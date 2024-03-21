@@ -152,7 +152,12 @@
         </div>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products') }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('products') }}"
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "main-menu.products-home.explore-our-help-articles",
+                "link_url": "{{ url('products') }}"
+              }'>
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
@@ -167,20 +172,83 @@
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('products.product', 'firefox') }}">{{ _('Firefox Browser') }}</a></li>
-              <li><a
-                  href="{{ url('products.product', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
+              <li>
+                <a href="{{ url('products.product', 'firefox') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.product-home",
+                    "link_detail": "firefox",
+                    "link_url": "{{ url('products.product', 'firefox') }}"
+                  }'>
+                  {{ _('Firefox Browser') }}
+                </a>
               </li>
-              <li><a href="{{ url('products.product', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('products.product', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('products.product', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('products') }}">{{ _('Browse All Articles') }}</a></li>
+              <li>
+                <a href="{{ url('products.product', 'firefox-private-network-vpn') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.product-home",
+                    "link_detail": "firefox-private-network-vpn",
+                    "link_url": "{{ url('products.product', 'firefox-private-network-vpn') }}"
+                  }'>
+                  {{ _('Mozilla VPN') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.product', 'ios') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.product-home",
+                    "link_detail": "ios",
+                    "link_url": "{{ url('products.product', 'ios') }}"
+                  }'>
+                  {{ _('Firefox for iOS') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.product', 'focus-firefox') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.product-home",
+                    "link_detail": "focus-firefox",
+                    "link_url": "{{ url('products.product', 'focus-firefox') }}"
+                  }'>
+                  {{ _('Firefox Focus') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.product', 'mobile') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.product-home",
+                    "link_detail": "mobile",
+                    "link_url": "{{ url('products.product', 'mobile') }}"
+                  }'>
+                  {{ _('Firefox for Android') }}
+                </a>
+              </li>
+              <li>
+                <a class="color-link" href="{{ url('products') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.products-home.browse-all-articles",
+                    "link_url": "{{ url('products') }}"
+                  }'>
+                  {{ _('Browse All Articles') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', 'mozilla-account') }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('products.product', 'mozilla-account') }}"
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "main-menu.product-home.mozilla-account",
+                "link_detail": "mozilla-account",
+                "link_url": "{{ url('products.product', 'mozilla-account') }}"
+              }'>
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path stroke="#000" stroke-linecap="round" stroke-width="2" d="M1 19s1.5-6 7-6 7 6 7 6"/>
@@ -192,11 +260,43 @@
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account' )}}">{{ _('What Is It?') }}</a></li>
-              <li><a href="{{ url('products.product', 'mozilla-account')}}">{{ _('Get Help') }}</a></li>
-              <li><a href="https://accounts.firefox.com/reset_password">{{ _('Reset Password') }}</a></li>
+              <li>
+                <a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.kb-article.what-is-it",
+                    "link_url": "{{ url('wiki.document', 'access-mozilla-services-firefox-account') }}"
+                  }'>
+                  {{ _('What Is It?') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.product', 'mozilla-account')}}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.product-home.get-help",
+                    "link_detail": "mozilla-account",
+                    "link_url": "{{ url('products.product', 'mozilla-account') }}"
+                  }'>
+                  {{ _('Get Help') }}
+                </a>
+              </li>
+              <li>
+                <a href="https://accounts.firefox.com/reset_password">
+                  {{ _('Reset Password') }}
+                </a>
+              </li>
               <li></li>
-              <li><a href="{{ url('wiki.document', 'switching-devices') }}">{{ _('Sync Your Data') }}</a></li>
+              <li>
+                <a href="{{ url('wiki.document', 'switching-devices') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.kb-article.sync-your-data",
+                    "link_url": "{{ url('wiki.document', 'switching-devices') }}"
+                  }'>
+                  {{ _('Sync Your Data') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
@@ -216,7 +316,12 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}"
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "main-menu.forums-home.discussions",
+                "link_url": "{{ url('forums.forums') }}"
+              }'>
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -237,7 +342,13 @@
         </div>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}"
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "main-menu.product-home.tools",
+                "link_detail": "contributor",
+                "link_url": "{{ url('products.product', slug='contributor') }}"
+              }'>
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path
@@ -262,7 +373,14 @@
 {% endif %}
 
 <li class="mzp-c-menu-category">
-  <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.contribute') }}">{{ _('Contribute') }}</a>
+  <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.contribute') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "main-menu.contribute-home",
+      "link_url": "{{ url('landings.contribute') }}"
+    }'>
+    {{ _('Contribute') }}
+  </a>
 </li>
 {% endmacro %}
 
