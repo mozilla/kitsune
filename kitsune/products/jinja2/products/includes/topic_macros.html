@@ -57,7 +57,7 @@
           href="{{ aaq_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "aaq-card-for-aaq-step-2",
+            "link_type": "aaq-card.aaq-step-2",
             "link_detail": "{{ product_key }}",
             "link_url": "{{ aaq_url }}"
           }'>
@@ -89,7 +89,7 @@
           href="{{ topic_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "topic-sidebar",
+            "link_type": "sidebar.topic",
             "link_detail": "{{ topic.slug }}",
             "link_url": "{{ topic_url }}"
           }'>
@@ -104,7 +104,7 @@
             <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}"
               data-event-name="click_internal_link"
               data-event-parameters='{
-                "link_type": "subtopic-sidebar",
+                "link_type": "sidebar.subtopic",
                 "link_detail": "{{ subtopic.slug }}",
                 "link_url": "{{ subtopic_url }}"
               }'>
@@ -129,7 +129,7 @@
       <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}"
         data-event-name="click_internal_link"
         data-event-parameters='{
-          "link_type": "topic-tab",
+          "link_type": "tab.topic",
           "link_detail": "{{ topic.slug }}",
           "link_url": "{{ topic_url }}"
         }'>
@@ -143,7 +143,7 @@
         <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "subtopic-tab",
+            "link_type": "tab.subtopic",
             "link_detail": "{{ subtopic.slug }}",
             "link_url": "{{ subtopic_url }}"
           }'>
