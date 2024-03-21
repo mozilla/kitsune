@@ -62,7 +62,12 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}"
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "main-menu.aaq-step-1.ask-a-question",
+                "link_url": "{{ url('questions.aaq_step1') }}"
+              }'>
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -77,14 +82,71 @@
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
-              <li><a
-                  href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'desktop') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.aaq-step-2",
+                    "link_detail": "desktop",
+                    "link_url": "{{ url('questions.aaq_step2', 'desktop') }}"
+                  }'>
+                  {{ _('Firefox Browser') }}
+                </a>
               </li>
-              <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('Browse All Products') }}</a></li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.aaq-step-2",
+                    "link_detail": "firefox-private-network-vpn",
+                    "link_url": "{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}"
+                  }'>
+                  {{ _('Mozilla VPN') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'ios') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.aaq-step-2",
+                    "link_detail": "ios",
+                    "link_url": "{{ url('questions.aaq_step2', 'ios') }}"
+                  }'>
+                  {{ _('Firefox for iOS') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'focus') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.aaq-step-2",
+                    "link_detail": "focus",
+                    "link_url": "{{ url('questions.aaq_step2', 'focus') }}"
+                  }'>
+                  {{ _('Firefox Focus') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'mobile') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.aaq-step-2",
+                    "link_detail": "mobile",
+                    "link_url": "{{ url('questions.aaq_step2', 'mobile') }}"
+                  }'>
+                  {{ _('Firefox for Android') }}
+                </a>
+              </li>
+              <li>
+                <a class="color-link" href="{{ url('questions.aaq_step1') }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "main-menu.aaq-step-1.browse-all-products",
+                    "link_url": "{{ url('questions.aaq_step1') }}"
+                  }'>
+                  {{ _('Browse All Products') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
@@ -144,9 +206,9 @@
 </li>
 {% if user.is_authenticated %}
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools"
-    data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
+  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools">
+    {{ _('Contributor Tools') }}
+  </a>
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
     <div class="sumo-nav--dropdown-container">
       <div class="sumo-nav--dropdown-grid">
@@ -213,8 +275,7 @@
   {% if show_header_fx_download() %}
   {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
   <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button"
-    class="firefox-download-button hidden sumo-button primary-button button-lg" data-event-category="Download Button"
-    data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+    class="firefox-download-button hidden sumo-button primary-button button-lg">{{ _('Download Firefox') }}</a>
   {% endif %}
 </li>
 {% endif %}
@@ -299,8 +360,14 @@
     </div>
   </div>
   {% elif not request.path == url('users.auth') %}
-  <a rel="nofollow" href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Sign In">{{ _('Sign In/Up') }}</a>
+  <a rel="nofollow" href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "main-menu.sign-in-up",
+      "link_url": "{{ url('users.auth') }}"
+    }'>
+    {{ _('Sign In/Up') }}
+  </a>
   {% endif %}
 </li>
 {% endmacro %}
@@ -343,8 +410,8 @@
   <ul class="sidebar-nav--list">
     {% endif %}
     <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('For Contributors') }}</li>
-    {{ _discussion_nav_links(user, default_language, active) }}
-    {{ _tools_nav_links(user, default_language, active) }}
+    {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
+    {{ _tools_nav_links(user, default_language, active, context="sidebar") }}
 
     {% if not li_only %}
   </ul>
@@ -353,38 +420,142 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro _discussion_nav_links(user, default_language, active=None) -%}
-<li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('Community Discussions') }}</a>
+{% macro _discussion_nav_links(user, default_language, active=None, context="main-menu") -%}
+<li>
+  <a href="{{ url('forums.threads', 'contributors') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.community-discussions' }}",
+      "link_url": "{{ url('forums.threads', 'contributors') }}"
+    }'>
+    {{ _('Community Discussions') }}
+  </a>
 </li>
-<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Support Forum Home">{{ _('Support Forums') }}</a></li>
-<li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Forum') }}</a></li>
-<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'buddies') }}">{{ _('New Contributors') }}</a></li>
+<li>
+  <a href="{{ url('questions.home') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.support-forums' }}",
+      "link_url": "{{ url('questions.home') }}"
+    }'>
+    {{ _('Support Forums') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('forums.threads', 'l10n-forum') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.l10n-discussions' }}",
+      "link_url": "{{ url('forums.threads', 'l10n-forum') }}"
+    }'>
+    {{ _('L10N Discussions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('forums.threads', 'social-media') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.social-support-discussions' }}",
+      "link_url": "{{ url('forums.threads', 'social-media') }}"
+    }'>
+    {{ _('Social Support Forum') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.locale_discussions') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.article-discussions' }}",
+      "link_url": "{{ url('wiki.locale_discussions') }}"
+    }'>
+    {{ _('Article Discussions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('forums.threads', 'buddies') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.new-contributor-discussions' }}",
+      "link_url": "{{ url('forums.threads', 'buddies') }}"
+    }'>
+    {{ _('New Contributors') }}
+  </a>
+</li>
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None) -%}
-<li><a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}</a></li>
-<li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Community Hub">{{ _('Community Hub') }}</a></li>
-<li><a href="{{ url('wiki.category', 60) }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Templates">{{ _('Templates') }}</a></li>
-<li><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Dashboards">{{ _('Dashboards') }}</a></li>
-<li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
-<li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
+{% macro _tools_nav_links(user, default_language, active=None, context="main-menu") -%}
+<li>
+  <a href="{{ url('products.product', slug='contributor') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.contributor-guides' }}",
+      "link_url": "{{ url('products.product', slug='contributor') }}"
+    }'>
+    {{ _('Guides') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('community.home') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.community-hub' }}",
+      "link_url": "{{ url('community.home') }}"
+    }'>
+    {{ _('Community Hub') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.category', 60) }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.kb-templates' }}",
+      "link_url": "{{ url('wiki.category', 60) }}"
+    }'>
+    {{ _('Templates') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('dashboards.localization') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.l10n-dashboard' }}",
+      "link_url": "{{ url('dashboards.localization') }}"
+    }'>
+    {{ _('Dashboards') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.revisions') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.kb-recent-revisions' }}",
+      "link_url": "{{ url('wiki.revisions') }}"
+    }'>
+    {{ _('Recent Revisions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('gallery.home') }}"
+    data-event-name="click_internal_link"
+    data-event-parameters='{
+      "link_type": "{{ context + '.media-gallery' }}",
+      "link_url": "{{ url('gallery.home') }}"
+    }'>
+    {{ _('Media Gallery') }}
+  </a>
+</li>
 {% if user.has_perm('flagit.can_moderate') %}
-<li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
+  <li>
+    <a href="{{ url('flagit.queue') }}"
+      data-event-name="click_internal_link"
+      data-event-parameters='{
+        "link_type": "{{ context + '.moderate-forum-content' }}",
+        "link_url": "{{ url('flagit.queue') }}"
+      }'>
+      {{ _('Moderate Forum Content') }}
+    </a>
+  </li>
 {% endif %}
-<!-- <li><a href="#">Tag Admin</a></li> -->
 {% endmacro %}
 
 {# This is designed to be used like this:
@@ -417,8 +588,7 @@
   <div class="download-buttons">
     <div class="download-firefox">
       <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button"
-        class="download-button sumo-button primary-button button-lg" data-event-category="Download Button"
-        data-event-action="Panel Opening" data-event-label="{{ latest_version }}">
+        class="download-button sumo-button primary-button button-lg">
         {{ _('Download Firefox') }}
       </a>
       <ul class="download-info text-body-xs">
@@ -442,8 +612,7 @@
             {{ _('How does it work?') }}
           </a></li>
         <li>
-          <a href="https://www.mozilla.org/firefox/new/#download-fx" data-event-category="Download Button"
-            data-event-action="Panel Opening" data-event-label="{{ latest_version }}">
+          <a href="https://www.mozilla.org/firefox/new/#download-fx">
             {{ _('Download a fresh copy') }}
           </a>
         </li>
@@ -504,9 +673,14 @@
       <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
       <div class="card--details">
         <h3 class="card--title">
-          <a class="expand-this-link" href="{{ url('wiki.document', doc.slug)  }}" {% if new_tab %} target="_blank"
-            {% endif %} data-event-category="link click" data-event-action="product"
-            data-event-label="#{{ doc.title }}">{{ doc.title }}</a>
+          {% set doc_url = url('wiki.document', doc.slug) %}
+          <a class="expand-this-link" href="{{ doc_url }}"{% if new_tab %} target="_blank"{% endif %}
+            data-event-name="click_internal_link"
+            data-event-parameters='{
+              "link_type": "featured.kb-article",
+              "link_url": "{{ doc_url }}"
+            }'>
+            {{ doc.title }}</a>
         </h3>
         <p class="card--desc">
           {{ doc.current_revision.summary }}
