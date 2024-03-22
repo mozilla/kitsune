@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       trackEvent("search", {
-        "locale": locale,
         "search_term": searchTerm,
         "search_product_filter": productFilter,
         "search_content_filter": contentFilter

@@ -195,7 +195,6 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
         queries.push(query);
         search.query(query, InstantSearchSettings.render);
         trackEvent("search", {
-          "locale": locale,
           "search_term": query,
           "search_product_filter": getSearchProductFilter(),
           "search_content_filter": getSearchContentFilter()
@@ -240,7 +239,6 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
     search.query(null, InstantSearchSettings.render);
     trackEvent("search", {
-      "locale": locale,
       "search_term": search.lastQuery,
       "search_product_filter": getSearchProductFilter(),
       "search_content_filter": getSearchContentFilter()

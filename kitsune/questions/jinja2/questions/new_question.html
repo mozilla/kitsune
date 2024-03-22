@@ -39,4 +39,4 @@
 {% block submit_button_value %}
   {{ _('Submit') }}
 {% endblock %}
-{% block submit_button_attrs %}{% if current_step > 1 %}data-event-name="question_submitted" data-event-parameters='{"products": "{{ ga_products }}"}'{% endif %}{% endblock %}
+{% block submit_button_attrs %}data-event-name="question_submitted"{% endblock %}
