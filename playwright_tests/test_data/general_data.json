@@ -74,6 +74,11 @@
   },
   "dashboard_links": {
     "recent_revisions": "https://support.allizom.org/en-US/kb/revisions",
-    "kb_overview": "https://support.allizom.org/en-US/contributors/kb-overview"
-  }
+    "kb_overview": "https://support.allizom.org/en-US/contributors/kb-overview",
+    "l10n_most_visited_translations": "https://support.allizom.org/ro/localization/most-visited-translations"
+  },
+  "discussions_links": {
+    "article_discussions": "https://support.allizom.org/en-US/kb/all/discussions"
+  },
+  "test_article_link": "https://support.allizom.org/en-US/kb/donotdelete"
 }

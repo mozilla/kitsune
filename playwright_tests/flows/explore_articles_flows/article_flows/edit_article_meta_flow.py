@@ -10,7 +10,18 @@ class EditArticleMetaFlow(TestUtilities, KBArticleEditMetadata):
     def __init__(self, page: Page):
         super().__init__(page)
 
-    def edit_article_metadata(self, title=None, needs_change=False, needs_change_comment=False):
+    def edit_article_metadata(self, title=None,
+                              needs_change=False,
+                              needs_change_comment=False,
+                              restricted_to_groups: list[str] = None,
+                              single_group=""):
+
+        if restricted_to_groups is not None:
+            for group in restricted_to_groups:
+                super()._add_and_select_restrict_visibility_group_metadata(group)
+        if single_group != "":
+            super()._add_and_select_restrict_visibility_group_metadata(single_group)
+
         if title is not None:
             super()._add_text_to_title_field(title)
 

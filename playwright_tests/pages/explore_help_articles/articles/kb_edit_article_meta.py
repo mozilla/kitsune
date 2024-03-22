@@ -9,6 +9,8 @@ class KBArticleEditMetadata(BasePage):
     __restricted_visibility_chosen_groups = ("//input[@id='id_restrict_to_groups-selectized"
                                              "']/../div[@class='item']")
     __clear_all_selected_groups_button = "//a[@class='clear']"
+    __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-selectized']"
+    __kb_article_restrict_visibility_delete_all_groups = "//a[@title='Clear']"
     __title_input_field = "//input[@id='id_title']"
     __slug_input_field = "//input[@id='id_slug']"
     __category_select_field = "//select[@id='id_category']"
@@ -32,6 +34,18 @@ class KBArticleEditMetadata(BasePage):
 
     def _clear_all_restricted_visibility_group_selections(self):
         super()._click(self.__clear_all_selected_groups_button)
+
+    def _add_and_select_restrict_visibility_group_metadata(self, group_name: str):
+        option_xpath = f"//div[@class='option active']/span[text()='{group_name}']"
+        super()._fill(self.__kb_article_restrict_visibility_field, group_name)
+        super()._click(option_xpath)
+
+    def _delete_a_restricted_visibility_group_metadata(self, group_name: str):
+        xpath = f"//div[@class='item' and text()='{group_name}']/a"
+        super()._click(xpath)
+
+    def _delete_all_restricted_visibility_groups_metadata(self):
+        super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
 
     def _get_text_of_title_input_field(self):
         return super()._get_text_of_element(self.__title_input_field)

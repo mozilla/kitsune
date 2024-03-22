@@ -26,12 +26,16 @@ class TopNavbar(BasePage):
 
     # Contributor Tools
     __contributor_tools_option = "//a[contains(text(),'Contributor Tools')]"
+    __article_discussions_option = ("//div[@id='main-navigation']//a[normalize-space(text("
+                                    "))='Article Discussions']")
     __moderate_forum_content = ("//div[@id='main-navigation']//a[contains(text(), 'Moderate "
                                 "Forum Content')]")
     __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
                                  "normalize-space(text())='Recent Revisions']")
     __dashboards_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
                            "normalize-space(text())='Dashboards']")
+    __media_gallery_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
+                              "normalize-space(text())='Media Gallery']")
 
     # Sign in button
     __signin_signup_button = "//div[@id='profile-navigation']//a[contains(text(), 'Sign In/Up')]"
@@ -63,6 +67,10 @@ class TopNavbar(BasePage):
     def _click_on_contribute_top_navbar_option(self):
         super()._click(self.__contribute_option)
 
+    def _click_on_article_discussions_option(self):
+        super()._hover_over_element(self.__contributor_tools_option)
+        super()._click(self.__article_discussions_option)
+
     # Contributor tools
     def _click_on_moderate_forum_content_option(self):
         super()._hover_over_element(self.__contributor_tools_option)
@@ -75,6 +83,10 @@ class TopNavbar(BasePage):
     def _click_on_dashboards_option(self):
         super()._hover_over_element(self.__contributor_tools_option)
         super()._click(self.__dashboards_option)
+
+    def _click_on_media_gallery_option(self):
+        super()._hover_over_element(self.__contributor_tools_option)
+        super()._click(self.__media_gallery_option)
 
     # Explore our Help Articles actions.
     def _click_on_explore_our_help_articles_option(self):

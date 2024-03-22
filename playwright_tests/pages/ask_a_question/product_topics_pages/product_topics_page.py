@@ -25,6 +25,10 @@ class ProductTopicPage(BasePage):
     def _get_page_title(self) -> str:
         return super()._get_text_of_element(self.__page_title)
 
+    def _get_a_particular_article_locator(self, article_title: str):
+        xpath = f"//h2[@class='sumo-card-heading']/a[normalize-space(text())='{article_title}']"
+        return super()._get_element_locator(xpath)
+
     # Navbar actions.
     def _get_selected_navbar_option(self) -> str:
         return super()._get_text_of_element(self.__selected_nav_link)

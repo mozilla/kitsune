@@ -18,6 +18,9 @@ class BasePage:
         self.__wait_for_dom_load_to_finnish()
         return self._page.locator(xpath).all()
 
+    def _get_current_page_url(self) -> str:
+        return self._page.url
+
     # Single locator retrieval without wait.
     def _get_element_locator_no_wait(self, xpath: str) -> Locator:
         return self._page.locator(xpath)
@@ -54,6 +57,9 @@ class BasePage:
     def _get_element_locator_attribute_value(self, locator: Locator, attribute: str) -> str:
         self.__wait_for_dom_load_to_finnish()
         return locator.get_attribute(attribute)
+
+    def _wait_for_given_timeout(self, timeout: float):
+        self._page.wait_for_timeout(timeout)
 
     # Fetching a particular element input value.
     def _get_element_input_value(self, xpath: str) -> str:

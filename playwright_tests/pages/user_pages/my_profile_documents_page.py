@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Page, Locator
 from playwright_tests.core.basepage import BasePage
 
 
@@ -16,3 +16,7 @@ class MyProfileDocumentsPage(BasePage):
 
     def _get_text_of_document_links(self) -> list[str]:
         return super()._get_text_of_elements(self.__documents_link_list)
+
+    def _get_a_particular_document_locator(self, document_name: str) -> Locator:
+        xpath = f"//main//a[contains(text(),'{document_name}')]"
+        return super()._get_element_locator(xpath)
