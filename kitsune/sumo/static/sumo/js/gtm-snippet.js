@@ -26,25 +26,24 @@ import dntEnabled from "./libs/dnt-helper";
 
     w.gtag('js', new Date());
 
-    if (html.getAttribute("lang") || html.dataset.gaContentGroup || html.dataset.gaProducts || html.dataset.gaTopics) {
-      let configParameters = {};
-      if (html.getAttribute("lang")) {
-        configParameters.locale = html.getAttribute("lang");
-      }
-      if (html.dataset.gaTopics) {
-        configParameters.topics = html.dataset.gaTopics;
-      }
-      if (html.dataset.gaProducts) {
-        configParameters.products = html.dataset.gaProducts;
-      }
-      if (html.dataset.gaContentGroup) {
-        configParameters.content_group = html.dataset.gaContentGroup;
-      }
-      console.log("--------------------");
-      console.log(`gtag config for ${GTM_CONTAINER_ID}`);
-      console.log(`parameters: ${JSON.stringify(configParameters)}`);
-      console.log("--------------------");
-      w.gtag('config', GTM_CONTAINER_ID, configParameters);
+    let configParameters = {};
+    if (html.getAttribute("lang")) {
+      configParameters.locale = html.getAttribute("lang");
     }
+    if (html.dataset.gaTopics) {
+      configParameters.topics = html.dataset.gaTopics;
+    }
+    if (html.dataset.gaProducts) {
+      configParameters.products = html.dataset.gaProducts;
+    }
+    if (html.dataset.gaContentGroup) {
+      configParameters.content_group = html.dataset.gaContentGroup;
+    }
+
+    console.log("--------------------");
+    console.log(`gtag config for ${GTM_CONTAINER_ID}`);
+    console.log(`parameters: ${JSON.stringify(configParameters)}`);
+    console.log("--------------------");
+    w.gtag('config', GTM_CONTAINER_ID, configParameters);
   }
 })(window);
