@@ -2,10 +2,11 @@ export default function trackEvent(name, parameters) {
   console.log("--------------------");
   console.log(`event: "${name}"`);
   console.log(`parameters: ${JSON.stringify(parameters)}`);
-  console.log("--------------------");
   if (window.gtag) {
+    console.log("sending...");
     window.gtag('event', name, parameters);
   }
+  console.log("--------------------");
 }
 
 // The "DOMContentLoaded" event is guaranteed not to have been
