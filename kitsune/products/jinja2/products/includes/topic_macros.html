@@ -14,7 +14,7 @@
             <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
               data-event-name="click_internal_link"
               data-event-parameters='{
-                "link_type": "product-and-topic-home",
+                "link_name": "product-and-topic-home",
                 "link_detail": "{{ (product_slug or product.slug) + '/' + topic.slug }}",
                 "link_url": "{{ topic_url }}"
               }'>
@@ -57,7 +57,7 @@
           href="{{ aaq_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "aaq-card.aaq-step-2",
+            "link_name": "aaq-card.aaq-step-2",
             "link_detail": "{{ product_key }}",
             "link_url": "{{ aaq_url }}"
           }'>
@@ -89,7 +89,7 @@
           href="{{ topic_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "sidebar.product-and-topic-home",
+            "link_name": "sidebar.product-and-topic-home",
             "link_detail": "{{ product.slug + '/' + topic.slug }}",
             "link_url": "{{ topic_url }}"
           }'>
@@ -104,7 +104,7 @@
             <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}"
               data-event-name="click_internal_link"
               data-event-parameters='{
-                "link_type": "sidebar.product-and-topic-and-subtopic-home",
+                "link_name": "sidebar.product-and-topic-and-subtopic-home",
                 "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}",
                 "link_url": "{{ subtopic_url }}"
               }'>
@@ -129,7 +129,7 @@
       <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}"
         data-event-name="click_internal_link"
         data-event-parameters='{
-          "link_type": "tab.product-and-topic-home",
+          "link_name": "tab.product-and-topic-home",
           "link_detail": "{{ product.slug + '/' + topic.slug }}",
           "link_url": "{{ topic_url }}"
         }'>
@@ -143,7 +143,7 @@
         <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "tab.product-and-topic-and-subtopic-home",
+            "link_name": "tab.product-and-topic-and-subtopic-home",
             "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}",
             "link_url": "{{ subtopic_url }}"
           }'>

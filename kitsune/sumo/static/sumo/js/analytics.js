@@ -13,58 +13,15 @@ export default function trackEvent(name, parameters) {
 // waits until all deferred scripts have been loaded, and the code
 // in this file is always bundled into a script that is deferred.
 document.addEventListener("DOMContentLoaded", () => {
-  const linksWithGAEvent = document.querySelectorAll("body a[data-event-name]");
-  const buttonsWithGAEvent = document.querySelectorAll("body button[data-event-name]");
-
-  linksWithGAEvent.forEach((linkWithGAEvent) => {
-    linkWithGAEvent.addEventListener("click", (event) => {
+  const elementsWithGAEvent = document.querySelectorAll("body *[data-event-name]");
+  elementsWithGAEvent.forEach((elementWithGAEvent) => {
+    elementWithGAEvent.addEventListener("click", (event) => {
       let eventParameters;
-      let link = event.currentTarget;
-      // Is a new tab/window being opened?
-      let newTab = event.metaKey || event.ctrlKey || link.getAttribute("target") === '_blank';
-
-      if (link.dataset.eventParameters) {
-        eventParameters = JSON.parse(link.dataset.eventParameters);
+      let element = event.currentTarget;
+      if (element.dataset.eventParameters) {
+        eventParameters = JSON.parse(element.dataset.eventParameters);
       }
-
-      trackEvent(link.dataset.eventName, eventParameters);
-
-      if (!newTab) {
-        // Prevent the default action (navigation) while we wait for the event to be tracked.
-        // If a new tab/window is being opened, there's no need to delay/prevent anything.
-        event.preventDefault();
-        // Delay the click navigation by 250ms to ensure the event is tracked.
-        setTimeout(function () {
-          document.location.href = link.getAttribute("href");
-        }, 250);
-      }
+      trackEvent(element.dataset.eventName, eventParameters);
     });
   });
-
-  buttonsWithGAEvent.forEach((buttonWithGAEvent) => {
-    buttonWithGAEvent.addEventListener("click", (event) => {
-      let eventParameters;
-      let button = event.currentTarget;
-      let closestForm = button.closest("form");
-
-      if (button.dataset.eventParameters) {
-        eventParameters = JSON.parse(button.dataset.eventParameters);
-      }
-
-      trackEvent(button.dataset.eventName, eventParameters);
-
-      if (closestForm) {
-        event.preventDefault();
-        // Delay the form submission by 250ms to ensure the event is tracked.
-        setTimeout(function() {
-          if (closestForm.requestSubmit) {
-            closestForm.requestSubmit(button);
-          } else {
-            closestForm.submit();
-          }
-        }, 250);
-      }
-    });
-  });
-
 });

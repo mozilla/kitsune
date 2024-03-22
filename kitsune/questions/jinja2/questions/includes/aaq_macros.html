@@ -26,7 +26,7 @@
                 href="{{ aaq_step_2_link }}"
                 data-event-name="click_internal_link"
                 data-event-parameters='{
-                  "link_type": "aaq-step-2",
+                  "link_name": "aaq-step-2",
                   "link_detail": "{{ product.slug }}",
                   "link_url": "{{ aaq_step_2_link }}"
                 }'>
@@ -112,17 +112,17 @@
         <p>{{ _('Sign in/up to post your question and get help.') }}</p>
       {% endif %}
       {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
-        {% set link_type = "aaq-widget.community-support.kb-article" %}
+        {% set link_name = "aaq-widget.community-support.kb-article" %}
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
-        {% set link_type = "aaq-widget.aaq-step-3" %}
+        {% set link_name = "aaq-widget.aaq-step-3" %}
         {% set next_step = url('questions.aaq_step3', product_key=aaq_context.key) %}
       {% endif %}
       <a class="sumo-button primary-button feature-box"
         href="{{ next_step }}"
         data-event-name="click_internal_link"
         data-event-parameters='{
-          "link_type": "{{ link_type }}",
+          "link_name": "{{ link_name }}",
           "link_detail": "{{ aaq_context.key }}",
           "link_url": "{{ next_step }}"
         }'>
