@@ -40,6 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    trackEvent('article_view', {
+      "default_slug": defaultSlug,
+    });
+
     // Fire a GA event after 10 seconds to track an engaged article "read".
     setTimeout(function() {
       trackEvent('article_read', {
