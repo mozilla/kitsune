@@ -25,12 +25,12 @@ class ProductsPage(BasePage):
 
     # Product card actions.
     def _get_subheading_of_card(self, card_title: str) -> str:
-        xpath = (f"//a[@data-event-label='{card_title}']/../following-sibling::p["
-                 f"@class='card--desc']")
+        xpath = (f"//a[normalize-space(text())='{card_title}']/../following-sibling::p[@class="
+                 f"'card--desc']")
         return super()._get_text_of_element(xpath)
 
     def _click_on_a_particular_product_support_card(self, card_title):
-        xpath = f"//a[@data-event-label='{card_title}']"
+        xpath = f"//div[@class='card--details']//a[normalize-space(text())='{card_title}']"
         super()._click(xpath)
 
     def _get_all_product_support_titles(self) -> list[str]:

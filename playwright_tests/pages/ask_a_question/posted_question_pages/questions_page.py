@@ -49,7 +49,7 @@ class QuestionPage(BasePage):
     __search_support_search_button = "//form[@id='support-search-sidebar']/button"
 
     # Still need help widget locators.
-    __still_need_help_ask_now_button = "//a[@data-event-label='aaq widget']"
+    __still_need_help_ask_now_button = "//div[contains(@class,'aaq-widget')]//a"
 
     # Question Tools locators.
     __edit_this_question_option = "//ul[@id='related-content']/li[@class='edit']/a"
@@ -108,7 +108,7 @@ class QuestionPage(BasePage):
     __preview_reply_button = "//input[@id='preview']"
 
     # Post Reply button locators.
-    __post_reply_button = "//button[text()='Post Reply']"
+    __post_reply_button = "//button[normalize-space(text())='Post Reply']"
 
     # Delete question locators.
     __delete_question_delete_button = "//input[@value='Delete']"

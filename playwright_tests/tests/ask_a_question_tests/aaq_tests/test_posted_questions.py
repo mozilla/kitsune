@@ -25,6 +25,9 @@ class TestPostedQuestions(TestUtilities):
                          "question"):
             self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
 
+        with allure.step("Deleting user session"):
+            self.delete_cookies()
+
         if username == 'TEST_ACCOUNT_13':
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -1455,7 +1458,7 @@ class TestPostedQuestions(TestUtilities):
         # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
         with allure.step("Signing in with a non admin user account and posting a Firefox product "
                          "question"):
-            posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+            posted_question = self.post_firefox_product_question_flow("TEST_ACCOUNT_MESSAGE_6")
         question_id = self.sumo_pages.question_page._get_question_id()
 
         if quote_on == "reply":

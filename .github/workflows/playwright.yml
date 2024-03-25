@@ -71,13 +71,17 @@ jobs:
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
             declare -a tests=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard")
+            any_failures=false
             for test in "${tests[@]}"; do
                 num_processes=2
                 if [[ "$test" =~ ^(beforeThreadTests|afterThreadTests)$ ]]; then
                   num_processes=1
                 fi
-                poetry run pytest -m $test --numprocesses $num_processes --browser ${{ env.BROWSER }} --reruns 1
+                if ! poetry run pytest -m $test --numprocesses $num_processes --browser ${{ env.BROWSER }} --reruns 1; then
+                 any_failures=true
+                fi
             done
+            echo "TESTS_FAILED=$any_failures" >> $GITHUB_ENV
       - name: Generating Allure Report
         working-directory: playwright_tests
         if: success() || failure()
@@ -93,3 +97,6 @@ jobs:
           name: Playwright test report
           path: |
             playwright_tests/allure-report
+      - name: Playwright Test Status
+        if: env.TESTS_FAILED == 'true'
+        run: exit 1

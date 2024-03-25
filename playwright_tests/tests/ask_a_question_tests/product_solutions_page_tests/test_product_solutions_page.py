@@ -144,12 +144,12 @@ class TestProductSolutionsPage(TestUtilities):
                 ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT
 
             with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-                assert self.sumo_pages.product_solutions_page._get_aaq_widget_button_name(
+                assert self.sumo_pages.product_solutions_page._get_aaq_premium_widget_button_name(
                 ) == AAQWidgetMessages.PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
 
             with allure.step("Clicking on the AAQ button, verifying that the auth page is "
                              "displayed and signing in to SUMO"):
-                self.sumo_pages.product_solutions_page._click_ask_now_button()
+                self.sumo_pages.product_solutions_page._click_contact_support_button()
 
                 self.logger.info("Signing in to SUMO")
                 self.sumo_pages.auth_flow_page.sign_in_flow(

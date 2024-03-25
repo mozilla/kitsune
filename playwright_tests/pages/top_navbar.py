@@ -18,22 +18,23 @@ class TopNavbar(BasePage):
     __ask_a_question_option = "//h4[contains(text(),'Ask a Question')]/parent::a"
     __aaq_firefox_browser_option = ("//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
                                     "Question')]/../..//a[contains(text(),'Firefox Browser')]")
-    __browse_all_products_option = "//div[@id='main-navigation']//a[text()='Browse All Products']"
+    __browse_all_products_option = ("//div[@id='main-navigation']//a[normalize-space(text("
+                                    "))='Browse All Products']")
 
     # Contribute Tools
     __contribute_option = "//a[contains(text(),'Contribute')]"
 
     # Contributor Tools
     __contributor_tools_option = "//a[contains(text(),'Contributor Tools')]"
-    __moderate_forum_content = ("//div[@id='main-navigation']//a[@data-event-label='Moderate "
-                                "Forum Content']")
-    __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[text("
-                                 ")='Recent Revisions']")
-    __dashboards_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[text("
-                           ")='Dashboards']")
+    __moderate_forum_content = ("//div[@id='main-navigation']//a[contains(text(), 'Moderate "
+                                "Forum Content')]")
+    __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
+                                 "normalize-space(text())='Recent Revisions']")
+    __dashboards_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
+                           "normalize-space(text())='Dashboards']")
 
     # Sign in button
-    __signin_signup_button = "//div[@id='profile-navigation']//a[@data-event-label='Sign In']"
+    __signin_signup_button = "//div[@id='profile-navigation']//a[contains(text(), 'Sign In/Up')]"
 
     # Signed in options
     __signed_in_username = "//span[@class='sumo-nav--username']"
@@ -43,7 +44,7 @@ class TopNavbar(BasePage):
                                        "text(), 'My Questions')]")
     __signed_in_settings_option = "//h4[contains(text(), 'Settings')]/parent::a"
     __signed_in_inbox_option = "//h4[contains(text(), 'Inbox')]/parent::a"
-    __sign_out_button = "//a[@data-event-label='Sign Out']"
+    __sign_out_button = "//a[contains(text(), 'Sign Out')]"
 
     def __init__(self, page: Page):
         super().__init__(page)
