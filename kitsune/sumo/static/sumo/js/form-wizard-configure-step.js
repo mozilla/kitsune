@@ -58,10 +58,6 @@ export class ConfigureStep extends BaseFormStep {
   }
 
   connectedCallback() {
-    super.connectedCallback();
-    let buttons = this.shadowRoot.querySelector("#buttons");
-    buttons.addEventListener("click", this);
-
     let notSyncingInstructionLink = this.shadowRoot.querySelector("#instructions > .not-syncing > a");
     notSyncingInstructionLink.id = "turn-on-sync";
 
@@ -69,16 +65,28 @@ export class ConfigureStep extends BaseFormStep {
     syncingInstructionLink.id = "change-sync-prefs";
 
     for (let link of [notSyncingInstructionLink, syncingInstructionLink]) {
-      link.addEventListener("click", this);
       link.dataset.eventName = "dmw_click";
       link.dataset.eventParameters = `{"dmw_click_target": "${link.id}"}`;
+    }
+
+    super.connectedCallback();
+
+    let buttons = this.shadowRoot.querySelector("#buttons");
+    buttons.addEventListener("click", this);
+
+    for (let link of [notSyncingInstructionLink, syncingInstructionLink]) {
+      link.addEventListener("click", this);
     }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     let buttons = this.shadowRoot.querySelector("#buttons");
+    let syncingInstructionLink = this.shadowRoot.querySelector("#instructions > .syncing > a");
+    let notSyncingInstructionLink = this.shadowRoot.querySelector("#instructions > .not-syncing > a");
     buttons.removeEventListener("click", this);
+    syncingInstructionLink.removeEventListener("click", this);
+    notSyncingInstructionLink.removeEventListener("click", this);
   }
 
   render(prevState, state) {
