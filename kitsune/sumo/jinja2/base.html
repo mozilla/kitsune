@@ -232,8 +232,26 @@
             <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
             <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
             <li><a href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
-            <li><a href="{{ url('landings.contribute') }}">{{ _('Join our Community') }}</a></li>
-            <li><a href="{{ url('home') }}">{{ _('Explore Help Articles')}}</a></li>
+            <li>
+              <a href="{{ url('landings.contribute') }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_name": "footer.join-our-community.contribute-home",
+                  "link_url": "{{ url('landings.contribute') }}"
+                }'>
+                {{ _('Join our Community') }}
+              </a>
+            </li>
+            <li>
+              <a href="{{ url('home') }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_name": "footer.explore-help-articles.home",
+                  "link_url": "{{ url('home') }}"
+                }'>
+                {{ _('Explore Help Articles')}}
+              </a>
+            </li>
           </ul>
         </section>
 
@@ -265,10 +283,38 @@
             {% if not request.user.is_authenticated %}
               <li><a rel="nofollow" href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
             {% endif %}
-            <li><a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account' )}}">{{ _('What Is It?') }}</a></li>
+            <li>
+              <a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account') }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_name": "footer.what-is-it.kb-article",
+                  "link_url": "{{ url('wiki.document', 'access-mozilla-services-firefox-account') }}"
+                }'>
+                {{ _('What Is It?') }}
+              </a>
+            </li>
             <li><a href="https://accounts.firefox.com/reset_password">{{ _('Reset Password') }}</a></li>
-            <li><a href="{{ url('wiki.document', 'switching-devices') }}">{{ _('Sync Your Data') }}</a></li>
-            <li><a href="{{ url('products.product', 'mozilla-account')}}">{{ _('Get Help') }}</a></li>
+            <li>
+              <a href="{{ url('wiki.document', 'switching-devices') }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_name": "footer.sync-your-data.kb-article",
+                  "link_url": "{{ url('wiki.document', 'switching-devices') }}"
+                }'>
+                {{ _('Sync Your Data') }}
+              </a>
+            </li>
+            <li>
+              <a href="{{ url('products.product', 'mozilla-account') }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_name": "footer.get-help.product-home",
+                  "link_detail": "mozilla-account",
+                  "link_url": "{{ url('products.product', 'mozilla-account') }}"
+                }'>
+                {{ _('Get Help') }}
+              </a>
+            </li>
           </ul>
         </section>
 
