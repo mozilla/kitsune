@@ -3,6 +3,7 @@
 {% from "search/includes/result.html" import search_result with context %}
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q), ('WT.oss_r', num_results), ('robots', 'noindex, nofollow')) %}
+{% set ga_content_group = "search-home" %}
 
 {% block masthead %}
 <div class="search-results-visible">
@@ -53,7 +54,7 @@
                     <a tabindex="-1" class="expand-this-link title" href="{{ doc.url }}"
                       data-event-name="click_internal_link"
                       data-event-parameters='{
-                        "link_name": "{{ search-fallback.kb-article }}",
+                        "link_name": "search-fallback.kb-article",
                         "link_url": "{{ doc.url }}"
                       }'>
                       {{ doc.document_title }}
