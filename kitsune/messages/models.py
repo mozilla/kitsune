@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.db import models
 
 from kitsune.sumo.models import ModelBase
@@ -34,6 +34,7 @@ class InboxMessage(ModelBase):
     """A message in a user's private message inbox."""
 
     to = models.ForeignKey(User, on_delete=models.CASCADE, related_name="inbox")
+    to_group = models.ManyToManyField(Group, null=True, blank=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
     created = models.DateTimeField(default=datetime.now, db_index=True)
@@ -59,12 +60,14 @@ class InboxMessage(ModelBase):
 class OutboxMessage(ModelBase):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="outbox")
     to = models.ManyToManyField(User)
+    to_group = models.ManyToManyField(Group, null=True, blank=True)
     message = models.TextField()
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
     def __str__(self):
         to = ", ".join([u.username for u in self.to.all()])
-        return "from:%s to:%s %s" % (self.sender, to, self.message[0:30])
+        to_group = ", ".join([g.name for g in self.to_group.all()]) or None
+        return "from:%s to:%s groups:%s %s" % (self.sender, to, to_group, self.message[0:30])
 
     @property
     def content_parsed(self):

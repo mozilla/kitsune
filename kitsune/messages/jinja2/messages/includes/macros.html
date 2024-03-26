@@ -59,18 +59,30 @@
     {% endif %}
   </span>
   <span class="to">
-    {% if message.recipients > 1 -%}
-      {% set comma = joiner(', ') %}
-      {% for user in message.to.all() -%}
-        {{ comma() }}
-        {{ name_link(user) }}
-      {%- endfor %}
-    {% else %}{# Save a query! #}
-      {{ name_link(message.recipient) }}
+    <p><strong>{{ _('To') }}:</strong>
+      {% if message.recipients > 1 -%}
+        {% set comma = joiner(', ') %}
+        {% for user in message.to.all() -%}
+          {{ comma() }}
+          {{ name_link(user) }}
+        {%- endfor %}
+        </p>
+        </span>
+        {% if request.user.profile.is_staff and message.to_group %}
+          <span class="to-group">
+            <p><strong>{{ _('To Groups') }}:</strong> 
+            {% set comma = joiner(', ') %}
+            {% for group in message.to_group.all() -%}
+              {{ comma() }}
+              {{ group_link(group) }}
+            {% endfor %}
+            </p>
+          </span>
+        {% endif %}
     {% endif %}
-    {{ datetimeformat(message.created) }}
+    <span class="time">{{ datetimeformat(message.created) }}</span>
   </span>
-  <div class="message">{{ message.content_parsed }}</div>
+  <div class="message read-message">{{ message.content_parsed }}</div>
 {%- endmacro %}
 
 
