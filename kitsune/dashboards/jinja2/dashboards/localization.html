@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import print_readout, overview_section, product_choice_list, print_subscription_menu with context %}
+{% from "dashboards/includes/macros.html" import print_readout_body, overview_section, product_choice_list, print_subscription_menu with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 {% set title = _('[{locale}][{product}] Localization Dashboard')|fe(locale=current_locale, product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
@@ -83,22 +83,24 @@
                                      (overview_rows['all'], True),
                                      (overview_rows['templates'], True))) }}
 
-      <div id="stats-tabs" data-ui-type="tabbed-view">
-        <ul class="cf" data-tab-role="tabs">
-          <li><a href="#">{{ _('Localization') }}</a></li>
-          <li><a href="#">{{ _('Review') }}</a></li>
+      <nav class="localization tabs">
+        <ul class="tabs--list">
+          {% for readout in readouts.values() %}
+          <li class="tabs--item">
+            <button class="tabs--link{% if readout.slug == 'most-visited-translations' %} is-active{% endif %}" data-tab-content-id="{{ readout.slug }}" id="{{ readout.slug }}">
+              <span>{{ readout.title }}</span>
+            </button>
+          </li>
+          {% endfor %}
         </ul>
-        <div data-tab-role="panels">
-          <div>
-            {{ print_readout(readouts['most-visited-translations'], max_rows=20, product=product) }}
-          </div>
-          <div>
-            {{ print_readout(readouts['unreviewed'], max_rows=10, product=product) }}
-          </div>
-        </div>
-      </div>
+      </nav>
 
-      {{ print_readout(readouts['template-translations'], max_rows=10, product=product) }}
+      {% for readout in readouts.values() %}
+      <section class="localization tabs--content{% if readout.slug == 'most-visited-translations' %} is-active{% endif %}" id="tab-{{ readout.slug }}">
+        {{ print_readout_body(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10, product=product) }}
+      </section>
+      {% endfor %}
+
     </article>
   </div>
 {% endblock %}

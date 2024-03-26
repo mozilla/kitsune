@@ -183,3 +183,32 @@
         color: inherit;
     }
 }
+
+.dashboards {
+    button.tabs--link > span, details > summary {
+        font-size: 1.5rem;
+    }
+
+    details > summary {
+        font-weight: bold;
+    }
+
+    .tabs--content:not(.tabs--content.is-active) {
+        display: none;
+    }
+
+    nav.tabs {
+        button.tabs--link:focus:not(:focus-visible) {
+            box-shadow: none;
+        }
+
+        button.tabs--link:hover {
+            cursor: pointer;
+        }
+    }
+
+    details {
+        padding-top: p.$spacing-lg;
+        padding-bottom: p.$spacing-lg;
+    }
+}
