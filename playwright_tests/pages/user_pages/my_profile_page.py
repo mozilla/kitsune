@@ -45,7 +45,7 @@ class MyProfilePage(BasePage):
     __my_profile_email_address = "//p/strong"
     __my_profile_displayed_email_address = ("//li[@class='avatar-group--details-item']/span["
                                             "@class='email']/a")
-    __my_profile_sign_out_button = "//article[@id='profile']//a[@data-event-label='Sign Out']"
+    __my_profile_sign_out_button = "//article[@id='profile']//a[contains(text(), 'Sign Out')]"
     __my_profile_display_name_header = "//h2[@class='sumo-callout-heading user']"
     __my_profile_username_info = "//span[@class='username']"
     __my_profile_location_info = "//h2[contains(@class,'location')]"

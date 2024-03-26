@@ -94,7 +94,7 @@ class TestAAQPage(TestUtilities):
                 if username != '':
                     with allure.step("Clicking on the Ask Now button and verifying that the scam "
                                      "banner is not displayed"):
-                        self.sumo_pages.product_solutions_page._click_ask_now_button()
+                        self.sumo_pages.product_solutions_page._click_contact_support_button()
                         self.wait_for_url_to_be(
                             super().aaq_question_test_data["products_aaq_url"][premium_product]
                         )

@@ -16,7 +16,7 @@ class ProductTopicPage(BasePage):
 
     # Product topic page still need help locators.
     __still_need_help_subheading = "//div[contains(@class, 'aaq-widget')]/p"
-    __aaq_button = "//a[@data-event-label='aaq widget']"
+    __aaq_button = "//div[contains(@class,'aaq-widget')]/a"
 
     def __init__(self, page: Page):
         super().__init__(page)

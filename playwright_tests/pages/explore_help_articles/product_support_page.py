@@ -60,8 +60,8 @@ class ProductSupportPage(BasePage):
         return super()._get_text_of_element(self.__frequent_topics_section_subtitle)
 
     def _click_on_a_particular_frequent_topic_card(self, card_title: str):
-        xpath = (f"//h2[contains(text(),'Frequent Topics')]"
-                 f"/../../../..//a[@data-event-label='{card_title}']")
+        xpath = (f"//h2[contains(text(),'Frequent Topics')]/../../../..//a["
+                 f"normalize-space(text())='{card_title}']")
         super()._click(xpath)
 
     def _get_featured_articles_header_text(self) -> str:
