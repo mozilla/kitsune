@@ -2,7 +2,7 @@ import readerModeIcon from "protocol/img/icons/reader-mode.svg";
 import blogIcon from "protocol/img/icons/blog.svg";
 import detailsInit from "./protocol-details-init";
 import tabsInit from "./sumo-tabs";
-import trackEvent from "sumo/js/analytics";
+import trackEvent, {addGAEventListeners} from "sumo/js/analytics";
 import CachedXHR from "sumo/js/cached_xhr";
 import Search from "sumo/js/search_utils";
 
@@ -104,6 +104,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     }
     $searchContent.html($searchResults);
 
+    addGAEventListeners("#instant-search-content");
     detailsInit(); // fold up sidebar on mobile.
     tabsInit();
 
