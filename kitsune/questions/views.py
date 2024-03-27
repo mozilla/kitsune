@@ -328,6 +328,9 @@ def question_list(request, product_slug):
         "topic": topic,
     }
 
+    if products:
+        data["ga_products"] = f"/{'/'.join(product.slug for product in products)}/"
+
     return render(request, "questions/question_list.html", data)
 
 
@@ -519,10 +522,12 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         "current_step": step,
         "host": Site.objects.get_current().domain,
         "is_loginless": is_loginless,
+        "ga_content_group": f"aaq-step-{step}",
     }
 
     if step > 1:
         context["has_ticketing_support"] = has_ticketing_support
+        context["ga_products"] = f"/{product.slug}/"
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
@@ -716,17 +721,15 @@ def edit_question(request, question_id):
                 reverse("questions.details", kwargs={"question_id": question.id})
             )
 
-    return render(
-        request,
-        "questions/edit_question.html",
-        {
-            "question": question,
-            "form": form,
-            "images": images,
-            "current_product": question.product_config,
-            "current_category": question.category_config,
-        },
-    )
+    context = {
+        "question": question,
+        "form": form,
+        "images": images,
+        "current_product": question.product_config,
+        "current_category": question.category_config,
+    }
+
+    return render(request, "questions/edit_question.html", context)
 
 
 @require_POST

@@ -39,14 +39,14 @@ export class SignInStep extends BaseFormStep {
               <input id="email" name="email" type="email" required="true" placeholder="${gettext("user@example.com")}" pending-autofocus="" />
             </div>
 
-            <button id="continue" class="mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click">${gettext("Continue")}</button>
+            <button id="continue" class="mzp-c-button mzp-t-product" type="submit" data-event-name="dmw_click">${gettext("Continue")}</button>
           </form>
 
           <p class="for-sign-up form-footer">
-            ${gettext("Already have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-link">${gettext("Sign in")}</a>
+            ${gettext("Already have an account?")} <a class='alternative-link' href='#' data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "sign-in-link"}'>${gettext("Sign in")}</a>
           </p>
           <p class="for-sign-in form-footer">
-            ${gettext("Don’t have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
+            ${gettext("Don’t have an account?")} <a class='alternative-link' href='#' data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "signup-link"}'>${gettext("Sign up")}</a>
           </p>
         </div>
       </template>
@@ -133,10 +133,10 @@ export class SignInStep extends BaseFormStep {
         this.#emailEl.value = this.state.email;
       }
       root.setAttribute("mode", "sign-in");
-      continueBtn.dataset.eventLabel = "sign-in-button";
+      continueBtn.dataset.eventParameters = '{"dmw_click_target": "sign-in-button"}';
     } else {
       root.setAttribute("mode", "sign-up");
-      continueBtn.dataset.eventLabel = "signup-button";
+      continueBtn.dataset.eventParameters = '{"dmw_click_target": "signup-button"}';
     }
 
     let form = this.shadowRoot.querySelector("form");

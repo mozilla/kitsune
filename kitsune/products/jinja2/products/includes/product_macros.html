@@ -1,18 +1,19 @@
-{% macro product_cards(products, topic=None) -%}
+{% macro product_cards(products) -%}
 <div class="sumo-card-grid is-product-wrap">
   <div class="scroll-wrap">
     {% for product in products %}
+      {% set prod_url = url('products.product', slug=product.slug) %}
       <div class="card card--product zoom-on-hover">
-        {% if topic %}
-          {% set prod_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-        {% else %}
-          {% set prod_url = url('products.product', slug=product.slug) %}
-        {% endif %}
-
           <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
           <div class="card--details">
             <h3 class="card--title">
-              <a class="expand-this-link" href="{{ prod_url }}" data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
+              <a class="expand-this-link" href="{{ prod_url }}"
+                 data-event-name="click_internal_link"
+                 data-event-parameters='{
+                   "link_name": "product-home",
+                   "link_detail": "{{ product.slug }}",
+                   "link_url": "{{ prod_url }}"
+                 }'>
                 {{ pgettext('DB: products.Product.title', product.title) }}
               </a>
             </h3>

@@ -38,7 +38,7 @@ export default function AjaxVote(form, options) {
             $form = $btn.closest('form'),
             url = $form.attr('action'),
             formDataArray = $form.serializeArray(),
-            data = {},
+            data = {url},
             i, l;
           $btns.attr('disabled', 'disabled');
           $form.addClass('busy');
@@ -64,8 +64,7 @@ export default function AjaxVote(form, options) {
               self.voted = true;
 
               if (!data.ignored) {
-                // Trigger a document event for others to listen for.
-                $(document).trigger('vote', $.extend(data, {url: url}));
+                document.dispatchEvent(new CustomEvent("vote", { bubbles: true, detail: data }));
               }
 
               // Hide other forms

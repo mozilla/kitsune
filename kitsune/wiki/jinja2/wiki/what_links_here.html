@@ -5,6 +5,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('What Links Here'))] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
+{% set ga_content_group = "kb-cms" %}
 
 {% macro relations_list(name, title) %}
   {% if relations[name] %}

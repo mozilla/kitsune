@@ -1,5 +1,3 @@
-import trackEvent from "sumo/js/analytics";
-
 /*
  * users.js
  * Make public emails clickable.
@@ -30,9 +28,5 @@ import trackEvent from "sumo/js/analytics";
   $(function() {
     makeEmailsClickable();
     confirmUserDeactivation();
-
-    if ($('body').is('.register') && window.location.search.indexOf('reg=aaq') > -1) {
-      trackEvent('Ask A Question Flow', 'step 3 confirmed page');
-    }
   });
 })(jQuery);

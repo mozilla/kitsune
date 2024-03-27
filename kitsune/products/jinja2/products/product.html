@@ -5,10 +5,10 @@
 {% set scripts = ('products',) %}
 {% set classes = 'product-landing' %}
 {% set search_params = {'product': product.slug} %}
-
 {% set extra_body_attrs = {'data-product-slug': product.slug} %}
-
 {% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
+{% set ga_products = "/" + product.slug + "/" %}
+{% set ga_content_group = "product-home" %}
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
@@ -143,9 +143,7 @@
       {% if product.slug == 'thunderbird' %}
       <div class="download-buttons">
         <div class="download-thunderbird">
-          <a href="https://www.thunderbird.net/" class="download-button sumo-button primary-button button-lg"
-          data-event-category="Download Button"
-          data-event-action="Download Thunderbird">
+          <a href="https://www.thunderbird.net/" class="download-button sumo-button primary-button button-lg">
             <span class="download-content">
               <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
             </span>

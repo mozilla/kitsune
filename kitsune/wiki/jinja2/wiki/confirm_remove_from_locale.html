@@ -3,6 +3,7 @@
 {% set crumbs = [(url('wiki.locales'), _('Locales')),
                  (locale.get_absolute_url(), locale.locale),
                  (None, title)] %}
+{% set ga_content_group = "kb-cms" %}
 
 {% block content %}
   <article id="remove-leader" class="main">
