@@ -94,7 +94,9 @@ def new_message(request):
     to = ", ".join(recipients) if recipients else None
     message = request.GET.get("message")
 
-    form = MessageForm(request.POST or None, initial={"to": to or None, "message": message})
+    form = MessageForm(
+        request.POST or None, initial={"to": to or None, "message": message}, user=request.user
+    )
 
     if (
         request.method == "POST"

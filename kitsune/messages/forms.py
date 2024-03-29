@@ -9,25 +9,26 @@ class MessageForm(forms.Form):
 
     to = MultiUsernameOrGroupnameField(
         label=_lazy("To:"),
-        widget=forms.TextInput(attrs={"class": "user-autocomplete"}),
-    )
-    to_group = forms.CharField(
-        label=_lazy("To group:"),
-        widget=forms.HiddenInput(),
-        required=False,
+        widget=forms.TextInput(
+            attrs={"placeholder": "Search for Users", "class": "user-autocomplete"}
+        ),
     )
     message = forms.CharField(label=_lazy("Message:"), max_length=10000, widget=forms.Textarea)
     in_reply_to = forms.IntegerField(widget=forms.HiddenInput, required=False)
+
+    def __init__(self, *args, **kwargs):
+        # Grab the user
+        self.user = kwargs.pop("user")
+        super(MessageForm, self).__init__(*args, **kwargs)
+
+        # If the user is_staff, the placholder text needs updated
+        if self.user and self.user.profile.is_staff:
+            self.fields["to"].widget.attrs["placeholder"] = "Search for Users or Groups"
 
 
 class ReplyForm(forms.Form):
     """Form to reply to a private message."""
 
     to = forms.CharField(widget=forms.HiddenInput)
-    to_group = forms.CharField(
-        label=_lazy("To group:"),
-        widget=forms.HiddenInput(),
-        required=False,
-    )
     message = forms.CharField(max_length=10000, widget=forms.Textarea)
     in_reply_to = forms.IntegerField(widget=forms.HiddenInput)
