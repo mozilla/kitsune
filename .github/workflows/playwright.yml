@@ -70,11 +70,10 @@ jobs:
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            declare -a tests=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard")
-            any_failures=false
+            declare -a tests=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "restrictedArticleCreation" "kbRestrictedVisibilitySingleGroup" "whitelistingDifferentGroup" "kbRestrictedVisibilityMultipleGroups" "removingAllArticleRestrictions" "kbRemovedRestrictions" "deleteAllRestrictedTestArticles")
             for test in "${tests[@]}"; do
                 num_processes=2
-                if [[ "$test" =~ ^(beforeThreadTests|afterThreadTests)$ ]]; then
+                if [[ "$test" =~ ^(beforeThreadTests|afterThreadTests|restrictedArticleCreation|whitelistingDifferentGroup|removingAllArticleRestrictions|deleteAllRestrictedTestArticles)$ ]]; then
                   num_processes=1
                 fi
                 if ! poetry run pytest -m $test --numprocesses $num_processes --browser ${{ env.BROWSER }} --reruns 1; then

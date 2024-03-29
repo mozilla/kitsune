@@ -4,6 +4,8 @@ from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFl
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_flow import (
     AddKbArticleFlow)
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
+from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
+    AddKbMediaFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_revision_flow import \
     AddKBArticleRevision
 from playwright_tests.flows.explore_articles_flows.article_flows.delete_kb_article_flow import \
@@ -16,7 +18,10 @@ from playwright_tests.flows.messaging_system_flows.messaging_system_flow import 
     MessagingSystemFlows)
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
+from playwright_tests.pages.contribute.contributor_tools_pages.article_discussions_page import \
+    ArticleDiscussionsPage
 from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
+from playwright_tests.pages.contribute.contributor_tools_pages.media_gallery import MediaGallery
 from playwright_tests.pages.contribute.contributor_tools_pages.moderate_forum_content import \
     ModerateForumContent
 from playwright_tests.pages.contribute.contributor_tools_pages.recent_revisions_page import \
@@ -26,6 +31,7 @@ from playwright_tests.pages.explore_help_articles.articles.kb_article_discussion
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
     KBArticleReviewRevisionPage
+from playwright_tests.pages.explore_help_articles.articles.kb_category_page import KBCategoryPage
 from playwright_tests.pages.explore_help_articles.articles.kb_revision_preview_page import \
     KBArticleRevisionsPreviewPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import (
@@ -35,6 +41,8 @@ from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_meta 
     KBArticleEditMetadata
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
     EditKBArticlePage
+from playwright_tests.pages.explore_help_articles.articles.kb_what_links_here_page import \
+    WhatLinksHerePage
 from playwright_tests.pages.explore_help_articles.articles.products_page import ProductsPage
 from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import \
     SubmitKBArticlePage
@@ -129,6 +137,8 @@ class SumoPages:
         self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
         self.kb_article_preview_revision_page = KBArticleRevisionsPreviewPage(page)
         self.kb_article_edit_article_metadata_page = KBArticleEditMetadata(page)
+        self.kb_what_links_here_page = WhatLinksHerePage(page)
+        self.kb_category_page = KBCategoryPage(page)
 
         # Product Topics page
         self.product_topics_page = ProductTopicPage(page)
@@ -146,9 +156,15 @@ class SumoPages:
         self.support_forums_page = SupportForumsPage(page)
         self.product_support_forum = ProductSupportForum(page)
 
+        # Article Discussions page.
+        self.article_discussions_page = ArticleDiscussionsPage(page)
+
         # Dashboard pages.
         self.kb_dashboard_page = KBDashboard(page)
         self.recent_revisions_page = RecentRevisions(page)
+
+        # Media Gallery page.
+        self.media_gallery = MediaGallery(page)
 
         # Moderate Forum Page
         self.moderate_forum_content_page = ModerateForumContent(page)
@@ -179,3 +195,6 @@ class SumoPages:
 
         # KB article edit metadata Flow
         self.edit_article_metadata_flow = EditArticleMetaFlow(page)
+
+        # KB add article media Flow
+        self.add_kb_media_flow = AddKbMediaFlow(page)

@@ -2,6 +2,9 @@ from typing import Any
 
 from playwright_tests.core.testutilities import TestUtilities
 from playwright.sync_api import Page
+
+from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
+    AddKbMediaFlow
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
     KBArticleReviewRevisionPage
@@ -9,13 +12,17 @@ from playwright_tests.pages.explore_help_articles.articles.kb_article_show_histo
     KBArticleShowHistoryPage
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import (
     EditKBArticlePage)
+from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import \
+    SubmitKBArticlePage
 
 
 class AddKBArticleRevision(TestUtilities,
                            KBArticlePage,
                            EditKBArticlePage,
                            KBArticleShowHistoryPage,
-                           KBArticleReviewRevisionPage):
+                           KBArticleReviewRevisionPage,
+                           SubmitKBArticlePage,
+                           AddKbMediaFlow):
     def __init__(self, page: Page):
         super().__init__(page)
 

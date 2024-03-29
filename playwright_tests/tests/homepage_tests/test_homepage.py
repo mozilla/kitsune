@@ -63,8 +63,8 @@ class TestHomepage(TestUtilities):
                 )
 
                 assert (
-                    self.sumo_pages.kb_article_page._get_text_of_article_title()
-                    == articles_names[counter]
+                    self.sumo_pages.kb_article_page._get_text_of_article_title().strip()
+                    == articles_names[counter].strip()
                 ), (f"Incorrect featured article displayed. Expected: {featured_article} "
                     f"Received: {self.sumo_pages.kb_article_page._get_text_of_article_title()}")
 

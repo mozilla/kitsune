@@ -5,6 +5,8 @@ from playwright_tests.core.basepage import BasePage
 class SubmitKBArticlePage(BasePage):
     __kb_article_for_contributors_sidebar = "//nav[@id='for-contributors-sidebar']"
     # New KB article form locators.
+    __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-selectized']"
+    __kb_article_restrict_visibility_delete_all_groups = "//a[@title='Clear']"
     __kb_article_form_title = "//input[@id='id_title']"
     __kb_article_form_slug = "//input[@id='id_slug']"
     __kb_article_category_select = "//select[@id='id_category']"
@@ -58,6 +60,18 @@ class SubmitKBArticlePage(BasePage):
         return super()._get_element_locator(self.__kb_article_for_contributors_sidebar)
 
     # New KB form actions.
+    def _add_and_select_restrict_visibility_group(self, group_name: str):
+        option_xpath = f"//div[@class='option active']/span[text()='{group_name}']"
+        super()._fill(self.__kb_article_restrict_visibility_field, group_name)
+        super()._click(option_xpath)
+
+    def _delete_a_restricted_visibility_group(self, group_name: str):
+        xpath = f"//div[@class='item' and text()='{group_name}']/a"
+        super()._click(xpath)
+
+    def _delete_all_restricted_visibility_groups(self):
+        super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
+
     def _add_text_to_article_form_title_field(self, text: str):
         # Clearing the field first from auto-population
         super()._clear_field(self.__kb_article_form_title)
@@ -112,7 +126,7 @@ class SubmitKBArticlePage(BasePage):
         return super()._get_element_locator(self.__kb_article_preview_content)
 
     def _click_on_a_relevant_to_option_checkbox(self, option_to_click: str):
-        xpath = f"//div[@id='id_products']//label[contains(text(), '{option_to_click}')]/input"
+        xpath = f"//input[@id='{option_to_click}']"
         super()._click(xpath)
 
     def _get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:
@@ -151,3 +165,6 @@ class SubmitKBArticlePage(BasePage):
 
     def _check_allow_translations_checkbox(self):
         super()._click(self.__kb_article_allow_translations)
+
+    def _get_article_page_url(self) -> str:
+        return super()._get_current_page_url()

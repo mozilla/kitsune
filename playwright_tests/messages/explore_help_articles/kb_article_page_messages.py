@@ -20,3 +20,4 @@ class KBArticlePageMessages:
                                           "Document with this Slug and Locale already exists."]
     KB_ARTICLE_RELEVANCY_ERROR = "Please select at least one product."
     KB_ARTICLE_TOPIC_ERROR = "Please select at least one topic."
+    KB_ARTICLE_RESTRICTED_BANNER = "This document is restricted."

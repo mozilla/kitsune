@@ -1,13 +1,15 @@
 from playwright.sync_api import Page
 from typing import Any
 from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
+    AddKbMediaFlow
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
     KBArticlePageMessages)
 from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import (
     SubmitKBArticlePage)
 
 
-class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
+class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow):
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -22,12 +24,22 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
                                  selected_topics=True,
                                  search_summary=None,
                                  article_content=None,
+                                 article_content_image='',
                                  submit_article=True,
                                  is_template=False,
-                                 expiry_date=None) -> dict[str, Any]:
+                                 expiry_date=None,
+                                 restricted_to_groups: list[str] = None,
+                                 single_group=""
+                                 ) -> dict[str, Any]:
         self._page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
         kb_article_test_data = super().kb_article_test_data
+
+        if restricted_to_groups is not None:
+            for group in restricted_to_groups:
+                super()._add_and_select_restrict_visibility_group(group)
+        if single_group != "":
+            super()._add_and_select_restrict_visibility_group(single_group)
 
         if article_title is None:
             if is_template:
@@ -49,7 +61,12 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
             super()._add_text_to_article_slug_field(kb_article_slug)
 
         if article_category is None:
-            super()._select_category_option_by_text(kb_article_test_data["category_options"])
+            if is_template:
+                super()._select_category_option_by_text(
+                    kb_article_test_data["kb_template_category"]
+                )
+            else:
+                super()._select_category_option_by_text(kb_article_test_data["category_options"])
         else:
             super()._select_category_option_by_text(article_category)
 
@@ -95,6 +112,13 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
         if article_content is None:
             super()._add_text_to_content_textarea(kb_article_test_data["article_content"])
 
+        if article_content_image != '':
+            super()._click_on_insert_media_button()
+            super().add_media_to_kb_article(
+                file_type="Image",
+                file_name=article_content_image
+            )
+
         if expiry_date is not None:
             super()._add_text_to_expiry_date_field(expiry_date)
 
@@ -115,12 +139,16 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
             else:
                 super()._click_on_submit_for_review_button()
 
+        article_url = super()._get_article_page_url()
+
         return {"article_title": kb_article_title,
                 "article_content": kb_article_test_data["article_content"],
                 "article_content_html": kb_article_test_data['article_content_html_rendered'],
                 "article_slug": slug,
+                "article_child_topic": kb_article_test_data["selected_child_topic"],
                 "article_review_description": kb_article_test_data["changes_description"],
                 "keyword": kb_article_test_data["keywords"],
                 "search_results_summary": kb_article_test_data["search_result_summary"],
-                "expiry_date": kb_article_test_data["expiry_date"]
+                "expiry_date": kb_article_test_data["expiry_date"],
+                "article_url": article_url
                 }
