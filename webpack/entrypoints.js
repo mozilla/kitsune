@@ -90,7 +90,7 @@ const entrypoints = {
     "sumo/js/reportabuse.js",
   ],
   messages: [
-    "sumo/js/users_or_groups.autocomplete.js",
+    "sumo/js/messages.autocomplete.js",
     "sumo/js/messages.js",
   ],
   groups: [
