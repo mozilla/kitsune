@@ -1310,6 +1310,7 @@ def get_helpful_votes_async(request, document_slug):
             count_helpful=Count("helpful", filter=Q(helpful=True)),
             count_unhelpful=Count("helpful", filter=Q(helpful=False)),
         )
+        .order_by("date_created")
     )
 
     for res in results:
