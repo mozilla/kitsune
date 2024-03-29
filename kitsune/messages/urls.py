@@ -4,7 +4,9 @@ from kitsune.messages import api, views
 
 api_patterns = [
     re_path(
-        r"^usernames_or_groups", api.usernames_or_groups, name="messages.api.usernames_or_groups"
+        r"^autocomplete",
+        api.get_autocomplete_suggestions,
+        name="messages.api.get_autocomplete_suggestions",
     ),
 ]
 
