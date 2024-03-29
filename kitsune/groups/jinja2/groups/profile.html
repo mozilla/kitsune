@@ -18,12 +18,12 @@
         <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
       {% endif %}
       <h1>{{ profile.group.name }}</h1>
-      {% if user.profile.is_staff %}
-        <p class="pm"><a class="sumo-button primary-button button-lg" href="{{ url('messages.new')|urlparams(to=profile.group.name) }}">{{ _('Private message group members') }}</a></p>
-      {% endif %}
-      {% if user_can_edit %}
-        <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
-      {% endif %}
+        {% if user.profile.is_staff %}
+          <p class="pm"><a class="sumo-button primary-button button-lg" href="{{ url('messages.new')|urlparams(to=profile.group.name) }}">{{ _('Private message group members') }}</a></p>
+        {% endif %}
+        {% if user_can_edit %}
+          <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
+        {% endif %}
       <div id="doc-content">
         {{ profile.information_html|safe }}
       </div>
