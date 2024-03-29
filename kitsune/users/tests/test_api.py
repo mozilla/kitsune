@@ -23,7 +23,7 @@ class UsernamesTests(TestCase):
     url = reverse("users.api.usernames", locale="en-US")
 
     def setUp(self):
-        self.u = UserFactory(username="testUser")
+        self.u = UserFactory(username="testUser", profile__name="Ringo")
         self.client.login(username=self.u.username, password="testpass")
 
     def tearDown(self):
@@ -41,7 +41,13 @@ class UsernamesTests(TestCase):
         self.assertEqual(0, len(data))
 
     def test_query_current(self):
-        res = self.client.get(urlparams(self.url, term=self.u.username[0]))
+        # Test that we case-insensitively search the user's username.
+        res = self.client.get(urlparams(self.url, term=self.u.username[0].upper()))
+        self.assertEqual(200, res.status_code)
+        data = json.loads(res.content)
+        self.assertEqual(1, len(data))
+        # Test that we also case-insensitively search the name of the user's profile.
+        res = self.client.get(urlparams(self.url, term=self.u.profile.name.lower()))
         self.assertEqual(200, res.status_code)
         data = json.loads(res.content)
         self.assertEqual(1, len(data))
