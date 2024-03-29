@@ -229,7 +229,7 @@ class Profile(ModelBase):
 
     @property
     def is_staff(self):
-        return self.user.groups.filter(name="Staff").exists()
+        return self.user.groups.filter(name=settings.SUMO_STAFF).exists()
 
 
 class Setting(ModelBase):

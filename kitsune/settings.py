@@ -730,6 +730,10 @@ SESSION_SERIALIZER = config(
     "SESSION_SERIALIZER", default="django.contrib.sessions.serializers.PickleSerializer"
 )
 
+
+# Our group with permissions to see hidden docs and message groups
+SUMO_STAFF = "Staff"
+
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
