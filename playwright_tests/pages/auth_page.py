@@ -24,8 +24,8 @@ class AuthPage(BasePage):
     __enter_your_email_submit_button = "//button[@id='submit-btn']"
 
     # Password submission
-    __enter_your_password_input_field = "//input[@id='password']"
-    __enter_your_password_submit_button = "//button[@id='submit-btn']"
+    __enter_your_password_input_field = "//input[@type='password']"
+    __enter_your_password_submit_button = "//button[text()='Sign in']"
 
     # OTP Code
     __enter_otp_code_input_field = "//input[@id='otp-code']"
