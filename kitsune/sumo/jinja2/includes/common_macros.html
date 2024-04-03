@@ -187,15 +187,9 @@
   </div>
 </li>
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-<<<<<<< HEAD
-  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools">
-    {{ _('Contributor Tools') }}
-  </a>
-=======
   <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools"
     data-event-category="navigation" data-event-action="main navigation"
     data-event-label="Community Forums">{{ _('Community Forums') }}</a>
->>>>>>> 198f86b81 (Top level navigation changes)
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
     <div class="sumo-nav--dropdown-container">
       <div class="sumo-nav--dropdown-grid">
@@ -203,13 +197,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-<<<<<<< HEAD
-            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}"
-              data-event-name="link_click"
-              data-event-parameters='{"link_name": "main-menu.discussions"}'>
-=======
             <div class="mzp-c-menu-item-head">
->>>>>>> fead89930 (Update Community Forums top menu)
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -232,16 +220,7 @@
         </div>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-<<<<<<< HEAD
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}"
-              data-event-name="link_click"
-              data-event-parameters='{
-                "link_name": "main-menu.tools.product-home",
-                "link_detail": "contributor"
-              }'>
-=======
             <div class="mzp-c-menu-item-head">
->>>>>>> fead89930 (Update Community Forums top menu)
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path
@@ -311,12 +290,53 @@
   </div>
 </li>
 
-<li class="mzp-c-menu-category">
-  <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.contribute') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "main-menu.contribute.contribute-home"}'>
-    {{ _('Contribute') }}
-  </a>
+<li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools"
+    data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Contributor Tools">{{ _('Contribute') }}</a>
+  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
+    <div class="sumo-nav--dropdown-container">
+      <div class="sumo-nav--dropdown-grid">
+        <button class="mzp-c-menu-button-close" type="button"
+          aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
+        <div class="sumo-nav--dropdown-col">
+          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24">
+                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path
+                    d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10" />
+                </g>
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Community discussions') }}</h4>
+            </a>
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+              {{ _discussion_nav_links(user, default_language, active) }}
+            </ul>
+          </section>
+        </div>
+        <div class="sumo-nav--dropdown-col">
+          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24">
+                <path
+                  d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z"
+                  stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Contributor tools') }}</h4>
+            </a>
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+              {{ _tools_nav_links(user, default_language, active) }}
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
 </li>
 {% endmacro %}
 
@@ -471,103 +491,53 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro _discussion_nav_links(user, default_language, active=None, context="main-menu") -%}
-<li>
-  <a href="{{ url('forums.threads', 'contributors') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.community-discussions' }}"}'>
-    {{ _('Community Discussions') }}
-  </a>
+{% macro _discussion_nav_links(user, default_language, active=None) -%}
+<li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
+    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('SUMO Community discussions') }}</a>
 </li>
-<li>
-  <a href="{{ url('questions.home') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.support-forums' }}"}'>
-    {{ _('Support Forums') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('forums.threads', 'l10n-forum') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.l10n-discussions' }}"}'>
-    {{ _('L10N Discussions') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('forums.threads', 'social-media') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.social-support-forum' }}"}'>
-    {{ _('Social Support Forum') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.locale_discussions') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.article-discussions' }}"}'>
-    {{ _('Article Discussions') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('forums.threads', 'buddies') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.new-contributors' }}"}'>
-    {{ _('New Contributors') }}
-  </a>
-</li>
+<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Support Forum Home">{{ _('Support forum discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
+    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support discussions') }}</a></li>
+<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Article Discussions">{{ _('Article discussions') }}</a></li>
+<li><a class="color-link" href="{{ url('forums.threads', 'buddies') }}">{{ _('View all discussions') }}</a></li>
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None, context="main-menu") -%}
-<li>
-  <a href="{{ url('products.product', slug='contributor') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.guides' }}"}'>
-    {{ _('Guides') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('community.home') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.community-hub' }}"}'>
-    {{ _('Community Hub') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.category', 60) }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.templates.kb-list-articles' }}"}'>
-    {{ _('Templates') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('dashboards.contributors') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.dashboards' }}"}'>
-    {{ _('Dashboards') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.revisions') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.recent-revisions.kb-cms' }}"}'>
-    {{ _('Recent Revisions') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('gallery.home') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.media-gallery' }}"}'>
-    {{ _('Media Gallery') }}
-  </a>
-</li>
+{% macro _tools_nav_links(user, default_language, active=None) -%}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
-    <a href="{{ url('flagit.queue') }}"
-      data-event-name="link_click"
-      data-event-parameters='{"link_name": "{{ context + '.moderate-forum-content' }}"}'>
-      {{ _('Moderate Forum Content') }}
+    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
+      data-event-label="Moderate Forum Content">{{ _('Moderate forum content') }}
     </a>
   </li>
 {% endif %}
+<li>
+  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
+     data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Media Gallery">{{ _('Media Gallery') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Recent Revisions">{{ _('Recent Revisions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Community Hub">{{ _('Community Hub') }}
+  </a>
+</li>
 {% endmacro %}
 
 {# This is designed to be used like this:
