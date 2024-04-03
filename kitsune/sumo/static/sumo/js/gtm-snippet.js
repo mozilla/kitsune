@@ -26,7 +26,7 @@ import dntEnabled from "./libs/dnt-helper";
 
     w.gtag('js', new Date());
 
-    let configParameters = {};
+    let configParameters = {"debug_mode": true};
     if (html.getAttribute("lang")) {
       configParameters.locale = html.getAttribute("lang");
     }
