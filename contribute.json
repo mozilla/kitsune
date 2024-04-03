@@ -7,8 +7,8 @@
         "tests": "https://app.circleci.com/pipelines/github/mozilla/kitsune"
     },
     "participate": {
-        "home": "https://kitsune.readthedocs.io/en/latest/contributors.html",
-        "docs": "https://kitsune.readthedocs.io/en/latest/hacking_howto.html",
+        "home": "https://mozilla.github.io/kitsune/contributors/",
+        "docs": "https://mozilla.github.io/kitsune/hacking_howto/",
         "matrix": "https://chat.mozilla.org/#/room/#support-platform:mozilla.org",
         "matrix-contacts": ["tasos", "ryan"],
         "slack": "https://mozilla.slack.com/messages/support-platform",
