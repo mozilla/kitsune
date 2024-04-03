@@ -184,11 +184,14 @@
   }
 
   &--sublist-aaq {
-    display: flex;
-    flex-wrap: wrap;
+    @media #{p.$mq-sm} {
+      display: flex;
+      flex-wrap: wrap;
 
-    & li {
-      flex: 25%;
+      >li {
+        flex: 25%;
+      }
+
     }
   }
 
