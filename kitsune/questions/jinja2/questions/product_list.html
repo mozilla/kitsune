@@ -1,14 +1,11 @@
 {% extends "questions/base.html" %}
 
 {% set classes = 'questions' %}
-
 {% set title = _('Support Forums') %}
-
 {% set crumbs = [(None, _('Support Forums'))] %}
-
 {% set meta = (('robots', 'noindex'),) %}
-
 {% set canonical_url = canonicalize(viewname='questions.home') %}
+{% set ga_content_group = "list-support-forums" %}
 
 {% block contentwrap %}
 <section id="main-content" class="sumo-page-section--lg mzp-l-content">
@@ -26,7 +23,12 @@
           <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
           <div class="card--details">
             <h3 class="card--title">
-              <a class="expand-this-link title" href="{{ url('questions.list', product.slug) }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+              <a class="expand-this-link title" href="{{ url('questions.list', product.slug) }}"
+                data-event-name="link_click"
+                data-event-parameters='{
+                  "link_name": "support-forum-home",
+                  "link_detail": "{{ product.slug }}"
+                }'>
                 {{ _('<strong>{product}</strong> Support Forum')|fe(product=pgettext('DB: products.Product.title', product.title)) }}
               </a>
             </h3>
@@ -37,7 +39,12 @@
       </div>
     </div>
     <div class="sumo-button-wrap align-end product">
-      <a class="sumo-button primary-button button-lg title" href="{{ url('questions.list', 'all') }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+      <a class="sumo-button primary-button button-lg title" href="{{ url('questions.list', 'all') }}"
+        data-event-name="link_click"
+        data-event-parameters='{
+          "link_name": "support-forum-home",
+          "link_detail": "all"
+        }'>
         {{ _('{product} Support Forum')|fe(product=_('All Products')) }}
       </a>
     </div>

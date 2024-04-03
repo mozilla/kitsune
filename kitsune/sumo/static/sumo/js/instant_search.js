@@ -2,7 +2,7 @@ import readerModeIcon from "protocol/img/icons/reader-mode.svg";
 import blogIcon from "protocol/img/icons/blog.svg";
 import detailsInit from "./protocol-details-init";
 import tabsInit from "./sumo-tabs";
-import trackEvent from "sumo/js/analytics";
+import trackEvent, {addGAEventListeners} from "sumo/js/analytics";
 import CachedXHR from "sumo/js/cached_xhr";
 import Search from "sumo/js/search_utils";
 
@@ -104,6 +104,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     }
     $searchContent.html($searchResults);
 
+    addGAEventListeners("#instant-search-content");
     detailsInit(); // fold up sidebar on mobile.
     tabsInit();
 
@@ -115,6 +116,21 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     // change aaq link if we're in aaq flow
     if (aaq_explore_step) {
       $("#search-results-aaq-link").attr("href", window.location + "/form");
+    }
+  }
+
+  function getSearchProductFilter() {
+    return search.getParam("product") || "";
+  }
+
+  function getSearchContentFilter() {
+    switch (search.getParam("w")) {
+      case "1":
+        return "wiki";
+      case "2":
+        return "aaq";
+      default:
+        return "all-results";
     }
   }
 
@@ -174,15 +190,16 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
       });
 
       searchTimeout = setTimeout(function() {
-        if (search.hasLastQuery) {
-          trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
-        }
         search.unsetParam("page");
         search.setParams(params);
         let query = $this.val().trim();
         queries.push(query);
         search.query(query, InstantSearchSettings.render);
-        trackEvent('Instant Search', 'Search', search.lastQueryUrl());
+        trackEvent("search", {
+          "search_term": query,
+          "search_product_filter": getSearchProductFilter(),
+          "search_content_filter": getSearchContentFilter()
+        });
       }, 200);
     }
 
@@ -204,10 +221,6 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
     var $this = $(this);
 
-    if (search.hasLastQuery) {
-      trackEvent('Instant Search', 'Exit Search', search.queryUrl());
-    }
-
     var setParams = $this.data('instant-search-set-params');
     if (setParams) {
       setParams = setParams.split('&');
@@ -226,7 +239,11 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     }
 
     search.query(null, InstantSearchSettings.render);
-    trackEvent("Instant Search", "Search", search.lastQueryUrl());
+    trackEvent("search", {
+      "search_term": search.lastQuery,
+      "search_product_filter": getSearchProductFilter(),
+      "search_content_filter": getSearchContentFilter()
+    });
   });
 
   // 'Popular searches' feature

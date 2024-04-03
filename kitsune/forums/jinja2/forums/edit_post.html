@@ -8,6 +8,7 @@
 (url('forums.posts', forum.slug, thread.id), thread.title),
 (None, _('Edit a post'))] %}
 {% set scripts = ('forums',) %}
+{% set ga_content_group = "contributor-forum-post-edit" %}
 
 {% block content %}
   <div id="edit-post" class="grid_12">

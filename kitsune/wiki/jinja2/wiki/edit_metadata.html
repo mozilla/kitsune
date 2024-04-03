@@ -8,6 +8,7 @@
 {# TODO: Change KB url to landing page when we have one #}
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Edit Article Metadata'))] %}
+{% set ga_content_group = "kb-cms" %}
 
 {% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
 {% set classes = 'edit_metadata' %}

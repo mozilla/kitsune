@@ -66,7 +66,7 @@ import trackEvent from "sumo/js/analytics";
         if (localStorage.getItem(id + '.closed') === 'true') {
           if ($this.data('close-type') === 'remove') {
             $target.remove();
-          } 
+          }
           else {
             $('#' + id).hide();
           }
@@ -281,7 +281,7 @@ import trackEvent from "sumo/js/analytics";
       }
     });
   }
-  
+
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
@@ -306,11 +306,11 @@ import trackEvent from "sumo/js/analytics";
     var $pw = $form.find('input[name="password"]');
     $pw.attr('type', (this.checked) ? 'text' : 'password');
   });
-  
+
   $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
     ev.preventDefault();
     // Send event to GA for metrics/reporting purposes.
-    trackEvent('Refresh Firefox', 'click refresh button');
+    trackEvent('refresh_firefox_click');
 
     UITour.resetFirefox();
     return false;

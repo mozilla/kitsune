@@ -328,6 +328,9 @@ def question_list(request, product_slug):
         "topic": topic,
     }
 
+    if products:
+        data["ga_products"] = f"/{'/'.join(product.slug for product in products)}/"
+
     return render(request, "questions/question_list.html", data)
 
 
@@ -431,8 +434,6 @@ def question_details(
         {
             "all_products": products,
             "all_topics": topics,
-            "product": question.product,
-            "topic": question.topic,
             "related_documents": related_documents,
             "related_questions": related_questions,
             "question_images": question_images,
@@ -519,10 +520,12 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         "current_step": step,
         "host": Site.objects.get_current().domain,
         "is_loginless": is_loginless,
+        "ga_content_group": f"aaq-step-{step}",
     }
 
     if step > 1:
         context["has_ticketing_support"] = has_ticketing_support
+        context["ga_products"] = f"/{product.slug}/"
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
@@ -716,17 +719,15 @@ def edit_question(request, question_id):
                 reverse("questions.details", kwargs={"question_id": question.id})
             )
 
-    return render(
-        request,
-        "questions/edit_question.html",
-        {
-            "question": question,
-            "form": form,
-            "images": images,
-            "current_product": question.product_config,
-            "current_category": question.category_config,
-        },
-    )
+    context = {
+        "question": question,
+        "form": form,
+        "images": images,
+        "current_product": question.product_config,
+        "current_category": question.category_config,
+    }
+
+    return render(request, "questions/edit_question.html", context)
 
 
 @require_POST
@@ -1365,6 +1366,8 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
     )
     return {
         "question": question,
+        "product": question.product,
+        "topic": question.topic,
         "answers": answers_,
         "form": form or AnswerForm(),
         "answer_preview": answer_preview,

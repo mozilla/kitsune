@@ -43,7 +43,7 @@ export class ConfigureStep extends BaseFormStep {
           </p>
 
           <p id="buttons">
-            <button id="next" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="configuration-next">${gettext("Continue")}</button>
+            <button id="next" class="mzp-c-button mzp-t-product" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "configuration-next"}'>${gettext("Continue")}</button>
           </p>
         </div>
       </template>
@@ -58,10 +58,6 @@ export class ConfigureStep extends BaseFormStep {
   }
 
   connectedCallback() {
-    super.connectedCallback();
-    let buttons = this.shadowRoot.querySelector("#buttons");
-    buttons.addEventListener("click", this);
-
     let notSyncingInstructionLink = this.shadowRoot.querySelector("#instructions > .not-syncing > a");
     notSyncingInstructionLink.id = "turn-on-sync";
 
@@ -69,17 +65,28 @@ export class ConfigureStep extends BaseFormStep {
     syncingInstructionLink.id = "change-sync-prefs";
 
     for (let link of [notSyncingInstructionLink, syncingInstructionLink]) {
+      link.dataset.eventName = "dmw_click";
+      link.dataset.eventParameters = `{"dmw_click_target": "${link.id}"}`;
+    }
+
+    super.connectedCallback();
+
+    let buttons = this.shadowRoot.querySelector("#buttons");
+    buttons.addEventListener("click", this);
+
+    for (let link of [notSyncingInstructionLink, syncingInstructionLink]) {
       link.addEventListener("click", this);
-      link.dataset.eventCategory = "device-migration-wizard";
-      link.dataset.eventAction = "click";
-      link.dataset.eventLabel = link.id;
     }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     let buttons = this.shadowRoot.querySelector("#buttons");
+    let syncingInstructionLink = this.shadowRoot.querySelector("#instructions > .syncing > a");
+    let notSyncingInstructionLink = this.shadowRoot.querySelector("#instructions > .not-syncing > a");
     buttons.removeEventListener("click", this);
+    syncingInstructionLink.removeEventListener("click", this);
+    notSyncingInstructionLink.removeEventListener("click", this);
   }
 
   render(prevState, state) {

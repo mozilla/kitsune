@@ -2,14 +2,22 @@
 <article class="topic-article {{ result.type }}">
   <div class="topic-article--icon-wrap">
     {% if result.type == 'document' %}
+      {% set link_name = "search-result.kb-article" %}
     <img class="topic-article--icon" src="{{ icons.reader_mode }}" alt="">
     {% elif result.type == 'question' %}
+      {% set link_name = "search-result.support-forum-question-details" %}
     <img class="topic-article--icon" src="{{ icons.blog }}" alt="">
+    {% else %}
+      {% set link_name = "search-result.other" %}
     {% endif %}
   </div>
   <div class="topic-article--text">
     <h3 class="sumo-card-heading">
-      <a class="title" href="{{ result.url }}" data-event-category="Instant Search" data-event-action="Result Clicked">{{ result.title }}</a>
+      <a class="title" href="{{ result.url }}"
+        data-event-name="link_click"
+        data-event-parameters='{"link_name": "{{ link_name }}"}'>
+        {{ result.title }}
+      </a>
     </h3>
 
     {% if result.type == 'question' %}

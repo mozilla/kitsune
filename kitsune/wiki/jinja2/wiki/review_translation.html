@@ -8,6 +8,7 @@
 {% if document.is_switching_devices_document %}
   {% set scripts = scripts + ('switching-devices',) %}
 {% endif %}
+{% set ga_content_group = "kb-cms" %}
 
 {% block content %}
 <article id="review-revision" class="sumo-page-section--inner">

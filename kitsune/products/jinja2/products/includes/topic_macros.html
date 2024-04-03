@@ -12,7 +12,11 @@
         <div class="card--details">
           <h3 class="card--title">
             <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
-               data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "product-and-topic-home",
+                "link_detail": "{{ (product_slug or product.slug) + '/' + topic.slug }}"
+              }'>
               {{ pgettext('DB: products.Topic.title', topic.title) }}
             </a>
           </h3>
@@ -47,9 +51,13 @@
             {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
           {% endif %}
         </p>
-        {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
         <a class="sumo-button primary-button button-lg"
-          href="{{ aaq_url }}" data-event-label="Get support">
+          href="{{ url('questions.aaq_step2', product_key=product_key) }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+            "link_name": "aaq-banner.aaq-step-2",
+            "link_detail": "{{ product_key }}"
+          }'>
           {% if product and product.has_ticketing_support %}
             {{ _('Get Support') }}
           {% else %}
@@ -76,9 +84,11 @@
           {% if selected_topic == topic and selected_subtopic != None %}show-selected-on-lg{% endif %}
           "
           href="{{ topic_url }}"
-          data-event-category="link click"
-          data-event-action="topic sidebar"
-          data-event-label="{{topic.title}}">
+          data-event-name="link_click"
+          data-event-parameters='{
+            "link_name": "sidebar.product-and-topic-home",
+            "link_detail": "{{ product.slug + '/' + topic.slug }}"
+          }'>
           {{ pgettext('DB: products.Topic.title', topic.title) }}
         </a>
 
@@ -87,7 +97,12 @@
         {% for subtopic in subtopics %}
           {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
           <li class="sidebar-nav--subitem">
-            <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+            <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}"
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "sidebar.product-and-topic-and-subtopic-home",
+                "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}"
+              }'>
               {{ pgettext('DB: products.Topic.title', subtopic.title) }}
             </a>
           </li>
@@ -106,7 +121,12 @@
   <ul class="tabs--list subtopics">
     {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
     <li class="tabs--item">
-      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}">
+      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}"
+        data-event-name="link_click"
+        data-event-parameters='{
+          "link_name": "tab.product-and-topic-home",
+          "link_detail": "{{ product.slug + '/' + topic.slug }}"
+        }'>
         <span class="mobile-only">{{ _('All') }}</span>
         <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
       </a>
@@ -114,7 +134,12 @@
     {% for subtopic in subtopics %}
       {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
       <li class="tabs--item">
-        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+            "link_name": "tab.product-and-topic-and-subtopic-home",
+            "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}"
+          }'>
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
         </a>
       </li>

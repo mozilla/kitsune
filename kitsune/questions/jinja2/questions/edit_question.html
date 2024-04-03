@@ -5,6 +5,13 @@
                  (None, _('Edit the question'))] %}
 
 {% set classes = 'edit-question' %}
+{% set ga_content_group = "support-forum-question-edit" %}
+{% if question.product %}
+  {% set ga_products = "/" + question.product.slug + "/" %}
+{% endif %}
+{% if question.topic %}
+  {% set ga_topics = "/" + question.topic.slug + "/" %}
+{% endif %}
 
 {% block headline %}{{ _('Edit a Question') }}{% endblock %}
 

@@ -5,8 +5,7 @@
 {% set title = _('Recent Revisions') %}
 {% set crumbs = [(None, title)] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
-
-
+{% set ga_content_group = "kb-cms" %}
 
 {% block side_top %}
   {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'revisions', True) }}

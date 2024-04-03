@@ -8,6 +8,7 @@
 {% if threads.number > 1 %}
 {% set canonical_url = canonical_url|urlparams(page=threads.number) %}
 {% endif %}
+{% set ga_content_group = "contributor-forum-home" %}
 
 {% block content %}
 <article id="threads" class="content-box sumo-page-section">

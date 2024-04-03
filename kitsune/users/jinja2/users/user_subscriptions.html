@@ -13,7 +13,12 @@
         <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
         <div class="card--details">
           <h3 class="card--title">
-            <a class="title" href="{{ url('products.product', product.slug) }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+            <a class="title" href="{{ url('products.product', product.slug) }}"
+              data-event-name="link_click"
+              data-event-parameters='{
+                "link_name": "product-home",
+                "link_detail": "{{ product.slug }}"
+              }'>
               {{ _('<strong>{product}</strong>')|fe(product=pgettext('DB: products.Product.title', product.title)) }}
             </a>
           </h3>

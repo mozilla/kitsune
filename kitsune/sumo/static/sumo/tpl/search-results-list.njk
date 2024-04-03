@@ -50,10 +50,11 @@
           <img class="card--icon-sm" src="{{ icons.reader_mode }}" alt="" aria-hidden="true" />
           <div class="card--details">
             <h3 class="card--title">
-              <a
-                class="expand-this-link title"
-                href="{{ doc.url }}"
-              >{{ doc.document_title }}</a>
+              <a class="expand-this-link title" href="{{ doc.url }}"
+                data-event-name="link_click"
+                data-event-parameters='{"link_name": "search-fallback.kb-article"}'>
+                {{ doc.document_title }}
+              </a>
             </h3>
             <p class="card--desc">
               {{ doc.document_summary }}
@@ -142,9 +143,8 @@
         id="search-results-aaq-link"
         class="sumo-button primary-button button-lg"
         href="/questions/new"
-        data-event-category="link click"
-        data-event-action="topic"
-        data-event-label="Get support">
+        data-event-name="link_click"
+        data-event-parameters='{"link_name": "search-results.aaq-step-1.get-support"}'>
         {{ _('Get Support') }}
       </a>
     </div>

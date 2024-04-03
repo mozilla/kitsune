@@ -4,6 +4,8 @@ import sinon from 'sinon';
 import AjaxVote from "sumo/js/ajaxvote";
 
 describe('ajaxvote', () => {
+  let eventListener;
+
   describe('helpful vote', () => {
     beforeEach(() => {
       sinon.stub($, 'ajax').yieldsTo('success', {message: 'Thanks for the vote!'});
@@ -17,7 +19,7 @@ describe('ajaxvote', () => {
 
     afterEach(() => {
       $.ajax.restore();
-      $(document).off('vote');
+      document.removeEventListener('vote', eventListener);
     });
 
     it('should fire an event on a helpful vote', done => {
@@ -25,11 +27,12 @@ describe('ajaxvote', () => {
         positionMessage: true,
         removeForm: true,
       });
-      $(document).on('vote', (ev, data) => {
-        expect(data.helpful).to.equal('Yes');
-        expect(data.url).to.equal('/vote');
+      eventListener = function(event) {
+        expect(event.detail.helpful).to.equal('Yes');
+        expect(event.detail.url).to.equal('/vote');
         done();
-      });
+      }
+      document.addEventListener('vote', eventListener);
       $('input[name="helpful"]').trigger("click");
     });
 
@@ -38,11 +41,12 @@ describe('ajaxvote', () => {
         positionMessage: true,
         removeForm: true,
       });
-      $(document).on('vote', (ev, data) => {
-        expect(data['not-helpful']).to.equal('No');
-        expect(data.url).to.equal('/vote');
+      eventListener = function(event) {
+        expect(event.detail['not-helpful']).to.equal('No');
+        expect(event.detail.url).to.equal('/vote');
         done();
-      });
+      }
+      document.addEventListener('vote', eventListener);
       $('input[name="not-helpful"]').trigger('click');
     });
 
@@ -51,11 +55,12 @@ describe('ajaxvote', () => {
         positionMessage: true,
         removeForm: true,
       });
-      $(document).on('vote', (ev, data) => {
+      eventListener = function(event) {
         expect($.ajax.calledOnce).to.equal(true);
         expect($.ajax.firstCall.args[0].data.helpful).to.equal('Yes');
         done();
-      });
+      }
+      document.addEventListener('vote', eventListener);
       $('input[name="helpful"]').trigger('click');
     });
 
@@ -64,10 +69,11 @@ describe('ajaxvote', () => {
         positionMessage: true,
         removeForm: true,
       });
-      $(document).on('vote', (ev, data) => {
+      eventListener = function(event) {
         expect($('.ajax-vote-box').text()).to.equal('Thanks for the vote!');
         done();
-      });
+      }
+      document.addEventListener('vote', eventListener);
       $('input[name="helpful"]').trigger('click');
     });
 

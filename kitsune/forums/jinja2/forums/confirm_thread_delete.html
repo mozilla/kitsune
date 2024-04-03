@@ -5,6 +5,7 @@
                 (url('forums.threads', forum.slug), forum.name),
                 (url('forums.posts', forum.slug, thread.id), thread.title),
                 (None, _('Delete Thread'))] %}
+{% set ga_content_group = "contributor-forum-thread-delete" %}
 
 {% block content %}
 <article id="confirm-delete" class="main">

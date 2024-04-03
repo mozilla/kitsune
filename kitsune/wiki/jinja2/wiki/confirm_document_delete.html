@@ -7,6 +7,7 @@
   {% set crumbs = [(document.get_absolute_url(), document.title),
                    (None, _('Delete Document'))] %}
 {% endif %}
+{% set ga_content_group = "kb-cms" %}
 
 {% block content %}
   <div class="grid_9">

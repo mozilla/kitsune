@@ -4,6 +4,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Select language'))] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
+{% set ga_content_group = "kb-cms" %}
 
 {% block content %}
     <article id="select-locale">

@@ -8,6 +8,13 @@
 {% set crumbs = [(url('questions.home'), _('Support Forums')),
                  (question.get_absolute_url(), question.title),
                  (None, _('Email updates'))] %}
+{% set ga_content_group = "support-forum-question-unsubscribe" %}
+{% if question.product %}
+  {% set ga_products = "/" + question.product.slug + "/" %}
+{% endif %}
+{% if question.topic %}
+  {% set ga_topics = "/" + question.topic.slug + "/" %}
+{% endif %}
 
 {% block content %}
   <div class="grid_12">

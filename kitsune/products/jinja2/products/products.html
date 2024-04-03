@@ -2,8 +2,8 @@
 {% from 'products/includes/product_macros.html' import product_cards with context %}
 {% set title = _('Products') %}
 {% set crumbs = [(None, title)] %}
-
 {% set canonical_url = canonicalize(viewname='products') %}
+{% set ga_content_group = "list-products" %}
 
 {% block hidden_search_masthead %}{% endblock %}
 
