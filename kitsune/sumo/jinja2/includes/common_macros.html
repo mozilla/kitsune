@@ -165,6 +165,7 @@
     </div>
   </div>
 </li>
+
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
   <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true"
     aria-controls="mzp-c-menu-panel-help">{{ _('Ask a Question') }}</a>
@@ -172,8 +173,9 @@
     <div class="sumo-nav--dropdown-container">
       <div class="sumo-nav--dropdown-grid">
         <button class="mzp-c-menu-button-close" type="button"
-          aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
-        <div class="sumo-nav--dropdown-thirds">
+          aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}
+        </button>
+        <div class="sumo-nav--dropdown">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
@@ -185,19 +187,22 @@
                 </g>
               </svg>
               <h4 class="mzp-c-menu-item-title">{{ _('Get help with') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Get support from our contributors or staff members.') }}
-              </p>
             </div>
-            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist-aaq">
               <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'firefox-enterprise') }}">{{ _('Firefox for enterprise') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'relay') }}">{{ _('Firefox relay') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox focus') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'monitor') }}">{{ _('Monitor') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'mozilla-account') }}">{{ _('Mozilla account') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
               <li><a
                   href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
               </li>
-              <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('Browse All Products') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'pocket') }}">{{ _('Pocket') }}</a></li>
+              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('View all') }}</a></li>
             </ul>
           </section>
         </div>
