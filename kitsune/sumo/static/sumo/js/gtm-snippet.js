@@ -46,6 +46,10 @@ import dntEnabled from "./libs/dnt-helper";
       configParameters.article_locale = html.dataset.gaArticleLocale;
     }
 
+    console.log("------------------------------");
+    console.log(`config for ${GTM_CONTAINER_ID}:`);
+    console.log(`parameters: ${JSON.stringify(configParameters, null, 2)}`);
+    console.log("------------------------------");
     w.gtag('config', GTM_CONTAINER_ID, configParameters);
   }
 })(window);
