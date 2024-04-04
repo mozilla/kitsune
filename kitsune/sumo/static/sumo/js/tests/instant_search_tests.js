@@ -52,7 +52,7 @@ describe('instant search', () => {
       $searchInput.val(query);
       $searchInput.trigger('input');
 
-      clock.tick(200);
+      clock.tick(600);
       // call the callback to actually render things
       cxhrMock.firstCall.args[1].success({
         num_results: 0,
@@ -70,7 +70,7 @@ describe('instant search', () => {
       $searchInput.val(query);
       $searchInput.trigger('input');
 
-      clock.tick(200);
+      clock.tick(600);
       // call the callback to actually render things
       cxhrMock.firstCall.args[1].success({
         num_results: 0,
