@@ -5,10 +5,9 @@
 High level:
 
 -   [SUMO Infra home](https://github.com/mozilla-it/sumo-infra)
--   [Deploying SUMO](https://github.com/mozilla/kitsune/tree/main/k8s#deploying-sumo)
+-   [SUMO K8s deployment](https://github.com/mozilla/kitsune/tree/7ff9934d185ce58153c652928298b5f62d37f8d2/k8s#deploying-sumo) (obsolete)
 -   [MozMEAO escalation path](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455)
-
--   [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/main/docs/SUMO%20architecture%202019.svg)
+-   [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/main/docs/SUMO%20architecture%202019.pdf)
     -   [Source](https://www.lucidchart.com/documents/view/3687b2eb-57c7-4488-a8b5-4ddcf54e47b3)
 -   [SLA](https://docs.google.com/document/d/1SYtkEioKl6uvdZZA06YtVigWYJY0Nb9hGfvE0UwEPXA/edit)
 -   [Incident Reports](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=52265112)
@@ -267,7 +266,7 @@ There are limits that apply to using VPC ACLs documented [here](http://docs.aws.
 -   Most MySQL changes should already be replicated to the read-replica, however, if you're reading this, chances are things are broken. Ensure that the DB schema is correct for the iamges you're deploying.
 -   **scale cluster and pods**
 
-    -   the prod deployments [A](https://github.com/mozilla/kitsune/blob/main/k8s/regions/oregon/prod.yaml#L24-L48) yaml contain the correct number of replicas, but here are some safe values to use in an emergency:
+    -   the [prod deployments yaml](https://github.com/mozilla/kitsune/blob/99c4c2bf5c102f38910485b29fc87c2299daa18b/k8s/regions/oregon/prod.yaml#L24-L48) contains the correct number of replicas, but here are some safe values to use in an emergency:
 
 -   **DNS**
     -   point the `prod-tp.sumo.mozit.cloud` traffic policy at the Frankfurt ELB

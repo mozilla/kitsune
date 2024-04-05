@@ -123,7 +123,7 @@ migration:
             ...
         ]
 
-# Changes that involve reindexing {#changes_reindexing}
+# Changes that involve reindexing
 
 With Elastic Search, it takes a while to reindex. We need to be able to
 reindex without taking down search.

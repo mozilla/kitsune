@@ -37,7 +37,7 @@ By participating in this project, you're agreeing to uphold the [Mozilla Communi
 
 ## Contribute
 
-See our [contribution guide](https://kitsune.readthedocs.io/en/latest/contributors.html), or dive into [setting up your development environment](https://kitsune.readthedocs.io/en/latest/hacking_howto.html).
+See our [contribution guide](https://mozilla.github.io/kitsune/contributors), or dive into [setting up your development environment](https://mozilla.github.io/kitsune/hacking_howto/).
 
 ## Issues
 

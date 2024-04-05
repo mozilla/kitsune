@@ -25,17 +25,13 @@ Pull requests get reviewed.
 
 Once reviewed, the branch is merged into `main`, except in special cases
 such as changes that require re-indexing. See
-`Changes that involve reindexing <changes_reindexing>`{.interpreted-text
-role="ref"}.
+[Changes that involve reindexing](development.md#changes-that-involve-reindexing).
 
 We deploy to production from `main`.
 
 # Deploying
 
-We currently use Kubernetes for our infrastructure, see the instructions
-here for how to do deployments:
-
-<https://github.com/mozilla/kitsune/blob/main/k8s/README.md>
+For our infrastructure instructions see [Kubernetes Support Guide](k8s.md).
 
 # Servers
 
