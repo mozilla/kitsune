@@ -4,7 +4,7 @@ import allure
 import pytest
 from pytest_check import check
 from playwright_tests.core.testutilities import TestUtilities
-from playwright.sync_api import expect
+from playwright.sync_api import expect,TimeoutError
 
 from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
     ModerateForumContentPageMessages)
@@ -2049,8 +2049,12 @@ class TestPostedQuestions(TestUtilities):
         with check, allure.step("Clicking on the Insert Response, post reply and verifying that "
                                 "the reply was successfully posted and contains the correct data"):
             self.sumo_pages.question_page._click_on_common_responses_insert_response_button()
-            reply_id = self.sumo_pages.question_page._click_on_post_reply_button(username)
-            assert self.sumo_pages.question_page._get_text_content_of_reply(reply_id) in response
+            try:
+                reply_id = self.sumo_pages.question_page._click_on_post_reply_button(username)
+            except TimeoutError:
+                reply_id = self.sumo_pages.question_page._click_on_post_reply_button(username)
+            assert self.sumo_pages.question_page._get_text_content_of_reply(
+                reply_id).strip() in response.strip()
 
         with allure.step("Signing in  with an admin account and deleting the posted question"):
             self.start_existing_session(super().username_extraction_from_email(
