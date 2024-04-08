@@ -200,7 +200,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
           "search_product_filter": getSearchProductFilter(),
           "search_content_filter": getSearchContentFilter()
         });
-      }, 200);
+      }, 600);
     }
 
     if (formId === "support-search" || formId === "mobile-search-results") {
