@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _lazy, gettext as _
 from pyquery import PyQuery
 
 from kitsune.gallery.models import Image
+from kitsune.inproduct.models import Redirect
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.i18n import split_into_language_and_path
@@ -778,6 +779,17 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             )
 
         return user.id in self.unrestricted_for_user_ids
+
+    @cached_property
+    def is_linked_in_product(self):
+        if self.parent:
+            return Redirect.objects.filter(
+                (Q(locale__in=("", self.locale)) & Q(target__contains=f"kb/{self.parent.slug}"))
+                | (Q(locale=self.locale) & Q(target__contains=f"kb/{self.slug}"))
+            ).exists()
+        return Redirect.objects.filter(
+            locale__in=("", self.locale), target__contains=f"kb/{self.slug}"
+        ).exists()
 
 
 class AbstractRevision(models.Model):

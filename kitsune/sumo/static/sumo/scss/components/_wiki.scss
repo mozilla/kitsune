@@ -3,6 +3,24 @@
 
 @import 'selectize/scss/selectize.default';
 
+figure {
+  &.linked-in-product {
+    display: flex;
+    margin-bottom: p.$spacing-xl;
+
+    img {
+      width: 24px;
+      height: 24px;
+      margin-right: p.$spacing-sm;
+    }
+
+    figcaption {
+      font-weight: bold;
+      line-height: normal;
+    }
+  }
+}
+
 #id_restrict_to_groups {
   // Prevents flickering by hiding the un-selectized select
   // until selectize uses it to make a new one that's visible.
