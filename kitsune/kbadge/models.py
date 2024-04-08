@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 
 from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
+from kitsune.sumo.utils import in_staff_group
 
 
 IMG_MAX_SIZE = getattr(settings, "BADGER_IMG_MAX_SIZE", (256, 256))
@@ -266,9 +267,9 @@ class Badge(models.Model):
             return True
         if user.is_anonymous:
             return False
-        if user.is_staff or user.is_superuser:
-            return True
         if user == self.creator:
+            return True
+        if user.is_superuser or in_staff_group(user):
             return True
 
         # TODO: List of delegates for whom awarding is allowed

@@ -24,6 +24,7 @@ from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import in_staff_group
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
@@ -720,8 +721,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         """
         return self.is_unrestricted_for(user, use_cache=use_cache) and bool(
             self.current_revision
-            or user.is_staff
             or user.is_superuser
+            or in_staff_group(user)
             or (
                 user.is_authenticated
                 and (
@@ -762,7 +763,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             # Translations follow their parent's restrictions.
             return self.parent.is_unrestricted_for(user, use_cache=use_cache)
 
-        if user.is_staff or user.is_superuser:
+        if user.is_superuser or in_staff_group(user):
             return True
 
         is_restricted = self.is_restricted if use_cache else self.get_is_restricted()

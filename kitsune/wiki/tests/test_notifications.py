@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.core import mail
 
 from kitsune.products.tests import ProductFactory
@@ -111,7 +112,7 @@ class ReviewTests(TestCase):
         when the revision is for a restricted document.
         """
         rw = _set_up_ready_watcher()
-        creator = UserFactory(is_staff=True)
+        creator = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self._review_revision(
             is_ready=True,
             creator=creator,
@@ -337,7 +338,7 @@ class ReviewableRevisionInLocaleEventTests(TestCase):
         add_permission(self.watcher2, Revision, "review_revision")
         ReviewableRevisionInLocaleEvent.notify(self.watcher1, locale="en-US")
         ReviewableRevisionInLocaleEvent.notify(self.watcher2, locale="en-US")
-        creator = UserFactory(is_staff=True)
+        creator = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self.client.login(username=creator.username, password="testpass")
 
     def test_when_restricted(self):

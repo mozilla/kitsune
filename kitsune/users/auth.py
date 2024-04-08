@@ -214,7 +214,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # There is a change in the email in Mozilla accounts. Let's update user's email
         # unless we have a superuser
-        if email and (email != user.email) and not user.is_staff:
+        if email and (email != user.email) and not user.profile.in_staff_group:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
                 if request:
                     msg = _(

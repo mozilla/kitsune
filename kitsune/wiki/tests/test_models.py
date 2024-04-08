@@ -3,6 +3,7 @@
 import urllib.parse
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from taggit.models import TaggedItem
@@ -412,7 +413,7 @@ class VisibilityTests(TestCase):
         self.anonymous = AnonymousUser()
         self.user1 = UserFactory(groups=[self.group1, self.group4])
         self.user2 = UserFactory(groups=[self.group2, self.group3])
-        self.staff = UserFactory(is_staff=True)
+        self.staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self.superuser = UserFactory(is_superuser=True)
         self.reviewer = UserFactory()
         add_permission(self.reviewer, Revision, "review_revision")

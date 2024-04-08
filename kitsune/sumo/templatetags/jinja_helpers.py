@@ -28,9 +28,7 @@ import wikimarkup.parser
 from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import is_trusted_user as is_trusted_user_func
-from kitsune.sumo.utils import webpack_static as webpack_static_func
-from kitsune.sumo.utils import in_staff_group
+from kitsune.sumo.utils import in_staff_group, is_trusted_user, webpack_static
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
@@ -468,11 +466,6 @@ def static(path):
 
 
 @library.global_function
-def webpack_static(source_path):
-    return webpack_static_func(source_path)
-
-
-@library.global_function
 def now():
     return datetime.datetime.now()
 
@@ -565,9 +558,6 @@ def show_header_fx_download(context):
         return True
 
 
-@library.global_function
-def is_trusted_user(user):
-    return is_trusted_user_func(user)
-
-
+library.global_function(webpack_static)
+library.global_function(is_trusted_user)
 library.global_function(in_staff_group)
