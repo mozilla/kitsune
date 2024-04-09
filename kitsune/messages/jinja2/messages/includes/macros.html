@@ -99,6 +99,7 @@
           </div>
         {% else %}
           {{ field|safe }}
+          {{ field.errors }}
         {% endif %}
       </li>
     {% endfor %}

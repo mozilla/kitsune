@@ -91,7 +91,7 @@ class MultiUsernameOrGroupnameField(forms.Field):
     def to_python(self, value):
         if not value:
             if self.required:
-                raise forms.ValidationError(_("To field is required."))
+                raise ValidationError(_("To field is required."))
             else:
                 return []
 
@@ -110,7 +110,7 @@ class MultiUsernameOrGroupnameField(forms.Field):
                     except Group.DoesNotExist:
                         msg = _("{name} is not a valid username or group name.")
             if msg:
-                raise forms.ValidationError(msg.format(name=name))
+                raise ValidationError(msg.format(name=name))
         return users_and_groups
 
 

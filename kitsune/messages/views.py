@@ -71,45 +71,32 @@ def outbox(request):
 @login_required
 def new_message(request):
     """Send a new private message."""
-    to = request.GET.get("to")
-    message = request.GET.get("message")
+    if request.method == "GET":
+        form = MessageForm(initial=request.GET.dict(), user=request.user)
+    elif request.method == "POST":
+        form = MessageForm(request.POST, user=request.user)
+        if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
+            receivers = {user for user in form.cleaned_data["to"] if isinstance(user, User)}
+            groups = [group for group in form.cleaned_data["to"] if isinstance(group, Group)]
 
-    form = MessageForm(
-        request.POST or None, initial={"to": to or None, "message": message}, user=request.user
-    )
+            for group in groups:
+                receivers.update(group.user_set.all())
 
-    if (
-        request.method == "POST"
-        and form.is_valid()
-        and not is_ratelimited(request, "private-message-day", "50/d")
-    ):
-        all_receivers = []
-        all_groups = []
-        for receiver in form.cleaned_data["to"]:
-            if isinstance(receiver, Group):
-                all_receivers.extend(receiver.user_set.all())
-                all_groups.append(receiver)
-            if isinstance(receiver, User):
-                all_receivers.append(receiver)
-            # Remove duplicates
-            all_receivers = list(set(all_receivers))
-        send_message(
-            all_receivers,
-            to_group=all_groups,
-            text=form.cleaned_data["message"],
-            sender=request.user,
-        )
-        if form.cleaned_data["in_reply_to"]:
-            irt = form.cleaned_data["in_reply_to"]
-            try:
-                m = InboxMessage.objects.get(pk=irt, to=request.user)
-                m.update(replied=True)
-            except InboxMessage.DoesNotExist:
-                pass
-        contrib_messages.add_message(
-            request, contrib_messages.SUCCESS, _("Your message was sent!")
-        )
-        return HttpResponseRedirect(reverse("messages.outbox"))
+            send_message(
+                list(receivers),
+                to_group=groups,
+                text=form.cleaned_data["message"],
+                sender=request.user,
+            )
+            if "in_reply_to" in form.cleaned_data and form.cleaned_data["in_reply_to"]:
+                InboxMessage.objects.filter(
+                    pk=form.cleaned_data["in_reply_to"], to=request.user
+                ).update(replied=True)
+
+            contrib_messages.add_message(
+                request, contrib_messages.SUCCESS, _("Your message was sent!")
+            )
+            return HttpResponseRedirect(reverse("messages.outbox"))
 
     return render(request, "messages/new.html", {"form": form})
 
