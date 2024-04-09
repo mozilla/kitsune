@@ -72,26 +72,6 @@ def outbox(request):
 def new_message(request):
     """Send a new private message."""
     to = request.GET.get("to")
-    recipients = []
-
-    if to:
-        for name in to.split(","):
-            try:
-                User.objects.get(username=name)
-                recipient = name
-            except User.DoesNotExist:
-                try:
-                    Group.objects.get(name=name)
-                    recipient = name
-                except Group.DoesNotExist:
-                    contrib_messages.add_message(
-                        request,
-                        contrib_messages.ERROR,
-                        _("Invalid user or group name provided. Enter a new name below."),
-                    )
-                    return HttpResponseRedirect(reverse("messages.new"))
-        recipients.append(recipient)
-    to = ", ".join(recipients) if recipients else None
     message = request.GET.get("message")
 
     form = MessageForm(

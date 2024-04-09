@@ -97,11 +97,7 @@ class MultiUsernameOrGroupnameField(forms.Field):
 
         users_and_groups = []
         for user_or_group in value.split(","):
-            if ":" in user_or_group:
-                _type, name = user_or_group.split(":")
-                name = name.strip()
-            else:
-                name = user_or_group.strip()
+            name = user_or_group.strip()
             msg = ""
             if name:
                 try:
