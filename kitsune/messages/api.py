@@ -36,23 +36,6 @@ def get_autocomplete_suggestions(request):
                 else webpack_static(settings.DEFAULT_AVATAR),
             }
 
-        def append_exact_match(pre, suggestions, is_staff):
-            """Append the exact match to suggestions if not already included."""
-            try:
-                exact_match_user = (
-                    User.objects.filter(username__iexact=pre, is_active=True)
-                    .select_related("profile")
-                    .get()
-                )
-                suggestions.append(create_suggestion(exact_match_user, "User"))
-            except User.DoesNotExist:
-                if is_staff:
-                    try:
-                        exact_match_group = Group.objects.get(name__iexact=pre)
-                        suggestions.append(create_suggestion(exact_match_group, "Group", False))
-                    except Group.DoesNotExist:
-                        pass
-
         suggestions = []
         user_criteria = Q(username__istartswith=pre) | Q(profile__name__istartswith=pre)
         users = (
@@ -69,7 +52,6 @@ def get_autocomplete_suggestions(request):
             for group in groups:
                 suggestions.append(create_suggestion(group, "Group", False))
 
-        append_exact_match(pre, suggestions, is_staff)
         return suggestions
 
     return get_suggestions(pre, request.user.profile.is_staff)
