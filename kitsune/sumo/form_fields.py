@@ -95,8 +95,8 @@ class MultiUsernameOrGroupnameField(forms.Field):
             else:
                 return []
 
-        # Split and strip names
-        names = [name.strip() for name in value.split(",")]
+        # Split names, strip whitespace, and filter out any empty strings
+        names = [name.strip() for name in value.split(",") if name.strip()]
 
         # Find users and groups in a single query each
         users = User.objects.filter(username__in=names)
