@@ -68,7 +68,7 @@
         {%- endfor %}
         </p>
         </span>
-        {% if request.user.profile.is_staff and message.to_group %}
+        {% if in_staff_group(request.user) and message.to_group %}
           <span class="to-group">
             <p><strong>{{ _('To Groups') }}:</strong> 
             {% set comma = joiner(', ') %}

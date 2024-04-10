@@ -732,7 +732,7 @@ SESSION_SERIALIZER = config(
 
 
 # Our group with permissions to see hidden docs and message groups
-SUMO_STAFF = "Staff"
+STAFF_GROUP = "Staff"
 
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)

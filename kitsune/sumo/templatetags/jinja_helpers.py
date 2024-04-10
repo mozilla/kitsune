@@ -30,6 +30,7 @@ from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_trusted_user as is_trusted_user_func
 from kitsune.sumo.utils import webpack_static as webpack_static_func
+from kitsune.sumo.utils import in_staff_group
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
@@ -567,3 +568,6 @@ def show_header_fx_download(context):
 @library.global_function
 def is_trusted_user(user):
     return is_trusted_user_func(user)
+
+
+library.global_function(in_staff_group)

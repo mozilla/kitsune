@@ -18,7 +18,7 @@
         <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
       {% endif %}
       <h1>{{ profile.group.name }}</h1>
-        {% if user.profile.is_staff %}
+        {% if in_staff_group(user) %}
           <p class="pm"><a class="sumo-button primary-button button-lg" href="{{ url('messages.new')|urlparams(to=profile.group.name) }}">{{ _('Private message group members') }}</a></p>
         {% endif %}
         {% if user_can_edit %}

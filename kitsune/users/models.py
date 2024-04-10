@@ -1,6 +1,7 @@
 import logging
 import re
 from datetime import datetime
+from functools import cached_property
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -227,9 +228,9 @@ class Profile(ModelBase):
     def is_subscriber(self):
         return self.products.exists()
 
-    @property
-    def is_staff(self):
-        return self.user.groups.filter(name=settings.SUMO_STAFF).exists()
+    @cached_property
+    def in_staff_group(self):
+        return self.user.groups.filter(name=settings.STAFF_GROUP).exists()
 
 
 class Setting(ModelBase):

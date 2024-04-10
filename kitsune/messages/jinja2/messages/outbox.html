@@ -30,7 +30,7 @@
                   <span class="to user">
                     <b>{{ _('To') }}</b>
                   </span>                  
-                  {% if request.user.profile.is_staff %}
+                  {% if in_staff_group(request.user) %}
                     <span class="to group">
                         <b>{{ _('To Groups') }}</b>
                     </span>
@@ -79,7 +79,7 @@
                       {{ name_link(message.recipient) }}
                     {%- endif %}
                   </span>
-                  {% if request.user.profile.is_staff %}
+                  {% if in_staff_group(request.user) %}
                     <span class="to group">
                       {% if message.to_group %}
                         {% if message.to_groups_count > 0 -%}
