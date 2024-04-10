@@ -39,6 +39,7 @@ class QuestionPage(BasePage):
 
     # Question details locators.
     __question_details_button = "//button[@aria-controls='question-details']"
+    __more_system_details_modal = "//div[normalize-space(@class)='mzp-c-modal']"
     __more_system_details_option = "//a[@id='show-more-details']"
     __close_additional_system_details_button = "//div[@class='mzp-c-modal-close']/button"
     __user_agent_information = "//div[@class='about-support']//li"
@@ -320,6 +321,7 @@ class QuestionPage(BasePage):
         return super()._get_element_locator(self.__more_information_panel_header)
 
     def _get_user_agent_information(self) -> str:
+        super()._wait_for_selector(self.__more_system_details_modal)
         return super()._get_text_of_element(self.__user_agent_information)
 
     def _get_system_details_information(self) -> list[str]:
