@@ -21,17 +21,16 @@ def get_autocomplete_suggestions(request):
 
     def create_suggestion(item):
         """Create a dictionary object for the autocomplete suggestion."""
+        is_user = isinstance(item, User)
         return {
-            "type": "User" if isinstance(item, User) else "Group",
+            "type": "User" if is_user else "Group",
             "type_icon": webpack_static(
-                settings.DEFAULT_USER_ICON
-                if isinstance(item, User)
-                else settings.DEFAULT_GROUP_ICON
+                settings.DEFAULT_USER_ICON if is_user else settings.DEFAULT_GROUP_ICON
             ),
-            "name": item.username if isinstance(item, User) else item.name,
-            "display_name": item.profile.name if isinstance(item, User) else item.name,
+            "name": item.username if is_user else item.name,
+            "display_name": item.profile.name if is_user else item.name,
             "avatar": profile_avatar(item, 24)
-            if isinstance(item, User)
+            if is_user
             else webpack_static(settings.DEFAULT_AVATAR),
         }
 
