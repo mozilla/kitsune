@@ -11,7 +11,136 @@ from playwright_tests.messages.explore_help_articles.kb_article_revision_page_me
     KBArticleRevision)
 
 
-class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
+class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticlePageMessages):
+
+    # C890940, C2243447
+    @pytest.mark.kbArticleCreationAndAccess
+    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', '', 'TEST_ACCOUNT_MODERATOR'])
+    def test_kb_editing_tools_visibility(self, username):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article and approving it"):
+            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Navigating to the Article page"):
+            self.sumo_pages.kb_article_page._click_on_article_option()
+
+        if username == 'TEST_ACCOUNT_13':
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_13"]
+            ))
+            with allure.step("Verifying that only some editing tools options are displayed"):
+                expect(
+                    self.sumo_pages.kb_article_page._get_article_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_edit_article_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_edit_article_metadata_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_translate_article_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_show_translations_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_what_links_here_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_show_history_option_locator()
+                ).to_be_visible()
+        elif username == '':
+            self.delete_cookies()
+            with allure.step("Verifying that all the editing tools options are not displayed"):
+                expect(
+                    self.sumo_pages.kb_article_page._get_article_option_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_edit_article_option_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_edit_article_metadata_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_translate_article_option_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_show_translations_option_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_what_links_here_locator()
+                ).to_be_hidden()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_show_history_option_locator()
+                ).to_be_hidden()
+        else:
+            with allure.step("Verifying that all the editing tools options are displayed"):
+                expect(
+                    self.sumo_pages.kb_article_page._get_article_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_edit_article_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_edit_article_metadata_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_translate_article_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_show_translations_option_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_what_links_here_locator()
+                ).to_be_visible()
+
+                expect(
+                    self.sumo_pages.kb_article_page._get_show_history_option_locator()
+                ).to_be_visible()
+
+        if username != 'TEST_ACCOUNT_MODERATOR':
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Deleting the created article"):
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C891308, C2081444
     @pytest.mark.kbArticleCreationAndAccess
@@ -34,7 +163,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         with check, allure.step("Verifying that the revision contains the correct status"):
             status = self.sumo_pages.kb_article_show_history_page._get_revision_status(
-                self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
+                article_details['first_revision_id']
             )
             assert KBArticlePageMessages.UNREVIEWED_REVISION_STATUS == status
 
@@ -61,7 +190,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             self.sumo_pages.kb_article_page._click_on_show_history_option()
             status = (
                 self.sumo_pages.kb_article_show_history_page._get_status_of_reviewable_revision(
-                    self.sumo_pages.kb_article_show_history_page._get_last_revision_id()))
+                    article_details['first_revision_id']))
             assert KBArticlePageMessages.REVIEW_REVISION_STATUS == status
 
         with allure.step("Deleting the created article"):
@@ -85,11 +214,8 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         with check, allure.step("Clicking on the first review and verifying that the correct "
                                 "revision header is displayed"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.logger.info("Clicking on the 'Review' option")
             self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-                revision_id
+                article_details['first_revision_id']
             )
             assert self.sumo_pages.kb_article_review_revision_page._get_revision_header(
             ) == KBArticleRevision.KB_ARTICLE_REVISION_HEADER + article_details['article_title']
@@ -97,7 +223,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         with check, allure.step("Verifying that the correct subtext is displayed"):
             assert (self.sumo_pages.kb_article_review_revision_page._get_reviewing_revision_text()
                     .replace("\n", "").strip() == self.get_kb_article_revision_details(
-                    revision_id=re.findall(r'\d+', revision_id)[0],
+                    revision_id=re.findall(r'\d+', article_details['first_revision_id'])[0],
                     username=username,
                     revision_comment=article_details['article_review_description']
                     ).strip())
@@ -153,7 +279,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         with check, allure.step("Verifying that the review status updates to 'Current'"):
             assert self.sumo_pages.kb_article_show_history_page._get_revision_status(
-                revision_id
+                article_details['first_revision_id']
             ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
 
         with allure.step("Clicking on the 'Article' editing tools option"):
@@ -192,7 +318,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             ))
 
         with allure.step("Create a new simple article"):
-            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
         with allure.step("Clicking on the article option and posting a new article thread"):
             self.sumo_pages.kb_article_page._click_on_article_option()
@@ -226,9 +352,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             ))
 
         with allure.step("Approving the article revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                article_details['first_revision_id']
+            )
 
         with allure.step("Navigating to the article page"):
             self.navigate_to_link(article_url)
@@ -302,7 +428,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             ))
 
         with allure.step("Create a new simple article"):
-            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(allow_discussion=False)
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                allow_discussion=False
+            )
 
         with allure.step("Clicking on the article option and verifying that the 'Discussion' "
                          "option is not displayed"):
@@ -331,9 +459,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             ))
 
         with allure.step("Approving the revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                article_details['first_revision_id']
+            )
 
         with allure.step("Navigating back to the article page and verifying that the "
                          "'Discussion' option is not displayed"):
@@ -550,7 +678,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             assert self.sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
             )[0] == KBArticlePageMessages.KB_ARTICLE_RELEVANCY_ERROR
 
-    # C2091665
+    # C2091665, C2243453
     @pytest.mark.kbArticleCreationAndAccess
     def test_kb_article_topic_validation(self):
         with allure.step("Signing in with a non-admin account"):
@@ -604,10 +732,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             ))
 
         with allure.step("Create a new simple article and approving the revision"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         with allure.step("Clicking on the top navbar sumo nav logo"):
             self.sumo_pages.top_navbar._click_on_sumo_nav_logo()
@@ -671,4 +798,621 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
                 self.start_existing_session(super().username_extraction_from_email(
                     self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
                 ))
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2081445
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_non_approved_articles(self):
+        with allure.step("Signing in with a non-admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+            ))
+
+        with allure.step("Creating a simple kb article without approving it"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+
+        with allure.step("Creating a new revision for the kb article"):
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+
+        with allure.step("Verifying that both the first and second revisions are displayed"):
+            expect(
+                self.sumo_pages.kb_article_show_history_page._get_a_particular_revision_locator(
+                    article_details['first_revision_id']
+                )
+            ).to_be_visible()
+            expect(
+                self.sumo_pages.kb_article_show_history_page._get_a_particular_revision_locator(
+                    second_revision['revision_id']
+                )
+            ).to_be_visible()
+
+        with allure.step("Deleting the article"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C966833, C2102177, C2091592
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_kb_article_keyword_and_summary_update(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Signing in with a non-admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
+            ))
+
+        with check, allure.step("Navigating to the 'Edit Article' form and verifying that the "
+                                "edit keyword field is not displayed"):
+            self.sumo_pages.kb_article_page._click_on_edit_article_option()
+            expect(
+                self.sumo_pages.kb_edit_article_page._get_edit_keywords_field_locator()
+            ).to_be_hidden()
+
+        with allure.step("Navigating back to the article"):
+            self.sumo_pages.kb_article_page._click_on_article_option()
+
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with check, allure.step("Clicking on the 'Edit Article' option and verifying that the "
+                                "correct notification banner is displayed stating that another "
+                                "user is also working on an edit"):
+            self.sumo_pages.kb_article_page._click_on_edit_article_option()
+            check.equal(
+                self.sumo_pages.kb_edit_article_page._get_edit_article_warning_message(),
+                self.get_article_warning_message(
+                    super().username_extraction_from_email(
+                        self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
+                    )
+                )
+            )
+            self.sumo_pages.kb_edit_article_page._click_on_edit_anyway_option()
+
+        with allure.step("Creating a new revision for the kb article and approving it"):
+            self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+                keywords=super().kb_article_test_data['updated_keywords'],
+                search_result_summary=super(
+                ).kb_article_test_data['updated_search_result_summary'],
+                approve_revision=True
+            )
+
+        with allure.step("Clicking on the top navbar sumo nav logo"):
+            self.sumo_pages.top_navbar._click_on_sumo_nav_logo()
+
+        with allure.step("Wait for ~1 minute until the kb article is available in search"):
+            self.wait_for_given_timeout(60000)
+
+        with allure.step("Signing out"):
+            self.delete_cookies()
+
+        with allure.step("Typing the article keyword inside the search field"):
+            self.sumo_pages.search_page._type_into_searchbar(article_details['keyword'])
+
+        with allure.step("Verifying that the article is displayed inside the search results"):
+            expect(
+                self.sumo_pages.search_page._get_locator_of_a_particular_article(
+                    article_details['article_title']
+                )
+            ).to_be_visible()
+
+        with check, allure.step("Verifying that the correct kb summary is displayed inside the "
+                                "search results"):
+            check.equal(
+                self.sumo_pages.search_page
+                ._get_search_result_summary_text_of_a_particular_article(
+                    article_details['article_title']
+                ),
+                super().kb_article_test_data['updated_search_result_summary']
+            )
+
+        with allure.step("Clearing the searchbar"):
+            self.sumo_pages.search_page._clear_the_searchbar()
+
+        with allure.step("Typing the article summary inside the search field"):
+            self.sumo_pages.search_page._type_into_searchbar(
+                article_details['search_results_summary']
+            )
+
+        with allure.step("Verifying that the article is displayed inside the search results"):
+            expect(
+                self.sumo_pages.search_page._get_locator_of_a_particular_article(
+                    article_details['article_title']
+                )
+            ).to_be_visible()
+
+        with check, allure.step("Verifying that the correct kb summary is displayed inside the "
+                                "search results"):
+            check.equal(
+                self.sumo_pages.search_page
+                ._get_search_result_summary_text_of_a_particular_article(
+                    article_details['article_title']
+                ),
+                super().kb_article_test_data['updated_search_result_summary']
+            )
+
+        with check, allure.step("Clicking on the article and verifying that the user is "
+                                "redirected to the kb article"):
+            self.sumo_pages.search_page._click_on_a_particular_article(
+                article_details['article_title']
+            )
+            check.equal(
+                self.sumo_pages.kb_article_page._get_text_of_article_title(),
+                article_details['article_title']
+            )
+
+        with allure.step("Deleting the created article"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2243447, C2243449
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_article_metadata_title(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Signing in with a non-admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+            ))
+
+        with allure.step("Clicking on the Article option"):
+            self.sumo_pages.kb_article_page._click_on_article_option()
+            article_url = self.get_page_url()
+
+        with check, allure.step("Verifying that the 'Edit Article Metadata option is not "
+                                "displayed'"):
+            expect(
+                self.sumo_pages.kb_article_page._get_edit_article_metadata_locator()
+            ).to_be_hidden()
+
+        with check, allure.step("Navigating to the /metadata endpoint and verifying that the "
+                                "Access Denied page is returned"):
+            with self.page.expect_navigation() as navigation_info:
+                self.navigate_to_link(
+                    article_url + KBArticleRevision.KB_EDIT_METADATA
+                )
+            response = navigation_info.value
+            assert response.status == 403
+
+        with allure.step("Signing in back with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.navigate_to_link(
+                article_url + KBArticleRevision.KB_EDIT_METADATA
+            )
+
+        with allure.step("Changing the article title"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                title=self.kb_article_test_data['updated_kb_article_title'] + article_details
+                ['article_title']
+            )
+
+        with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
+                                "that the updated title and original slug is displayed"):
+            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
+            check.equal(
+                (self.sumo_pages.kb_article_edit_article_metadata_page
+                 ._get_text_of_title_input_field()),
+                self.kb_article_test_data['updated_kb_article_title'] + article_details
+                ['article_title']
+            )
+
+            check.equal(
+                self.sumo_pages.kb_article_edit_article_metadata_page._get_slug_input_field(),
+                article_details['article_slug']
+            )
+
+        with allure.step("Deleting the article"):
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2243450, C2091589
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_article_metadata_slug(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Trying to update an article with an already existing slug"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                slug="donotdelete"
+            )
+
+        with check, allure.step("Verifying that the correct error message is displayed"):
+            check.equal(
+                self.sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+                KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
+            )
+
+        with allure.step("Changing the article slug"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                slug=article_details['article_slug'] + "1"
+            )
+
+        with check, allure.step("Verifying that the article url has updated with the new slug"):
+            check.is_in(
+                article_details['article_slug'] + "1",
+                self.get_page_url()
+            )
+
+        with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
+                                "that the slug was updated"):
+            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
+
+            check.equal(
+                self.sumo_pages.kb_article_edit_article_metadata_page._get_slug_input_field(),
+                article_details['article_slug'] + "1"
+            )
+
+        with allure.step("Deleting the article"):
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2243451
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_article_metadata_category(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Selecting a different category"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                category="Templates"
+            )
+
+        with check, allure.step("Verifying that the correct error message is displayed"):
+            check.equal(
+                self.sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+                super().get_template_error(article_details['article_title'])
+            )
+
+        with allure.step("Selecting a different category"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                category="Navigation"
+            )
+
+        with check, allure.step("Verifying that the article is no longer displayed inside the "
+                                "old category"):
+            self.navigate_to_link(
+                self.different_endpoints['kb_categories_links']
+                [article_details['article_category']]
+            )
+            expect(
+                self.sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+                    article_details['article_title']
+                )
+            ).to_be_hidden()
+
+        with check, allure.step("Verifying that the article is displayed inside the new category"):
+            self.navigate_to_link(
+                self.different_endpoints['kb_categories_links']["Navigation"]
+            )
+            expect(
+                self.sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+                    article_details['article_title']
+                )
+            ).to_be_visible()
+
+        article_template_title = "Template:" + article_details['article_title']
+        with allure.step("Changing the category and title of the kb article to match the "
+                         "template category"):
+            self.navigate_to_link(article_details['article_url'])
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                title=article_template_title, category="Templates"
+            )
+
+        with check, allure.step("Verifying that the article is no longer displayed inside the "
+                                "old category"):
+            self.navigate_to_link(
+                self.different_endpoints['kb_categories_links']["Navigation"]
+            )
+            expect(
+                self.sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+                    article_template_title
+                )
+            ).to_be_hidden()
+
+        with check, allure.step("Verifying that the article is displayed inside the new category"):
+            self.navigate_to_link(
+                self.different_endpoints['kb_categories_links']["Templates"]
+            )
+            expect(
+                self.sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+                    article_template_title
+                )
+            ).to_be_visible()
+
+        with allure.step("Deleting the article"):
+            self.navigate_to_link(article_details['article_url'])
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2243452, C2243453
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_article_metadata_relevancy_and_topic(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with check, allure.step("Editing the article metadata by deselecting the relevancy and "
+                                "verifying that the correct error message is displayed"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                relevancy=article_details['article_relevancy']
+            )
+            check.equal(
+                self.sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+                KBArticlePageMessages.KB_ARTICLE_RELEVANCY_ERROR
+            )
+
+        with check, allure.step("Selecting a different relevancy group, deselecting the topics "
+                                "option and verifying that the correct error message is "
+                                "displayed"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                relevancy="Pocket", topics=article_details['article_topic']
+            )
+            check.equal(
+                self.sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+                KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR
+            )
+
+        with allure.step("Selecting a different topic relevant to the relevancy group"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+                topics=["Pocket", "Getting Started"]
+            )
+
+        with check, allure.step("Verifying that the correct breadcrumb is displayed"):
+            check.is_in(
+                "Pocket",
+                self.sumo_pages.kb_article_page._get_text_of_all_breadcrumbs()
+            )
+            check.is_in(
+                "Getting Started",
+                self.sumo_pages.kb_article_page._get_text_of_all_breadcrumbs()
+            )
+
+        with allure.step("Deleting the article"):
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2243455
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_metadata_article_discussions(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
+            expect(
+                self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            ).to_be_visible()
+
+        with allure.step("Signing in with a non-admin user and verifying that the discussion "
+                         "options is visible"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+            ))
+
+        with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
+            expect(
+                self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            ).to_be_visible()
+
+        with allure.step("Signing in with an admin account and disabling article discussions via "
+                         "edit article metadata form"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=False)
+
+        with check, allure.step("Verifying that 'Discussion' is not displayed for admin users"):
+            expect(
+                self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            ).to_be_hidden()
+
+        with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
+                                "returned"):
+            with self.page.expect_navigation() as navigation_info:
+                self.navigate_to_link(
+                    article_details['article_url'] + (KBArticlePageMessages
+                                                      .KB_ARTICLE_DISCUSSIONS_ENDPOINT))
+            response = navigation_info.value
+            assert response.status == 404
+
+        with check, allure.step("Verifying that the discussion option is not displayed for "
+                                "non-admin users"):
+            self.navigate_to_link(article_details['article_url'])
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+            ))
+            expect(
+                self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            ).to_be_hidden()
+
+        with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
+                                "returned"):
+            with self.page.expect_navigation() as navigation_info:
+                self.navigate_to_link(
+                    article_details['article_url'] + (KBArticlePageMessages
+                                                      .KB_ARTICLE_DISCUSSIONS_ENDPOINT))
+            response = navigation_info.value
+            assert response.status == 404
+
+        with allure.step("Signing in with an admin account and enabling the discussion option "
+                         "via the edit article metadata page"):
+            self.navigate_to_link(article_details['article_url'])
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=True)
+
+        with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
+            expect(
+                self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            ).to_be_visible()
+
+        with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+            ))
+            expect(
+                self.sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            ).to_be_visible()
+
+        with allure.step("Deleting the article"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2244014
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_edit_metadata_article_multiple_users(self):
+        with allure.step("Signing in with an Admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Create a new simple article"):
+            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Clicking on the 'Edit Article Metadata' option"):
+            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
+
+        with allure.step("Navigating back to the article page and signing in with a non-admin "
+                         "user account"):
+            self.sumo_pages.kb_article_page._click_on_article_option()
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_13"]
+            ))
+
+        with allure.step("Clicking on the 'Edit Article Metadata' option"):
+            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
+
+        with check, allure.step("Verifying that the correct error message is displayed"):
+            check.equal(
+                self.sumo_pages.kb_edit_article_page._get_edit_article_warning_message(),
+                self.get_article_warning_message(
+                    super().username_extraction_from_email(
+                        self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+                    )
+                )
+            )
+
+        with allure.step("Clicking on the 'Edit Anyway' option and verifying that the warning "
+                         "banner is no longer displayed"):
+            self.sumo_pages.kb_edit_article_page._click_on_edit_anyway_option()
+            expect(
+                self.sumo_pages.kb_edit_article_page._get_warning_banner_locator()
+            ).to_be_hidden()
+
+        with allure.step("Deleting the article"):
+            self.sumo_pages.kb_article_page._click_on_article_option()
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2271119, C2243454
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_archived_kb_article_edit(self):
+        with allure.step("Signing in with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Creating a simple kb article and approving it"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with allure.step("Marking the article as Obsolete via the 'Edit Article Metadata' page"):
+            self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
+
+        with allure.step("Signing in with a non-admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_13']
+            ))
+
+        with allure.step("Verifying that the 'Edit Article' navbar option is not displayed"):
+            expect(
+                self.sumo_pages.kb_article_page._get_edit_article_option_locator()
+            ).to_be_hidden()
+
+        with allure.step("Navigating to the 'Show History' page and clicking on the existing "
+                         "revision"):
+            self.sumo_pages.kb_article_page._click_on_show_history_option()
+            self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
+                article_details['first_revision_id']
+            )
+
+        with allure.step("Clicking on the 'Edit Article based on this Revision' and submitting a "
+                         "new article edit"):
+            (self.sumo_pages.kb_article_preview_revision_page
+             ._click_on_edit_article_based_on_this_revision_link())
+
+            self.sumo_pages.kb_edit_article_page._fill_edit_article_content_field(
+                self.kb_article_test_data['updated_article_content']
+            )
+            # Submitting for preview steps
+            self.sumo_pages.kb_edit_article_page._click_submit_for_review_button()
+
+            (self.sumo_pages.kb_edit_article_page
+                ._fill_edit_article_changes_panel_comment(
+                    self.kb_article_test_data['changes_description']
+                ))
+
+            (self.sumo_pages.kb_edit_article_page
+             ._click_edit_article_changes_panel_submit_button())
+
+        with allure.step("Verifying that the revision was successfully submitted"):
+            second_revision = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
+            assert (article_details['first_revision_id'] != second_revision)
+
+        with allure.step("Deleting the article"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()

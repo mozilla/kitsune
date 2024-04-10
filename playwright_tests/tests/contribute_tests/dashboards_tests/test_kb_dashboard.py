@@ -82,9 +82,9 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ).to_have_url(article_url)
 
         with allure.step("Approving the article revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                article_details['first_revision_id']
+            )
 
         with check, allure.step("Navigating back to the kb overview page and verifying that the "
                                 "correct live status is displayed"):
@@ -136,17 +136,14 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ))
 
         with allure.step("Creating a new simple article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
 
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
         with allure.step("Creating a anew revision for the document"):
-            second_revision = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
         with check, allure.step("Navigating to the kb overview dashboard and verifying that the "
                                 "correct status is displayed"):
@@ -185,17 +182,14 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ))
 
         with allure.step("Creating a new simple article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
 
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
         with allure.step("Creating a new revision for the document"):
-            second_revision = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
         with check, allure.step("Navigating to the kb overview page and verifying that the "
                                 "correct kb status is displayed"):
@@ -231,19 +225,15 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ))
 
         with allure.step("Creating a new simple article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
 
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
         with allure.step("Creating an new article revision for the document"):
-            second_revision = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
-            )
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
                 second_revision['revision_id'], revision_needs_change=True
             )
 
@@ -258,7 +248,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2266377
+    # C2266377, C2243456
     @pytest.mark.kbDashboard
     def test_kb_dashboard_needs_update_edit_metadata(self):
         with allure.step("Signing in with the admin account"):
@@ -267,18 +257,14 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ))
 
         with allure.step("Create a new simple article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
 
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
         with allure.step("Clicking on the 'Edit Article Metadata' option and enabling the 'Needs "
                          "change with comment' option"):
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                 needs_change=True, needs_change_comment=True
             )
@@ -293,7 +279,6 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
         with allure.step("Navigating back to the article's 'Edit Article Metadata' page and "
                          "removing the comment from the needs change textarea"):
             self.navigate_to_link(article_url)
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(needs_change=True)
 
         with allure.step("Navigating to the complete dashboard list and verifying that the "
@@ -306,7 +291,6 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
         with allure.step("Navigating back to the article's 'Edit Article Metadata' page and "
                          "removing the needs change updates"):
             self.navigate_to_link(article_url)
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata()
 
         with check, allure.step("Navigating to the kb overview page and verifying that the "
@@ -336,7 +320,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
 
         with allure.step("Approving the first revision and marking it as ready for l10n"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
                 revision_id=revision_id, ready_for_l10n=True)
 
         with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
@@ -359,14 +343,11 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ))
 
         with allure.step("Creating a new kb article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
-
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first kb revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id=revision_id)
 
         with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                                 "the correct l10n status is displayed"):
@@ -379,7 +360,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
                          "for l10n"):
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_show_history_page._click_on_ready_for_l10n_option(
-                revision_id
+                article_details['first_revision_id']
             )
             self.sumo_pages.kb_article_show_history_page._click_on_submit_l10n_readiness_button()
 
@@ -404,15 +385,11 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
 
         with allure.step("Creating a new simple article & unchecking the allow translations"):
             article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-                allow_translations=False
+                allow_translations=False,
+                approve_first_revision=True
             )
 
         article_url = self.get_page_url()
-
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id=revision_id)
 
         with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                          "correct l10n status is displayed"):
@@ -435,15 +412,11 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
 
         with allure.step("Create a new simple article & adding an old expiry date"):
             article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-                expiry_date=self.kb_article_test_data['old_expiry_date']
+                expiry_date=self.kb_article_test_data['old_expiry_date'],
+                approve_first_revision=True
             )
 
         article_url = self.get_page_url()
-
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first kb article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                                 "the correct stale status and date is displayed"):
@@ -460,13 +433,9 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
         with allure.step("Navigating back to the article and creating a new revision with a "
                          "non-stale expiry date"):
             self.navigate_to_link(article_url)
-            second_revision = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
-                expiry_date=self.kb_article_test_data['expiry_date']
-            )
-
-        with allure.step("Approving the revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
-                second_revision['revision_id']
+            self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+                expiry_date=self.kb_article_test_data['expiry_date'],
+                approve_revision=True
             )
 
         with check, allure.step("Navigating to the kb dashboard and verifying that the correct "
@@ -493,14 +462,11 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             ))
 
         with allure.step("Creating a new kb article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
-
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the first kb article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id=revision_id)
 
         with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                          "correct title is displayed"):
@@ -514,7 +480,6 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
         with allure.step("Navigating to the article's 'Edit Metadata page' page and changing the "
                          "title"):
             self.navigate_to_link(article_url)
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             new_article_title = "Updated " + article_details['article_title']
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                 title=new_article_title

@@ -33,14 +33,15 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         article_url = self.get_page_url()
 
         self.logger.info("Fetching the revision id")
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        revision_id_number = self.number_extraction_from_string(revision_id)
+        revision_id_number = self.number_extraction_from_string(
+            article_details['first_revision_id']
+        )
 
         with allure.step("Verifying that the delete button is not available for the only kb "
                          "revision"):
             expect(
                 self.sumo_pages.kb_article_show_history_page._get_delete_revision_button_locator(
-                    revision_id
+                    article_details['first_revision_id']
                 )
             ).to_be_hidden()
 
@@ -98,7 +99,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.navigate_to_link(article_url)
             expect(
                 self.sumo_pages.kb_article_show_history_page._get_delete_revision_button_locator(
-                    revision_id
+                    article_details['first_revision_id']
                 )
             ).to_be_hidden()
 
@@ -117,7 +118,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
                                 "revision and verifying that the correct 'Unable to delete the "
                                 "revision' page header"):
             self.sumo_pages.kb_article_show_history_page._click_on_delete_revision_button(
-                revision_id
+                article_details['first_revision_id']
             )
             assert (self.sumo_pages.kb_article_show_history_page
                     ._get_unable_to_delete_revision_header(
@@ -222,7 +223,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         username_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Create a new simple article"):
-            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
         article_url = self.get_page_url()
 
@@ -238,9 +239,9 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
                     ._get_list_of_kb_article_contributors())
 
         with allure.step("Navigating back to the 'Show History page and approving the revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                article_details['first_revision_id']
+            )
 
         with check, allure.step("Verifying that the username which created the revision is added "
                                 "inside the 'Contributors' list"):
@@ -274,7 +275,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         with allure.step("Creating a new revision for the document and verifying that the 'Edit "
                          "Contributors' option is not displayed for users which don't have the "
                          "necessary permissions"):
-            second_revision_info = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
+            second_revision_info = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
             )
             expect(
                 self.sumo_pages.kb_article_show_history_page._get_edit_contributors_option_locator(
@@ -322,7 +323,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         with check, allure.step("Approving the revision and verifying that the second username "
                                 "is displayed inside the Contributors list"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
                 second_revision_info['revision_id']
             )
             assert (username_two in self.sumo_pages.kb_article_show_history_page
@@ -441,27 +442,21 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Create a new simple article"):
-            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         self.sumo_pages.kb_article_page._click_on_article_option()
         article_url = self.get_page_url()
 
-        with allure.step("Approving the article revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
-        with allure.step("Signing in with a non-Admin account amd creating a new revision"):
+        with allure.step("Signing in with a non-Admin account and creating a new revision"):
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))
 
             username_two = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-            second_revision_info = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
-            )
+            second_revision_info = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
         with allure.step("Signing in with an admin account"):
             self.start_existing_session(super().username_extraction_from_email(
@@ -469,7 +464,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             ))
 
         with allure.step("Approving the revision and deleting the user session"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
                 second_revision_info['revision_id']
             )
             self.delete_cookies()
@@ -550,7 +545,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.navigate_back()
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2499415
+    # C2499415, C2271120
     @pytest.mark.kbArticleShowHistory
     def test_kb_article_revision_date_functionality(self):
         with allure.step("Signing in with an admin account"):
@@ -563,12 +558,11 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         with allure.step("Create a new simple article, clicking on the 'Show History' option and "
                          "approving the revision"):
-            self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
             self.sumo_pages.kb_article_page._click_on_article_option()
             article_url = self.get_page_url()
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         with allure.step("Signing in with a non-admin account"):
             creator_username = self.start_existing_session(super().username_extraction_from_email(
@@ -576,7 +570,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             ))
 
         with allure.step("Submitting a new revision"):
-            second_revision_info = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
+            second_revision_info = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
             )
 
         with allure.step("Deleting the user session and clicking on the first revision"):
@@ -584,7 +578,9 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             revision_time = self.sumo_pages.kb_article_show_history_page._get_revision_time(
                 second_revision_info['revision_id']
             )
-            self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(revision_id)
+            self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
+                article_details['first_revision_id']
+            )
 
         with check, allure.step("Verifying that the correct 'Is current revision?' text is "
                                 "displayed"):
@@ -722,9 +718,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
-        with allure.step("Clicking on show history option and approving the second revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+        with allure.step("Approving the second revision"):
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
                 second_revision_info['revision_id'], ready_for_l10n=True)
 
         with check, allure.step("Deleting the user session, clicking on the revision time and "

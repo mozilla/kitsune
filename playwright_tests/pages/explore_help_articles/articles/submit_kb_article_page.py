@@ -126,7 +126,7 @@ class SubmitKBArticlePage(BasePage):
         return super()._get_element_locator(self.__kb_article_preview_content)
 
     def _click_on_a_relevant_to_option_checkbox(self, option_to_click: str):
-        xpath = f"//input[@id='{option_to_click}']"
+        xpath = f"//div[@id='id_products']//label[normalize-space(text())='{option_to_click}']"
         super()._click(xpath)
 
     def _get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:

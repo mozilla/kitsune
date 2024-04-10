@@ -1,20 +1,35 @@
 from playwright_tests.core.testutilities import TestUtilities
 from playwright.sync_api import Page
 
+from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import \
+    KBArticleRevision
+from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_meta import (
     KBArticleEditMetadata)
+from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import \
+    SubmitKBArticlePage
 
 
-class EditArticleMetaFlow(TestUtilities, KBArticleEditMetadata):
+class EditArticleMetaFlow(TestUtilities, KBArticleEditMetadata, SubmitKBArticlePage,
+                          KBArticlePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
 
     def edit_article_metadata(self, title=None,
+                              slug=None,
+                              category=None,
+                              relevancy=None,
+                              topics=None,
+                              obsolete=False,
+                              discussions=True,
                               needs_change=False,
                               needs_change_comment=False,
                               restricted_to_groups: list[str] = None,
                               single_group=""):
+
+        if KBArticleRevision.KB_EDIT_METADATA not in super()._get_current_page_url():
+            super()._click_on_edit_article_metadata()
 
         if restricted_to_groups is not None:
             for group in restricted_to_groups:
@@ -24,6 +39,34 @@ class EditArticleMetaFlow(TestUtilities, KBArticleEditMetadata):
 
         if title is not None:
             super()._add_text_to_title_field(title)
+
+        if slug is not None:
+            super()._add_text_to_slug_field(slug)
+
+        if category is not None:
+            super()._select_category(category)
+
+        if relevancy is not None:
+            super()._check_a_particular_relevancy_option(relevancy)
+
+        if topics is not None:
+            super()._click_on_a_particular_parent_topic(
+                topics[0]
+            )
+            super()._click_on_a_particular_child_topic_checkbox(
+                topics[0],
+                topics[1],
+            )
+
+        if obsolete:
+            super()._click_on_obsolete_checkbox()
+
+        if discussions:
+            if not super()._is_allow_discussion_checkbox_checked():
+                super()._click_on_allow_discussion_on_article_checkbox()
+        else:
+            if super()._is_allow_discussion_checkbox_checked():
+                super()._click_on_allow_discussion_on_article_checkbox()
 
         # If it needs change we are going to ensure that the needs change checkbox is checked.
         if needs_change:

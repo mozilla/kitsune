@@ -1,10 +1,13 @@
-from playwright_tests.core.basepage import BasePage
+from playwright_tests.core.basepage import BasePage, Locator
 from playwright.sync_api import Page
 
 
 class EditKBArticlePage(BasePage):
     # KB Article edit page locators.
     __edit_article_page_header = "//h1"
+    __edit_by_another_user_warning_banner = "//div[@id='locked-warning']"
+    __edit_by_another_user_warning_message = "//div[@id='locked-warning']//p"
+    __edit_by_another_user_edit_anyway_option = "//a[@id='unlock-button']"
 
     # KB Article edit page field locators.
     __edit_article_keywords_field = "//input[@id='id_keywords']"
@@ -26,6 +29,16 @@ class EditKBArticlePage(BasePage):
     def _get_edit_article_page_header(self) -> str:
         return super()._get_text_of_element(self.__edit_article_page_header)
 
+    def _get_warning_banner_locator(self) -> Locator:
+        return super()._get_element_locator(self.__edit_by_another_user_warning_banner)
+
+    def _get_edit_article_warning_message(self) -> str:
+        paragraphs = super()._get_text_of_elements(self.__edit_by_another_user_warning_message)
+        return ' '.join(paragraphs)
+
+    def _click_on_edit_anyway_option(self):
+        super()._click(self.__edit_by_another_user_edit_anyway_option)
+
     # Edit kb article page field actions.
     def _get_edit_article_keywords_field_value(self) -> str:
         return super()._get_element_input_value(self.__edit_article_keywords_field)
@@ -33,6 +46,9 @@ class EditKBArticlePage(BasePage):
     def _fill_edit_article_keywords_field(self, text: str):
         super()._clear_field(self.__edit_article_keywords_field)
         super()._fill(self.__edit_article_keywords_field, text)
+
+    def _get_edit_keywords_field_locator(self) -> Locator:
+        return super()._get_element_locator(self.__edit_article_keywords_field)
 
     def _get_edit_article_search_result_summary_text(self) -> str:
         return super()._get_text_of_element(self.__edit_article_search_result_summary_field)

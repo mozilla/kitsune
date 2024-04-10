@@ -1163,7 +1163,7 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
             article_content_image=super().kb_article_test_data['article_image']
         )
 
-        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+        self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=self.sumo_pages.kb_article_show_history_page._get_last_revision_id(),
             ready_for_l10n=True
         )
@@ -1176,7 +1176,7 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
             article_content_image=super().kb_article_test_data['article_image']
         )
 
-        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+        self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=self.sumo_pages.kb_article_show_history_page._get_last_revision_id(),
             ready_for_l10n=True
         )
@@ -1185,16 +1185,16 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
 
         simple_article = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
-        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+        self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=self.sumo_pages.kb_article_show_history_page._get_last_revision_id(),
             ready_for_l10n=True
         )
 
         simple_article_template = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            is_template=True,
+            is_template=True
         )
 
-        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+        self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=self.sumo_pages.kb_article_show_history_page._get_last_revision_id(),
             ready_for_l10n=True
         )
