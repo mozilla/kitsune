@@ -1,9 +1,18 @@
-from django.urls import re_path
+from django.urls import include, re_path
 
-from kitsune.messages import views
+from kitsune.messages import api, views
+
+api_patterns = [
+    re_path(
+        r"^autocomplete",
+        api.get_autocomplete_suggestions,
+        name="messages.api.get_autocomplete_suggestions",
+    ),
+]
 
 urlpatterns = [
     re_path(r"^$", views.inbox, name="messages.inbox"),
+    re_path(r"^api/", include(api_patterns)),
     re_path(r"^bulk_action$", views.bulk_action, name="messages.bulk_action"),
     re_path(r"^read/(?P<msgid>\d+)$", views.read, name="messages.read"),
     re_path(r"^read/(?P<msgid>\d+)/delete$", views.delete, name="messages.delete"),

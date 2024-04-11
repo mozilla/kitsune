@@ -1,23 +1,29 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.sumo.form_fields import MultiUsernameField
-
-
-TO_PLACEHOLDER = _lazy("username1, username2,...")
+from kitsune.sumo.form_fields import MultiUsernameOrGroupnameField
 
 
 class MessageForm(forms.Form):
     """Form send a private message."""
 
-    to = MultiUsernameField(
+    to = MultiUsernameOrGroupnameField(
         label=_lazy("To:"),
         widget=forms.TextInput(
-            attrs={"placeholder": TO_PLACEHOLDER, "class": "user-autocomplete"}
+            attrs={"placeholder": "Search for Users", "class": "user-autocomplete"}
         ),
     )
     message = forms.CharField(label=_lazy("Message:"), max_length=10000, widget=forms.Textarea)
     in_reply_to = forms.IntegerField(widget=forms.HiddenInput, required=False)
+
+    def __init__(self, *args, **kwargs):
+        # Grab the user
+        self.user = kwargs.pop("user")
+        super(MessageForm, self).__init__(*args, **kwargs)
+
+        # If the user is_staff, the placholder text needs to be updated
+        if self.user and self.user.profile.in_staff_group:
+            self.fields["to"].widget.attrs["placeholder"] = "Search for Users or Groups"
 
 
 class ReplyForm(forms.Form):

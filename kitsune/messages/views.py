@@ -1,7 +1,7 @@
 import json
 
 from django.contrib import messages as contrib_messages
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
@@ -43,7 +43,15 @@ def read(request, msgid):
 @login_required
 def read_outbox(request, msgid):
     message = get_object_or_404(OutboxMessage, pk=msgid, sender=request.user)
-    return render(request, "messages/read-outbox.html", {"message": _add_recipients(message)})
+    return render(
+        request,
+        "messages/read-outbox.html",
+        {
+            "message": _add_recipients(message),
+            "to_users": message.to.all(),
+            "to_groups": message.to_group.all(),
+        },
+    )
 
 
 @login_required
@@ -63,40 +71,32 @@ def outbox(request):
 @login_required
 def new_message(request):
     """Send a new private message."""
-    to = request.GET.get("to")
-    if to:
-        try:
-            for username in to.split(","):
-                User.objects.get(username=username)
-        except User.DoesNotExist:
-            contrib_messages.add_message(
-                request,
-                contrib_messages.ERROR,
-                _("Invalid username provided. Enter a new username below."),
+    if request.method == "GET":
+        form = MessageForm(initial=request.GET.dict(), user=request.user)
+    elif request.method == "POST":
+        form = MessageForm(request.POST, user=request.user)
+        if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
+            receivers = {user for user in form.cleaned_data["to"] if isinstance(user, User)}
+            groups = [group for group in form.cleaned_data["to"] if isinstance(group, Group)]
+
+            for group in groups:
+                receivers.update(group.user_set.all())
+
+            send_message(
+                list(receivers),
+                to_group=groups,
+                text=form.cleaned_data["message"],
+                sender=request.user,
             )
-            return HttpResponseRedirect(reverse("messages.new"))
+            if "in_reply_to" in form.cleaned_data and form.cleaned_data["in_reply_to"]:
+                InboxMessage.objects.filter(
+                    pk=form.cleaned_data["in_reply_to"], to=request.user
+                ).update(replied=True)
 
-    message = request.GET.get("message")
-
-    form = MessageForm(request.POST or None, initial={"to": to, "message": message})
-
-    if (
-        request.method == "POST"
-        and form.is_valid()
-        and not is_ratelimited(request, "primate-message-day", "50/d")
-    ):
-        send_message(form.cleaned_data["to"], form.cleaned_data["message"], request.user)
-        if form.cleaned_data["in_reply_to"]:
-            irt = form.cleaned_data["in_reply_to"]
-            try:
-                m = InboxMessage.objects.get(pk=irt, to=request.user)
-                m.update(replied=True)
-            except InboxMessage.DoesNotExist:
-                pass
-        contrib_messages.add_message(
-            request, contrib_messages.SUCCESS, _("Your message was sent!")
-        )
-        return HttpResponseRedirect(reverse("messages.inbox"))
+            contrib_messages.add_message(
+                request, contrib_messages.SUCCESS, _("Your message was sent!")
+            )
+            return HttpResponseRedirect(reverse("messages.outbox"))
 
     return render(request, "messages/new.html", {"form": form})
 
@@ -172,8 +172,16 @@ def preview_async(request):
 
 def _add_recipients(msg):
     msg.recipients = msg.to.count()
+    msg.to_groups_count = msg.to_group.count()
+
     if msg.recipients == 1:
         msg.recipient = msg.to.all()[0]
     else:
         msg.recipient = None
+
+    if msg.to_groups_count == 1:
+        msg.to_groups = msg.to_group.all()[0]
+    else:
+        msg.to_groups = msg.to_group.all()
+
     return msg

@@ -608,6 +608,8 @@ ENABLE_DEV_LOGIN = config("ENABLE_DEV_LOGIN", default=False, cast=bool)
 AUTH_PROFILE_MODULE = "users.Profile"
 USER_AVATAR_PATH = "uploads/avatars/"
 DEFAULT_AVATAR = "sumo/img/avatar.png"
+DEFAULT_GROUP_ICON = "sumo/img/group-icon.svg"
+DEFAULT_USER_ICON = "sumo/img/user-icon.svg"
 AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 1310720  # 1MB, in bytes
 GROUP_AVATAR_PATH = "uploads/groupavatars/"
@@ -727,6 +729,10 @@ SESSION_ENGINE = config("SESSION_ENGINE", default="django.contrib.sessions.backe
 SESSION_SERIALIZER = config(
     "SESSION_SERIALIZER", default="django.contrib.sessions.serializers.PickleSerializer"
 )
+
+
+# Our group with permissions to see hidden docs and message groups
+STAFF_GROUP = "Staff"
 
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)

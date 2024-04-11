@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -81,6 +81,41 @@ class MultiUsernameField(forms.Field):
                     raise forms.ValidationError(msg.format(username=username))
 
         return users
+
+
+class MultiUsernameOrGroupnameField(forms.Field):
+    """Form field that takes a comma-separated list of usernames or groupnames
+    and validates that users/groups exist for each one, and returns the list of
+    users/groups."""
+
+    def to_python(self, value):
+        if not value:
+            if self.required:
+                raise ValidationError(_("To field is required."))
+            else:
+                return []
+
+        # Split names, strip whitespace, and filter out any empty strings
+        names = [name.strip() for name in value.split(",") if name.strip()]
+
+        # Find users and groups in a single query each
+        users = User.objects.filter(username__in=names)
+        groups = Group.objects.filter(name__in=names)
+
+        users_and_groups = list(users) + list(groups)
+
+        # Check if all names were found
+        found_names = set([obj.username for obj in users] + [obj.name for obj in groups])
+        missing_names = set(names) - found_names
+
+        if missing_names:
+            raise ValidationError(
+                _("The following are not valid usernames or group names: {names}").format(
+                    names=", ".join(missing_names)
+                )
+            )
+
+        return users_and_groups
 
 
 class ImagePlusField(forms.ImageField):

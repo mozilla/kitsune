@@ -66,7 +66,7 @@
       }
 
       .avatar-details {
-        width: 190px;
+        width: 100%;
         flex: 0 0 auto;
       }
     }
@@ -81,6 +81,16 @@
 .avatar-details {
   display: flex;
   align-items: center;
+  gap: 12px;
+
+  span {
+    flex: 2;
+    text-align: left;
+  }
+
+  .message-view {
+    flex: 2;
+  }
 
   .avatar {
     display: block;
@@ -94,11 +104,9 @@
     }
   }
 
-  .user {
-    flex: 1 1 auto;
+  .user, .group {
 
     a {
-      font-weight: bold;
       color: var(--color-heading);
       text-decoration: none;
 
@@ -108,11 +116,11 @@
       }
     }
 
-    time {
-      display: block;
-      @include c.text-body-xs;
-      font-weight: normal;
-      color: var(--color-text);
+    p {
+      font-weight: bold;
+      color: var(--color-heading);
+      text-decoration: none;
+      padding-right:5px;
     }
   }
 }
@@ -121,4 +129,32 @@
   .message {
     @include c.ulol;
   }
+}
+
+@media (max-width: 767px) {
+  .group, .user {
+    display: none;
+  }
+}
+
+time {
+  display: block;
+  @include c.text-body-xs;
+  font-weight: normal;
+  color: var(--color-text);
+}
+
+.to, 
+.to-group {
+  p {
+  margin: 0;
+  padding: 0;
+  font-weight: bold;
+  color: var(--color-heading);
+  text-decoration: none;
+  }
+}
+
+.read-message {
+  margin-top: 20px;
 }

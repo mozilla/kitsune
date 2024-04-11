@@ -368,3 +368,8 @@ def is_trusted_user(user: User) -> bool:
             user.is_staff,
         ]
     )
+
+
+def in_staff_group(user: User | None) -> bool:
+    """Check if a user is in the Staff group."""
+    return bool(user and user.is_authenticated and user.profile.in_staff_group)
