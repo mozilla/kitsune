@@ -86,7 +86,7 @@ class MultiUsernameField(forms.Field):
 class MultiUsernameOrGroupnameField(forms.Field):
     """Form field that takes a comma-separated list of usernames or groupnames
     and validates that users/groups exist for each one, and returns the list of
-    users/gorups."""
+    users/groups."""
 
     def to_python(self, value):
         if not value:
