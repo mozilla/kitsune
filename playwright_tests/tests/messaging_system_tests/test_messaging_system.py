@@ -571,6 +571,7 @@ class TestMessagingSystem(TestUtilities):
 
         with check, allure.step("Clicking on the 'delete selected' button while no messages is "
                                 "selected and verifying that the correct banner is displayed"):
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_inbox()
             self.sumo_pages.inbox_page._click_on_inbox_delete_selected_button()
             assert self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
             ) in InboxPageMessages.NO_MESSAGES_SELECTED_BANNER_TEXT

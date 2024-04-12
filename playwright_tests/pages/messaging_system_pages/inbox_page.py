@@ -26,7 +26,7 @@ class InboxPage(BasePage):
     # Inbox messages.
     __inbox_messages = "//ol[@class='message-list']/li"
     __inbox_messages_section = "//ol[@class='message-list']"
-    __inbox_messages_delete_button = "//ol[@class='message-list']/li/a[@class='delete']"
+    __inbox_messages_delete_button = "//ol[@class='message-list']//a[@class='delete']"
     __inbox_delete_checkbox = ("//ol[@class='message-list']//a/ancestor::li/div[contains(@class, "
                                "'field checkbox no-label')]/label")
 
@@ -71,7 +71,7 @@ class InboxPage(BasePage):
         super()._hover_over_element(xpath_to_hover)
 
         xpath_delete_button = (
-            f"//ol[@class='message-list']//a[contains(text(),'{username}')]/ancestor::li"
+            f"//ol[@class='message-list']//a[contains(text(),'{username}')]/../.."
             f"/a[@class='delete']"
         )
         super()._click(xpath_delete_button)
@@ -128,7 +128,7 @@ class InboxPage(BasePage):
 
             inbox_elements_delete_button = super()._get_element_handles(
                 self.__inbox_messages_delete_button)
-            delete_button = inbox_elements_delete_button[counter]
+            delete_button = inbox_elements_delete_button[i]
 
             delete_button.click()
             self._click_on_delete_page_delete_button()
