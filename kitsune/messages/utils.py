@@ -3,8 +3,9 @@ from django.contrib.auth.models import Group
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.users.models import User
 from kitsune.messages.signals import message_sent
-from kitsune.messages.tasks import email_private_message
-from kitsune.users.models import Setting
+
+# from kitsune.messages.tasks import email_private_message
+# from kitsune.users.models import Setting
 
 
 def send_message(to, text=None, sender=None):
@@ -35,11 +36,11 @@ def send_message(to, text=None, sender=None):
         # Add the groups from the To field to the message
         outbox_message.to_group.set(groups)
 
-    set_of_user_pks_to_email_private_message = set(
-        Setting.objects.filter(
-            user__in=receivers, name="email_private_messages", value=True
-        ).values_list("user__pk", flat=True)
-    )
+    # set_of_user_pks_to_email_private_message = set(
+    #    Setting.objects.filter(
+    #        user__in=receivers, name="email_private_messages", value=True
+    #    ).values_list("user__pk", flat=True)
+    # )
 
     for recipient in receivers:
         inbox_message = InboxMessage.objects.create(sender=sender, to=recipient, message=text)
@@ -47,8 +48,8 @@ def send_message(to, text=None, sender=None):
         # we should also add the groups to their message as well
         if groups:
             inbox_message.to_group.set(groups)
-        if recipient.pk in set_of_user_pks_to_email_private_message:
-            email_private_message(inbox_message_id=inbox_message.id)
+        # if recipient.pk in set_of_user_pks_to_email_private_message:
+        #    email_private_message(inbox_message_id=inbox_message.id)
 
     message_sent.send(sender=InboxMessage, to=to, text=text, msg_sender=sender)
 
