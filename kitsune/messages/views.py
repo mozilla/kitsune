@@ -1,7 +1,7 @@
 import json
 
 from django.contrib import messages as contrib_messages
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
@@ -75,18 +75,19 @@ def new_message(request):
     elif request.method == "POST":
         form = MessageForm(request.POST, user=request.user)
         if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
-            receivers = {user for user in form.cleaned_data["to"] if isinstance(user, User)}
-            groups = [group for group in form.cleaned_data["to"] if isinstance(group, Group)]
-            prefetched_groups = Group.objects.filter(
-                pk__in=[group.pk for group in groups]
-            ).prefetch_related("user_set")
-
-            for group in prefetched_groups:
-                receivers.update(group.user_set.all())
+            if (
+                any(isinstance(obj, Group) for obj in form.cleaned_data["to"])
+                and not request.user.profile.in_staff_group
+            ):
+                contrib_messages.add_message(
+                    request,
+                    contrib_messages.ERROR,
+                    _("You can't send messages to groups. Please select only users."),
+                )
+                return render(request, "messages/new.html", {"form": form})
 
             send_message(
-                list(receivers),
-                to_group=groups,
+                form.cleaned_data["to"],
                 text=form.cleaned_data["message"],
                 sender=request.user,
             )

@@ -438,8 +438,8 @@ class UserCloseAccountTests(TestCase):
         # Populate inboxes and outboxes with messages between the user and other users.
         self.other_users = UserFactory.create_batch(2)
         for sender in self.other_users:
-            send_message([self.user], to_group="", text="foo", sender=sender)
-        send_message(self.other_users, to_group="", text="bar", sender=self.user)
+            send_message([self.user], text="foo", sender=sender)
+        send_message(self.other_users, text="bar", sender=self.user)
         super(UserCloseAccountTests, self).setUp()
 
     def tearDown(self):
