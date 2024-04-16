@@ -1,5 +1,5 @@
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.messages.utils import send_message
+from kitsune.messages.tasks import send_message
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 

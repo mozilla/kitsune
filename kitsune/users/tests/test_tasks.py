@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from kitsune.messages.utils import send_message
+from kitsune.messages.tasks import send_message
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import AccountEvent

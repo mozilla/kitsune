@@ -12,7 +12,7 @@ from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE
 from kitsune.messages.forms import MessageForm, ReplyForm
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.messages.utils import send_message
+from kitsune.messages.tasks import send_message
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited, paginate
 
@@ -85,8 +85,7 @@ def new_message(request):
                     _("You can't send messages to groups. Please select only users."),
                 )
                 return render(request, "messages/new.html", {"form": form})
-
-            send_message(
+            send_message.delay(
                 form.cleaned_data["to"],
                 text=form.cleaned_data["message"],
                 sender=request.user,

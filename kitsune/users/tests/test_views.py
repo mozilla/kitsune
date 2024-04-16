@@ -13,7 +13,7 @@ from josepy import jwa, jwk, jws
 from pyquery import PyQuery as pq
 
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.messages.utils import send_message
+from kitsune.messages.tasks import send_message
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
