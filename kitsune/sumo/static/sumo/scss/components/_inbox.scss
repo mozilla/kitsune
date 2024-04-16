@@ -1,17 +1,15 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-
 .message-list {
   border-top: 1px solid var(--color-border);
 
   &--item {
-
     display: grid;
     grid-gap: p.$spacing-xs 10px;
     grid-template-columns: 36px 1fr 30px;
     grid-template-areas:
-      "checkbox avatar  delete"
+      "checkbox avatar delete"
       "checkbox details delete";
     padding: p.$spacing-sm 0;
     border-bottom: 1px solid var(--color-border);
@@ -24,6 +22,18 @@
 
     .avatar-details {
       grid-area: avatar;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      span {
+        flex: 1;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
 
     .read {
@@ -66,7 +76,6 @@
       }
 
       .avatar-details {
-        width: 100%;
         flex: 0 0 auto;
       }
     }
@@ -81,6 +90,7 @@
 .avatar-details {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
 
   span {
@@ -97,15 +107,16 @@
     @include p.bidi(((margin, 0 12px 0 0, 0 0 0 12px),));
     flex: 0 0 auto;
     width: 44px;
+    max-width: 44px;
 
     img {
       width: 100%;
+      max-width: 40px;
       height: auto;
     }
   }
 
   .user, .group {
-
     a {
       color: var(--color-heading);
       text-decoration: none;
@@ -120,7 +131,7 @@
       font-weight: bold;
       color: var(--color-heading);
       text-decoration: none;
-      padding-right:5px;
+      padding-right: 5px;
     }
   }
 }
@@ -145,13 +156,14 @@ time {
 }
 
 .to, 
-.to-group {
+.to-group,
+.to-user {
   p {
-  margin: 0;
-  padding: 0;
-  font-weight: bold;
-  color: var(--color-heading);
-  text-decoration: none;
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+    color: var(--color-heading);
+    text-decoration: none;
   }
 }
 
