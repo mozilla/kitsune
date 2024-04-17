@@ -4,6 +4,7 @@ from playwright.sync_api import Page
 
 class KBArticleEditMetadata(BasePage):
     # Edit article metadata page locators.
+    __edit_article_metadata_error = "//ul[@class='errorlist']"
     __edit_article_metadata_page_header = "//h1[@class='sumo-page-heading']"
     __restrict_visibility_input_field = "//input[@id='id_restrict_to_groups-selectized']"
     __restricted_visibility_chosen_groups = ("//input[@id='id_restrict_to_groups-selectized"
@@ -24,6 +25,9 @@ class KBArticleEditMetadata(BasePage):
         super().__init__(page)
 
     # Edit article metadata page actions.
+    def _get_error_message(self) -> str:
+        return super()._get_text_of_element(self.__edit_article_metadata_error)
+
     def _get_edit_article_metadata_page_header(self) -> str:
         return super()._get_element_text_content(self.__edit_article_metadata_page_header)
 
@@ -47,15 +51,15 @@ class KBArticleEditMetadata(BasePage):
     def _delete_all_restricted_visibility_groups_metadata(self):
         super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
 
-    def _get_text_of_title_input_field(self):
-        return super()._get_text_of_element(self.__title_input_field)
+    def _get_text_of_title_input_field(self) -> str:
+        return super()._get_element_input_value(self.__title_input_field)
 
     def _add_text_to_title_field(self, text: str):
         super()._clear_field(self.__title_input_field)
         super()._fill(self.__title_input_field, text)
 
     def _get_slug_input_field(self) -> str:
-        return super()._get_text_of_element(self.__slug_input_field)
+        return super()._get_element_input_value(self.__slug_input_field)
 
     def _add_text_to_slug_field(self, text: str):
         super()._clear_field(self.__slug_input_field)
@@ -68,8 +72,8 @@ class KBArticleEditMetadata(BasePage):
         xpath = f"//div[@id='id_products']//label[text()='\n {option}']/input"
         return super()._is_checkbox_checked(xpath)
 
-    def _check_a_particular_checkbox(self, option: str):
-        xpath = f"//div[@id='id_products']//label[text()='\n {option}']/input"
+    def _check_a_particular_relevancy_option(self, option: str):
+        xpath = f"//div[@id='id_products']//label[normalize-space(text())='{option}']"
         super()._click(xpath)
 
     def _click_on_a_particular_topics_foldout_section(self, option: str):

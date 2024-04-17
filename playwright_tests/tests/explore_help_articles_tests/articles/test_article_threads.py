@@ -1143,19 +1143,15 @@ class TestArticleThreads(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+        self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True
+        )
 
         self.sumo_pages.kb_article_page._click_on_article_option()
         with open("test_data/test_article", 'w') as file:
             file.write(self.get_page_url())
 
         TestArticleThreads.article_url = self.get_page_url()
-
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        self.logger.info("Approving the revision")
-        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
     # Will perform a cleanup by deleting the test article at the end.
     # Need be executed after all other methods from this test class in th GH workflow file.

@@ -101,6 +101,10 @@ class KBArticleShowHistoryPage(BasePage):
         xpath = f"//tr[@id='{revision_id}']/td[@class='status']/span"
         return super()._get_text_of_element(xpath)
 
+    def _get_a_particular_revision_locator(self, revision_id) -> Locator:
+        xpath = f"//tr[@id='{revision_id}']"
+        return super()._get_element_locator(xpath)
+
     # For unreviewed revisions but user session permits review.
     def _get_status_of_reviewable_revision(self, revision_id):
         xpath = f"//tr[@id='{revision_id}']/td[@class='status']/a"

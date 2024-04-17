@@ -4,6 +4,7 @@ from playwright_tests.core.basepage import BasePage
 
 class KBArticlePage(BasePage):
     __kb_article_heading = "//h1[@class='sumo-page-heading']"
+    __kb_article_breadcrumbs_list = "//ol[@id='breadcrumbs']//a"
     __kb_article_restricted_banner = "//div[contains(@class,'warning-box')]"
     __kb_article_content = "//section[@id='doc-content']"
     __kb_article_content_approved_content = "//section[@id='doc-content']/p"
@@ -14,7 +15,9 @@ class KBArticlePage(BasePage):
     __editing_tools_article_option = "//a[text()='Article']"
     __editing_tools_edit_article_option = "//li/a[text()='Edit Article']"
     __editing_tools_edit_article_metadata_option = "//a[text()='Edit Article Metadata']"
+    __editing_tools_translate_article = "//a[text()='Translate Article']"
     __editing_tools_discussion_option = "//ul[@class='sidebar-nav--list']//a[text()='Discussion']"
+    __editing_tools_show_translations = "//a[text()='Show Translations']"
     __editing_tools_what_links_here = "//a[text()='What Links Here']"
     __editing_tools_show_history_option = "//a[contains(text(), 'Show History')]"
 
@@ -25,6 +28,9 @@ class KBArticlePage(BasePage):
     def _click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
         xpath = f"//ol[@id='breadcrumbs']//a[text()='{breadcrumb_name}']"
         super()._click(xpath)
+
+    def _get_text_of_all_breadcrumbs(self) -> list[str]:
+        return super()._get_text_of_elements(self.__kb_article_breadcrumbs_list)
 
     def _get_text_of_article_title(self) -> str:
         return super()._get_text_of_element(self.__kb_article_heading)
@@ -51,18 +57,39 @@ class KBArticlePage(BasePage):
     def _click_on_what_links_here_option(self):
         super()._click(self.__editing_tools_what_links_here)
 
+    def _get_what_links_here_locator(self):
+        return super()._get_element_locator(self.__editing_tools_what_links_here)
+
     # KB Article editing tools section actions.
     def _click_on_show_history_option(self):
         super()._click(self.__editing_tools_show_history_option)
 
+    def _get_show_history_option_locator(self):
+        return super()._get_element_locator(self.__editing_tools_show_history_option)
+
     def _click_on_edit_article_option(self):
         super()._click(self.__editing_tools_edit_article_option)
+
+    def _get_edit_article_option_locator(self):
+        return super()._get_element_locator(self.__editing_tools_edit_article_option)
 
     def _click_on_edit_article_metadata(self):
         super()._click(self.__editing_tools_edit_article_metadata_option)
 
+    def _get_edit_article_metadata_locator(self):
+        return super()._get_element_locator(self.__editing_tools_edit_article_metadata_option)
+
+    def _get_translate_article_option_locator(self):
+        return super()._get_element_locator(self.__editing_tools_translate_article)
+
+    def _get_show_translations_option_locator(self):
+        return super()._get_element_locator(self.__editing_tools_show_translations)
+
     def _click_on_article_option(self):
         super()._click(self.__editing_tools_article_option)
+
+    def _get_article_option_locator(self) -> Locator:
+        return super()._get_element_locator(self.__editing_tools_article_option)
 
     def _editing_tools_discussion_locator(self) -> Locator:
         return super()._get_element_locator(self.__editing_tools_discussion_option)

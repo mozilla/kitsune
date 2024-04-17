@@ -6,8 +6,6 @@ from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
     AddKbMediaFlow
-from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_revision_flow import \
-    AddKBArticleRevision
 from playwright_tests.flows.explore_articles_flows.article_flows.delete_kb_article_flow import \
     DeleteKbArticleFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.edit_article_meta_flow import \
@@ -183,9 +181,6 @@ class SumoPages:
 
         # KB article Flow
         self.submit_kb_article_flow = AddKbArticleFlow(page)
-
-        # KB article revision Flow
-        self.kb_article_revision_flow = AddKBArticleRevision(page)
 
         # KB article deletion Flow
         self.kb_article_deletion_flow = DeleteKbArticleFlow(page)

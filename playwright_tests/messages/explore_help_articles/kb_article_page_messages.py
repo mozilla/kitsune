@@ -21,3 +21,7 @@ class KBArticlePageMessages:
     KB_ARTICLE_RELEVANCY_ERROR = "Please select at least one product."
     KB_ARTICLE_TOPIC_ERROR = "Please select at least one topic."
     KB_ARTICLE_RESTRICTED_BANNER = "This document is restricted."
+
+    def get_template_error(self, article_title) -> str:
+        return (f'Documents in the Template category must have titles that start with '
+                f'"Template:". (Current title is "{article_title}")')

@@ -108,13 +108,11 @@ class TestRecentRevisionsDashboard(TestUtilities):
             ))
 
         with allure.step("Creating a new kb article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         article_url = self.get_page_url()
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        with allure.step("Approving the article revision"):
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         with allure.step("Signing in with a non-admin account"):
             self.logger.info("Signing in with a non admin account")
@@ -125,7 +123,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
         username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Creating a new revision for the article"):
-            second_revision = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
         with allure.step("Navigating to the Recent Revisions dashboard and verifying that own "
                          "revision is visible"):
@@ -174,7 +172,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
 
         with allure.step("Navigating to the article and approving the revision"):
             self.navigate_to_link(article_url)
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
                 second_revision['revision_id']
             )
             self.wait_for_given_timeout(1000)
@@ -244,17 +242,14 @@ class TestRecentRevisionsDashboard(TestUtilities):
         first_username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Creating a new kb article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         self.sumo_pages.kb_article_page._click_on_article_option()
         article_url = self.get_page_url()
 
-        with allure.step("Approving the first revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
-        with allure.step("Navigating to the recent revisions dahsboard and verifying that the "
+        with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                          "'Show Diff' option is not available for first revisions"):
             self.sumo_pages.top_navbar._click_on_recent_revisions_option()
             self.wait_for_given_timeout(3000)
@@ -271,7 +266,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))
             username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
-            second_revision = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
         with allure.step("Navigating to the recent revisions dashboard, signing out and clicking "
                          "on the revision date link and verifying that the user is redirected to"
@@ -349,7 +344,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2266240
+    # C2266240, C2243449
     @pytest.mark.recentRevisionsDashboard
     def test_recent_revisions_dashboard_title_and_username_update(self):
         with allure.step("Signing back in with the admin account"):
@@ -359,18 +354,14 @@ class TestRecentRevisionsDashboard(TestUtilities):
         first_username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Creating a new kb article"):
-            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
 
         self.sumo_pages.kb_article_page._click_on_article_option()
         article_url = self.get_page_url()
 
-        with allure.step("Approving the first article revision"):
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-            revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-            self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
-
         with allure.step("Changing the article title via the 'Edit Article Metadata' page"):
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                 title=self.kb_article_test_data['updated_kb_article_title'] + article_details
                 ['article_title']
