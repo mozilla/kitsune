@@ -58,8 +58,8 @@ def read_outbox(request, msgid):
 def outbox(request):
     user = request.user
     messages = OutboxMessage.objects.filter(sender=user).order_by("-created")
-
-    messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE)
+    count = messages.count()
+    messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 
     for msg in messages.object_list:
         _add_recipients(msg)
@@ -183,15 +183,9 @@ def _add_recipients(msg):
     msg.to_groups_count = len(groups)
 
     # Assign the recipient based on the number of recipients
-    if msg.recipients == 1:
-        msg.recipient = recipients[0]
-    else:
-        msg.recipient = None
+    msg.recipient = recipients[0] if len(recipients) == 1 else None
 
     # Assign the group(s) based on the number of groups
-    if msg.to_groups_count == 1:
-        msg.to_groups = groups[0]
-    else:
-        msg.to_groups = groups
+    msg.to_groups = groups[0] if len(groups) == 1 else groups
 
     return msg
