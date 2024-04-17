@@ -58,8 +58,9 @@ def read_outbox(request, msgid):
 def outbox(request):
     user = request.user
     messages = OutboxMessage.objects.filter(sender=user).order_by("-created")
+    count = messages.count()
 
-    messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE)
+    messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 
     for msg in messages.object_list:
         _add_recipients(msg)
@@ -175,23 +176,19 @@ def preview_async(request):
 
 def _add_recipients(msg):
     # Fetch all recipients and groups at once
-    recipients = list(msg.to.all())
-    groups = list(msg.to_group.all())
-
-    # Set the counts based on the lists
-    msg.recipients = len(recipients)
-    msg.to_groups_count = len(groups)
+    msg.recipients = msg.to.count()
+    msg.to_groups_count = msg.to_group.count()
 
     # Assign the recipient based on the number of recipients
     if msg.recipients == 1:
-        msg.recipient = recipients[0]
+        msg.recipient = msg.to.first()
     else:
         msg.recipient = None
 
     # Assign the group(s) based on the number of groups
     if msg.to_groups_count == 1:
-        msg.to_groups = groups[0]
+        msg.to_groups = msg.to_group.first()
     else:
-        msg.to_groups = groups
+        msg.to_groups = msg.to_group.all()
 
     return msg
