@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-
+from django.db.models import Prefetch
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.users.models import User
 from kitsune.messages.signals import message_sent
@@ -18,38 +18,39 @@ def send_message(to, text=None, sender=None):
     # We need a sender, a message, and someone to send it to
     if not sender or not text or not to:
         return
-    # This is users from the To field
-    users = {user for user in to if isinstance(user, User)}
-    # This is groups from the To field
-    groups = {group for group in to if isinstance(group, Group)}
-    # This is all the users that are going to receive the message
-    receivers = users | set(User.objects.filter(groups__in=groups).distinct())
+    # Prepare querysets for users and groups directly and efficiently
+    users_qs = User.objects.filter(
+        username__in=[obj.username for obj in to if isinstance(obj, User)]
+    )
+    groups_qs = Group.objects.filter(name__in=[obj.name for obj in to if isinstance(obj, Group)])
 
+    # Prefetch group members and reduce DB hits
+    groups_qs = groups_qs.prefetch_related(Prefetch("user_set"))
+
+    # Resolve all unique users, including those in groups
+    users = set(users_qs)
+    for group in groups_qs:
+        users.update(group.user_set.all())
+
+    # Create the outbox message
     outbox_message = OutboxMessage.objects.create(sender=sender, message=text)
-    # Add the users from the To field to the outbox message, not all the users
-    # that are going to receive the message - this way we don't overwhelm the
-    # message UI
     outbox_message.to.set(users)
+    outbox_message.to_group.set(groups_qs)
 
-    if groups:
-        # Add the groups from the To field to the message
-        outbox_message.to_group.set(groups)
-
-    set_of_user_pks_to_email_private_message = set(
+    # Fetch settings for email notifications in one go
+    users_to_email = set(
         Setting.objects.filter(
-            user__in=receivers, name="email_private_messages", value=True
-        ).values_list("user__pk", flat=True)
+            user__in=users, name="email_private_messages", value=True
+        ).values_list("user__id", flat=True)
     )
 
-    for recipient in receivers:
-        inbox_message = InboxMessage.objects.create(sender=sender, to=recipient, message=text)
-        # If we had a user, and we made them an inbox message,
-        # we should also add the groups to their message as well
-        if groups:
-            inbox_message.to_group.set(groups)
-        if recipient.pk in set_of_user_pks_to_email_private_message:
+    # Create inbox messages and handle emails
+    for user in users:
+        inbox_message = InboxMessage.objects.create(sender=sender, to=user, message=text)
+        if user.id in users_to_email:
             email_private_message(inbox_message_id=inbox_message.id)
 
+    # Send a signal if needed
     message_sent.send(sender=InboxMessage, to=to, text=text, msg_sender=sender)
 
 

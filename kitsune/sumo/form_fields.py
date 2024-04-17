@@ -96,17 +96,19 @@ class MultiUsernameOrGroupnameField(forms.Field):
                 return []
 
         # Split names, strip whitespace, and filter out any empty strings
-        names = [name.strip() for name in value.split(",") if name.strip()]
+        # Using set to remove duplicates
+        names = {name.strip() for name in value.split(",") if name.strip()}
 
         # Find users and groups in a single query each
-        users = User.objects.filter(username__in=names)
-        groups = Group.objects.filter(name__in=names)
-
-        users_and_groups = list(users) + list(groups)
+        users_and_groups = list(User.objects.filter(username__in=names)) + list(
+            Group.objects.filter(name__in=names)
+        )
 
         # Check if all names were found
-        found_names = set([obj.username for obj in users] + [obj.name for obj in groups])
-        missing_names = set(names) - found_names
+        found_names = {
+            obj.username if isinstance(obj, User) else obj.name for obj in users_and_groups
+        }
+        missing_names = names - found_names
 
         if missing_names:
             raise ValidationError(
