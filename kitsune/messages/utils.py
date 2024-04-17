@@ -28,24 +28,27 @@ def send_message(to, text=None, sender=None):
     groups_qs = groups_qs.prefetch_related(Prefetch("user_set"))
 
     # Resolve all unique users, including those in groups
-    users = set(users_qs)
+    # but keep up with users from groups
+    to_users = set(users_qs)
+    group_users = set()
     for group in groups_qs:
-        users.update(group.user_set.all())
+        group_users.update(group.user_set.all())
+    all_recipients_of_message = to_users.union(group_users)
 
     # Create the outbox message
     outbox_message = OutboxMessage.objects.create(sender=sender, message=text)
-    outbox_message.to.set(users)
+    outbox_message.to.set(to_users)
     outbox_message.to_group.set(groups_qs)
 
     # Fetch settings for email notifications in one go
     users_to_email = set(
         Setting.objects.filter(
-            user__in=users, name="email_private_messages", value=True
+            user__in=all_recipients_of_message, name="email_private_messages", value=True
         ).values_list("user__id", flat=True)
     )
 
     # Create inbox messages and handle emails
-    for user in users:
+    for user in all_recipients_of_message:
         inbox_message = InboxMessage.objects.create(sender=sender, to=user, message=text)
         if user.id in users_to_email:
             email_private_message(inbox_message_id=inbox_message.id)

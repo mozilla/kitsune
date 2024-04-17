@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import Group
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -20,12 +21,20 @@ from kitsune.sumo.utils import is_ratelimited, paginate
 @login_required
 def inbox(request):
     user = request.user
-    messages = InboxMessage.objects.filter(to=user).order_by("-created")
+    messages = (
+        InboxMessage.objects.filter(to=user)
+        .order_by("-created")
+        .prefetch_related("sender__profile")
+    )
     count = messages.count()
 
     messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 
-    return render(request, "messages/inbox.html", {"msgs": messages})
+    return render(
+        request,
+        "messages/inbox.html",
+        {"msgs": messages, "default_avatar": settings.DEFAULT_AVATAR},
+    )
 
 
 @login_required
@@ -36,7 +45,11 @@ def read(request, msgid):
         message.update(read=True)
     initial = {"to": message.sender, "in_reply_to": message.pk}
     form = ReplyForm(initial=initial)
-    response = render(request, "messages/read.html", {"message": message, "form": form})
+    response = render(
+        request,
+        "messages/read.html",
+        {"message": message, "form": form, "default_avatar": settings.DEFAULT_AVATAR},
+    )
     return response
 
 
@@ -57,7 +70,11 @@ def read_outbox(request, msgid):
 @login_required
 def outbox(request):
     user = request.user
-    messages = OutboxMessage.objects.filter(sender=user).order_by("-created")
+    messages = (
+        OutboxMessage.objects.filter(sender=user)
+        .order_by("-created")
+        .prefetch_related("to", "to_group")
+    )
     count = messages.count()
     messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 

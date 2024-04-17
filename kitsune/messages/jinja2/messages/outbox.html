@@ -1,5 +1,5 @@
 {% extends "messages/base.html" %}
-{% from "messages/includes/macros.html" import avatar_link, name_link %}
+{% from "messages/includes/macros.html" import name_link %}
 {% set title = _('Sent Messages') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')),
                  (None, title)] %}
@@ -37,7 +37,6 @@
                     <b>{{ _('Message') }}</b>
                 </span>
                 <span class="delete-button">
-                 
                 </span>
                 </div>
               </li>
@@ -58,7 +57,7 @@
                           {%- if name -%}
                             {{ name }}
                           {%- else -%}
-                            {{ display_name(user) }}
+                            {{ user.profile.display_name }}
                           {%- endif %}
                           {%- if not loop.last -%},{%- endif -%}
                         </a>
@@ -75,7 +74,10 @@
                       {% if message.to_group %}
                         {% if message.to_groups_count > 0 -%}
                           {%- for group in message.to_group.all()[:3] -%}
-                            {{ group_link(group) }}
+                            {%- for profile in group.profile.all() -%}
+                              {% set group_slug = profile.slug %}
+                              <a href="{{ url('groups.profile', group_slug) }}">{{ group }}</a>
+                            {%- endfor -%}
                             {%- if not loop.last -%},{%- endif -%}
                           {% endfor %}
                           {%- if message.to_groups_count > 3 -%}
