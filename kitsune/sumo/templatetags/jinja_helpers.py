@@ -45,6 +45,11 @@ class DateTimeFormatError(Exception):
     pass
 
 
+library.global_function(webpack_static)
+library.global_function(is_trusted_user)
+library.global_function(in_staff_group)
+
+
 @library.filter
 def paginator(pager):
     """Render list of pages."""
@@ -556,8 +561,3 @@ def show_header_fx_download(context):
         return product.slug != "firefox"
     else:
         return True
-
-
-library.global_function(webpack_static)
-library.global_function(is_trusted_user)
-library.global_function(in_staff_group)
