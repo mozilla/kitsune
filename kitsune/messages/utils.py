@@ -48,10 +48,16 @@ def send_message(to, text=None, sender=None):
     )
 
     # Create inbox messages and handle emails
-    for user in all_recipients_of_message:
-        inbox_message = InboxMessage.objects.create(sender=sender, to=user, message=text)
-        if user.id in users_to_email:
-            email_private_message(inbox_message_id=inbox_message.id)
+
+    inbox_messages = [
+        InboxMessage(sender=sender, to=user, message=text) for user in all_recipients_of_message
+    ]
+    messages = InboxMessage.objects.bulk_create(inbox_messages)
+
+    # Send emails to users who want them
+    for message in messages:
+        if message.to.id in users_to_email:
+            email_private_message(inbox_message_id=message.id)
 
     # Send a signal if needed
     message_sent.send(sender=InboxMessage, to=to, text=text, msg_sender=sender)
