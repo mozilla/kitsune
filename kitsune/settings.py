@@ -731,7 +731,7 @@ SESSION_SERIALIZER = config(
 )
 
 
-# Our group with permissions to see hidden docs and message groups
+# Our group with the power to see hidden docs and message groups.
 STAFF_GROUP = "Staff"
 
 # CSRF

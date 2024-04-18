@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Exists, OuterRef, Q
 
+from kitsune.sumo.utils import in_staff_group
 from kitsune.wiki.permissions import can_delete_documents_or_review_revisions
 
 
@@ -32,7 +33,7 @@ class VisibilityManager(models.Manager):
         restricted. A translation (i.e., a document with a parent), follows its
         parent's restrictions.
         """
-        if user and (user.is_staff or user.is_superuser):
+        if user and (user.is_superuser or in_staff_group(user)):
             # Staff and superusers are never restricted.
             return self.filter(**kwargs)
 
@@ -89,8 +90,8 @@ class VisibilityManager(models.Manager):
             return qs.filter(**{f"{prefix}current_revision__isnull": False})
 
         if not (
-            user.is_staff
-            or user.is_superuser
+            user.is_superuser
+            or in_staff_group(user)
             or can_delete_documents_or_review_revisions(user, locale=locale)
         ):
             # Authenticated users without permission to see documents that

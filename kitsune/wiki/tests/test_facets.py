@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -22,7 +23,7 @@ class TestFacetHelpers(TestCase):
         self.group4 = GroupFactory(name="group4")
         self.user1 = UserFactory(groups=[self.group1, self.group4])
         self.user2 = UserFactory(groups=[self.group2, self.group3])
-        self.staff = UserFactory(is_staff=True)
+        self.staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self.anonymous = AnonymousUser()
 
         # Create products

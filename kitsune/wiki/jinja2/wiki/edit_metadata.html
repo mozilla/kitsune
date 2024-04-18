@@ -33,7 +33,7 @@
           {{ errorlist(document_form) }}
           <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
             {% csrf_token %}
-            {% if request.user.is_staff %}
+            {% if in_staff_group(request.user) %}
               <div class="mzp-c-emphasis-box field">
                 <fieldset>
                     <legend>{{ _("Restrict Visibility") }}</legend>

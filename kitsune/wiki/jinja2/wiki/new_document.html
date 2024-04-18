@@ -21,7 +21,7 @@
         <form action="" method="post" data-json-url="{{ url('wiki.json') }}" id="id_new_document_form">
           {% csrf_token %}
           <ul>
-            {% if request.user.is_staff %}
+            {% if in_staff_group(request.user) %}
             <li class="mzp-c-emphasis-box field has-large-textarea">
               <fieldset>
                   <legend>{{ _("Restrict Visibility") }}</legend>

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
@@ -9,9 +11,9 @@ class TestDocumentViews(TestCase):
         super().setUp()
         self.group1 = GroupFactory(name="group1")
         self.group2 = GroupFactory(name="group2")
-        self.group3 = GroupFactory(name="staff")
+        self.group3 = GroupFactory(name="group3")
         self.user1 = UserFactory(groups=[self.group1, self.group2])
-        self.staff = UserFactory(is_staff=True, groups=[self.group3])
+        self.staff = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self.doc1 = DocumentFactory()
         self.doc2 = ApprovedRevisionFactory().document
         self.doc3 = ApprovedRevisionFactory(document__restrict_to_groups=[self.group3]).document

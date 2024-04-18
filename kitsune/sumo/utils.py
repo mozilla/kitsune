@@ -353,20 +353,20 @@ def webpack_static(source_path):
         return url
 
 
-def is_trusted_user(user: User) -> bool:
+def is_trusted_user(user: User | None) -> bool:
     """Given a user ID, checks for group membership.
 
     If a user belongs to one of the trusted groups as defined in the project
     settings, then is considered a trusted user.
     """
-    if not user or not user.is_authenticated:
-        return False
-    return any(
-        [
-            user.groups.filter(name__in=settings.TRUSTED_GROUPS).exists(),
-            user.is_superuser,
-            user.is_staff,
-        ]
+    return bool(
+        user
+        and user.is_authenticated
+        and (
+            user.is_superuser
+            or user.profile.in_staff_group
+            or user.groups.filter(name__in=settings.TRUSTED_GROUPS).exists()
+        )
     )
 
 

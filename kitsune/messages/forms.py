@@ -21,7 +21,7 @@ class MessageForm(forms.Form):
         self.user = kwargs.pop("user")
         super(MessageForm, self).__init__(*args, **kwargs)
 
-        # If the user is_staff, the placholder text needs to be updated
+        # If the user is a member of the staff group, the placholder text needs to be updated.
         if self.user and self.user.profile.in_staff_group:
             self.fields["to"].widget.attrs["placeholder"] = "Search for Users or Groups"
 
