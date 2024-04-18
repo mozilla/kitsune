@@ -71,7 +71,7 @@
                   </span>
                   {% if in_staff_group(request.user) %}
                     <span class="to group">
-                      {% if message.to_group %}
+                      {% if message.to_groups %}
                         {% if message.to_groups_count > 0 -%}
                           {%- for group in message.to_group.all()[:3] -%}
                             {%- for profile in group.profile.all() -%}

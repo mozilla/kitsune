@@ -34,7 +34,6 @@ class InboxMessage(ModelBase):
     """A message in a user's private message inbox."""
 
     to = models.ForeignKey(User, on_delete=models.CASCADE, related_name="inbox")
-    to_group = models.ManyToManyField(Group, null=True, blank=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
     created = models.DateTimeField(default=datetime.now, db_index=True)

@@ -191,18 +191,14 @@ def preview_async(request):
 
 
 def _add_recipients(msg):
-    # Fetch all recipients and groups at once
-    recipients = list(msg.to.all())
-    groups = list(msg.to_group.all())
-
     # Set the counts based on the lists
-    msg.recipients = len(recipients)
-    msg.to_groups_count = len(groups)
+    msg.recipients = msg.to.all().count()
+    msg.to_groups_count = msg.to_group.all().count()
 
     # Assign the recipient based on the number of recipients
-    msg.recipient = recipients[0] if len(recipients) == 1 else None
+    msg.recipient = msg.to.all()[0] if msg.recipients == 1 else None
 
     # Assign the group(s) based on the number of groups
-    msg.to_groups = groups[0] if len(groups) == 1 else groups
+    msg.to_groups = msg.to_group.all()[0] if msg.to_groups_count == 1 else msg.to_group.all()
 
     return msg
