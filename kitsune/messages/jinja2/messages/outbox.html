@@ -51,42 +51,31 @@
                     <p>{{ datetimeformat(message.created) }}</p>
                   </span>
                   <span class="to user">
-                    {% if message.recipients > 1 -%}
-                      {% for user in message.to.all()[:3] -%}
-                        <a rel="nofollow" href="{{ profile_url(user) }}">
-                          {%- if name -%}
-                            {{ name }}
-                          {%- else -%}
-                            {{ user.profile.display_name }}
-                          {%- endif %}
-                          {%- if not loop.last -%},{%- endif -%}
-                        </a>
-                      {% endfor %}
-                      {% if message.recipients >= 3 -%}
-                      ...
-                      {% endif %}
-                    {% else %}
-                      {{ name_link(message.recipient) }}
-                    {%- endif %}
+
+                  {% for user in message.to.all()[:1] -%}
+                    <a rel="nofollow" href="{{ profile_url(user) }}">
+                      {%- if name -%}
+                        {{ name }}
+                      {%- else -%}
+                        {{ user.profile.display_name }}
+                      {%- endif -%}
+                    {%- if message.recipients_count>1 -%}, ...{% endif %}
+                    </a>
+                  {% else %}
+                   {{ _('None') }}
+                  {%- endfor %}
                   </span>
                   {% if in_staff_group(request.user) %}
                     <span class="to group">
-                      {% if message.to_groups %}
-                        {% if message.to_groups_count > 0 -%}
-                          {%- for group in message.to_group.all()[:3] -%}
-                            {%- for profile in group.profile.all() -%}
-                              {% set group_slug = profile.slug %}
-                              <a href="{{ url('groups.profile', group_slug) }}">{{ group }}</a>
-                            {%- endfor -%}
-                            {%- if not loop.last -%},{%- endif -%}
-                          {% endfor %}
-                          {%- if message.to_groups_count > 3 -%}
-                          ...
-                          {% endif %}
+                        {%- for group in message.to_groups[:1] -%}
+                          {%- for profile in group.profile.all() -%}
+                            {% set group_slug = profile.slug %}
+                            <a href="{{ url('groups.profile', group_slug) }}">{{ group }}</a>
+                          {%- endfor -%}
+                          {% if message.to_groups_count>1 %}, ...{% endif %}
                         {% else %}
                           {{ _('None') }}
-                        {% endif %}
-                      {% endif %}
+                        {% endfor %}
                     </span>
                   {% endif %}
                 <span class="message-view">

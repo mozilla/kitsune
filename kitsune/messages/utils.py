@@ -26,20 +26,15 @@ def send_message(to, text=None, sender=None):
         else:
             groups.append(obj)
 
-    # User pks from to field users
-    to_users = set(User.objects.filter(username__in=users).values_list("id", flat=True))
-
-    # Group users' pks only - could be a lot of them
-    group_users = set(User.objects.filter(groups__in=groups).values_list("id", flat=True))
-
     # Resolve all unique user ids, including those in groups
     # We need to keep group_users separate for email notifications
-    all_recipients_of_message = to_users.union(group_users)
+    all_recipients_of_message = set(user.id for user in users) | set(
+        User.objects.filter(groups__in=groups).values_list("id", flat=True)
+    )
 
     # Create the outbox message
     outbox_message = OutboxMessage.objects.create(sender=sender, message=text)
-    to_users = User.objects.filter(id__in=to_users)
-    outbox_message.to.set(to_users)
+    outbox_message.to.set(users)
     outbox_message.to_group.set(groups)
 
     # Fetch settings for email notifications in one go
@@ -47,7 +42,7 @@ def send_message(to, text=None, sender=None):
     # listed in 'to' field, not to users who are from groups
     users_to_email = set(
         Setting.objects.filter(
-            user__in=to_users, name="email_private_messages", value=True
+            user__in=users, name="email_private_messages", value=True
         ).values_list("user__id", flat=True)
     )
 
