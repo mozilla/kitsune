@@ -14,7 +14,7 @@
       {% endif %}
     </section>
     <section id="main-area">
-      {% if in_staff_group(user) and user.has_perm('groups.change_groupprofile') %}
+      {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
         <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
       {% endif %}
       <h1>{{ profile.group.name }}</h1>

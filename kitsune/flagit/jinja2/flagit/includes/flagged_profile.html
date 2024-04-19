@@ -11,7 +11,7 @@
 <h3 class="sumo-page-intro">{{ _('Take Action:') }}</h3>
 <div class="actions sumo-button-wrap">
   <a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">View</a>
-  {% if user.has_perm('profile.change_profile') %}
+  {% if user.is_staff and user.has_perm('profile.change_profile') %}
     <a class="sumo-button button-sm edit" href="{{ url('admin:users_profile_change', object.object_id) }}">{{ _('Edit') }}</a>
   {% endif %}
 </div>
