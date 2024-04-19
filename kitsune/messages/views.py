@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import Group
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -20,12 +21,20 @@ from kitsune.sumo.utils import is_ratelimited, paginate
 @login_required
 def inbox(request):
     user = request.user
-    messages = InboxMessage.objects.filter(to=user).order_by("-created")
+    messages = (
+        InboxMessage.objects.filter(to=user)
+        .order_by("-created")
+        .prefetch_related("sender__profile")
+    )
     count = messages.count()
 
     messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 
-    return render(request, "messages/inbox.html", {"msgs": messages})
+    return render(
+        request,
+        "messages/inbox.html",
+        {"msgs": messages, "default_avatar": settings.DEFAULT_AVATAR},
+    )
 
 
 @login_required
@@ -36,7 +45,11 @@ def read(request, msgid):
         message.update(read=True)
     initial = {"to": message.sender, "in_reply_to": message.pk}
     form = ReplyForm(initial=initial)
-    response = render(request, "messages/read.html", {"message": message, "form": form})
+    response = render(
+        request,
+        "messages/read.html",
+        {"message": message, "form": form, "default_avatar": settings.DEFAULT_AVATAR},
+    )
     return response
 
 
@@ -57,9 +70,13 @@ def read_outbox(request, msgid):
 @login_required
 def outbox(request):
     user = request.user
-    messages = OutboxMessage.objects.filter(sender=user).order_by("-created")
-
-    messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE)
+    messages = (
+        OutboxMessage.objects.filter(sender=user)
+        .order_by("-created")
+        .prefetch_related("to", "to_group")
+    )
+    count = messages.count()
+    messages = paginate(request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 
     for msg in messages.object_list:
         _add_recipients(msg)
@@ -174,24 +191,18 @@ def preview_async(request):
 
 
 def _add_recipients(msg):
-    # Fetch all recipients and groups at once
-    recipients = list(msg.to.all())
-    groups = list(msg.to_group.all())
-
     # Set the counts based on the lists
-    msg.recipients = len(recipients)
-    msg.to_groups_count = len(groups)
+    msg.recipients_count = msg.to.all().count()
+    msg.to_groups_count = msg.to_group.all().count()
 
     # Assign the recipient based on the number of recipients
-    if msg.recipients == 1:
-        msg.recipient = recipients[0]
-    else:
-        msg.recipient = None
+    msg.recipient = msg.to.all()[0] if msg.recipients_count == 1 else None
 
     # Assign the group(s) based on the number of groups
-    if msg.to_groups_count == 1:
-        msg.to_groups = groups[0]
-    else:
-        msg.to_groups = groups
+    msg.to_groups = (
+        msg.to_group.prefetch_related("profile").all()[:1]
+        if msg.to_groups_count == 1
+        else list(msg.to_group.prefetch_related("profile"))
+    )
 
     return msg

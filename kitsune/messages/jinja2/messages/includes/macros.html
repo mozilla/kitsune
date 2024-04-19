@@ -1,12 +1,12 @@
 {% from "includes/common_macros.html" import content_editor with context %}
 
-{% macro avatar_link(user=None) -%}
+{% macro avatar_link(user=None, default_avatar=None) -%}
   {% if user %}
     <a rel="nofollow" href="{{ profile_url(user) }}">
       <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ display_name(user) }}" />
     </a>
   {% else %}
-    <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ _('System') }}" />
+    <img src="{{ default_avatar }}" height="48" width="48" alt="{{ _('None') }}" />
   {% endif %}
 {%- endmacro %}
 
@@ -14,7 +14,7 @@
   {% if user -%}
     <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
   {%- else -%}
-    {{ name if name else _('System') }}
+    {{ name if name else _('None') }}
   {%- endif %}
 {%- endmacro %}
 
@@ -39,7 +39,7 @@
 <section class="avatar-row">
   <div class="avatar-details user-meta">
     <div class="avatar">
-      {{ avatar_link(message.sender) }}
+      {{ avatar_link(message.sender, default_avatar) }}
     </div>
     <div class="user from">
       {{ name_link(message.sender) }} {{ datetimeformat(message.created) }}
