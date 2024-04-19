@@ -83,8 +83,7 @@
                           {%- if message.to_groups_count > 3 -%}
                           ...
                           {% endif %}
-                        {% endif %}
-                        {% if message.to_groups_count < 1 -%}
+                        {% else %}
                           {{ _('None') }}
                         {% endif %}
                       {% endif %}
