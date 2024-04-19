@@ -1,0 +1,87 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.inbox-table {
+    display: grid;
+    grid-template-columns: 40px 45px auto auto auto auto; // Adjust sizes as needed
+    grid-gap: 10px;
+    width: 100%;
+    
+    .email-row {
+        display: contents;
+        
+        .email-cell {
+            padding: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+
+        .field {
+            margin-right: 20px;
+            grid-area: checkbox;
+            align-self: center;
+        }
+
+        &.header {
+            .email-cell {
+                font-weight: bold;
+                background-color: #eef;
+            }
+        }
+    }
+}
+
+
+.outbox-table {
+    display: grid;
+    grid-template-columns: 40px auto auto auto 1fr; // Adjust sizes as needed
+    grid-gap: 10px;
+    width: 100%;
+    
+    .email-row {
+        display: contents;
+        
+        .email-cell {
+            padding: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+
+        .field {
+            margin-right: 20px;
+            grid-area: checkbox;
+            align-self: center;
+        }
+
+        &.header {
+            .email-cell {
+                font-weight: bold;
+                background-color: #eef;
+            }
+        }
+    }
+}
+// Responsive adjustments
+@media (max-width: 600px) {
+    .outbox-table {
+        grid-template-columns: 40px 2fr 3fr; // Simplify layout for small screens
+        
+        .email-cell {
+            &:nth-child(3), // To
+            &:nth-child(4) { // To Groups
+                display: none; // Hide less important columns on small screens
+            }
+        }
+    }
+    .inbox-table {
+        grid-template-columns: 40px 1fr 3fr; // Simplify layout for small screens
+        
+        .email-cell {
+            &:nth-child(2), // Avatar
+            &:nth-child(4), // Date
+            &:nth-child(6) { // Delete X
+                display: none; // Hide less important columns on small screens
+            }
+        }
+    }
+}
