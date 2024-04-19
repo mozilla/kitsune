@@ -59,7 +59,7 @@
                       {%- else -%}
                         {{ user.profile.display_name }}
                       {%- endif -%}
-                    {%- if message.recipients_count>1 -%}, ...{% endif %}
+                    {%- if message.recipients_count > 1 -%}, ...{% endif %}
                     </a>
                   {% else %}
                    {{ _('None') }}
@@ -69,10 +69,9 @@
                     <span class="to group">
                         {%- for group in message.to_groups[:1] -%}
                           {%- for profile in group.profile.all() -%}
-                            {% set group_slug = profile.slug %}
-                            <a href="{{ url('groups.profile', group_slug) }}">{{ group }}</a>
+                            <a href="{{ url('groups.profile', profile.slug) }}">{{ group }}</a>
                           {%- endfor -%}
-                          {% if message.to_groups_count>1 %}, ...{% endif %}
+                          {% if message.to_groups_count > 1 %}, ...{% endif %}
                         {% else %}
                           {{ _('None') }}
                         {% endfor %}
