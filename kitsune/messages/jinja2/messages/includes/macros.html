@@ -52,27 +52,27 @@
 
 {% macro outbox_message(message) -%}
   <span class="to">
-  {% if message.recipient %}
+  {% if message.recipients_count > 0 %}
     <p><strong>{{ _('To') }}:</strong>
-      {% if message.recipients > 1 -%}
-        {% set comma = joiner(', ') %}
-        {% for user in message.to.all() -%}
-          {{ comma() }}
-          {{ name_link(user) }}
-        {%- endfor %}
-      {% else %}
-        {{ name_link(message.recipient) }}
-      {% endif %}
+    {% set comma = joiner(', ') %}
+    {% for user in message.to.all() -%}
+        {{ comma() }}
+        {{ name_link(user) }}
+    {% else %}
+      {{ name_link(message.recipient) }}
+    {% endfor %}
     </p>
   {% endif %}
   </span>
-  {% if in_staff_group(request.user) and message.to_group %}
+  {% if in_staff_group(request.user) and message.to_groups_count > 0 %}
     <span class="to-group">
       <p><strong>{{ _('To Groups') }}:</strong> 
       {% set comma = joiner(', ') %}
-      {% for group in message.to_group.all() -%}
-        {{ comma() }}
-        {{ group_link(group) }}
+      {% for group in message.to_groups -%}
+        {%- for profile in group.profile.all() -%}
+          {{ comma() }}
+          <a href="{{ url('groups.profile', profile.slug) }}">{{ group }}</a>
+        {% endfor %}
       {% endfor %}
       </p>
     </span>
