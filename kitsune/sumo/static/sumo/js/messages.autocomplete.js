@@ -59,7 +59,7 @@ import { safeString, safeInterpolate } from "sumo/js/main";
     initAutocomplete({
       selector: '.user-autocomplete',
       apiEndpoint: $('body').data('messages-api'),
-      valueField: 'name',
+      valueField: 'type_and_name',
       displayField: 'name',
       hintText: 'Search for a user or group. Group mail requires Staff group membership.',
       placeholder: 'Type a user or group name',

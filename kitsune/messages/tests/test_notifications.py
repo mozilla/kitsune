@@ -35,7 +35,11 @@ class NotificationsTests(TestCase):
         assert Setting.get_for_user(self.to, "email_private_messages")
 
         self.client.login(username=self.sender.username, password="testpass")
-        post(self.client, "messages.new", {"to": self.to, "message": "a message"})
+        post(
+            self.client,
+            "messages.new",
+            {"to": f"User: {self.to}", "message": "a message"},
+        )
         subject = "[SUMO] You have a new private message from [{sender}]"
 
         attrs_eq(
@@ -62,6 +66,10 @@ class NotificationsTests(TestCase):
         assert not Setting.get_for_user(self.to, "email_private_messages")
 
         self.client.login(username=self.sender.username, password="testpass")
-        post(self.client, "messages.new", {"to": self.to, "message": "a message"})
+        post(
+            self.client,
+            "messages.new",
+            {"to": f"User: {self.to}", "message": "a message"},
+        )
 
         assert not mail.outbox

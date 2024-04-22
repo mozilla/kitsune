@@ -25,6 +25,17 @@ class MessageForm(forms.Form):
         if self.user and self.user.profile.in_staff_group:
             self.fields["to"].widget.attrs["placeholder"] = "Search for Users or Groups"
 
+    def clean_to(self):
+        """Ensure that all usernames and group names are valid."""
+        to = self.cleaned_data["to"]
+
+        if not to["users"] and not to["groups"]:
+            raise forms.ValidationError("Please select at least one user or group.")
+        if to["groups"] and not self.user.profile.in_staff_group:
+            raise forms.ValidationError("You are not allowed to send messages to groups.")
+
+        return to
+
 
 class ReplyForm(forms.Form):
     """Form to reply to a private message."""

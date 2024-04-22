@@ -1,5 +1,6 @@
+from django.contrib.auth.models import Group, User
+
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.users.models import User
 from kitsune.messages.signals import message_sent
 from kitsune.messages.tasks import email_private_message
 from kitsune.users.models import Setting
@@ -7,28 +8,24 @@ from kitsune.users.models import Setting
 
 def send_message(to, text=None, sender=None):
     """Send a private message.
-
-    :arg to: Users or Groups to send the message to
-    :arg sender: the User who is sending the message
-    :arg text: the message text
+    :arg to: A dictionary with two keys, 'users' and 'groups',
+            each containing a list usernames or group names.
     """
 
     # We need a sender, a message, and someone to send it to
     if not sender or not text or not to:
         return
-    # User pks from users in To field
-    users = []
-    groups = []
-
-    for obj in to:
-        if isinstance(obj, User):
-            users.append(obj)
-        else:
-            groups.append(obj)
 
     # Resolve all unique user ids, including those in groups
-    # We need to keep group_users separate for email notifications
-    all_recipients_of_message = set(user.id for user in users) | set(
+    # We need to keep group users separate for email notifications
+
+    to_users = to.get("users", [])
+    to_groups = to.get("groups", [])
+
+    users = User.objects.filter(username__in=to_users) if to_users else User.objects.none()
+    groups = Group.objects.filter(name__in=to_groups) if to_groups else Group.objects.none()
+
+    all_recipients_of_message = set(users.values_list("id", flat=True)) | set(
         User.objects.filter(groups__in=groups).values_list("id", flat=True)
     )
 

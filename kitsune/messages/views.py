@@ -2,7 +2,6 @@ import json
 
 from django.conf import settings
 from django.contrib import messages as contrib_messages
-from django.contrib.auth.models import Group
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
@@ -86,37 +85,22 @@ def outbox(request):
 
 @login_required
 def new_message(request):
-    """Send a new private message."""
-    if request.method == "GET":
-        form = MessageForm(initial=request.GET.dict(), user=request.user)
-    elif request.method == "POST":
-        form = MessageForm(request.POST, user=request.user)
-        if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
-            if (
-                any(isinstance(obj, Group) for obj in form.cleaned_data["to"])
-                and not request.user.profile.in_staff_group
-            ):
-                contrib_messages.add_message(
-                    request,
-                    contrib_messages.ERROR,
-                    _("You can't send messages to groups. Please select only users."),
-                )
-                return render(request, "messages/new.html", {"form": form})
+    form = MessageForm(request.POST or None, user=request.user)
+    if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
+        send_message(
+            form.cleaned_data["to"],
+            text=form.cleaned_data["message"],
+            sender=request.user,
+        )
+        if "in_reply_to" in form.cleaned_data and form.cleaned_data["in_reply_to"]:
+            InboxMessage.objects.filter(
+                pk=form.cleaned_data["in_reply_to"], to=request.user
+            ).update(replied=True)
 
-            send_message(
-                form.cleaned_data["to"],
-                text=form.cleaned_data["message"],
-                sender=request.user,
-            )
-            if "in_reply_to" in form.cleaned_data and form.cleaned_data["in_reply_to"]:
-                InboxMessage.objects.filter(
-                    pk=form.cleaned_data["in_reply_to"], to=request.user
-                ).update(replied=True)
-
-            contrib_messages.add_message(
-                request, contrib_messages.SUCCESS, _("Your message was sent!")
-            )
-            return HttpResponseRedirect(reverse("messages.outbox"))
+        contrib_messages.add_message(
+            request, contrib_messages.SUCCESS, _("Your message was sent!")
+        )
+        return HttpResponseRedirect(reverse("messages.outbox"))
 
     return render(request, "messages/new.html", {"form": form})
 

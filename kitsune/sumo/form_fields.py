@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from django import forms
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -95,29 +95,26 @@ class MultiUsernameOrGroupnameField(forms.Field):
             else:
                 return []
 
-        # Split names, strip whitespace, and filter out any empty strings
-        # Using set to remove duplicates
-        names = {name.strip() for name in value.split(",") if name.strip()}
+        # Get and strip the input items, turn to list
+        # * "User: user1, Group: group1, User: user2" ->
+        #   ["User: user1", "Group: group1", "User: user2"]
+        parts = [value.strip() for value in value.split(",") if value.strip()]
 
-        # Find users and groups in a single query each
-        users_and_groups = list(User.objects.filter(username__in=names)) + list(
-            Group.objects.filter(name__in=names)
-        )
+        # Split the parts into key-value pairs
+        # * ["User: user1", "Group: group1", "User: user2"] ->
+        #   [("User", "user1"), ("Group", "group1"), ("User", "user2")]
+        key_value_pairs = [tuple(map(str.strip, part.split(":"))) for part in parts]
 
-        # Check if all names were found
-        found_names = {
-            obj.username if isinstance(obj, User) else obj.name for obj in users_and_groups
-        }
-        missing_names = names - found_names
+        # Crete data structure to hold grouped items
+        # * [("User", "user1"), ("Group", "group1"), ("User", "user2")] ->
+        #   {"User": ["user1", "user2"], "Group": ["group1"]}
+        grouped = {}
+        for key, value in key_value_pairs:
+            grouped.setdefault(key, []).append(value)
 
-        if missing_names:
-            raise ValidationError(
-                _("The following are not valid usernames or group names: {names}").format(
-                    names=", ".join(missing_names)
-                )
-            )
+        to_objects = {"users": grouped.get("User", []), "groups": grouped.get("Group", [])}
 
-        return users_and_groups
+        return to_objects
 
 
 class ImagePlusField(forms.ImageField):

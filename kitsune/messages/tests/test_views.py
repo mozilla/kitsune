@@ -45,9 +45,14 @@ class ReadMessageTests(TestCase):
     def test_mark_message_replied(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1, message="foo")
         assert not i.replied
+        to = f"User: {self.user2.username}"
         self.client.post(
             reverse("messages.new", locale="en-US"),
-            {"to": self.user2.username, "message": "bar", "in_reply_to": i.pk},
+            {
+                "to": to,
+                "message": "bar",
+                "in_reply_to": i.pk,
+            },
         )
         assert InboxMessage.objects.get(pk=i.pk).replied
 
