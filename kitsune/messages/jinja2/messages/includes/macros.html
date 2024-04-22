@@ -54,7 +54,7 @@
   <span class="to">
   {% if message.recipient %}
     <p><strong>{{ _('To') }}:</strong>
-      {% if message.recipients > 1 -%}
+      {% for user in message.to.all() -%}
         {% set comma = joiner(', ') %}
         {% for user in message.to.all() -%}
           {{ comma() }}
@@ -62,7 +62,7 @@
         {%- endfor %}
       {% else %}
         {{ name_link(message.recipient) }}
-      {% endif %}
+      {% endfor %}
     </p>
   {% endif %}
   </span>
