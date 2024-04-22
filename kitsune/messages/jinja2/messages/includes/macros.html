@@ -52,15 +52,15 @@
 
 {% macro outbox_message(message) -%}
   <span class="to">
-  {% if message.to %}
+  {% if message.recipients_count > 0 %}
     <p><strong>{{ _('To') }}:</strong>
     {% set comma = joiner(', ') %}
-      {% for user in message.to.all() -%}
-          {{ comma() }}
-          {{ name_link(user) }}
-      {% else %}
-        {{ name_link(message.recipient) }}
-      {% endfor %}
+    {% for user in message.to.all() -%}
+        {{ comma() }}
+        {{ name_link(user) }}
+    {% else %}
+      {{ name_link(message.recipient) }}
+    {% endfor %}
     </p>
   {% endif %}
   </span>
