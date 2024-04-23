@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+echo "Building Docker image via docker-compose"
+
 source docker/bin/set_git_env_vars.sh
 export DOCKER_BUILDKIT=1
 
