@@ -1,32 +1,16 @@
 import logging
-from datetime import date, timedelta
 
-from django.db import close_old_connections, connection, models
+from django.db import IntegrityError, models, transaction
+from django.db.models import Subquery
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEAR, PERIODS
+from kitsune.dashboards import PERIODS
 from kitsune.products.models import Product
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.dashboards")
-
-
-def period_dates(period):
-    """Return when each period begins and ends."""
-    end = date.today() - timedelta(days=1)  # yesterday
-
-    if period == LAST_7_DAYS:
-        start = end - timedelta(days=7)
-    elif period == LAST_30_DAYS:
-        start = end - timedelta(days=30)
-    elif period == LAST_90_DAYS:
-        start = end - timedelta(days=90)
-    elif LAST_YEAR:
-        start = end - timedelta(days=365)
-
-    return start, end
 
 
 class WikiDocumentVisits(ModelBase):
@@ -42,29 +26,35 @@ class WikiDocumentVisits(ModelBase):
     @classmethod
     def reload_period_from_analytics(cls, period, verbose=False):
         """Replace the stats for the given period from Google Analytics."""
-        counts = googleanalytics.pageviews_by_document(*period_dates(period), verbose=verbose)
-        if counts:
-            # Close any existing connections because our load balancer times
-            # them out at 5 minutes and the GA calls take forever.
-            close_old_connections()
-
-            # Delete and remake the rows:
-            # Horribly inefficient until
-            # http://code.djangoproject.com/ticket/9519 is fixed.
-            # cls.objects.filter(period=period).delete()
-
-            # Instead, we use raw SQL!
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "DELETE FROM dashboards_wikidocumentvisits WHERE period = %s",
-                    [period],
+        with transaction.atomic():
+            # First, let's clear out the previous results for this period.
+            if verbose:
+                log.info(
+                    f"Deleting all stale instances of {cls.__name__} with period = {period}..."
                 )
-            # Now we create them again with fresh data.
-            for doc_id, visits in counts.items():
-                cls.objects.create(document=Document(pk=doc_id), visits=visits, period=period)
-        else:
-            # Don't erase interesting data if there's nothing to replace it:
-            log.warning("Google Analytics returned no interesting data," " so I kept what I had.")
+
+            cls.objects.filter(period=period).delete()
+
+            # Then we can create the fresh results for this period.
+            if verbose:
+                log.info(f"Creating fresh instances of {cls.__name__} with period = {period}...")
+
+            for (locale, slug), visits in googleanalytics.pageviews_by_document(
+                period, verbose=verbose
+            ):
+                try:
+                    with transaction.atomic():
+                        cls.objects.create(
+                            document_id=Subquery(
+                                Document.objects.filter(locale=locale, slug=slug).values("id")
+                            ),
+                            period=period,
+                            visits=visits,
+                        )
+                except IntegrityError:
+                    # We've already rolled back the bad insertion, which was due to the
+                    # fact that the document no longer exists, so let's move on.
+                    pass
 
 
 L10N_TOP20_CODE = "percent_localized_top20"

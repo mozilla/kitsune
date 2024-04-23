@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
 from google.auth.exceptions import GoogleAuthError
-from googleapiclient.errors import Error as GoogleAPIError
+
 from OpenSSL.crypto import Error as OpenSSLError
 
 from kitsune.announcements.forms import AnnouncementForm
@@ -93,11 +93,11 @@ def get_locales_by_visit(start_date, end_date):
     sorted_locales = cache.get(cache_key)
     if sorted_locales is None:
         try:
-            results = visitors_by_locale(start_date, end_date)
-            locales_and_visits = list(results.items())
-            sorted_locales = list(reversed(sorted(locales_and_visits, key=lambda x: x[1])))
+            sorted_locales = sorted(
+                visitors_by_locale(start_date, end_date).items(), key=lambda x: x[1], reverse=True
+            )
             cache.add(cache_key, sorted_locales, settings.CACHE_LONG_TIMEOUT)
-        except (GoogleAPIError, GoogleAuthError, OpenSSLError):
+        except (GoogleAuthError, OpenSSLError):
             # Just return all locales with 0s for visits.
             log.exception(
                 "Something went wrong getting visitors by locale "

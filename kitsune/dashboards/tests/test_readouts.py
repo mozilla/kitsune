@@ -2,7 +2,8 @@ from datetime import datetime
 
 from django.conf import settings
 
-from kitsune.dashboards.models import LAST_30_DAYS, WikiDocumentVisits
+from kitsune.dashboards import LAST_30_DAYS
+from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.dashboards.readouts import (
     AdministrationReadout,
     CannedResponsesReadout,

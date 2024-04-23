@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -27,13 +27,9 @@ class Command(BaseCommand):
         # Collect up until yesterday
         end = date.today() - timedelta(days=1)
 
-        # Get the visitor data from Google Analytics.
-        visitors = googleanalytics.visitors(start, end)
-
         # Create the metrics.
         metric_kind = MetricKind.objects.get_or_create(code=VISITORS_METRIC_CODE)[0]
-        for date_str, visits in list(visitors.items()):
-            day = datetime.strptime(date_str, "%Y-%m-%d").date()
+        for day, visits in googleanalytics.visitors(start, end):
             Metric.objects.create(
                 kind=metric_kind, start=day, end=day + timedelta(days=1), value=visits
             )

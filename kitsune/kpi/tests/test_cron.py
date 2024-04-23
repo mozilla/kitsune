@@ -161,15 +161,36 @@ class CronJobTests(TestCase):
     def test_update_visitors_cron(self, visitors):
         """Verify the cron job inserts the right rows."""
         visitor_kind = MetricKindFactory(code=VISITORS_METRIC_CODE)
-        visitors.return_value = {"2012-01-13": 42, "2012-01-14": 193, "2012-01-15": 33}
+
+        today = date.today()
+        days_ago_4 = today - timedelta(days=4)
+        days_ago_3 = today - timedelta(days=3)
+        days_ago_2 = today - timedelta(days=2)
+        days_ago_1 = today - timedelta(days=1)
+
+        MetricFactory(start=days_ago_4, end=days_ago_3, kind=visitor_kind, value=200)
+
+        visitors.return_value = (
+            row
+            for row in (
+                (days_ago_3, 42),
+                (days_ago_2, 193),
+                (days_ago_1, 33),
+            )
+        )
 
         call_command("update_visitors_metric")
 
         metrics = Metric.objects.filter(kind=visitor_kind).order_by("start")
-        self.assertEqual(3, len(metrics))
-        self.assertEqual(42, metrics[0].value)
-        self.assertEqual(193, metrics[1].value)
-        self.assertEqual(date(2012, 1, 15), metrics[2].start)
+        self.assertEqual(4, len(metrics))
+        self.assertEqual(200, metrics[0].value)
+        self.assertEqual(days_ago_4, metrics[0].start)
+        self.assertEqual(42, metrics[1].value)
+        self.assertEqual(days_ago_3, metrics[1].start)
+        self.assertEqual(193, metrics[2].value)
+        self.assertEqual(days_ago_2, metrics[2].start)
+        self.assertEqual(33, metrics[3].value)
+        self.assertEqual(days_ago_1, metrics[3].start)
 
     @patch.object(kitsune.kpi.management.utils, "_get_top_docs")
     @patch.object(googleanalytics, "visitors_by_locale")
@@ -252,24 +273,53 @@ class CronJobTests(TestCase):
         self.assertEqual(1, len(metrics))
         self.assertEqual(50, metrics[0].value)
 
-    @patch.object(googleanalytics, "search_ctr")
-    def test_update_search_ctr(self, search_ctr):
+    @patch.object(googleanalytics, "search_clicks_and_impressions")
+    def test_update_search_ctr(self, search_clicks_and_impressions):
         """Verify the cron job inserts the right rows."""
         clicks_kind = MetricKindFactory(code=SEARCH_CLICKS_METRIC_CODE)
-        MetricKindFactory(code=SEARCH_SEARCHES_METRIC_CODE)
-        search_ctr.return_value = {
-            "2013-06-06": 42.123456789,
-            "2013-06-07": 13.7654321,
-            "2013-06-08": 99.55555,
-        }
+        searches_kind = MetricKindFactory(code=SEARCH_SEARCHES_METRIC_CODE)
+
+        today = date.today()
+        days_ago_4 = today - timedelta(days=4)
+        days_ago_3 = today - timedelta(days=3)
+        days_ago_2 = today - timedelta(days=2)
+        days_ago_1 = today - timedelta(days=1)
+
+        MetricFactory(start=days_ago_4, end=days_ago_3, kind=clicks_kind, value=100)
+        MetricFactory(start=days_ago_4, end=days_ago_3, kind=searches_kind, value=200)
+
+        search_clicks_and_impressions.return_value = (
+            row
+            for row in (
+                (days_ago_3, 177, 421),
+                (days_ago_2, 19, 138),
+                (days_ago_1, 990, 995),
+            )
+        )
 
         call_command("update_search_ctr_metric")
 
-        metrics = Metric.objects.filter(kind=clicks_kind).order_by("start")
-        self.assertEqual(3, len(metrics))
-        self.assertEqual(421, metrics[0].value)
-        self.assertEqual(138, metrics[1].value)
-        self.assertEqual(date(2013, 6, 8), metrics[2].start)
+        clicks_metrics = Metric.objects.filter(kind=clicks_kind).order_by("start")
+        self.assertEqual(4, len(clicks_metrics))
+        self.assertEqual(100, clicks_metrics[0].value)
+        self.assertEqual(days_ago_4, clicks_metrics[0].start)
+        self.assertEqual(177, clicks_metrics[1].value)
+        self.assertEqual(days_ago_3, clicks_metrics[1].start)
+        self.assertEqual(19, clicks_metrics[2].value)
+        self.assertEqual(days_ago_2, clicks_metrics[2].start)
+        self.assertEqual(990, clicks_metrics[3].value)
+        self.assertEqual(days_ago_1, clicks_metrics[3].start)
+
+        searches_metrics = Metric.objects.filter(kind=searches_kind).order_by("start")
+        self.assertEqual(4, len(searches_metrics))
+        self.assertEqual(200, searches_metrics[0].value)
+        self.assertEqual(days_ago_4, searches_metrics[0].start)
+        self.assertEqual(421, searches_metrics[1].value)
+        self.assertEqual(days_ago_3, searches_metrics[1].start)
+        self.assertEqual(138, searches_metrics[2].value)
+        self.assertEqual(days_ago_2, searches_metrics[2].start)
+        self.assertEqual(995, searches_metrics[3].value)
+        self.assertEqual(days_ago_1, searches_metrics[3].start)
 
     @patch.object(surveygizmo_utils, "requests")
     def test_process_exit_surveys(self, requests):

@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 import actstream
@@ -10,11 +10,10 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db import close_old_connections, models
-from django.db.models import Count
+from django.db import IntegrityError, models
+from django.db.models import Count, Subquery
 from django.db.models.functions import Now
 from django.db.models.signals import post_save
-from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.urls import is_valid_path
 from django.utils import translation
@@ -733,39 +732,15 @@ class QuestionVisits(ModelBase):
         """Update the stats from Google Analytics."""
         from kitsune.sumo import googleanalytics
 
-        today = date.today()
-        one_year_ago = today - timedelta(days=365)
-        counts = googleanalytics.pageviews_by_question(one_year_ago, today, verbose=verbose)
-        if counts:
-            # Close any existing connections because our load balancer times
-            # them out at 5 minutes and the GA calls take forever.
-            close_old_connections()
-
-            for question_id, visits in counts.items():
-                # We are trying to minimize db calls here. Let's try to update
-                # first, that will be the common case.
-                num = cls.objects.filter(question_id=question_id).update(visits=visits)
-
-                # If we were able to update, we are done.
-                if num > 0:
-                    continue
-                # If it doesn't exist yet, create it.
-                try:
-                    # For some reason unbeknowest to me,
-                    # IntegrityError doesn't get kicked up in the
-                    # QuestionVisits tests when running the tests with
-                    # a clean db. So to deal with that, we explicitly
-                    # check the db to see if the question exists.
-                    # This happens with Django 1.4.6 and South
-                    # 0.8.2. If we update either, we might want to see
-                    # if this is still a problem.
-                    Question.objects.get(pk=question_id)
-                    cls.objects.create(question_id=question_id, visits=visits)
-                except (Question.DoesNotExist, IntegrityError):
-                    # The question doesn't exist anymore, move on.
-                    continue
-        else:
-            log.warning("Google Analytics returned no interesting data," " so I kept what I had.")
+        for question_id, visits in googleanalytics.pageviews_by_question(verbose=verbose):
+            try:
+                cls.objects.update_or_create(
+                    question_id=Subquery(Question.objects.filter(id=question_id).values("id")),
+                    defaults=dict(visits=visits),
+                )
+            except IntegrityError:
+                # Skip the update-or-create if the question no longer exists.
+                pass
 
 
 class QuestionLocale(ModelBase):
