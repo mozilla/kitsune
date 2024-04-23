@@ -6,6 +6,14 @@
   {% endif %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
+      {% if in_staff_group(user) and (document or parent).is_linked_in_product %}
+        <li>
+          <figure class="linked-in-product">
+            <img src="{{ webpack_static('sumo/img/info.svg') }}" alt="{{ _('Information icon') }}" />
+            <figcaption>{{ _("Article is linked in product") }}</figcaption>
+          </figure>
+        </li>
+      {% endif %}
       <li id="editing-tools-sidebar">
         {% if user.is_authenticated %}
           <h3 class="sidebar-subheading large-only">{{ _('Editing Tools') }}</h3>
