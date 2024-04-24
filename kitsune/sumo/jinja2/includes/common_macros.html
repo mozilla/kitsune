@@ -480,9 +480,8 @@
   {% if not li_only %}
   <ul class="sidebar-nav--list">
     {% endif %}
-    <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('For Contributors') }}</li>
+    <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Discussions') }}</li>
     {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
-    {{ _tools_nav_links(user, default_language, active, context="sidebar") }}
 
     {% if not li_only %}
   </ul>
@@ -491,21 +490,31 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro _discussion_nav_links(user, default_language, active=None) -%}
+{% macro _discussion_nav_links(user, default_language, active=None, context="main-menu") -%}
 <li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('SUMO Community discussions') }}</a>
+    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('SUMO Community Discussions') }}</a>
 </li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Support Forum Home">{{ _('Support forum discussions') }}</a></li>
+    data-event-label="Support Forum Home">{{ _('Support Forum Discussions') }}</a></li>
 <li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support discussions') }}</a></li>
+    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization Discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Discussions') }}</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Article Discussions">{{ _('Article discussions') }}</a></li>
-<li><a class="color-link" href="{{ url('forums.threads', 'buddies') }}">{{ _('View all discussions') }}</a></li>
+    data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
+{% if context == "main-menu" %}
+  <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all Discussions') }}</a></li>
+{% endif %}
+{% if context == "sidebar" %}
+  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile Support Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge Base Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum Moderator Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off Topic Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost Thread Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Discussions') }}</a></li>
+{% endif %}
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None) -%}
+{% macro _tools_nav_links(user, default_language, active=None, context="main-menu") -%}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
     <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
