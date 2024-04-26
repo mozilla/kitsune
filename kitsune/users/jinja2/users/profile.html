@@ -19,6 +19,11 @@
             To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
           {% endtrans %}
         </p>
+        <p>
+          {% trans %}
+            After an avatar-change, a re-login on support.mozilla.org is required for the changes to be applied.
+          {% endtrans %}
+        </p>
         <section class="avatar-group">
           <figure class="avatar-group--figure">
             <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
