@@ -534,13 +534,6 @@
     {{ _('Article Discussions') }}
   </a>
 </li>
-<li>
-  <a href="{{ url('forums.threads', 'buddies') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.new-contributors' }}"}'>
-    {{ _('New Contributors') }}
-  </a>
-</li>
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None, context="main-menu") -%}
