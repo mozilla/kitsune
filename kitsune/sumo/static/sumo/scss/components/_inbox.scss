@@ -11,7 +11,7 @@
     grid-gap: p.$spacing-xs 10px;
     grid-template-columns: 36px 1fr 30px;
     grid-template-areas:
-      "checkbox avatar  delete"
+      "checkbox avatar delete"
       "checkbox details delete";
     padding: p.$spacing-sm 0;
     border-bottom: 1px solid var(--color-border);

@@ -34,7 +34,7 @@
 
 .outbox-table {
     display: grid;
-    grid-template-columns: 40px auto auto auto 1fr; // Adjust sizes as needed
+    grid-template-columns: auto auto auto 1fr auto;// Adjust sizes as needed
     grid-gap: 10px;
     width: 100%;
     
@@ -64,11 +64,11 @@
 // Responsive adjustments
 @media (max-width: 600px) {
     .outbox-table {
-        grid-template-columns: 40px 2fr 3fr; // Simplify layout for small screens
+        grid-template-columns: 2fr 2fr 1fr; // Simplify layout for small screens
         
         .email-cell {
-            &:nth-child(3), // To
-            &:nth-child(4) { // To Groups
+            &:nth-child(1), // Date
+            &:nth-child(3) { // To Groups
                 display: none; // Hide less important columns on small screens
             }
         }

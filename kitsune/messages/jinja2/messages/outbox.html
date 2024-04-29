@@ -14,27 +14,19 @@
         </div>
       {% if msgs %}
         <form action="{{ url('messages.outbox_bulk_action') }}" method="POST">
-          <div class="sumo-button-wrap">
-            <button type="submit" name="delete" class="sumo-button">{{ _('Delete Selected') }}</button>
-          </div>
         <div class="outbox-table">
             <div class="email-row header">
-                <div class="email-cell checkbox">
-                    <input type="checkbox" aria-label="Select all">
-                </div>
                 <div class="email-cell sent">{{ _('Sent On') }}</div>
                 <div class="email-cell to">{{ _('To Users') }}</div>
                 {% if in_staff_group(request.user) %}
                     <div class="email-cell to-groups">{{ _('To Groups') }}</div>
                 {% endif %}
                 <div class="email-cell excerpt">{{ _('Excerpt') }}</div>
+                <div class="email-cell delete">{{ _('Delete?') }}</div>
             </div>
             <!-- Repeat the following div for each email message -->
             {% for message in msgs.object_list %}
             <div class="email-row">
-                <div class="email-cell check">
-                    <input class="field checkbox no-label" type="checkbox" aria-label="Select this message" name="id" value="{{ message.id }}" id="id_checkbox_{{ message.id }}">
-                </div>
                 <div class="email-cell sent">{{ datetimeformat(message.created) }}</div>
                 <div class="email-cell to">
                 {% for user in message.to.all()[:1] -%}
@@ -44,8 +36,8 @@
                       {%- else -%}
                         {{ user.profile.display_name }}
                       {%- endif -%}
-                    {%- if message.recipients_count > 1 -%}, ...{% endif %}
                     </a>
+                    {%- if message.recipients_count > 1 -%}, ...{% endif %}
                 {% else %}
                    {{ _('None') }}
                 {%- endfor %}
@@ -67,6 +59,9 @@
                     <a class="read message text-body-sm" href="{{ url('messages.read_outbox', message.id) }}">
                         {{ message.content_parsed|striptags|truncate(length=160) }}
                     </a>
+                </div>
+                <div class="email-cell delete">
+                  <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
                 </div>
             </div>
             {% endfor %}
