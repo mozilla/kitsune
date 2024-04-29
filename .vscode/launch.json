@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Kitsune",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "django": true,
             "program": "${workspaceFolder}/manage.py",
@@ -16,8 +16,40 @@
             ]
         },
         {
+            "name": "Kitsune Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+            "test"
+            ]
+         },
+         {
+            "name": "Kitsune Wiki Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+            "test",
+            "kitsune.wiki.tests" 
+            ]
+         },
+        {
+            "name": "Kitsune Messages Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+            "test",
+            "kitsune.messages.tests" 
+            ]
+         },
+        {
             "name": "Kitsune (Gunicorn)",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "django": true,
             "program": "/venv/bin/gunicorn",
@@ -32,14 +64,11 @@
         },
         {
             "name": "Attach to .vscode/debug-python",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "127.0.0.1",
                 "port": 5678
-            },
-            "autoreload": {
-                "enable": true
             }
         }
     ]
