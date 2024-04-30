@@ -31,11 +31,7 @@
                 <div class="email-cell to">
                 {% for user in message.to.all()[:1] -%}
                     <a rel="nofollow" href="{{ profile_url(user) }}">
-                      {%- if name -%}
-                        {{ name }}
-                      {%- else -%}
                         {{ user.profile.display_name }}
-                      {%- endif -%}
                     </a>
                     {%- if message.recipients_count > 1 -%}, ...{% endif %}
                 {% else %}
@@ -61,7 +57,7 @@
                     </a>
                 </div>
                 <div class="email-cell delete">
-                  <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
+                  <a class="delete" href="{{ url('messages.delete_outbox', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
                 </div>
             </div>
             {% endfor %}
