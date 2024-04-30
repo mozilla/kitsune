@@ -115,6 +115,7 @@ def make_mail(
         html = transform(
             render_email(html_template, context_vars),
             base_url="https://" + Site.objects.get_current().domain,
+            cssutils_logging_level=logging.ERROR,
         )
         mail.attach_alternative(html, "text/html")
 
