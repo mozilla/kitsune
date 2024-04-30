@@ -95,19 +95,17 @@ class MultiUsernameOrGroupnameField(forms.Field):
             else:
                 return []
 
-        # Get and strip the input items, turn to list
-        # * "User: user1, Group: group1, User: user2" ->
-        #   ["User: user1", "Group: group1", "User: user2"]
-        parts = (value.strip() for value in value.split(",") if value.strip())
+        # This generator expression splits the input string `value` by commas to extract
+        # parts, strips whitespace from each part, and then further splits each non-empty
+        # part by the colon.
+        # Each resulting pair of values (before and after the colon) is stripped of
+        # any extra whitespace and returned as a tuple. This process is done lazily,
+        # generating each tuple only when iterated over.
+        key_value_pairs = (
+            tuple(map(str.strip, part.split(":"))) for part in value.split(",") if part.strip()
+        )
 
-        # Split the parts into key-value pairs
-        # * ["User: user1", "Group: group1", "User: user2"] ->
-        #   [("User", "user1"), ("Group", "group1"), ("User", "user2")]
-        key_value_pairs = (tuple(map(str.strip, part.split(":"))) for part in parts)
-
-        # Crete data structure to hold grouped items
-        # * [("User", "user1"), ("Group", "group1"), ("User", "user2")] ->
-        #   {"User": ["user1", "user2"], "Group": ["group1"]}
+        # Crete data structure to hold values grouped by keys
         to_objects = {}
         for key, value in key_value_pairs:
             to_objects.setdefault(f"{key.lower()}s", []).append(value)
