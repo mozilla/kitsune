@@ -98,21 +98,19 @@ class MultiUsernameOrGroupnameField(forms.Field):
         # Get and strip the input items, turn to list
         # * "User: user1, Group: group1, User: user2" ->
         #   ["User: user1", "Group: group1", "User: user2"]
-        parts = [value.strip() for value in value.split(",") if value.strip()]
+        parts = (value.strip() for value in value.split(",") if value.strip())
 
         # Split the parts into key-value pairs
         # * ["User: user1", "Group: group1", "User: user2"] ->
         #   [("User", "user1"), ("Group", "group1"), ("User", "user2")]
-        key_value_pairs = [tuple(map(str.strip, part.split(":"))) for part in parts]
+        key_value_pairs = (tuple(map(str.strip, part.split(":"))) for part in parts)
 
         # Crete data structure to hold grouped items
         # * [("User", "user1"), ("Group", "group1"), ("User", "user2")] ->
         #   {"User": ["user1", "user2"], "Group": ["group1"]}
-        grouped = {}
+        to_objects = {}
         for key, value in key_value_pairs:
-            grouped.setdefault(key, []).append(value)
-
-        to_objects = {"users": grouped.get("User", []), "groups": grouped.get("Group", [])}
+            to_objects.setdefault(f"{key.lower()}s", []).append(value)
 
         return to_objects
 

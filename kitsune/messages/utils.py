@@ -22,8 +22,8 @@ def send_message(to, text=None, sender=None):
     to_users = to.get("users", [])
     to_groups = to.get("groups", [])
 
-    users = User.objects.filter(username__in=to_users) if to_users else User.objects.none()
-    groups = Group.objects.filter(name__in=to_groups) if to_groups else Group.objects.none()
+    users = User.objects.filter(username__in=to_users)
+    groups = Group.objects.filter(name__in=to_groups, profile__isnull=False)
 
     all_recipients_of_message = set(users.values_list("id", flat=True)) | set(
         User.objects.filter(groups__in=groups).values_list("id", flat=True)

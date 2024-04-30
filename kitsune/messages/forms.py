@@ -27,12 +27,23 @@ class MessageForm(forms.Form):
 
     def clean_to(self):
         """Ensure that all usernames and group names are valid."""
-        to = self.cleaned_data["to"]
+        to = self.cleaned_data.get("to", {})
 
-        if not to["users"] and not to["groups"]:
+        # Check if there are valid users or groups selected.
+        if not to.get("users") and not to.get("groups"):
             raise forms.ValidationError("Please select at least one user or group.")
-        if to["groups"] and not self.user.profile.in_staff_group:
-            raise forms.ValidationError("You are not allowed to send messages to groups.")
+
+        # Check for group messages permissions.
+        if to.get("groups"):
+            # If the user is not a member of the staff group,
+            # they are not allowed to send messages to groups.
+            if not self.user.profile.in_staff_group:
+                raise forms.ValidationError("You are not allowed to send messages to groups.")
+            # If group.profile is None, it means we don't allow messages to it.
+            if not all(group.profile for group in to.get("groups")):
+                raise forms.ValidationError(
+                    "You are not allowed to send messages to groups without profiles."
+                )
 
         return to
 

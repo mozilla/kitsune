@@ -45,7 +45,7 @@ def get_autocomplete_suggestions(request):
         suggestions.append(create_suggestion(user))
 
     if request.user.profile.in_staff_group:
-        groups = Group.objects.filter(name__istartswith=pre)[:10]
+        groups = Group.objects.filter(name__istartswith=pre, profile__isnull=False)[:10]
         for group in groups:
             suggestions.append(create_suggestion(group))
 

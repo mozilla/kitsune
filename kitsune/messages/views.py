@@ -183,10 +183,6 @@ def _add_recipients(msg):
     msg.recipient = msg.to.all()[0] if msg.recipients_count == 1 else None
 
     # Assign the group(s) based on the number of groups
-    msg.to_groups = (
-        msg.to_group.prefetch_related("profile").all()[:1]
-        if msg.to_groups_count == 1
-        else list(msg.to_group.prefetch_related("profile"))
-    )
+    msg.to_groups = list(msg.to_group.prefetch_related("profile"))
 
     return msg
