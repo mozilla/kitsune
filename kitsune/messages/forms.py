@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.form_fields import MultiUsernameOrGroupnameField
@@ -39,10 +40,19 @@ class MessageForm(forms.Form):
             # they are not allowed to send messages to groups.
             if not self.user.profile.in_staff_group:
                 raise forms.ValidationError("You are not allowed to send messages to groups.")
-            # If group.profile is None, it means we don't allow messages to it.
-            if not all(group.profile for group in to.get("groups")):
+            # If the group lacks a profile, the user is not allowed to send messages to it.
+            group_names = to.get("groups")
+            if bad_group_names := (
+                set(group_names)
+                - set(
+                    Group.objects.filter(name__in=group_names, profile__isnull=False).values_list(
+                        "name", flat=True
+                    )
+                )
+            ):
                 raise forms.ValidationError(
-                    "You are not allowed to send messages to groups without profiles."
+                    "You are not allowed to send messages to groups without profiles "
+                    f"({', '.join(bad_group_names)})."
                 )
 
         return to

@@ -105,7 +105,7 @@ class MultiUsernameOrGroupnameField(forms.Field):
             tuple(map(str.strip, part.split(":"))) for part in value.split(",") if part.strip()
         )
 
-        # Crete data structure to hold values grouped by keys
+        # Create data structure to hold values grouped by keys
         to_objects = {}
         for key, value in key_value_pairs:
             to_objects.setdefault(f"{key.lower()}s", []).append(value)
