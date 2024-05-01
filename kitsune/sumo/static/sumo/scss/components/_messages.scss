@@ -1,85 +1,68 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-.inbox-table {
-    display: grid;
-    grid-template-columns: 40px 45px auto auto auto auto; // Adjust sizes as needed
-    grid-gap: 10px;
+.inbox-table, .outbox-table {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+}
+
+.email-row {
+    display: flex;
+    flex-wrap: nowrap; // Prevent wrapping to maintain alignment
+    justify-content: space-between; // Distributes space between cells
+    width: 100%; // Ensure the row spans full width
     
-    .email-row {
-        display: contents;
-        
+    .email-cell {
+        padding: 8px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        min-width: 100px; // Minimum width for cell content
+        // Specify flex-basis for each cell type
+        &:first-child { flex: 0 1 40px; } // Checkbox cell
+        &:nth-child(2) { flex: 0 0 45px; } // Avatar cell
+        &:nth-child(3) { flex: 1 0 20%; } // From cell
+        &:nth-child(4) { flex: 1 0 20%; } // Received On cell
+        &:nth-child(5) { flex: 1 0 40%; } // Excerpt cell
+        &:nth-child(6) { flex: 0 0 10%; } // Delete cell
+    }
+
+    &.header {
         .email-cell {
-            padding: 8px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            font-weight: bold;
+            background-color: #eef;
         }
+    }
 
-        .field {
-            margin-right: 20px;
-            grid-area: checkbox;
-            align-self: center;
-        }
+    &.read {
+        background-color: #f9f9f9; // Set white background for the whole row if read
 
-        &.header {
-            .email-cell {
-                font-weight: bold;
-                background-color: #eef;
-            }
+        .email-cell {
+            background-color: #f9f9f9; // Ensure each cell in a read message also has a white background
         }
     }
 }
 
-
-.outbox-table {
-    display: grid;
-    grid-template-columns: auto auto auto 1fr auto;// Adjust sizes as needed
-    grid-gap: 10px;
-    width: 100%;
-    
-    .email-row {
-        display: contents;
-        
-        .email-cell {
-            padding: 8px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-        }
-
-        .field {
-            margin-right: 20px;
-            grid-area: checkbox;
-            align-self: center;
-        }
-
-        &.header {
-            .email-cell {
-                font-weight: bold;
-                background-color: #eef;
-            }
-        }
+.outbox-table .email-row {
+    .email-cell {
+        // Specify flex-basis for each cell type
+        &:nth-child(1) { flex: 1 0 20%; } // First cell
+        &:nth-child(2) { flex: 1 0 20%; } // Second cell
+        &:nth-child(3) { flex: 1 0 20%; } // Third cell
+        &:nth-child(4) { flex: 3 0 30%; } // Larger central content area
+        &:last-child { flex: 0 0 10%; } // Actions or delete cell
     }
 }
+
 // Responsive adjustments
 @media (max-width: 600px) {
-    .outbox-table {
-        grid-template-columns: 2fr 2fr 1fr; // Simplify layout for small screens
-        
+    .outbox-table, .inbox-table {
         .email-cell {
-            &:nth-child(1), // Date
-            &:nth-child(3) { // To Groups
-                display: none; // Hide less important columns on small screens
-            }
-        }
-    }
-    .inbox-table {
-        grid-template-columns: 40px 1fr 3fr; // Simplify layout for small screens
-        
-        .email-cell {
-            &:nth-child(2), // Avatar
-            &:nth-child(4), // Date
-            &:nth-child(6) { // Delete X
+            flex: 1 0 100%; // Make each cell expand to full width on small screens
+            display: block; // Ensures that cells do not try to align in a row when space is constrained
+            
+            &:nth-child(1), // First cell, commonly date or checkbox
+            &:nth-child(3) { // Third cell
                 display: none; // Hide less important columns on small screens
             }
         }

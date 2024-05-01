@@ -17,8 +17,8 @@
       <div class="sumo-button-wrap">
         <input class="sumo-button" type="submit" name="mark_read" value="{{ _('Mark Selected as Read') }}">
       </div>
-      <div class="inbox-table">
-            <div class="email-row header">
+      <ol class="inbox-table">
+            <li class="email-row header">
                 <div class="email-cell checkbox">
                     <input type="checkbox" aria-label="Select all">
                 </div>
@@ -27,10 +27,10 @@
                 <div class="email-cell date">{{ _('Received On') }}</div>
                 <div class="email-cell excerpt">{{ _('Excerpt') }}</div>
                 <div class="email-cell delete">{{ _('Delete?') }}</div>
-            </div>
+            </li>
             <!-- Repeat the following div for each email message -->
           {% for message in msgs.object_list %}
-            <div class="email-row">
+            <li class="email-row{% if message.read %} read{% endif %}">
                 <div class="email-cell check">
                     <input class="field checkbox no-label" type="checkbox" aria-label="Select this message" name="id" value="{{ message.id }}" id="id_checkbox_{{ message.id }}">
                 </div>
@@ -51,10 +51,10 @@
                 <div class="email-cell delete">
                   <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
                 </div>
-            </div>
+            </li>
           {% endfor %}
             <!-- Additional rows go here -->
-        </div>
+        </ol>
           {% csrf_token %}
         </form>
         {{ msgs|paginator }}

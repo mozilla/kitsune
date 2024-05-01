@@ -14,8 +14,8 @@
         </div>
       {% if msgs %}
         <form action="{{ url('messages.outbox_bulk_action') }}" method="POST">
-        <div class="outbox-table">
-            <div class="email-row header">
+        <ol class="outbox-table">
+            <li class="email-row header">
                 <div class="email-cell sent">{{ _('Sent On') }}</div>
                 <div class="email-cell to">{{ _('To Users') }}</div>
                 {% if in_staff_group(request.user) %}
@@ -23,10 +23,10 @@
                 {% endif %}
                 <div class="email-cell excerpt">{{ _('Excerpt') }}</div>
                 <div class="email-cell delete">{{ _('Delete?') }}</div>
-            </div>
+            </li>
             <!-- Repeat the following div for each email message -->
             {% for message in msgs.object_list %}
-            <div class="email-row">
+            <li class="email-row">
                 <div class="email-cell sent">{{ datetimeformat(message.created) }}</div>
                 <div class="email-cell to">
                 {% for user in message.to.all()[:1] -%}
@@ -34,8 +34,6 @@
                         {{ user.profile.display_name }}
                     </a>
                     {%- if message.recipients_count > 1 -%}, ...{% endif %}
-                {% else %}
-                   {{ _('None') }}
                 {%- endfor %}
                 </div>
                 {% if in_staff_group(request.user) %}
@@ -46,8 +44,6 @@
                         <a href="{{ url('groups.profile', group_slug) }}">{{ group }}</a>
                         {%- endfor -%}
                         {% if message.to_groups_count>1 %}, ...{% endif %}
-                    {% else %}
-                        {{ _('None') }}
                     {% endfor %}
                     </div>
                 {% endif %}
@@ -59,11 +55,10 @@
                 <div class="email-cell delete">
                   <a class="delete" href="{{ url('messages.delete_outbox', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
                 </div>
-            </div>
+            </li>
             {% endfor %}
             <!-- Additional rows go here -->
-        </div>
-
+        </ol>
           {% csrf_token %}
         </form>
         {{ msgs|paginator }}
