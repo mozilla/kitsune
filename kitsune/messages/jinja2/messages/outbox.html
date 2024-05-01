@@ -1,5 +1,5 @@
 {% extends "messages/base.html" %}
-{% from "messages/includes/macros.html" import name_link %}
+{% from "messages/includes/macros.html" import avatar_link, name_link %}
 {% set title = _('Sent Messages') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')),
                  (None, title)] %}
@@ -14,81 +14,51 @@
         </div>
       {% if msgs %}
         <form action="{{ url('messages.outbox_bulk_action') }}" method="POST">
-          <div class="sumo-button-wrap">
-            <button type="submit" name="delete" class="sumo-button">{{ _('Delete Selected') }}</button>
-          </div>
-          <ol class="message-list">
-              <li class="message-list--item">
-                <div class="field checkbox no-label">
-                </div>
-                <div class="avatar-details">
-                  <span class="to user">
-                    <b>{{ _('Sent') }}</b>
-                  </span>
-                  <span class="to user">
-                    <b>{{ _('To') }}</b>
-                  </span>                  
-                  {% if in_staff_group(request.user) %}
-                    <span class="to group">
-                        <b>{{ _('To Groups') }}</b>
-                    </span>
-                  {% endif %}
-                <span class="message-view">
-                    <b>{{ _('Message') }}</b>
-                </span>
-                <span class="delete-button">
-                </span>
-                </div>
-              </li>
+        <ol class="outbox-table">
+            <li class="email-row header">
+                <div class="email-cell sent">{{ _('Sent On') }}</div>
+                <div class="email-cell to">{{ _('To Users') }}</div>
+                {% if in_staff_group(request.user) %}
+                    <div class="email-cell to-groups">{{ _('To Groups') }}</div>
+                {% endif %}
+                <div class="email-cell excerpt">{{ _('Excerpt') }}</div>
+                <div class="email-cell delete">{{ _('Delete?') }}</div>
+            </li>
+            <!-- Repeat the following div for each email message -->
             {% for message in msgs.object_list %}
-              <li class="message-list--item">
-                <div class="field checkbox no-label">
-                  <input type="checkbox" name="id" value="{{ message.id }}" id="id_checkbox_{{ message.id }}">
-                  <label for="id_checkbox_{{ message.id }}"></label>
-                </div>
-                <div class="avatar-details">
-                  <span class="time">
-                    <p>{{ datetimeformat(message.created) }}</p>
-                  </span>
-                  <span class="to user">
-
-                  {% for user in message.to.all()[:1] -%}
+            <li class="email-row">
+                <div class="email-cell sent">{{ datetimeformat(message.created) }}</div>
+                <div class="email-cell to">
+                {% for user in message.to.all()[:1] -%}
                     <a rel="nofollow" href="{{ profile_url(user) }}">
-                      {%- if name -%}
-                        {{ name }}
-                      {%- else -%}
                         {{ user.profile.display_name }}
-                      {%- endif -%}
-                    {%- if message.recipients_count > 1 -%}, ...{% endif %}
                     </a>
-                  {% else %}
-                   {{ _('None') }}
-                  {%- endfor %}
-                  </span>
-                  {% if in_staff_group(request.user) %}
-                    <span class="to group">
-                        {%- for group in message.to_groups[:1] -%}
-                          {%- for profile in group.profile.all() -%}
-                            <a href="{{ url('groups.profile', profile.slug) }}">{{ group }}</a>
-                          {%- endfor -%}
-                          {% if message.to_groups_count > 1 %}, ...{% endif %}
-                        {% else %}
-                          {{ _('None') }}
-                        {% endfor %}
-                    </span>
-                  {% endif %}
-                <span class="message-view">
-                  <a class="read message text-body-sm" href="{{ url('messages.read_outbox', message.id) }}">
-                    {{ message.content_parsed|striptags|truncate(length=160) }}
-                  </a>
-                </span>
-                <span class="delete-button">
-                 <a class="delete" href="{{ url('messages.delete_outbox', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
-                </span>
+                    {%- if message.recipients_count > 1 -%}, ...{% endif %}
+                {%- endfor %}
                 </div>
-              </li>
+                {% if in_staff_group(request.user) %}
+                    <div class="email-cell to-groups">
+                    {%- for group in message.to_groups[:1] -%}
+                        {%- for profile in group.profile.all() -%}
+                        {% set group_slug = profile.slug %}
+                        <a href="{{ url('groups.profile', group_slug) }}">{{ group }}</a>
+                        {%- endfor -%}
+                        {% if message.to_groups_count>1 %}, ...{% endif %}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="email-cell excerpt">
+                    <a class="read message text-body-sm" href="{{ url('messages.read_outbox', message.id) }}">
+                        {{ message.content_parsed|striptags|truncate(length=160) }}
+                    </a>
+                </div>
+                <div class="email-cell delete">
+                  <a class="delete" href="{{ url('messages.delete_outbox', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
+                </div>
+            </li>
             {% endfor %}
-          </ol>
+            <!-- Additional rows go here -->
+        </ol>
           {% csrf_token %}
         </form>
         {{ msgs|paginator }}

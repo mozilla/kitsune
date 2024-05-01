@@ -1,0 +1,70 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.inbox-table, .outbox-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.email-row {
+    display: flex;
+    flex-wrap: nowrap; // Prevent wrapping to maintain alignment
+    justify-content: space-between; // Distributes space between cells
+    width: 100%; // Ensure the row spans full width
+    
+    .email-cell {
+        padding: 8px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        min-width: 100px; // Minimum width for cell content
+        // Specify flex-basis for each cell type
+        &:first-child { flex: 0 1 40px; } // Checkbox cell
+        &:nth-child(2) { flex: 0 0 45px; } // Avatar cell
+        &:nth-child(3) { flex: 1 0 20%; } // From cell
+        &:nth-child(4) { flex: 1 0 20%; } // Received On cell
+        &:nth-child(5) { flex: 1 0 40%; } // Excerpt cell
+        &:nth-child(6) { flex: 0 0 10%; } // Delete cell
+    }
+
+    &.header {
+        .email-cell {
+            font-weight: bold;
+            background-color: #eef;
+        }
+    }
+
+    &.read {
+        background-color: #f9f9f9; // Set white background for the whole row if read
+
+        .email-cell {
+            background-color: #f9f9f9; // Ensure each cell in a read message also has a white background
+        }
+    }
+}
+
+.outbox-table .email-row {
+    .email-cell {
+        // Specify flex-basis for each cell type
+        &:nth-child(1) { flex: 1 0 20%; } // First cell
+        &:nth-child(2) { flex: 1 0 20%; } // Second cell
+        &:nth-child(3) { flex: 1 0 20%; } // Third cell
+        &:nth-child(4) { flex: 3 0 30%; } // Larger central content area
+        &:last-child { flex: 0 0 10%; } // Actions or delete cell
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 600px) {
+    .outbox-table, .inbox-table {
+        .email-cell {
+            flex: 1 0 100%; // Make each cell expand to full width on small screens
+            display: block; // Ensures that cells do not try to align in a row when space is constrained
+            
+            &:nth-child(1), // First cell, commonly date or checkbox
+            &:nth-child(3) { // Third cell
+                display: none; // Hide less important columns on small screens
+            }
+        }
+    }
+}

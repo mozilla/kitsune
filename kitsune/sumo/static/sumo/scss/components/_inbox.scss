@@ -1,10 +1,12 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
+
 .message-list {
   border-top: 1px solid var(--color-border);
 
   &--item {
+
     display: grid;
     grid-gap: p.$spacing-xs 10px;
     grid-template-columns: 36px 1fr 30px;
@@ -22,18 +24,6 @@
 
     .avatar-details {
       grid-area: avatar;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-
-      span {
-        flex: 1;
-        text-align: left;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
     }
 
     .read {
@@ -76,6 +66,7 @@
       }
 
       .avatar-details {
+        width: 190px;
         flex: 0 0 auto;
       }
     }
@@ -90,34 +81,24 @@
 .avatar-details {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  span {
-    flex: 2;
-    text-align: left;
-  }
-
-  .message-view {
-    flex: 2;
-  }
 
   .avatar {
     display: block;
     @include p.bidi(((margin, 0 12px 0 0, 0 0 0 12px),));
     flex: 0 0 auto;
     width: 44px;
-    max-width: 44px;
 
     img {
       width: 100%;
-      max-width: 40px;
       height: auto;
     }
   }
 
-  .user, .group {
+  .user {
+    flex: 1 1 auto;
+
     a {
+      font-weight: bold;
       color: var(--color-heading);
       text-decoration: none;
 
@@ -127,11 +108,11 @@
       }
     }
 
-    p {
-      font-weight: bold;
-      color: var(--color-heading);
-      text-decoration: none;
-      padding-right: 5px;
+    time {
+      display: block;
+      @include c.text-body-xs;
+      font-weight: normal;
+      color: var(--color-text);
     }
   }
 }
@@ -140,34 +121,4 @@
   .message {
     @include c.ulol;
   }
-}
-
-@media (max-width: 767px) {
-  .group, .user {
-    display: none;
-  }
-}
-
-time {
-  display: block;
-  @include c.text-body-xs;
-  font-weight: normal;
-  color: var(--color-text);
-}
-
-.to, 
-.to-group,
-.to-user,
-.from-user {
-  p {
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-    color: var(--color-heading);
-    text-decoration: none;
-  }
-}
-
-.read-message {
-  margin-top: 20px;
 }
