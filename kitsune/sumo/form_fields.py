@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from django import forms
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -95,29 +95,22 @@ class MultiUsernameOrGroupnameField(forms.Field):
             else:
                 return []
 
-        # Split names, strip whitespace, and filter out any empty strings
-        # Using set to remove duplicates
-        names = {name.strip() for name in value.split(",") if name.strip()}
-
-        # Find users and groups in a single query each
-        users_and_groups = list(User.objects.filter(username__in=names)) + list(
-            Group.objects.filter(name__in=names)
+        # This generator expression splits the input string `value` by commas to extract
+        # parts, strips whitespace from each part, and then further splits each non-empty
+        # part by the colon.
+        # Each resulting pair of values (before and after the colon) is stripped of
+        # any extra whitespace and returned as a tuple. This process is done lazily,
+        # generating each tuple only when iterated over.
+        key_value_pairs = (
+            tuple(map(str.strip, part.split(":"))) for part in value.split(",") if part.strip()
         )
 
-        # Check if all names were found
-        found_names = {
-            obj.username if isinstance(obj, User) else obj.name for obj in users_and_groups
-        }
-        missing_names = names - found_names
+        # Create data structure to hold values grouped by keys
+        to_objects = {}
+        for key, value in key_value_pairs:
+            to_objects.setdefault(f"{key.lower()}s", []).append(value)
 
-        if missing_names:
-            raise ValidationError(
-                _("The following are not valid usernames or group names: {names}").format(
-                    names=", ".join(missing_names)
-                )
-            )
-
-        return users_and_groups
+        return to_objects
 
 
 class ImagePlusField(forms.ImageField):

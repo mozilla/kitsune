@@ -11,7 +11,7 @@ class SendTests(TestCase):
         to = UserFactory.create_batch(2)
         sender = UserFactory()
         msg_text = "hi there!"
-        send_message(to=to, text=msg_text, sender=sender)
+        send_message(to={"users": to}, text=msg_text, sender=sender)
 
         msgs_in = InboxMessage.objects.all()
         msgs_out = OutboxMessage.objects.all()

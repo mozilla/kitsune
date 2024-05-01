@@ -30,8 +30,8 @@ class AccountEventsTasksTestCase(TestCase):
         # Populate inboxes and outboxes with messages between the user and other users.
         other_users = UserFactory.create_batch(2)
         for sender in other_users:
-            send_message([user], text="foo", sender=sender)
-        send_message(other_users, text="bar", sender=user)
+            send_message({"users": [user]}, text="foo", sender=sender)
+        send_message({"users": other_users}, text="bar", sender=user)
 
         # Confirm the expected initial state.
         self.assertTrue(user.is_active)

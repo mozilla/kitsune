@@ -28,10 +28,11 @@ def get_autocomplete_suggestions(request):
                 settings.DEFAULT_USER_ICON if is_user else settings.DEFAULT_GROUP_ICON
             ),
             "name": item.username if is_user else item.name,
+            "type_and_name": f"User: {item.username}" if is_user else f"Group: {item.name}",
             "display_name": item.profile.name if is_user else item.name,
-            "avatar": profile_avatar(item, 24)
-            if is_user
-            else webpack_static(settings.DEFAULT_AVATAR),
+            "avatar": (
+                profile_avatar(item, 24) if is_user else webpack_static(settings.DEFAULT_AVATAR)
+            ),
         }
 
     suggestions = []
@@ -44,7 +45,7 @@ def get_autocomplete_suggestions(request):
         suggestions.append(create_suggestion(user))
 
     if request.user.profile.in_staff_group:
-        groups = Group.objects.filter(name__istartswith=pre)[:10]
+        groups = Group.objects.filter(name__istartswith=pre, profile__isnull=False)[:10]
         for group in groups:
             suggestions.append(create_suggestion(group))
 
