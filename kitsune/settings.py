@@ -1045,12 +1045,20 @@ if config("SENTRY_DSN", None):
     ignore_logger("request.summary")
     ignore_logger("django.security.DisallowedHost")
 
+    def filter_exceptions(event, hint):
+        if event.get("logger", "") == "gevent" and event.get("exception"):
+            exc_values = event["exception"]["values"]
+            if any(exc["type"] == "GreenletExit" for exc in exc_values):
+                return None
+        return event
+
     sentry_sdk.init(
         dsn=config("SENTRY_DSN"),
         integrations=[DjangoIntegration()],
         release=config("GIT_SHA", default=None),
         server_name=PLATFORM_NAME,
         environment=config("SENTRY_ENVIRONMENT", default=""),
+        before_send=filter_exceptions,
         sample_rate=config("SENTRY_SAMPLE_RATE", 0.25),
     )
 
