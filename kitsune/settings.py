@@ -1046,7 +1046,7 @@ if config("SENTRY_DSN", None):
     ignore_logger("django.security.DisallowedHost")
 
     def filter_exceptions(event, hint):
-        if event.get("logger", "") == "gevent" and event.get("exception"):
+        if event.get("logger") == "gunicorn.error" and event.get("exception"):
             exc_values = event["exception"]["values"]
             if any(exc["type"] == "GreenletExit" for exc in exc_values):
                 return None
