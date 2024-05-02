@@ -483,7 +483,7 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions") -%}
+{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions", locale=None) -%}
 {% if user.is_authenticated %}
 <nav class="sidebar-nav" id="for-contributors-sidebar">
   <span class="details-heading"></span>
@@ -530,7 +530,7 @@
 {% endif %}
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None) -%}
+{% macro _tools_nav_links(user, default_language, active=None, context="main-menu", locale=None) -%}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
     <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
@@ -539,8 +539,8 @@
   </li>
 {% endif %}
 <li>
-  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Recent Revisions">{{ _('Recent Revisions') }}
   </a>
 </li>
 <li>
@@ -549,18 +549,31 @@
   </a>
 </li>
 <li>
-  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Media Gallery">{{ _('Media Gallery') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Recent Revisions">{{ _('Recent Revisions') }}
-  </a>
-</li>
-<li>
   <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
      data-event-label="Community Hub">{{ _('Community Hub') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.locales') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Locales">{{ _('Locales') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+  </a>
+</li>
+<li {{ active|class_selected('metrics') }}></li>
+  <a href="{{ url('dashboards.locale_metrics', locale) }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Locale Metrics">{{ _('Locale Metrics') }}</a>
+</li>
+<li {{ active|class_selected('aggregated') }}>
+  <a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Aggregated Metrics">{{ _('Aggregated Metrics') }}</a>
+</li>
+<li>
+  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Media Gallery">{{ _('Media Gallery') }}
   </a>
 </li>
 {% endmacro %}
