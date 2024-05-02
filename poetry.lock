@@ -1178,17 +1178,17 @@ sftp = ["paramiko (>=1.15)"]
 
 [[package]]
 name = "django-taggit"
-version = "3.1.0"
+version = "5.0.1"
 description = "django-taggit is a reusable Django application for simple tagging."
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "django-taggit-3.1.0.tar.gz", hash = "sha256:c8f2e4eae387939089b3d75d1d8649e008880970c068ce9d0e82f87fd5e29508"},
-    {file = "django_taggit-3.1.0-py3-none-any.whl", hash = "sha256:543218ac346fbe02a65733e0341c91b57a3e0f7a41568966b26f1cea9edc4805"},
+    {file = "django-taggit-5.0.1.tar.gz", hash = "sha256:edcd7db1e0f35c304e082a2f631ddac2e16ef5296029524eb792af7430cab4cc"},
+    {file = "django_taggit-5.0.1-py3-none-any.whl", hash = "sha256:a0ca8a28b03c4b26c2630fd762cb76ec39b5e41abf727a7b66f897a625c5e647"},
 ]
 
 [package.dependencies]
-Django = ">=3.2"
+Django = ">=4.1"
 
 [[package]]
 name = "django-timezone-field"
@@ -4822,4 +4822,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7365e6e25632cd5e02de22cb61b11207c247ec6a5857a08eb79c3ab6dc5475d6"
+content-hash = "bfeebf67bfbe0cd4850ec44356f5a38d6506290e0b0503dd8455441af3e8da49"
