@@ -483,7 +483,7 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions", locale=None) -%}
+{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions", locale=None, is_collapsible=False) -%}
 {% if user.is_authenticated %}
 <nav class="sidebar-nav" id="for-contributors-sidebar">
   <span class="details-heading"></span>
@@ -492,7 +492,7 @@
   {% endif %}
     {% if menu == "contributor-tools" %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Tools') }}</li>
-      {{ _tools_nav_links(user, default_language, active, context="sidebar") }}
+      {{ _tools_nav_links(user, default_language, active, context="sidebar", locale=locale, is_collapsible=is_collapsible) }}
     {% else %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Discussions') }}</li>
       {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
@@ -535,7 +535,7 @@
 {% endif %}
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None, context="main-menu", locale=None) -%}
+{% macro _tools_nav_links(user, default_language, active=None, context="main-menu", locale=None, is_collapsible=False) -%}
 {% if context == "main-menu" %}
   {% set data_event_action = "main navigation" %}
 {% else %}
@@ -563,29 +563,36 @@
      data-event-label="Community Hub">{{ _('Community Hub') }}
   </a>
 </li>
-<li>
-  <a href="{{ url('wiki.locales') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-     data-event-label="Locales">{{ _('Locales') }}
+<div {% if is_collapsible %} class="collapsible-content" {% endif %}>
+  <li>
+    <a href="{{ url('wiki.locales') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Locales">{{ _('Locales') }}
+    </a>
+  </li>
+  <li>
+    <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+    </a>
+  </li>
+  <li {{ active|class_selected('metrics') }}></li>
+    <a href="{{ url('dashboards.locale_metrics', locale) }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Locale Metrics">{{ _('Locale Metrics') }}</a>
+  </li>
+  <li {{ active|class_selected('aggregated') }}>
+    <a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Aggregated Metrics">{{ _('Aggregated Metrics') }}</a>
+  </li>
+  <li>
+    <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Media Gallery">{{ _('Media Gallery') }}
+    </a>
+  </li>
+</div>
+{% if is_collapsible %}
+  <a href="#" class="color-link show-more-btn" id="show-more-link">
+      Show More
   </a>
-</li>
-<li>
-  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
-  </a>
-</li>
-<li {{ active|class_selected('metrics') }}></li>
-  <a href="{{ url('dashboards.locale_metrics', locale) }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-     data-event-label="Locale Metrics">{{ _('Locale Metrics') }}</a>
-</li>
-<li {{ active|class_selected('aggregated') }}>
-  <a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-     data-event-label="Aggregated Metrics">{{ _('Aggregated Metrics') }}</a>
-</li>
-<li>
-  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-     data-event-label="Media Gallery">{{ _('Media Gallery') }}
-  </a>
-</li>
+{% endif %}
 {% endmacro %}
 
 {# This is designed to be used like this:
