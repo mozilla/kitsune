@@ -1,20 +1,25 @@
 import json
 import logging
 import time
-from datetime import datetime, time as datetime_time, timedelta
+from datetime import datetime, timedelta
+from datetime import time as datetime_time
 from functools import wraps
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
-
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
@@ -74,7 +79,6 @@ from kitsune.wiki.tasks import (
     send_reviewed_notification,
 )
 from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
-
 
 log = logging.getLogger("k.wiki")
 
@@ -1668,6 +1672,7 @@ def recent_revisions(request):
     c = {
         "revisions": revs,
         "form": form,
+        "locale": request.GET.get("locale", request.LANGUAGE_CODE),
     }
     if fragment:
         template = "wiki/includes/recent_revisions_fragment.html"

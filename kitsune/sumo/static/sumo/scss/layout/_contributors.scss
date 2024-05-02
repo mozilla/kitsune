@@ -45,13 +45,17 @@
 .media-search {
   margin-top: p.$spacing-xl;
   margin-bottom: p.$spacing-xl;
+
+  &.sumo-button {
+    padding: 20px;
+  }
 }
 
 .media-filters {
   display: flex;
   justify-content: space-between;
 
-  > * {
+  >* {
     width: 48%;
   }
 }
@@ -119,6 +123,7 @@
   display: block;
   margin: 0 auto;
 }
+
 .pick-a-way {
   display: flex;
   flex-wrap: wrap;
@@ -130,6 +135,7 @@
     width: 80px;
     height: 80px;
   }
+
   span {
     display: block;
     max-width: 280px;
@@ -177,6 +183,7 @@
   &.has-left-heading {
     align-items: center;
     width: 100%;
+
     h2 {
       flex: 1 1 280px;
     }
@@ -223,6 +230,7 @@ ol.headings-list {
     }
   }
 }
+
 .users {
   display: flex;
   flex-wrap: wrap;
@@ -231,9 +239,8 @@ ol.headings-list {
   li {
     flex: 1 1 100%;
     max-width: 340px;
-    @include p.bidi((
-      (margin, p.$spacing-sm p.$spacing-xl p.$spacing-sm 0, p.$spacing-sm 0 p.$spacing-sm p.$spacing-xl),
-    ));
+    @include p.bidi(((margin, p.$spacing-sm p.$spacing-xl p.$spacing-sm 0, p.$spacing-sm 0 p.$spacing-sm p.$spacing-xl),
+      ));
     position: relative;
     padding: p.$spacing-sm;
     border-radius: var(--global-radius);

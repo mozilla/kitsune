@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "dashboards/includes/macros.html" import print_readout, product_choice_list, print_subscription_menu, category_filter with context %}
-{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% set title = _('Knowledge Base Dashboard') %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set crumbs = [(None, title)] %}
@@ -71,5 +71,9 @@
 
 
 {% block side_top %}
-  {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'dashboard', True) }}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True, menu="contributor-tools", locale=locale) }}
+    </ul>
+  </nav>
 {% endblock %}

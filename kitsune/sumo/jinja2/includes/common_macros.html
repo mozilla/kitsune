@@ -80,7 +80,7 @@
                     "link_name": "main-menu.firefox-browser.product-home",
                     "link_detail": "firefox"
                   }'>
-                  {{ _('Firefox Browser') }}
+                  {{ _('Firefox browser') }}
                 </a>
               </li>
               <li>
@@ -104,13 +104,13 @@
                 </a>
               </li>
               <li>
-                <a href="{{ url('products.product', 'focus-firefox') }}"
+                <a href="{{ url('products.product', 'thunderbird') }}"
                   data-event-name="link_click"
                   data-event-parameters='{
-                    "link_name": "main-menu.firefox-focus.product-home",
-                    "link_detail": "focus-firefox"
+                    "link_name": "main-menu.thunderbird.product-home",
+                    "link_detail": "thunderbird"
                   }'>
-                  {{ _('Firefox Focus') }}
+                  {{ _('Thunderbird') }}
                 </a>
               </li>
               <li>
@@ -268,14 +268,14 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Get help with') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist-aaq">
-              <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'firefox-enterprise') }}">{{ _('Firefox for enterprise') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'relay') }}">{{ _('Firefox relay') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox browser') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'firefox-enterprise') }}">{{ _('Firefox for Enterprise') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'relay') }}">{{ _('Firefox Relay') }}</a></li>
               <li><a href="{{ url('questions.aaq_step2', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
               <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox focus') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox Focus') }}</a></li>
               <li><a href="{{ url('questions.aaq_step2', 'monitor') }}">{{ _('Monitor') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'mozilla-account') }}">{{ _('Mozilla account') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'mozilla-account') }}">{{ _('Mozilla Account') }}</a></li>
               <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
               <li><a
                   href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
@@ -339,7 +339,7 @@
                 <h4 class="mzp-c-menu-item-title">{{ _('Contributor tools') }}</h4>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                {{ _tools_nav_links(user, default_language, active) }}
+               {{ _tools_nav_links(user, default_language, active, context="main-menu") }}
               </ul>
             </section>
           </div>
@@ -483,82 +483,118 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
+{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions", locale=None, is_collapsible=False) -%}
 {% if user.is_authenticated %}
 <nav class="sidebar-nav" id="for-contributors-sidebar">
   <span class="details-heading"></span>
   {% if not li_only %}
-  <ul class="sidebar-nav--list">
+    <ul class="sidebar-nav--list">
+  {% endif %}
+    {% if menu == "contributor-tools" %}
+      <li class="sidebar-subheading sidebar-nav--heading-item hide-on-mobile">{{ _('Contributor tools') }}</li>
+      {{ _tools_nav_links(user, default_language, active, context="sidebar-menu", locale=locale, is_collapsible=is_collapsible) }}
+    {% else %}
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor discussions') }}</li>
+      {{ _discussion_nav_links(user, default_language, active, context="sidebar-menu") }}
     {% endif %}
-    <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('For Contributors') }}</li>
-    {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
-    {{ _tools_nav_links(user, default_language, active, context="sidebar") }}
 
-    {% if not li_only %}
-  </ul>
+  {% if not li_only %}
+    </ul>
   {% endif %}
 </nav>
 {% endif %}
 {%- endmacro %}
 
-{% macro _discussion_nav_links(user, default_language, active=None) -%}
-<li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('SUMO Community discussions') }}</a>
-</li>
-<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Support Forum Home">{{ _('Support forum discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support discussions') }}</a></li>
-<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
+{% macro _discussion_nav_links(user, default_language, active=None, context="main-menu") -%}
 {% if context == "main-menu" %}
-  <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all Discussions') }}</a></li>
+  {% set data_event_action = "main navigation" %}
+{% else %}
+  {% set data_event_action = "sidebar navigation" %}
 {% endif %}
-{% if context == "sidebar" %}
-  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile Support Discussions') }}</a></li>
-  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge Base Discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
+    data-event-action={{ data_event_action }} data-event-label="community discussions">{{ _('SUMO community discussions') }}</a>
+</li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social support discussions') }}</a></li>
+<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+    data-event-label="support forum home">{{ _('Support forum discussions') }}</a></li>
+<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+    data-event-label="article discussions">{{ _('Article discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
+    data-event-action={{ data_event_action }} data-event-label="L10N discussions">{{ _('Localization discussions') }}</a></li>
+{% if context == "main-menu" %}
+  <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all discussions') }}</a></li>
+{% endif %}
+{% if context == "sidebar-menu" %}
+  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile support discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge base discussions') }}</a></li>
 {% if user.has_perm('flagit.can_moderate') %}
-  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum Moderator Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum moderator discussions') }}</a></li>
 {% endif %}
-  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off Topic Discussions') }}</a></li>
-  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost Thread Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off topic discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost thread discussions') }}</a></li>
 {% endif %}
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None) -%}
+{% macro _tools_nav_links(user, default_language, active=None, context="main-menu", locale=None, is_collapsible=False) -%}
+{% if context == "main-menu" %}
+  {% set data_event_action = "main navigation" %}
+{% else %}
+  {% set data_event_action = "sidebar navigation" %}
+{% endif %}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
-    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
-      data-event-label="Moderate Forum Content">{{ _('Moderate forum content') }}
+    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="moderate forum content">{{ _('Moderate forum content') }}
     </a>
   </li>
 {% endif %}
 <li>
-  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+    data-event-label="dashboards">{{ _('Knowledge base dashboards') }}
   </a>
 </li>
 <li>
   <a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
-     data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}
+     data-event-action={{ data_event_action }} data-event-label="guides">{{ _('Guides') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Media Gallery">{{ _('Media Gallery') }}
+  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+    data-event-label=".edia gallery">{{ _('Media gallery') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Recent Revisions">{{ _('Recent Revisions') }}
+  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+     data-event-label="recent revisions">{{ _('Recent revisions') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Community Hub">{{ _('Community Hub') }}
+  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+     data-event-label="community hub">{{ _('Community hub') }}
   </a>
 </li>
+{% if context == "sidebar-menu" %}
+  <div {% if is_collapsible %} class="collapsible-content" {% endif %}>
+    <li>
+      <a href="{{ url('wiki.locales') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+        data-event-label="locales">{{ _('Locales') }}
+      </a>
+    </li>
+    <li {{ active|class_selected('metrics') }}></li>
+      <a href="{{ url('dashboards.locale_metrics', locale) }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+        data-event-label="locale metrics">{{ _('Locale metrics') }}</a>
+    </li>
+    <li {{ active|class_selected('aggregated') }}>
+      <a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+        data-event-label="aggregated metrics">{{ _('Aggregated metrics') }}</a>
+    </li>
+  </div>
+{% endif %}
+{% if is_collapsible %}
+  <a href="#" class="color-link show-more-btn hide-on-mobile" id="show-more-link">
+      Show More
+  </a>
+{% endif %}
 {% endmacro %}
 
 {# This is designed to be used like this:

@@ -1,16 +1,16 @@
 import json
-from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.models import Answer
 
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-from kitsune.access.decorators import permission_required, login_required
+from kitsune.access.decorators import login_required, permission_required
 from kitsune.flagit.models import FlaggedObject
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.models import Answer
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -60,7 +60,11 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
 @permission_required("flagit.can_moderate")
 def queue(request, content_type=None):
     """The moderation queue."""
-    return render(request, "flagit/queue.html", {"objects": FlaggedObject.objects.pending()})
+    return render(
+        request,
+        "flagit/queue.html",
+        {"objects": FlaggedObject.objects.pending(), "locale": request.LANGUAGE_CODE},
+    )
 
 
 @require_POST

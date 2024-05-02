@@ -166,6 +166,35 @@
     }
   }
 
+  .collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.8s ease-out;
+
+    @media screen and (max-width: 767px) {
+      max-height: 225px;
+    }
+
+    &.expanded {
+      max-height: 225px;
+    }
+  }
+
+  .show-more-btn {
+
+    &:after {
+      position: relative;
+      top: 7px;
+      margin-left: 5px;
+      content: url('protocol/img/icons/arrow-down.svg');
+      filter: invert(27%) sepia(48%) saturate(3683%) hue-rotate(204deg) brightness(91%) contrast(106%);
+    }
+
+    &.expanded::after {
+      content: url('protocol/img/icons/arrow-up.svg');
+    }
+  }
+
   @media #{p.$mq-lg} {
 
     // sublist is only used when the sidebar is in dropdown mode for mobile/tablet.

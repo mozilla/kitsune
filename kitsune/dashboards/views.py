@@ -3,7 +3,7 @@ import logging
 from datetime import date, timedelta
 
 from django.conf import settings
-from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET
@@ -11,19 +11,18 @@ from django.views.decorators.http import require_GET
 from kitsune.announcements.views import user_can_announce
 from kitsune.dashboards import PERIODS
 from kitsune.dashboards.readouts import (
-    l10n_overview_rows,
-    kb_overview_rows,
-    READOUTS,
-    L10N_READOUTS,
     CONTRIBUTOR_READOUTS,
+    L10N_READOUTS,
+    READOUTS,
+    kb_overview_rows,
+    l10n_overview_rows,
 )
-from kitsune.dashboards.utils import render_readouts, get_locales_by_visit
+from kitsune.dashboards.utils import get_locales_by_visit, render_readouts
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import smart_int
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Locale
-
 
 log = logging.getLogger("k.dashboards")
 
@@ -162,6 +161,7 @@ def contributors(request):
             "overview_modes": PERIODS,
             "category": category,
             "categories": CATEGORIES,
+            "locale": request.LANGUAGE_CODE,
         },
     )
 
