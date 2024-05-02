@@ -1,0 +1,2096 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Kitsune is the platform that powers SuMo">
+      
+      
+      
+        <link rel="canonical" href="https://support.mozilla.org/localization/">
+      
+      
+        <link rel="prev" href="../email/">
+      
+      
+        <link rel="next" href="../elastic_search/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+    
+    
+      
+        <title>Localization - Kitsune Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#making-strings-localizable" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Kitsune Documentation" class="md-header__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kitsune Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Localization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Kitsune Documentation" class="md-nav__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Kitsune Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Introduction
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Join this project!
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hacking_howto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Hacking howto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contactus/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contact us
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer's guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer's guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conventions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conventions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../patching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Patching Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tests/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    All about testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../celery/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Celery
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Email from Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Localization
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Localization
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#making-strings-localizable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making Strings Localizable
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Making Strings Localizable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interpolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpolation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#localization-comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Localization Comments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-context-with-msgctxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Context with msgctxt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plurals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plurals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-html-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in HTML Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Strings in HTML Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-trans-blocks-for-long-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using {% trans %} Blocks for Long Strings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in Python
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Strings in Python">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lazily-translated-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lazily Translated Strings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-the-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in the Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-email-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in Email Templates
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-localized-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing localized strings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linting-localized-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linting localized strings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-the-localizations-getting-localizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting the Localizations {#getting-localizations}
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-the-localizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Updating the Localizations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating the Localizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-new-locale" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding a New Locale
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiling-mo-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compiling MO Files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-arent-localized-strings-getting-updated-on-prod" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why aren't localized strings getting updated on prod?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why aren't localized strings getting updated on prod?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reporting-errors-in-po-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reporting errors in .po files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../elastic_search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Elastic search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Frontend
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../svelte/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Svelte
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser_permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Browser permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zendesk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Zendesk
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SEO
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Other Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../switching_devices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Switching devices
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SuMo
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            SuMo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kitsune Deployments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    K8s
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sla/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Service Level Agreement
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../questions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ask A Question
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../badges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Badges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Architectural Decisions
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Architectural Decisions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architectural-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architectural Decision Records
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0001-record-architecture-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Record
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0002-es-l10n-content/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - L10N content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0003-es-aaq-documents/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - AAQ content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0004-type-checking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Type Checking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#making-strings-localizable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making Strings Localizable
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Making Strings Localizable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interpolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpolation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#localization-comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Localization Comments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-context-with-msgctxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Context with msgctxt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plurals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plurals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-html-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in HTML Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Strings in HTML Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-trans-blocks-for-long-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using {% trans %} Blocks for Long Strings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in Python
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Strings in Python">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lazily-translated-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lazily Translated Strings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-the-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in the Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strings-in-email-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Strings in Email Templates
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-localized-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing localized strings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linting-localized-strings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linting localized strings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-the-localizations-getting-localizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting the Localizations {#getting-localizations}
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-the-localizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Updating the Localizations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating the Localizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-new-locale" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding a New Locale
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiling-mo-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compiling MO Files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-arent-localized-strings-getting-updated-on-prod" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why aren't localized strings getting updated on prod?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why aren't localized strings getting updated on prod?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reporting-errors-in-po-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reporting errors in .po files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Localization</h1>
+
+<p>Kitsune is localized with
+<a href="http://www.gnu.org/software/gettext/">gettext</a>. User-facing strings in
+the code or templates need to be marked for gettext localization.</p>
+<p>We use <a href="https://pontoon.mozilla.org/">Pontoon</a> to provide an easy
+interface to localizing these files. Localizers are also free to
+download the PO files and use whatever tool they are comfortable with.</p>
+<h2 id="making-strings-localizable">Making Strings Localizable<a class="headerlink" href="#making-strings-localizable" title="Permanent link">&para;</a></h2>
+<p>Making strings in templates localizable is exceptionally easy. Making
+strings in Python localizable is a little more complicated. The short
+answer, though, is just wrap the string in <code>_()</code>.</p>
+<h3 id="interpolation">Interpolation<a class="headerlink" href="#interpolation" title="Permanent link">&para;</a></h3>
+<p>A string is often a combination of a fixed string and something
+changing, for example, <code>Welcome, James</code> is a combination of the fixed
+part <code>Welcome,</code>, and the changing part <code>James</code>. The naive solution is to
+localize the first part and the follow it with the name:</p>
+<div class="highlight"><pre><span></span><code>_(&#39;Welcome, &#39;) + username
+</code></pre></div>
+<p>This is <strong>wrong!</strong></p>
+<p>In some locales, the word order may be different. Use Python string
+formatting to interpolate the changing part into the string:</p>
+<div class="highlight"><pre><span></span><code>_(&#39;Welcome, {name}&#39;).format(name=username)
+</code></pre></div>
+<p>Python gives you a lot of ways to interpolate strings. The best way is
+to use Py3k formatting and kwargs. That's the clearest for localizers.</p>
+<p>The worst way is to use <code>%(label)s</code>, as localizers seem to have all
+manner of trouble with it. Options like <code>%s</code> and <code>{0}</code> are somewhere in
+the middle, and generally OK if it's clear from context what they will
+be.</p>
+<h3 id="localization-comments">Localization Comments<a class="headerlink" href="#localization-comments" title="Permanent link">&para;</a></h3>
+<p>Sometimes, it can help localizers to describe where a string comes from,
+particularly if it can be difficult to find in the interface, or is not
+very self-descriptive (e.g. very short strings). If you immediately
+precede the string with a comment that starts <code>L10n:</code>, the comment will
+be added to the PO file, and visible to localizers.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>rev_data.append({
+            &#39;x&#39;: 1000 * int(time.mktime(rdate.timetuple())),
+            # L10n: &#39;R&#39; is the first letter of &quot;Revision&quot;.
+            &#39;title&#39;: _(&#39;R&#39;, &#39;revision_heading&#39;),
+            &#39;text&#39;: str(_(&#39;Revision %s&#39;)) % rev.created
+            #&#39;url&#39;: &#39;http://www.google.com/&#39;  # Not supported yet
+        })
+</code></pre></div>
+<h3 id="adding-context-with-msgctxt">Adding Context with msgctxt<a class="headerlink" href="#adding-context-with-msgctxt" title="Permanent link">&para;</a></h3>
+<p>Strings may be the same in English, but different in other languages.
+English, for example, has no grammatical gender, and sometimes the noun
+and verb forms of a word are identical.</p>
+<p>To make it possible to localize these correctly, we can add "context"
+(known in gettext as "msgctxt") to differentiate two otherwise
+identical strings.</p>
+<p>For example, the string "Search" may be a noun or a verb in English.
+In a heading, it may be considered a noun, but on a button, it may be a
+verb. It's appropriate to add a context (like "button") to one of
+them.</p>
+<p>Generally, we should only add context if we are sure the strings aren't
+used in the same way, or if localizers ask us to.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">tower</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="o">...</span>
+
+<span class="n">foo</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Search&#39;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s1">&#39;text for the search button on the form&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="plurals">Plurals<a class="headerlink" href="#plurals" title="Permanent link">&para;</a></h3>
+<p>"You have 1 new messages" grates on discerning ears. Fortunately,
+gettext gives us a way to fix that in English <em>and</em> other locales, the
+<code>ngettext</code> function:</p>
+<div class="highlight"><pre><span></span><code><span class="n">ngettext</span><span class="p">(</span><span class="s1">&#39;singular&#39;</span><span class="p">,</span> <span class="s1">&#39;plural&#39;</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+</code></pre></div>
+<p>A more realistic example might be:</p>
+<div class="highlight"><pre><span></span><code><span class="n">ngettext</span><span class="p">(</span><span class="s1">&#39;Found </span><span class="si">{count}</span><span class="s1"> result.&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;Found </span><span class="si">{count}</span><span class="s1"> results&#39;</span><span class="p">,</span>
+         <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">))</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+</code></pre></div>
+<p>This method takes three arguments because English only needs three,
+i.e., zero is considered "plural" for English. Other locales may have
+different plural rules, and require different phrases for, say 0, 1,
+2-3, 4-10, &gt;10. That's absolutely fine, and gettext makes it possible.</p>
+<h3 id="strings-in-html-templates">Strings in HTML Templates<a class="headerlink" href="#strings-in-html-templates" title="Permanent link">&para;</a></h3>
+<p>When putting new text into a template, all you need to do is wrap it in
+a <code>_()</code> call:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ _(&#39;Heading&#39;) }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+</code></pre></div>
+<p>Adding context is easy, too:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ _(&#39;Heading&#39;, &#39;context&#39;) }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+</code></pre></div>
+<p>L10n comments need to be Jinja2 comments:</p>
+<div class="highlight"><pre><span></span><code><span class="c">{# L10n: Describes this heading #}</span>
+<span class="x">&lt;h1&gt;</span><span class="cp">{{</span> <span class="kp">_</span><span class="o">(</span><span class="s1">&#39;Heading&#39;</span><span class="o">)</span> <span class="cp">}}</span><span class="x">&lt;/h1&gt;</span>
+</code></pre></div>
+<p>Note that Jinja2 escapes all content output through <code>{{ }}</code> by default.
+To put HTML in a string, you'll need to add the <code>|safe</code> filter:</p>
+<div class="highlight"><pre><span></span><code><span class="x">&lt;h1&gt;</span><span class="cp">{{</span> <span class="kp">_</span><span class="o">(</span><span class="s1">&#39;Firefox &lt;span&gt;Help&lt;/span&gt;&#39;</span><span class="o">)|</span><span class="nf">safe</span> <span class="cp">}}</span><span class="x">&lt;/h1&gt;</span>
+</code></pre></div>
+<p>To interpolate, you should use one of two Jinja2 filters: <code>|f()</code> or, in
+some cases, <code>|fe()</code>. <code>|f()</code> has exactly the same arguments as
+<code>u''.format()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{{</span> <span class="kp">_</span><span class="o">(</span><span class="s1">&#39;Welcome, {name}!&#39;</span><span class="o">)|</span><span class="nf">f</span><span class="o">(</span><span class="nv">name</span><span class="o">=</span><span class="nv">request.user.username</span><span class="o">)</span> <span class="cp">}}</span>
+</code></pre></div>
+<p>The <code>|fe()</code> is exactly like the <code>|f()</code> filter, but escapes its arguments
+before interpolating, then returns a "safe" object. Use it when the
+localized string contains HTML:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{{</span> <span class="kp">_</span><span class="o">(</span><span class="s1">&#39;Found &lt;strong&gt;{0}&lt;/strong&gt; results.&#39;</span><span class="o">)|</span><span class="nf">fe</span><span class="o">(</span><span class="nv">num_results</span><span class="o">)</span> <span class="cp">}}</span>
+</code></pre></div>
+<p>Note that you <em>do not need</em> to use <code>|safe</code> with <code>|fe()</code>. Also note that
+while it may look similar, the following is <em>not</em> safe:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{{</span> <span class="kp">_</span><span class="o">(</span><span class="s1">&#39;Found &lt;strong&gt;{0}&lt;/strong&gt; results.&#39;</span><span class="o">)|</span><span class="nf">f</span><span class="o">(</span><span class="nv">num_results</span><span class="o">)|</span><span class="nf">safe</span> <span class="cp">}}</span>
+</code></pre></div>
+<p>The <code>ngettext</code> function is also available:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{{</span> <span class="nv">ngettext</span><span class="o">(</span><span class="s1">&#39;Found {0} result.&#39;</span><span class="o">,</span>
+            <span class="s1">&#39;Found {0} results.&#39;</span><span class="o">,</span>
+            <span class="nv">num_results</span><span class="o">)|</span><span class="nf">f</span><span class="o">(</span><span class="nv">num_results</span><span class="o">)</span> <span class="cp">}}</span>
+</code></pre></div>
+<h4 id="using-trans-blocks-for-long-strings">Using <code>{% trans %}</code> Blocks for Long Strings<a class="headerlink" href="#using-trans-blocks-for-long-strings" title="Permanent link">&para;</a></h4>
+<p>When a string is very long, i.e. long enough to make Github scroll
+sideways, it should be line-broken and put in a <code>{% trans %}</code> block.
+<code>{% trans %}</code> blocks work like other block-level tags in Jinja2, except
+they cannot have other tags, except strings, inside them.</p>
+<p>The only thing that should be inside a <code>{% trans %}</code> block is printing a
+string with <code>{{ string }}</code>. These are defined in the opening
+<code>{% trans %}</code> tag:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">trans</span> <span class="nv">user</span><span class="o">=</span><span class="nv">request.user.username</span> <span class="cp">%}</span>
+<span class="x">    Thanks for registering, </span><span class="cp">{{</span> <span class="nv">user</span> <span class="cp">}}</span><span class="x">! We&#39;re so...</span>
+<span class="x">    hope that you&#39;ll...</span>
+<span class="cp">{%</span> <span class="k">endtrans</span> <span class="cp">%}</span>
+</code></pre></div>
+<p>You can also provide comments:</p>
+<div class="highlight"><pre><span></span><code><span class="c">{# L10n: User is a username #}</span>
+<span class="cp">{%</span> <span class="k">trans</span> <span class="nv">user</span><span class="o">=</span><span class="nv">request.user.username</span> <span class="cp">%}</span>
+<span class="x">    Thanks for registering, </span><span class="cp">{{</span> <span class="nv">user</span> <span class="cp">}}</span><span class="x">! We&#39;re so...</span>
+<span class="x">    hope that you&#39;ll...</span>
+<span class="cp">{%</span> <span class="k">endtrans</span> <span class="cp">%}</span>
+</code></pre></div>
+<p>When a block contains HTML with attributes, those which don't need to
+be localized should be passed as arguments. This ensures strings won't
+need to be re-localized if those attributes change:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">trans</span> <span class="nv">url</span><span class="o">=</span><span class="s2">&quot;http://example.com&quot;</span> <span class="cp">%}</span>
+<span class="x">    Please visit &lt;a href=&quot;</span><span class="cp">{{</span> <span class="nv">url</span> <span class="cp">}}</span><span class="x">&quot; title=&quot;External Site&quot;&gt;our FAQ&lt;/a&gt; for more information.</span>
+<span class="cp">{%</span> <span class="k">endtrans</span> <span class="cp">%}</span>
+</code></pre></div>
+<h3 id="strings-in-python">Strings in Python<a class="headerlink" href="#strings-in-python" title="Permanent link">&para;</a></h3>
+<div class="admonition tip">
+<p class="admonition-title">String location</p>
+<p>Whenever you are adding a string in Python, ask yourself if it really
+needs to be there, or if it should be in the template. Keep logic and
+presentation separate!</p>
+</div>
+<p>Strings in Python are more complex for two reasons:</p>
+<ol>
+<li>We need to make sure we're always using Unicode strings and the
+    Unicode-friendly versions of the functions.</li>
+<li>If you use the <code>ugettext</code> function in the wrong place, the string
+    may end up in the wrong locale!</li>
+</ol>
+<p>Here's how you might localize a string in a view:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">tower</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="k">def</span> <span class="nf">my_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Oh hi, staff!&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;You are not staff!&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>Interpolation is done through normal Python string formatting:</p>
+<div class="highlight"><pre><span></span><code><span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Oh, hi, </span><span class="si">{user}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+</code></pre></div>
+<p><code>ugettext</code> supports context, too:</p>
+<div class="highlight"><pre><span></span><code><span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Search&#39;</span><span class="p">,</span> <span class="s1">&#39;context&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>L10n comments are normal one-line Python comments:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># L10n: A message to users.</span>
+<span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Oh, hi there!&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>If you need to use plurals, import the function <code>ungettext</code> from Tower:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">tower</span> <span class="kn">import</span> <span class="n">ungettext</span><span class="p">,</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="n">msg</span> <span class="o">=</span> <span class="n">ungettext</span><span class="p">(</span><span class="s1">&#39;Found </span><span class="si">{0}</span><span class="s1"> result&#39;</span><span class="p">,</span> <span class="s1">&#39;Found </span><span class="si">{0}</span><span class="s1"> results&#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="lazily-translated-strings">Lazily Translated Strings<a class="headerlink" href="#lazily-translated-strings" title="Permanent link">&para;</a></h4>
+<p>You can use <code>ugettext</code> or <code>ungettext</code> only in views or functions called
+from views. If the function will be evaluated when the module is loaded,
+then the string may end up in English or the locale of the last request!
+(We're tracking down that issue.)</p>
+<p>Examples include strings in module-level code, arguments to functions in
+class definitions, strings in functions called from outside the context
+of a view. To localize these strings, you need to use the <code>_lazy</code>
+versions of the above methods, <code>ugettext_lazy</code> and <code>ungettext_lazy</code>. The
+result doesn't get translated until it is evaluated as a string, for
+example by being output or passed to <code>str()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">tower</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_lazy</span>
+
+<span class="n">PAGE_TITLE</span> <span class="o">=</span> <span class="n">_lazy</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Page Title&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>ugettext_lazy</code> also supports context.</p>
+<p>It is very important to pass Unicode objects to the <code>_lazy</code> versions of
+these functions. Failure to do so results in significant issues when
+they are evaluated as strings.</p>
+<p>If you need to work with a lazily-translated string, you'll first need
+to convert it to a <code>str</code> object:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">tower</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_lazy</span>
+
+<span class="n">WELCOME</span> <span class="o">=</span> <span class="n">_lazy</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;Welcome, </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">my_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="c1"># Fails:</span>
+    <span class="n">WELCOME</span> <span class="o">%</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span>
+
+    <span class="c1"># Works:</span>
+    <span class="nb">str</span><span class="p">(</span><span class="n">WELCOME</span><span class="p">)</span> <span class="o">%</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span>
+</code></pre></div>
+<h3 id="strings-in-the-database">Strings in the Database<a class="headerlink" href="#strings-in-the-database" title="Permanent link">&para;</a></h3>
+<p>There is some user generated content that needs to be localizable. For
+example, karma titles can be created in the admin site and need to be
+localized when displayed to users. A django management command is used
+for this. The first step to making a model's field localizable is
+adding it to <code>DB_LOCALIZE</code> in <code>settings.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">DB_LOCALIZE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;karma&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;Title&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;attrs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;comments&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;This is a karma title.&#39;</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;appname&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;ModelName&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;attrs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;field_name&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;comments&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Optional comments for localizers.&#39;</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Then, all you need to do is run the <code>extract_db</code> management command:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>manage.py<span class="w"> </span>extract_db
+</code></pre></div>
+<p><em>Be sure to have a recent database from production when running the
+command.</em></p>
+<p>By default, this will write all the strings to
+[kitsune/sumo/db_strings.py]{.title-ref} and they will get picked up
+during the normal string extraction (see below).</p>
+<h3 id="strings-in-email-templates">Strings in Email Templates<a class="headerlink" href="#strings-in-email-templates" title="Permanent link">&para;</a></h3>
+<p>Currently, email templates are text-based and not in HTML. Because of
+that you should use this style guide:</p>
+<ol>
+<li>
+<p>The entire email should be wrapped in autoescape. e.g.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">autoescape</span> <span class="kp">false</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">trans</span> <span class="cp">%}</span>
+The entire email should be wrapped in autoescape.
+<span class="cp">{%</span> <span class="k">endtrans</span> <span class="cp">%}</span>
+
+
+...
+<span class="cp">{%</span> <span class="k">endautoescape</span> <span class="cp">%}</span>
+</code></pre></div>
+</li>
+<li>
+<p>After an <code>{% endtrans %}</code>, you need two blank lines (three carriage
+    returns). The first is eaten by the tag. The other two show up in
+    the email. e.g.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">{%</span> <span class="k">trans</span> <span class="cp">%}</span>
+<span class="x">To confirm your subscription, stand up, put your hands on</span>
+<span class="x">your hips and do the hokey pokey.</span>
+<span class="cp">{%</span> <span class="k">endtrans</span> <span class="cp">%}</span>
+
+
+<span class="cp">{{</span> <span class="kp">_</span><span class="o">(</span><span class="s1">&#39;Thanks!&#39;</span><span class="o">)</span> <span class="cp">}}</span>
+</code></pre></div>
+<p>Produces this:</p>
+<div class="highlight"><pre><span></span><code>To confirm your subscription, stand up, put your hands on
+your hips and do the hokey pokey.
+
+Thanks!
+</code></pre></div>
+</li>
+<li>
+<p>Putting in line breaks in a <code>trans</code> block doesn't have an effect
+    since <code>trans</code> blocks get gettexted and whitespace is collapsed.</p>
+</li>
+</ol>
+<h2 id="testing-localized-strings">Testing localized strings<a class="headerlink" href="#testing-localized-strings" title="Permanent link">&para;</a></h2>
+<p>When we add strings that need to be localized, it can take a couple of
+weeks for us to get translations of those localized strings. This makes
+it difficult to find localization issues.</p>
+<p>Enter <a href="https://github.com/willkg/dennis/">Dennis</a>.</p>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>$ ./scripts/test_locales.sh
+</code></pre></div>
+<p>It'll extract all the strings, create a <code>.pot</code> file, then create a
+Pirate translation of all strings. The Pirate strings are available in
+the xx locale. After running the <code>test_locales.sh</code> script, you can
+access the xx locale with:</p>
+<blockquote>
+<p><a href="http://localhost:8000/xx/">http://localhost:8000/xx/</a></p>
+</blockquote>
+<p>Strings in the Pirate translation have the following properties:</p>
+<ol>
+<li>they are longer than the English string: helps us find layout and
+    wrapping issues</li>
+<li>they have at least one unicode character: helps us find unicode
+    issues</li>
+<li>they are easily discernable from the English versions: helps us find
+    strings that aren't translated</li>
+</ol>
+<p>::: note
+::: title
+Note
+:::</p>
+<p>The xx locale is only available on your local machine. It is not
+available on -dev, -stage, or -prod.
+:::</p>
+<h2 id="linting-localized-strings">Linting localized strings<a class="headerlink" href="#linting-localized-strings" title="Permanent link">&para;</a></h2>
+<p>You can lint localized strings for warnings and errors:</p>
+<div class="highlight"><pre><span></span><code>$ dennis-cmd lint locale/
+</code></pre></div>
+<p>Or just errors:</p>
+<div class="highlight"><pre><span></span><code>$ dennis-cmd lint --errorsonly locale/
+</code></pre></div>
+<p>You can see help text:</p>
+<div class="highlight"><pre><span></span><code>$ dennis-cmd
+</code></pre></div>
+<h2 id="getting-the-localizations-getting-localizations">Getting the Localizations {#getting-localizations}<a class="headerlink" href="#getting-the-localizations-getting-localizations" title="Permanent link">&para;</a></h2>
+<p>Localizations are not stored in this repository, but are in a separate
+Git repo:</p>
+<blockquote>
+<p><a href="https://github.com/mozilla-l10n/sumo-l10n">https://github.com/mozilla-l10n/sumo-l10n</a></p>
+</blockquote>
+<p>You don't need the localization files for general development. However,
+if you need them for something, they're pretty easy to get:</p>
+<div class="highlight"><pre><span></span><code>$ cd kitsune
+$ git clone https://github.com/mozilla-l10n/sumo-l10n locale
+</code></pre></div>
+<h2 id="updating-the-localizations">Updating the Localizations<a class="headerlink" href="#updating-the-localizations" title="Permanent link">&para;</a></h2>
+<p>When strings are added or updated, we need to update the templates and
+PO files for localizers. Updating strings is pretty easy. Check out the
+localizations as above, then:</p>
+<div class="highlight"><pre><span></span><code>$ python manage.py extract
+$ python manage.py merge
+</code></pre></div>
+<p>Congratulations! You've now updated the POT and PO files.</p>
+<p>Sometimes this can leave a bunch of garbage files with <code>.po~</code>
+extensions. You should delete these, never commit them:</p>
+<div class="highlight"><pre><span></span><code>$ find . -name &quot;*.po~&quot; -delete
+</code></pre></div>
+<h3 id="adding-a-new-locale">Adding a New Locale<a class="headerlink" href="#adding-a-new-locale" title="Permanent link">&para;</a></h3>
+<p>Say you wanted to add <code>fa-IR</code>:</p>
+<div class="highlight"><pre><span></span><code>$ mkdir -p locale/fa-IR/LC_MESSAGES
+$ python manage.py merge
+</code></pre></div>
+<p>Then add 'fa-IR' to SUMO_LANGUAGES in settings.py and make sure there
+is an entry in lib/languages.json (if not, add it).</p>
+<p>And finally, add a migration with:</p>
+<div class="highlight"><pre><span></span><code>INSERT INTO `wiki_locale` (`locale`) VALUES (&#39;fa-IR&#39;);
+</code></pre></div>
+<p>Done!</p>
+<h2 id="compiling-mo-files">Compiling MO Files<a class="headerlink" href="#compiling-mo-files" title="Permanent link">&para;</a></h2>
+<p>gettext is so fast for localization because it doesn't parse text
+files, it reads a binary format. You can easily compile that binary file
+from the PO files in the repository.</p>
+<p>We don't store MO files in the repository because they need to change
+every time the corresponding PO file changes, so it's silly and not
+worth it. They are ignored by <code>.gitignore</code>, but please make sure you
+don't forcibly add them to the repository.</p>
+<p>There is a shell script to compile the MO files for you:</p>
+<div class="highlight"><pre><span></span><code>$ ./locale/compile-mo.sh locale
+</code></pre></div>
+<p>Done!</p>
+<h2 id="why-arent-localized-strings-getting-updated-on-prod">Why aren't localized strings getting updated on prod?<a class="headerlink" href="#why-arent-localized-strings-getting-updated-on-prod" title="Permanent link">&para;</a></h2>
+<p>We use Dennis to
+<code>lint .po files for errors&lt;localization:Linting localized strings&gt;</code>{.interpreted-text
+role="ref"} that cause HTTP 500 errors in production. Things like
+malformed variables, variables in the translated string that aren't in
+the original and that sort of thing.</p>
+<p>For example, this would cause the site to break:</p>
+<div class="highlight"><pre><span></span><code>#: kitsune/questions/templates/questions/includes/answer.html:19
+msgid &quot;{num} answers&quot;
+msgstr &quot;{0} antwoorden&quot;
+</code></pre></div>
+<p>In this example, the <code>{0}</code> is wrong.</p>
+<h3 id="reporting-errors-in-po-files">Reporting errors in .po files<a class="headerlink" href="#reporting-errors-in-po-files" title="Permanent link">&para;</a></h3>
+<p>When we do a deployment to production, we dump all the Dennis output
+into:</p>
+<p><a href="https://support.mozilla.org/static/postatus.txt">https://support.mozilla.org/static/postatus.txt</a></p>
+<p>We need to check that periodically and report the errors.</p>
+<p>If there are errors in those files, we need to open up a bug in
+<strong>Mozilla Localizations</strong> -&gt; <em>locale code</em> with the specifics.</p>
+<p>Product:</p>
+<blockquote>
+<p>Mozilla Localizations</p>
+</blockquote>
+<p>Component:</p>
+<blockquote>
+<p>The locale code for the language in question</p>
+</blockquote>
+<p>Bug summary:</p>
+<blockquote>
+<p>Use the error line</p>
+</blockquote>
+<p>Bug description template:</p>
+<blockquote>
+<div class="highlight"><pre><span></span><code>We found errors in the translated strings for Mozilla Support
+&lt;https://support.mozilla.org/&gt;. The errors are as follows:
+
+
+&lt;paste errors here&gt;
+
+
+Until these errors are fixed, we can&#39;t deploy updates to the
+strings for this locale to production.
+
+Mozilla Support strings can be fixed in the Support Mozilla project
+in Pontoon &lt;https://pontoon.mozilla.org/projects/sumo/&gt;.
+
+If you have any questions, let us know.
+</code></pre></div>
+</blockquote>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.top", "toc.follow", "content.code.copy", "content.code.highlight"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      
+    
+  </body>
+</html>

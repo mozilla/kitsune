@@ -1,0 +1,1812 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Kitsune is the platform that powers SuMo">
+      
+      
+      
+        <link rel="canonical" href="https://support.mozilla.org/elastic_search/">
+      
+      
+        <link rel="prev" href="../localization/">
+      
+      
+        <link rel="next" href="../frontend/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+    
+    
+      
+        <title>Elastic search - Kitsune Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#search" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Kitsune Documentation" class="md-header__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kitsune Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Elastic search
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Kitsune Documentation" class="md-nav__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Kitsune Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Introduction
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Join this project!
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hacking_howto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Hacking howto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contactus/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contact us
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer's guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer's guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conventions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conventions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../patching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Patching Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tests/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    All about testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../celery/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Celery
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Email from Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Localization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Elastic search
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Elastic search
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#search" class="md-nav__link">
+    <span class="md-ellipsis">
+      Search
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Search">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#development-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development tips
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-fields-to-a-live-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding fields to a live index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexing-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexing performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datetimes-and-timezones" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datetimes and timezones
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#print-elasticsearch-queries-in-your-development-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      Print ElasticSearch queries in your development console
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulate-slow-and-out-of-order-query-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulate slow and out of order query responses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synonyms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synonyms
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Synonyms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hyponyms-and-hypernyms-subtypes-and-supertypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hyponyms and hypernyms (subtypes and supertypes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-the-rest-of-the-analysis-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with the rest of the analysis chain
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interaction with the rest of the analysis chain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stop-words" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stop words
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applying-to-all-locales" class="md-nav__link">
+    <span class="md-ellipsis">
+      Applying to all locales
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Updating
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#on-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      On production
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#character-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Character mappings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Frontend
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../svelte/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Svelte
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser_permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Browser permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zendesk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Zendesk
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SEO
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Other Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../switching_devices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Switching devices
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SuMo
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            SuMo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kitsune Deployments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    K8s
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sla/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Service Level Agreement
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../questions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ask A Question
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../badges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Badges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Architectural Decisions
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Architectural Decisions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architectural-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architectural Decision Records
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0001-record-architecture-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Record
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0002-es-l10n-content/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - L10N content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0003-es-aaq-documents/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - AAQ content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0004-type-checking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Type Checking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#search" class="md-nav__link">
+    <span class="md-ellipsis">
+      Search
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Search">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#development-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development tips
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-fields-to-a-live-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding fields to a live index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexing-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexing performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datetimes-and-timezones" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datetimes and timezones
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#print-elasticsearch-queries-in-your-development-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      Print ElasticSearch queries in your development console
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulate-slow-and-out-of-order-query-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulate slow and out of order query responses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synonyms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synonyms
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Synonyms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hyponyms-and-hypernyms-subtypes-and-supertypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hyponyms and hypernyms (subtypes and supertypes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-the-rest-of-the-analysis-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interaction with the rest of the analysis chain
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interaction with the rest of the analysis chain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stop-words" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stop words
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applying-to-all-locales" class="md-nav__link">
+    <span class="md-ellipsis">
+      Applying to all locales
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Updating
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#on-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      On production
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#character-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Character mappings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Elastic search</h1>
+
+<h2 id="search">Search<a class="headerlink" href="#search" title="Permanent link">&para;</a></h2>
+<h3 id="development-tips">Development tips<a class="headerlink" href="#development-tips" title="Permanent link">&para;</a></h3>
+<h4 id="adding-fields-to-a-live-index">Adding fields to a live index<a class="headerlink" href="#adding-fields-to-a-live-index" title="Permanent link">&para;</a></h4>
+<p>Elastic supports adding new fields to an existing mapping,
+along with some other operations:
+<a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.9/mapping.html#add-field-mapping">https://www.elastic.co/guide/en/elasticsearch/reference/7.9/mapping.html#add-field-mapping</a></p>
+<p>To know whether a change you make to a Document will work in prod,
+try it locally having already set up the mapping:</p>
+<div class="highlight"><pre><span></span><code>./manage.py es_init --limit TestDocument
+
+... make changes to TestDocument ...
+
+./manage.py es_init --limit TestDocument
+</code></pre></div>
+<p>If that fails with an error,
+you'll need to create a new index with the new mapping,
+and reindex everything into that index.</p>
+<p>However if it succeeds then it should also work on prod.</p>
+<p>Once the changes are deployed to prod,
+and the mapping is updated with <code>es_init</code>,
+some documents may need to be reindexed.
+This is because we disable dynamic mapping in <code>SumoDocument</code>,
+to prevent a dynamic mapping of the wrong type being set up before <code>es_init</code> was able to be run during a deployment.</p>
+<p>So to ensure no data is missing from the index,
+run something like:</p>
+<div class="highlight"><pre><span></span><code>./manage.py es_reindex --limit TestDocument --updated-after &lt;datetime of deploy&gt; --updated-before &lt;datetime of mapping update&gt;
+</code></pre></div>
+<h4 id="indexing-performance">Indexing performance<a class="headerlink" href="#indexing-performance" title="Permanent link">&para;</a></h4>
+<p>When adding or editing elastic documents,
+you might want to add the <code>--print-sql-count</code> argument when testing out your changes,
+to see how many SQL queries are being executed:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">CELERY_TASK_ALWAYS_EAGER</span><span class="o">=</span>True<span class="w"> </span>./manage.py<span class="w"> </span>es_reindex<span class="w"> </span>--print-sql-count<span class="w"> </span>--sql-chunk-size<span class="o">=</span><span class="m">100</span><span class="w"> </span>--count<span class="o">=</span><span class="m">100</span>
+</code></pre></div>
+<p>If the result is much less than 100,
+then you have a well optimized document for indexing.
+However, if the result is some multiple of 100,
+then unfortunately one or more SQL queries are being executed for each instance being indexed.
+Consider using some combination of
+<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#select-related"><code>select_related</code></a>,
+<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#prefetch-related"><code>prefetch_related</code></a>
+or <a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#annotate">annotations</a>
+to bring that number down.</p>
+<h4 id="datetimes-and-timezones">Datetimes and timezones<a class="headerlink" href="#datetimes-and-timezones" title="Permanent link">&para;</a></h4>
+<p>As a first step in our migration to using timezone-aware datetimes throughout the application,
+all datetimes stored in Elastic should be timezone-aware,
+so as to avoid having to migrate them later.</p>
+<p>If inheriting from <code>SumoDocument</code>,
+any naive datetime set in a <code>Date</code> field will be automatically converted into a timezone-aware datetime,
+with the naive datetime assumed to be in the application's <code>TIME_ZONE</code>.</p>
+<p>To avoid loss of precision around DST switches,
+where possible aware datetimes should be set.
+To generate an aware datetime do:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">datetime</span><span class="o">,</span> <span class="nn">timezone</span>
+
+<span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+</code></pre></div>
+<p>This should be used instead of
+<a href="https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.now"><code>django.utils.timezone.now()</code></a>
+as that returns a naive or aware datetime depending on the value of <code>USE_TZ</code>, whereas we want datetimes in Elastic to always be timezone-aware.</p>
+<h4 id="print-elasticsearch-queries-in-your-development-console">Print ElasticSearch queries in your development console<a class="headerlink" href="#print-elasticsearch-queries-in-your-development-console" title="Permanent link">&para;</a></h4>
+<p>You can set the following variable in your .env file to enable the logging of the queries that are sent to your local ElasticSearch instance.</p>
+<div class="highlight"><pre><span></span><code>ES_ENABLE_CONSOLE_LOGGING=True
+</code></pre></div>
+<h4 id="simulate-slow-and-out-of-order-query-responses">Simulate slow and out of order query responses<a class="headerlink" href="#simulate-slow-and-out-of-order-query-responses" title="Permanent link">&para;</a></h4>
+<p>To test how Instant Search behaves with slow and out of order responses you can add a snippet like this:</p>
+<div class="highlight"><pre><span></span><code>from time import sleep
+from random import randint
+sleep(randint(1, 10))
+</code></pre></div>
+<p>to <code>kitsune.search.views.simple_search</code>.</p>
+<h4 id="synonyms">Synonyms<a class="headerlink" href="#synonyms" title="Permanent link">&para;</a></h4>
+<p>The <code>kitsune/search/dictionaries/synonyms</code> path contains a text file for each of our search-enabled locales,
+where synonyms are in the
+<a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.10/analysis-synonym-graph-tokenfilter.html#_solr_synonyms_2">Solr format</a>.</p>
+<p><code>expand</code> defaults to <code>True</code>,
+so synonyms with no explicit mapping resolve to all elements in the list.
+That is to say:</p>
+<div class="highlight"><pre><span></span><code>start, open, run
+</code></pre></div>
+<p>is equivalent to:</p>
+<div class="highlight"><pre><span></span><code>start, open, run =&gt; start, open, run
+</code></pre></div>
+<p>It's also worth noting that these synonyms are applied at <em>query</em> time,
+not index time.</p>
+<p>That is to say,
+if a document contained the phrase:</p>
+<blockquote>
+<p>Firefox won't play music.</p>
+</blockquote>
+<p>and we had a synonym set up as:</p>
+<div class="highlight"><pre><span></span><code>music =&gt; music, audio
+</code></pre></div>
+<p>Then the search query:</p>
+<blockquote>
+<p>firefox won't play audio</p>
+</blockquote>
+<p>would <strong>not</strong> match that document.</p>
+<h5 id="hyponyms-and-hypernyms-subtypes-and-supertypes">Hyponyms and hypernyms (subtypes and supertypes)<a class="headerlink" href="#hyponyms-and-hypernyms-subtypes-and-supertypes" title="Permanent link">&para;</a></h5>
+<p>The synonym files can also be used to define relations between
+<a href="https://en.wikipedia.org/wiki/Hyponymy_and_hypernymy">hyponyms and hypernyms (subtypes and supertypes)</a>.</p>
+<p>For example,
+a user searching for or posting about a problem with Facebook could use the phrase "Facebook isn't working",
+or "social media isn't working".
+Another user searching for or posting about a problem with Twitter could use the phrase "Twitter isn't working",
+or "social media isn't working".</p>
+<p>A simple synonym definition like:</p>
+<div class="highlight"><pre><span></span><code>social, facebook, face book, twitter
+</code></pre></div>
+<p>isn't sufficient here,
+as a user querying about a problem with Facebook clearly doesn't have one with Twitter.</p>
+<p>Similarly a rule like:</p>
+<div class="highlight"><pre><span></span><code>social =&gt; social, facebook, face book, twitter
+</code></pre></div>
+<p>only captures the case where a user has posted about Facebook not working and searched for social media not working,
+not the reverse.</p>
+<p>So in this case a set of synonyms should be defined,
+like so:</p>
+<div class="highlight"><pre><span></span><code>social, facebook, face book
+social, twitter
+</code></pre></div>
+<p>With the hypernyms (supertypes) defined across all lines,
+and the hyponyms (subtypes) defined on one line.</p>
+<p>This way,
+a search for "social" would also become one for "facebook", "face book" and "twitter".
+Whereas a search for "twitter" would also become one for "social",
+but <em>not</em> "facebook" or "face book".</p>
+<h5 id="interaction-with-the-rest-of-the-analysis-chain">Interaction with the rest of the analysis chain<a class="headerlink" href="#interaction-with-the-rest-of-the-analysis-chain" title="Permanent link">&para;</a></h5>
+<p>All the analyzers above the synonym token filter in the analyzer chain are also applied to the synonyms,
+such as our tokenizers, stemmers and stop word filters.</p>
+<p>This means it's not necessary to specify the plural or conjugated forms of words,
+as post-analysis they <em>should</em> end up as the same token.</p>
+<p>Hyphen-separated and space separated words will analyze to the same set of tokens.</p>
+<p>For instance in en-US,
+all these synonyms would do nothing at all:</p>
+<div class="highlight"><pre><span></span><code>de activate, de-activate
+load, loading, loaded
+bug, bugs
+</code></pre></div>
+<h6 id="stop-words">Stop words<a class="headerlink" href="#stop-words" title="Permanent link">&para;</a></h6>
+<p>Synonyms containing stop words (such as "in" or "on") must be treated with care,
+as the stop words will also be filtered out of the synonyms.</p>
+<p>For example,
+these two rules produce the same result in the en-US analysis chain:</p>
+<div class="highlight"><pre><span></span><code>addon, add on
+addon, add
+</code></pre></div>
+<p>So a <a href="#character-mappings">character mapping</a> should be used to turn phrases containing those stop words into ones which don't.
+Those resulting phrases can then be used in the synonyms definition.</p>
+<h5 id="applying-to-all-locales">Applying to all locales<a class="headerlink" href="#applying-to-all-locales" title="Permanent link">&para;</a></h5>
+<p>There's also an <code>_all.txt</code> file,
+which specifies synonyms which should be applied across <em>all</em> locales.
+Suitable synonyms here include brand names or specific technical terms which won't tend to be localized.</p>
+<h5 id="updating">Updating<a class="headerlink" href="#updating" title="Permanent link">&para;</a></h5>
+<p>In development synonyms can be updated very easily.
+Save your changes in the text file and run:</p>
+<div class="highlight"><pre><span></span><code>./manage.py es_init --reload-search-analyzers
+</code></pre></div>
+<p>If no other changes were made to the index configurations,
+then this should apply successfully,
+and your already-indexed data will persist within the index and not require any indexing
+(because these synonyms are applied at query time).</p>
+<h6 id="on-production">On production<a class="headerlink" href="#on-production" title="Permanent link">&para;</a></h6>
+<p>The synonym files need to be put in a bundle and uploaded to the Elastic Cloud.</p>
+<p>Run the <code>bin/create_elastic_bundle.sh</code> script to create a zip file with the appropriate directory structure.
+(You'll need to have <code>zip</code> installed for this command to work.)</p>
+<p>Then,
+either <a href="https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-add-your-plugin">create</a> an extension,
+or <a href="https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-update-bundles-and-plugins">update</a> the previously created extension.</p>
+<p>And in either case,
+<a href="https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-update-bundles">update the deployment configuration</a>
+with the custom extension.</p>
+<div class="highlight"><pre><span></span><code>.. Note::
+  When updating the deployment after updating an already-existing extension,
+  Elastic Cloud may say that no changes are being applied.
+  That isn&#39;t true,
+  and through testing it seems like the extension is being updated,
+  and the search analyzers are being reloaded automatically.
+
+  From testing,
+  this seems to be the only approach to update and reload synonyms on the Elastic Cloud.
+  Updating the extension,
+  restarting the cluster and using the reload-search-analyzers command *won&#39;t* work.
+
+  Thankfully there&#39;s an open issue upstream to make managing synonyms easier with an API:
+  https://github.com/elastic/elasticsearch/issues/38523
+</code></pre></div>
+<h4 id="character-mappings">Character mappings<a class="headerlink" href="#character-mappings" title="Permanent link">&para;</a></h4>
+<p>Character mappings <em>cannot</em> be dynamically updated,
+this is because they're applied at index time.
+So any changes to a character mapping requires a re-index.</p>
+<p>Taking the addon example from above,
+we'd want to create character mappings like:</p>
+<div class="highlight"><pre><span></span><code>[
+  &quot;add on =&gt; addon&quot;,
+  &quot;add-on =&gt; addon&quot;,
+]
+</code></pre></div>
+<p>Post-tokenization <code>addon</code> doesn't contain an <code>on</code> token,
+so this is a suitable phrase to replace with.</p>
+<p>Unlike synonyms,
+character mappings are applied before any other part of the analysis chain,
+so space separated and hyphen-separated phrases need to both be added.</p>
+<p>In theory plural and conjugated forms of words also need to be specified,
+however in practice plural words tend to be covered by the singular replacement as well
+(e.g. "add on" is a substring in "add ons",
+so "add ons" is replaced by "addons")
+and there is marginal benefit to defining <em>every single</em> conjugation of a verb.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.top", "toc.follow", "content.code.copy", "content.code.highlight"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      
+    
+  </body>
+</html>

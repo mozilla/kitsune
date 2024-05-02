@@ -1,0 +1,1668 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Kitsune is the platform that powers SuMo">
+      
+      
+      
+        <link rel="canonical" href="https://support.mozilla.org/patching/">
+      
+      
+        <link rel="prev" href="../conventions/">
+      
+      
+        <link rel="next" href="../development/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+    
+    
+      
+        <title>Patching Kitsune - Kitsune Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-quick-and-dirty" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Kitsune Documentation" class="md-header__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kitsune Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Patching Kitsune
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Kitsune Documentation" class="md-nav__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Kitsune Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Introduction
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Join this project!
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hacking_howto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Hacking howto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contactus/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contact us
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer's guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer's guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conventions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conventions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Patching Kitsune
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Patching Kitsune
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-quick-and-dirty" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Quick and Dirty
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fork-and-clone-kitsune" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fork and Clone Kitsune
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-a-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      Find a Bug
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#take-the-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      Take the Bug
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-the-bug-on-a-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix the Bug on a Branch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-a-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      Open a Pull Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respond-to-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      Respond to Review
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ready-to-merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ready to Merge!
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tests/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    All about testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../celery/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Celery
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Email from Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Localization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../elastic_search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Elastic search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Frontend
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../svelte/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Svelte
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser_permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Browser permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zendesk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Zendesk
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SEO
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Other Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../switching_devices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Switching devices
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SuMo
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            SuMo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kitsune Deployments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    K8s
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sla/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Service Level Agreement
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../questions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ask A Question
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../badges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Badges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Architectural Decisions
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Architectural Decisions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architectural-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architectural Decision Records
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0001-record-architecture-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Record
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0002-es-l10n-content/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - L10N content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0003-es-aaq-documents/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - AAQ content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0004-type-checking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Type Checking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-quick-and-dirty" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Quick and Dirty
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fork-and-clone-kitsune" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fork and Clone Kitsune
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-a-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      Find a Bug
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#take-the-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      Take the Bug
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-the-bug-on-a-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix the Bug on a Branch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-a-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      Open a Pull Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respond-to-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      Respond to Review
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ready-to-merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ready to Merge!
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Patching Kitsune</h1>
+
+<p>Submitting a patch to <a href="https://support.mozilla.com">Kitsune</a> is easy!
+(Fair warning: writing the patch may not be ;)</p>
+<p>We use <a href="https://github.com/mozilla/kitsune/pulls">pull requests</a> to
+manage patches and code reviews, and
+<a href="https://bugzilla.mozilla.org">Bugzilla</a> to handle actual bug tracking.</p>
+<p>Because of our infrastructure and how we do deployments, we've
+developed a fairly straight-forward workflow in git for submitting
+patches. This is outlined below.</p>
+<p>You should run the tests before submitting a pull request. You can find
+help for getting set up in the <a href="../hacking_howto/">installation docs</a> and
+help for running tests in the <a href="../tests/">testing docs</a>.</p>
+<p>If you ever find yourself stuck, <a href="../contactus/">contact us</a>. We 're happy to
+help!</p>
+<p>You 'll need a Github account and a Bugzilla account.</p>
+<h2 id="the-quick-and-dirty">The Quick and Dirty<a class="headerlink" href="#the-quick-and-dirty" title="Permanent link">&para;</a></h2>
+<p>Very quick, very little explanation. Those with strong git fu may
+already see some shortcuts. Use them!</p>
+<p>First, clone your fork, and then point the main branch to Mozilla's
+fork. Assuming your Github account is <code>foobar</code> and you've already
+forked Kitsune:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/foobar/kitsune
+<span class="nb">cd</span><span class="w"> </span>kitsune
+git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>mozilla<span class="w"> </span>https://github.com/mozilla/kitsune.git
+git<span class="w"> </span>fetch<span class="w"> </span>mozilla
+git<span class="w"> </span>checkout<span class="w"> </span>-t<span class="w"> </span>mozilla/main<span class="w"> </span>-B<span class="w"> </span>main
+</code></pre></div>
+<p>If you haven't set up your local git user, please do before committing
+any code for Kitsune. This way you can take credit for your work:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>config<span class="w"> </span>user.email<span class="w"> </span>your@github.email
+git<span class="w"> </span>config<span class="w"> </span>user.name<span class="w"> </span><span class="s2">&quot;Your Name&quot;</span>
+</code></pre></div>
+<p>You should only need to do that once. Here's the bit to do every time:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>mozilla/main
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>my-feature-123456
+
+<span class="c1"># Make a change and commit it.</span>
+<span class="nv">$EDITOR</span><span class="w"> </span>path/to/file.py
+git<span class="w"> </span>add<span class="w"> </span>path/to/file.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;[Bug 123456] Fooing and the Barring.&quot;</span>
+git<span class="w"> </span>push<span class="w"> </span>--set-upstream<span class="w"> </span>origin<span class="w"> </span>my-feature
+
+<span class="c1"># Open a pull request, get review.</span>
+<span class="c1"># Respond to feedback:</span>
+<span class="nv">$EDITOR</span><span class="w"> </span>path/to/file.py
+git<span class="w"> </span>add<span class="w"> </span>path/to/file.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Feedback from Barfoo&quot;</span>
+git<span class="w"> </span>push
+</code></pre></div>
+<p>Eventually you will get an <code>r+</code>. If you have commit access, now you can go
+ahead and merge your branch. If you do not have commit access the next part will be done by someone who
+does.</p>
+<p>There are two options. The first is to press the Big Green Button in
+GitHub PRs that says "Merge pull Request". If you would prefer to do
+it manually or if there are merge conflicts, you can do this:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># r+! Merge</span>
+git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>fetch<span class="w"> </span>mozilla
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>mozilla/main
+git<span class="w"> </span>merge<span class="w"> </span>--no-ff<span class="w"> </span>my-feature-123456
+git<span class="w"> </span>push<span class="w"> </span>mozilla<span class="w"> </span>main<span class="w">  </span><span class="c1"># Bots will alert everyone!</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main<span class="w">  </span><span class="c1"># Optional but nice.</span>
+</code></pre></div>
+<p>After the pull request is closed:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>:my-feature<span class="w">  </span><span class="c1"># Delete the remote branch. Nice to others.</span>
+git<span class="w"> </span>branch<span class="w"> </span>-D<span class="w"> </span>my-feature<span class="w"> </span><span class="c1"># Delete the local branch, if you&#39;re done.</span>
+</code></pre></div>
+<h2 id="the-details">The Details<a class="headerlink" href="#the-details" title="Permanent link">&para;</a></h2>
+<p>This is the process in more detail, for a relatively small change that
+will only need one commit and doesn not need any special treatment, like
+landing on special branches.</p>
+<h3 id="fork-and-clone-kitsune">Fork and Clone Kitsune<a class="headerlink" href="#fork-and-clone-kitsune" title="Permanent link">&para;</a></h3>
+<p>On Github, hit the <strong>Fork</strong> button. You will want to clone <strong>your</strong> fork
+of the project:</p>
+<p><code>bash git clone git@github.com:&lt;yourname&gt;/kitsune.git</code></p>
+<p>To help keep up to date, you should add <code>mozilla/kitsune</code> as a remote:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="nb">cd</span><span class="w"> </span>kitsune
+<span class="w">    </span>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>mozilla<span class="w"> </span>https://github.com/mozilla/kitsune.git
+</code></pre></div>
+<p>You should avoid changing your <code>main</code> branch, it should track <code>mozilla/main</code>. This can help:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>git<span class="w"> </span>fetch<span class="w"> </span>mozilla
+<span class="w">    </span><span class="c1"># Update your main branch to track Mozilla&#39;s main branch instead.</span>
+<span class="w">    </span>git<span class="w"> </span>checkout<span class="w"> </span>-B<span class="w"> </span>main<span class="w"> </span>-t<span class="w"> </span>mozilla/main<span class="w"> </span><span class="c1"># Update your main branch to</span>
+</code></pre></div>
+<p>If you haven't set up your local git user, please do before committing
+any code for Kitsune. This way you can take credit for your work:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>git<span class="w"> </span>config<span class="w"> </span>user.email<span class="w"> </span>your@github.email
+<span class="w">    </span>git<span class="w"> </span>config<span class="w"> </span>user.name<span class="w"> </span><span class="s2">&quot;Your Name&quot;</span>
+</code></pre></div>
+<p>The correct way to keep your local main up to date is:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>git<span class="w"> </span>checkout<span class="w"> </span>main
+<span class="w">    </span>git<span class="w"> </span>fetch<span class="w"> </span>mozilla
+<span class="w">    </span>git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>mozilla/main
+</code></pre></div>
+<p>This will forcibly move your local main branch to whatever is on the
+Mozilla main branch, destroying anything you have committed that wasn't
+pushed. Remember to always work on a branch that is not main!</p>
+<h3 id="find-a-bug">Find a Bug<a class="headerlink" href="#find-a-bug" title="Permanent link">&para;</a></h3>
+<p>Step one is to make sure there's a bug in Bugzilla. Obvious "bugs"
+just need a Bugzilla bug to track the work for all the involved teams.
+There are <a href="http://bit.ly/LUTjcY">a number of open bugs</a> if you want to
+try your hand at fixing something!</p>
+<p>New features or changes to features need bugs to build a consensus of
+developers, support team members and community members, before we
+decide to make the change. If you want to change something like this, be
+sure to file the bug and get a consensus first. We'd hate to have you
+spend time on a patch we cannot take.</p>
+<h3 id="take-the-bug">Take the Bug<a class="headerlink" href="#take-the-bug" title="Permanent link">&para;</a></h3>
+<p>To make sure no one else is working on the bug at the same time, assign
+it to yourself in Bugzilla. If you have the proper permissions there's
+an easy "take" link next to the Assignee field. Ask in Matrix for
+details.</p>
+<p>You can assign bugs to yourself even if you aren't going to immediately
+work on them (though make sure you will get to them sooner rather than
+later). Once you are actively working on a bug, set the bug to the
+<code>ASSIGNED</code> state.</p>
+<h3 id="fix-the-bug-on-a-branch">Fix the Bug on a Branch<a class="headerlink" href="#fix-the-bug-on-a-branch" title="Permanent link">&para;</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This describes the process for fixing a relatively small bug in a
+single-commit. Large features may differ.</p>
+</div>
+<p>All bug fixes, changes, new features, etc, should be done on a "feature
+branch", which just means "any branch besides <code>main</code>." You should
+make sure your local <code>main</code> branch is up to date (see above) before
+starting a new feature branch. Your feature branch should include the
+bug number in the branch name, if applicable.</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>git<span class="w"> </span>checkout<span class="w"> </span>main
+<span class="w">    </span>git<span class="w"> </span>fetch<span class="w"> </span>mozilla
+<span class="w">    </span>git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>upstream/main<span class="w">  </span><span class="c1"># Update local main.</span>
+<span class="w">    </span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>my-feature-branch-123456<span class="w">  </span><span class="c1"># Some logical name.</span>
+</code></pre></div>
+<p>Now you're on a feature branch, go ahead and make your changes.
+Assuming you haven't added any new files, you can do:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>git<span class="w"> </span>commit<span class="w"> </span>-a<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;[Bug 123456] Fix the foo and the bar.&quot;</span>
+</code></pre></div>
+<p>If you did add new files, you will have to <code>git add</code> them before
+committing.</p>
+<h3 id="open-a-pull-request">Open a Pull Request<a class="headerlink" href="#open-a-pull-request" title="Permanent link">&para;</a></h3>
+<p>Once you have the bug fixed locally, you will need to push the changes up
+to Github so you can open a pull request.</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>git<span class="w"> </span>push<span class="w"> </span>--set-upstream<span class="w"> </span>origin<span class="w"> </span>my-feature-branch
+</code></pre></div>
+<p>Then, in your browser, navigate to
+<code>https://github.com/&lt;yourname&gt;/kitsune/compare/my-feature-branch</code> and
+hit the <strong>Pull Request</strong> button. If the commit message is clear, the
+form should be filled out enough for you to submit it right away.</p>
+<p>We add an <code>r?</code> in the pull request message indicating that this pull
+request is ready to go and is looking for someone to review it.</p>
+<p>Othertimes you may want to open a pull request early that isn't quite
+ready to merge. This is a great way to share the work that you are
+doing, and get early feedback. Make it clear that your PR isn't ready
+by putting <code>[WIP]</code> in the title. Also make sure to say when it is ready!
+The best way to do this is to remove <code>[WIP]</code> from the title and make a
+comment asking for <code>r?</code>.</p>
+<h3 id="respond-to-review">Respond to Review<a class="headerlink" href="#respond-to-review" title="Permanent link">&para;</a></h3>
+<p>It's very rare that pull requests will be checked in immediately. Most
+of the time they will go through one or more rounds of code review and
+clean-up.</p>
+<p>Code review is usually comments made on the pull request or commits in
+Github, asking for specific changes to be made. If the requested change
+isn't clear, or you disagree with it, feel free to ask questions
+inline. Isn't Github's line-by-line commenting great?</p>
+<p>Assuming a few small changes need to be made, make the changes locally
+on the feature branch, then put them in a <em>new commit</em>. This makes it
+easier from reviewers. For example, if Erik reviewed the pull request
+and asked for some fixes, you might do this:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>my-feature-branch
+<span class="c1"># Make the changes.</span>
+git<span class="w"> </span>commit<span class="w"> </span>-a<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Feedback from Erik.&quot;</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>my-feature-branch
+</code></pre></div>
+<p>Github will automatically add the new commit to the pull request, so
+we'll see it. Leaving it in a separate commit at this stage helps the
+reviewer see what changes you've made.</p>
+<p>There may be more than one round of feedback, especially for complex
+bugs. The process is exactly the same after each round: make the
+changes, add them in yet another new commit, push the changes.</p>
+<p>There are also a few bots that might interact with your PR. In
+particular, our continuous integration service will run tests and style
+checks on your new code. All PRs must be approved by the CI system
+before they will be merged, so watch out. They show up as either a red X
+or a green check mark in the PR.</p>
+<h3 id="ready-to-merge">Ready to Merge!<a class="headerlink" href="#ready-to-merge" title="Permanent link">&para;</a></h3>
+<p>Once a pull request has gotten an <code>r+</code> ("R-plus", it's from Bugzilla)
+it's ready to merge in. At this point you can rebase and squash any
+feedback/fixup commits you want, but this isn\'t required.</p>
+<p>If you don't have commit access, someone who does may do this for you,
+if they have time. Alternatively, if you have commit access, you can
+press GitHub's "Merge pull request" button, which does a similar
+process to below. This is the preferred way to merge PRs when there are
+no complications.</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>reset<span class="w"> </span>--hard<span class="w"> </span>mozilla/main
+git<span class="w"> </span>merge<span class="w"> </span>--no-ff<span class="w"> </span>my-feature-branch-123456
+<span class="c1"># Make sure tests pass.</span>
+python<span class="w"> </span>manage.py<span class="w"> </span><span class="nb">test</span>
+git<span class="w"> </span>push
+</code></pre></div>
+<p>You 're done! Congratulations, soon you will have code running on one of
+the biggest sites in the world!</p>
+<p>Before pushing to <code>mozilla/main</code>, I like to verify that the merge went
+fine in the logs. For the vast majority of merges, <em>there should not be
+a merge commit</em>.</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>log<span class="w"> </span>--graph<span class="w"> </span>--decorate
+git<span class="w"> </span>push<span class="w"> </span>mozilla<span class="w"> </span>main<span class="w">             </span><span class="c1"># !!! Pushing code to the primary repo/branch!</span>
+
+<span class="c1"># Optionally, you can keep your Github main in sync.</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main<span class="w">              </span><span class="c1"># Not strictly necessary but kinda nice.</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>:my-feature-branch<span class="w">  </span><span class="c1"># Nice to clean up.</span>
+</code></pre></div>
+<p>This should automatically close the PR, as GitHub will notice the merge
+commit.</p>
+<p>Once the commit is on <code>mozilla/main</code>, copy the commit url to the bug.</p>
+<p>Once the commit has been deployed to stage and prod, set the bug to
+<code>RESOLVED FIXED</code>. This tells everyone that the fix is in production.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.top", "toc.follow", "content.code.copy", "content.code.highlight"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      
+    
+  </body>
+</html>

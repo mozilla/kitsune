@@ -1,0 +1,1853 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Kitsune is the platform that powers SuMo">
+      
+      
+      
+        <link rel="canonical" href="https://support.mozilla.org/k8s/">
+      
+      
+        <link rel="prev" href="../deployments/">
+      
+      
+        <link rel="next" href="../sla/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+    
+    
+      
+        <title>K8s - Kitsune Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sumo-kubernetes-support-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Kitsune Documentation" class="md-header__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kitsune Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              K8s
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Kitsune Documentation" class="md-nav__button md-logo" aria-label="Kitsune Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Kitsune Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mozilla/kitsune" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mozilla/kitsune
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Introduction
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Join this project!
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hacking_howto/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Hacking howto
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contactus/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contact us
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer's guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer's guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conventions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conventions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../patching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Patching Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tests/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    All about testing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../celery/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Celery
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Email from Kitsune
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Localization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../elastic_search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Elastic search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Frontend
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../svelte/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Svelte
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser_permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Browser permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zendesk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Zendesk
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SEO
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Other Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../switching_devices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Switching devices
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    SuMo
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            SuMo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kitsune Deployments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    K8s
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    K8s
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sumo-kubernetes-support-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      SUMO Kubernetes Support Guide
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SUMO Kubernetes Support Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#links" class="md-nav__link">
+    <span class="md-ellipsis">
+      Links
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#k8s-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s commands
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="K8s commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="General">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#working-with-k8s-command-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with K8s command output
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#k8s-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Services
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Monitoring
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-relic" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Relic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#papertrail" class="md-nav__link">
+    <span class="md-ellipsis">
+      Papertrail
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elasticco" class="md-nav__link">
+    <span class="md-ellipsis">
+      elastic.co
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cronjobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cronjobs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-addingremoving-k8s-oregonfrankfurt-cluster-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually adding/removing K8s Oregon/Frankfurt cluster nodes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-blocking-an-ip-address" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually Blocking an IP address
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-initiating-cluster-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually Initiating Cluster failover
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sla/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Service Level Agreement
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Users
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../questions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ask A Question
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../badges/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Badges
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Architectural Decisions
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Architectural Decisions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architectural-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architectural Decision Records
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0001-record-architecture-decisions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Record
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0002-es-l10n-content/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - L10N content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0003-es-aaq-documents/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search - AAQ content
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/0004-type-checking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Type Checking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sumo-kubernetes-support-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      SUMO Kubernetes Support Guide
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SUMO Kubernetes Support Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#links" class="md-nav__link">
+    <span class="md-ellipsis">
+      Links
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#k8s-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s commands
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="K8s commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="General">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#working-with-k8s-command-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Working with K8s command output
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#k8s-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Services
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Monitoring
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-relic" class="md-nav__link">
+    <span class="md-ellipsis">
+      New Relic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#papertrail" class="md-nav__link">
+    <span class="md-ellipsis">
+      Papertrail
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elasticco" class="md-nav__link">
+    <span class="md-ellipsis">
+      elastic.co
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cronjobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cronjobs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-addingremoving-k8s-oregonfrankfurt-cluster-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually adding/removing K8s Oregon/Frankfurt cluster nodes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-blocking-an-ip-address" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually Blocking an IP address
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-initiating-cluster-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manually Initiating Cluster failover
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>K8s</h1>
+
+<h2 id="sumo-kubernetes-support-guide">SUMO Kubernetes Support Guide<a class="headerlink" href="#sumo-kubernetes-support-guide" title="Permanent link">&para;</a></h2>
+<h3 id="links">Links<a class="headerlink" href="#links" title="Permanent link">&para;</a></h3>
+<p>High level:</p>
+<ul>
+<li><a href="https://github.com/mozilla-it/sumo-infra">SUMO Infra home</a></li>
+<li><a href="https://github.com/mozilla/kitsune/tree/7ff9934d185ce58153c652928298b5f62d37f8d2/k8s#deploying-sumo">SUMO K8s deployment</a> (obsolete)</li>
+<li><a href="https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455">MozMEAO escalation path</a></li>
+<li><a href="https://raw.githubusercontent.com/mozilla/kitsune/main/docs/SUMO%20architecture%202019.pdf">Architecture diagram</a><ul>
+<li><a href="https://www.lucidchart.com/documents/view/3687b2eb-57c7-4488-a8b5-4ddcf54e47b3">Source</a></li>
+</ul>
+</li>
+<li><a href="https://docs.google.com/document/d/1SYtkEioKl6uvdZZA06YtVigWYJY0Nb9hGfvE0UwEPXA/edit">SLA</a></li>
+<li><a href="https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=52265112">Incident Reports</a></li>
+</ul>
+<p>Tech details:</p>
+<ul>
+<li><a href="https://github.com/mozilla/kitsune/tree/main/k8s/">SUMO K8s deployments/services/secrets templates</a></li>
+<li><a href="https://github.com/mozilla-it/sumo-infra/tree/main/k8s/tf">SUMO AWS resource definitions</a></li>
+</ul>
+<h3 id="k8s-commands">K8s commands<a class="headerlink" href="#k8s-commands" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Most of the examples use <code>sumo-prod</code> as an example namespace. SUMO dev/stage/prod run in the <code>sumo-dev</code>/<code>sumo-stage</code>/<code>sumo-prod</code> namespaces respectively.</p>
+</blockquote>
+<h4 id="general">General<a class="headerlink" href="#general" title="Permanent link">&para;</a></h4>
+<p>Most examples are using the <code>kubectl get ...</code> subcommand. If you'd prefer output that's more readable, you can substitute the <code>get</code> subcommand with <code>describe</code>:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod describe pod sumo-prod-web-76b74db69-dvxbh
+</code></pre></div>
+<blockquote>
+<p>Listing resources is easier with the <code>get</code> subcommand.</p>
+</blockquote>
+<p>To see all SUMO pods currently running:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get pods
+</code></pre></div>
+<p>To see all pods running and the K8s nodes they are assigned to:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get pods -o wide
+</code></pre></div>
+<p>To show yaml for a single pod:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get pod sumo-prod-web-76b74db69-dvxbh -o yaml
+</code></pre></div>
+<p>To show all deployments:</p>
+<div class="highlight"><pre><span></span><code> kubectl -n sumo-prod get deployments
+
+NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+sumo-prod-celery   3         3         3            3           330d
+sumo-prod-cron     0         0         0            0           330d
+sumo-prod-web      50        50        50           50          331d
+</code></pre></div>
+<p>To show yaml for a single deployment:</p>
+<div class="highlight"><pre><span></span><code> kubectl -n sumo-prod get deployment sumo-prod-web -o yaml
+</code></pre></div>
+<p>Run a bash shell on a SUMO pod:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod exec -it sumo-prod-web-76b74db69-xbfgj bash
+</code></pre></div>
+<p>Scaling a deployment:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod scale --replicas=60 deployment/sumo-prod-web
+</code></pre></div>
+<p>Check rolling update status:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod rollout status deployment/sumo-prod-web
+</code></pre></div>
+<h5 id="working-with-k8s-command-output">Working with K8s command output<a class="headerlink" href="#working-with-k8s-command-output" title="Permanent link">&para;</a></h5>
+<p>Filtering pods based on a label:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod -l type=web get pods
+</code></pre></div>
+<p>Getting a list of pods:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod -l type=web get pods | tail -n +2 | cut -d&quot; &quot; -f 1
+</code></pre></div>
+<p>Structured output:</p>
+<p>See the jsonpath guide <a href="https://kubernetes.io/docs/reference/kubectl/jsonpath/">here</a></p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get pods -o=jsonpath=&#39;{.items[0].metadata.name}&#39;
+</code></pre></div>
+<p>Processing K8s command json output with jq:</p>
+<blockquote>
+<p>jsonpath may be more portable</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get pods -o json | jq -r .items[].metadata.name
+</code></pre></div>
+<h4 id="k8s-services">K8s Services<a class="headerlink" href="#k8s-services" title="Permanent link">&para;</a></h4>
+<p>List SUMO services:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get services
+NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+sumo-nodeport   NodePort   100.71.222.28   &lt;none&gt;        443:30139/TCP   341d
+</code></pre></div>
+<h4 id="secrets">Secrets<a class="headerlink" href="#secrets" title="Permanent link">&para;</a></h4>
+<p><a href="https://kubernetes.io/docs/concepts/configuration/secret/">K8s secrets docs</a></p>
+<p>Secret values are base64 encoded when viewed in K8s output. Once setup as an environment variable or mounted file in a pod, the values are base64 decoded automatically.</p>
+<p>Kitsune uses secrets specified as environment variables in a deployment spec:</p>
+<ul>
+<li><a href="https://github.com/mozilla/kitsune/blob/7ff9934d185ce58153c652928298b5f62d37f8d2/k8s/templates/sumo-app.yaml.j2#L43-L46">example</a></li>
+</ul>
+<p>To list secrets:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get secrets
+</code></pre></div>
+<p>To view a secret w/ base64-encoded values:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get secret sumo-secrets-prod -o yaml
+</code></pre></div>
+<p>To view a secret with decoded values (aka "human readable"):</p>
+<blockquote>
+<p>This example uses the <a href="https://github.com/metadave/ksv">ksv</a> utility</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod get secret sumo-secrets-prod -o yaml | ksv
+</code></pre></div>
+<p>To encode a secret value:</p>
+<div class="highlight"><pre><span></span><code>echo -n &quot;somevalue&quot; | base64
+</code></pre></div>
+<blockquote>
+<p>The <code>-n</code> flag strips the newline before base64 encoding.
+Values must be specified without newlines, the <code>base64</code> command on Linux can take a <code>-w 0</code> parameter that outputs without newlines. The <code>base64</code> command in Macos Sierra seems to output encoded values without newlines.</p>
+</blockquote>
+<p>Updating secrets:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n sumo-prod apply -f ./some-secret.yaml
+</code></pre></div>
+<h3 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h3>
+<h4 id="new-relic">New Relic<a class="headerlink" href="#new-relic" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p><a href="https://onenr.io/0MRNqKbP8wn">Primary region</a></p>
+<ul>
+<li><code>sumo-prod-oregon</code></li>
+</ul>
+</li>
+<li>
+<p><a href="https://onenr.io/0qwyem31Gwn">Failover region</a></p>
+<ul>
+<li><code>sumo-prod-frankfurt</code></li>
+</ul>
+</li>
+</ul>
+<h4 id="papertrail">Papertrail<a class="headerlink" href="#papertrail" title="Permanent link">&para;</a></h4>
+<p>All pod output is logged to Papertrail.</p>
+<ul>
+<li><a href="https://my.papertrailapp.com/groups/13629141/events">Oregon</a></li>
+<li><a href="https://papertrailapp.com/groups/5458941/events">Frankfurt</a></li>
+</ul>
+<h4 id="elasticco">elastic.co<a class="headerlink" href="#elasticco" title="Permanent link">&para;</a></h4>
+<p>Our hosted Elasticsearch cluster is in the <code>us-west-2</code> region of AWS. Elastic.co hosting status can be found on <a href="https://cloud-status.elastic.co/">this</a> page.</p>
+<h3 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h3>
+<h4 id="cronjobs">Cronjobs<a class="headerlink" href="#cronjobs" title="Permanent link">&para;</a></h4>
+<p>The <code>sumo-prod-cron</code> deployment is a self-contained Python cron system that runs in both Primary and Failover clusters.</p>
+<div class="highlight"><pre><span></span><code> # Oregon
+kubectl -n sumo-prod get deployments
+NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+sumo-prod-celery   3         3         3            3           330d
+sumo-prod-cron     1         1         1            1           330d
+sumo-prod-web      25        25        25           25          331d
+</code></pre></div>
+<h4 id="manually-addingremoving-k8s-oregonfrankfurt-cluster-nodes">Manually adding/removing K8s Oregon/Frankfurt cluster nodes<a class="headerlink" href="#manually-addingremoving-k8s-oregonfrankfurt-cluster-nodes" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>If you are modifying the Frankfurt cluster, replace instances of <code>oregon-*</code> below with <code>frankfurt</code>.</p>
+</blockquote>
+<ol>
+<li>login to the AWS console</li>
+<li>ensure you are in the <code>Oregon</code> region</li>
+<li>search for and select the <code>EC2</code> service in the AWS console</li>
+<li>select <code>Auto Scaling Groups</code> from the navigation on the left side of the page</li>
+<li>click on the <code>nodes.k8s.us-west-2a.sumo.mozit.cloud</code> or <code>nodes.k8s.us-west-2b.sumo.mozit.cloud</code> row to select it</li>
+<li>from the <code>Actions</code> menu (close to the top of the page), click <code>Edit</code></li>
+<li>the <code>Details</code> tab for the ASG should appear, set the appropriate <code>Min</code>, <code>Desired</code> and <code>Max</code> values.<ol>
+<li>it's probably good to set <code>Min</code> and <code>Desired</code> to the same value in case the cluster autoscaler decides to scale down the cluster smaller than the <code>Min</code>.</li>
+</ol>
+</li>
+<li>click <code>Save</code></li>
+<li>if you click on <code>Instances</code> from the navigation on the left side of the page, you can see the new instances that are starting/stopping.</li>
+<li>you can see when the nodes join the K8s cluster with the following command:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>watch &#39;kubectl get nodes | tail -n +2 | grep -v main | wc -l&#39;
+</code></pre></div>
+<blockquote>
+<p>The number that is displayed should eventually match your ASG <code>Desired</code> value. Note this value only includes K8s workers.</p>
+</blockquote>
+<h4 id="manually-blocking-an-ip-address">Manually Blocking an IP address<a class="headerlink" href="#manually-blocking-an-ip-address" title="Permanent link">&para;</a></h4>
+<ol>
+<li>login to the AWS console</li>
+<li>ensure you are in the <code>Oregon</code> region</li>
+<li>search for and select the <code>VPC</code> service in the AWS console</li>
+<li>select <code>Network ACLs</code> from the navigation on the left side of the page</li>
+<li>select the row containing the <code>Oregon</code> VPC</li>
+<li>click on the <code>Inbound Rules</code> tab</li>
+<li>click <code>Edit</code></li>
+<li>click <code>Add another rule</code></li>
+<li>for <code>Rule#</code>, select a value &lt; 100 and &gt; 0</li>
+<li>for <code>Type</code>, select <code>All Traffic</code></li>
+<li>for <code>Source</code>, enter the IP address in CIDR format. To block a single IP, append <code>/32</code> to the IP address.<ol>
+<li>example: <code>196.52.2.54/32</code></li>
+</ol>
+</li>
+<li>for <code>Allow / Deny</code>, select <code>DENY</code></li>
+<li>click <code>Save</code></li>
+</ol>
+<p>There are limits that apply to using VPC ACLs documented <a href="http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html#vpc-limits-nacls">here</a>.</p>
+<h4 id="manually-initiating-cluster-failover">Manually Initiating Cluster failover<a class="headerlink" href="#manually-initiating-cluster-failover" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>Note: Route 53 will provide automated cluster failover, these docs cover things to consider if there is a catastrophic failure in Oregon and Frankfurt must be promoted to primary rather than a read-only failover.</p>
+</blockquote>
+<ul>
+<li><strong>verify the Frankfurt read replica</strong><ul>
+<li><code>eu-central-1</code> (Frankfurt) has a read-replica of the SUMO production database</li>
+<li>the replica is currently a <code>db.m4.xlarge</code>, while the prod DB is <code>db.m4.4xlarge</code><ul>
+<li>this may be ok in maintenance mode, but if you are going to enable write traffic, the instance type must be scaled up.<ul>
+<li>SRE's performed a manual instance type change on the Frankfurt read-replica, and it took ~10 minutes to change from a <code>db.t2.medium</code> to a <code>db.m4.xlarge</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>although we have alerting in place to notify the SRE team in the event of a replication error, it's a good idea to check the replication status on the RDS details page for the <code>sumo</code> MySQL instance.<ul>
+<li>specifically, check the <code>DB Instance Status</code>, <code>Read Replica Source</code>, <code>Replication State</code>, and <code>Replication Error</code> values.</li>
+</ul>
+</li>
+<li>decide if <a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html#USER_ReadRepl.Promote">promoting the read-replica</a> to a main is appropriate.<ul>
+<li>it's preferrable to have a multi-AZ RDS instance, as we can take snapshots against the failover instance (RDS does this by default in a multi-AZ setup).</li>
+<li>if data is written to a promoted instance, and failover back to the us-west-2 clusters is desirable, a full DB backup and restore in us-west-2 is required.</li>
+<li>the replica is automatically rebooted before being promoted to a full instance.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>ensure image versions are up to date</strong></li>
+<li>Most MySQL changes should already be replicated to the read-replica, however, if you're reading this, chances are things are broken. Ensure that the DB schema is correct for the iamges you're deploying.</li>
+<li>
+<p><strong>scale cluster and pods</strong></p>
+<ul>
+<li>the <a href="https://github.com/mozilla/kitsune/blob/99c4c2bf5c102f38910485b29fc87c2299daa18b/k8s/regions/oregon/prod.yaml#L24-L48">prod deployments yaml</a> contains the correct number of replicas, but here are some safe values to use in an emergency:</li>
+</ul>
+</li>
+<li>
+<p><strong>DNS</strong></p>
+<ul>
+<li>point the <code>prod-tp.sumo.mozit.cloud</code> traffic policy at the Frankfurt ELB</li>
+</ul>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tracking", "navigation.top", "toc.follow", "content.code.copy", "content.code.highlight"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      
+    
+  </body>
+</html>
