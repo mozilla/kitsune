@@ -1,5 +1,5 @@
 {% extends "wiki/base.html" %}
-{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
 
 {% set scripts = ('wiki', 'wiki.diff') %}
 {% set title = _('Recent Revisions') %}
@@ -8,7 +8,11 @@
 {% set ga_content_group = "kb-cms" %}
 
 {% block side_top %}
-  {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'revisions', True) }}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True, menu="contributor-tools", locale=locale, is_collapsible=True) }}
+    </ul>
+  </nav>
 {% endblock %}
 
 {% block content %}
