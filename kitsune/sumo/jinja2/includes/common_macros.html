@@ -483,19 +483,23 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
+{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions") -%}
 {% if user.is_authenticated %}
 <nav class="sidebar-nav" id="for-contributors-sidebar">
   <span class="details-heading"></span>
   {% if not li_only %}
-  <ul class="sidebar-nav--list">
+    <ul class="sidebar-nav--list">
+  {% endif %}
+    {% if menu == "contributor-tools" %}
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Tools') }}</li>
+      {{ _tools_nav_links(user, default_language, active, context="sidebar") }}
+    {% else %}
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Discussions') }}</li>
+      {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
     {% endif %}
-    <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('For Contributors') }}</li>
-    {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
-    {{ _tools_nav_links(user, default_language, active, context="sidebar") }}
 
-    {% if not li_only %}
-  </ul>
+  {% if not li_only %}
+    </ul>
   {% endif %}
 </nav>
 {% endif %}
