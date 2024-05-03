@@ -483,33 +483,43 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
+{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None, menu="contributor-discussions", locale=None, is_collapsible=False) -%}
 {% if user.is_authenticated %}
 <nav class="sidebar-nav" id="for-contributors-sidebar">
   <span class="details-heading"></span>
   {% if not li_only %}
-  <ul class="sidebar-nav--list">
+    <ul class="sidebar-nav--list">
+  {% endif %}
+    {% if menu == "contributor-tools" %}
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Tools') }}</li>
+      {{ _tools_nav_links(user, default_language, active, context="sidebar", locale=locale, is_collapsible=is_collapsible) }}
+    {% else %}
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Discussions') }}</li>
+      {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
     {% endif %}
-    <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Discussions') }}</li>
-    {{ _discussion_nav_links(user, default_language, active, context="sidebar") }}
 
-    {% if not li_only %}
-  </ul>
+  {% if not li_only %}
+    </ul>
   {% endif %}
 </nav>
 {% endif %}
 {%- endmacro %}
 
 {% macro _discussion_nav_links(user, default_language, active=None, context="main-menu") -%}
+{% if context == "main-menu" %}
+  {% set data_event_action = "main navigation" %}
+{% else %}
+  {% set data_event_action = "sidebar navigation" %}
+{% endif %}
 <li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('SUMO Community Discussions') }}</a>
+    data-event-action={{ data_event_action }} data-event-label="Community Discussions">{{ _('SUMO Community Discussions') }}</a>
 </li>
-<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
+<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="Support Forum Home">{{ _('Support Forum Discussions') }}</a></li>
 <li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization Discussions') }}</a></li>
+    data-event-action={{ data_event_action }} data-event-label="L10N Discussions">{{ _('Localization Discussions') }}</a></li>
 <li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Discussions') }}</a></li>
-<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
+<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
 {% if context == "main-menu" %}
   <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all Discussions') }}</a></li>
@@ -525,39 +535,64 @@
 {% endif %}
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None, context="main-menu") -%}
+{% macro _tools_nav_links(user, default_language, active=None, context="main-menu", locale=None, is_collapsible=False) -%}
+{% if context == "main-menu" %}
+  {% set data_event_action = "main navigation" %}
+{% else %}
+  {% set data_event_action = "sidebar navigation" %}
+{% endif %}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
-    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
+    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
       data-event-label="Moderate Forum Content">{{ _('Moderate forum content') }}
     </a>
   </li>
 {% endif %}
 <li>
-  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
-     data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
-     data-event-label="Media Gallery">{{ _('Media Gallery') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
+  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
      data-event-label="Recent Revisions">{{ _('Recent Revisions') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
+  <a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
+     data-event-action={{ data_event_action }} data-event-label="Guides">{{ _('Guides') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
      data-event-label="Community Hub">{{ _('Community Hub') }}
   </a>
 </li>
+<div {% if is_collapsible %} class="collapsible-content" {% endif %}>
+  <li>
+    <a href="{{ url('wiki.locales') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Locales">{{ _('Locales') }}
+    </a>
+  </li>
+  <li>
+    <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+    </a>
+  </li>
+  <li {{ active|class_selected('metrics') }}></li>
+    <a href="{{ url('dashboards.locale_metrics', locale) }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Locale Metrics">{{ _('Locale Metrics') }}</a>
+  </li>
+  <li {{ active|class_selected('aggregated') }}>
+    <a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Aggregated Metrics">{{ _('Aggregated Metrics') }}</a>
+  </li>
+  <li>
+    <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+      data-event-label="Media Gallery">{{ _('Media Gallery') }}
+    </a>
+  </li>
+</div>
+{% if is_collapsible %}
+  <a href="#" class="color-link show-more-btn" id="show-more-link">
+      Show More
+  </a>
+{% endif %}
 {% endmacro %}
 
 {# This is designed to be used like this:
