@@ -517,7 +517,9 @@
 {% if context == "sidebar" %}
   <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile Support Discussions') }}</a></li>
   <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge Base Discussions') }}</a></li>
+{% if user.has_perm('flagit.can_moderate') %}
   <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum Moderator Discussions') }}</a></li>
+{% endif %}
   <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off Topic Discussions') }}</a></li>
   <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost Thread Discussions') }}</a></li>
 {% endif %}
