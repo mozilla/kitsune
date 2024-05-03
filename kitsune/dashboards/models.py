@@ -1,13 +1,14 @@
 import logging
 
 from django.db import IntegrityError, models, transaction
-from django.db.models import Subquery
+from django.db.models import Q, Subquery
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.dashboards import PERIODS
 from kitsune.products.models import Product
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.utils import chunked
 from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.dashboards")
@@ -35,26 +36,70 @@ class WikiDocumentVisits(ModelBase):
 
             cls.objects.filter(period=period).delete()
 
-            # Then we can create the fresh results for this period.
+            # Next, let's gather some data we need. We're sacrificing memory
+            # here in order to reduce the number of database queries later on.
             if verbose:
-                log.info(f"Creating fresh instances of {cls.__name__} with period = {period}...")
+                log.info("Gathering pageviews per article from GA4 data API...")
 
+            instance_by_locale_and_slug = {}
             for (locale, slug), visits in googleanalytics.pageviews_by_document(
                 period, verbose=verbose
             ):
+                instance_by_locale_and_slug[(locale, slug)] = cls(
+                    document_id=Subquery(
+                        Document.objects.filter(locale=locale, slug=slug).values("id")
+                    ),
+                    period=period,
+                    visits=visits,
+                )
+
+            # Then we can create the fresh results for this period.
+            if verbose:
+                log.info(
+                    f"Creating {len(instance_by_locale_and_slug)} fresh instances of "
+                    f"{cls.__name__} with period = {period}..."
+                )
+
+            def create_batch(batch_of_locale_and_slug_queries):
+                """
+                Create a batch of instances in one shot, but only include instances that
+                refer to an existing Document, so we avoid triggering an integrity error.
+                A call to this function makes only two databases queries no matter how
+                many instances we need to validate and create.
+                """
+                cls.objects.bulk_create(
+                    [
+                        instance_by_locale_and_slug[locale_and_slug]
+                        for locale_and_slug in Document.objects.filter(
+                            batch_of_locale_and_slug_queries
+                        ).values_list("locale", "slug")
+                    ]
+                )
+
+            # Let's create the fresh instances in batches, so we avoid exposing ourselves to
+            # the possibility of transgressing some query size limit.
+            batch_size = 1000
+            for batch_of_pairs in chunked(list(instance_by_locale_and_slug), batch_size):
+                locale_and_slug_queries = Q()
+                for locale, slug in batch_of_pairs:
+                    locale_and_slug_queries |= Q(locale=locale, slug=slug)
+
+                if verbose:
+                    log.info(f"Creating a batch of {len(batch_of_pairs)} instances...")
+
                 try:
                     with transaction.atomic():
-                        cls.objects.create(
-                            document_id=Subquery(
-                                Document.objects.filter(locale=locale, slug=slug).values("id")
-                            ),
-                            period=period,
-                            visits=visits,
-                        )
+                        create_batch(locale_and_slug_queries)
                 except IntegrityError:
-                    # We've already rolled back the bad insertion, which was due to the
-                    # fact that the document no longer exists, so let's move on.
-                    pass
+                    # There is a very slim chance that one or more Documents have been deleted in
+                    # the moment of time between the formation of the list of valid instances and
+                    # actually creating them, so let's give it one more try, assuming there's an
+                    # even slimmer chance that lightning will strike twice. If this one fails,
+                    # we'll roll-back everything and give up on the entire effort.
+                    create_batch(locale_and_slug_queries)
+
+            if verbose:
+                log.info("Done.")
 
 
 L10N_TOP20_CODE = "percent_localized_top20"
