@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 import actstream
@@ -10,11 +10,10 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db import close_old_connections, models
-from django.db.models import Count
+from django.db import IntegrityError, models, transaction
+from django.db.models import Count, Subquery
 from django.db.models.functions import Now
 from django.db.models.signals import post_save
-from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.urls import is_valid_path
 from django.utils import translation
@@ -32,6 +31,7 @@ from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import chunked
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
@@ -733,39 +733,67 @@ class QuestionVisits(ModelBase):
         """Update the stats from Google Analytics."""
         from kitsune.sumo import googleanalytics
 
-        today = date.today()
-        one_year_ago = today - timedelta(days=365)
-        counts = googleanalytics.pageviews_by_question(one_year_ago, today, verbose=verbose)
-        if counts:
-            # Close any existing connections because our load balancer times
-            # them out at 5 minutes and the GA calls take forever.
-            close_old_connections()
+        with transaction.atomic():
+            # First, let's gather some data we need. We're sacrificing memory
+            # here in order to reduce the number of database queries later on.
+            if verbose:
+                log.info("Gathering pageviews per question from GA4 data API...")
 
-            for question_id, visits in counts.items():
-                # We are trying to minimize db calls here. Let's try to update
-                # first, that will be the common case.
-                num = cls.objects.filter(question_id=question_id).update(visits=visits)
+            instance_by_question_id = {}
+            for question_id, visits in googleanalytics.pageviews_by_question(verbose=verbose):
+                instance_by_question_id[question_id] = cls(
+                    question_id=Subquery(Question.objects.filter(id=question_id).values("id")),
+                    visits=visits,
+                )
 
-                # If we were able to update, we are done.
-                if num > 0:
-                    continue
-                # If it doesn't exist yet, create it.
+            question_ids = list(instance_by_question_id)
+
+            # Next, let's clear out the stale instances that have new results.
+            if verbose:
+                log.info(f"Deleting all stale instances of {cls.__name__}...")
+
+            cls.objects.filter(question_id__in=question_ids).delete()
+
+            # Then we can create fresh instances for the questions that have results.
+            if verbose:
+                log.info(f"Creating {len(question_ids)} fresh instances of {cls.__name__}...")
+
+            def create_batch(batch_of_question_ids):
+                """
+                Create a batch of instances in one shot, but only include instances that
+                refer to an existing Question, so we avoid triggering an integrity error.
+                A call to this function makes only two databases queries no matter how
+                many instances we need to validate and create.
+                """
+                cls.objects.bulk_create(
+                    [
+                        instance_by_question_id[id]
+                        for id in Question.objects.filter(
+                            id__in=batch_of_question_ids
+                        ).values_list("id", flat=True)
+                    ]
+                )
+
+            # Let's create the fresh instances in batches, so we avoid exposing ourselves to
+            # the possibility of transgressing some query size limit.
+            batch_size = 1000
+            for batch_of_question_ids in chunked(question_ids, batch_size):
+                if verbose:
+                    log.info(f"Creating a batch of {len(batch_of_question_ids)} instances...")
+
                 try:
-                    # For some reason unbeknowest to me,
-                    # IntegrityError doesn't get kicked up in the
-                    # QuestionVisits tests when running the tests with
-                    # a clean db. So to deal with that, we explicitly
-                    # check the db to see if the question exists.
-                    # This happens with Django 1.4.6 and South
-                    # 0.8.2. If we update either, we might want to see
-                    # if this is still a problem.
-                    Question.objects.get(pk=question_id)
-                    cls.objects.create(question_id=question_id, visits=visits)
-                except (Question.DoesNotExist, IntegrityError):
-                    # The question doesn't exist anymore, move on.
-                    continue
-        else:
-            log.warning("Google Analytics returned no interesting data," " so I kept what I had.")
+                    with transaction.atomic():
+                        create_batch(batch_of_question_ids)
+                except IntegrityError:
+                    # There is a very slim chance that one or more Questions have been deleted in
+                    # the moment of time between the formation of the list of valid instances and
+                    # actually creating them, so let's give it one more try, assuming there's an
+                    # even slimmer chance that lightning will strike twice. If this one fails,
+                    # we'll roll-back everything and give up on the entire effort.
+                    create_batch(batch_of_question_ids)
+
+            if verbose:
+                log.info("Done.")
 
 
 class QuestionLocale(ModelBase):

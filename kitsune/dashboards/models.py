@@ -1,32 +1,17 @@
 import logging
-from datetime import date, timedelta
 
-from django.db import close_old_connections, connection, models
+from django.db import IntegrityError, models, transaction
+from django.db.models import Q, Subquery
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEAR, PERIODS
+from kitsune.dashboards import PERIODS
 from kitsune.products.models import Product
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.utils import chunked
 from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.dashboards")
-
-
-def period_dates(period):
-    """Return when each period begins and ends."""
-    end = date.today() - timedelta(days=1)  # yesterday
-
-    if period == LAST_7_DAYS:
-        start = end - timedelta(days=7)
-    elif period == LAST_30_DAYS:
-        start = end - timedelta(days=30)
-    elif period == LAST_90_DAYS:
-        start = end - timedelta(days=90)
-    elif LAST_YEAR:
-        start = end - timedelta(days=365)
-
-    return start, end
 
 
 class WikiDocumentVisits(ModelBase):
@@ -42,29 +27,79 @@ class WikiDocumentVisits(ModelBase):
     @classmethod
     def reload_period_from_analytics(cls, period, verbose=False):
         """Replace the stats for the given period from Google Analytics."""
-        counts = googleanalytics.pageviews_by_document(*period_dates(period), verbose=verbose)
-        if counts:
-            # Close any existing connections because our load balancer times
-            # them out at 5 minutes and the GA calls take forever.
-            close_old_connections()
-
-            # Delete and remake the rows:
-            # Horribly inefficient until
-            # http://code.djangoproject.com/ticket/9519 is fixed.
-            # cls.objects.filter(period=period).delete()
-
-            # Instead, we use raw SQL!
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "DELETE FROM dashboards_wikidocumentvisits WHERE period = %s",
-                    [period],
+        with transaction.atomic():
+            # First, let's clear out the previous results for this period.
+            if verbose:
+                log.info(
+                    f"Deleting all stale instances of {cls.__name__} with period = {period}..."
                 )
-            # Now we create them again with fresh data.
-            for doc_id, visits in counts.items():
-                cls.objects.create(document=Document(pk=doc_id), visits=visits, period=period)
-        else:
-            # Don't erase interesting data if there's nothing to replace it:
-            log.warning("Google Analytics returned no interesting data," " so I kept what I had.")
+
+            cls.objects.filter(period=period).delete()
+
+            # Next, let's gather some data we need. We're sacrificing memory
+            # here in order to reduce the number of database queries later on.
+            if verbose:
+                log.info("Gathering pageviews per article from GA4 data API...")
+
+            instance_by_locale_and_slug = {}
+            for (locale, slug), visits in googleanalytics.pageviews_by_document(
+                period, verbose=verbose
+            ):
+                instance_by_locale_and_slug[(locale, slug)] = cls(
+                    document_id=Subquery(
+                        Document.objects.filter(locale=locale, slug=slug).values("id")
+                    ),
+                    period=period,
+                    visits=visits,
+                )
+
+            # Then we can create the fresh results for this period.
+            if verbose:
+                log.info(
+                    f"Creating {len(instance_by_locale_and_slug)} fresh instances of "
+                    f"{cls.__name__} with period = {period}..."
+                )
+
+            def create_batch(batch_of_locale_and_slug_queries):
+                """
+                Create a batch of instances in one shot, but only include instances that
+                refer to an existing Document, so we avoid triggering an integrity error.
+                A call to this function makes only two databases queries no matter how
+                many instances we need to validate and create.
+                """
+                cls.objects.bulk_create(
+                    [
+                        instance_by_locale_and_slug[locale_and_slug]
+                        for locale_and_slug in Document.objects.filter(
+                            batch_of_locale_and_slug_queries
+                        ).values_list("locale", "slug")
+                    ]
+                )
+
+            # Let's create the fresh instances in batches, so we avoid exposing ourselves to
+            # the possibility of transgressing some query size limit.
+            batch_size = 1000
+            for batch_of_pairs in chunked(list(instance_by_locale_and_slug), batch_size):
+                locale_and_slug_queries = Q()
+                for locale, slug in batch_of_pairs:
+                    locale_and_slug_queries |= Q(locale=locale, slug=slug)
+
+                if verbose:
+                    log.info(f"Creating a batch of {len(batch_of_pairs)} instances...")
+
+                try:
+                    with transaction.atomic():
+                        create_batch(locale_and_slug_queries)
+                except IntegrityError:
+                    # There is a very slim chance that one or more Documents have been deleted in
+                    # the moment of time between the formation of the list of valid instances and
+                    # actually creating them, so let's give it one more try, assuming there's an
+                    # even slimmer chance that lightning will strike twice. If this one fails,
+                    # we'll roll-back everything and give up on the entire effort.
+                    create_batch(locale_and_slug_queries)
+
+            if verbose:
+                log.info("Done.")
 
 
 L10N_TOP20_CODE = "percent_localized_top20"

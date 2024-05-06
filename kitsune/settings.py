@@ -918,9 +918,7 @@ GA_KEY = config("GA_KEY", default=None)  # Google API client key
 GA_ACCOUNT = config(
     "GA_ACCOUNT", "something@developer.gserviceaccount.com"
 )  # Google API Service Account email address
-GA_PROFILE_ID = config(
-    "GA_PROFILE_ID", default="12345678"
-)  # Google Analytics profile id for SUMO prod
+GA_PROPERTY_ID = config("GA_PROPERTY_ID", default="123456789")
 GTM_CONTAINER_ID = config("GTM_CONTAINER_ID", default="")  # Google container ID
 
 REDIS_BACKENDS = {

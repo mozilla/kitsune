@@ -9,7 +9,7 @@ from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.questions import config, models
+from kitsune.questions import config
 from kitsune.questions.models import (
     AlreadyTakenException,
     Answer,
@@ -574,23 +574,22 @@ class QuestionVisitsTests(TestCase):
 
     # Need to monkeypatch close_old_connections out because it
     # does something screwy with the testing infra around transactions.
-    @mock.patch.object(models, "close_old_connections")
-    @mock.patch.object(
-        googleanalytics,
-        "pageviews_by_question",
-    )
-    def test_visit_count_from_analytics(self, pageviews_by_question, close_old_connections):
+    @mock.patch.object(googleanalytics, "pageviews_by_question")
+    def test_visit_count_from_analytics(self, pageviews_by_question):
         """Verify stored visit counts from mocked data."""
         q1 = QuestionFactory()
         q2 = QuestionFactory()
         q3 = QuestionFactory()
 
-        pageviews_by_question.return_value = {
-            q1.id: 42,
-            q2.id: 27,
-            q3.id: 1337,
-            123459: 3,
-        }
+        pageviews_by_question.return_value = (
+            row
+            for row in (
+                (q1.id, 42),
+                (q2.id, 27),
+                (q3.id, 1337),
+                (123459, 3),
+            )
+        )
 
         QuestionVisits.reload_from_analytics()
         self.assertEqual(3, QuestionVisits.objects.count())
@@ -599,11 +598,14 @@ class QuestionVisitsTests(TestCase):
         self.assertEqual(1337, QuestionVisits.objects.get(question_id=q3.id).visits)
 
         # Change the data and run again to cover the update case.
-        pageviews_by_question.return_value = {
-            q1.id: 100,
-            q2.id: 200,
-            q3.id: 300,
-        }
+        pageviews_by_question.return_value = (
+            row
+            for row in (
+                (q1.id, 100),
+                (q2.id, 200),
+                (q3.id, 300),
+            )
+        )
         QuestionVisits.reload_from_analytics()
         self.assertEqual(3, QuestionVisits.objects.count())
         self.assertEqual(100, QuestionVisits.objects.get(question_id=q1.id).visits)

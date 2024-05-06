@@ -1,408 +1,150 @@
 from datetime import date
 from unittest.mock import patch
 
+from google.analytics.data_v1beta.types import DimensionValue, MetricValue, Row
+
+from kitsune.dashboards import LAST_7_DAYS
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.tests import ApprovedRevisionFactory
 
 
 class GoogleAnalyticsTests(TestCase):
     """Tests for the Google Analytics API helper."""
 
-    @patch.object(googleanalytics, "_build_request")
-    def test_visitors(self, _build_request):
+    @patch.object(googleanalytics, "run_report")
+    def test_visitors(self, run_report):
         """Test googleanalytics.visitors()."""
-        execute = _build_request.return_value.get.return_value.execute
-        execute.return_value = VISITORS_RESPONSE
+        run_report.return_value = (
+            Row(
+                dimension_values=[DimensionValue(value="20240411")],
+                metric_values=[MetricValue(value="23415")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="20240414")],
+                metric_values=[MetricValue(value="41976")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="20240416")],
+                metric_values=[MetricValue(value="34657")],
+            ),
+        )
 
-        visits = googleanalytics.visitors(date(2013, 1, 16), date(2013, 1, 16))
+        result = list(googleanalytics.visitors(date(2024, 4, 11), date(2024, 4, 16)))
 
-        self.assertEqual(1, len(visits))
-        self.assertEqual(382719, visits["2013-01-16"])
+        self.assertEqual(6, len(result))
+        self.assertEqual(result[0], (date(2024, 4, 11), 23415))
+        self.assertEqual(result[1], (date(2024, 4, 12), 0))
+        self.assertEqual(result[2], (date(2024, 4, 13), 0))
+        self.assertEqual(result[3], (date(2024, 4, 14), 41976))
+        self.assertEqual(result[4], (date(2024, 4, 15), 0))
+        self.assertEqual(result[5], (date(2024, 4, 16), 34657))
 
-    @patch.object(googleanalytics, "_build_request")
-    def test_visitors_by_locale(self, _build_request):
-        """Test googleanalytics.visits_by_locale()."""
-        execute = _build_request.return_value.get.return_value.execute
-        execute.return_value = VISITORS_BY_LOCALE_RESPONSE
+    @patch.object(googleanalytics, "run_report")
+    def test_visitors_by_locale(self, run_report):
+        """Test googleanalytics.visitors_by_locale()."""
+        run_report.return_value = (
+            Row(
+                dimension_values=[DimensionValue(value="en-US")],
+                metric_values=[MetricValue(value="221447")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="es")],
+                metric_values=[MetricValue(value="24432")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="de")],
+                metric_values=[MetricValue(value="34657")],
+            ),
+        )
 
-        visits = googleanalytics.visitors_by_locale(date(2013, 1, 16), date(2013, 1, 16))
+        visits = googleanalytics.visitors_by_locale(date(2024, 4, 11), date(2024, 4, 20))
 
-        self.assertEqual(58, len(visits))
+        self.assertEqual(3, len(visits))
         self.assertEqual(221447, visits["en-US"])
         self.assertEqual(24432, visits["es"])
+        self.assertEqual(34657, visits["de"])
 
-    @patch.object(googleanalytics, "_build_request")
-    def test_pageviews_by_document(self, _build_request):
+    @patch.object(googleanalytics, "run_report")
+    def test_pageviews_by_document(self, run_report):
         """Test googleanalytics.pageviews_by_document()."""
-        execute = _build_request.return_value.get.return_value.execute
-        execute.return_value = PAGEVIEWS_BY_DOCUMENT_RESPONSE
+        run_report.return_value = (
+            Row(
+                dimension_values=[DimensionValue(value="/en-US/kb/doc1-slug")],
+                metric_values=[MetricValue(value="1000")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="/es/kb/doc2-slug")],
+                metric_values=[MetricValue(value="2000")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="/de/kb/doc3-slug")],
+                metric_values=[MetricValue(value="3000")],
+            ),
+        )
 
-        # Add some documents that match the response data.
-        documents = []
-        for i in range(1, 6):
-            documents.append(ApprovedRevisionFactory(document__slug="doc-%s" % i).document)
+        result = list(googleanalytics.pageviews_by_document(LAST_7_DAYS))
 
-        pageviews = googleanalytics.pageviews_by_document(date(2013, 1, 16), date(2013, 1, 16))
+        self.assertEqual(3, len(result))
+        self.assertEqual(result[0], (("en-US", "doc1-slug"), 1000))
+        self.assertEqual(result[1], (("es", "doc2-slug"), 2000))
+        self.assertEqual(result[2], (("de", "doc3-slug"), 3000))
 
-        self.assertEqual(5, len(pageviews))
-        self.assertEqual(1, pageviews[documents[0].pk])
-        self.assertEqual(2, pageviews[documents[1].pk])
-        self.assertEqual(10, pageviews[documents[2].pk])
-        self.assertEqual(39, pageviews[documents[3].pk])
-        self.assertEqual(46, pageviews[documents[4].pk])
-
-    @patch.object(googleanalytics, "_build_request")
-    def test_pageviews_by_question(self, _build_request):
+    @patch.object(googleanalytics, "run_report")
+    def test_pageviews_by_question(self, run_report):
         """Test googleanalytics.pageviews_by_question()."""
-        execute = _build_request.return_value.get.return_value.execute
-        execute.return_value = PAGEVIEWS_BY_QUESTION_RESPONSE
+        run_report.return_value = (
+            Row(
+                dimension_values=[DimensionValue(value="/en-US/questions/123456")],
+                metric_values=[MetricValue(value="1000")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="/es/questions/782348")],
+                metric_values=[MetricValue(value="2000")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="/de/questions/987235")],
+                metric_values=[MetricValue(value="3000")],
+            ),
+        )
 
-        pageviews = googleanalytics.pageviews_by_question(date(2013, 1, 16), date(2013, 1, 16))
+        result = list(googleanalytics.pageviews_by_question(LAST_7_DAYS))
 
-        self.assertEqual(3, len(pageviews))
-        self.assertEqual(3, pageviews[1])
-        self.assertEqual(2, pageviews[2])
-        self.assertEqual(11, pageviews[3])
+        self.assertEqual(3, len(result))
+        self.assertEqual(result[0], (123456, 1000))
+        self.assertEqual(result[1], (782348, 2000))
+        self.assertEqual(result[2], (987235, 3000))
 
-    @patch.object(googleanalytics, "_build_request")
-    def test_search_ctr(self, _build_request):
-        """Test googleanalytics.search_ctr()."""
-        execute = _build_request.return_value.get.return_value.execute
-        execute.return_value = SEARCH_CTR_RESPONSE
+    @patch.object(googleanalytics, "run_report")
+    def test_search_clicks_and_impressions(self, run_report):
+        """Test googleanalytics.test_search_clicks_and_impressions()."""
+        run_report.side_effect = (
+            (
+                Row(
+                    dimension_values=[DimensionValue(value="20240411")],
+                    metric_values=[MetricValue(value="10328")],
+                ),
+                Row(
+                    dimension_values=[DimensionValue(value="20240413")],
+                    metric_values=[MetricValue(value="9739")],
+                ),
+            ),
+            (
+                Row(
+                    dimension_values=[DimensionValue(value="20240411")],
+                    metric_values=[MetricValue(value="4657")],
+                ),
+                Row(
+                    dimension_values=[DimensionValue(value="20240413")],
+                    metric_values=[MetricValue(value="3791")],
+                ),
+            ),
+        )
 
-        ctr = googleanalytics.search_ctr(date(2013, 6, 6), date(2013, 6, 6))
+        result = list(
+            googleanalytics.search_clicks_and_impressions(date(2024, 4, 11), date(2024, 4, 13))
+        )
 
-        self.assertEqual(1, len(ctr))
-        self.assertEqual(74.88925980111263, ctr["2013-06-06"])
-
-
-VISITORS_RESPONSE = {
-    "kind": "analytics#gaData",
-    "rows": [["382719"]],  # <~ The number we are looking for.
-    "containsSampledData": False,
-    "profileInfo": {
-        "webPropertyId": "UA-1234567890",
-        "internalWebPropertyId": "1234567890",
-        "tableId": "ga:1234567890",
-        "profileId": "1234567890",
-        "profileName": "support.mozilla.org - Production Only",
-        "accountId": "1234567890",
-    },
-    "itemsPerPage": 1000,
-    "totalsForAllResults": {"ga:visitors": "382719"},
-    "columnHeaders": [{"dataType": "INTEGER", "columnType": "METRIC", "name": "ga:visitors"}],
-    "query": {
-        "max-results": 1000,
-        "dimensions": "",
-        "start-date": "2013-01-16",
-        "start-index": 1,
-        "ids": "ga:1234567890",
-        "metrics": ["ga:visitors"],
-        "end-date": "2013-01-16",
-    },
-    "totalResults": 1,
-    "id": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:1234567890&metrics=ga:visitors&start-date=2013-01-16"
-        "&end-date=2013-01-16"
-    ),
-    "selfLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:1234567890&metrics=ga:visitors"
-        "&start-date=2013-01-16&end-date=2013-01-16"
-    ),
-}
-
-
-VISITORS_BY_LOCALE_RESPONSE = {
-    "kind": "analytics#gaData",
-    "rows": [
-        ["/1/", "16"],
-        ["/ach/", "24"],
-        ["/ak/", "32"],
-        ["/ar/", "3362"],
-        ["/as/", "10"],
-        ["/ast/", "6"],
-        ["/az/", "41"],
-        ["/be/", "13"],
-        ["/bg/", "989"],
-        ["/bn/", "21"],
-        ["/bs/", "73"],
-        ["/ca/", "432"],
-        ["/cs/", "3308"],
-        ["/da/", "947"],
-        ["/de/", "37313"],
-        ["/el/", "1720"],
-        ["/en-US/", "221447"],
-        ["/eo/", "12"],
-        ["/es/", "24432"],
-        ["/et/", "226"],
-        ["/eu/", "122"],
-        ["/fa/", "356"],
-        ["/favicon.ico", "4"],
-        ["/ff/", "6"],
-        ["/fi/", "2318"],
-        ["/fr/", "24922"],
-        ["/fur/", "5"],
-        ["/fy-NL/", "2"],
-        ["/ga-IE/", "7"],
-        ["/gd/", "7"],
-        ["/gl/", "43"],
-        ["/gu-IN/", "3"],
-        ["/he/", "202"],
-        ["/hi-IN/", "21"],
-        ["/hr/", "677"],
-        ["/hu/", "2873"],
-        ["/hy-AM/", "14"],
-        ["/id/", "3390"],
-        ["/ilo/", "5"],
-        ["/is/", "39"],
-        ["/it/", "9986"],
-        ["/ja/", "15508"],
-        ["/kk/", "9"],
-        ["/km/", "8"],
-        ["/kn/", "7"],
-        ["/ko/", "858"],
-        ["/lt/", "536"],
-        ["/mai/", "12"],
-        ["/mk/", "58"],
-        ["/ml/", "10"],
-        ["/mn/", "42"],
-        ["/mr/", "10"],
-        ["/ms/", "14"],
-        ["/my/", "413"],
-        ["/nb-NO/", "714"],
-        ["/ne-NP/", "7"],
-        ["/nl/", "4970"],
-        ["/no/", "135"],
-        ["/pa-IN/", "10"],
-        ["/pl/", "9701"],
-        ["/pt-BR/", "12299"],
-        ["/pt-PT/", "1332"],
-        ["/rm/", "8"],
-        ["/ro/", "1221"],
-        ["/ru/", "26194"],
-        ["/rw/", "5"],
-        ["/si/", "21"],
-        ["/sk/", "875"],
-        ["/sl/", "530"],
-        ["/son/", "1"],
-        ["/sq/", "27"],
-        ["/sr/", "256"],
-        ["/sv/", "1488"],
-        ["/ta-LK/", "13"],
-        ["/ta/", "13"],
-        ["/te/", "6"],
-        ["/th/", "2936"],
-        ["/tr/", "3470"],
-        ["/uk/", "434"],
-        ["/vi/", "4880"],
-        ["/zh-CN/", "5640"],
-        ["/zh-TW/", "3508"],
-    ],
-    "containsSampledData": False,
-    "profileInfo": {
-        "webPropertyId": "UA-1234567890",
-        "internalWebPropertyId": "1234567890",
-        "tableId": "ga:1234567890",
-        "profileId": "1234567890",
-        "profileName": "support.mozilla.org - Production Only",
-        "accountId": "1234567890",
-    },
-    "itemsPerPage": 1000,
-    "totalsForAllResults": {"ga:visitors": "437598"},
-    "columnHeaders": [
-        {"dataType": "STRING", "columnType": "DIMENSION", "name": "ga:pagePathLevel1"},
-        {"dataType": "INTEGER", "columnType": "METRIC", "name": "ga:visitors"},
-    ],
-    "query": {
-        "max-results": 1000,
-        "dimensions": "ga:pagePathLevel1",
-        "start-date": "2013-01-16",
-        "start-index": 1,
-        "ids": "ga:1234567890",
-        "metrics": ["ga:visitors"],
-        "end-date": "2013-01-16",
-    },
-    "totalResults": 83,
-    "id": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:1234567890&dimensions=ga:pagePathLevel1"
-        "&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16"
-    ),
-    "selfLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:1234567890&dimensions=ga:pagePathLevel1"
-        "&metrics=ga:visitors&start-date=2013-01-16"
-        "&end-date=2013-01-16"
-    ),
-}
-
-
-PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
-    "kind": "analytics#gaData",
-    "rows": [
-        ["/en-US/kb/doc-1", "1"],  # Counts as a pageview.
-        ["/en-US/kb/doc-1/edit", "2"],  # Doesn't count as a pageview
-        ["/en-US/kb/doc-1/history", "1"],  # Doesn't count as a pageview
-        ["/en-US/kb/doc-2", "2"],  # Counts as a pageview.
-        ["/en-US/kb/doc-3", "10"],  # Counts as a pageview.
-        ["/en-US/kb/doc-4", "39"],  # Counts as a pageview.
-        ["/en-US/kb/doc-5", "40"],  # Counts as a pageview.
-        ["/en-US/kb/doc-5/discuss", "1"],  # Doesn't count as a pageview
-        ["/en-US/kb/doc-5?param=ab", "2"],  # Counts as a pageview.
-        ["/en-US/kb/doc-5?param=cd", "4"],
-    ],  # Counts as a pageview.
-    "containsSampledData": False,
-    "columnHeaders": [
-        {"dataType": "STRING", "columnType": "DIMENSION", "name": "ga:pagePath"},
-        {"dataType": "INTEGER", "columnType": "METRIC", "name": "ga:pageviews"},
-    ],
-    "profileInfo": {
-        "webPropertyId": "UA-1234567890",
-        "internalWebPropertyId": "1234567890",
-        "tableId": "ga:1234567890",
-        "profileId": "1234567890",
-        "profileName": "support.mozilla.org - Production Only",
-        "accountId": "1234567890",
-    },
-    "itemsPerPage": 10,
-    "totalsForAllResults": {"ga:pageviews": "164293"},
-    "nextLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:1234567890&dimensions=ga:pagePath"
-        "&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/"
-        ";ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17"
-        "&end-date=2013-01-17&start-index=11&max-results=10"
-    ),
-    "query": {
-        "max-results": 10,
-        "dimensions": "ga:pagePath",
-        "start-date": "2013-01-17",
-        "start-index": 1,
-        "ids": "ga:1234567890",
-        "metrics": ["ga:pageviews"],
-        "filters": "ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/",
-        "end-date": "2013-01-17",
-    },
-    "totalResults": 10,
-    "id": (
-        "https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890"
-        "&dimensions=ga:pagePath&metrics=ga:pageviews"
-        "&filters=ga:pagePathLevel2%3D%3D/kb/;"
-        "ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17"
-        "&end-date=2013-01-17&start-index=1&max-results=10"
-    ),
-    "selfLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:1234567890&dimensions=ga:pagePath&"
-        "metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;"
-        "ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17"
-        "&end-date=2013-01-17&start-index=1&max-results=10"
-    ),
-}
-
-
-PAGEVIEWS_BY_QUESTION_RESPONSE = {
-    "columnHeaders": [
-        {"columnType": "DIMENSION", "dataType": "STRING", "name": "ga:pagePath"},
-        {"columnType": "METRIC", "dataType": "INTEGER", "name": "ga:pageviews"},
-    ],
-    "containsSampledData": False,
-    "id": (
-        "https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487"
-        "&dimensions=ga:pagePath&metrics=ga:pageviews"
-        "&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01"
-        "&end-date=2013-01-02&start-index=1&max-results=10"
-    ),
-    "itemsPerPage": 10,
-    "kind": "analytics#gaData",
-    "nextLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:65912487&dimensions=ga:pagePath"
-        "&metrics=ga:pageviews"
-        "&filters=ga:pagePathLevel2%3D%3D/questions/"
-        "&start-date=2013-01-01&end-date=2013-01-02"
-        "&start-index=11&max-results=10"
-    ),
-    "profileInfo": {
-        "accountId": "36116321",
-        "internalWebPropertyId": "64136921",
-        "profileId": "65912487",
-        "profileName": "support.mozilla.org - Production Only",
-        "tableId": "ga:65912487",
-        "webPropertyId": "UA-36116321-2",
-    },
-    "query": {
-        "dimensions": "ga:pagePath",
-        "end-date": "2013-01-02",
-        "filters": "ga:pagePathLevel2==/questions/",
-        "ids": "ga:65912487",
-        "max-results": 10,
-        "metrics": ["ga:pageviews"],
-        "start-date": "2013-01-01",
-        "start-index": 1,
-    },
-    "rows": [
-        ["/en-US/questions/1", "2"],  # Counts as a pageview.
-        ["/es/questions/1", "1"],  # Counts as a pageview.
-        ["/en-US/questions/1/edit", "3"],  # Doesn't count as a pageview
-        ["/en-US/questions/stats", "1"],  # Doesn't count as a pageview
-        ["/en-US/questions/2", "1"],  # Counts as a pageview.
-        ["/en-US/questions/2?mobile=1", "1"],  # Counts as a pageview.
-        ["/en-US/questions/2/foo", "2"],  # Doesn't count as a pageview
-        ["/en-US/questions/bar", "1"],  # Doesn't count as a pageview
-        ["/es/questions/3?mobile=0", "10"],  # Counts as a pageview.
-        ["/es/questions/3?lang=en-US", "1"],
-    ],  # Counts as a pageview.
-    "selfLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:65912487&dimensions=ga:pagePath"
-        "&metrics=ga:pageviews"
-        "&filters=ga:pagePathLevel2%3D%3D/questions/"
-        "&start-date=2013-01-01&end-date=2013-01-02"
-        "&start-index=1&max-results=10"
-    ),
-    "totalResults": 10,
-    "totalsForAllResults": {"ga:pageviews": "242403"},
-}
-
-
-SEARCH_CTR_RESPONSE = {
-    "kind": "analytics#gaData",
-    "rows": [["74.88925980111263"]],  # <~ The number we are looking for.
-    "containsSampledData": False,
-    "profileInfo": {
-        "webPropertyId": "UA-36116321-2",
-        "internalWebPropertyId": "64136921",
-        "tableId": "ga:65912487",
-        "profileId": "65912487",
-        "profileName": "support.mozilla.org - Production Only",
-        "accountId": "36116321",
-    },
-    "itemsPerPage": 1000,
-    "totalsForAllResults": {"ga:goal11ConversionRate": "74.88925980111263"},
-    "columnHeaders": [
-        {"dataType": "PERCENT", "columnType": "METRIC", "name": "ga:goal11ConversionRate"}
-    ],
-    "query": {
-        "max-results": 1000,
-        "start-date": "2013-06-06",
-        "start-index": 1,
-        "ids": "ga:65912487",
-        "metrics": ["ga:goal11ConversionRate"],
-        "end-date": "2013-06-06",
-    },
-    "totalResults": 1,
-    "id": (
-        "https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487"
-        "&metrics=ga:goal11ConversionRate&start-date=2013-06-06"
-        "&end-date=2013-06-06"
-    ),
-    "selfLink": (
-        "https://www.googleapis.com/analytics/v3/data/ga"
-        "?ids=ga:65912487&metrics=ga:goal11ConversionRate&"
-        "start-date=2013-06-06&end-date=2013-06-06"
-    ),
-}
+        self.assertEqual(3, len(result))
+        self.assertEqual(result[0], (date(2024, 4, 11), 4657, 10328))
+        self.assertEqual(result[1], (date(2024, 4, 12), 0, 0))
+        self.assertEqual(result[2], (date(2024, 4, 13), 3791, 9739))
