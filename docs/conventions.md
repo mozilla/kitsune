@@ -11,7 +11,7 @@ We follow most of the practices as detailed in the [Mozilla webdev
 bootcamp
 guide](https://mozweb.readthedocs.io/en/latest/guide/development_process.html).
 
-It is recommended that you [install pre-commit](hacking_howto.md/#install-lintingtools)
+It is recommended that you [install pre-commit](hacking_howto.md/#install-linting-tools)
 
 ## Type hints
 
