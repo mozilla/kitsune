@@ -97,7 +97,7 @@ APPROVED_EMAIL_CONTENT = """\
 To view the updated document, click the following link, or paste it into \
 your browser's location bar:
 
-https://testserver/en-US/kb/%(document_slug)s?utm_campaign=wiki-approved&\
+https://testserver/en-US/kb/%(document_slug)s/?utm_campaign=wiki-approved&\
 utm_source=notification&utm_medium=email
 
 --
@@ -217,7 +217,7 @@ class DocumentTests(TestCase):
         RevisionFactory(document=d2, is_approved=False)
         url = reverse("wiki.document", args=[r.document.slug], locale="fr")
         response = self.client.get(url, follow=True)
-        self.assertEqual("/fr/kb/french", response.redirect_chain[0][0])
+        self.assertEqual("/fr/kb/french/", response.redirect_chain[0][0])
         doc = pq(response.content)
         self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
         # Fallback message is shown.
@@ -2519,7 +2519,7 @@ class ArticlePreviewTests(TestCase):
         doc = pq(response.content)
         link = doc("#doc-content a")
         self.assertEqual("Prueba", link.text())
-        self.assertEqual("/es/kb/prueba", link[0].attrib["href"])
+        self.assertEqual("/es/kb/prueba/", link[0].attrib["href"])
 
 
 class HelpfulVoteTests(TestCase):

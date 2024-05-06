@@ -21,7 +21,7 @@ from django.contrib import admin  # noqa
 admin.autodiscover()
 
 urlpatterns = i18n_patterns(
-    path("kb", include("kitsune.wiki.urls")),
+    path("kb/", include("kitsune.wiki.urls")),
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
     path("questions/", include("kitsune.questions.urls")),

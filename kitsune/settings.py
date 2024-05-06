@@ -463,6 +463,7 @@ TEMPLATES = [
     },
 ]
 
+APPEND_SLASH = True
 
 MIDDLEWARE: tuple[str, ...] = (
     "kitsune.sumo.middleware.HostnameMiddleware",

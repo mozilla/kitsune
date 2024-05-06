@@ -243,16 +243,16 @@ VISITORS_BY_LOCALE_RESPONSE = {
 PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
     "kind": "analytics#gaData",
     "rows": [
-        ["/en-US/kb/doc-1", "1"],  # Counts as a pageview.
-        ["/en-US/kb/doc-1/edit", "2"],  # Doesn't count as a pageview
-        ["/en-US/kb/doc-1/history", "1"],  # Doesn't count as a pageview
-        ["/en-US/kb/doc-2", "2"],  # Counts as a pageview.
-        ["/en-US/kb/doc-3", "10"],  # Counts as a pageview.
-        ["/en-US/kb/doc-4", "39"],  # Counts as a pageview.
-        ["/en-US/kb/doc-5", "40"],  # Counts as a pageview.
-        ["/en-US/kb/doc-5/discuss", "1"],  # Doesn't count as a pageview
-        ["/en-US/kb/doc-5?param=ab", "2"],  # Counts as a pageview.
-        ["/en-US/kb/doc-5?param=cd", "4"],
+        ["/en-US/kb/doc-1/", "1"],  # Counts as a pageview.
+        ["/en-US/kb/doc-1/edit/", "2"],  # Doesn't count as a pageview
+        ["/en-US/kb/doc-1/history/", "1"],  # Doesn't count as a pageview
+        ["/en-US/kb/doc-2/", "2"],  # Counts as a pageview.
+        ["/en-US/kb/doc-3/", "10"],  # Counts as a pageview.
+        ["/en-US/kb/doc-4/", "39"],  # Counts as a pageview.
+        ["/en-US/kb/doc-5/", "40"],  # Counts as a pageview.
+        ["/en-US/kb/doc-5/discuss/", "1"],  # Doesn't count as a pageview
+        ["/en-US/kb/doc-5/?param=ab", "2"],  # Counts as a pageview.
+        ["/en-US/kb/doc-5/?param=cd", "4"],
     ],  # Counts as a pageview.
     "containsSampledData": False,
     "columnHeaders": [

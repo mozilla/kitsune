@@ -2378,7 +2378,7 @@ class PocketArticleTests(TestCase):
         redirect_chain = response.redirect_chain
         self.assertEqual(len(redirect_chain), 2)
         self.assertEqual(redirect_chain[0], (f"/en-US/kb/pocket/1111-{doc.slug}", 302))
-        self.assertEqual(redirect_chain[1], ("/en-US/kb/article-title", 302))
+        self.assertEqual(redirect_chain[1], ("/en-US/kb/article-title/", 302))
 
     def test_pocket_redirect_when_kb_article_doesnt_exist(self):
         """No match found, we should be sent to /products/pocket"""
