@@ -16,12 +16,11 @@
     <form action="{{ url('messages.bulk_action') }}" method="POST">
       <div class="sumo-button-wrap">
         <input class="sumo-button" type="submit" name="mark_read" value="{{ _('Mark Selected as Read') }}">
+        <input class="sumo-button" type="submit" name="delete" value="{{ _('Delete Selected') }}">
       </div>
       <ol class="inbox-table">
             <li class="email-row header">
-                <div class="email-cell checkbox">
-                    <input type="checkbox" aria-label="Select all">
-                </div>
+                <div class="email-cell check"></div>
                 <div class="email-cell avatar"></div>
                 <div class="email-cell from">{{ _('From') }}</div>
                 <div class="email-cell date">{{ _('Received On') }}</div>
