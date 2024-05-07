@@ -19,7 +19,7 @@
         border: 1px solid #ddd;
         min-width: 100px; // Minimum width for cell content
         // Specify flex-basis for each cell type
-        &:first-child { flex: 0 1 40px; } // Checkbox cell
+        &:first-child { flex: 0 0 20px; } // Checkbox cell
         &:nth-child(2) { flex: 0 0 45px; } // Avatar cell
         &:nth-child(3) { flex: 1 0 20%; } // From cell
         &:nth-child(4) { flex: 1 0 20%; } // Received On cell
@@ -46,7 +46,7 @@
 .outbox-table .email-row {
     .email-cell {
         // Specify flex-basis for each cell type
-        &:nth-child(1) { flex: 1 0 20%; } // First cell
+        &:nth-child(1) { flex: 0 0 40px; } // First cell
         &:nth-child(2) { flex: 1 0 20%; } // Second cell
         &:nth-child(3) { flex: 1 0 20%; } // Third cell
         &:nth-child(4) { flex: 3 0 30%; } // Larger central content area
