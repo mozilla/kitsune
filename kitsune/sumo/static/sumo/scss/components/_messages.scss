@@ -61,8 +61,9 @@
             flex: 1 0 100%; // Make each cell expand to full width on small screens
             display: block; // Ensures that cells do not try to align in a row when space is constrained
             
-            &:nth-child(1), // First cell, commonly date or checkbox
-            &:nth-child(3) { // Third cell
+
+            &:nth-child(3), // Third cell
+            &:nth-child(6) { // Last Ccell
                 display: none; // Hide less important columns on small screens
             }
         }
