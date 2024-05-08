@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE
+from kitsune.messages.api import get_autocomplete_suggestions
 from kitsune.messages.forms import MessageForm, ReplyForm
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
@@ -85,7 +86,26 @@ def outbox(request):
 
 @login_required
 def new_message(request):
-    form = MessageForm(request.POST or None, user=request.user)
+    initial_data = {}
+    if request.method == "GET":
+        # Check if 'to' parameter is in the GET request and prepare initial data
+        # We have to do this because messaging links from profiles are GET
+        # Also, we have to use the get_autocomplete_suggestions function on
+        # anything passed in to populate the 'to' field correctly when we
+        # don't know if the 'to' is a user or a group or none.
+        # If a name is passed in to 'to' that is the name of both a group
+        # and a user, both will be added if the user has group messaging
+        # permissions. The user can then remove the one they don't want.
+        # Without separating the to field into to_users and to_groups,
+        # we can't know which is which, so we do a best fit.
+        to = request.GET.get("to")
+        if to:
+            suggestions = json.loads(get_autocomplete_suggestions(request).content)
+            to_items = [item["type_and_name"] for item in suggestions]
+            initial_data = {"to": " ,".join(to_items)}
+
+    # Initialize the form with GET parameter if it exists, else normally
+    form = MessageForm(request.POST or None, initial=initial_data, user=request.user)
     if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
         send_message(
             form.cleaned_data["to"],

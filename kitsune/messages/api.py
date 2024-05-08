@@ -15,7 +15,7 @@ from kitsune.users.templatetags.jinja_helpers import profile_avatar
 @json_view
 def get_autocomplete_suggestions(request):
     """An API to provide auto-complete data for user names or groups."""
-    pre = request.GET.get("term", "") or request.GET.get("query", "")
+    pre = request.GET.get("term", "") or request.GET.get("query", "") or request.GET.get("to", "")
     if not pre or not request.user.is_authenticated:
         return []
 
