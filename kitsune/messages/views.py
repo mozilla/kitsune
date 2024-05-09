@@ -10,10 +10,9 @@ from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE
-from kitsune.messages.api import get_autocomplete_suggestions
 from kitsune.messages.forms import MessageForm, ReplyForm
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.messages.utils import send_message
+from kitsune.messages.utils import create_suggestion, find_users_and_groups_by_search, send_message
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited, paginate
 
@@ -88,20 +87,23 @@ def outbox(request):
 def new_message(request):
     initial_data = {}
     if request.method == "GET":
-        # Check if 'to' parameter is in the GET request and prepare initial data
         # We have to do this because messaging links from profiles are GET
-        # Also, we have to use the get_autocomplete_suggestions function on
-        # anything passed in to populate the 'to' field correctly when we
-        # don't know if the 'to' is a user or a group or none.
-        # If a name is passed in to 'to' that is the name of both a group
-        # and a user, both will be added if the user has group messaging
-        # permissions. The user can then remove the one they don't want.
+        # It's possible there are other use cases for the GET param
+        # We are only going to return object(s) if our match is exact
+        # If a name is passed in that is the name of both a group
+        # and a user, both will be added.
+        # The user can then remove the one they don't want.
         # Without separating the to field into to_users and to_groups,
-        # we can't know which is which, so we do a best fit.
-        to = request.GET.get("to")
-        if to:
-            suggestions = json.loads(get_autocomplete_suggestions(request).content)
-            to_items = [item["type_and_name"] for item in suggestions]
+        # we can't know which is which, so show both.
+        if request.GET.get("to"):
+            # Get users (and groups if request user is in Staff group)
+            # - if exact match, show only that user/group
+            # - if not exact match we won't find anything
+            list_of_objects = find_users_and_groups_by_search(
+                request.GET.get("to"), show_groups=request.user.profile.in_staff_group, exact=True
+            )
+            # This gets the type and name of the object in the format we need
+            to_items = [create_suggestion(item)["type_and_name"] for item in list_of_objects]
             initial_data = {"to": " ,".join(to_items)}
 
     # Initialize the form with GET parameter if it exists, else normally

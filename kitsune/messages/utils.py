@@ -1,9 +1,12 @@
+from django.conf import settings
 from django.contrib.auth.models import Group, User
-
+from django.db.models import Q
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.signals import message_sent
 from kitsune.messages.tasks import email_private_message
+from kitsune.sumo.utils import webpack_static
 from kitsune.users.models import Setting
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
 
 
 def send_message(to, text=None, sender=None):
@@ -65,3 +68,41 @@ def send_message(to, text=None, sender=None):
 def unread_count_for(user):
     """Returns the number of unread messages for the specified user."""
     return InboxMessage.objects.filter(to=user, read=False).count()
+
+
+def create_suggestion(item):
+    """Create a dictionary object for the autocomplete suggestion."""
+    is_user = isinstance(item, User)
+    return {
+        "type": "User" if is_user else "Group",
+        "type_icon": webpack_static(
+            settings.DEFAULT_USER_ICON if is_user else settings.DEFAULT_GROUP_ICON
+        ),
+        "name": item.username if is_user else item.name,
+        "type_and_name": f"User: {item.username}" if is_user else f"Group: {item.name}",
+        "display_name": item.profile.name if is_user else item.name,
+        "avatar": (
+            profile_avatar(item, 24) if is_user else webpack_static(settings.DEFAULT_AVATAR)
+        ),
+    }
+
+
+def find_users_and_groups_by_search(pre, show_groups=False, exact=False):
+    """Given a name or start of a name, return a list of users and groups."""
+    if exact:
+        user_criteria = Q(username=pre) | Q(profile__name=pre)
+        group_criteria = Q(name=pre)
+    else:
+        user_criteria = Q(username__istartswith=pre) | Q(profile__name__istartswith=pre)
+        group_criteria = Q(name__istartswith=pre)
+
+    users = User.objects.filter(
+        user_criteria, is_active=True, profile__is_fxa_migrated=True
+    ).select_related("profile")[:10]
+
+    if show_groups:
+        groups = Group.objects.filter(group_criteria, profile__isnull=False)[:10]
+
+    user_list = list(users)
+
+    return user_list + list(groups) if show_groups else user_list
