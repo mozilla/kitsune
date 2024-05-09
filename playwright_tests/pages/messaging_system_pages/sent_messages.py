@@ -14,11 +14,10 @@ class SentMessagePage(BasePage):
     __sent_messages_page_message_banner_text = "//ul[@class='user-messages']/li/p"
     __sent_message_page_message_banner_close_button = ("//button[@class='mzp-c-notification-bar"
                                                        "-button']")
-    __sent_messages = "//ol[@class='message-list']/li"
-    __sent_messages_section = "//ol[@class='message-list']"
-    __sent_messages_delete_button = "//ol[@class='message-list']//a[@class='delete']"
-    __sent_messages_delete_checkbox = ("//ol[@class='message-list']//a/ancestor::li/div["
-                                       "contains(@class, 'field checkbox no-label')]/label")
+    __sent_messages = "//li[contains(@class,'email-row') and not(contains(@class, 'header'))]"
+    __sent_messages_section = "//ol[@class='outbox-table']"
+    __sent_messages_delete_button = "//ol[@class='outbox-table']//a[@class='delete']"
+    __sent_messages_delete_checkbox = "//div[contains(@class,'checkbox')]/label"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -34,8 +33,8 @@ class SentMessagePage(BasePage):
         return super()._get_text_of_element(self.__sent_messages_no_messages_message)
 
     def _get_sent_message_subject(self, username: str) -> str:
-        xpath = (f"//ol[@class='message-list']//a[contains(text(),'{username}')]/ancestor::li/a["
-                 f"@class='read']")
+        xpath = (f"//div[@class='email-cell to']//a[contains(text(),'{username}')]/../../"
+                 f"div[@class='email-cell excerpt']/a")
         return super()._get_text_of_element(xpath)
 
     # Need to update this def click_on_sent_messages_page_banner_close_button(self): Hitting the
@@ -46,22 +45,20 @@ class SentMessagePage(BasePage):
         super()._click(self.__sent_messages_delete_selected_button)
 
     def _click_on_sent_message_delete_button(self, username: str):
-        xpath_to_hover = f"//ol[@class='message-list']//a[contains(text(),'{username}')]"
-        super()._hover_over_element(xpath_to_hover)
-        xpath_delete_button = (f"//ol[@class='message-list']//a[contains(text(),'{username}')]/../"
-                               f"../span/a[@class='delete']")
+        xpath_delete_button = (f"//div[@class='email-cell to']//a[contains(text(),'{username}')]"
+                               f"/../..//a[@class='delete']")
         super()._click(xpath_delete_button)
 
     def _click_on_sent_message_sender_username(self, username: str):
-        xpath = f"//ol[@class='message-list']//a[contains(text(),'{username}')]"
+        xpath = f"//div[@class='email-cell to']//a[contains(text(),'{username}')]"
         super()._click(xpath)
 
     def _sent_message_select_checkbox(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__sent_messages_delete_checkbox)
 
     def _click_on_sent_message_subject(self, username: str):
-        xpath = (f"//ol[@class='message-list']//a[contains(text(),'{username}')]/ancestor::li/a["
-                 f"@class='read']")
+        xpath = (f"//div[@class='email-cell to']//a[contains(text(),'{username}')]/../.."
+                 f"/div[@class='email-cell excerpt']/a")
         super()._click(xpath)
 
     def _click_on_delete_page_delete_button(self):
@@ -71,7 +68,7 @@ class SentMessagePage(BasePage):
         super()._click(self.__sent_messages_delete_page_cancel_button)
 
     def _sent_messages(self, username: str) -> Locator:
-        return super()._get_element_locator(f"//ol[@class='message-list']//a[contains(text(),"
+        return super()._get_element_locator(f"//div[@class='email-cell to']//a[contains(text(),"
                                             f"'{username}')]")
 
     def _sent_message_banner(self) -> Locator:
@@ -83,12 +80,7 @@ class SentMessagePage(BasePage):
     def _delete_all_displayed_sent_messages(self):
         sent_elements_delete_button = super()._get_element_handles(
             self.__sent_messages_delete_button)
-        counter = 1
         for i in range(len(sent_elements_delete_button)):
-            sent_messages = super()._get_element_handles(self.__sent_messages)
-            element = sent_messages[counter]
-            element.hover()
-
             delete_button = sent_elements_delete_button[i]
 
             delete_button.click()
@@ -97,7 +89,7 @@ class SentMessagePage(BasePage):
     def _delete_all_sent_messages_via_delete_selected_button(self):
         sent_messages_count = super()._get_element_handles(self.__sent_messages)
         counter = 0
-        for i in range(len(sent_messages_count) - 1):
+        for i in range(len(sent_messages_count)):
             checkbox = self._sent_message_select_checkbox()
             element = checkbox[counter]
             element.click()

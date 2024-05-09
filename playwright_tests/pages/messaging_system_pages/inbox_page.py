@@ -24,11 +24,10 @@ class InboxPage(BasePage):
     __inbox_delete_page_cancel_button = "//a[contains(text(), 'Cancel')]"
 
     # Inbox messages.
-    __inbox_messages = "//ol[@class='message-list']/li"
-    __inbox_messages_section = "//ol[@class='message-list']"
-    __inbox_messages_delete_button = "//ol[@class='message-list']//a[@class='delete']"
-    __inbox_delete_checkbox = ("//ol[@class='message-list']//a/ancestor::li/div[contains(@class, "
-                               "'field checkbox no-label')]/label")
+    __inbox_messages = "//li[contains(@class,'email-row') and not(contains(@class, 'header'))]"
+    __inbox_messages_section = "//ol[@class='inbox-table']"
+    __inbox_messages_delete_button = "//div[@class='email-cell delete']//a[@class='delete']"
+    __inbox_delete_checkbox = "//div[@class='email-cell check']/input"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -55,8 +54,8 @@ class InboxPage(BasePage):
     # Inbox messages actions.
     def _get_inbox_message_subject(self, username: str) -> str:
         xpath = (
-            f"//ol[@class='message-list']//a[contains(text(),"
-            f"'{username}')]/ancestor::li/a[@class='read']"
+            f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../..//"
+            f"a[@class='read']"
         )
         return super()._get_text_of_element(xpath)
 
@@ -65,14 +64,9 @@ class InboxPage(BasePage):
     # type='click')
 
     def _click_on_inbox_message_delete_button(self, username: str):
-        xpath_to_hover = (
-            f"//ol[@class='message-list']//a[contains(text(),'{username}')]"
-        )
-        super()._hover_over_element(xpath_to_hover)
-
         xpath_delete_button = (
-            f"//ol[@class='message-list']//a[contains(text(),'{username}')]/../.."
-            f"/a[@class='delete']"
+            f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../..//"
+            f"a[@class='delete']"
         )
         super()._click(xpath_delete_button)
 
@@ -86,15 +80,15 @@ class InboxPage(BasePage):
         super()._click(self.__inbox_delete_selected_button)
 
     def _click_on_inbox_message_sender_username(self, username: str):
-        xpath = f"//ol[@class='message-list']//a[contains(text(),'{username}')]"
+        xpath = f"//div[@class='email-cell from']//a[contains(text(),'{username}')]"
         super()._click(xpath)
 
     def _inbox_message_select_checkbox_element(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__inbox_delete_checkbox)
 
     def _click_on_inbox_message_subject(self, username: str):
-        xpath = (f"//ol[@class='message-list']//a[contains(text(),'{username}')]/ancestor::li/a["
-                 f"@class='read']")
+        xpath = (f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../..//"
+                 f"a[@class='read']")
         super()._click(xpath)
 
     def _click_on_delete_page_delete_button(self):
@@ -112,20 +106,15 @@ class InboxPage(BasePage):
         return super()._get_element_locator(self.__inbox_page_scam_alert_banner_text)
 
     def _inbox_message(self, username: str) -> Locator:
-        return super()._get_element_locator(
-            f"//ol[@class='message-list']//a[contains(text(),'{username}')]")
+        return super()._get_element_locator(f"//div[@class='email-cell from']//a[contains(text(),"
+                                            f"'{username}')]")
 
     def _are_inbox_messages_displayed(self) -> bool:
         return super()._is_element_visible(self.__inbox_messages_section)
 
     def _delete_all_inbox_messages(self):
         inbox_messages_count = super()._get_element_handles(self.__inbox_messages)
-        counter = 0
         for i in range(len(inbox_messages_count)):
-            inbox_messages = super()._get_element_handles(self.__inbox_messages)
-            element = inbox_messages[counter]
-            element.hover()
-
             inbox_elements_delete_button = super()._get_element_handles(
                 self.__inbox_messages_delete_button)
             delete_button = inbox_elements_delete_button[i]

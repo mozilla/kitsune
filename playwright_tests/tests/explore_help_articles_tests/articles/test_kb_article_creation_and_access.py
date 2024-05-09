@@ -733,6 +733,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
 
         with allure.step("Create a new simple article and approving the revision"):
             article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                article_keyword=super().kb_article_test_data['updated_keywords'],
+                search_summary=super(
+                ).kb_article_test_data['updated_search_result_summary'],
                 approve_first_revision=True
             )
 
@@ -884,7 +887,8 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
                 keywords=super().kb_article_test_data['updated_keywords'],
                 search_result_summary=super(
                 ).kb_article_test_data['updated_search_result_summary'],
-                approve_revision=True
+                approve_revision=True,
+                is_admin=True
             )
 
         with allure.step("Clicking on the top navbar sumo nav logo"):
@@ -897,7 +901,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
             self.delete_cookies()
 
         with allure.step("Typing the article keyword inside the search field"):
-            self.sumo_pages.search_page._type_into_searchbar(article_details['keyword'])
+            self.sumo_pages.search_page._type_into_searchbar(
+                super().kb_article_test_data['updated_keywords']
+            )
 
         with allure.step("Verifying that the article is displayed inside the search results"):
             expect(
@@ -921,7 +927,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
 
         with allure.step("Typing the article summary inside the search field"):
             self.sumo_pages.search_page._type_into_searchbar(
-                article_details['search_results_summary']
+                super().kb_article_test_data['updated_search_result_summary']
             )
 
         with allure.step("Verifying that the article is displayed inside the search results"):
