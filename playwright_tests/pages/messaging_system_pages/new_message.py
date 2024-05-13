@@ -95,7 +95,7 @@ class NewMessagePage(BasePage):
         super()._click(self.__new_message_send_button)
 
     def _click_on_a_searched_user(self, username: str):
-        xpath = f"//div[@class='name_search']/b[contains(text(), '{username}')]"
+        xpath = f"//div[@class='name_search' and text()='{username}']"
         super()._click(xpath)
 
     def _click_on_preview_internal_link(self):

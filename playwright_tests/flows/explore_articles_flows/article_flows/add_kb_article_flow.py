@@ -26,6 +26,7 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
                                  article_title=None,
                                  article_slug=None,
                                  article_category=None,
+                                 article_keyword=None,
                                  allow_discussion=True,
                                  allow_translations=True,
                                  selected_relevancy=True,
@@ -116,12 +117,26 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
             super()._check_allow_discussion_on_article_checkbox()
 
         super()._add_text_to_related_documents_field(kb_article_test_data["related_documents"])
-        super()._add_text_to_keywords_field(kb_article_test_data["keywords"])
 
+        keyword = None
+        if article_keyword is None:
+            super()._add_text_to_keywords_field(kb_article_test_data["keywords"])
+            keyword = kb_article_test_data["keywords"]
+        else:
+            super()._add_text_to_keywords_field(article_keyword)
+            keyword = article_keyword
+
+        summary = None
         if search_summary is None:
             super()._add_text_to_search_result_summary_field(
                 kb_article_test_data["search_result_summary"]
             )
+            summary = kb_article_test_data["search_result_summary"]
+        else:
+            super()._add_text_to_search_result_summary_field(
+                search_summary
+            )
+            summary = search_summary
 
         if not super()._is_content_textarea_displayed():
             super()._click_on_toggle_syntax_highlight_option()
@@ -148,7 +163,7 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
         if submit_article is True:
             # If title and slug are empty we are not reaching the description field.
             if ((article_title != '') and (article_slug != '') and (
-                    search_summary is None) and (article_content is None)):
+                    search_summary != "") and (article_content != "")):
                 super()._click_on_submit_for_review_button()
                 super()._add_text_to_changes_description_field(
                     kb_article_test_data["changes_description"]
@@ -176,8 +191,8 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
                 "article_relevancy": relevancy,
                 "article_topic": article_topic,
                 "article_review_description": kb_article_test_data["changes_description"],
-                "keyword": kb_article_test_data["keywords"],
-                "search_results_summary": kb_article_test_data["search_result_summary"],
+                "keyword": keyword,
+                "search_results_summary": summary,
                 "expiry_date": kb_article_test_data["expiry_date"],
                 "article_url": article_url,
                 "first_revision_id": first_revision_id
