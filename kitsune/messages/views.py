@@ -85,7 +85,11 @@ def outbox(request):
 
 @login_required
 def new_message(request):
-    form = MessageForm(request.POST or None, user=request.user)
+    data = request.POST or None
+    form_kwargs = {"user": request.user}
+    if not data:
+        form_kwargs["initial"] = request.GET.dict()
+    form = MessageForm(data, **form_kwargs)
     if form.is_valid() and not is_ratelimited(request, "private-message-day", "50/d"):
         send_message(
             form.cleaned_data["to"],
