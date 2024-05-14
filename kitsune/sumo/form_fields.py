@@ -92,22 +92,24 @@ class MultiUsernameOrGroupnameField(forms.Field):
         if not value:
             if self.required:
                 raise ValidationError(_("To field is required."))
-            else:
-                return []
+            return []
 
         # This generator expression splits the input string `value` by commas to extract
         # parts, strips whitespace from each part, and then further splits each non-empty
         # part by the colon.
         # Each resulting pair of values (before and after the colon) is stripped of
-        # any extra whitespace and returned as a tuple. This process is done lazily,
-        # generating each tuple only when iterated over.
         key_value_pairs = (
-            tuple(map(str.strip, part.split(":"))) for part in value.split(",") if part.strip()
+            tuple(map(str.strip, (part if ":" in part else "user: " + part).split(":")[:2]))
+            for part in value.split(",")
+            if part.strip()
         )
 
         # Create data structure to hold values grouped by keys
         to_objects = {}
         for key, value in key_value_pairs:
+            # check if the value is a valid username in the database
+            if not User.objects.filter(username=value).exists():
+                raise ValidationError(_(f"{value} is not a valid username."))
             to_objects.setdefault(f"{key.lower()}s", []).append(value)
 
         return to_objects
