@@ -171,6 +171,10 @@
     overflow: hidden;
     transition: max-height 0.8s ease-out;
 
+    @media screen and (max-width: 767px) {
+      max-height: 225px;
+    }
+
     &.expanded {
       max-height: 225px;
     }
