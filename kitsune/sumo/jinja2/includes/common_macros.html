@@ -494,7 +494,7 @@
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Tools') }}</li>
       {{ _tools_nav_links(user, default_language, active, context="sidebar-menu", locale=locale, is_collapsible=is_collapsible) }}
     {% else %}
-      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor Discussions') }}</li>
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Contributor discussions') }}</li>
       {{ _discussion_nav_links(user, default_language, active, context="sidebar-menu") }}
     {% endif %}
 
@@ -524,14 +524,14 @@
 {% if context == "main-menu" %}
   <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all discussions') }}</a></li>
 {% endif %}
-{% if context == "sidebar" %}
-  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile Support Discussions') }}</a></li>
-  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge Base Discussions') }}</a></li>
+{% if context == "sidebar-menu" %}
+  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile support discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge base discussions') }}</a></li>
 {% if user.has_perm('flagit.can_moderate') %}
-  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum Moderator Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum moderator discussions') }}</a></li>
 {% endif %}
-  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off Topic Discussions') }}</a></li>
-  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost Thread Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off topic discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost thread discussions') }}</a></li>
 {% endif %}
 {% endmacro %}
 
@@ -544,7 +544,7 @@
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
     <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-      data-event-label="Moderate Forum Content">{{ _('Moderate forum content') }}
+      data-event-label="moderate forum content">{{ _('Moderate forum content') }}
     </a>
   </li>
 {% endif %}
