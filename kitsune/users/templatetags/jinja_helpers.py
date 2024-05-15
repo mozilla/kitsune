@@ -7,6 +7,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 from kitsune.users.models import Profile
+from kitsune.users.utils import user_is_contributor
 
 
 @library.global_function
@@ -93,6 +94,4 @@ def private_message_link(user):
 @library.global_function
 def is_contributor(user):
     """Return whether the user is in the 'Registered as contributor' group."""
-    return (
-        user.is_authenticated and user.groups.filter(name="Registered as contributor").count() > 0
-    )
+    return user_is_contributor(user)
