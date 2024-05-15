@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
@@ -68,26 +68,37 @@ def product_landing(request, slug):
 
 
 @check_simple_wiki_locale
-def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
+def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None):
     """The document listing page for a product + topic."""
-    product = get_object_or_404(Product, slug=product_slug)
-    topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
+
+    product = get_object_or_404(Product, slug=product_slug) if product_slug else None
+    topic_kw = {
+        "slug": topic_slug,
+        "parent__isnull": True,
+    }
+    doc_kw = {"locale": request.LANGUAGE_CODE}
+
+    if product:
+        topic_kw["product"] = product
+        doc_kw["products"] = [product]
+
+        request.session["aaq_context"] = {
+            "has_ticketing_support": product.has_ticketing_support,
+            "key": _get_aaq_product_key(product_slug),
+        }
+    topics = Topic.objects.filter(**topic_kw)
+    if not (topic := topics.exists()):
+        raise Http404
+    topic = topics.first()
 
     template = "products/documents.html"
-
-    doc_kw = {"locale": request.LANGUAGE_CODE, "products": [product]}
 
     if subtopic_slug is not None:
         subtopic = get_object_or_404(Topic, slug=subtopic_slug, product=product, parent=topic)
         doc_kw["topics"] = [subtopic]
     else:
         subtopic = None
-        doc_kw["topics"] = [topic]
-
-    request.session["aaq_context"] = {
-        "has_ticketing_support": product.has_ticketing_support,
-        "key": _get_aaq_product_key(product_slug),
-    }
+        doc_kw["topics"] = topics
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
 
@@ -103,5 +114,6 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
             "documents": documents,
             "fallback_documents": fallback_documents,
             "search_params": {"product": product_slug},
+            "products": Product.objects.filter(visible=True, topics__in=topics),
         },
     )
