@@ -290,7 +290,7 @@
   </div>
 </li>
 
-{% if not user.is_authenticated %}
+{% if not user.is_authenticated or not is_contributor(user) %}
   <li class="mzp-c-menu-category">
     <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.contribute') }}"
       data-event-name="link_click"
