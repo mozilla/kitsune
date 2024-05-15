@@ -9,22 +9,25 @@
 
 .email-row {
     display: flex;
-    flex-wrap: nowrap; // Prevent wrapping to maintain alignment
-    justify-content: space-between; // Distributes space between cells
-    width: 100%; // Ensure the row spans full width
-    
+    width: 100%;
+    box-sizing: border-box; // Include padding and border in width calculations
+
     .email-cell {
         padding: 8px;
         background-color: #fff;
         border: 1px solid #ddd;
-        min-width: 100px; // Minimum width for cell content
-        // Specify flex-basis for each cell type
-        &:first-child { flex: 0 0 20px; } // Checkbox cell
-        &:nth-child(2) { flex: 0 0 45px; } // Avatar cell
-        &:nth-child(3) { flex: 1 0 20%; } // From cell
-        &:nth-child(4) { flex: 1 0 20%; } // Received On cell
-        &:nth-child(5) { flex: 1 0 40%; } // Excerpt cell
-        &:nth-child(6) { flex: 0 0 10%; } // Delete cell
+        box-sizing: border-box; // Include padding and border in width calculations
+        overflow: hidden; // Hide overflow content
+        text-overflow: ellipsis; // Add ellipsis for overflowing text
+        white-space: nowrap; // Prevent text from wrapping
+        flex-shrink: 0; // Prevent columns from shrinking
+
+        &:first-child { width: 5%; } // Checkbox cell
+        &:nth-child(2) { width: 10%; } // Avatar cell
+        &:nth-child(3) { width: 20%; } // From cell
+        &:nth-child(4) { width: 20%; } // Received On cell
+        &:nth-child(5) { width: 30%; } // Excerpt cell
+        &:nth-child(6) { width: 15%; } // Delete cell
     }
 
     &.header {
@@ -45,26 +48,29 @@
 
 .outbox-table .email-row {
     .email-cell {
-        // Specify flex-basis for each cell type
-        &:nth-child(1) { flex: 0 0 40px; } // First cell
-        &:nth-child(2) { flex: 1 0 20%; } // Second cell
-        &:nth-child(3) { flex: 1 0 20%; } // Third cell
-        &:nth-child(4) { flex: 3 0 30%; } // Larger central content area
-        &:last-child { flex: 0 0 10%; } // Actions or delete cell
+        &:nth-child(1) { width: 10%; } // First cell
+        &:nth-child(2) { width: 20%; } // Second cell
+        &:nth-child(3) { width: 20%; } // Third cell
+        &:nth-child(4) { width: 30%; } // Larger central content area
+        &:last-child { width: 20%; } // Actions or delete cell
     }
 }
 
 // Responsive adjustments
 @media (max-width: 600px) {
     .outbox-table, .inbox-table {
-        .email-cell {
-            flex: 1 0 100%; // Make each cell expand to full width on small screens
-            display: block; // Ensures that cells do not try to align in a row when space is constrained
-            
+        .email-row {
+            .email-cell {
+                flex: 1 1 auto; // Allow cells to grow and shrink based on content
+                min-width: 0; // Allow cells to shrink below their content width
+                overflow: hidden; // Hide overflow content
+                text-overflow: ellipsis; // Add ellipsis for overflowing text
+                white-space: nowrap; // Prevent text from wrapping
 
-            &:nth-child(3), // Third cell
-            &:nth-child(6) { // Last Ccell
-                display: none; // Hide less important columns on small screens
+                &:nth-child(2), // Avatar cell
+                &:nth-child(6) { // Delete cell
+                    display: none; // Hide less important columns on small screens
+                }
             }
         }
     }
