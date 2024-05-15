@@ -151,3 +151,11 @@ def get_oidc_fxa_setting(attr):
     }
 
     return FXA_CONFIGURATION.get(attr, None)
+
+
+def user_is_contributor(user):
+    """Return whether the user is a contributor."""
+    return (
+        user.is_authenticated
+        and user.groups.filter(name__in=ContributionAreas.get_groups()).exists()
+    )

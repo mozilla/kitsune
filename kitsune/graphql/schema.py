@@ -1,8 +1,8 @@
-from django.contrib.auth.models import User
 import graphene
+from django.contrib.auth.models import User
 from graphene_django import DjangoObjectType
 
-from kitsune.users.models import ContributionAreas
+from kitsune.users.utils import user_is_contributor
 
 
 class CurrentUserType(DjangoObjectType):
@@ -18,8 +18,4 @@ class CurrentUserType(DjangoObjectType):
 
     def resolve_is_contributor(self, info):
         """Return whether the current user is a contributor."""
-        user = info.context.user
-        return (
-            user.is_authenticated
-            and user.groups.filter(name__in=ContributionAreas.get_groups()).exists()
-        )
+        return user_is_contributor(info.context.user)
