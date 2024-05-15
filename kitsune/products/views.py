@@ -19,6 +19,25 @@ def product_list(request):
     return render(request, template, {"products": products})
 
 
+@check_simple_wiki_locale
+def topic_list(request, product_slug=None):
+    """The topic picker page."""
+    template = "products/topics.html"
+    topics = Topic.objects.filter(visible=True)
+    products = Product.objects.filter(visible=True)
+    try:
+        product = Product.objects.get(slug=product_slug)
+    except Product.DoesNotExist:
+        product = Product.objects.none()
+    if product:
+        topics = topics.filter(product=product)
+    return render(
+        request,
+        template,
+        {"topics": topics, "products": products, "selected_product": product},
+    )
+
+
 def _get_aaq_product_key(slug):
     product_key = ""
     for k, v in aaq_config.products.items():
