@@ -18,8 +18,12 @@ product_patterns = [
 ]
 
 topic_patterns = [
-    re_path(r"^$", views.topic_list, name="products.topics"),
-    re_path(r"(?P<product_slug>[^/]+)$", views.topic_list, name="products.topics"),
+    re_path(r"^(?P<topic_slug>[^/]+)$", views.document_listing, name="products.topic_documents"),
+    re_path(
+        r"(?P<topic_slug>[^/]+)/(?P<product_slug>[^/]+)$",
+        views.document_listing,
+        name="products.topic_product_documents",
+    ),
 ]
 
 urlpatterns = [

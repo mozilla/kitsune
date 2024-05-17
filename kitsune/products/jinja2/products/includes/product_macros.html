@@ -23,26 +23,22 @@
 </div>
 {%- endmacro %}
 
-{% macro product_sidebar(products, selected_product=None) -%}
+{% macro product_dropdown(products, topic, selected_product=None) -%}
 <h3 class="sidebar-subheading large-only">{{ _('All Products') }}</h3>
+
 <nav class="sidebar-nav topics">
   <span class="details-heading"></span>
-  <ul class="sidebar-nav--list">
+  <select id="products-dropdown" class="sidebar-nav--dropdown">
+    <option value="{{ url('products.topic_documents', topic_slug=topic.slug) }}" {% if selected_product is none %}selected{% endif %}>
+      All Products
+    </option>
     {% for product in products %}
-      {% set product_topics_url = url('products.topics', product_slug=product.slug) %}
-      <li class="sidebar-nav--item %}">
-        <a class="sidebar-nav--link {% if selected_product == product %}selected{% endif %}"
-          href="{{ product_topics_url }}"
-          data-event-name="link_click"
-          data-event-parameters='{
-            "link_name": "sidebar.product-and-topic-home",
-{# TODO: FIx this               #}
-            {# "link_detail": "{{ product.slug + '/' + topic.slug }}" #}
-          }'>
-          {{ pgettext('DB: products.Product.title', product.title) }}
-        </a>
-      </li>
+      <option value="{{ url('products.topic_product_documents', topic_slug=topic.slug, product_slug=product.slug) }}" 
+              {% if selected_product == product %}selected{% endif %}>
+        {{ pgettext('DB: products.Product.title', product.title) }}
+      </option>
     {% endfor %}
-  </ul>
+  </select>
 </nav>
+
 {%- endmacro %}
