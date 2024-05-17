@@ -60,19 +60,19 @@ class TestFacetHelpers(TestCase):
         ApprovedRevisionFactory(document=self.doc2)
 
         # An archived article shouldn't show up.
-        doc3 = DocumentFactory(
+        self.doc3 = DocumentFactory(
             is_archived=True, products=[self.desktop], topics=[self.general_d, self.bookmarks_d]
         )
-        ApprovedRevisionFactory(document=doc3)
+        ApprovedRevisionFactory(document=self.doc3)
 
         # A template article shouldn't show up either.
-        doc4 = TemplateDocumentFactory(
+        self.doc4 = TemplateDocumentFactory(
             products=[self.desktop], topics=[self.general_d, self.bookmarks_d]
         )
-        ApprovedRevisionFactory(document=doc4)
+        ApprovedRevisionFactory(document=self.doc4)
 
         # An article without a current revision shouldn't show up either.
-        doc5 = DocumentFactory(
+        self.doc5 = DocumentFactory(
             products=[self.desktop, self.mobile],
             topics=[
                 self.general_d,
@@ -83,7 +83,7 @@ class TestFacetHelpers(TestCase):
                 self.sync_m,
             ],
         )
-        RevisionFactory(is_approved=False, document=doc5)
+        RevisionFactory(is_approved=False, document=self.doc5)
 
         # An article restricted to members of "group1".
         self.doc6 = DocumentFactory(
@@ -236,19 +236,23 @@ class TestFacetHelpers(TestCase):
             docs = _documents_for(
                 self.anonymous, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual([d["id"] for d in docs], [self.doc1.id])
+            self.assertEqual([d["id"] for d in docs], [self.doc1.id, self.doc2.id])
 
         with self.subTest("documents_for-general_bookmarks-user1"):
             docs = _documents_for(
                 self.user1, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual([d["id"] for d in docs], [self.doc1.id, self.doc6.id, self.doc7.id])
+            self.assertEqual(
+                [d["id"] for d in docs], [self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id]
+            )
 
         with self.subTest("documents_for-general_bookmarks-user2"):
             docs = _documents_for(
                 self.user2, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual([d["id"] for d in docs], [self.doc1.id, self.doc7.id, self.doc8.id])
+            self.assertEqual(
+                [d["id"] for d in docs], [self.doc1.id, self.doc2.id, self.doc7.id, self.doc8.id]
+            )
 
         with self.subTest("documents_for-general_bookmarks-staff"):
             docs = _documents_for(
@@ -256,7 +260,7 @@ class TestFacetHelpers(TestCase):
             )
             self.assertEqual(
                 [d["id"] for d in docs],
-                [self.doc1.id, self.doc6.id, self.doc7.id, self.doc8.id],
+                [self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id, self.doc8.id],
             )
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-anon"):
@@ -288,22 +292,25 @@ class TestFacetHelpers(TestCase):
             )
 
         with self.subTest("documents_for-general_sync-anon"):
-            docs = _documents_for(
-                self.anonymous, locale="en-US", topics=[self.general_d, self.sync_d]
-            )
-            self.assertEqual(len(docs), 0)
+            docs = _documents_for(self.anonymous, locale="en-US", topics=[self.sync_d])
+            self.assertEqual([d["id"] for d in docs], [self.doc2.id])
 
         with self.subTest("documents_for-general_sync-user1"):
             docs = _documents_for(self.user1, locale="en-US", topics=[self.general_d, self.sync_d])
-            self.assertEqual([d["id"] for d in docs], [self.doc6.id, self.doc7.id])
+            self.assertEqual(
+                [d["id"] for d in docs], [self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id]
+            )
 
         with self.subTest("documents_for-general_sync-user2"):
-            docs = _documents_for(self.user2, locale="en-US", topics=[self.general_d, self.sync_d])
-            self.assertEqual([d["id"] for d in docs], [self.doc7.id, self.doc8.id])
+            docs = _documents_for(self.user2, locale="en-US", topics=[self.sync_d])
+            self.assertEqual([d["id"] for d in docs], [self.doc2.id, self.doc7.id, self.doc8.id])
 
         with self.subTest("documents_for-general_sync-staff"):
             docs = _documents_for(self.staff, locale="en-US", topics=[self.general_d, self.sync_d])
-            self.assertEqual([d["id"] for d in docs], [self.doc6.id, self.doc7.id, self.doc8.id])
+            self.assertEqual(
+                [d["id"] for d in docs],
+                [self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id, self.doc8.id],
+            )
 
     def test_documents_for_caching_1(self):
         """
@@ -376,7 +383,7 @@ class TestFacetHelpers(TestCase):
                 self.anonymous, locale="es", topics=[self.general_d, self.bookmarks_d]
             )
             self.assertEqual(len(docs), 0)
-            self.assertEqual([d["id"] for d in fallbacks], [self.doc1.id])
+            self.assertEqual([d["id"] for d in fallbacks], [self.doc1.id, self.doc2.id])
 
         with self.subTest("documents_for_fallback-user2"):
             docs, fallbacks = documents_for(
@@ -385,7 +392,7 @@ class TestFacetHelpers(TestCase):
             self.assertEqual(
                 [d["id"] for d in docs], [self.doc1_localized.id, self.doc8_localized.id]
             )
-            self.assertEqual([d["id"] for d in fallbacks], [self.doc7.id])
+            self.assertEqual([d["id"] for d in fallbacks], [self.doc2.id, self.doc7.id])
 
         with self.subTest("documents_for_fallback-staff"):
             docs, fallbacks = documents_for(self.staff, locale="de", topics=[self.general_d])

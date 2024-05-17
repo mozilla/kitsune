@@ -109,12 +109,14 @@ def _documents_for(user, locale, topics=None, products=None):
     # speed up query by removing any ordering, since we're doing it in python:
     qs = qs.select_related("current_revision", "parent").order_by()
 
-    for topic in topics or []:
+    if topics:
+        topic_ids = [t.id for t in topics]
         # we need to filter against parent topics for localized articles
-        qs = qs.filter(Q(topics=topic) | Q(parent__topics=topic))
+        qs = qs.filter(Q(topics__in=topic_ids) | Q(parent__topics__in=topic_ids))
     for product in products or []:
         # we need to filter against parent products for localized articles
         qs = qs.filter(Q(products=product) | Q(parent__products=product))
+
     qs = qs.distinct()
 
     votes_cache_key = f"votes_for:{cache_key}"
