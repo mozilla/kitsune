@@ -531,12 +531,13 @@ class TestEditMyProfile(TestUtilities):
         with allure.step("Clicking on the twitter link and verifying that the user is redirected "
                          "correctly"):
             self.sumo_pages.my_profile_page._click_on_twitter_link()
+            self.wait_for_given_timeout(2000)
             assert (MyProfileMessages.TWITTER_REDIRECT_LINK + twitter_field_test_data in self.
                     get_page_url())
 
         with check, allure.step("Navigating back to the SUMO page, signing out, accessing the "
                                 "profile and verifying that the twitter information is displayed"):
-            self.navigate_back()
+            self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
             self.delete_cookies()
             self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
             assert self.sumo_pages.my_profile_page._get_my_profile_twitter_text(
@@ -545,12 +546,13 @@ class TestEditMyProfile(TestUtilities):
         with check, allure.step("Clicking on the twitter link and verifying that the user is "
                                 "redirected correctly"):
             self.sumo_pages.my_profile_page._click_on_twitter_link()
+            self.wait_for_given_timeout(2000)
             assert (MyProfileMessages.TWITTER_REDIRECT_LINK + twitter_field_test_data in self.
                     get_page_url())
 
         with allure.step("Navigating back to the SUMO page and clearing the twitter input field "
                          "changes"):
-            self.navigate_back()
+            self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))

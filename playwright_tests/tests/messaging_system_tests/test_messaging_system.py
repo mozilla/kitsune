@@ -50,6 +50,7 @@ class TestMessagingSystem(TestUtilities):
     # This test needs to be updated to fetch the username from a different place
     @pytest.mark.messagingSystem
     def test_private_messages_can_be_sent_via_user_profiles(self):
+        message_body = "Test1"
         user_two = super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
         )
@@ -59,7 +60,7 @@ class TestMessagingSystem(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
             ))
 
-        user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
+        self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Navigating to the profile page for user two"):
             self.navigate_to_link(
@@ -80,7 +81,7 @@ class TestMessagingSystem(TestUtilities):
 
         with allure.step("Sending a message to the user"):
             self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
-                message_body=self.user_message_test_data["valid_user_message"]["message"]
+                message_body=message_body
             )
 
         with check, allure.step("Verifying that the correct message sent banner is displayed"):
@@ -91,13 +92,14 @@ class TestMessagingSystem(TestUtilities):
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
 
         with allure.step("Verifying that the sent message is displayed"):
-            expect(self.sumo_pages.sent_message_page._sent_messages(
-                username=user_two
-            )).to_be_visible()
+            expect(
+                self.sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(
+                    message_body
+                )).to_be_visible()
 
         with allure.step("Deleting the message from the sent messages page"):
             self.sumo_pages.messaging_system_flow.delete_message_flow(
-                username=user_two, from_sent_list=True
+                excerpt=message_body, from_sent_list=True
             )
 
         with check, allure.step("Verifying that the correct banner is displayed"):
@@ -107,8 +109,9 @@ class TestMessagingSystem(TestUtilities):
 
         with allure.step("Verifying that messages from user two are not displayed"):
             expect(
-                self.sumo_pages.sent_message_page._sent_messages(username=user_two)
-            ).to_be_hidden()
+                self.sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(
+                    message_body
+                )).to_be_hidden()
 
         with allure.step("Signing in with the user which received the message"):
             self.start_existing_session(super().username_extraction_from_email(
@@ -119,18 +122,18 @@ class TestMessagingSystem(TestUtilities):
             self.sumo_pages.top_navbar._click_on_inbox_option()
 
         with allure.step("Verifying that the inbox contains the previously sent messages"):
-            expect(self.sumo_pages.inbox_page._inbox_message(
-                username=user_one
+            expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                message_body
             )).to_be_visible()
 
         with allure.step("Deleting the messages from the inbox section"):
             self.sumo_pages.messaging_system_flow.delete_message_flow(
-                username=user_one, from_inbox_list=True
+                excerpt=message_body, from_inbox_list=True
             )
 
         with allure.step("Verifying that the messages are no longer displayed inside the inbox"):
             expect(
-                self.sumo_pages.inbox_page._inbox_message(username=user_one)
+                self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(excerpt=message_body)
             ).to_be_hidden()
 
         with check, allure.step("Verifying that the correct banner is displayed"):
@@ -140,6 +143,7 @@ class TestMessagingSystem(TestUtilities):
     # C891419
     @pytest.mark.messagingSystem
     def test_private_message_can_be_sent_via_new_message_page(self):
+        message_body = "Test2"
         test_user = super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         )
@@ -149,14 +153,14 @@ class TestMessagingSystem(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_3"]
             ))
 
-        user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
+        self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Accessing the New Message page and sending a message to another user"):
             self.sumo_pages.top_navbar._click_on_inbox_option()
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
             self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
                 recipient_username=test_user,
-                message_body=super().user_message_test_data["valid_user_message"]["message"],
+                message_body=message_body,
             )
 
         with check, allure.step("Verifying that the correct banner is displayed"):
@@ -167,10 +171,13 @@ class TestMessagingSystem(TestUtilities):
         with allure.step("Verifying that the sent message is displayed inside the sent messages "
                          "page"):
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-            expect(self.sumo_pages.sent_message_page._sent_messages(test_user)).to_be_visible()
+            expect(self.sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(
+                message_body)).to_be_visible()
 
         with allure.step("Clearing the sent messages list"):
-            self.sumo_pages.sent_message_page._delete_all_displayed_sent_messages()
+            self.sumo_pages.messaging_system_flow.delete_message_flow(
+                excerpt=message_body, from_sent_list=True
+            )
 
         with allure.step("Signing in with the receiver account and verifying that the message is "
                          "displayed inside the inbox section"):
@@ -178,12 +185,14 @@ class TestMessagingSystem(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
             ))
             self.sumo_pages.top_navbar._click_on_inbox_option()
-            expect(self.sumo_pages.inbox_page._inbox_message(
-                username=user_one
+            expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                message_body
             )).to_be_visible()
 
         with allure.step("Clearing the inbox"):
-            self.sumo_pages.inbox_page._delete_all_inbox_messages()
+            self.sumo_pages.messaging_system_flow.delete_message_flow(
+                excerpt=message_body, from_inbox_list=True
+            )
 
     # C891412, C891413
     @pytest.mark.messagingSystem
@@ -373,6 +382,7 @@ class TestMessagingSystem(TestUtilities):
     # C891417
     @pytest.mark.messagingSystem
     def test_new_message_cancel_button(self):
+        message_body = "Test3"
         user_two = super().username_extraction_from_email(
             super().user_secrets_accounts["TEST_ACCOUNT_13"]
         )
@@ -382,7 +392,7 @@ class TestMessagingSystem(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))
 
-        user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
+        self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Accessing the 'New Message' section"):
             self.sumo_pages.top_navbar._click_on_inbox_option()
@@ -391,7 +401,7 @@ class TestMessagingSystem(TestUtilities):
         with allure.step("Filling the new message form with data"):
             self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
                 recipient_username=user_two,
-                message_body=super().user_message_test_data["valid_user_message"]["message"],
+                message_body=message_body,
                 submit_message=False
             )
 
@@ -406,8 +416,8 @@ class TestMessagingSystem(TestUtilities):
         with allure.step("Navigating to the 'Sent Messages' page and verifying that the message "
                          "was not sent"):
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-            expect(self.sumo_pages.sent_message_page._sent_messages(username=user_two)
-                   ).to_be_hidden()
+            expect(self.sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(
+                message_body)).to_be_hidden()
 
         with allure.step("Signing out and signing in with the receiver account"):
             self.start_existing_session(super().username_extraction_from_email(
@@ -418,7 +428,7 @@ class TestMessagingSystem(TestUtilities):
                          "received"):
             self.sumo_pages.top_navbar._click_on_inbox_option()
             expect(
-                self.sumo_pages.inbox_page._inbox_message(username=user_one)
+                self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
             ).to_be_hidden()
 
     # C891418
@@ -524,6 +534,7 @@ class TestMessagingSystem(TestUtilities):
     # C891421, C891424
     @pytest.mark.messagingSystem
     def test_messages_can_be_selected_and_deleted(self):
+        message_body = "Test4"
         test_user = self.username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         )
@@ -533,7 +544,7 @@ class TestMessagingSystem(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
             ))
 
-        user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
+        username_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         with allure.step("Accessing the 'New Message' page and sending a message to a different "
                          "user"):
@@ -541,7 +552,7 @@ class TestMessagingSystem(TestUtilities):
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
             self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
                 recipient_username=test_user,
-                message_body=super().user_message_test_data["valid_user_message"]["message"],
+                message_body=message_body,
             )
 
         with allure.step("Navigating to the sent messages page"):
@@ -557,7 +568,7 @@ class TestMessagingSystem(TestUtilities):
         with allure.step("Verifying that the message is still listed inside the sent messages "
                          "section"):
             expect(
-                self.sumo_pages.sent_message_page._sent_messages(username=test_user)
+                self.sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
             ).to_be_visible()
 
         with allure.step("Sending another message to self twice"):
@@ -565,8 +576,8 @@ class TestMessagingSystem(TestUtilities):
                 self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message(
                 )
                 self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
-                    recipient_username=user_one,
-                    message_body=super().user_message_test_data["valid_user_message"]["message"],
+                    recipient_username=username_one,
+                    message_body=message_body,
                 )
 
         with check, allure.step("Clicking on the 'delete selected' button while no messages is "
@@ -576,15 +587,17 @@ class TestMessagingSystem(TestUtilities):
             assert self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
             ) in InboxPageMessages.NO_MESSAGES_SELECTED_BANNER_TEXT
             expect(
-                self.sumo_pages.inbox_page._inbox_message(username=user_one).first
+                self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body).first
             ).to_be_visible()
 
         with allure.step("Selecting the messages and deleting it via the delete selected button"):
-            self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button()
+            self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+                message_body
+            )
 
         with check, allure.step("Verifying that the messages are no longer displayed"):
             expect(
-                self.sumo_pages.inbox_page._inbox_message(username=user_one)
+                self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
             ).to_be_hidden()
             assert self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
             ) in InboxPageMessages.MULTIPLE_MESSAGES_DELETION_BANNER_TEXT
@@ -593,14 +606,12 @@ class TestMessagingSystem(TestUtilities):
                          "the 'delete selected button'"):
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
             self.sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
+                message_body
             )
 
         with allure.step("Verifying that the messages are no longer displayed"):
             expect(
-                self.sumo_pages.sent_message_page._sent_messages(username=user_one)
-            ).to_be_hidden()
-            expect(
-                self.sumo_pages.sent_message_page._sent_messages(username=test_user)
+                self.sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
             ).to_be_hidden()
 
         with check, allure.step("Verifying that the correct banner is displayed"):
@@ -615,17 +626,360 @@ class TestMessagingSystem(TestUtilities):
 
         with allure.step("Verifying that the messages are displayed inside the inbox section"):
             expect(
-                self.sumo_pages.inbox_page._inbox_message(username=user_one)
+                self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
             ).to_be_visible()
 
         with allure.step("Deleting all messages from the inbox page via the delete selected "
                          "button'"):
-            self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button()
+            self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+                message_body
+            )
 
         with check, allure.step("Verifying that the messages are no longer displayed inside the "
                                 "inbox section and the correct banner is displayed"):
             expect(
-                self.sumo_pages.inbox_page._inbox_message(username=user_one)
+                self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
             ).to_be_hidden()
             assert self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
             ) in InboxPageMessages.MESSAGE_DELETED_BANNER_TEXT
+
+    # C2566115, C2602253, C2602252
+    @pytest.mark.messagingSystem
+    def test_group_messages_cannot_be_sent_by_non_staff_users(self):
+        with allure.step("Signing in with a non-staff account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_12']
+            ))
+
+        with allure.step("Navigating to the new message page"):
+            self.sumo_pages.top_navbar._click_on_inbox_option()
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+
+        with allure.step("Typing in a group name inside the To field"):
+            self.sumo_pages.new_message_page._type_into_new_message_to_input_field(
+                super().user_message_test_data['test_groups'][0]
+            )
+
+        with allure.step("Verifying that no users are returned"):
+            expect(
+                self.sumo_pages.new_message_page._get_no_user_to_locator()
+            ).to_be_visible(timeout=10000)
+
+        with allure.step("Navigating to the groups page"):
+            self.navigate_to_link(super().general_test_data['groups'])
+            self.sumo_pages.user_groups._click_on_a_particular_group(
+                super().user_message_test_data['test_groups'][0]
+            )
+
+        with allure.step("Verifying that the pm group members button is not displayed"):
+            expect(
+                self.sumo_pages.user_groups._get_pm_group_members_button()
+            ).to_be_hidden()
+
+        with allure.step("Deleting the user session and verifying that the pm group members "
+                         "button is not displayed"):
+            self.delete_cookies()
+            expect(
+                self.sumo_pages.user_groups._get_pm_group_members_button()
+            ).to_be_hidden()
+
+        # The PM group members button was removed for staff members as well.
+        with allure.step("Signing in with a staff account and verifying that the pm group "
+                         "members button is not displayed"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+            expect(
+                self.sumo_pages.user_groups._get_pm_group_members_button()
+            ).to_be_hidden()
+
+    # C2566115, C2566116, C2566119
+    @pytest.mark.messagingSystem
+    def test_staff_users_can_send_group_messages(self):
+        message_body = 'Test5'
+        with allure.step("Signing in with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+        targeted_test_group = super().user_message_test_data['test_groups'][0]
+
+        with allure.step("Navigating to the new messages page"):
+            self.sumo_pages.top_navbar._click_on_inbox_option()
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+
+        with allure.step("Sending out a message to a test group"):
+            self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+                recipient_username=targeted_test_group,
+                message_body=message_body,
+            )
+
+        with allure.step("Navigating to the 'Sent Messages page' and verifying that the message "
+                         "was sent"):
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+            expect(
+                self.sumo_pages.sent_message_page._sent_messages_to_group(
+                    targeted_test_group, message_body)
+            ).to_be_visible()
+
+        with allure.step("Deleting the outbox"):
+            (self.sumo_pages.sent_message_page
+             ._delete_all_sent_messages_via_delete_selected_button(message_body))
+
+        with allure.step("Signing in with all targeted group members, verifying that the message "
+                         "was received and clearing the inbox"):
+            for user in super().general_test_data['testGroup1users']:
+                self.start_existing_session(super().username_extraction_from_email(
+                    self.user_secrets_accounts[user]
+                ))
+
+                self.sumo_pages.top_navbar._click_on_inbox_option()
+                expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                    message_body
+                )).to_be_visible()
+                self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+                    message_body
+                )
+
+        with allure.step("Signing in with users from second test group and verifying that the "
+                         "message was not received"):
+            for user in super().general_test_data["testGroup2users"]:
+                self.start_existing_session(super().username_extraction_from_email(
+                    self.user_secrets_accounts[user]
+                ))
+
+                self.sumo_pages.top_navbar._click_on_inbox_option()
+                expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                    message_body
+                )).to_be_hidden()
+
+    # C2566117, C2566119
+    @pytest.mark.messagingSystem
+    def test_staff_users_can_send_messages_to_multiple_groups(self):
+        message_body = "Test6"
+        with allure.step("Signing in with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+        targeted_test_group = super().user_message_test_data['test_groups']
+
+        with allure.step("Navigating to the new messages page"):
+            self.sumo_pages.top_navbar._click_on_inbox_option()
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+
+        with allure.step("Sending out a message to a test group"):
+            self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+                recipient_username=targeted_test_group,
+                message_body=message_body,
+            )
+
+        with check, allure.step("Navigating to the 'Sent Messages page' and verifying that the "
+                                "message was sent"):
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+            self.sumo_pages.sent_message_page._click_on_sent_message_subject(
+                message_body
+            )
+            check.equal(
+                self.sumo_pages.sent_message_page._get_text_of_all_sent_groups(),
+                targeted_test_group
+            )
+
+        with allure.step("Deleting the outbox"):
+            self.navigate_back()
+            (self.sumo_pages.sent_message_page
+             ._delete_all_sent_messages_via_delete_selected_button(message_body))
+
+        with allure.step("Signing in with all targeted group members, verifying that the message "
+                         "was received and clearing the inbox"):
+            for user in super().general_test_data['testGroup1users'] + super(
+            ).general_test_data['testGroup2users'][1:]:
+                self.start_existing_session(super().username_extraction_from_email(
+                    self.user_secrets_accounts[user]
+                ))
+
+                self.sumo_pages.top_navbar._click_on_inbox_option()
+                expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                    message_body
+                )).to_be_visible()
+                self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+                    message_body
+                )
+
+    # C2566118, C2566119, C2566120
+    @pytest.mark.messagingSystem
+    def test_staff_users_can_send_messages_to_both_groups_and_user(self):
+        with allure.step("Signing in with an admin account"):
+            message_body = "Test7"
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+        targeted_test_group = super().user_message_test_data['test_groups'][0]
+        targeted_user = [super().username_extraction_from_email(
+            super().user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']),
+            super().username_extraction_from_email(super(
+            ).user_secrets_accounts['TEST_ACCOUNT_12'])]
+
+        with allure.step("Navigating to the new messages page"):
+            self.sumo_pages.top_navbar._click_on_inbox_option()
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+
+        with allure.step("Sending out a message to a test group + user"):
+            self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+                recipient_username=targeted_user + [targeted_test_group],
+                message_body=message_body,
+            )
+
+        with check, allure.step("Navigating to the 'Sent Messages page' and verifying that the "
+                                "message was sent"):
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+            self.sumo_pages.sent_message_page._click_on_sent_message_subject(
+                message_body
+            )
+            check.is_in(
+                targeted_test_group,
+                self.sumo_pages.sent_message_page._get_text_of_all_sent_groups()
+            )
+            check.equal(
+                targeted_user,
+                self.sumo_pages.sent_message_page._get_text_of_all_recipients()
+            )
+
+        with allure.step("Deleting the outbox"):
+            self.navigate_back()
+            (self.sumo_pages.sent_message_page
+             ._delete_all_sent_messages_via_delete_selected_button(message_body))
+
+        with allure.step("Signing in with all targeted group members, verifying that the message "
+                         "was received and clearing the inbox"):
+            for user in super().general_test_data['testGroup1users'] + ['TEST_ACCOUNT_12']:
+                self.start_existing_session(super().username_extraction_from_email(
+                    self.user_secrets_accounts[user]
+                ))
+
+                self.sumo_pages.top_navbar._click_on_inbox_option()
+                expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                    message_body
+                )).to_be_visible()
+                self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+                    message_body
+                )
+
+    # C2566116
+    @pytest.mark.messagingSystem
+    def test_removed_group_users_do_not_receive_group_messages(self):
+        message_body = "Test8"
+        with allure.step("Signing in with a staff account and removing a user from the targeted "
+                         "group"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+            targeted_test_group = super().user_message_test_data['test_groups'][0]
+            targeted_user = super().remove_character_from_string(
+                super().username_extraction_from_email(
+                    self.user_special_chars
+                ),
+                '*'
+            )
+
+            self.navigate_to_link(super().general_test_data['groups'])
+            self.sumo_pages.user_groups._click_on_a_particular_group(
+                targeted_test_group
+            )
+
+            self.sumo_pages.user_group_flow.remove_a_user_from_group(
+                targeted_user
+            )
+
+        with allure.step("Navigating to the new message page and sending a message to the group"):
+            self.sumo_pages.top_navbar._click_on_inbox_option()
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+            self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+                recipient_username=targeted_test_group,
+                message_body=message_body,
+            )
+
+        with allure.step("Deleting the outbox"):
+            (self.sumo_pages.sent_message_page
+             ._delete_all_sent_messages_via_delete_selected_button(message_body))
+
+        with allure.step("Signing in with all targeted group members, verifying that the message "
+                         "was received and clearing the inbox"):
+            for user in super().general_test_data['testGroup1users']:
+                logged_user = self.start_existing_session(
+                    super().username_extraction_from_email(
+                        self.user_secrets_accounts[user]
+                    ))
+                self.sumo_pages.top_navbar._click_on_inbox_option()
+
+                if logged_user == targeted_user:
+                    with allure.step("Verifying that the removed user has not received the group "
+                                     "message"):
+                        expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                            message_body
+                        )).to_be_hidden()
+                else:
+                    expect(self.sumo_pages.inbox_page._inbox_message_based_on_excerpt(
+                        message_body
+                    )).to_be_visible()
+                    (self.sumo_pages.inbox_page
+                     ._delete_all_inbox_messages_via_delete_selected_button(message_body))
+
+        with allure.step("Signing in with an staff account and adding the user back to the group"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+            self.navigate_to_link(super().general_test_data['groups'])
+            self.sumo_pages.user_groups._click_on_a_particular_group(
+                targeted_test_group
+            )
+
+            self.sumo_pages.user_group_flow.add_a_user_to_group(
+                targeted_user
+            )
+
+    # C2584835
+    @pytest.mark.messagingSystem
+    def test_unable_to_send_group_messages_to_profiless_groups(self):
+        with allure.step("Signing in with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            ))
+
+        with allure.step("Navigating to the new message page"):
+            self.sumo_pages.top_navbar._click_on_inbox_option()
+            self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+
+        with allure.step("Typing in a profiless group name inside the To field"):
+            self.sumo_pages.new_message_page._type_into_new_message_to_input_field(
+                "kb-contributors"
+            )
+
+        with allure.step("Verifying that no users are returned"):
+            expect(
+                self.sumo_pages.new_message_page._get_no_user_to_locator()
+            ).to_be_visible(timeout=10000)
+
+    @pytest.mark.messagingSystemCleanup
+    def test_clear_inbox_and_outbox(self):
+        for user in super().user_secrets_accounts:
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts[user]
+            ))
+
+            self.inbox_and_outbox_deletion()
+
+        self.delete_cookies()
+        self.sumo_pages.auth_flow_page.sign_in_flow(
+            username=super().user_special_chars,
+            account_password=super().user_secrets_pass,
+        )
+        self.inbox_and_outbox_deletion()
+
+    def inbox_and_outbox_deletion(self):
+        self.sumo_pages.top_navbar._click_on_inbox_option()
+        if self.sumo_pages.inbox_page._are_inbox_messages_displayed():
+            self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button()
+
+        self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+        if self.sumo_pages.sent_message_page._are_sent_messages_displayed():
+            (self.sumo_pages.sent_message_page
+             ._delete_all_sent_messages_via_delete_selected_button())

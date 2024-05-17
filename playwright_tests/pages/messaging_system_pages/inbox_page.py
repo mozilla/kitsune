@@ -53,22 +53,24 @@ class InboxPage(BasePage):
 
     # Inbox messages actions.
     def _get_inbox_message_subject(self, username: str) -> str:
-        xpath = (
+        return super()._get_text_of_element((
             f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../..//"
             f"a[@class='read']"
-        )
-        return super()._get_text_of_element(xpath)
+        ))
 
     # This requires a change def click_on_inbox_message_banner_close_button(self):
     # self._page.locator(self.__inbox_page_message_action_banner_close_button).dispatch_event(
     # type='click')
 
-    def _click_on_inbox_message_delete_button(self, username: str):
-        xpath_delete_button = (
+    def _click_on_inbox_message_delete_button_by_username(self, username: str):
+        super()._click((
             f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../..//"
             f"a[@class='delete']"
-        )
-        super()._click(xpath_delete_button)
+        ))
+
+    def _click_on_inbox_message_delete_button_by_excerpt(self, excerpt: str):
+        super()._click(f"//div[@class='email-cell excerpt']/a[normalize-space(text())='{excerpt}']"
+                       f"/../..//a[@class='delete']")
 
     def _click_on_inbox_new_message_button(self):
         super()._click(self.__inbox_new_message_button)
@@ -80,16 +82,19 @@ class InboxPage(BasePage):
         super()._click(self.__inbox_delete_selected_button)
 
     def _click_on_inbox_message_sender_username(self, username: str):
-        xpath = f"//div[@class='email-cell from']//a[contains(text(),'{username}')]"
-        super()._click(xpath)
+        super()._click(f"//div[@class='email-cell from']//a[contains(text(),'{username}')]")
 
-    def _inbox_message_select_checkbox_element(self) -> list[ElementHandle]:
-        return super()._get_element_handles(self.__inbox_delete_checkbox)
+    def _inbox_message_select_checkbox_element(self, excerpt='') -> list[ElementHandle]:
+        if excerpt != '':
+            return super()._get_element_handles(f"//div[@class='email-cell excerpt']"
+                                                f"/a[normalize-space(text())='{excerpt}']/../.."
+                                                f"/div[@class='email-cell check']/input")
+        else:
+            return super()._get_element_handles(self.__inbox_delete_checkbox)
 
     def _click_on_inbox_message_subject(self, username: str):
-        xpath = (f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../..//"
-                 f"a[@class='read']")
-        super()._click(xpath)
+        super()._click((f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../.."
+                        f"//a[@class='read']"))
 
     def _click_on_delete_page_delete_button(self):
         super()._click(self.__inbox_delete_page_delete_button)
@@ -109,6 +114,14 @@ class InboxPage(BasePage):
         return super()._get_element_locator(f"//div[@class='email-cell from']//a[contains(text(),"
                                             f"'{username}')]")
 
+    def _inbox_message_based_on_excerpt(self, excerpt: str) -> Locator:
+        return super()._get_element_locator(f"//div[@class='email-cell excerpt']/a[normalize-space"
+                                            f"(text())='{excerpt}']")
+
+    def _inbox_message_element_handles(self, excerpt: str) -> list[ElementHandle]:
+        return super()._get_element_handles(f"//div[@class='email-cell excerpt']/a[normalize-space"
+                                            f"(text())='{excerpt}']")
+
     def _are_inbox_messages_displayed(self) -> bool:
         return super()._is_element_visible(self.__inbox_messages_section)
 
@@ -122,11 +135,17 @@ class InboxPage(BasePage):
             delete_button.click()
             self._click_on_delete_page_delete_button()
 
-    def _delete_all_inbox_messages_via_delete_selected_button(self):
-        inbox_messages_count = super()._get_element_handles(self.__inbox_messages)
+    def _delete_all_inbox_messages_via_delete_selected_button(self, excerpt=''):
+        if excerpt != '':
+            inbox_messages_count = self._inbox_message_element_handles(excerpt)
+        else:
+            inbox_messages_count = super()._get_element_handles(self.__inbox_messages)
         counter = 0
         for i in range(len(inbox_messages_count)):
-            inbox_checkbox = self._inbox_message_select_checkbox_element()
+            if excerpt != '':
+                inbox_checkbox = self._inbox_message_select_checkbox_element(excerpt)
+            else:
+                inbox_checkbox = self._inbox_message_select_checkbox_element()
             element = inbox_checkbox[counter]
             element.click()
             counter += 1

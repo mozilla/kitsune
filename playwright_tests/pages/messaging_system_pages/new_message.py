@@ -17,6 +17,8 @@ class NewMessagePage(BasePage):
     __new_message_search_results_bolded_characters = "//div[@class='name_search']/b"
     __new_message_search_results_text = "//div[@class='name_search']"
     __sent_message_page_to_user_text = "//li[@class='token-input-token-facebook']/p"
+    __sent_messages_page_no_user_text = ("//div[@class='token-input-dropdown-facebook']/p[text("
+                                         ")='No results']")
     __sent_message_page_to_user_delete_button = ("//span[@class='token-input-delete-token"
                                                  "-facebook']")
 
@@ -61,6 +63,9 @@ class NewMessagePage(BasePage):
     def _get_user_to_text(self) -> str:
         return super()._get_text_of_element(self.__sent_message_page_to_user_text)
 
+    def _get_no_user_to_locator(self) -> Locator:
+        return super()._get_element_locator(self.__sent_messages_page_no_user_text)
+
     def _get_new_message_page_header_text(self) -> str:
         return super()._get_text_of_element(self.__new_message_page_header)
 
@@ -93,6 +98,9 @@ class NewMessagePage(BasePage):
 
     def _click_on_new_message_send_button(self):
         super()._click(self.__new_message_send_button)
+
+    def _click_on_a_search_result(self, username: str):
+        super()._click(f"//div[@class='name_search' and text()='{username}']")
 
     def _click_on_a_searched_user(self, username: str):
         xpath = f"//div[@class='name_search' and text()='{username}']"
