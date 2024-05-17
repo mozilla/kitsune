@@ -7,7 +7,11 @@ from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    HelpfulVoteFactory,
+)
 
 
 class ProductViewsTestCase(Elastic7TestCase):
@@ -70,7 +74,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         ApprovedRevisionFactory()
 
         # GET the page and verify the content.
-        url = reverse("products.documents", args=[p.slug, t1.slug])
+        url = reverse("products.documents", args=[t1.slug, p.slug])
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
@@ -93,7 +97,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Add a lower display order to the second document. It should be first now.
         docs[1].display_order = 0
         docs[1].save()
-        url = reverse("products.documents", args=[p.slug, t.slug])
+        url = reverse("products.documents", args=[t.slug, p.slug])
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
@@ -107,7 +111,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         HelpfulVoteFactory(revision=rev, helpful=True)
         docs[2].save()  # Votes don't trigger a reindex.
         cache.clear()  # documents_for() is cached
-        url = reverse("products.documents", args=[p.slug, t.slug])
+        url = reverse("products.documents", args=[t.slug, p.slug])
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
@@ -140,7 +144,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         ApprovedRevisionFactory(document=doc)
 
         # GET the page and verify no subtopics yet.
-        url = reverse("products.documents", args=[p.slug, t.slug])
+        url = reverse("products.documents", args=[t.slug, p.slug])
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
         pqdoc = pq(r.content)

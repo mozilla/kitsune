@@ -1,23 +1,34 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
+{% from 'products/includes/product_macros.html' import product_dropdown %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
-{% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
-{% if subtopic %}
-  {% set ga_content_group = "product-and-topic-and-subtopic-home" %}
-  {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
-  {% set canonical_url = canonicalize(model_url=subtopic.get_absolute_url()) %}
+{% if product %}
+  {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
+  {% if subtopic %}
+    {% set ga_content_group = "product-and-topic-and-subtopic-home" %}
+    {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
+    {% set canonical_url = canonicalize(model_url=subtopic.get_absolute_url()) %}
+  {% else %}
+    {% set ga_content_group = "product-and-topic-home" %}
+    {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
+    {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
+  {% endif %}
+  {% set search_params = {'product': product.slug} %}
+  {% set ga_products = "/" + product.slug + "/" %}
+  {% set page_title = pgettext('DB: products.Topic.title', topic.title) + ' | ' +  _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) %}
 {% else %}
-  {% set ga_content_group = "product-and-topic-home" %}
-  {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
-  {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
+  {% set crumbs = [(url('products.topic_documents', topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title))] %}
+  {% set search_params = {'topic': topic.slug} %}
+  {% set page_title = pgettext('DB: products.Topic.title', topic.title) %}
 {% endif %}
-{% set search_params = {'product': product.slug} %}
-{% set ga_products = "/" + product.slug + "/" %}
-{% set ga_topics = "/" + topic.slug + "/" %}
+{% block title %}{{ page_title }}{% endblock %}
 
-{% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
+{% set scripts = ('topics',) %}
+{% set ga_content_group = "product-and-topic-home" %}
+
+{% set ga_topics = "/" + topic.slug + "/" %}
 
 {% block above_main %}
 {% endblock %}
@@ -27,78 +38,33 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
 </div>
 
-{{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
+{% if product %}
+  {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
+{% else %}
+  {{ product_dropdown(products, topic) }}
+{% endif %}
+
 
 {{ aaq_widget(request, "topic") }}
 
 {% endblock %}
 
-{% block product_announcement %}
-  {% if product.slug == 'hubs' %}
-  <div id="hubs-banner" class="mzp-c-notification-bar mzp-t-warning">
-    <button class="mzp-c-notification-bar-button close-button" type="button"></button>
-    <p>{{ _('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla please read this <a href="https://hubs.mozilla.com/labs/sunset/">article at Mozilla Hubs Creator Labs</a>.') }}</p>
-  </div>
-  {% endif %}
-{% endblock %}
+{% if product %}
+  {% block product_announcement %}
+    {% if product.slug == 'hubs' %}
+    <div id="hubs-banner" class="mzp-c-notification-bar mzp-t-warning">
+      <button class="mzp-c-notification-bar-button close-button" type="button"></button>
+      <p>{{ _('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla please read this <a href="https://hubs.mozilla.com/labs/sunset/">article at Mozilla Hubs Creator Labs</a>.') }}</p>
+    </div>
+    {% endif %}
+  {% endblock %}
+{% endif %}
 
 {% block content %}
     <article id="document-list">
-      <header class="sumo-article-header">
-        <div class="sumo-article-header--text">
-          <div class="documents-product-title">
-            {% set prod_url = url('products.product', slug=product.slug) %}
-            <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
-            {% if product.slug == 'firefox' %}
-              {{ download_firefox() }}
-            {% endif %}
-          </div>
-
-          {% if subtopic %}
-          <h2 class="sumo-card-heading is-subtopic">
-            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-              {{ pgettext('DB: products.Topic.title', topic.title) }}
-            </a>
-          </h2>
-          <h1 class="topic-title is-subtopic sumo-page-heading">
-            {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-          </h1>
-          {% else %}
-          <h1 class="topic-title sumo-page-heading">
-            {{ pgettext('DB: products.Topic.title', topic.title) }}
-          </h1>
-          {% endif %}
-
-        {# Show the description if it is different than the title. Otherwise, don't bother. #}
-        {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-          <p class="topic-description sumo-page-intro mb-0">
-            {% if subtopic %}
-               {{ pgettext('DB: products.Topic.description', subtopic.description) }}
-            {% else %}
-              {{ pgettext('DB: products.Topic.description', topic.description) }}
-            {% endif %}
-          </p>
-        {% endif %}
-        </div>
-      </header>
-
-      {% if topic.slug == "Focus-ios" %}
-        {{ sumo_banner(
-          id="focus-ios-beta-banner",
-          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for iOS.'),
-          button_text=_('Get started'),
-          button_link="https://testflight.apple.com/join/dH8lkFZi",
-        ) }}
-      {% elif topic.slug == "firefox-focus-android" %}
-        {{ sumo_banner(
-          id="focus-android-update-banner",
-          text=_('Update to the latest version of Firefox Focus for Android to receive the latest features, enhancements and bug fixes. Firefox Focus is available for free in the Google Play store.'),
-          button_text=_('Download now'),
-          button_link="https://play.google.com/store/apps/details?id=org.mozilla.focus")
-          }}
+      {% if product %}
+        {% include 'products/includes/product_documents.html' %}
       {% endif %}
-
-      {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
 
       <section class="topic-list">
         {% for document in documents %}
