@@ -14,9 +14,14 @@ class MessagingSystemFlows(TestUtilities, NewMessagePage, SentMessagePage, Inbox
                                              recipient_username='',
                                              message_body='',
                                              submit_message=True):
-        if recipient_username != '':
+        if recipient_username != '' and not isinstance(recipient_username, list):
             super()._type_into_new_message_to_input_field(recipient_username)
             super()._click_on_a_searched_user(recipient_username)
+
+        if isinstance(recipient_username, list):
+            for recipient in recipient_username:
+                super()._type_into_new_message_to_input_field(recipient)
+                super()._click_on_a_searched_user(recipient)
 
         if message_body != '':
             super()._fill_into_new_message_body_textarea(message_body)
@@ -24,15 +29,20 @@ class MessagingSystemFlows(TestUtilities, NewMessagePage, SentMessagePage, Inbox
         if submit_message:
             super()._click_on_new_message_send_button()
 
-    def delete_message_flow(self, username: str,
+    def delete_message_flow(self, username='',
+                            excerpt='',
                             delete_message=True,
                             from_sent_list=False,
                             from_inbox_list=False):
-        if from_sent_list:
-            super()._click_on_sent_message_delete_button(username)
+        if from_sent_list and username != '':
+            super()._click_on_sent_message_delete_button_by_user(username)
+        elif from_sent_list and excerpt != '':
+            super()._click_on_sent_message_delete_button_by_excerpt(excerpt)
 
-        if from_inbox_list:
-            super()._click_on_inbox_message_delete_button(username)
+        if from_inbox_list and username != '':
+            super()._click_on_inbox_message_delete_button_by_username(username)
+        elif from_inbox_list and excerpt != '':
+            super()._click_on_inbox_message_delete_button_by_excerpt(excerpt)
 
         if delete_message:
             super()._click_on_delete_page_delete_button()

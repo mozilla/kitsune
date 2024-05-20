@@ -23,7 +23,7 @@ class TestLoginSessions(TestUtilities):
             )
 
             print(super().user_secrets_accounts[i])
-            self.wait_for_given_timeout(3500)
+            self.wait_for_given_timeout(3800)
             username = self.username_extraction_from_email(
                 super().user_secrets_accounts[i]
             )

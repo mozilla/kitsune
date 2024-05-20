@@ -19,6 +19,10 @@ class SentMessagePage(BasePage):
     __sent_messages_delete_button = "//ol[@class='outbox-table']//a[@class='delete']"
     __sent_messages_delete_checkbox = "//div[contains(@class,'checkbox')]/label"
 
+    # Read Sent Messages page
+    __to_groups_list_items = "//span[@class='to-group']//a"
+    __to_user_list_items = "//span[@class='to']//a"
+
     def __init__(self, page: Page):
         super().__init__(page)
 
@@ -33,9 +37,9 @@ class SentMessagePage(BasePage):
         return super()._get_text_of_element(self.__sent_messages_no_messages_message)
 
     def _get_sent_message_subject(self, username: str) -> str:
-        xpath = (f"//div[@class='email-cell to']//a[contains(text(),'{username}')]/../../"
-                 f"div[@class='email-cell excerpt']/a")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@class='email-cell to']//a[contains(text(),"
+                                            f"'{username}')]/../.."
+                                            f"/div[@class='email-cell excerpt']/a")
 
     # Need to update this def click_on_sent_messages_page_banner_close_button(self): Hitting the
     # click twice because of an issue with closing the banner self._page.locator(
@@ -44,22 +48,32 @@ class SentMessagePage(BasePage):
     def _click_on_delete_selected_button(self):
         super()._click(self.__sent_messages_delete_selected_button)
 
-    def _click_on_sent_message_delete_button(self, username: str):
-        xpath_delete_button = (f"//div[@class='email-cell to']//a[contains(text(),'{username}')]"
-                               f"/../..//a[@class='delete']")
-        super()._click(xpath_delete_button)
+    def _click_on_sent_message_delete_button_by_user(self, username: str):
+        super()._click(f"//div[@class='email-cell to']//a[contains(text(),'{username}')]/../..//"
+                       f"a[@class='delete']")
+
+    def _click_on_sent_message_delete_button_by_excerpt(self, excerpt: str):
+        super()._click(f"//div[@class='email-cell excerpt']/a[normalize-space(text())='{excerpt}']"
+                       f"/../..//a[@class='delete']")
 
     def _click_on_sent_message_sender_username(self, username: str):
-        xpath = f"//div[@class='email-cell to']//a[contains(text(),'{username}')]"
-        super()._click(xpath)
+        super()._click(f"//div[@class='email-cell to']//a[contains(text(),'{username}')]")
 
     def _sent_message_select_checkbox(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__sent_messages_delete_checkbox)
 
-    def _click_on_sent_message_subject(self, username: str):
-        xpath = (f"//div[@class='email-cell to']//a[contains(text(),'{username}')]/../.."
-                 f"/div[@class='email-cell excerpt']/a")
-        super()._click(xpath)
+    def _sent_message_select_checkbox_element(self, excerpt: str) -> list[ElementHandle]:
+        return super()._get_element_handles(f"//div[@class='email-cell excerpt']/a[normalize-space"
+                                            f"(text())='{excerpt}']/../.."
+                                            f"/div[@class='email-cell field checkbox no-label']"
+                                            f"/label")
+
+    def _click_on_sent_message_subject(self, text: str):
+        super()._click(f"//div[@class='email-cell excerpt']/a[contains(text(),'{text}')]")
+
+    def _click_on_sent_messages_to_group_subject(self, group_name: str):
+        super()._click(f"//div[@class='email-cell to-groups']/a[text()='{group_name}']/../../"
+                       f"div[@class='email-cell excerpt']")
 
     def _click_on_delete_page_delete_button(self):
         super()._click(self.__sent_messages_delete_page_delete_button)
@@ -70,6 +84,20 @@ class SentMessagePage(BasePage):
     def _sent_messages(self, username: str) -> Locator:
         return super()._get_element_locator(f"//div[@class='email-cell to']//a[contains(text(),"
                                             f"'{username}')]")
+
+    def _sent_messages_by_excerpt_locator(self, excerpt: str) -> Locator:
+        return super()._get_element_locator(f"//div[@class='email-cell excerpt']/"
+                                            f"a[normalize-space(text())='{excerpt}']")
+
+    def _sent_messages_by_excerpt_element_handles(self, excerpt: str) -> list[ElementHandle]:
+        return super()._get_element_handles(f"//div[@class='email-cell excerpt']/"
+                                            f"a[normalize-space(text())='{excerpt}']")
+
+    def _sent_messages_to_group(self, group: str, excerpt: str) -> Locator:
+        return super()._get_element_locator(f"//div[@class='email-cell to-groups']//a[contains"
+                                            f"(text(),'{group}')]/../../"
+                                            f"div[@class='email-cell excerpt']/a[normalize-space"
+                                            f"(text())='{excerpt}']")
 
     def _sent_message_banner(self) -> Locator:
         return super()._get_element_locator(self.__sent_messages_page_message_banner_text)
@@ -86,14 +114,27 @@ class SentMessagePage(BasePage):
             delete_button.click()
             self._click_on_delete_page_delete_button()
 
-    def _delete_all_sent_messages_via_delete_selected_button(self):
-        sent_messages_count = super()._get_element_handles(self.__sent_messages)
+    def _delete_all_sent_messages_via_delete_selected_button(self, excerpt=''):
+        if excerpt != '':
+            sent_messages_count = self._sent_messages_by_excerpt_element_handles(excerpt)
+        else:
+            sent_messages_count = super()._get_element_handles(self.__sent_messages)
         counter = 0
         for i in range(len(sent_messages_count)):
-            checkbox = self._sent_message_select_checkbox()
+            if excerpt != '':
+                checkbox = self._sent_message_select_checkbox_element(excerpt)
+            else:
+                checkbox = self._sent_message_select_checkbox()
             element = checkbox[counter]
             element.click()
             counter += 1
 
         self._click_on_delete_selected_button()
         self._click_on_delete_page_delete_button()
+
+    # Read Sent Message page
+    def _get_text_of_all_sent_groups(self) -> list[str]:
+        return super()._get_text_of_elements(self.__to_groups_list_items)
+
+    def _get_text_of_all_recipients(self) -> list[str]:
+        return super()._get_text_of_elements(self.__to_user_list_items)

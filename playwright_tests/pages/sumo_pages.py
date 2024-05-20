@@ -14,6 +14,7 @@ from playwright_tests.flows.explore_articles_flows.article_flows.post_new_thread
     PostNewDiscussionThreadFlow
 from playwright_tests.flows.messaging_system_flows.messaging_system_flow import (
     MessagingSystemFlows)
+from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFlow
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.contribute.contributor_tools_pages.article_discussions_page import \
@@ -24,6 +25,7 @@ from playwright_tests.pages.contribute.contributor_tools_pages.moderate_forum_co
     ModerateForumContent
 from playwright_tests.pages.contribute.contributor_tools_pages.recent_revisions_page import \
     RecentRevisions
+from playwright_tests.pages.contribute.groups_page import GroupsPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_discussion_page import \
     KBArticleDiscussionPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
@@ -154,6 +156,9 @@ class SumoPages:
         self.support_forums_page = SupportForumsPage(page)
         self.product_support_forum = ProductSupportForum(page)
 
+        # User Groups
+        self.user_groups = GroupsPage(page)
+
         # Article Discussions page.
         self.article_discussions_page = ArticleDiscussionsPage(page)
 
@@ -193,3 +198,6 @@ class SumoPages:
 
         # KB add article media Flow
         self.add_kb_media_flow = AddKbMediaFlow(page)
+
+        # User Group Flow
+        self.user_group_flow = UserGroupFlow(page)
