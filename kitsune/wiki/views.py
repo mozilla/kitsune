@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Case, Count, Exists, FloatField, OuterRef, Q, Sum, When
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -271,12 +271,22 @@ def document(request, document_slug, document=None):
         breadcrumbs.append((product.get_absolute_url(), product.title))
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
+    votes = HelpfulVote.objects.filter(revision=doc.current_revision).aggregate(
+        total_votes=Count("id"),
+        helpful_votes=Sum(Case(When(helpful=True, then=1), default=0, output_field=FloatField())),
+    )
+    helpful_votes = (
+        int((votes["helpful_votes"] / votes["total_votes"]) * 100)
+        if votes["total_votes"] > 0
+        else 0
+    )
 
     data = {
         "document": doc,
         "redirected_from": redirected_from,
         "contributors": contributors,
         "fallback_reason": fallback_reason,
+        "helpful_votes": helpful_votes,
         "product_topics": product_topics,
         "product": product,
         "products": products,
@@ -324,8 +334,8 @@ def list_documents(request, category=None):
             category = str(dict(CATEGORIES)[category_id])
         except KeyError:
             raise Http404
-
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
+
     return render(request, "wiki/list_documents.html", {"documents": docs, "category": category})
 
 

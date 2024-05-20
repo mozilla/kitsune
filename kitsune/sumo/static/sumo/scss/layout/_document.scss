@@ -305,3 +305,54 @@
     }
   }
 }
+
+#document_metadata {
+  display: flex;
+  align-items: center;
+  margin-top: p.$spacing-md;
+  padding-bottom: p.$spacing-md;
+  margin-bottom: p.$spacing-xl;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+
+  &.has-border-bottom {
+    border-bottom: 1px solid var(--color-text);
+  }
+
+  .product {
+    font-weight: bold;
+    margin-right: 24px;
+  }
+
+  .last-updated {
+    display: flex;
+    align-items: center;
+
+    .pencil {
+      margin-right: 8px; // Optional, to add some space between the icon and text
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
+    .time {
+      margin-left: 8px; // Space between "Last updated:" and "16 hours ago"
+      margin-right: 16px; // Space after "16 hours ago"
+    }
+  }
+
+  .helpful-info {
+    display: flex;
+    align-items: center;
+
+    .thumbsup {
+      margin-right: 8px; // Optional, to add some space between the icon and text
+    }
+
+    .helpful-count {
+      font-weight: bold;
+      margin-right: 8px; // Space between the count and the "users found this helpful"
+    }
+  }
+}

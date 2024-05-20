@@ -12,6 +12,20 @@
   <h1 class="sumo-page-heading">{{ document.title }}</h1>
 {%- endmacro %}
 
+{% macro document_metadata(document, helpful_votes, product) -%}
+  <div id="document_metadata" class="has-border-bottom">
+    <span class="product">{{ product }}</span>
+    <span class="last-updated">
+      <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>Last updated:</strong> <span class="time">{{ document.current_revision.created|naturaltime }}</span>
+    </span>
+    {% if helpful_votes %}
+    <span class="helpful-info">
+      <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/><span class="helpful-count">{{ helpful_votes }}%</span> of users found this helpful
+    </span>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
 {% macro document_messages(document, redirected_from) -%}
   {% if redirected_from %}
     <div id="redirected-from">
