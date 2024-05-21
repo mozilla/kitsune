@@ -1,10 +1,12 @@
 import json
 
+from django.db.models import OuterRef, Subquery
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
+from kitsune.questions import NAVIGATION_TOPICS
 from kitsune.questions import config as aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
@@ -72,6 +74,10 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     """The document listing page for a product + topic."""
 
     product = get_object_or_404(Product, slug=product_slug) if product_slug else None
+    topic_navigation = request.resolver_match.url_name in [
+        "products.topic_documents",
+        "products.topic_product_documents",
+    ]
     topic_kw = {
         "slug": topic_slug,
         "parent__isnull": True,
@@ -101,6 +107,12 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         doc_kw["topics"] = topics
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
+    if topic_navigation:
+        topics = Topic.objects.filter(visible=True, slug__in=NAVIGATION_TOPICS)
+        topic_subquery = topics.filter(slug=OuterRef("slug")).order_by("id").values("id")[:1]
+        topics = Topic.objects.filter(id__in=Subquery(topic_subquery))
+    else:
+        topics = topics_for(request.user, product=product, parent=None)
 
     return render(
         request,
@@ -109,11 +121,12 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "product": product,
             "topic": topic,
             "subtopic": subtopic,
-            "topics": topics_for(request.user, product=product, parent=None),
+            "topics": topics,
             "subtopics": topics_for(request.user, product=product, parent=topic),
             "documents": documents,
             "fallback_documents": fallback_documents,
             "search_params": {"product": product_slug},
             "products": Product.objects.filter(visible=True, topics__in=topics),
+            "topic_navigation": topic_navigation,
         },
     )
