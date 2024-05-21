@@ -28,17 +28,16 @@ class SearchPage(BasePage):
         return super()._get_text_of_elements(self.__popular_searches)
 
     def _click_on_a_particular_popular_search(self, popular_search_option: str):
-        xpath = f"//p[@class='popular-searches']/a[text()='{popular_search_option}']"
-        super()._click(xpath)
+        super()._click(f"//p[@class='popular-searches']/a[text()='{popular_search_option}']")
 
     def _get_search_result_summary_text_of_a_particular_article(self, article_title) -> str:
-        xpath = (f"//h3[@class='sumo-card-heading']/a[normalize-space(text())='{article_title}']/"
-                 f"../../p")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//h3[@class='sumo-card-heading']/"
+                                            f"a[normalize-space(text())='{article_title}']/../"
+                                            f"../p")
 
     def _click_on_a_particular_article(self, article_title):
-        xpath = f"//h3[@class='sumo-card-heading']/a[normalize-space(text())='{article_title}']"
-        super()._click(xpath)
+        super()._click(f"//h3[@class='sumo-card-heading']/"
+                       f"a[normalize-space(text())='{article_title}']")
 
     def _get_all_search_results_article_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__search_results_article_titles)
@@ -47,5 +46,5 @@ class SearchPage(BasePage):
         return super()._get_text_of_elements(self.__search_results_articles_summary)
 
     def _get_locator_of_a_particular_article(self, article_title: str) -> Locator:
-        xpath = f"//h3[@class='sumo-card-heading']/a[normalize-space(text())='{article_title}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//h3[@class='sumo-card-heading']/"
+                                            f"a[normalize-space(text())='{article_title}']")

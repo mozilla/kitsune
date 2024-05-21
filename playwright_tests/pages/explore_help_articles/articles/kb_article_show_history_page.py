@@ -52,12 +52,10 @@ class KBArticleShowHistoryPage(BasePage):
         return super()._get_text_of_element(self.__show_history_revision_history_for)
 
     def _click_on_a_particular_revision_editor(self, revision_id: str, username: str):
-        xpath = f"//tr[@id='{revision_id}']//a[contains(text(),'{username}')]"
-        super()._click(xpath)
+        super()._click(f"//tr[@id='{revision_id}']//a[contains(text(),'{username}')]")
 
     def _click_on_ready_for_l10n_option(self, revision_id: str):
-        xpath = f"//tr[@id='{revision_id}']/td[@class='l10n']/a"
-        super()._click(xpath)
+        super()._click(f"//tr[@id='{revision_id}']/td[@class='l10n']/a")
 
     def _click_on_submit_l10n_readiness_button(self):
         super()._click(self.__ready_for_l10_modal_submit_button)
@@ -90,37 +88,29 @@ class KBArticleShowHistoryPage(BasePage):
 
     # For unreviewed revisions but user session doesn't permit review.
     def _click_on_a_revision_date(self, revision_id):
-        xpath = f"//tr[@id='{revision_id}']/td[@class='date']/a"
-        super()._click(xpath)
+        super()._click(f"//tr[@id='{revision_id}']/td[@class='date']/a")
 
     def _get_revision_time(self, revision_id) -> str:
-        xpath = f"//tr[@id='{revision_id}']/td[@class='date']/a/time"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='date']/a/time")
 
     def _get_revision_status(self, revision_id) -> str:
-        xpath = f"//tr[@id='{revision_id}']/td[@class='status']/span"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='status']/span")
 
     def _get_a_particular_revision_locator(self, revision_id) -> Locator:
-        xpath = f"//tr[@id='{revision_id}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//tr[@id='{revision_id}']")
 
     # For unreviewed revisions but user session permits review.
     def _get_status_of_reviewable_revision(self, revision_id):
-        xpath = f"//tr[@id='{revision_id}']/td[@class='status']/a"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='status']/a")
 
     def _click_on_review_revision(self, revision_id):
-        xpath = f"//tr[@id='{revision_id}']/td[@class='status']/a"
-        super()._click(xpath)
+        super()._click(f"//tr[@id='{revision_id}']/td[@class='status']/a")
 
     def _get_delete_revision_button_locator(self, revision_id) -> Locator:
-        xpath = f"//tr[@id='{revision_id}']/td[@class='delete']/a"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//tr[@id='{revision_id}']/td[@class='delete']/a")
 
     def _click_on_delete_revision_button(self, revision_id):
-        xpath = f"//tr[@id='{revision_id}']/td[@class='delete']/a"
-        return super()._click(xpath)
+        return super()._click(f"//tr[@id='{revision_id}']/td[@class='delete']/a")
 
     def _get_unable_to_delete_revision_header(self) -> str:
         return super()._get_text_of_element(self.__unable_to_delete_revision_page_header)
@@ -143,19 +133,16 @@ class KBArticleShowHistoryPage(BasePage):
         super()._type(self.__add_contributor_input_field, text, 100)
 
     def _click_on_new_contributor_search_result(self, username: str):
-        xpath = f"//div[@class='name_search']/b[contains(text(), '{username}')]"
-        super()._click(xpath)
+        super()._click(f"//div[@class='name_search']/b[contains(text(), '{username}')]")
 
     def _click_on_add_contributor_button(self):
         super()._click(self.__add_contributor_button)
 
     def _click_on_a_particular_contributor(self, username: str):
-        xpath = f"//span[text()='{username}']/.."
-        super()._click(xpath)
+        super()._click(f"//span[text()='{username}']/..")
 
     def _click_on_delete_button_for_a_particular_contributor(self, username: str):
-        xpath = f"//span[text()='{username}']/../..//a[@class='remove-button']"
-        super()._click(xpath)
+        super()._click(f"//span[text()='{username}']/../..//a[@class='remove-button']")
 
     def _get_list_of_all_contributors(self) -> list[str]:
         return super()._get_text_of_elements(self.__all_contributors_usernames)

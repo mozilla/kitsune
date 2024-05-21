@@ -61,13 +61,11 @@ class SubmitKBArticlePage(BasePage):
 
     # New KB form actions.
     def _add_and_select_restrict_visibility_group(self, group_name: str):
-        option_xpath = f"//div[@class='option active']/span[text()='{group_name}']"
         super()._fill(self.__kb_article_restrict_visibility_field, group_name)
-        super()._click(option_xpath)
+        super()._click(f"//div[@class='option active']/span[text()='{group_name}']")
 
     def _delete_a_restricted_visibility_group(self, group_name: str):
-        xpath = f"//div[@class='item' and text()='{group_name}']/a"
-        super()._click(xpath)
+        super()._click(f"//div[@class='item' and text()='{group_name}']/a")
 
     def _delete_all_restricted_visibility_groups(self):
         super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
@@ -126,24 +124,21 @@ class SubmitKBArticlePage(BasePage):
         return super()._get_element_locator(self.__kb_article_preview_content)
 
     def _click_on_a_relevant_to_option_checkbox(self, option_to_click: str):
-        xpath = f"//div[@id='id_products']//label[normalize-space(text())='{option_to_click}']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='id_products']//"
+                       f"label[normalize-space(text())='{option_to_click}']")
 
     def _get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:
-        xpath = f"//div[@id='id_products']//input[@id='id_products_{option_to_click}']/.."
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='id_products']//"
+                                            f"input[@id='id_products_{option_to_click}']/..")
 
     def _click_on_a_particular_parent_topic(self, parent_topic: str):
-        xpath_parent_topic = f"//section[@id='accordion']//button[text()='{parent_topic}']"
-        super()._click(xpath_parent_topic)
+        super()._click(f"//section[@id='accordion']//button[text()='{parent_topic}']")
 
     def _click_on_a_particular_child_topic_checkbox(
         self, parent_topic: str, child_topic_checkbox: str
     ):
-        xpath_child_topic_checkbox_option = (
-            f"//section[@id='accordion']//button[text()='{parent_topic}']/parent::h3"
-            f"/following-sibling::ul[1]//label[text()='{child_topic_checkbox}']")
-        super()._click(xpath_child_topic_checkbox_option)
+        super()._click(f"//section[@id='accordion']//button[text()='{parent_topic}']/parent::h3/"
+                       f"following-sibling::ul[1]//label[text()='{child_topic_checkbox}']")
 
     def _click_on_insert_media_textarea_option(self):
         super()._click(self.__kb_article_insert_media)

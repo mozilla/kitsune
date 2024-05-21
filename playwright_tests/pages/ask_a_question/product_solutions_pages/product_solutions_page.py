@@ -65,8 +65,8 @@ class ProductSolutionsPage(BasePage):
 
     # Featured article actions.
     def _click_on_a_featured_article_card(self, card_name: str):
-        xpath = f'//h2[contains(text(),"Featured Articles")]/../..//a[text()="{card_name}"]'
-        super()._click(xpath)
+        super()._click(f'//h2[contains(text(),"Featured Articles")]/../..//'
+                       f'a[text()="{card_name}"]')
 
     def _get_all_featured_articles_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__featured_articles_cards)
@@ -76,9 +76,8 @@ class ProductSolutionsPage(BasePage):
 
     # Popular topic actions.
     def _click_on_a_popular_topic_card(self, card_name: str):
-        xpth = (f"//h2[contains(text(),'Popular Topics')]/../..//a[normalize-space(text()) = "
-                f"'{card_name}']")
-        super()._click(xpth)
+        super()._click(f"//h2[contains(text(),'Popular Topics')]/../..//"
+                       f"a[normalize-space(text()) = '{card_name}']")
 
     def _get_popular_topics(self) -> list[str]:
         return super()._get_text_of_elements(self.__popular_topics_cards)

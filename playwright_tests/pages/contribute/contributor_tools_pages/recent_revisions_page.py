@@ -70,59 +70,63 @@ class RecentRevisions(BasePage):
         super()._type(self.__end_date_input_field, end_date, 0)
 
     def _get_recent_revision_based_on_article(self, title: str) -> Locator:
-        xpath = f"//div[@id='revisions-fragment']//div[@class='title']//a[text()='{title}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='revisions-fragment']//"
+                                            f"div[@class='title']//a[text()='{title}']")
 
     def _get_recent_revision_based_on_article_title_and_user(self, title: str,
                                                              username: str) -> Locator:
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']//a[text()='{title}'"
-                 f"]/../../div[@class='creator']/a[contains(text(),'{username}')]")
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='revisions-fragment']//"
+                                            f"div[@class='title']//a[text()='{title}']/../../"
+                                            f"div[@class='creator']/"
+                                            f"a[contains(text(),'{username}')]")
 
     def _click_on_article_title(self, article_title: str, creator: str):
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='creator']"
-                 f"/a[contains(text(),'{creator}')]/../../div[@class='title']/"
-                 f"a[text()='{article_title}']")
-        super()._click(xpath)
+        super()._click(f"//div[@id='revisions-fragment']//div[@class='creator']/"
+                       f"a[contains(text(),'{creator}')]/../../div[@class='title']/"
+                       f"a[text()='{article_title}']")
 
     def _click_article_creator_link(self, article_title: str, creator: str):
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}'"
-                 f"]/../..//div[@class='creator']/a[contains(text(),'{creator}')]")
-        super()._click(xpath)
+        super()._click(f"//div[@id='revisions-fragment']//div[@class='title']/"
+                       f"a[text()='{article_title}']/../..//div[@class='creator']/"
+                       f"a[contains(text(),'{creator}')]")
 
     def _click_on_show_diff_for_article(self, article_title: str, creator: str):
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}'"
-                 f"]/../../div[@class='creator']/a[contains(text(),'{creator}')]/../../"
-                 f"div[@class='showdiff']/a[@class='show-diff']")
-        super()._click(xpath)
+        super()._click(f"//div[@id='revisions-fragment']//div[@class='title']/"
+                       f"a[text()='{article_title}']/../../div[@class='creator']/"
+                       f"a[contains(text(),'{creator}')]/../../div[@class='showdiff']/"
+                       f"a[@class='show-diff']")
 
     def _get_show_diff_article_locator(self, article_title: str, creator: str) -> Locator:
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}'"
-                 f"]/../../div[@class='creator']/a[contains(text(),'{creator}')]/../../"
-                 f"div[@class='showdiff']/a[@class='show-diff']")
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='revisions-fragment']//"
+                                            f"div[@class='title']/a[text()='{article_title}']/../"
+                                            f"../div[@class='creator']/"
+                                            f"a[contains(text(),'{creator}')]/../../"
+                                            f"div[@class='showdiff']/a[@class='show-diff']")
 
     def _click_on_hide_diff_for_article(self, article_title: str, creator: str):
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}'"
-                 f"]/../../div[@class='creator']/a[contains(text(),'{creator}')]/../../"
-                 f"div[@class='showdiff']/a[@class='close-diff']")
-        super()._click(xpath)
+        super()._click(f"//div[@id='revisions-fragment']//div[@class='title']/"
+                       f"a[text()='{article_title}']/../../div[@class='creator']/"
+                       f"a[contains(text(),'{creator}')]/../../div[@class='showdiff']/"
+                       f"a[@class='close-diff']")
 
     def _click_on_revision_date_for_article(self, article_title: str, username: str):
-        xpath = (f"//div[@class='creator']/a[contains(text(),'{username}')]/../../div["
-                 f"@class='title']/a[text()='{article_title}']/../../div[@class='date']/a")
-        super()._click(xpath)
+        super()._click(f"//div[@class='creator']/a[contains(text(),'{username}')]/../../"
+                       f"div[@class='title']/a[text()='{article_title}']/../../"
+                       f"div[@class='date']/a")
 
     def _get_revision_comment(self, article_title: str, username: str) -> str:
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}'"
-                 f"]/../../div[@class='creator']/a[contains(text(),'{username}')]/../../"
-                 f"div[@class='comment wider']")
-        return super()._get_element_inner_text_from_page(xpath)
+        return super()._get_element_inner_text_from_page(f"//div[@id='revisions-fragment']//"
+                                                         f"div[@class='title']/"
+                                                         f"a[text()='{article_title}']/../../"
+                                                         f"div[@class='creator']/"
+                                                         f"a[contains(text(),'{username}')]/../../"
+                                                         f"div[@class='comment wider']")
 
     def _get_revision_and_username_locator(self, article_title: str, username: str) -> Locator:
-        xpath = (f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}'"
-                 f"]/../../div[@class='creator']/a[contains(text(),'{username}')]")
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='revisions-fragment']//"
+                                            f"div[@class='title']/a[text()='{article_title}']/../"
+                                            f"../div[@class='creator']/"
+                                            f"a[contains(text(),'{username}')]")
 
     # Diff section actions
     def _get_diff_section_locator(self) -> Locator:

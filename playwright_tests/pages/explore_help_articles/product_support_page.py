@@ -60,9 +60,8 @@ class ProductSupportPage(BasePage):
         return super()._get_text_of_element(self.__frequent_topics_section_subtitle)
 
     def _click_on_a_particular_frequent_topic_card(self, card_title: str):
-        xpath = (f"//h2[contains(text(),'Frequent Topics')]/../../../..//a["
-                 f"normalize-space(text())='{card_title}']")
-        super()._click(xpath)
+        super()._click(f"//h2[contains(text(),'Frequent Topics')]/../../../..//"
+                       f"a[normalize-space(text())='{card_title}']")
 
     def _get_featured_articles_header_text(self) -> str:
         return super()._get_text_of_element(self.__featured_article_section_title)
@@ -77,8 +76,7 @@ class ProductSupportPage(BasePage):
         return len(super()._get_text_of_elements(self.__featured_articles_cards))
 
     def _click_on_a_particular_feature_article_card(self, card_title):
-        xpath = f'//h2[contains(text(),"Featured Articles")]/..//a[text()="{card_title}"]'
-        super()._click(xpath)
+        super()._click(f'//h2[contains(text(),"Featured Articles")]/..//a[text()="{card_title}"]')
 
     def _get_still_need_help_widget_title(self) -> str:
         return super()._get_text_of_element(self.__still_need_help_widget_title)

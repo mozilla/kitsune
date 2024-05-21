@@ -26,23 +26,24 @@ class ProductTopicPage(BasePage):
         return super()._get_text_of_element(self.__page_title)
 
     def _get_a_particular_article_locator(self, article_title: str):
-        xpath = f"//h2[@class='sumo-card-heading']/a[normalize-space(text())='{article_title}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//h2[@class='sumo-card-heading']/a[normalize-space"
+                                            f"(text())='{article_title}']")
 
     # Navbar actions.
     def _get_selected_navbar_option(self) -> str:
         return super()._get_text_of_element(self.__selected_nav_link)
 
     def _click_on_a_navbar_option(self, option_name: str):
-        xpath = f'//a[@data-event-action="topic sidebar" and contains(text(), "{option_name}")]'
-        super()._click(xpath)
+        super()._click(f'//a[@data-event-action="topic sidebar" and contains(text(),'
+                       f' "{option_name}")]')
 
     def _get_navbar_links_text(self) -> list[str]:
         return super()._get_text_of_elements(self.__navbar_links)
 
     def _get_navbar_option_link(self, option_name: str) -> str:
-        xpath = f'//a[@data-event-action="topic sidebar" and contains(text(), "{option_name}")]'
-        return super()._get_element_attribute_value(xpath, "href")
+        return super()._get_element_attribute_value(f'//a[@data-event-action="topic sidebar" '
+                                                    f'and contains(text(), "{option_name}")]',
+                                                    "href")
 
     # AAQ section actions.
     def _get_aaq_subheading_text(self) -> str:

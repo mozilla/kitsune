@@ -26,8 +26,7 @@ class KBArticlePage(BasePage):
 
     # KB Article page content actions.
     def _click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
-        xpath = f"//ol[@id='breadcrumbs']//a[text()='{breadcrumb_name}']"
-        super()._click(xpath)
+        super()._click(f"//ol[@id='breadcrumbs']//a[text()='{breadcrumb_name}']")
 
     def _get_text_of_all_breadcrumbs(self) -> list[str]:
         return super()._get_text_of_elements(self.__kb_article_breadcrumbs_list)
@@ -45,8 +44,8 @@ class KBArticlePage(BasePage):
         return super()._get_text_of_elements(self.__kb_article_contributors)
 
     def _click_on_a_particular_article_contributor(self, username: str):
-        xpath = f"//div[@class='document--contributors-list text-body-xs']/a[text()='{username}']"
-        super()._click(xpath)
+        super()._click(f"//div[@class='document--contributors-list text-body-xs']/"
+                       f"a[text()='{username}']")
 
     def _get_text_of_kb_article_content_approved(self) -> str:
         return super()._get_text_of_element(self.__kb_article_content_approved_content)

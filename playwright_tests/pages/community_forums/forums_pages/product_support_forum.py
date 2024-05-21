@@ -36,8 +36,8 @@ class ProductSupportForum(BasePage):
 
     # Question list actions
     def _get_all_question_list_tags(self, question_id: str) -> list[str]:
-        xpath = f"//article[@id='{question_id}']//li[@class='tag']"
-        question_tags = super()._get_text_of_elements(xpath)
+        question_tags = super()._get_text_of_elements(f"//article[@id='{question_id}']//"
+                                                      f"li[@class='tag']")
         return question_tags
 
     def _extract_question_ids(self) -> list[str]:

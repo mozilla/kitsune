@@ -24,12 +24,11 @@ class SupportForumsPage(BasePage):
 
     # Product cards actions.
     def _click_on_a_particular_product_card(self, card_name: str):
-        xpath = f"//strong[text()='{card_name}']"
-        super()._click(xpath)
+        super()._click(f"//strong[text()='{card_name}']")
 
     def _get_product_card_titles_list(self) -> list[str]:
         return super()._get_text_of_elements(self.__product_card_titles)
 
     def _get_card_description_text(self, card_title: str) -> str:
-        xpath = f"//strong[text()='{card_title}']/../../following-sibling::p"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//strong[text()='{card_title}']/../../"
+                                            f"following-sibling::p")
