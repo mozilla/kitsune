@@ -155,8 +155,8 @@ class QuestionPage(BasePage):
 
     # Breadcrumbs actions.
     def _get_current_breadcrumb_locator(self, question_title: str) -> Locator:
-        xpath = f"//ol[@id='breadcrumbs']/li[text()='{question_title}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//ol[@id='breadcrumbs']/li[text()='{question_title}'"
+                                            f"]")
 
     def _click_on_breadcrumb(self, breadcrumb_xpath: str):
         super()._click(breadcrumb_xpath)
@@ -188,16 +188,14 @@ class QuestionPage(BasePage):
         return super()._get_text_of_element(self.__problem_solved_banner_text)
 
     def _get_solved_the_problem_button_locator(self, target_reply_id: str) -> Locator:
-        xpath = f"//div[@id='{target_reply_id}']/following-sibling::aside//input[@type='submit']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{target_reply_id}']/"
+                                            f"following-sibling::aside//input[@type='submit']")
 
     def _get_chosen_solution_reply_message(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//h3[@class='is-solution']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//h3[@class='is-solution']")
 
     def _get_chosen_solution_reply_message_locator(self, reply_id: str) -> Locator:
-        xpath = f"//div[@id='{reply_id}']//h3[@class='is-solution']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{reply_id}']//h3[@class='is-solution']")
 
     # I have this problem too actions.
     def _get_i_have_this_problem_too_locator(self) -> Locator:
@@ -241,47 +239,42 @@ class QuestionPage(BasePage):
         super()._click(self.__posted_questions_success_banner_my_questions_link)
 
     def _click_on_solves_the_problem_button(self, target_reply_id: str):
-        xpath = f"//div[@id='{target_reply_id}']/following-sibling::aside//input[@type='submit']"
-
-        super()._click(xpath)
+        super()._click(f"//div[@id='{target_reply_id}']/following-sibling::aside//"
+                       f"input[@type='submit']")
 
     def _is_post_reply_button_visible(self) -> ElementHandle:
         super()._wait_for_selector(self.__post_reply_button)
         return super()._get_element_handle(self.__post_reply_button)
 
     def _click_on_the_reply_author(self, reply_id: str):
-        xpath = f"//div[@id='{reply_id}']//a[@class='author-name']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{reply_id}']//a[@class='author-name']")
 
     def _get_text_content_of_reply(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//div[@class='content']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']")
 
     def _get_display_name_of_question_reply_author(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//a[@class='author-name']/span[@class='display-name']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//a[@class='author-name']/"
+                                            f"span[@class='display-name']")
 
     def _get_displayed_user_title_of_question_reply_locator(self, reply_id: str) -> Locator:
-        xpath = f"//div[@id='{reply_id}']//a[@class='author-name']/span[@class='user-title']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{reply_id}']//a[@class='author-name']/"
+                                            f"span[@class='user-title']")
 
     def _get_displayed_user_title_of_question_reply(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//a[@class='author-name']/span[@class='user-title']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//a[@class='author-name']/"
+                                            f"span[@class='user-title']")
 
     # Question tag actions.
     def _get_question_tag_options(self) -> list[str]:
         return super()._get_text_of_elements(self.__question_tags_options)
 
     def _get_remove_tag_button_locator(self, tag_name: str) -> Locator:
-        xpath = (f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/following-sibling::button["
-                 f"@class='remover']")
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/"
+                                            f"following-sibling::button[@class='remover']")
 
     def _add_text_to_add_a_tag_input_field(self, text: str):
         super()._fill(self.__add_a_tag_input_field, text)
-        dropdown_xpath = f"//li[@class='ui-menu-item']/div[text()='{text}']"
-        super()._click(dropdown_xpath)
+        super()._click(f"//li[@class='ui-menu-item']/div[text()='{text}']")
 
     def _get_add_a_tag_input_field(self) -> Locator:
         return super()._get_element_locator(self.__add_a_tag_input_field)
@@ -293,17 +286,14 @@ class QuestionPage(BasePage):
         super()._click(self.__add_a_tab_button)
 
     def _click_on_a_certain_tag(self, tag_name: str):
-        xpath = f"//li[@class='tag']//a[text()='{tag_name}']"
-        super()._click(xpath)
+        super()._click(f"//li[@class='tag']//a[text()='{tag_name}']")
 
     def _get_a_certain_tag(self, tag_name: str) -> Locator:
-        xpath = f"//li[@class='tag']//a[text()='{tag_name}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//li[@class='tag']//a[text()='{tag_name}']")
 
     def _click_on_tag_remove_button(self, tag_name: str):
-        xpath = (f"//li[@class='tag']//a[text()='{tag_name}']/following-sibling::button["
-                 f"@class='remover']")
-        super()._click(xpath)
+        super()._click(f"//li[@class='tag']//a[text()='{tag_name}']/"
+                       f"following-sibling::button[@class='remover']")
 
     # Attached image actions.
     def _get_attached_image(self) -> Locator:
@@ -311,8 +301,7 @@ class QuestionPage(BasePage):
 
     # Question more information actions.
     def _get_more_information_with_text_locator(self, text: str) -> Locator:
-        xpath = f"//div[@class='about-support']/p[text()='{text}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@class='about-support']/p[text()='{text}']")
 
     def _get_question_details_button_locator(self) -> Locator:
         return super()._get_element_locator(self.__question_details_button)
@@ -337,60 +326,49 @@ class QuestionPage(BasePage):
         super()._click(self.__close_additional_system_details_button)
 
     def _get_reply_section_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']")
 
     def _click_on_reply_more_options_button(self, answer_id: str):
-        xpath = f"//div[@id='{answer_id}']//button[text()='more options']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{answer_id}']//button[text()='more options']")
 
     def _click_on_report_abuse_for_a_certain_reply(self, answer_id: str):
-        xpath = f"//div[@id='{answer_id}']//a[text()='Report Abuse']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{answer_id}']//a[text()='Report Abuse']")
 
     def _get_click_on_report_abuse_reply_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']//a[text()='Report Abuse']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']//a[text()='Report Abuse']")
 
     def _click_on_quote_for_a_certain_reply(self, answer_id: str):
-        xpath = f"//div[@id='{answer_id}']//a[text()='Quote']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{answer_id}']//a[text()='Quote']")
 
     def _get_quote_reply_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']//a[text()='Quote']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']//a[text()='Quote']")
 
     def _click_on_mark_as_spam_for_a_certain_reply(self, answer_id: str):
-        xpath = f"//div[@id='{answer_id}']//form[@class='spam-form cf']/a"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{answer_id}']//form[@class='spam-form cf']/a")
 
     def _get_mark_as_spam_reply_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']//form[@class='spam-form cf']/a"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']//"
+                                            f"form[@class='spam-form cf']/a")
 
     def _get_marked_as_spam_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']//h3[@class='is-spam']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']//h3[@class='is-spam']")
 
     def _get_marked_as_spam_text(self, answer_id: str) -> str:
-        xpath = f"//div[@id='{answer_id}']//h3[@class='is-spam']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{answer_id}']//h3[@class='is-spam']")
 
     def _click_on_edit_this_post_for_a_certain_reply(self, answer_id: str):
-        xpath = f"//div[@id='{answer_id}']//a[text()='Edit this post']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{answer_id}']//a[text()='Edit this post']")
 
     def _get_edit_this_post_reply_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']//a[text()='Edit this post']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']//"
+                                            f"a[text()='Edit this post']")
 
     def _click_on_delete_this_post_for_a_certain_reply(self, answer_id: str):
-        xpath = f"//div[@id='{answer_id}']//a[text()='Delete this post']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{answer_id}']//a[text()='Delete this post']")
 
     def _get_delete_this_post_reply_locator(self, answer_id: str) -> Locator:
-        xpath = f"//div[@id='{answer_id}']//a[text()='Delete this post']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{answer_id}']//"
+                                            f"a[text()='Delete this post']")
 
     def _click_on_cancel_delete_button(self):
         super()._click(self.__delete_question_cancel_button)
@@ -412,42 +390,37 @@ class QuestionPage(BasePage):
         return super()._get_element_input_value(self.__post_a_reply_textarea)
 
     def _get_posted_reply_locator(self, question_id: str) -> Locator:
-        xpath = f"//div[@id='{question_id}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{question_id}']")
 
     def _get_posted_reply_text(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//div[@class='content']/p"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']/p")
 
     def _get_posted_quote_reply_username_text(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//div[@class='content']/em/p"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']/em/p")
 
     def _click_posted_reply_said_link(self, reply_id: str):
-        xpath = f"//div[@id='{reply_id}']//div[@class='content']//a"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{reply_id}']//div[@class='content']//a")
 
     def _get_blockquote_reply_text(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//div[@class='content']//blockquote"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']//"
+                                            f"blockquote")
 
     def _get_posted_reply_modified_by_text(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//p[@class='edited text-body-sm']/em"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                            f"p[@class='edited text-body-sm']/em")
 
     def _get_posted_reply_modified_by_locator(self, reply_id: str) -> Locator:
-        xpath = f"//div[@id='{reply_id}']//p[@class='edited text-body-sm']/em"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{reply_id}']//"
+                                            f"p[@class='edited text-body-sm']/em")
 
     def _click_on_post_reply_button(self, repliant_username) -> str:
-        xpath_display_name = \
-            f"//span[@class='display-name' and contains(text(), '{repliant_username}')]"
-
-        xpath_reply_id = (f"//span[@class='display-name' and contains(text(), "
-                          f"'{repliant_username}')]/ancestor::div[@class='answer ']")
         super()._click(self.__post_reply_button)
-        super()._wait_for_selector(xpath_display_name)
-        return super()._get_element_attribute_value(xpath_reply_id, "id")
+        super()._wait_for_selector(f"//span[@class='display-name' and contains"
+                                   f"(text(), '{repliant_username}')]")
+        return super()._get_element_attribute_value(f"//span[@class='display-name' and "
+                                                    f"contains(text(), '{repliant_username}')]/"
+                                                    f"ancestor::div[@class='answer ']",
+                                                    "id")
 
     # Question Tools actions.
     def _get_edit_this_question_option_locator(self) -> Locator:
@@ -507,41 +480,39 @@ class QuestionPage(BasePage):
 
     # Votes reply section
     def _get_reply_votes_section_locator(self, reply_id: str) -> Locator:
-        xpath = f"//div[@id='{reply_id}']//form[@class='document-vote--form helpful']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{reply_id}']//"
+                                            f"form[@class='document-vote--form helpful']")
 
     def _get_reply_vote_heading(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//h4[@class='document-vote--heading']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                            f"h4[@class='document-vote--heading']")
 
     def _click_reply_vote_thumbs_up_button(self, reply_id: str):
-        xpath = f"//div[@id='{reply_id}']//button[@name='helpful']"
-        return super()._click(xpath)
+        return super()._click(f"//div[@id='{reply_id}']//button[@name='helpful']")
 
     def _get_thumbs_up_vote_message(self, reply_id: str) -> str:
-        xpath = f"//div[@id='{reply_id}']//p[@class='msg document-vote--heading']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                            f"p[@class='msg document-vote--heading']")
 
     def _get_thumbs_up_button_locator(self, reply_id: str) -> Locator:
-        xpath = f"//div[@id='{reply_id}']//button[@name='helpful']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{reply_id}']//button[@name='helpful']")
 
     def _get_thumbs_down_button_locator(self, reply_id: str) -> Locator:
-        xpath = f"//div[@id='{reply_id}']//button[@name='not-helpful']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//div[@id='{reply_id}']//"
+                                            f"button[@name='not-helpful']")
 
     def _click_reply_vote_thumbs_down_button(self, reply_id):
-        xpath = f"//div[@id='{reply_id}']//button[@name='not-helpful']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='{reply_id}']//button[@name='not-helpful']")
 
     def _get_helpful_count(self, reply_id) -> str:
-        xpath = f"//div[@id='{reply_id}']//button[@name='helpful']//strong[@class='helpful-count']"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                            f"button[@name='helpful']//"
+                                            f"strong[@class='helpful-count']")
 
     def _get_not_helpful_count(self, reply_id) -> str:
-        xpath = (f"//div[@id='{reply_id}']//button[@name='not-helpful']//strong["
-                 f"@class='helpful-count']")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                            f"button[@name='not-helpful']//"
+                                            f"strong[@class='helpful-count']")
 
     # Signed out card actions.
     def _click_on_log_in_to_your_account_signed_out_card_link(self):
@@ -580,12 +551,10 @@ class QuestionPage(BasePage):
         return super()._get_text_of_elements(self.__common_responses_responses_options)
 
     def _click_on_a_particular_category_option(self, option: str):
-        xpath = f"//ul[@class='category-list']/li[text()='{option}']"
-        super()._click(xpath)
+        super()._click(f"//ul[@class='category-list']/li[text()='{option}']")
 
     def _click_on_a_particular_response_option(self, option: str):
-        xpath = f"//ul[@class='sidebar-nav']/li[text()='{option}']"
-        super()._click(xpath)
+        super()._click(f"//ul[@class='sidebar-nav']/li[text()='{option}']")
 
     # Removing both newline characters and link syntax format.
     def _get_text_of_response_editor_textarea_field(self) -> str:

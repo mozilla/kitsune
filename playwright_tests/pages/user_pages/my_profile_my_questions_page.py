@@ -27,20 +27,17 @@ class MyProfileMyQuestionsPage(BasePage):
         return len(super()._get_element_handles(self.__my_profile_my_questions_list))
 
     def _click_on_a_question_by_index(self, index_of_question: int):
-        xpath = f"//article[@id='profile']/ul/a[{index_of_question}]/li"
-        super()._click(xpath)
+        super()._click(f"//article[@id='profile']/ul/a[{index_of_question}]/li")
 
     def _click_on_a_question_by_name(self, question_title: str):
-        xpath = f"//article[@id='profile']/ul/a/li[text()='{question_title}']"
-        super()._click(xpath)
+        super()._click(f"//article[@id='profile']/ul/a/li[text()='{question_title}']")
 
     def _get_text_of_first_listed_question(self) -> str:
-        xpath = "//article[@id='profile']/ul/a[1]"
-        return super()._get_element_inner_text_from_page(xpath)
+        return super()._get_element_inner_text_from_page("//article[@id='profile']/ul/a[1]")
 
     def _get_listed_question(self, question_name: str) -> Locator:
-        xpath = f"//article[@id='profile']/ul/a/li[text()='{question_name}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//article[@id='profile']/ul/a/"
+                                            f"li[text()='{question_name}']")
 
     def _get_all_my_posted_questions(self) -> list[str]:
         return super()._get_text_of_elements(self.__my_profile_my_questions_titles)

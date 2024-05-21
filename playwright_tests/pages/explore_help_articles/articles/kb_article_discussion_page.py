@@ -104,16 +104,16 @@ class KBArticleDiscussionPage(BasePage):
         super()._click(self.__new_thread_submit_button)
 
     def _get_posted_thread_locator(self, thread_id: str) -> Locator:
-        xpath = f"//tr[@class='threads']/td[@class='title']//a[contains(@href, '{thread_id}')]"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//tr[@class='threads']/td[@class='title']//"
+                                            f"a[contains(@href, '{thread_id}')]")
 
     def _get_thread_by_title_locator(self, thread_title: str) -> Locator:
-        xpath = f"//tr[@class='threads']/td[@class='title']/a[text()='{thread_title}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//tr[@class='threads']/td[@class='title']/"
+                                            f"a[text()='{thread_title}']")
 
     def _click_on_a_particular_thread(self, thread_id: str):
-        xpath = f"//tr[@class='threads']/td[@class='title']//a[contains(@href, '{thread_id}')]"
-        super()._click(xpath)
+        super()._click(f"//tr[@class='threads']/td[@class='title']//"
+                       f"a[contains(@href, '{thread_id}')]")
 
     # Actions related to thread content
     def _get_thread_title_text(self) -> str:
@@ -157,9 +157,9 @@ class KBArticleDiscussionPage(BasePage):
 
     # Article discussions page content actions
     def _get_article_discussions_thread_counter(self, thread_id: str) -> str:
-        xpath = (f"//tr[@class='threads']/td[@class='title']//a[contains(@href, "
-                 f"'{thread_id}')]/../following-sibling::td[@class='replies']")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//tr[@class='threads']/td[@class='title']//"
+                                            f"a[contains(@href, '{thread_id}')]/../"
+                                            f"following-sibling::td[@class='replies']")
 
     def _get_all_article_threads_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__all_article_threads_titles)
@@ -178,21 +178,18 @@ class KBArticleDiscussionPage(BasePage):
 
     # Actions related to thread replies.
     def _click_on_dotted_menu_for_a_certain_reply(self, thread_id: str):
-        xpath = f"//li[@id='{thread_id}']//span[@class='icon-button is-summary']//button"
-        super()._click(xpath)
+        super()._click(f"//li[@id='{thread_id}']//span[@class='icon-button is-summary']//button")
 
     def _click_on_delete_this_thread_option(self):
         super()._click(self.__delete_thread)
 
     def _click_on_edit_this_thread_reply(self, thread_id: str):
-        xpath = (f"//li[@id='{thread_id}']//div[@class='mzp-c-menu-list is-details']//a[text("
-                 ")='Edit this post']")
-        super()._click(xpath)
+        super()._click(f"//li[@id='{thread_id}']//div[@class='mzp-c-menu-list is-details']//"
+                       f"a[text()='Edit this post']")
 
     def _click_on_delete_this_thread_reply(self, thread_id: str):
-        xpath = (f"//li[@id='{thread_id}']//div[@class='mzp-c-menu-list is-details']//a[text("
-                 ")='Delete this post']")
-        super()._click(xpath)
+        super()._click(f"//li[@id='{thread_id}']//div[@class='mzp-c-menu-list is-details']//"
+                       f"a[text()='Delete this post']")
 
     def _click_on_delete_this_thread_reply_confirmation_button(self):
         super()._click(self.__delete_thread_reply_confirmation_page_button)

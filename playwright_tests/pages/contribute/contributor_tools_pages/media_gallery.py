@@ -52,8 +52,7 @@ class MediaGallery(BasePage):
         return super()._get_text_of_elements(self.__image_in_documents_list)
 
     def _click_on_a_linked_in_document(self, document_name: str):
-        xpath = f"//div[@class='documents']//li/a[text()='{document_name}']"
-        super()._click(xpath)
+        super()._click(f"//div[@class='documents']//li/a[text()='{document_name}']")
 
     def _click_on_delete_this_image_button(self):
         super()._click(self.__delete_this_image_button)
@@ -89,10 +88,9 @@ class MediaGallery(BasePage):
         super()._click(self.__upload_media_button)
 
     def _select_media_file_from_list(self, media_file_name: str):
-        xpath = f"//ol[@id='media-list']/li/a[@title='{media_file_name}']"
         # We need to wait a bit so that the list finishes to update in case of search.
         super()._wait_for_given_timeout(1000)
-        super()._click(xpath)
+        super()._click(f"//ol[@id='media-list']/li/a[@title='{media_file_name}']")
 
     def _click_on_insert_media_button(self):
         super()._click(self.__insert_media_button)

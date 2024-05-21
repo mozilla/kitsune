@@ -18,10 +18,9 @@ class MyProfileAnswersPage(BasePage):
         return super()._get_text_of_elements(self.__my_answers_question_subject_links)
 
     def _click_on_specific_answer(self, answer_id: str):
-        xpath = f"//article[@id='profile']//a[contains(@href, '{answer_id}')]"
-        super()._click(xpath)
+        super()._click(f"//article[@id='profile']//a[contains(@href, '{answer_id}')]")
 
     def _get_my_answer_text(self, answer_id: str) -> str:
-        xpath = (f"//article[@id='profile']//a[contains(@href, '{answer_id}')]/following-sibling"
-                 f"::blockquote")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//article[@id='profile']//"
+                                            f"a[contains(@href, '{answer_id}')]/"
+                                            f"following-sibling::blockquote")

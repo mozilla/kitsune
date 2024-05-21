@@ -32,21 +32,18 @@ class KBArticleEditMetadata(BasePage):
         return super()._get_element_text_content(self.__edit_article_metadata_page_header)
 
     def _delete_a_chosen_restricted_visibility_group(self, chosen_group: str):
-        xpath = (f"//input[@id='id_restrict_to_groups-selectized']/../div[text()='{chosen_group}']"
-                 f"/a")
-        super()._click(xpath)
+        super()._click(f"//input[@id='id_restrict_to_groups-selectized']/../"
+                       f"div[text()='{chosen_group}']/a")
 
     def _clear_all_restricted_visibility_group_selections(self):
         super()._click(self.__clear_all_selected_groups_button)
 
     def _add_and_select_restrict_visibility_group_metadata(self, group_name: str):
-        option_xpath = f"//div[@class='option active']/span[text()='{group_name}']"
         super()._fill(self.__kb_article_restrict_visibility_field, group_name)
-        super()._click(option_xpath)
+        super()._click(f"//div[@class='option active']/span[text()='{group_name}']")
 
     def _delete_a_restricted_visibility_group_metadata(self, group_name: str):
-        xpath = f"//div[@class='item' and text()='{group_name}']/a"
-        super()._click(xpath)
+        super()._click(f"//div[@class='item' and text()='{group_name}']/a")
 
     def _delete_all_restricted_visibility_groups_metadata(self):
         super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
@@ -69,26 +66,23 @@ class KBArticleEditMetadata(BasePage):
         super()._select_option_by_label(self.__category_select_field, option)
 
     def _is_relevant_checkbox_checked(self, option: str) -> bool:
-        xpath = f"//div[@id='id_products']//label[text()='\n {option}']/input"
-        return super()._is_checkbox_checked(xpath)
+        return super()._is_checkbox_checked(f"//div[@id='id_products']//"
+                                            f"label[text()='\n {option}']/input")
 
     def _check_a_particular_relevancy_option(self, option: str):
-        xpath = f"//div[@id='id_products']//label[normalize-space(text())='{option}']"
-        super()._click(xpath)
+        super()._click(f"//div[@id='id_products']//label[normalize-space(text())='{option}']")
 
     def _click_on_a_particular_topics_foldout_section(self, option: str):
-        xpath = f"//section[@id='accordion']//button[text()='{option}']"
-        super()._click(xpath)
+        super()._click(f"//section[@id='accordion']//button[text()='{option}']")
 
     def _is_a_particular_topic_checkbox_checked(self, option: str) -> bool:
-        xpath = (f"//ul[@id='expand-mzpcdetailsh-0' and @aria-hidden='false']//label"
-                 f"[text()='{option}']/../input")
-        return super()._is_checkbox_checked(xpath)
+        return super()._is_checkbox_checked(f"//ul[@id='expand-mzpcdetailsh-0' and"
+                                            f" @aria-hidden='false']//"
+                                            f"label[text()='{option}']/../input")
 
     def _check_a_particular_topic_checkbox(self, option: str):
-        xpath = (f"//ul[@id='expand-mzpcdetailsh-0' and @aria-hidden='false']//label"
-                 f"[text()='{option}']")
-        super()._click(xpath)
+        super()._click(f"//ul[@id='expand-mzpcdetailsh-0' and @aria-hidden='false']//"
+                       f"label[text()='{option}']")
 
     def _is_obsolete_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__obsolete_checkbox)

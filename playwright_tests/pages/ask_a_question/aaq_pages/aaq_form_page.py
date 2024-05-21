@@ -71,8 +71,7 @@ class AAQFormPage(BasePage):
         return super()._get_text_of_element(self.__in_progress_item_label)
 
     def _click_on_a_particular_completed_milestone(self, milestone_name: str):
-        xpath = f'//span[@class="progress--label" and text()="{milestone_name}"]/../..'
-        super()._click(xpath)
+        super()._click(f'//span[@class="progress--label" and text()="{milestone_name}"]/../..')
 
     # Question subject actions.
     def _get_value_of_subject_input_field(self) -> str:

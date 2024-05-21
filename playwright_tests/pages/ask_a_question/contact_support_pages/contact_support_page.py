@@ -36,10 +36,8 @@ class ContactSupportPage(BasePage):
         return super()._get_text_of_elements(self.__product_cards_titles)
 
     def _get_product_card_subtitle(self, card_name: str) -> str:
-        xpath = (f"//a[normalize-space(text()) = '{card_name}']/..//following-sibling::p["
-                 f"@class='card--desc']")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//a[normalize-space(text()) = '{card_name}']/..//"
+                                            f"following-sibling::p[@class='card--desc']")
 
     def _click_on_a_particular_card(self, card_name: str):
-        xpath = f"//h3[@class='card--title']/a[normalize-space(text())='{card_name}']"
-        super()._click(xpath)
+        super()._click(f"//h3[@class='card--title']/a[normalize-space(text())='{card_name}']")

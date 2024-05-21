@@ -17,55 +17,48 @@ class KBDashboard(BasePage):
 
     # KB Dashboard actions
     def _get_a_particular_article_title_locator(self, article_name: str) -> Locator:
-        xpath = f"//td/a[text()='{article_name}']"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//td/a[text()='{article_name}']")
 
     def _click_on_article_title(self, article_name: str):
-        xpath = f"//td/a[text()='{article_name}']"
-        super()._click(xpath)
+        super()._click(f"//td/a[text()='{article_name}']")
 
     def _get_a_particular_article_status(self, article_name: str) -> str:
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td[contains(@class,"
-                 f"'status ')]")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//td/a[text()='{article_name}']/../"
+                                            f"following-sibling::td[contains(@class,'status ')]")
 
     def _get_needs_update_status(self, article_name: str) -> str:
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td[contains(@class,"
-                 f"'needs-update')]")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//td/a[text()='{article_name}']/../"
+                                            f"following-sibling::td[contains(@class, "
+                                            f"'needs-update')]")
 
     def _is_needs_change_empty(self, article_name: str) -> bool:
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td[contains(@class,"
-                 f"'needs-update')]")
-        return super()._is_element_empty(xpath)
+        return super()._is_element_empty(f"//td/a[text()='{article_name}']/../"
+                                         f"following-sibling::td[contains(@class,'needs-update')]")
 
     def _get_ready_for_l10n_status(self, article_name: str) -> str:
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td[contains(@class,"
-                 f"'ready-for-l10n')]")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//td/a[text()='{article_name}']/../"
+                                            f"following-sibling::td[contains"
+                                            f"(@class,'ready-for-l10n')]")
 
     def _get_stale_status(self, article_name: str) -> str:
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td[contains(@class,"
-                 f"'stale ')]")
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//td/a[text()='{article_name}']/../"
+                                            f"following-sibling::td[contains(@class,'stale ')]")
 
     def _is_stale_status_empty(self, article_name: str) -> bool:
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td[contains(@class,"
-                 f"'stale ')]")
-        return super()._is_element_empty(xpath)
+        return super()._is_element_empty(f"//td/a[text()='{article_name}']/../"
+                                         f"following-sibling::td[contains(@class,'stale ')]")
 
     def _get_existing_expiry_date(self, article_name: str) -> str:
-        xpath = f"//td/a[text()='{article_name}']/../following-sibling::td/time"
-        return super()._get_text_of_element(xpath)
+        return super()._get_text_of_element(f"//td/a[text()='{article_name}']/../"
+                                            f"following-sibling::td/time")
 
     def _get_expiry_date_locator(self, article_name: str) -> Locator:
-        xpath = f"//td/a[text()='{article_name}']/../following-sibling::td/time"
-        return super()._get_element_locator(xpath)
+        return super()._get_element_locator(f"//td/a[text()='{article_name}']/../"
+                                            f"following-sibling::td/time")
 
     def _click_on_show_translations_option(self, article_name: str):
-        xpath = (f"//td/a[text()='{article_name}']/../following-sibling::td/a[contains(text(),"
-                 f"'Show translations')]")
-        super()._click(xpath)
+        super()._click(f"//td/a[text()='{article_name}']/../following-sibling::td/"
+                       f"a[contains(text(),'Show translations')]")
 
     def _click_on_the_complete_overview_link(self):
         super()._click(self.__complete_overview_link)
