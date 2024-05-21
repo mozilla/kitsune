@@ -206,12 +206,12 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="#">{{ _('Getting started') }}</a></li>
-              <li><a href="#">{{ _('Privacy and security') }}</a></li>
-              <li><a href="#">{{ _('Installation and setup') }}</a></li>
-              <li><a href="#">{{ _('Settings and customization') }}</a></li>
-              <li><a href="#">{{ _('Interface and features') }}</a></li>
-              <li><a href="#">{{ _('Troubleshooting') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='get-started') }}">{{ _('Getting started') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='privacy-and-security') }}">{{ _('Privacy and security') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}">{{ _('Installation and setup') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='customize') }}">{{ _('Settings and customization') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='get-started') }}">{{ _('Interface and features') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
             </ul>
           </section>
         </div>

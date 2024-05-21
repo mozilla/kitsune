@@ -70,13 +70,19 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
-<h3 class="sidebar-subheading large-only">{{ _('All') }} {{ product }} {{ _('Topics') }}</h3>
+{% macro topic_sidebar(topics, subtopics, product=None, selected_topic=None, selected_subtopic=None) -%}
+<h3 class="sidebar-subheading large-only">{{ _('All') }} {% if product %} {{ product }} {% endif %} {{ _('Topics') }}</h3>
 <nav class="sidebar-nav topics">
   <span class="details-heading"></span>
   <ul class="sidebar-nav--list">
     {% for topic in topics %}
+    {% if product %}
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      {% set link_detail = product.slug + '/' + topic.slug %}
+    {% else %}
+      {% set topic_url = url('products.topic_documents', topic_slug=topic.slug) %}
+      {% set link_detail = topic.slug %}
+    {% endif %}
       <li class="sidebar-nav--item {% if subtopics %}has-subtopics {% endif %}{% if selected_subtopic != None %} subtopic-selected{% endif %}">
         <a class="
           sidebar-nav--link
@@ -87,7 +93,7 @@
           data-event-name="link_click"
           data-event-parameters='{
             "link_name": "sidebar.product-and-topic-home",
-            "link_detail": "{{ product.slug + '/' + topic.slug }}"
+            "link_detail": "{{ link_detail }}"
           }'>
           {{ pgettext('DB: products.Topic.title', topic.title) }}
         </a>
