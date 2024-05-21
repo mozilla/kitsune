@@ -38,10 +38,11 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
 </div>
 
-{% if product %}
-  {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
-{% else %}
+{% if topic_navigation %}
   {{ product_dropdown(products, topic) }}
+  {{ topic_sidebar(topics) }}
+{% else %}
+  {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endif %}
 
 

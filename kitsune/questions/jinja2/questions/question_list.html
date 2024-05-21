@@ -5,19 +5,23 @@
 {% set classes = 'questions' %}
 
 {% if all_products %}
-  {% set product_title = _('All Products') %}
+  {% set page_title = _('All Products') %}
 {% elif multiple_products %}
-  {% set product_title = _('Multiple Products') %}
+  {% set page_title = _('Multiple Products') %}
 {% else %}
-  {% set product_title = pgettext('DB: products.Product.title', products[0].title) %}
+  {% set page_title = pgettext('DB: products.Product.title', products[0].title) %}
   {% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
 {% endif %}
 
-{% set title = _('{product} Support Forum')|f(product=product_title) %}
+{% set title = _('{title} Support Forum')|f(title=page_title) %}
 
-{% set crumbs = [(url('questions.home'), _('Support Forums')), (None, product_title)] %}
+{% set crumbs = [(url('questions.home'), _('Support Forums')), (None, page_title)] %}
 
-{% set canonical_url = canonicalize(viewname='questions.list', product_slug=product_slug)|urlparams(None, request.GET) %}
+{% if topics %}
+  {% set canonical_url = canonicalize(viewname='questions.list_by_topic', topic_slug=topics[0].slug)|urlparams(None, request.GET) %}
+{% else %}
+  {% set canonical_url = canonicalize(viewname='questions.list', product_slug=product_slug)|urlparams(None, request.GET) %}
+{% endif %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
@@ -295,6 +299,20 @@
       {% for f, desc in filters.items() %}
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
+      <li>
+        <select id="products-topics-dropdown">
+          <option value="{{ url('questions.list_by_topic', topic_slug=topic_slug) }}" {% if selected_topic is none %}selected{% endif %}>
+            All Topics
+          </option>
+          {% for topic in topic_list %}
+            <option value="{{ url('questions.list_by_topic', topic_slug=topic.slug) }}" 
+                    {% if selected_topic == topic %}selected{% endif %}>
+              {{ pgettext('DB: products.Topic.title', topic.title) }}
+            </option>
+          {% endfor %}
+        </select>
+      </li>
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
       <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
       <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>

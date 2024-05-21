@@ -28,7 +28,7 @@
 
 <nav class="sidebar-nav topics">
   <span class="details-heading"></span>
-  <select id="products-dropdown" class="sidebar-nav--dropdown">
+  <select id="products-topics-dropdown" class="sidebar-nav--dropdown">
     <option value="{{ url('products.topic_documents', topic_slug=topic.slug) }}" {% if selected_product is none %}selected{% endif %}>
       All Products
     </option>
