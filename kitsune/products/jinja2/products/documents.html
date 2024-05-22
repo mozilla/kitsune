@@ -102,7 +102,7 @@
 
       <section class="topic-list">
         {% for document in documents %}
-          <article class="topic-article">
+          <article class="topic-article no-bottom-margin">
             <div class="topic-article--icon-wrap">
               <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
             </div>
@@ -115,6 +115,17 @@
                 </a>
               </h2>
               <p>{{ document['document_summary'] }}</p>
+              <div id="document_metadata" class="has-border-top">
+                <span class="product">{% for product in document['products'] %}{{ product }}{% endfor %}</span>
+                <span class="last-updated">
+                  <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>Last updated:</strong> <span class="time">{{ document['created']|naturaltime }}</span>
+                </span>
+                {% if document['percent_helpful']>0 %}
+                <span class="helpful-info">
+                  <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/><span class="helpful-count">{{ document['percent_helpful'] }}%</span> of users found this helpful
+                </span>
+                {% endif %}
+              </div>
             </div>
           </article>
         {% endfor %}

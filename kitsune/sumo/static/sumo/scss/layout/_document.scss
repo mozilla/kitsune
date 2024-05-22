@@ -319,6 +319,13 @@
     border-bottom: 1px solid var(--color-text);
   }
 
+  &.has-border-top {
+    border-top: 1px solid #EDEDF0;
+    margin-top: 12px;
+    margin-bottom: 24px;
+    padding-top: 12px;
+  }
+
   .product {
     font-weight: bold;
     margin-right: 24px;

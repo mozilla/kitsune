@@ -5,6 +5,10 @@
   display: flex;
   margin-bottom: p.$spacing-xl;
 
+  &.no-bottom-margin {
+    margin-bottom: 0;
+  }
+
   &--icon-wrap {
     flex: 0 0 auto;
     @include p.bidi((
