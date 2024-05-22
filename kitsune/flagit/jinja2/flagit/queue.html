@@ -49,7 +49,7 @@
 {% block side_top %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True, menu="contributor-tools", locale=locale) }}
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="flagit.queue", menu="contributor-tools", locale=locale) }}
     </ul>
   </nav>
 {% endblock %}

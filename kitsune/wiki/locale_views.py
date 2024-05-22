@@ -5,14 +5,13 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_POST, require_http_methods
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
 from kitsune.groups.forms import AddUserForm
 from kitsune.wiki.models import Locale
 from kitsune.wiki.utils import active_contributors
-
 
 LEADER = "leader"
 REVIEWER = "reviewer"
@@ -27,7 +26,8 @@ ROLE_ATTRS = {
 def locale_list(request):
     """List the support KB locales."""
     locales = Locale.objects.all()
-    return render(request, "wiki/locale_list.html", {"locales": locales})
+    locale = request.LANGUAGE_CODE
+    return render(request, "wiki/locale_list.html", {"locales": locales, "locale": locale})
 
 
 def locale_details(request, locale_code, leader_form=None, reviewer_form=None, editor_form=None):

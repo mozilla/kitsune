@@ -243,7 +243,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         # This filter will match if any of the products on a question have the
         # correct id.
         question_qs = question_qs.filter(product__in=products)
-        multiple = True
+        multiple = len(products) > 1
 
     # Filter by topic.
     if topics:
