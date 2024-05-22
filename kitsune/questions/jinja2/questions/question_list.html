@@ -13,9 +13,9 @@
   {% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
 {% endif %}
 
-{% set title = _('{title} Support Forum')|f(title=page_title) %}
+{% set title = _('{title} Community Forums')|f(title=page_title) %}
 
-{% set crumbs = [(url('questions.home'), _('Support Forums')), (None, page_title)] %}
+{% set crumbs = [(url('questions.home'), _('Community Forums')), (None, page_title)] %}
 
 {% if topics %}
   {% set canonical_url = canonicalize(viewname='questions.list_by_topic', topic_slug=topics[0].slug)|urlparams(None, request.GET) %}

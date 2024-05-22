@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,7 +8,7 @@ class SupportForumsPage(BasePage):
     __page_main_heading = "//h1[@class='sumo-page-heading']"
     __page_intro = "//p[@class='sumo-page-intro']"
     __product_card_titles = "//h3[@class='card--title']"
-    __all_products_support_forum_button = "//a[contains(text(), 'All Products Support Forum')]"
+    __all_products_support_forum_button = "//a[contains(text(), 'All Products Community Forums')]"
 
     def __init__(self, page: Page):
         super().__init__(page)

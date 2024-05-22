@@ -21,7 +21,7 @@
         <ul class="sidebar-nav sidebar-folding">
           {{ for_contributors_sidebar(user, 
                                       settings.WIKI_DEFAULT_LANGUAGE, 
-                                      True, 
+                                      active='gallery.home', 
                                       menu="contributor-tools", 
                                       is_collapsible=True, 
                                       locale=locale) }}
