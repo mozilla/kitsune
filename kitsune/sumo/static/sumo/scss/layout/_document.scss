@@ -308,6 +308,7 @@
 
 #document_metadata {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-top: p.$spacing-md;
   padding-bottom: p.$spacing-md;
@@ -362,4 +363,31 @@
       margin-right: 8px; // Space between the count and the "users found this helpful"
     }
   }
+
+  // Media query for small screens
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .product {
+      margin-right: 0;
+      margin-bottom: 8px;
+    }
+
+    .last-updated {
+      margin-bottom: 8px;
+
+      .time {
+        margin-left: 4px; // Adjust spacing for small screens
+        margin-right: 8px; // Adjust spacing for small screens
+      }
+    }
+
+    .helpful-info {
+      .helpful-count {
+        margin-right: 4px; // Adjust spacing for small screens
+      }
+    }
+  }
 }
+
