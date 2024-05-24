@@ -12,11 +12,11 @@
   <h1 class="sumo-page-heading">{{ document.title }}</h1>
 {%- endmacro %}
 
-{% macro document_metadata(document, helpful_votes, product) -%}
-  <div id="document_metadata" class="has-border-bottom">
-    <span class="product">{{ product }}</span>
+{% macro document_metadata(created_date, helpful_votes, products, metadata_type) -%}
+  <div id="document_metadata" class="{% if metadata_type=='list' %}has-border-top{% else %}has-border-bottom{% endif %}">
+    <span class="product">{% for product in products %}{{ product }}{{ ", " if not loop.last else "" }}{% endfor %}</span>
     <span class="last-updated">
-      <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>Last updated:</strong> <span class="time">{{ document.current_revision.created|naturaltime }}</span>
+      <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>Last updated:</strong> <span class="time">{{ created_date|naturaltime }}</span>
     </span>
     {% if helpful_votes %}
     <span class="helpful-info">
