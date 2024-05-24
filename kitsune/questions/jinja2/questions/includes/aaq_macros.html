@@ -102,7 +102,7 @@
       {{ _('Ask a Question') }}
     </h2>
     {% if aaq_context %}
-      {% set link_detail = aaq_contex.key %}
+      {% set link_detail = aaq_context.key %}
       {% if request.user.is_authenticated and aaq_context.has_ticketing_support %}
         {# user authenticated and ticketing support #}
         <p> {{ _('Still need help? Continue to contact our support team.') }}</p>
