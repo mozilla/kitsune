@@ -47,7 +47,7 @@
 {% endif %}
 
 
-{{ aaq_widget(request, "topic") }}
+{{ aaq_widget(request, "topic", topic) }}
 
 {% endblock %}
 
@@ -66,6 +66,8 @@
     <article id="document-list">
       {% if product %}
         {% include 'products/includes/product_documents.html' %}
+      {% else %}
+        {% include 'products/includes/topic_documents.html' %}
       {% endif %}
 
       <section class="topic-list">
