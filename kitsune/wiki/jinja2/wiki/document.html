@@ -15,6 +15,7 @@
 {% set extra_body_attrs = {"data-document-id": document.id} %}
 {% set ga_content_group = "kb-article" %}
 {% set ga_default_slug = default_slug %}
+{% set metadata_type = 'document' %}
 
 {% block product_announcement %}
   {% if product.slug == 'hubs' %}
@@ -95,7 +96,7 @@
     {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
-      {{ document_metadata(document, helpful_votes, product) }}
+      {{ document_metadata(document.current_revision.created, helpful_votes, products, metadata_type) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
       {% if document.gets_mozilla_account_cta %}
