@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, Count, Q, When, IntegerField
+from django.db.models import Count, Q
 from django.db.models.functions import Now
 
 from kitsune.products.models import Topic
@@ -124,21 +124,15 @@ def _documents_for(user, locale, topics=None, products=None):
         #       field, and the "HelpfulVote" query will be massively slower.
         # Extended votes_query
         votes_query = (
-            HelpfulVote.objects.filter(
-                revision_id__in=qs.values_list("current_revision_id", flat=True)
-            )
+            HelpfulVote.objects.filter(revision__document__is_archived=False)
+            .filter(revision_id__in=qs.values_list("current_revision_id", flat=True))
+            .values("revision_id")
             .annotate(
-                helpful_count=Count(Case(When(helpful=True, then=1), output_field=IntegerField())),
+                helpful_count=Count("id", filter=Q(helpful=True)),
                 total_count=Count("id"),
                 time_limited_count=Count(
-                    Case(
-                        When(
-                            created__range=(Now() - timedelta(days=30), Now()),
-                            helpful=True,
-                            then=1,
-                        ),
-                        output_field=IntegerField(),
-                    )
+                    "id",
+                    filter=Q(helpful=True, created__range=(Now() - timedelta(days=30), Now())),
                 ),
             )
             .values("revision_id", "helpful_count", "total_count", "time_limited_count")
@@ -146,11 +140,11 @@ def _documents_for(user, locale, topics=None, products=None):
 
         # Convert the query results into a dictionary
         votes_dict = {
-            row["revision_id"]: {
-                "helpful_count": row["helpful_count"],
-                "total_count": row["total_count"],
-                "time_limited_count": row["time_limited_count"],
-            }
+            row["revision_id"]: (
+                row["helpful_count"],
+                row["total_count"],
+                row["time_limited_count"],
+            )
             for row in votes_query
         }
 
@@ -160,10 +154,10 @@ def _documents_for(user, locale, topics=None, products=None):
 
     doc_dicts = []
     for d in qs:
-        total_votes = votes_dict.get(d.current_revision_id, {}).get("total_count", 0)
-        total_helpful_votes = votes_dict.get(d.current_revision_id, {}).get("helpful_count", 0)
+        total_helpful_votes, total_votes, time_limited_count = map(
+            int, votes_dict.get(d.current_revision_id, (0, 0, 0))
+        )
         percent_helpful = int((total_helpful_votes / total_votes) * 100) if total_votes > 0 else 0
-
         doc_dicts.append(
             dict(
                 id=d.id,
@@ -173,9 +167,7 @@ def _documents_for(user, locale, topics=None, products=None):
                 document_parent_id=d.parent_id,
                 document_summary=d.current_revision.summary,
                 display_order=d.original.display_order,
-                helpful_votes=votes_dict.get(d.current_revision_id, {}).get(
-                    "time_limited_count", 0
-                ),
+                helpful_votes=time_limited_count,
                 percent_helpful=percent_helpful,
                 products=products or [],
             )
