@@ -34,6 +34,7 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
+from kitsune.products.views import _get_aaq_product_key
 from kitsune.questions import NAVIGATION_TOPICS, config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
@@ -239,11 +240,14 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # Filter by products.
     multiple = False
+    product_key = None
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
         question_qs = question_qs.filter(product__in=products)
         multiple = len(products) > 1
+        if not multiple:
+            product_key = _get_aaq_product_key(products[0].slug)
 
     # Filter by topic.
     if topics:
@@ -326,6 +330,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "topic_list": topic_list,
         "topics": topics,
         "selected_topic": topics[0] if topics else None,
+        "product_key": product_key,
     }
 
     if products:

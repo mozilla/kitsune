@@ -2,55 +2,17 @@
   <div class="sumo-article-header--text">
 
     <div class="documents-product-title">
-      {% set topic_url = url('products.product', slug=product.slug) %}
-      <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
-      {% if product.slug == 'firefox' %}
-          {{ download_firefox() }}
-      {% endif %}
-    </div>
-
-    {% if subtopic %}
-      <h2 class="sumo-card-heading is-subtopic">
-        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-          {{ pgettext('DB: products.Topic.title', topic.title) }}
-        </a>
-      </h2>
+      {{ download_firefox() }}
       <h1 class="topic-title is-subtopic sumo-page-heading">
-        {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-      </h1>
-    {% else %}
-      <h1 class="topic-title sumo-page-heading">
         {{ pgettext('DB: products.Topic.title', topic.title) }}
       </h1>
-    {% endif %}
+    </div>
 
     {# Show the description if it is different than the title. Otherwise, don't bother. #}
-    {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
+    {% if topic.title != topic.description %}
       <p class="topic-description sumo-page-intro mb-0">
-        {% if subtopic %}
-          {{ pgettext('DB: products.Topic.description', subtopic.description) }}
-        {% else %}
           {{ pgettext('DB: products.Topic.description', topic.description) }}
-        {% endif %}
       </p>
     {% endif %}
   </div>
 </header>
-
-{% if topic.slug == "Focus-ios" %}
-{{ sumo_banner(
-    id="focus-ios-beta-banner",
-    text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for iOS.'),
-    button_text=_('Get started'),
-    button_link="https://testflight.apple.com/join/dH8lkFZi",
-) }}
-{% elif topic.slug == "firefox-focus-android" %}
-{{ sumo_banner(
-    id="focus-android-update-banner",
-    text=_('Update to the latest version of Firefox Focus for Android to receive the latest features, enhancements and bug fixes. Firefox Focus is available for free in the Google Play store.'),
-    button_text=_('Download now'),
-    button_link="https://play.google.com/store/apps/details?id=org.mozilla.focus")
-    }}
-{% endif %}
-
-{{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
