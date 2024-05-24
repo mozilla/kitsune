@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
+{% from 'wiki/includes/document_macros.html' import document_metadata %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
@@ -16,6 +17,7 @@
 {% set search_params = {'product': product.slug} %}
 {% set ga_products = "/" + product.slug + "/" %}
 {% set ga_topics = "/" + topic.slug + "/" %}
+{% set metadata_type="list" %}
 
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
@@ -115,17 +117,7 @@
                 </a>
               </h2>
               <p>{{ document['document_summary'] }}</p>
-              <div id="document_metadata" class="has-border-top">
-                <span class="product">{% for product in document['products'] %}{{ product }}{% endfor %}</span>
-                <span class="last-updated">
-                  <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>Last updated:</strong> <span class="time">{{ document['created']|naturaltime }}</span>
-                </span>
-                {% if document['percent_helpful']>0 %}
-                <span class="helpful-info">
-                  <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/><span class="helpful-count">{{ document['percent_helpful'] }}%</span> of users found this helpful
-                </span>
-                {% endif %}
-              </div>
+             {{ document_metadata(document['created'], document['percent_helpful'], document['products'], metadata_type) }}
             </div>
           </article>
         {% endfor %}
