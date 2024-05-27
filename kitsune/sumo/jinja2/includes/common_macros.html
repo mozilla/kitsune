@@ -148,12 +148,12 @@
             <h4 class="mzp-c-menu-item-title">{{ _('Explore by topic') }}</h4>
           </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="#">{{ _('Settings') }}</a></li>
-              <li><a href="#">{{ _('Installation and updates') }}</a></li>
-              <li><a href="#">{{ _('Email and messaging') }}</a></li>
-              <li><a href="#">{{ _('Performance and connectivity') }}</a></li>
-              <li><a href="#">{{ _('Privacy and security') }}</a></li>
-              <li><a href="#">{{ _('Browse') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='protect-your-privacy') }}">{{ _('Protect your privacy') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='manage-preferences-and-add-ons-firefox') }}">{{ _('Customize settings and preferences') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='install-and-update') }}">{{ _('Install and update') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='install-and-manage-add-ons-firefox') }}">{{ _('Install and manage add-ons') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='emails-thunderbird') }}">{{ _('Emails') }}</a></li>
             </ul>
           </section>
         </div>
@@ -206,12 +206,12 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='get-started') }}">{{ _('Getting started') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='privacy-and-security') }}">{{ _('Privacy and security') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}">{{ _('Installation and setup') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='customize') }}">{{ _('Settings and customization') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='get-started') }}">{{ _('Interface and features') }}</a></li>
               <li><a href="{{ url('questions.list_by_topic', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='protect-your-privacy') }}">{{ _('Protect your privacy') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='manage-preferences-and-add-ons-firefox') }}">{{ _('Customize settings and preferences') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}">{{ _('Install and update') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-manage-add-ons-firefox') }}">{{ _('Install and manage add-ons') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='emails-thunderbird') }}">{{ _('Emails') }}</a></li>
             </ul>
           </section>
         </div>
