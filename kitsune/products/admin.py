@@ -21,6 +21,12 @@ class TopicAdmin(admin.ModelAdmin):
     list_display_links = ("title", "slug")
     list_editable = ("display_order", "visible", "in_aaq")
     list_filter = ("product", "parent", "slug")
+    search_fields = (
+        "title",
+        "slug",
+        "product__title",
+        "product__slug",
+    )
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
 
