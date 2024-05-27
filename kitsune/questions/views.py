@@ -35,7 +35,7 @@ from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.products.views import _get_aaq_product_key
-from kitsune.questions import NAVIGATION_TOPICS, config
+from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.forms import (
@@ -53,6 +53,7 @@ from kitsune.questions.models import (
     QuestionVote,
 )
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
+from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams

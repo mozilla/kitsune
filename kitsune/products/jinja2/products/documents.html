@@ -40,7 +40,7 @@
 
 {% if topic_navigation %}
   {{ product_dropdown(products, topic) }}
-  {{ topic_sidebar(topics) }}
+  {{ topic_sidebar(topic_list) }}
 {% else %}
   {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endif %}

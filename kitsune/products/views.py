@@ -6,8 +6,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
-from kitsune.questions import NAVIGATION_TOPICS
 from kitsune.questions import config as aaq_config
+from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.utils import get_featured_articles
@@ -81,6 +81,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     topic_kw = {
         "slug": topic_slug,
         "parent__isnull": True,
+        "visible": True,
     }
     doc_kw = {"locale": request.LANGUAGE_CODE}
 
@@ -92,6 +93,17 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "has_ticketing_support": product.has_ticketing_support,
             "key": _get_aaq_product_key(product_slug),
         }
+    if topic_navigation and (
+        topic_title := next((k for k, v in NAVIGATION_TOPICS.items() if topic_slug in v), None)
+    ):
+        del topic_kw["slug"]
+        topic_kw["slug__in"] = NAVIGATION_TOPICS[topic_title]
+        topic_list = Topic.objects.filter(title__in=NAVIGATION_TOPICS.keys())
+        topic_subquery = topic_list.filter(slug=OuterRef("slug")).order_by("id").values("id")[:1]
+        topic_list = Topic.objects.filter(id__in=Subquery(topic_subquery))
+    else:
+        topics = topics_for(request.user, product=product, parent=None)
+
     topics = Topic.objects.filter(**topic_kw)
     if not (topic := topics.exists()):
         raise Http404
@@ -107,12 +119,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         doc_kw["topics"] = topics
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
-    if topic_navigation:
-        topics = Topic.objects.filter(visible=True, slug__in=NAVIGATION_TOPICS)
-        topic_subquery = topics.filter(slug=OuterRef("slug")).order_by("id").values("id")[:1]
-        topics = Topic.objects.filter(id__in=Subquery(topic_subquery))
-    else:
-        topics = topics_for(request.user, product=product, parent=None)
 
     return render(
         request,
@@ -128,5 +134,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "search_params": {"product": product_slug},
             "products": Product.objects.filter(visible=True, topics__in=topics),
             "topic_navigation": topic_navigation,
+            "topic_list": topic_list,
         },
     )

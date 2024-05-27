@@ -305,19 +305,21 @@
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
-      <li>
-        <select id="products-topics-dropdown">
-          <option value="{{ url('questions.list_by_topic', topic_slug=topic_slug) }}" {% if selected_topic is none %}selected{% endif %}>
-            All Topics
-          </option>
-          {% for topic in topic_list %}
-            <option value="{{ url('questions.list_by_topic', topic_slug=topic.slug) }}" 
-                    {% if selected_topic == topic %}selected{% endif %}>
-              {{ pgettext('DB: products.Topic.title', topic.title) }}
+      {% if topic_list %}
+        <li>
+          <select id="products-topics-dropdown">
+            <option value="{{ url('questions.list_by_topic', topic_slug=topic_slug) }}" {% if selected_topic is none %}selected{% endif %}>
+              All Topics
             </option>
-          {% endfor %}
-        </select>
-      </li>
+            {% for topic in topic_list %}
+              <option value="{{ url('questions.list_by_topic', topic_slug=topic.slug) }}" 
+                {% if selected_topic == topic %}selected{% endif %}>
+                {{ pgettext('DB: products.Topic.title', topic.title) }}
+              </option>
+            {% endfor %}
+          </select>
+        </li>
+      {% endif %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
       <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
       <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
