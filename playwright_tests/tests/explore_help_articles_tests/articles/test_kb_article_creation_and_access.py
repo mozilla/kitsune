@@ -196,7 +196,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
         with allure.step("Deleting the created article"):
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2081446, # C2081447
+    # C2081446, C2081447, C2490049,  C2490051
     @pytest.mark.kbArticleCreationAndAccess
     def test_articles_revision_page_and_revision_approval(self):
         with allure.step("Signing in with a non-admin account"):
@@ -303,10 +303,33 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
             assert self.sumo_pages.kb_article_page._get_text_of_kb_article_content_approved(
             ) == article_details['article_content_html']
 
-        with allure.step("Signing in with an admin account and deleting the article"):
+        with allure.step("Signing in with an admin account and creating a new revision"):
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+
+        with check, allure.step("Verifying that the first approved revision is marked as the "
+                                "current"):
+            assert self.sumo_pages.kb_article_show_history_page._get_revision_status(
+                article_details['first_revision_id']
+            ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
+
+        with check, allure.step("Approving the second revision"):
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                second_revision['revision_id'])
+
+        with check, allure.step("Verifying that the first revision status is 'Approved', and the"
+                                "second is 'Current'"):
+            assert self.sumo_pages.kb_article_show_history_page._get_revision_status(
+                article_details['first_revision_id']
+            ) == KBArticlePageMessages.PREVIOUS_APPROVED_REVISION_STATUS
+
+            assert self.sumo_pages.kb_article_show_history_page._get_revision_status(
+                second_revision['revision_id']
+            ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
+
+        with allure.step("Signing in with an admin account and deleting the article"):
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2091580, C954321
@@ -1416,6 +1439,74 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision, KBArticle
         with allure.step("Verifying that the revision was successfully submitted"):
             second_revision = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
             assert (article_details['first_revision_id'] != second_revision)
+
+        with allure.step("Deleting the article"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2490052
+    @pytest.mark.kbArticleCreationAndAccess
+    def test_revision_significance(self):
+        with allure.step("Signing in with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Creating a simple kb article and approving the first revision"):
+            article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                approve_first_revision=True
+            )
+
+        with check, allure.step("Verifying that the significance is the correct one"):
+            check.equal(
+                self.sumo_pages.kb_article_show_history_page._get_revision_significance(
+                    article_details['first_revision_id']
+                ),
+                KBArticlePageMessages.MAJOR_SIGNIFICANCE
+            )
+
+        with check, allure.step("Creating a new revision, approving it wih minor significance "
+                                "and verifying that the correct significance is displayed"):
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                revision_id=second_revision['revision_id'],
+                significance_type='minor'
+            )
+            check.equal(
+                self.sumo_pages.kb_article_show_history_page._get_revision_significance(
+                    second_revision['revision_id']
+                ),
+                KBArticlePageMessages.MINOR_SIGNIFICANCE
+            )
+
+        with check, allure.step("Creating a new revision and approving it with normal "
+                                "significance which is the default one and verifying that the "
+                                "correct significance is displayed"):
+            third_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+                approve_revision=True
+            )
+            check.equal(
+                self.sumo_pages.kb_article_show_history_page._get_revision_significance(
+                    third_revision['revision_id']
+                ),
+                KBArticlePageMessages.NORMAL_SIGNIFICANCE
+            )
+
+        with check, allure.step("Creating a new revision, approving it with major significance "
+                                "and verifying that the correct significance is displayed"):
+            forth_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                revision_id=forth_revision['revision_id'],
+                significance_type='major'
+            )
+            check.equal(
+                self.sumo_pages.kb_article_show_history_page._get_revision_significance(
+                    forth_revision['revision_id']
+                ),
+                KBArticlePageMessages.MAJOR_SIGNIFICANCE
+            )
 
         with allure.step("Deleting the article"):
             self.start_existing_session(super().username_extraction_from_email(

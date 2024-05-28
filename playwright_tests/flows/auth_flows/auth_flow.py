@@ -20,6 +20,11 @@ class AuthFlowPage(TestUtilities, AuthPage, Homepage):
             super()._add_data_to_password_input_field(password)
             super()._click_on_enter_your_password_submit_button()
 
+    def login_with_existing_session(self):
+        if super()._is_continue_with_firefox_button_displayed():
+            super()._click_on_continue_with_firefox_accounts_button()
+        super()._click_on_user_logged_in_sign_in_button()
+
     # Sign in flow.
     def sign_in_flow(
         self, username: str, account_password: str
@@ -31,7 +36,9 @@ class AuthFlowPage(TestUtilities, AuthPage, Homepage):
         if super()._is_continue_with_firefox_button_displayed():
             super()._click_on_continue_with_firefox_accounts_button()
 
-        super().clear_session_storage()
+        if super()._is_use_a_different_account_button_displayed():
+            super()._click_on_use_a_different_account_button()
+
         self.__provide_login_credentials_and_submit(username, account_password)
 
         if super()._is_enter_otp_code_input_field_displayed():

@@ -12,6 +12,5 @@ class AddKbMediaFlow(MediaGallery):
             super()._click_on_videos_filter()
 
         super()._fill_search_modal_gallery_searchbox_input_field(file_name)
-        super()._click_on_search_modal_gallery_search_button()
-        super()._select_media_file_from_list(file_name)
+        super()._select_media_file_from_list(file_name, is_modal=True)
         super()._click_on_insert_media_button()

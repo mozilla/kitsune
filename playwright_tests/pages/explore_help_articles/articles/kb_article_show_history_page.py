@@ -9,6 +9,7 @@ class KBArticleShowHistoryPage(BasePage):
     __show_history_revision_history_for = ("//dt[text()='Revision history "
                                            "for:']/following-sibling::dd[1]")
     __ready_for_l10_modal_submit_button = "//button[@id='submit-l10n']"
+    __l10n_modal = "//div[@class='mzp-c-modal-window']"
 
     # Document contributors locators
     __show_history_page_banner = "//li[@class='mzp-c-notification-bar mzp-t-success']/p"
@@ -36,6 +37,9 @@ class KBArticleShowHistoryPage(BasePage):
         super().__init__(page)
 
     # Page actions.
+    def _get_l10n_modal_locator(self) -> Locator:
+        return super()._get_element_locator(self.__l10n_modal)
+
     def _get_show_history_page_banner(self) -> str:
         return super()._get_text_of_element(self.__show_history_page_banner)
 
@@ -56,6 +60,10 @@ class KBArticleShowHistoryPage(BasePage):
 
     def _click_on_ready_for_l10n_option(self, revision_id: str):
         super()._click(f"//tr[@id='{revision_id}']/td[@class='l10n']/a")
+
+    def _get_ready_for_localization_status(self, revision_id: str) -> Locator:
+        return super()._get_element_locator(f"//tr[@id='{revision_id}']/td[@class='l10n']/"
+                                            f"a[@class='yes']")
 
     def _click_on_submit_l10n_readiness_button(self):
         super()._click(self.__ready_for_l10_modal_submit_button)
@@ -158,3 +166,7 @@ class KBArticleShowHistoryPage(BasePage):
 
     def _get_all_contributors_locator(self) -> Locator:
         return super()._get_element_locator(self.__all_contributors_list_items)
+
+    def _get_revision_significance(self, revision_id: str) -> str:
+        return super()._get_text_of_element(f"//tr[@id='{revision_id}']"
+                                            f"/td[@class='significance']").strip()

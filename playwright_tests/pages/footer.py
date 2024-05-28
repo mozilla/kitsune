@@ -14,3 +14,6 @@ class FooterSection(BasePage):
     # Footer section actions.
     def _get_all_footer_links(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__all_footer_links)
+
+    def _switch_to_ro_locale(self):
+        super()._select_option_by_value(self.__language_selector, 'ro')

@@ -4,6 +4,8 @@ from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFl
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_flow import (
     AddKbArticleFlow)
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
+from playwright_tests.flows.explore_articles_flows.article_flows.kb_localization_flow import \
+    KbArticleTranslationFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
     AddKbMediaFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.delete_kb_article_flow import \
@@ -20,6 +22,10 @@ from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFor
 from playwright_tests.pages.contribute.contributor_tools_pages.article_discussions_page import \
     ArticleDiscussionsPage
 from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
+from playwright_tests.pages.contribute.contributor_tools_pages.l10n_most_visited_translations \
+    import MostVisitedTranslations
+from playwright_tests.pages.contribute.contributor_tools_pages.l10n_unreviewed import \
+    UnreviewedLocalizationPage
 from playwright_tests.pages.contribute.contributor_tools_pages.media_gallery import MediaGallery
 from playwright_tests.pages.contribute.contributor_tools_pages.moderate_forum_content import \
     ModerateForumContent
@@ -41,6 +47,8 @@ from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_meta 
     KBArticleEditMetadata
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
     EditKBArticlePage
+from playwright_tests.pages.explore_help_articles.articles.kb_translate_article_page import \
+    TranslateArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_what_links_here_page import \
     WhatLinksHerePage
 from playwright_tests.pages.explore_help_articles.articles.products_page import ProductsPage
@@ -139,6 +147,7 @@ class SumoPages:
         self.kb_article_edit_article_metadata_page = KBArticleEditMetadata(page)
         self.kb_what_links_here_page = WhatLinksHerePage(page)
         self.kb_category_page = KBCategoryPage(page)
+        self.translate_article_page = TranslateArticlePage(page)
 
         # Product Topics page
         self.product_topics_page = ProductTopicPage(page)
@@ -165,6 +174,8 @@ class SumoPages:
         # Dashboard pages.
         self.kb_dashboard_page = KBDashboard(page)
         self.recent_revisions_page = RecentRevisions(page)
+        self.localization_unreviewed_page = UnreviewedLocalizationPage(page)
+        self.most_visited_translations_page = MostVisitedTranslations(page)
 
         # Media Gallery page.
         self.media_gallery = MediaGallery(page)
@@ -186,6 +197,9 @@ class SumoPages:
 
         # KB article Flow
         self.submit_kb_article_flow = AddKbArticleFlow(page)
+
+        # KB article translation Flow
+        self.submit_kb_translation_flow = KbArticleTranslationFlow(page)
 
         # KB article deletion Flow
         self.kb_article_deletion_flow = DeleteKbArticleFlow(page)

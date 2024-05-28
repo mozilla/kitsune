@@ -66,6 +66,7 @@ class TestPopularTopicsPage(TestUtilities):
     @pytest.mark.productTopicsPage
     def test_aaq_redirect(self):
         with allure.step("Navigating to product topics pages"):
+            count = 0
             for product_topic in super().general_test_data["product_topics"]:
                 topic_url = super().general_test_data["product_topics"][product_topic]
                 self.navigate_to_link(topic_url)
@@ -83,10 +84,14 @@ class TestPopularTopicsPage(TestUtilities):
 
                     with allure.step("Signing in to SUMO and verifying that we are on the "
                                      "correct AAQ form page"):
-                        self.sumo_pages.auth_flow_page.sign_in_flow(
-                            username=super().user_special_chars,
-                            account_password=super().user_secrets_pass
-                        )
+                        if count == 0:
+                            self.sumo_pages.auth_flow_page.sign_in_flow(
+                                username=super().user_special_chars,
+                                account_password=super().user_secrets_pass
+                            )
+                            count += 1
+                        else:
+                            self.sumo_pages.auth_flow_page.login_with_existing_session()
                         expect(
                             self.page
                         ).to_have_url(super(

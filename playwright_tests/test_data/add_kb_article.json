@@ -28,5 +28,11 @@
   "restricted_visibility_groups": [
     "Accessibility",
     "Contributors"
-  ]
+  ],
+  "translated_title": "Articol Tradus",
+  "translated_slug": "articol-tradus-",
+  "translated_keyword": "Articol Automat Tradus",
+  "translated_search_summary": "Articol Automat Tradus sumar cautare",
+  "translated_body": "Body-ul articolului tradus",
+  "translated_review_description": "Descriere Traducere"
 }

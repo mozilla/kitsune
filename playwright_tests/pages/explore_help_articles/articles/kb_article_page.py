@@ -78,6 +78,9 @@ class KBArticlePage(BasePage):
     def _get_edit_article_metadata_locator(self):
         return super()._get_element_locator(self.__editing_tools_edit_article_metadata_option)
 
+    def _click_on_translate_article_option(self):
+        super()._click(self.__editing_tools_translate_article)
+
     def _get_translate_article_option_locator(self):
         return super()._get_element_locator(self.__editing_tools_translate_article)
 

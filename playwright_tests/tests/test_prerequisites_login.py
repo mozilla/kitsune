@@ -8,7 +8,10 @@ class TestLoginSessions(TestUtilities):
     @pytest.mark.loginSessions
     def test_create_user_sessions_for_test_accounts(self):
 
-        for i in super().user_secrets_accounts:
+        i = 0
+        keys = list(super().user_secrets_accounts.keys())
+        tried_once = False
+        while i < len(keys):
             self.sumo_pages.top_navbar._click_on_signin_signup_button()
 
             # Also acts as a wait. Introduced in order to avoid flakiness which occurred on some
@@ -18,17 +21,29 @@ class TestLoginSessions(TestUtilities):
             ).to_be_visible()
 
             self.sumo_pages.auth_flow_page.sign_in_flow(
-                username=super().user_secrets_accounts[i],
+                username=super().user_secrets_accounts[keys[i]],
                 account_password=super().user_secrets_pass
             )
 
-            print(super().user_secrets_accounts[i])
-            self.wait_for_given_timeout(3800)
+            self.wait_for_given_timeout(3500)
             username = self.username_extraction_from_email(
-                super().user_secrets_accounts[i]
+                super().user_secrets_accounts[keys[i]]
             )
-            print(username)
             self.store_session_cookies(username)
-            # Deleting cookies from browser storage (avoiding server invalidation from logout)
-            # and reloading the page to be signed out before re-entering the loop.
+
+            # Trying to log in. If the login fails, we retry creating the failed session. If we
+            # retried once, fail the test.
+            self.start_existing_session(
+                username
+            )
+
+            if self.sumo_pages.top_navbar._get_text_of_logged_in_username(
+            ) != username and not tried_once:
+                tried_once = True
+            elif self.sumo_pages.top_navbar._get_text_of_logged_in_username(
+            ) != username and tried_once:
+                pytest.fail(f"Unable to sign in with {username}")
+            else:
+                i += 1
+
             self.delete_cookies()

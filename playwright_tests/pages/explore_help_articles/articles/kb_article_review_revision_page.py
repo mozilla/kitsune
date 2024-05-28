@@ -40,8 +40,13 @@ class KBArticleReviewRevisionPage(BasePage):
     __ready_for_localization_modal_checkbox = "//input[@id='id_is_ready_for_localization']"
     __needs_change_modal_checkbox = "//input[@id='id_needs_change']"
     __needs_change_comment_textarea = "//textarea[@id='id_needs_change_comment']"
-    __modal_accept_button = "//button[text()='Accept']"
-    __modal_cancel_button = "//form[@id='approve-modal']//a[text()='Cancel']"
+    __modal_accept_button = "//form[@id='approve-modal']/div/button"
+    __modal_cancel_button = "//form[@id='approve-modal']/div/a"
+
+    # Revision significance
+    __minor_significance = "//input[@id='id_significance_0']"
+    __normal_significance = "//input[@id='id_significance_1']"
+    __major_significance = "//input[@id='id_significance_2']"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -123,3 +128,12 @@ class KBArticleReviewRevisionPage(BasePage):
 
     def _add_text_to_needs_change_comment(self, text: str):
         super()._fill(self.__needs_change_comment_textarea, text)
+
+    def _click_on_minor_significance_option(self):
+        super()._click(self.__minor_significance)
+
+    def _click_on_normal_significance_option(self):
+        super()._click(self.__normal_significance)
+
+    def _click_on_major_significance_option(self):
+        super()._click(self.__major_significance)
