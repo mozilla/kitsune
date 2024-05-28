@@ -2,8 +2,9 @@ import hashlib
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.postgres.aggregates import StringAgg
 from django.core.cache import cache
-from django.db.models import Count, Q
+from django.db.models import Case, Count, OuterRef, Q, Subquery, When
 from django.db.models.functions import Now
 
 from kitsune.products.models import Topic
@@ -93,7 +94,7 @@ def _documents_for(user, locale, topics=None, products=None):
 
     if not user.is_authenticated:
         # For anonymous users, first check the cache.
-        documents_cache_key = f"documents_for:{cache_key}"
+        documents_cache_key = f"documents_for_v2:{cache_key}"
         documents = cache.get(documents_cache_key)
         if documents is not None:
             return documents
@@ -122,54 +123,58 @@ def _documents_for(user, locale, topics=None, products=None):
         # NOTE: It's important to use "created__range" rather than "created__gt"
         #       with Postgres, otherwise it won't use the index on the "created"
         #       field, and the "HelpfulVote" query will be massively slower.
-        # Extended votes_query
         votes_query = (
-            HelpfulVote.objects.filter(revision__document__is_archived=False)
-            .filter(revision_id__in=qs.values_list("current_revision_id", flat=True))
+            HelpfulVote.objects.filter(
+                revision_id__in=qs.values_list("current_revision_id", flat=True),
+                created__range=(Now() - timedelta(days=30), Now()),
+                helpful=True,
+            )
             .values("revision_id")
-            .annotate(
-                helpful_count=Count("id", filter=Q(helpful=True)),
-                total_count=Count("id"),
-                time_limited_count=Count(
-                    "id",
-                    filter=Q(helpful=True, created__range=(Now() - timedelta(days=30), Now())),
-                ),
-            )
-            .values("revision_id", "helpful_count", "total_count", "time_limited_count")
+            .annotate(count=Count("*"))
+            .values("revision_id", "count")
         )
-
-        # Convert the query results into a dictionary
-        votes_dict = {
-            row["revision_id"]: (
-                row["helpful_count"],
-                row["total_count"],
-                row["time_limited_count"],
-            )
-            for row in votes_query
-        }
-
+        votes_dict = {row["revision_id"]: row["count"] for row in votes_query}
         # the votes query is rather expensive, and only used for ordering,
         # so we can cache it rather aggressively
         cache.set(votes_cache_key, votes_dict, timeout=settings.CACHE_LONG_TIMEOUT)
 
+    # Annotate each of the documents with its string of product titles. This must
+    # be a sub-query in order to free itself from the product filter(s) above.
+    qs = qs.annotate(
+        product_titles=Subquery(
+            Document.objects.filter(pk=OuterRef("pk"))
+            .annotate(
+                product_titles=Case(
+                    When(
+                        parent__isnull=False,
+                        then=StringAgg(
+                            "parent__products__title",
+                            delimiter=", ",
+                            ordering="parent__products__title",
+                        ),
+                    ),
+                    default=StringAgg(
+                        "products__title", delimiter=", ", ordering="products__title"
+                    ),
+                ),
+            )
+            .values("product_titles")
+        )
+    )
+
     doc_dicts = []
     for d in qs:
-        total_helpful_votes, total_votes, time_limited_count = map(
-            int, votes_dict.get(d.current_revision_id, (0, 0, 0))
-        )
-        percent_helpful = int((total_helpful_votes / total_votes) * 100) if total_votes > 0 else 0
         doc_dicts.append(
             dict(
                 id=d.id,
-                created=d.current_revision.created,
                 document_title=d.title,
                 url=d.get_absolute_url(),
                 document_parent_id=d.parent_id,
+                created=d.current_revision.created,
+                product_titles=d.product_titles,
                 document_summary=d.current_revision.summary,
                 display_order=d.original.display_order,
-                helpful_votes=time_limited_count,
-                percent_helpful=percent_helpful,
-                products=products or [],
+                helpful_votes=votes_dict.get(d.current_revision_id, 0),
             )
         )
 

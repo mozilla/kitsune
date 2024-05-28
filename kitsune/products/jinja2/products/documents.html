@@ -17,7 +17,6 @@
 {% set search_params = {'product': product.slug} %}
 {% set ga_products = "/" + product.slug + "/" %}
 {% set ga_topics = "/" + topic.slug + "/" %}
-{% set metadata_type="list" %}
 
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
@@ -117,7 +116,7 @@
                 </a>
               </h2>
               <p>{{ document['document_summary'] }}</p>
-             {{ document_metadata(document['created'], document['percent_helpful'], document['products'], metadata_type) }}
+             {{ document_metadata(document['created'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
             </div>
           </article>
         {% endfor %}

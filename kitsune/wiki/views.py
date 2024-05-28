@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db.models import Case, Count, Exists, FloatField, OuterRef, Q, Sum, When
+from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -273,7 +273,7 @@ def document(request, document_slug, document=None):
     breadcrumbs.reverse()
     votes = HelpfulVote.objects.filter(revision=doc.current_revision).aggregate(
         total_votes=Count("id"),
-        helpful_votes=Sum(Case(When(helpful=True, then=1), default=0, output_field=FloatField())),
+        helpful_votes=Count("id", filter=Q(helpful=True)),
     )
     helpful_votes = (
         int((votes["helpful_votes"] / votes["total_votes"]) * 100)
@@ -300,6 +300,7 @@ def document(request, document_slug, document=None):
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
+        "product_titles": ", ".join(p.title for p in sorted(products, key=lambda p: p.title)),
     }
 
     return render(request, "wiki/document.html", data)

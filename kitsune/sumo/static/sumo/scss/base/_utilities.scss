@@ -115,3 +115,23 @@
 .light-grey-bg {
   background: var(--color-marketing-gray-01);
 }
+
+.tooltip-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tooltip-container .tooltip {
+  background-color: var(--color-inverse-bg);
+  color: var(--color-inverse);
+  border-radius: var(--global-radius);
+  padding: p.$spacing-sm;
+  position: absolute;
+  width: max-content;
+  visibility: hidden;
+}
+
+.tooltip-container:hover .tooltip {
+  visibility: visible;
+}
