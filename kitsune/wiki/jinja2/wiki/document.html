@@ -95,7 +95,9 @@
     {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
-      {{ document_metadata(document.current_revision.created, product_titles, helpful_votes, metadata_type="document") }}
+      {% if not document.is_archived %}
+        {{ document_metadata(document.current_revision.created, product_titles, helpful_votes, metadata_type="document") }}
+      {% endif %}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
       {% if document.gets_mozilla_account_cta %}
