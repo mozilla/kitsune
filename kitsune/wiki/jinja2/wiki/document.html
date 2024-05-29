@@ -1,6 +1,7 @@
 {% extends "wiki/base.html" %}
+
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
-{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, inpage_contact_cta, topic_list, related_documents  %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_metadata, document_content, inpage_contact_cta, topic_list, related_documents  %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% from "includes/common_macros.html" import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
@@ -72,7 +73,7 @@
 
 {% block content %}
   <section id="document-list">
-    <header class="sumo-article-header has-border-bottom">
+    <header class="sumo-article-header kb-header">
       <div class="sumo-article-header--text">
         <div class="documents-product-title">
           {% set prod_url = url('products.product', slug=product.slug) %}
@@ -94,6 +95,7 @@
     {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
+      {{ document_metadata(document.current_revision.created, product_titles, helpful_votes, metadata_type="document") }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
       {% if document.gets_mozilla_account_cta %}

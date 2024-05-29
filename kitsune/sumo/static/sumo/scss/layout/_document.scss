@@ -305,3 +305,89 @@
     }
   }
 }
+
+#document_metadata {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: p.$spacing-md;
+  padding-bottom: p.$spacing-md;
+  margin-bottom: p.$spacing-xl;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+
+  &.has-border-bottom {
+    border-bottom: 1px solid var(--color-text);
+  }
+
+  &.has-border-top {
+    border-top: 1px solid #EDEDF0;
+    margin-top: 12px;
+    margin-bottom: 24px;
+    padding-top: 12px;
+  }
+
+  .product {
+    font-weight: bold;
+    margin-right: 24px;
+  }
+
+  .last-updated {
+    display: flex;
+    align-items: center;
+
+    .pencil {
+      margin-right: 8px; // Optional, to add some space between the icon and text
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
+    .time {
+      margin-left: 8px; // Space between "Last updated:" and "16 hours ago"
+      margin-right: 16px; // Space after "16 hours ago"
+    }
+  }
+
+  .helpful-info {
+    display: flex;
+    align-items: center;
+
+    .thumbsup {
+      margin-right: 8px; // Optional, to add some space between the icon and text
+    }
+
+    .helpful-count {
+      font-weight: bold;
+      margin-right: 8px; // Space between the count and the "users found this helpful"
+    }
+  }
+
+  // Media query for small screens
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .product {
+      margin-right: 0;
+      margin-bottom: 8px;
+    }
+
+    .last-updated {
+      margin-bottom: 8px;
+
+      .time {
+        margin-left: 4px; // Adjust spacing for small screens
+        margin-right: 8px; // Adjust spacing for small screens
+      }
+    }
+
+    .helpful-info {
+      .helpful-count {
+        margin-right: 4px; // Adjust spacing for small screens
+      }
+    }
+  }
+}
+

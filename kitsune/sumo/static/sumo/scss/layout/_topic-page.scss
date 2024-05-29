@@ -5,6 +5,10 @@
   display: flex;
   margin-bottom: p.$spacing-xl;
 
+  &.no-bottom-margin {
+    margin-bottom: 0;
+  }
+
   &--icon-wrap {
     flex: 0 0 auto;
     @include p.bidi((
@@ -55,6 +59,10 @@
 
   &.has-border-bottom {
     border-bottom: 1px solid var(--color-text);
+  }
+
+  &.kb-header {
+    margin: 0 0 16px;
   }
 
   &--text {

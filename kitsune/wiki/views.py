@@ -271,12 +271,22 @@ def document(request, document_slug, document=None):
         breadcrumbs.append((product.get_absolute_url(), product.title))
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
+    votes = HelpfulVote.objects.filter(revision=doc.current_revision).aggregate(
+        total_votes=Count("id"),
+        helpful_votes=Count("id", filter=Q(helpful=True)),
+    )
+    helpful_votes = (
+        int((votes["helpful_votes"] / votes["total_votes"]) * 100)
+        if votes["total_votes"] > 0
+        else 0
+    )
 
     data = {
         "document": doc,
         "redirected_from": redirected_from,
         "contributors": contributors,
         "fallback_reason": fallback_reason,
+        "helpful_votes": helpful_votes,
         "product_topics": product_topics,
         "product": product,
         "products": products,
@@ -290,6 +300,7 @@ def document(request, document_slug, document=None):
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
+        "product_titles": ", ".join(p.title for p in sorted(products, key=lambda p: p.title)),
     }
 
     return render(request, "wiki/document.html", data)
@@ -324,8 +335,8 @@ def list_documents(request, category=None):
             category = str(dict(CATEGORIES)[category_id])
         except KeyError:
             raise Http404
-
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
+
     return render(request, "wiki/list_documents.html", {"documents": docs, "category": category})
 
 

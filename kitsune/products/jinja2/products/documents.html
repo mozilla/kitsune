@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
+{% from 'wiki/includes/document_macros.html' import document_metadata %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
@@ -102,7 +103,7 @@
 
       <section class="topic-list">
         {% for document in documents %}
-          <article class="topic-article">
+          <article class="topic-article no-bottom-margin">
             <div class="topic-article--icon-wrap">
               <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
             </div>
@@ -115,6 +116,7 @@
                 </a>
               </h2>
               <p>{{ document['document_summary'] }}</p>
+             {{ document_metadata(document['created'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
             </div>
           </article>
         {% endfor %}

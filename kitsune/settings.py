@@ -635,6 +635,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_jinja.contrib._humanize",
     "graphene_django",
     "mozilla_django_oidc",
     "corsheaders",
