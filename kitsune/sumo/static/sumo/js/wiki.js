@@ -774,15 +774,17 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
   function collapsibleContributorTools() {
     const showMoreLink = document.getElementById('show-more-link');
-    const collapsibleContent = document.querySelector('.collapsible-content');
+    if (showMoreLink) {
+      const collapsibleContent = document.querySelector('.collapsible-content');
 
-    showMoreLink.addEventListener('click', (event) => {
-      event.preventDefault();
+      showMoreLink.addEventListener('click', (event) => {
+        event.preventDefault();
 
-      collapsibleContent.classList.toggle('expanded');
-      showMoreLink.classList.toggle('expanded');
-      showMoreLink.textContent = (showMoreLink.classList.contains('expanded')) ? 'Show Less' : 'Show More';
-    });
+        collapsibleContent.classList.toggle('expanded');
+        showMoreLink.classList.toggle('expanded');
+        showMoreLink.textContent = (showMoreLink.classList.contains('expanded')) ? 'Show Less' : 'Show More';
+      });
+    }
 
   }
 

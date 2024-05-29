@@ -184,9 +184,9 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse by product') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('products.product', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
+              <li><a href="{{ url('questions.list', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
               <li><a href="{{ url('questions.list', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox of iOS') }}</a></li>
+              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
               <li><a href="{{ url('questions.list', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
               <li><a href="{{ url('questions.list', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
               <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('View all forums') }}</a></li>
@@ -490,7 +490,7 @@
     data-event-action={{ data_event_action }} data-event-label="community discussions">{{ _('SUMO community discussions') }}</a>
 </li>
 <li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social support discussions') }}</a></li>
-<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+<li><a href="{{ url('forums.threads', 'support-forum-contributors') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="support forum home">{{ _('Support forum discussions') }}</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="article discussions">{{ _('Article discussions') }}</a></li>
@@ -534,6 +534,12 @@
   <a href="{{ url('products.product', slug='contributor') }}" {% if active == "products.product" %} class="selected" {% endif %}
      data-event-category="navigation"
      data-event-action={{ data_event_action }} data-event-label="guides">{{ _('Guides') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.category', category=60) }}" {% if active == "wiki.category" %} class="selected" {% endif %}
+     data-event-category="navigation"
+     data-event-action={{ data_event_action }} data-event-label="templates">{{ _('Templates') }}
   </a>
 </li>
 <li>
