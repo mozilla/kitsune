@@ -119,6 +119,7 @@
 .tooltip-container {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
 }
 
@@ -130,6 +131,26 @@
   position: absolute;
   width: max-content;
   visibility: hidden;
+
+  @media #{p.$mq-xs} {
+    max-width: p.$content-xs;
+  }
+
+  @media #{p.$mq-sm} {
+    max-width: p.$content-sm;
+  }
+
+  @media #{p.$mq-md} {
+    max-width: p.$content-md;
+  }
+
+  @media #{p.$mq-lg} {
+    max-width: p.$content-lg;
+  }
+
+  @media #{p.$mq-xl} {
+    max-width: p.$content-xl;
+  }
 }
 
 .tooltip-container:hover .tooltip {
