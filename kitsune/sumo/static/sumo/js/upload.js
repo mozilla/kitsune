@@ -15,19 +15,19 @@ $(function () {
     $(this).wrapDeleteInput({
       error_title_del: UPLOAD.error_title_del,
       error_login: UPLOAD.error_login,
-      onComplete: function() {
+      onComplete: function () {
         $form.trigger('ajaxComplete');
       }
     });
   });
 
   // Upload a file on input value change
-  $('div.attachments-upload input[type="file"]').each(function() {
+  $('div.attachments-upload input[type="file"]').each(function () {
     var $form = $(this).closest('form');
     $form.removeAttr('enctype');
     $(this).ajaxSubmitInput({
       url: $(this).closest('.attachments-upload').data('post-url'),
-      beforeSubmit: function($input) {
+      beforeSubmit: function ($input) {
         var $divUpload = $input.closest('.attachments-upload'),
           $options = {
             progress: $divUpload.find('.upload-progress'),
@@ -40,18 +40,18 @@ $(function () {
         $options.filename = $input.val().split(/[\/\\]/).pop();
         if ($options.filename.length > UPLOAD.max_filename_length) {
           $options.filename = $options.filename
-          .substr(0, UPLOAD.max_filename_length - 3) + '...';
+            .substr(0, UPLOAD.max_filename_length - 3) + '...';
         }
 
         $options.add.hide();
         $options.adding.text(interpolate(gettext('Uploading "%s"...'),
-        [$options.filename]))
-        .show();
+          [$options.filename]))
+          .show();
         $options.loading.removeClass('empty');
         $options.progress.addClass('show');
         return $options;
       },
-      onComplete: function($input, iframeContent, $options) {
+      onComplete: function ($input, iframeContent, $options) {
         var iframeJSON;
         var upFile;
         var $thumbnail;
@@ -78,25 +78,25 @@ $(function () {
           // HTML decode the name.
           upFile.name = $('<div/>').html(upFile.name).text();
           $thumbnail = $('<img/>')
-          .attr({
-            alt: upFile.name, title: upFile.name,
-            width: upFile.width, height: upFile.height,
-            src: upFile.thumbnail_url
-          })
-          .removeClass('upload-progress')
-          .wrap('<a class="image" href="' + upFile.url + '"></a>')
-          .closest('a')
-          .wrap('<div class="attachment"></div>')
-          .closest('div')
-          .addClass('attachment')
-          .insertBefore($options.progress);
+            .attr({
+              alt: upFile.name, title: upFile.name,
+              width: upFile.width, height: upFile.height,
+              src: upFile.thumbnail_url
+            })
+            .removeClass('upload-progress')
+            .wrap('<a class="image" href="' + upFile.url + '"></a>')
+            .closest('a')
+            .wrap('<div class="attachment"></div>')
+            .closest('div')
+            .addClass('attachment')
+            .insertBefore($options.progress);
           $thumbnail.prepend(
             '<input type="submit" class="delete" data-url="' +
             upFile.delete_url + '" value="&#x2716;"/>');
           $thumbnail.children().first().wrapDeleteInput({
             error_title_del: UPLOAD.error_title_del,
             error_login: UPLOAD.error_login,
-            onComplete: function() {
+            onComplete: function () {
               $form.trigger('ajaxComplete');
             }
           });
@@ -114,7 +114,7 @@ $(function () {
 
   // hijack the click on the thumb and open modal kbox
   function initImageModal() {
-    $('article').on('click', '.attachments-list a.image', function(ev) {
+    $('article').on('click', '.attachments-list a.image', function (ev) {
       ev.preventDefault();
       var imgUrl = $(this).attr('href'),
         image = new Image(),
@@ -123,21 +123,48 @@ $(function () {
           modal: true,
           title: gettext('Image Attachment'),
           id: 'image-attachment-kbox',
-          destroy: true
+          destroy: true,
+          position: 'none', // Disable automatic positioning
+          closeOnOutClick: true,
+          closeOnEsc: true
         });
       kbox.open();
 
-      function setWidth() {
-        $('#image-attachment-kbox').width(image.width)
-        .find('img').removeClass('loading').attr('src', imgUrl);
-        kbox.setPosition();
-      }
+      let $img = $('#image-attachment-kbox img');
+      let $container = $('#image-attachment-kbox');
+      function setDimensions() {
+        // Calculate maximum dimensions based on 80% viewport size
+        let maxWidth = $(window).width() * 0.8;
+        let maxHeight = $(window).height() * 0.8;
+        let imgWidth = image.width;
+        let imgHeight = image.height;
 
-      image.onload = setWidth;
-      image.src = imgUrl;
-      if (image.width) {
-        setWidth();
+
+        // Calculate the aspect ratio
+        let aspectRatio = imgWidth / imgHeight;
+
+        // Resize the image maintaining the aspect ratio
+        if (imgWidth > maxWidth || imgHeight > maxHeight) {
+          if (imgWidth / maxWidth > imgHeight / maxHeight) {
+            imgWidth = maxWidth;
+            imgHeight = maxWidth / aspectRatio;
+          } else {
+            imgHeight = maxHeight;
+            imgWidth = maxHeight * aspectRatio;
+          }
+        }
+
+        $img.width(imgWidth);
+        $img.height(imgHeight);
+        $container.css({
+          'width': imgWidth,
+          'overflow': 'hidden'
+        });
+        $img.removeClass('loading').attr('src', imgUrl);
+        kbox.setPosition('center'); // Center the modal after resizing
       }
+      image.onload = setDimensions;
+      image.src = imgUrl;
     });
   }
   initImageModal();
