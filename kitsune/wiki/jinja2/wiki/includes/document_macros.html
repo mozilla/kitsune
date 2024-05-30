@@ -20,11 +20,11 @@
       <span class="tooltip">{{ product_titles }}</span>
     </span>
     <span class="last-updated">
-      <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>Last updated:</strong> <span class="time">{{ created_date|naturaltime }}</span>
+      <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>{{ _("Last updated") }}:</strong> <span class="time">{{ created_date|naturaltime }}</span>
     </span>
     {% if helpful_votes %}
     <span class="helpful-info">
-      <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/><span class="helpful-count">{{ helpful_votes }}%</span> of users found this helpful
+      <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/>{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
     </span>
     {% endif %}
   </div>
