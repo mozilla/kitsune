@@ -15,12 +15,18 @@ class KBArticlePageMessages:
     UNREVIEWED_REVISION_STATUS = "Unreviewed"
     REVIEW_REVISION_STATUS = "Review"
     CURRENT_REVISION_STATUS = "Current"
+    PREVIOUS_APPROVED_REVISION_STATUS = "Approved"
+    MINOR_SIGNIFICANCE = ''
+    NORMAL_SIGNIFICANCE = 'M'
+    MAJOR_SIGNIFICANCE = 'MT'
     KB_ARTICLE_NOT_APPROVED_CONTENT = "This article doesn't have approved content yet."
     KB_ARTICLE_SUBMISSION_TITLE_ERRORS = ["Document with this Title and Locale already exists.",
                                           "Document with this Slug and Locale already exists."]
     KB_ARTICLE_RELEVANCY_ERROR = "Please select at least one product."
     KB_ARTICLE_TOPIC_ERROR = "Please select at least one topic."
     KB_ARTICLE_RESTRICTED_BANNER = "This document is restricted."
+    KB_ARTICLE_NOT_READY_FOR_TRANSLATION_BANNER = ("Traduci un document în engleză care nu este "
+                                                   "încă gata de localizare.")
 
     def get_template_error(self, article_title) -> str:
         return (f'Documents in the Template category must have titles that start with '

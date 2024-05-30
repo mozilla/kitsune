@@ -39,7 +39,8 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
                                  expiry_date=None,
                                  restricted_to_groups: list[str] = None,
                                  single_group="",
-                                 approve_first_revision=False
+                                 approve_first_revision=False,
+                                 ready_for_localization=False
                                  ) -> dict[str, Any]:
         self._page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
@@ -108,11 +109,9 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
 
         # Interacting with Allow Discussion checkbox
         if (allow_discussion is True) and (super(
-
         )._is_allow_discussion_on_article_checkbox_checked() is False):
             super()._check_allow_discussion_on_article_checkbox()
         elif (allow_discussion is False) and (super(
-
         )._is_allow_discussion_on_article_checkbox_checked() is True):
             super()._check_allow_discussion_on_article_checkbox()
 
@@ -180,7 +179,10 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
 
         if approve_first_revision:
             super()._click_on_show_history_option()
-            self.approve_kb_revision(first_revision_id)
+            if ready_for_localization:
+                self.approve_kb_revision(first_revision_id, ready_for_l10n=True)
+            else:
+                self.approve_kb_revision(first_revision_id)
 
         return {"article_title": kb_article_title,
                 "article_content": kb_article_test_data["article_content"],
@@ -200,7 +202,8 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
 
     def approve_kb_revision(self, revision_id: str,
                             revision_needs_change=False,
-                            ready_for_l10n=False):
+                            ready_for_l10n=False,
+                            significance_type=''):
         if (KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT not in
                 super()._get_current_page_url()):
             super()._click_on_show_history_option()
@@ -219,6 +222,14 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
 
         if ready_for_l10n:
             super()._check_ready_for_localization_checkbox()
+
+        if significance_type != '':
+            if significance_type == 'minor':
+                super()._click_on_minor_significance_option()
+            if significance_type == 'normal':
+                super()._click_on_normal_significance_option()
+            if significance_type == 'major':
+                super()._click_on_major_significance_option()
 
         super()._click_accept_revision_accept_button()
 
@@ -285,6 +296,9 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
         if approve_revision:
             self.approve_kb_revision(revision_id)
 
+        revision_time = super()._get_revision_time(revision_id)
+
         return {"revision_id": revision_id,
+                "revision_time": revision_time,
                 "changes_description": self.kb_article_test_data['changes_description']
                 }

@@ -150,10 +150,7 @@ class TestMyQuestions(TestUtilities):
                          "message and the question list is no longer displayed"):
             self.delete_cookies()
             self.sumo_pages.top_navbar._click_on_signin_signup_button()
-            self.sumo_pages.auth_flow_page.sign_in_flow(
-                username=super().user_special_chars,
-                account_password=super().user_secrets_pass
-            )
+            self.sumo_pages.auth_flow_page.login_with_existing_session()
             self.sumo_pages.top_navbar._click_on_view_profile_option()
             self.sumo_pages.user_navbar._click_on_my_questions_option()
             assert (

@@ -149,6 +149,10 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
             ))
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
+            if (self.sumo_pages.kb_article_edit_article_metadata_page
+                    ._is_clear_all_restricted_visibility_group_selection_visible()):
+                (self.sumo_pages.kb_article_edit_article_metadata_page
+                    ._clear_all_restricted_visibility_group_selections())
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                 single_group=super(
                 ).kb_article_test_data['restricted_visibility_groups'][0]

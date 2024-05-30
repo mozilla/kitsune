@@ -38,6 +38,9 @@ class KBArticleEditMetadata(BasePage):
     def _clear_all_restricted_visibility_group_selections(self):
         super()._click(self.__clear_all_selected_groups_button)
 
+    def _is_clear_all_restricted_visibility_group_selection_visible(self) -> bool:
+        return super()._is_element_visible(self.__clear_all_selected_groups_button)
+
     def _add_and_select_restrict_visibility_group_metadata(self, group_name: str):
         super()._fill(self.__kb_article_restrict_visibility_field, group_name)
         super()._click(f"//div[@class='option active']/span[text()='{group_name}']")

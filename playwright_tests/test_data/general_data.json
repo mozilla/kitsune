@@ -75,7 +75,8 @@
   "dashboard_links": {
     "recent_revisions": "https://support.allizom.org/en-US/kb/revisions",
     "kb_overview": "https://support.allizom.org/en-US/contributors/kb-overview",
-    "l10n_most_visited_translations": "https://support.allizom.org/ro/localization/most-visited-translations"
+    "l10n_most_visited_translations": "https://support.allizom.org/ro/localization/most-visited-translations",
+    "localization_unreviewed": "https://support.allizom.org/ro/localization/unreviewed"
   },
   "discussions_links": {
     "article_discussions": "https://support.allizom.org/en-US/kb/all/discussions"

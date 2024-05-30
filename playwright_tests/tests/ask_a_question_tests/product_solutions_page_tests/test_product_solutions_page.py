@@ -94,7 +94,7 @@ class TestProductSolutionsPage(TestUtilities):
         with allure.step("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products"):
             self.sumo_pages.top_navbar._click_on_browse_all_products_option()
-
+        count = 0
         for freemium_product in super().general_test_data["freemium_products"]:
             with allure.step(f"Clicking on the {freemium_product} card "):
                 self.sumo_pages.contact_support_page._click_on_a_particular_card(freemium_product)
@@ -111,10 +111,14 @@ class TestProductSolutionsPage(TestUtilities):
                              "displayed"):
                 self.sumo_pages.product_solutions_page._click_ask_now_button()
                 self.logger.info("Signing in to SUMO")
-                self.sumo_pages.auth_flow_page.sign_in_flow(
-                    username=super().user_special_chars,
-                    account_password=super().user_secrets_pass,
-                )
+                if count == 0:
+                    self.sumo_pages.auth_flow_page.sign_in_flow(
+                        username=super().user_special_chars,
+                        account_password=super().user_secrets_pass,
+                    )
+                    count += 1
+                else:
+                    self.sumo_pages.auth_flow_page.login_with_existing_session()
 
             with allure.step("Verifying that we are on the correct AAQ form page"):
                 expect(
@@ -133,7 +137,7 @@ class TestProductSolutionsPage(TestUtilities):
         with allure.step("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products"):
             self.sumo_pages.top_navbar._click_on_browse_all_products_option()
-
+        count = 0
         for premium_product in super().general_test_data["premium_products"]:
             with allure.step(f"Clicking on the {premium_product} card"):
                 self.sumo_pages.contact_support_page._click_on_a_particular_card(premium_product)
@@ -152,10 +156,14 @@ class TestProductSolutionsPage(TestUtilities):
                 self.sumo_pages.product_solutions_page._click_contact_support_button()
 
                 self.logger.info("Signing in to SUMO")
-                self.sumo_pages.auth_flow_page.sign_in_flow(
-                    username=super().user_special_chars,
-                    account_password=super().user_secrets_pass,
-                )
+                if count == 0:
+                    self.sumo_pages.auth_flow_page.sign_in_flow(
+                        username=super().user_special_chars,
+                        account_password=super().user_secrets_pass,
+                    )
+                    count += 1
+                else:
+                    self.sumo_pages.auth_flow_page.login_with_existing_session()
 
             with allure.step("Verifying that we are on the correct AAQ form page"):
                 expect(

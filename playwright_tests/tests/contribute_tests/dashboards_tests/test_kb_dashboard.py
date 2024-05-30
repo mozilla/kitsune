@@ -174,6 +174,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             )
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
+    # C2496647
     @pytest.mark.kbDashboard
     def test_kb_dashboard_revision_deferred_status(self):
         with allure.step("Signing in with an admin account"):
@@ -217,6 +218,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
+    # C2496646
     @pytest.mark.kbDashboard
     def test_kb_dashboard_needs_update_when_reviewing_a_revision(self):
         with allure.step("Signing in with an admin account"):
@@ -248,7 +250,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2266377, C2243456
+    # C2266377, C2243456, C2496646
     @pytest.mark.kbDashboard
     def test_kb_dashboard_needs_update_edit_metadata(self):
         with allure.step("Signing in with the admin account"):
@@ -304,7 +306,7 @@ class TestKBDashboard(TestUtilities, KBDashboardPageMessages):
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2266378
+    # C2266378, C2489548
     @pytest.mark.kbDashboard
     def test_ready_for_l10n_kb_dashboard_revision_approval(self):
         with allure.step("Signing in with the admin account"):

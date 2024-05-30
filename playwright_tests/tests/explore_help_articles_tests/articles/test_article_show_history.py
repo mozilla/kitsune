@@ -19,7 +19,7 @@ from playwright_tests.messages.my_profile_pages_messages.my_profile_page_message
 
 class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
-    # C891309, C2102170,  C2102168, C2489545
+    # C891309, C2102170,  C2102168, C2489545, C910271
     @pytest.mark.kbArticleShowHistory
     def test_kb_article_removal(self):
         with allure.step("Signing in with a non-admin account"):
@@ -153,6 +153,29 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
                 ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT
             )
 
+        with allure.step("Creating a new revision for the article"):
+            second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+                approve_revision=True
+            )
+
+        with check, allure.step("Deleting the revision and verifying that the revision is not "
+                                "displayed"):
+            self.sumo_pages.kb_article_show_history_page._click_on_delete_revision_button(
+                article_details['first_revision_id']
+            )
+            self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+            expect(
+                self.sumo_pages.kb_article_show_history_page._get_a_particular_revision_locator(
+                    article_details['first_revision_id']
+                )
+            ).to_be_hidden()
+
+            expect(
+                self.sumo_pages.kb_article_show_history_page._get_a_particular_revision_locator(
+                    second_revision['revision_id']
+                )
+            ).to_be_visible()
+
         with check, allure.step("Deleting the article, navigating to the article and verifying "
                                 "that the article was successfully deleted"):
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
@@ -212,7 +235,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
                 self.navigate_back()
                 self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2101637, C2489543, C2102169
+    # C2101637, C2489543, C2102169, C2489542
     @pytest.mark.kbArticleShowHistory
     def test_kb_article_contributor_removal(self):
         with allure.step("Signing in with an admin account"):
@@ -384,6 +407,32 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             assert (username_two not in self.sumo_pages.kb_article_page
                     ._get_list_of_kb_article_contributors())
 
+        with allure.step("Signing in with the removed username and creating a new revision"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+            ))
+            third_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+
+        with allure.step("Approving the revision and verifying that the user is added again "
+                         "inside the contributors list"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+            self.sumo_pages.submit_kb_article_flow.approve_kb_revision(
+                third_revision['revision_id']
+            )
+
+        with check, allure.step("Verifying that second username is not inside the 'Contributors' "
+                                "list"):
+            assert (username_two in self.sumo_pages.kb_article_show_history_page
+                    ._get_list_of_all_contributors())
+
+        with check, allure.step("Clicking on the Article menu and verifying that the user is not "
+                                "displayed inside the contributors section"):
+            self.sumo_pages.kb_article_page._click_on_article_option()
+            assert (username_two in self.sumo_pages.kb_article_page
+                    ._get_list_of_kb_article_contributors())
+
         with allure.step("Deleting the article"):
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
@@ -545,7 +594,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.navigate_back()
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    # C2499415, C2271120
+    # C2499415, C2271120, C2101633
     @pytest.mark.kbArticleShowHistory
     def test_kb_article_revision_date_functionality(self):
         with allure.step("Signing in with an admin account"):
