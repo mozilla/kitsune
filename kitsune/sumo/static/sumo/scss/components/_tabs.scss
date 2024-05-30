@@ -34,7 +34,7 @@
     outline: 1px solid var(--color-link);
   }
 
-  &:hover  {
+  &:hover {
     color: var(--color-link);
   }
 
@@ -99,6 +99,7 @@
     }
 
     .tabs--dropdown {
+      z-index: 10;
       display: block;
     }
   }
@@ -116,6 +117,7 @@
     .tabs--item {
       border-top: 1px solid var(--color-border);
       background-color: var(--page-bg);
+
       span {
         padding: 0;
       }
@@ -139,6 +141,7 @@
     opacity: 0;
     transform: translateY(-1em);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -147,7 +150,8 @@
 
 
 // jquery UI overrides
-.html-ltr, .html-rtl {
+.html-ltr,
+.html-rtl {
   .ui-widget.ui-widget-content {
     border: 0 none;
 

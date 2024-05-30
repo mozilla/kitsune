@@ -100,7 +100,7 @@
   text-align: center;
 
   @media #{p.$mq-lg} {
-    @include p.bidi(((text-align, left, right),));
+    @include p.bidi(((text-align, left, right), ));
   }
 }
 
@@ -121,35 +121,37 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-}
 
-.tooltip-container .tooltip {
-  background-color: var(--color-inverse-bg);
-  color: var(--color-inverse);
-  border-radius: var(--global-radius);
-  padding: p.$spacing-sm;
-  position: absolute;
-  width: max-content;
-  visibility: hidden;
+  .tooltip {
+    background-color: var(--color-inverse-bg);
+    color: var(--color-inverse);
+    padding: p.$spacing-sm;
+    position: absolute;
+    white-space: wrap;
+    z-index: 1;
+    visibility: hidden;
+    overflow-wrap: break-word;
 
-  @media #{p.$mq-xs} {
-    max-width: p.$content-xs;
-  }
+    @media #{p.$mq-xs} {
+      max-width: p.$content-xs;
+    }
 
-  @media #{p.$mq-sm} {
-    max-width: p.$content-sm;
-  }
+    @media #{p.$mq-sm} {
+      max-width: p.$content-sm;
+    }
 
-  @media #{p.$mq-md} {
-    max-width: p.$content-md;
-  }
+    @media #{p.$mq-md} {
+      max-width: p.$content-md;
+    }
 
-  @media #{p.$mq-lg} {
-    max-width: p.$content-lg;
-  }
+    @media #{p.$mq-lg} {
+      max-width: p.$content-lg;
+    }
 
-  @media #{p.$mq-xl} {
-    max-width: p.$content-xl;
+    @media #{p.$mq-xl} {
+      max-width: p.$content-xl;
+    }
+
   }
 }
 
