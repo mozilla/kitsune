@@ -11,7 +11,7 @@ from django.http import (
     JsonResponse,
 )
 from django.middleware.csrf import get_token
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
@@ -151,3 +151,12 @@ def serve_cors(*args, **kwargs):
     from django.views.static import serve
 
     return serve(*args, **kwargs)
+
+
+def cms_login(request):
+    """The login view for the Wagtail CMS."""
+    # If user is already logged-in and has permission, redirect them to the CMS dashboard.
+    if request.user.is_authenticated and request.user.has_perm("wagtailadmin.access_admin"):
+        return redirect(get_next_url(request) or reverse("wagtailadmin_home"))
+
+    return render(request, "wagtailadmin/login.html")

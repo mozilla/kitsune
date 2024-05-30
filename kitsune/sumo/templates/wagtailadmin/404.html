@@ -1,0 +1,6 @@
+{% extends "wagtailadmin/404.html" %}
+{% load sumo_tags %}
+
+{% block branding_logo %}
+    <img src="{% webpack_static 'sumo/img/mozilla-icon.png' %}" alt="{{ _("Mozilla Icon") }}"/>
+{% endblock %}

@@ -5,7 +5,6 @@ from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
-import wagtail.admin
 
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
@@ -49,7 +48,8 @@ if settings.OIDC_ENABLE:
     urlpatterns.append(path("", include("kitsune.users.urls_oidc")))
 
 if settings.WAGTAIL_ENABLE_ADMIN:
-    urlpatterns.append(path("cms/", include(wagtail.admin.urls)))
+    urlpatterns.append(path("cms/login/", sumo_views.cms_login, name="wagtailadmin_login"))
+    urlpatterns.append(path("cms/", include("wagtail.admin.urls")))
 
 urlpatterns += [
     path("1/", include("kitsune.inproduct.urls")),
