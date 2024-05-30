@@ -1,5 +1,3 @@
-from django.db import models
-
 from taggit.managers import TaggableManager
 
 from kitsune.tags.forms import TagField
@@ -15,17 +13,3 @@ class BigVocabTaggableManager(TaggableManager):
     def formfield(self, form_class=TagField, **kwargs):
         """Swap in our custom TagField."""
         return super(BigVocabTaggableManager, self).formfield(form_class, **kwargs)
-
-
-class BigVocabTaggableMixin(models.Model):
-    """Mixin for taggable models that still allows a caching manager to be the
-    default manager
-
-    Mix this in after [your caching] ModelBase.
-
-    """
-
-    tags = BigVocabTaggableManager()
-
-    class Meta:
-        abstract = True
