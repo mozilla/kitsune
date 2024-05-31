@@ -131,6 +131,7 @@
     z-index: 1;
     visibility: hidden;
     overflow-wrap: break-word;
+    width: max-content;
 
     @media #{p.$mq-xs} {
       max-width: p.$content-xs;
