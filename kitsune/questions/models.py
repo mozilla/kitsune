@@ -32,7 +32,7 @@ from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
-from kitsune.tags.models import BigVocabTaggableMixin
+from kitsune.tags.models import BigVocabTaggableManager
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
@@ -104,7 +104,7 @@ class AAQBase(ModelBase):
         cache.delete(self.images_cache_key % self.id)
 
 
-class Question(AAQBase, BigVocabTaggableMixin):
+class Question(AAQBase):
     """A support question."""
 
     title = models.CharField(max_length=255)
@@ -140,6 +140,8 @@ class Question(AAQBase, BigVocabTaggableMixin):
 
     taken_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     taken_until = models.DateTimeField(blank=True, null=True)
+
+    tags = BigVocabTaggableManager(related_name="questions")
 
     html_cache_key = "question:html:%s"
     tags_cache_key = "question:tags:%s"

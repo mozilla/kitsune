@@ -26,7 +26,7 @@ from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import in_staff_group
-from kitsune.tags.models import BigVocabTaggableMixin
+from kitsune.tags.models import BigVocabTaggableManager
 from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
@@ -63,7 +63,7 @@ class SlugCollision(Exception):
     """An attempt to create two pages of the same slug in one locale"""
 
 
-class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
+class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     """A localized knowledgebase document, not revision-specific."""
 
     title = models.CharField(max_length=255, db_index=True)
@@ -129,7 +129,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     )
 
     # List of users that have contributed to this document.
-    contributors = models.ManyToManyField(User)
+    contributors = models.ManyToManyField(User, related_name="wiki_contributions")
 
     # List of products this document applies to.
     # Children should query their parents for this.
@@ -154,6 +154,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
 
     # List of related documents
     related_documents = models.ManyToManyField("self", blank=True)
+
+    tags = BigVocabTaggableManager(related_name="wiki_documents")
 
     updated_column_name = "current_revision__created"
 

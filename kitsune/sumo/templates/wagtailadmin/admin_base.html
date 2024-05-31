@@ -1,0 +1,8 @@
+{% extends "wagtailadmin/admin_base.html" %}
+{% load sumo_tags %}
+
+{% block branding_favicon %}
+    <link rel="shortcut icon" href="{% webpack_static 'sumo/img/favicon.ico' %}" />
+{% endblock %}
+
+{% block branding_title %}{{ _("Mozilla Support") }}{% endblock %}
