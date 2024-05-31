@@ -45,11 +45,11 @@ class KBArticleEditMetadata(BasePage):
         super()._fill(self.__kb_article_restrict_visibility_field, group_name)
         super()._click(f"//div[@class='option active']/span[text()='{group_name}']")
 
-    def _delete_a_restricted_visibility_group_metadata(self, group_name: str):
-        super()._click(f"//div[@class='item' and text()='{group_name}']/a")
-
-    def _delete_all_restricted_visibility_groups_metadata(self):
-        super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
+    def _delete_a_restricted_visibility_group_metadata(self, group_name=''):
+        if group_name != '':
+            super()._click(f"//div[@class='item' and text()='{group_name}']/a")
+        else:
+            super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
 
     def _get_text_of_title_input_field(self) -> str:
         return super()._get_element_input_value(self.__title_input_field)

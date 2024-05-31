@@ -87,3 +87,10 @@ class EditArticleMetaFlow(TestUtilities, KBArticleEditMetadata, SubmitKBArticleP
                 super()._click_needs_change_checkbox()
 
         super()._click_on_save_changes_button()
+
+    def _remove_a_restricted_visibility_group(self, group_name=''):
+        if KBArticleRevision.KB_EDIT_METADATA not in super()._get_current_page_url():
+            super()._click_on_edit_article_metadata()
+
+        super()._delete_a_restricted_visibility_group_metadata(group_name)
+        super()._click_on_save_changes_button()
