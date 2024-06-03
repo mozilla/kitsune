@@ -148,11 +148,11 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
             self.navigate_to_link(article_url)
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             if (self.sumo_pages.kb_article_edit_article_metadata_page
                     ._is_clear_all_restricted_visibility_group_selection_visible()):
-                (self.sumo_pages.kb_article_edit_article_metadata_page
-                    ._clear_all_restricted_visibility_group_selections())
+                self.sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(
+                    group_name=''
+                )
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                 single_group=super(
                 ).kb_article_test_data['restricted_visibility_groups'][0]
@@ -176,7 +176,6 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
             self.navigate_to_link(article_url)
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
             self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                 single_group=super().kb_article_test_data['restricted_visibility_groups'][1]
             )
@@ -208,11 +207,8 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
-            (self.sumo_pages.kb_article_edit_article_metadata_page
-                ._delete_a_restricted_visibility_group_metadata(
-                    super().kb_article_test_data['restricted_visibility_groups'][0]))
-            self.sumo_pages.kb_article_edit_article_metadata_page._click_on_save_changes_button()
+            self.sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(
+                super().kb_article_test_data['restricted_visibility_groups'][0])
 
         with allure.step("Signing in with an account belonging to the removed group"):
             self.start_existing_session(super().username_extraction_from_email(
@@ -242,11 +238,9 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
-            self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
-            (self.sumo_pages.kb_article_edit_article_metadata_page
-             ._delete_all_restricted_visibility_groups_metadata())
-            (self.sumo_pages.kb_article_edit_article_metadata_page
-             ._click_on_save_changes_button())
+            self.sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(
+                group_name=''
+            )
 
         with allure.step("Deleting user session"):
             self.delete_cookies()
@@ -1135,7 +1129,6 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
         for key, value in self.restricted_kb_articles.items():
             if key.endswith("_url"):
                 self.navigate_to_link(value)
-                self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
                 self.sumo_pages.edit_article_metadata_flow.edit_article_metadata(
                     single_group=super().kb_article_test_data['restricted_visibility_groups'][1]
                 )
@@ -1149,11 +1142,9 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
         for key, value in self.restricted_kb_articles.items():
             if key.endswith("_url"):
                 self.navigate_to_link(value)
-                self.sumo_pages.kb_article_page._click_on_edit_article_metadata()
-                (self.sumo_pages.kb_article_edit_article_metadata_page
-                 ._delete_all_restricted_visibility_groups_metadata())
-                (self.sumo_pages.kb_article_edit_article_metadata_page
-                 ._click_on_save_changes_button())
+                self.sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(
+                    group_name=''
+                )
 
     @pytest.mark.restrictedArticleCreation
     def test_create_articles_for_restriction_test(self):
