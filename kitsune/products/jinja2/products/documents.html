@@ -23,12 +23,11 @@
   {% set crumbs = [(url('products.topic_documents', topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title))] %}
   {% set search_params = {'topic': topic.slug} %}
   {% set page_title = pgettext('DB: products.Topic.title', topic.title) %}
+    {% set ga_content_group = "topic-home" %}
 {% endif %}
 {% block title %}{{ page_title }}{% endblock %}
 
 {% set scripts = ('topics',) %}
-{% set ga_content_group = "product-and-topic-home" %}
-
 {% set ga_topics = "/" + topic.slug + "/" %}
 
 {% block above_main %}
@@ -40,8 +39,8 @@
 </div>
 
 {% if topic_navigation %}
-  {{ product_dropdown(products, topic) }}
-  {{ topic_sidebar(topic_list) }}
+  {{ product_dropdown(products, topic, selected_product=product) }}
+  {{ topic_sidebar(topic_list, selected_topic=topic) }}
 {% else %}
   {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endif %}

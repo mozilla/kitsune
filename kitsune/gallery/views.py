@@ -58,7 +58,7 @@ def gallery(request, media_type="image"):
             "media_type": media_type,
             "image_form": image_form,
             "submitted": request.method == "POST",
-            "locale": request.GET.get("locale", settings.WIKI_DEFAULT_LANGUAGE),
+            "locale": request.LANGUAGE_CODE,
         },
     )
 

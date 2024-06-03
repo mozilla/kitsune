@@ -304,8 +304,8 @@
       {% for f, desc in filters.items() %}
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
-      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
       {% if topic_list %}
+        <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
         <li>
           <select id="products-topics-dropdown">
             <option value="{{ url('questions.list_by_topic', topic_slug=topic_slug) }}" {% if selected_topic is none %}selected{% endif %}>
