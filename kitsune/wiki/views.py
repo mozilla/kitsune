@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from datetime import datetime, time as datetime_time
+from datetime import datetime, time as datetime_time, timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -281,8 +281,13 @@ def document(request, document_slug, document=None):
         else 0
     )
 
+    is_past_thirty_days = False
+    if doc.current_revision:
+        is_past_thirty_days = doc.current_revision.created < (datetime.now() - timedelta(days=30))
+
     data = {
         "document": doc,
+        "is_past_thirty_days": is_past_thirty_days,
         "redirected_from": redirected_from,
         "contributors": contributors,
         "fallback_reason": fallback_reason,
