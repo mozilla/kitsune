@@ -87,7 +87,7 @@
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
       {% if not document.is_archived %}
-        {{ document_metadata(document.current_revision.created, is_past_thirty_days, product_titles, helpful_votes, metadata_type="document") }}
+        {{ document_metadata(document.current_revision.created, is_past_thirty_days, is_first_revision, product_titles, helpful_votes, metadata_type="document") }}
       {% endif %}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 

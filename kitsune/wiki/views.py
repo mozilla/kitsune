@@ -285,9 +285,12 @@ def document(request, document_slug, document=None):
     if doc.current_revision:
         is_past_thirty_days = doc.current_revision.created < (datetime.now() - timedelta(days=30))
 
+    is_first_revision = doc.revisions.filter(is_approved=True).count() == 1
+
     data = {
         "document": doc,
         "is_past_thirty_days": is_past_thirty_days,
+        "is_first_revision": is_first_revision,
         "redirected_from": redirected_from,
         "contributors": contributors,
         "fallback_reason": fallback_reason,
