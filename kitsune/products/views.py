@@ -9,6 +9,7 @@ from product_details import product_details
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config as aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
+from kitsune.wiki.models import Revision
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.utils import get_featured_articles
 
@@ -96,6 +97,9 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
     thirty_days_ago = datetime.now() - timedelta(days=30)
     for document in documents:
         document["is_past_thirty_days"] = document["created"] < thirty_days_ago
+        document["is_first_revision"] = (
+            Revision.objects.filter(document=document["id"], is_approved=True).count() == 1
+        )
 
     return render(
         request,

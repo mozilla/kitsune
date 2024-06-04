@@ -107,7 +107,7 @@
                 </a>
               </h2>
               <p>{{ document['document_summary'] }}</p>
-             {{ document_metadata(document['created'], document['is_past_thirty_days'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
+             {{ document_metadata(document['created'], document['is_past_thirty_days'], document['is_first_revision'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
             </div>
           </article>
         {% endfor %}
