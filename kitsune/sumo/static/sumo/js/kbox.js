@@ -193,11 +193,11 @@ KBox.prototype = {
     // Handle ESC
     if (self.options.closeOnEsc) {
       self.keypressHandler = function (ev) {
-        if (ev.keyCode === 27) {
+        if (ev.key === 'Escape' || ev.keyCode === 27) {
           self.close();
         }
       };
-      $(document).on('keypress', self.keypressHandler);
+      $(document).on('keydown', self.keypressHandler);
     }
 
     // Handle outside clicks
@@ -256,7 +256,7 @@ KBox.prototype = {
       self.destroy();
     }
     if (self.options.closeOnEsc) {
-      $('body').off('keypress', self.keypressHandler);
+      $('body').off('keydown', self.keypressHandler);
     }
     if (self.options.closeOnOutClick) {
       $('body').off('click', self.clickHandler);
