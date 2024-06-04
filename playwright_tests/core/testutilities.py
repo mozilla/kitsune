@@ -154,6 +154,9 @@ class TestUtilities:
         if response.status >= 400:
             self.refresh_page()
 
+    def set_extra_http_headers(self, headers):
+        self.page.set_extra_http_headers(headers)
+
     # Wait for a given timeout
     def wait_for_given_timeout(self, milliseconds: int):
         self.page.wait_for_timeout(milliseconds)

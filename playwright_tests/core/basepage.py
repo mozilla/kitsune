@@ -58,6 +58,14 @@ class BasePage:
         self.__wait_for_dom_load_to_finnish()
         return locator.get_attribute(attribute)
 
+    def _get_attribute_values_of_elements(self, locator: list[Locator],
+                                          attribute: str) -> list[str]:
+        self.__wait_for_dom_load_to_finnish()
+        values = []
+        for element in locator:
+            values.append(element.get_attribute(attribute))
+        return values
+
     def _wait_for_given_timeout(self, timeout: float):
         self._page.wait_for_timeout(timeout)
 

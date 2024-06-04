@@ -920,7 +920,7 @@ class TestKbArticleRestrictedVisibility(TestUtilities):
                 )
             ).to_be_visible()
 
-    # C2539174
+    # C2539174 C2101640
     @pytest.mark.kbRestrictedVisibilitySingleGroup
     @pytest.mark.parametrize("article_title", [
         (restricted_kb_articles['restricted_kb_article_title']),

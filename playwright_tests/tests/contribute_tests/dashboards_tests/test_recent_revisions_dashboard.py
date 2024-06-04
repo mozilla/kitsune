@@ -28,7 +28,9 @@ class TestRecentRevisionsDashboard(TestUtilities):
 
         with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                          "posted article is displayed for admin accounts"):
-            self.sumo_pages.top_navbar._click_on_recent_revisions_option()
+            self.navigate_to_link(
+                self.general_test_data['dashboard_links']['recent_revisions']
+            )
             expect(
                 self.sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
                     article_details['article_title']
@@ -92,7 +94,9 @@ class TestRecentRevisionsDashboard(TestUtilities):
 
         with allure.step("Navigating back to the recent revisions page and verifying that the "
                          "article is no longer displayed"):
-            self.sumo_pages.top_navbar._click_on_recent_revisions_option()
+            self.navigate_to_link(
+                self.general_test_data['dashboard_links']['recent_revisions']
+            )
             expect(
                 self.sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
                     article_details['article_title']
@@ -127,7 +131,9 @@ class TestRecentRevisionsDashboard(TestUtilities):
 
         with allure.step("Navigating to the Recent Revisions dashboard and verifying that own "
                          "revision is visible"):
-            self.sumo_pages.top_navbar._click_on_recent_revisions_option()
+            self.navigate_to_link(
+                self.general_test_data['dashboard_links']['recent_revisions']
+            )
             expect(
                 self.sumo_pages.recent_revisions_page.
                 _get_recent_revision_based_on_article_title_and_user(
@@ -210,7 +216,9 @@ class TestRecentRevisionsDashboard(TestUtilities):
         with allure.step("Navigating back to the recent revision dashboard, signing out and "
                          "verifying that the revision is no longer displayed for the deleted kb "
                          "article"):
-            self.sumo_pages.top_navbar._click_on_recent_revisions_option()
+            self.navigate_to_link(
+                self.general_test_data['dashboard_links']['recent_revisions']
+            )
             self.wait_for_given_timeout(1000)
             self.delete_cookies()
             expect(

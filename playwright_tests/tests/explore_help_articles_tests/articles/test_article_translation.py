@@ -8,11 +8,13 @@ from playwright_tests.messages.explore_help_articles.kb_article_page_messages im
     KBArticlePageMessages)
 from playwright_tests.messages.explore_help_articles.kb_translation_messages import (
     KbTranslationMessages)
+from playwright_tests.messages.homepage_messages import HomepageMessages
+from kitsune.settings import SUMO_LANGUAGES, FALLBACK_LANGUAGES, NON_SUPPORTED_LOCALES
 
 
 class TestArticleTranslation(TestUtilities, KbTranslationMessages):
 
-    # C2489548, C2490043
+    # C2489548, C2490043, C946153
     @pytest.mark.kbArticleTranslation
     def test_not_ready_for_localization_articles_dashboard_status(self):
         with allure.step("Signing in with an Admin account"):
@@ -310,3 +312,115 @@ class TestArticleTranslation(TestUtilities, KbTranslationMessages):
 
             self.navigate_to_link(article_url)
             self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    # C2316346, C2316347
+    @pytest.mark.kbArticleTranslation
+    def test_unsupported_locales_fallback(self):
+        with allure.step("Verifying the unsupported locales fallback"):
+            for key, value in NON_SUPPORTED_LOCALES.items():
+                self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
+                if value is None:
+                    expect(
+                        self.page
+                    ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
+                else:
+                    expect(
+                        self.page
+                    ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
+
+    # C2625000
+    # Skipping this test for now due to the https://github.com/mozilla/sumo/issues/1820 failure
+    @pytest.mark.skip
+    def test_fallback_languages(self):
+        with allure.step("Verifying the language fallback"):
+            for key, value in FALLBACK_LANGUAGES.items():
+                self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
+                expect(
+                    self.page
+                ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
+
+    # C2316347
+    @pytest.mark.kbArticleTranslation
+    def test_supported_languages(self):
+        with allure.step("Verifying that the users are redirected to the supported locales "
+                         "successfully"):
+            for locale in SUMO_LANGUAGES:
+                if locale == 'xx':
+                    continue
+                else:
+                    with self.page.expect_navigation() as navigation_info:
+                        self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{locale}/")
+                    response = navigation_info.value
+                    assert response.status == 200
+                    assert locale in self.get_page_url()
+
+    # C2316350, C2316349
+    @pytest.mark.kbArticleTranslation
+    def test_sumo_locale_priority(self):
+        with allure.step("Signing in with a non-admin account and changing the preferred profile "
+                         "language"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
+            ))
+
+        with allure.step("Accessing the edit profile page and changing the language to ro"):
+            self.sumo_pages.top_navbar._click_on_edit_profile_option()
+            (self.sumo_pages.edit_my_profile_page
+             ._select_preferred_language_dropdown_option_by_value("ro"))
+            self.sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+
+        with allure.step("Navigating to the SUMO homepage without specifying the path in the "
+                         "locale and verifying that the preferred locale is set"):
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+            expect(
+                self.page
+            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + "/ro/")
+
+        with allure.step("Navigating to the SUMO homepage while using a lang query parameter and "
+                         "verifying that the user is redirected to the specified locale inside "
+                         "the param"):
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + "/?lang=de")
+            expect(
+                self.page
+            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + "/de/")
+
+        with allure.step("Navigating back to the ro locale"):
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+
+        with allure.step("Sending a request by modifying the 'Accept-Language' header to a "
+                         "different locale"):
+            headers = {
+                'Accept-Language': 'it'
+            }
+            self.set_extra_http_headers(headers)
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+            expect(
+                self.page
+            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + "/ro/")
+
+        with allure.step("Changing the preferred language back to english and signing out"):
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + '/en-US/')
+            self.sumo_pages.top_navbar._click_on_edit_profile_option()
+            (self.sumo_pages.edit_my_profile_page
+             ._select_preferred_language_dropdown_option_by_value("en-US"))
+            self.sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+            self.delete_cookies()
+
+        with allure.step("Sending the request with the modified 'Accept-Language' header set to "
+                         "a different locale and verifying that the correct locale is displayed"):
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+            expect(
+                self.page
+            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + "/it/")
+
+        with allure.step("Sending the request with the modified 'Accept-Language' to point out "
+                         "to an invalid locale and a fallback and verifying that the user is "
+                         "redirected to the correct first fallback locale"):
+            headers = {
+                'Accept-Language': 'test, de, it'
+            }
+            self.set_extra_http_headers(headers)
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+            expect(
+                self.page
+            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + "/de/")

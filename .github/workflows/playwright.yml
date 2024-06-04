@@ -49,6 +49,10 @@ env:
     TEST_ACCOUNTS_PS: ${{secrets.AUTOMATION_ACCOUNTS_PASSWORD}}
     TEST_ACCOUNT_MODERATOR: ${{secrets.AUTOMATION_MODERATOR_ACCOUNT}}
     BROWSER: ${{secrets.BROWSER}}
+    DATABASE_URL: postgres://kitsune:kitsune@postgres:5432/kitsune
+    SECRET_KEY: secret
+    REDIS_DEFAULT_URL=: edis://redis:6379/1
+    REDIS_HELPFULVOTES_URL: redis://redis:6379/2
 
 
 jobs:
