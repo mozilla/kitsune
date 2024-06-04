@@ -1,5 +1,7 @@
 import json
 
+from datetime import datetime, timedelta
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
@@ -90,6 +92,10 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
     }
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
+
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    for document in documents:
+        document["is_past_thirty_days"] = document["created"] < thirty_days_ago
 
     return render(
         request,
