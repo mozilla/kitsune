@@ -557,7 +557,6 @@ if READ_ONLY:
 else:
     OIDC_ENABLE = config("OIDC_ENABLE", default=True, cast=bool)
     ENABLE_ADMIN = config("ENABLE_ADMIN", default=OIDC_ENABLE, cast=bool)
-    WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=OIDC_ENABLE, cast=bool)
 
     # Username algo for the oidc lib
     def _username_algo(email):
@@ -1312,6 +1311,7 @@ MOZILLA_ACCOUNT_ARTICLES = [
 ]
 
 # Wagtail settings
+WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=False, cast=bool)
 WAGTAIL_I18N_ENABLED = True
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
 WAGTAILADMIN_PERMITTED_LANGUAGES = [
