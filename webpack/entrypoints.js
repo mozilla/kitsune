@@ -56,6 +56,9 @@ const entrypoints = {
   products: [
     "sumo/js/products.js",
   ],
+  topics: [
+    "sumo/js/topics.js",
+  ],
   search: [
     "sumo/js/search.js",
   ],

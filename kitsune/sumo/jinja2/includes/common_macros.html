@@ -127,58 +127,33 @@
                 <a class="color-link" href="{{ url('products') }}"
                   data-event-name="link_click"
                   data-event-parameters='{"link_name": "main-menu.browse-all-articles.list-products"}'>
-                  {{ _('Browse All Articles') }}
+                  {{ _('View all products') }}
                 </a>
               </li>
             </ul>
           </section>
         </div>
         <div class="sumo-nav--dropdown-col">
+
+
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', 'mozilla-account') }}"
-              data-event-name="link_click"
-              data-event-parameters='{
-                "link_name": "main-menu.mozilla-account.product-home",
-                "link_detail": "mozilla-account"
-              }'>
-              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24">
-                <path stroke="#000" stroke-linecap="round" stroke-width="2" d="M1 19s1.5-6 7-6 7 6 7 6"/>
-                <path stroke="#000" stroke-width="2" d="M8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" clip-rule="evenodd"/>
-              </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Mozilla Account') }}</h4>
-            </a>
+          <div class="mzp-c-menu-item-head">
+            <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                stroke-linecap="round">
+                <rect stroke-linejoin="round" width="18" height="18" rx="2" />
+                <path d="M4 5h10M4 9h10M4 13h4" />
+              </g>
+            </svg>
+            <h4 class="mzp-c-menu-item-title">{{ _('Explore by topic') }}</h4>
+          </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li>
-                <a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{"link_name": "main-menu.what-is-it.kb-article"}'>
-                  {{ _('What Is It?') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('products.product', 'mozilla-account')}}"
-                  data-event-name="link_click"
-                  data-event-parameters='{
-                    "link_name": "main-menu.get-help.product-home",
-                    "link_detail": "mozilla-account"
-                  }'>
-                  {{ _('Get Help') }}
-                </a>
-              </li>
-              <li>
-                <a href="https://accounts.firefox.com/reset_password">
-                  {{ _('Reset Password') }}
-                </a>
-              </li>
-              <li></li>
-              <li>
-                <a href="{{ url('wiki.document', 'switching-devices') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{"link_name": "main-menu.sync-your-data.kb-article"}'>
-                  {{ _('Sync Your Data') }}
-                </a>
-              </li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='protect-your-privacy') }}">{{ _('Protect your privacy') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='manage-preferences-and-add-ons-firefox') }}">{{ _('Customize settings and preferences') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='install-and-update') }}">{{ _('Install and update') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='install-and-manage-add-ons-firefox') }}">{{ _('Install and manage add-ons') }}</a></li>
+              <li><a href="{{ url('products.topic_documents', topic_slug='emails-thunderbird') }}">{{ _('Emails') }}</a></li>
             </ul>
           </section>
         </div>
@@ -209,9 +184,9 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse by product') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('products.product', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
+              <li><a href="{{ url('questions.list', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
               <li><a href="{{ url('questions.list', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox of iOS') }}</a></li>
+              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
               <li><a href="{{ url('questions.list', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
               <li><a href="{{ url('questions.list', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
               <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('View all forums') }}</a></li>
@@ -231,12 +206,12 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="#">{{ _('Getting started') }}</a></li>
-              <li><a href="#">{{ _('Privacy and security') }}</a></li>
-              <li><a href="#">{{ _('Installation and setup') }}</a></li>
-              <li><a href="#">{{ _('Settings and customization') }}</a></li>
-              <li><a href="#">{{ _('Interface and features') }}</a></li>
-              <li><a href="#">{{ _('Troubleshooting') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='protect-your-privacy') }}">{{ _('Protect your privacy') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='manage-preferences-and-add-ons-firefox') }}">{{ _('Customize settings and preferences') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}">{{ _('Install and update') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-manage-add-ons-firefox') }}">{{ _('Install and manage add-ons') }}</a></li>
+              <li><a href="{{ url('questions.list_by_topic', topic_slug='emails-thunderbird') }}">{{ _('Emails') }}</a></li>
             </ul>
           </section>
         </div>
@@ -515,7 +490,7 @@
     data-event-action={{ data_event_action }} data-event-label="community discussions">{{ _('SUMO community discussions') }}</a>
 </li>
 <li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social support discussions') }}</a></li>
-<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+<li><a href="{{ url('forums.threads', 'support-forum-contributors') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="support forum home">{{ _('Support forum discussions') }}</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="article discussions">{{ _('Article discussions') }}</a></li>
@@ -543,50 +518,65 @@
 {% endif %}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
-    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+    <a href="{{ url('flagit.queue') }}"  {% if active == "flagit.queue" %} class="selected" {% endif %} 
+      data-event-category="navigation" data-event-action={{ data_event_action }}
       data-event-label="moderate forum content">{{ _('Moderate forum content') }}
     </a>
   </li>
 {% endif %}
 <li>
-  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+  <a href="{{ url('dashboards.localization') }}" {% if active == "dashboards.localization" %} class="selected" {% endif %} 
+    data-event-category="navigation" data-event-action={{ data_event_action }}
     data-event-label="dashboards">{{ _('Knowledge base dashboards') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
+  <a href="{{ url('products.product', slug='contributor') }}" {% if active == "products.product" %} class="selected" {% endif %}
+     data-event-category="navigation"
      data-event-action={{ data_event_action }} data-event-label="guides">{{ _('Guides') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-    data-event-label=".edia gallery">{{ _('Media gallery') }}
+  <a href="{{ url('wiki.category', category=60) }}" {% if active == "wiki.category" %} class="selected" {% endif %}
+     data-event-category="navigation"
+     data-event-action={{ data_event_action }} data-event-label="templates">{{ _('Templates') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+  <a href="{{ url('gallery.home') }}" {% if active == "gallery.home" %} class="selected" {% endif %}
+     data-event-category="navigation" data-event-action={{ data_event_action }}
+     data-event-label=".edia gallery">{{ _('Media gallery') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.revisions') }}" {% if active == "wiki.revisions" %} class="selected" {% endif %} 
+     data-event-category="navigation" data-event-action={{ data_event_action }}
      data-event-label="recent revisions">{{ _('Recent revisions') }}
   </a>
 </li>
 <li>
-  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
+  <a href="{{ url('community.home') }}" {% if active == "community.home" %} class="selected" {% endif %}
+     data-event-category="navigation" data-event-action={{ data_event_action }}
      data-event-label="community hub">{{ _('Community hub') }}
   </a>
 </li>
 {% if context == "sidebar-menu" %}
   <div {% if is_collapsible %} class="collapsible-content" {% endif %}>
     <li>
-      <a href="{{ url('wiki.locales') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-        data-event-label="locales">{{ _('Locales') }}
+      <a href="{{ url('wiki.locales') }}" {% if active == "wiki.locales" %} class="selected" {% endif %} 
+         data-event-category="navigation" data-event-action={{ data_event_action }}
+         data-event-label="locales">{{ _('Locales') }}
       </a>
     </li>
     <li {{ active|class_selected('metrics') }}></li>
-      <a href="{{ url('dashboards.locale_metrics', locale) }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-        data-event-label="locale metrics">{{ _('Locale metrics') }}</a>
+      <a href="{{ url('dashboards.locale_metrics', locale) }}" {% if active == "dashboards.locale_metrics" %} class="selected" {% endif %}
+         data-event-category="navigation" data-event-action={{ data_event_action }}
+         data-event-label="locale metrics">{{ _('Locale metrics') }}</a>
     </li>
     <li {{ active|class_selected('aggregated') }}>
-      <a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-        data-event-label="aggregated metrics">{{ _('Aggregated metrics') }}</a>
+      <a href="{{ url('dashboards.aggregated_metrics') }}" {% if active == "dashboards.aggregated_metrics" %} class="selected" {% endif %}
+         data-event-category="navigation" data-event-action={{ data_event_action }}
+         data-event-label="aggregated metrics">{{ _('Aggregated metrics') }}</a>
     </li>
   </div>
 {% endif %}

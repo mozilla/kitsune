@@ -18,14 +18,16 @@
         </h1>
       </div>
       <div class="sumo-l-two-col--sidebar">
-        <ul class="sidebar-nav sidebar-folding">
-          {{ for_contributors_sidebar(user, 
-                                      settings.WIKI_DEFAULT_LANGUAGE, 
-                                      True, 
-                                      menu="contributor-tools", 
-                                      is_collapsible=True, 
-                                      locale=locale) }}
-        </ul>
+        <nav id="doc-tools">
+          <ul class="sidebar-nav sidebar-folding">
+            {{ for_contributors_sidebar(user, 
+                                        settings.WIKI_DEFAULT_LANGUAGE, 
+                                        active='gallery.home', 
+                                        menu="contributor-tools", 
+                                        is_collapsible=True, 
+                                        locale=locale) }}
+          </ul>
+        </nav>
       </div>
     </div>
   </div>

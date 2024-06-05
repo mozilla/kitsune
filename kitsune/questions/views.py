@@ -34,6 +34,7 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
+from kitsune.products.views import _get_aaq_product_key
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
@@ -44,8 +45,15 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
+from kitsune.questions.models import (
+    Answer,
+    AnswerVote,
+    Question,
+    QuestionLocale,
+    QuestionVote,
+)
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
+from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -116,7 +124,7 @@ def product_list(request):
     )
 
 
-def question_list(request, product_slug):
+def question_list(request, product_slug=None, topic_slug=None):
     """View the list of questions."""
     if settings.DISABLE_QUESTIONS_LIST_GLOBAL:
         messages.add_message(request, messages.WARNING, "You cannot list questions at this time.")
@@ -131,20 +139,19 @@ def question_list(request, product_slug):
 
     tagged = request.GET.get("tagged")
     tags = None
-    topic_slug = request.GET.get("topic")
+    topic_slug = request.GET.get("topic", "") or topic_slug
 
     order = request.GET.get("order", "updated")
     if order not in ORDER_BY:
         order = "updated"
     sort = request.GET.get("sort", "desc")
 
-    product_slugs = product_slug.split(",")
+    product_slugs = product_slug.split(",") if product_slug else []
     products = []
 
-    if len(product_slugs) > 1 or product_slugs[0] != "all":
+    if product_slugs and product_slugs[0] != "all":
         for slug in product_slugs:
             products.append(get_object_or_404(Product, slug=slug))
-        multiple = len(products) > 1
     else:
         # We want all products (no product filtering at all).
         if settings.DISABLE_QUESTIONS_LIST_ALL:
@@ -154,17 +161,9 @@ def question_list(request, product_slug):
             return HttpResponseRedirect("/")
 
         products = None
-        multiple = True
 
-    if topic_slug and not multiple:
-        # We don't support topics when there is more than one product.
-        # There is no way to know what product the topic applies to.
-        try:
-            topic = Topic.objects.get(slug=topic_slug, product=products[0])
-        except Topic.DoesNotExist:
-            topic = None
-    else:
-        topic = None
+    # Get all topics
+    topics = Topic.objects.filter(visible=True, slug=topic_slug) if topic_slug else []
 
     question_qs = Question.objects
 
@@ -241,16 +240,18 @@ def question_list(request, product_slug):
             question_qs = Question.objects.none()
 
     # Filter by products.
+    multiple = False
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
         question_qs = question_qs.filter(product__in=products)
+        multiple = len(products) > 1
 
     # Filter by topic.
-    if topic:
+    if topics:
         # This filter will match if any of the topics on a question have the
         # correct id.
-        question_qs = question_qs.filter(topic__id=topic.id)
+        question_qs = question_qs.filter(topic__in=topics)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in QuestionLocale.objects.locales_list():
@@ -293,12 +294,11 @@ def question_list(request, product_slug):
     # List of products to fill the selector.
     product_list = Product.objects.filter(visible=True)
 
-    # List of topics to fill the selector. Only shows if there is exactly
-    # one product selected.
-    if products and not multiple:
+    # List of topics to fill the selector.
+    if products:
         topic_list = Topic.objects.filter(visible=True, product=products[0])[:10]
     else:
-        topic_list = []
+        topic_list = Topic.objects.filter(visible=True, slug__in=NAVIGATION_TOPICS)
 
     # Store current filters in the session
     if request.user.is_authenticated:
@@ -322,10 +322,12 @@ def question_list(request, product_slug):
         "product_list": product_list,
         "products": products,
         "product_slug": product_slug,
+        "topic_slug": topic_slug,
         "multiple_products": multiple,
-        "all_products": product_slug == "all",
+        "all_products": product_slug == "all" or topics,
         "topic_list": topic_list,
-        "topic": topic,
+        "topics": topics,
+        "selected_topic": topics[0] if topics else None,
     }
 
     if products:

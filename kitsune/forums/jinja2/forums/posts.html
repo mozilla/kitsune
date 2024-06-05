@@ -4,7 +4,7 @@
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {# L10n: {t} is the title of the thread. {f} is the name of the forum. #}
 {% set title = _('{t} | {f} | Forums')|f(t=thread.title, f=forum.name) %}
-{% set crumbs = [(url('forums.forums'), _('Contributor Forums')),
+{% set crumbs = [(url('forums.forums'), _('Contributor Discussions')),
 (url('forums.threads', forum.slug), forum.name),
 (None, thread.title)] %}
 {% set canonical_url = canonicalize(viewname='forums.posts', forum_slug=forum.slug, thread_id=thread.id) %}
