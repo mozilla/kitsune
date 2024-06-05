@@ -463,8 +463,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "debug": DEBUG,
-            "context_processors": _CONTEXT_PROCESSORS
-            + ["wagtail.contrib.settings.context_processors.settings"],
+            "context_processors": _CONTEXT_PROCESSORS,
         },
     },
 ]
