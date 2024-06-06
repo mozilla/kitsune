@@ -95,6 +95,7 @@ class Topic(ModelBase):
 
     # Topics are product-specific
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="topics")
+    products = models.ManyToManyField(Product, related_name="m2m_topics")
 
     # Topics can optionally have a parent.
     parent = models.ForeignKey(
