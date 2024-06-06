@@ -5,7 +5,7 @@ NAVIGATION_TOPICS = OrderedDict(
         "Troubleshooting": ["troubleshooting", "fix-problems"],
         "Protect your privacy": [
             "protect-your-privacy",
-            "privacy-and-security-seetings",
+            "privacy-and-security-settings",
             "protect-your-privacy-firefox-android",
             "privacy-settings-firefox-ios",
         ],
