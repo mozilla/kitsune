@@ -22,3 +22,23 @@
   </div>
 </div>
 {%- endmacro %}
+
+{% macro product_dropdown(products, topic, selected_product=None) -%}
+<h3 class="sidebar-subheading large-only">{{ _('Filter by product') }}</h3>
+
+<nav class="sidebar-nav topics">
+  <span class="details-heading"></span>
+  <select id="products-topics-dropdown" class="sidebar-nav--dropdown">
+    <option value="{{ url('products.topic_documents', topic_slug=topic.slug) }}" {% if selected_product is none %}selected{% endif %}>
+      All Products
+    </option>
+    {% for product in products %}
+      <option value="{{ url('products.topic_product_documents', topic_slug=topic.slug, product_slug=product.slug) }}" 
+              {% if selected_product == product %}selected{% endif %}>
+        {{ pgettext('DB: products.Product.title', product.title) }}
+      </option>
+    {% endfor %}
+  </select>
+</nav>
+
+{%- endmacro %}

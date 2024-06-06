@@ -97,6 +97,9 @@ urlpatterns = [
     re_path(r"^mark_spam$", views.mark_spam, name="questions.mark_spam"),
     re_path(r"^unmark_spam$", views.unmark_spam, name="questions.unmark_spam"),
     # Question lists
+    re_path(
+        r"^topic/(?P<topic_slug>[\w+\-\,]+)$", views.question_list, name="questions.list_by_topic"
+    ),
     re_path(r"^(?P<product_slug>[\w+\-\,]+)$", views.question_list, name="questions.list"),
     # Flag content ("Report this post")
     re_path(

@@ -1,6 +1,6 @@
 {% extends "wiki/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% if locale.locale==settings.WIKI_DEFAULT_LANGUAGE %}
   {% set title = _('[{locale}] KB Team')|f(locale=locale.locale) %}
 {% else %}
@@ -111,7 +111,11 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ localization_sidebar_nav(locale.locale, 'team', locale.locale==settings.WIKI_DEFAULT_LANGUAGE)}}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="wiki.locales", menu="contributor-tools", locale=locale) }}
+    </ul>
+  </nav>
 {% endblock %}
 
 {% macro user_row(user) -%}

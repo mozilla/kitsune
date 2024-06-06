@@ -4,7 +4,12 @@ import logging
 
 from django.conf import settings
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, Http404
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
@@ -14,13 +19,12 @@ from kitsune.access.decorators import login_required
 from kitsune.gallery import ITEMS_PER_PAGE
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image, Video
-from kitsune.gallery.utils import upload_image, check_media_permissions
+from kitsune.gallery.utils import check_media_permissions, upload_image
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
 from kitsune.upload.tasks import compress_image, generate_thumbnail
 from kitsune.upload.utils import FileTooLargeError
 from kitsune.wiki.tasks import schedule_rebuild_kb
-
 
 log = logging.getLogger("k.gallery")
 
@@ -54,6 +58,7 @@ def gallery(request, media_type="image"):
             "media_type": media_type,
             "image_form": image_form,
             "submitted": request.method == "POST",
+            "locale": request.LANGUAGE_CODE,
         },
     )
 

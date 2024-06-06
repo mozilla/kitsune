@@ -23,7 +23,7 @@
 {% block side_top %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="wiki.locales", menu="contributor-tools", locale=locale) }}
     </ul>
   </nav>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% set title = _('Media Gallery') %}
 {% if submitted %}
   {% set classes = 'submitted' %}
@@ -17,29 +18,33 @@
         </h1>
       </div>
       <div class="sumo-l-two-col--sidebar">
-        {% if user.is_authenticated %}
-          <a id="btn-upload" class="sumo-button primary-button" href="#">{{ _('Upload a New Media File') }}</a>
-        {% endif %}
+        <nav id="doc-tools">
+          <ul class="sidebar-nav sidebar-folding">
+            {{ for_contributors_sidebar(user, 
+                                        settings.WIKI_DEFAULT_LANGUAGE, 
+                                        active='gallery.home', 
+                                        menu="contributor-tools", 
+                                        is_collapsible=True, 
+                                        locale=locale) }}
+          </ul>
+        </nav>
       </div>
     </div>
   </div>
 </section>
 {% endblock %}
 
-
 {% block contentwrap %}
 <section class="sumo-page-section">
   <div class="mzp-l-content">
     <div class="sumo-l-two-col sidebar-on-right contributors">
       <div class="sumo-l-two-col--one-half">
-        <form action="{{ url('gallery.search', media_type=media_type) }}" method="get" class="media-search simple-search-form" id="gallery-search">
-          <input class="searchbox" type="search" autocomplete="off" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
-          <button class="submit-button search-button" title="{{ _('Search') }}" type="submit">{{ _('Search') }}
-          </button>
-        </form>
-      </div>
-      <div class="sumo-l-two-col--one-half">
         <div class="media-filters">
+          <form action="{{ url('gallery.search', media_type=media_type) }}" method="get" class="media-search simple-search-form" id="gallery-search">
+            <input class="searchbox" type="search" autocomplete="off" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
+            <button class="submit-button search-button" title="{{ _('Search') }}" type="submit">{{ _('Search') }}
+            </button>
+          </form>
           <div id="locale-filter">
             <form action="#" method="get">
               <div class="field">
@@ -55,7 +60,11 @@
               </div>
             </form>
           </div>
+        </div>
+      </div>
 
+      <div class="sumo-l-two-col--one-half">
+        <div class="media-filters">
           <div id="media-type-filter" class="field">
             <label>{{ _("Show:") }}</label>
             <select id="media-type-select">
@@ -67,6 +76,9 @@
               <a href="{{ url('gallery.gallery', 'video') }}">{{ _('Videos') }}</a>
             </noscript>
           </div>
+          {% if user.is_authenticated %}
+            <a id="btn-upload" class="media-search sumo-button primary-button" href="#">{{ _('Upload a New Media File') }}</a>
+          {% endif %}
         </div>
       </div>
     </div>

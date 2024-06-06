@@ -1,4 +1,5 @@
 {% extends "questions/base.html" %} {# TODO: liberate - remove questions dependency #}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% set title = _('Flagged Content Pending Moderation') %}
 {% set classes = 'flagged' %}
 
@@ -45,5 +46,10 @@
   </div>
 {% endblock %}
 
-{% block side %}
+{% block side_top %}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="flagit.queue", menu="contributor-tools", locale=locale) }}
+    </ul>
+  </nav>
 {% endblock %}

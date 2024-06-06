@@ -7,7 +7,11 @@ from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    HelpfulVoteFactory,
+)
 
 
 class ProductViewsTestCase(Elastic7TestCase):

@@ -1,8 +1,8 @@
 {% extends "questions/base.html" %}
 
 {% set classes = 'questions' %}
-{% set title = _('Support Forums') %}
-{% set crumbs = [(None, _('Support Forums'))] %}
+{% set title = _('Community Forums') %}
+{% set crumbs = [(None, _('Community Forums'))] %}
 {% set meta = (('robots', 'noindex'),) %}
 {% set canonical_url = canonicalize(viewname='questions.home') %}
 {% set ga_content_group = "list-support-forums" %}
@@ -45,7 +45,7 @@
           "link_name": "support-forum-home",
           "link_detail": "all"
         }'>
-        {{ _('{product} Support Forum')|fe(product=_('All Products')) }}
+        {{ _('{product} Community Forums')|fe(product=_('All Products')) }}
       </a>
     </div>
   </div>

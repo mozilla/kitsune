@@ -39,6 +39,7 @@
     &:hover {
       text-decoration: none;
       color: var(--color-heading);
+      background-color: rgba(0, 0, 0, 0.1);
     }
 
     &.details-heading {
@@ -55,7 +56,7 @@
     }
   }
 
-  .edit > a:before {
+  .edit>a:before {
     content: none; // removes pencil icon from sidebar links
   }
 
@@ -73,8 +74,8 @@
     background-image: url("protocol/img/icons/reader-mode.svg");
   }
 
-  li.selected > :link,
-  li.selected > :visited,
+  li.selected> :link,
+  li.selected> :visited,
   a.selected:link,
   a.selected:visited {
     background-color: var(--color-link-active-bg);
@@ -83,7 +84,7 @@
   }
 
   &--sublist {
-    @include p.bidi(((margin-left, left, right),));
+    @include p.bidi(((margin-left, left, right), ));
     margin-bottom: p.$spacing-md;
   }
 
@@ -96,6 +97,7 @@
   }
 
   .details-heading {
+
     // button element is injected with JS on Protocol Details init.
     // See sumo/protocol-details-init.js and
     // node_modules/@mozilla-protocol/core/protocol/js/protocol-details.js
@@ -107,14 +109,14 @@
       color: var(--color-text);
       margin-bottom: 12px;
       text-decoration: none;
-      @include p.bidi(((text-align, left, right),));
+      @include p.bidi(((text-align, left, right), ));
       border: none;
       background-color: transparent;
       padding: 0;
 
 
       &:after {
-        @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
+        @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0), ));
         display: inline-flex;
         width: 12px;
         height: 10px;
@@ -132,7 +134,7 @@
       }
     }
 
-    + .sidebar-nav--list {
+    +.sidebar-nav--list {
       &[aria-hidden="true"] {
         display: none;
       }
@@ -164,7 +166,37 @@
     }
   }
 
+  .collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.8s ease-out;
+
+    @media screen and (max-width: 767px) {
+      max-height: 225px;
+    }
+
+    &.expanded {
+      max-height: 225px;
+    }
+  }
+
+  .show-more-btn {
+
+    &:after {
+      position: relative;
+      top: 7px;
+      margin-left: 5px;
+      content: url('protocol/img/icons/arrow-down.svg');
+      filter: invert(27%) sepia(48%) saturate(3683%) hue-rotate(204deg) brightness(91%) contrast(106%);
+    }
+
+    &.expanded::after {
+      content: url('protocol/img/icons/arrow-up.svg');
+    }
+  }
+
   @media #{p.$mq-lg} {
+
     // sublist is only used when the sidebar is in dropdown mode for mobile/tablet.
     &--sublist {
       display: none;
