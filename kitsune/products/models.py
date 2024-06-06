@@ -37,7 +37,6 @@ class Product(ModelBase):
     )
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None, null=True, editable=False)
-    sprite_height = models.IntegerField(default=None, null=True, editable=False)
 
     # Dictates the order in which products are displayed in product
     # lists.
