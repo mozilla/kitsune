@@ -11,7 +11,7 @@ class MessageForm(forms.Form):
     to = MultiUsernameOrGroupnameField(
         label=_lazy("To:"),
         widget=forms.TextInput(
-            attrs={"placeholder": "Search for Users", "class": "user-autocomplete"}
+            attrs={"placeholder": _lazy("Search for Users"), "class": "user-autocomplete"}
         ),
     )
     message = forms.CharField(label=_lazy("Message:"), max_length=10000, widget=forms.Textarea)
@@ -24,7 +24,7 @@ class MessageForm(forms.Form):
 
         # If the user is a member of the staff group, the placholder text needs to be updated.
         if self.user and self.user.profile.in_staff_group:
-            self.fields["to"].widget.attrs["placeholder"] = "Search for Users or Groups"
+            self.fields["to"].widget.attrs["placeholder"] = _lazy("Search for Users or Groups")
 
     def clean_to(self):
         """Ensure that all usernames and group names are valid."""
@@ -32,14 +32,16 @@ class MessageForm(forms.Form):
 
         # Check if there are valid users or groups selected.
         if not to.get("users") and not to.get("groups"):
-            raise forms.ValidationError("Please select at least one user or group.")
+            raise forms.ValidationError(_lazy("Please select at least one user or group."))
 
         # Check for group messages permissions.
         if to.get("groups"):
             # If the user is not a member of the staff group,
             # they are not allowed to send messages to groups.
             if not self.user.profile.in_staff_group:
-                raise forms.ValidationError("You are not allowed to send messages to groups.")
+                raise forms.ValidationError(
+                    _lazy("You are not allowed to send messages to groups.")
+                )
             # If the group lacks a profile, the user is not allowed to send messages to it.
             group_names = to.get("groups")
             if bad_group_names := (
@@ -51,8 +53,8 @@ class MessageForm(forms.Form):
                 )
             ):
                 raise forms.ValidationError(
-                    "You are not allowed to send messages to groups without profiles "
-                    f"({', '.join(bad_group_names)})."
+                    _lazy("You are not allowed to send messages to groups without profiles ")
+                    + f"({', '.join(bad_group_names)})."
                 )
 
         return to
