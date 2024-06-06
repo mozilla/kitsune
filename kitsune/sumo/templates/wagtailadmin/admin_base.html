@@ -1,4 +1,5 @@
 {% extends "wagtailadmin/admin_base.html" %}
+{% load i18n wagtailadmin_tags %}
 {% load sumo_tags %}
 
 {% block branding_favicon %}
@@ -6,3 +7,57 @@
 {% endblock %}
 
 {% block branding_title %}{{ _("Mozilla Support") }}{% endblock %}
+
+{% block extra_css %}
+  {% include "entrypoints/wagtail.html" %}
+{% endblock %}
+
+{% block js %}
+    <script nonce="{{ request.csp_nonce }}">
+        (function(document, window) {
+            window.wagtailConfig = window.wagtailConfig || {};
+            wagtailConfig.ADMIN_API = {
+                PAGES: '{% url "wagtailadmin_api:pages:listing" %}',
+                DOCUMENTS: '{% url "wagtailadmin_api:documents:listing" %}',
+                IMAGES: '{% url "wagtailadmin_api:images:listing" %}',
+                {# // Use this to add an extra query string on all API requests. #}
+                {# // Example value: '&order=-id' #}
+                EXTRA_CHILDREN_PARAMETERS: '',
+            };
+
+            {% i18n_enabled as i18n_enabled %}
+            {% locales as locales %}
+            wagtailConfig.I18N_ENABLED = {% if i18n_enabled %}true{% else %}false{% endif %};
+            wagtailConfig.LOCALES = {{ locales|safe }};
+
+            {% if locale %}
+                wagtailConfig.ACTIVE_CONTENT_LOCALE = '{{ locale.language_code }}'
+            {% endif %}
+
+            wagtailConfig.STRINGS = {% js_translation_strings %};
+
+            wagtailConfig.ADMIN_URLS = {
+                PAGES: '{% url "wagtailadmin_explore_root" %}'
+            };
+        })(document, window);
+    </script>
+    {% wagtail_config as config %}
+    {{ config|json_script:"wagtail-config" }}
+    <script src="{% versioned_static 'wagtailadmin/js/vendor/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/vendor/jquery-ui-1.13.2.min.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/vendor/jquery.datetimepicker.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/vendor/bootstrap-transition.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/vendor/bootstrap-modal.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/vendor/tag-it.js' %}"></script>
+    <script src="{% url 'wagtailadmin_javascript_catalog' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/core.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/vendor.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/wagtailadmin.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/telepath/telepath.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/sidebar.js' %}"></script>
+    <script src="{% versioned_static 'wagtailadmin/js/modal-workflow.js' %}"></script>
+
+    {% hook_output 'insert_global_admin_js' %}
+
+    {% block extra_js %}{% endblock %}
+{% endblock %}

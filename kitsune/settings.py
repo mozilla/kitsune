@@ -459,7 +459,9 @@ TEMPLATES = [
     },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            path("dist"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "debug": DEBUG,
@@ -1204,6 +1206,8 @@ CSP_IMG_SRC = (
     "https://*.google-analytics.com",
     "https://profile.accounts.firefox.com",
     "https://firefoxusercontent.com",
+    "http://www.gravatar.com",
+    "https://www.gravatar.com",
     "https://secure.gravatar.com",
     "https://i1.wp.com",
     "https://mozillausercontent.com",
@@ -1248,6 +1252,7 @@ CSP_CONNECT_SRC = (
     "https://accounts.firefox.com/metrics-flow",
     "https://accounts.stage.mozaws.net/metrics-flow",
     "https://basket.mozilla.org",
+    "https://releases.wagtail.org",
 )
 
 if DEBUG:
