@@ -169,6 +169,15 @@ class Topic(ModelBase):
             )
 
 
+class TopicSlugHistory(ModelBase):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="slug_history")
+    slug = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta(object):
+        ordering = ["-created"]
+
+
 class Version(ModelBase):
     name = models.CharField(max_length=255)
     # We don't use a SlugField here because we want to allow dots.
