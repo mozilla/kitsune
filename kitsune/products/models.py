@@ -96,6 +96,7 @@ class Topic(ModelBase):
 
     # Topics are product-specific
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="topics")
+    products = models.ManyToManyField(Product, through="ProductTopic", related_name="m2m_topics")
 
     # Topics can optionally have a parent.
     parent = models.ForeignKey(
@@ -167,6 +168,19 @@ class Topic(ModelBase):
                     "subtopic_slug": self.slug,
                 },
             )
+
+
+class ProductTopic(ModelBase):
+    """Through model for Product and Topic to add additional metadata."""
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["product", "topic"], name="unique_product_topic")
+        ]
 
 
 class Version(ModelBase):
