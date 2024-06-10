@@ -19,18 +19,18 @@ from playwright_tests.messages.ask_a_question_messages.contact_support_messages 
 class TestPostedQuestions(TestUtilities):
     # C2191086, C2191094, C2191263,  C2191263, C2191087, C2191088
     @pytest.mark.postedQuestions
-    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_13', ''])
+    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_5', ''])
     def test_posted_question_details(self, username):
         with allure.step("Signing in with a non-admin user account and posting a Firefox product "
                          "question"):
-            self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+            self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_5')
 
         with allure.step("Deleting user session"):
             self.delete_cookies()
 
-        if username == 'TEST_ACCOUNT_13':
+        if username == 'TEST_ACCOUNT_MESSAGE_5':
             self.start_existing_session(super().username_extraction_from_email(
-                self.user_secrets_accounts["TEST_ACCOUNT_13"]
+                self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
             ))
             self.page.reload()
 
@@ -39,17 +39,17 @@ class TestPostedQuestions(TestUtilities):
                 self.sumo_pages.product_solutions_page._get_scam_banner_locator()
             ).to_be_visible()
 
-        with allure.step("Verifying that the still need help banner is not displayed"):
+        with allure.step("Verifying that the still need help banner is displayed"):
             expect(
                 self.sumo_pages.product_solutions_page._get_still_need_help_locator()
-            ).to_be_hidden()
+            ).to_be_visible()
 
         with check, allure.step("Verifying that the Learn More button contains the correct link"):
             assert self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(
             ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
         with allure.step("Signing in with an admin account and verifying that the scam banner is "
-                         "displayed and the still need hel banner is not displayed"):
+                         "displayed and the still need help banner is displayed"):
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -58,7 +58,7 @@ class TestPostedQuestions(TestUtilities):
             ).to_be_visible()
             expect(
                 self.sumo_pages.product_solutions_page._get_still_need_help_locator()
-            ).to_be_hidden()
+            ).to_be_visible()
 
         with check, allure.step("Verifying that the Learn More button contains the correct link"):
             assert self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(
@@ -99,11 +99,11 @@ class TestPostedQuestions(TestUtilities):
     # C2191262, C2436105,  C2191263
     # To add image tests
     @pytest.mark.postedQuestions
-    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR'])
+    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_6', 'TEST_ACCOUNT_MODERATOR'])
     def test_cancel_edit_this_question_functionality(self, username):
         with allure.step("Signing in with a non admin user account and posting a Firefox product "
                          "question"):
-            posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+            posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_6')
 
         if username == 'TEST_ACCOUNT_MODERATOR':
             with allure.step("Signing in with an admin account"):
@@ -203,11 +203,11 @@ class TestPostedQuestions(TestUtilities):
     # C2191262, C2436105, C2191263
     # To add image tests
     @pytest.mark.postedQuestions
-    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR'])
+    @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_6', 'TEST_ACCOUNT_MODERATOR'])
     def test_edit_this_question_functionality(self, username):
         with allure.step("Signing in with a non admin user account and posting a Firefox product "
                          "question"):
-            posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+            posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_6')
             user = super().username_extraction_from_email(
                 self.user_secrets_accounts[username]
             )
@@ -1458,7 +1458,7 @@ class TestPostedQuestions(TestUtilities):
         # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
         with allure.step("Signing in with a non admin user account and posting a Firefox product "
                          "question"):
-            posted_question = self.post_firefox_product_question_flow("TEST_ACCOUNT_MESSAGE_6")
+            posted_question = self.post_firefox_product_question_flow("TEST_ACCOUNT_MESSAGE_3")
         question_id = self.sumo_pages.question_page._get_question_id()
 
         if quote_on == "reply":

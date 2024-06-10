@@ -20,7 +20,7 @@ class TestPostedQuestions(TestUtilities):
     @pytest.mark.skip
     def test_product_support_page(self):
         with allure.step("Navigating to products page via top-navbar"):
-            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
         with allure.step("Clicking on all product cards"):
             for card in self.sumo_pages.products_page._get_all_product_support_titles():
@@ -122,13 +122,14 @@ class TestPostedQuestions(TestUtilities):
                         ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
                     with allure.step("Navigating to products page via top-navbar"):
-                        self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+                        (self.sumo_pages.top_navbar
+                         ._click_on_explore_our_help_articles_view_all_option())
 
     # C890929
     @pytest.mark.skip
     def test_product_support_page_frequent_topics_redirect(self):
         with allure.step("Navigating to products page via top-navbar"):
-            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
         with allure.step("Clicking on all product cards"):
 
@@ -160,7 +161,7 @@ class TestPostedQuestions(TestUtilities):
     @pytest.mark.skip
     def test_product_support_page_featured_articles_redirect(self):
         with allure.step("Navigating to products page via top-navbar"):
-            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
         with allure.step("Clicking on all product cards"):
             for card in self.sumo_pages.products_page._get_all_product_support_titles():
@@ -204,7 +205,7 @@ class TestPostedQuestions(TestUtilities):
     @pytest.mark.skip
     def test_still_need_help_button_redirect(self):
         with allure.step("Navigating to products page via top-navbar"):
-            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
         with allure.step("Clicking on all product cards"):
             for card in self.sumo_pages.products_page._get_all_product_support_titles():
@@ -230,4 +231,5 @@ class TestPostedQuestions(TestUtilities):
                         ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
 
                     with allure.step("Navigating to products page via top-navbar"):
-                        self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+                        (self.sumo_pages.top_navbar
+                         ._click_on_explore_our_help_articles_view_all_option())

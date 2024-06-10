@@ -17,7 +17,7 @@ class TestPostedQuestions(TestUtilities):
     def test_products_page_content(self):
         with check, allure.step("Navigating to products page via top-navbar and verifying that "
                                 "the correct page header is displayed"):
-            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
             assert self.sumo_pages.products_page._get_page_header(
             ) == ProductsPageMessages.PRODUCTS_PAGE_HEADER
 
@@ -41,7 +41,7 @@ class TestPostedQuestions(TestUtilities):
     @pytest.mark.kbProductsPage
     def test_products_page_card_redirect(self):
         with allure.step("Navigating to products page via top-navbar"):
-            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
+            self.sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
         for card in self.sumo_pages.products_page._get_all_product_support_titles():
             if card in self.general_test_data['product_support']:

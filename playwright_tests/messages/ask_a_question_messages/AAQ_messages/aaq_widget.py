@@ -1,5 +1,8 @@
 class AAQWidgetMessages:
-    FREEMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT = "Ask Now"
-    PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT = "Contact Support"
-    FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT = "Sign in/up to post your question and get help."
-    PREMIUM_AAQ_SUBHEADING_TEXT = "Send a message to our support team."
+    FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT = "Continue"
+    FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT = ("Still need help? Sign in to ask your question on "
+                                               "our forums.")
+    PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT = ("Still need help? Sign in to contact our support "
+                                              "team.")
+    FREEMIUM_AAQ_SUBHEADING_TEXT = "Still need help? Continue to ask your question on our forums."
+    PREMIUM_AAQ_SUBHEADING_TEXT = "Still need help? Continue to contact our support team."

@@ -77,7 +77,7 @@ class TestPopularTopicsPage(TestUtilities):
                     with check, allure.step(f"Verifying that the correct subheading page for "
                                             f"{product_topic} is displayed"):
                         assert self.sumo_pages.product_topics_page._get_aaq_subheading_text(
-                        ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT
+                        ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
                     with allure.step("Clicking on the AAQ button"):
                         self.sumo_pages.product_topics_page._click_on_aaq_button()

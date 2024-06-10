@@ -16,9 +16,9 @@ class TestContactSupportPage(TestUtilities):
     # C890363
     @pytest.mark.contactSupportPage
     def test_contact_support_page_content(self):
-        with allure.step("Accessing the contact support page via the top navbar Get Help > Ask a "
-                         "Question"):
-            self.sumo_pages.top_navbar._click_on_ask_a_question_option()
+        with allure.step("Accessing the contact support page via the top navbar via Ask a "
+                         "Question > View All"):
+            self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         with check, allure.step("Verifying that the current milestone is the correct one"):
             assert self.sumo_pages.contact_support_page._get_text_of_current_milestone(
@@ -42,8 +42,8 @@ class TestContactSupportPage(TestUtilities):
     # C890368, C890387, C890388
     @pytest.mark.contactSupportPage
     def test_contact_support_page_cards_redirect(self):
-        with allure.step("Accessing the contact support page via the top navbar Get Help > "
-                         "Browse All products"):
+        with allure.step("Accessing the contact support page via the top navbar Ask a Question > "
+                         "View All"):
             self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         for card in self.sumo_pages.contact_support_page._get_all_product_card_titles():
@@ -63,9 +63,9 @@ class TestContactSupportPage(TestUtilities):
 
     @pytest.mark.contactSupportPage
     def test_browse_all_product_forums_button_redirect(self):
-        with allure.step("Accessing the contact support page via the top navbar Get Help > Ask a "
-                         "Question"):
-            self.sumo_pages.top_navbar._click_on_ask_a_question_option()
+        with allure.step("Accessing the contact support page via the top navbar Ask a Question > "
+                         "View All option"):
+            self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         with allure.step("Clicking on browse all product forums button and verifying that we are "
                          "redirected to the correct page"):
