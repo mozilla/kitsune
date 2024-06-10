@@ -536,12 +536,14 @@
      data-event-action={{ data_event_action }} data-event-label="guides">{{ _('Guides') }}
   </a>
 </li>
-<li>
-  <a href="{{ url('wiki.category', category=60) }}" {% if active == "wiki.category" %} class="selected" {% endif %}
-     data-event-category="navigation"
-     data-event-action={{ data_event_action }} data-event-label="templates">{{ _('Templates') }}
-  </a>
-</li>
+{% if context == "sidebar-menu" %}
+  <li>
+    <a href="{{ url('wiki.category', category=60) }}" {% if active == "wiki.category" %} class="selected" {% endif %}
+      data-event-category="navigation"
+      data-event-action={{ data_event_action }} data-event-label="templates">{{ _('Templates') }}
+    </a>
+  </li>
+{% endif %}
 <li>
   <a href="{{ url('gallery.home') }}" {% if active == "gallery.home" %} class="selected" {% endif %}
      data-event-category="navigation" data-event-action={{ data_event_action }}
