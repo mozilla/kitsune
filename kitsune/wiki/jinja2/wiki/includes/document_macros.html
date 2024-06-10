@@ -26,7 +26,7 @@
     {% endif %}
     {% if helpful_votes %}
     <span class="helpful-info">
-      <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/>{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
+	    <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/>{# L10N: {0} is 'helpful-count', {1} is the actual percentage and {2} is the percent sign. #}{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
     </span>
     {% endif %}
   </div>
