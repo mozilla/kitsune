@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from kitsune.products.models import Platform, Product, Topic, Version
+from kitsune.products.models import Platform, Product, Topic, TopicSlugHistory, Version
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -44,7 +44,16 @@ class PlatformAdmin(admin.ModelAdmin):
     list_editable = ("slug", "display_order", "visible")
 
 
+class TopicSlugHistoryAdmin(admin.ModelAdmin):
+    list_display = ("topic", "slug", "created")
+    list_display_links = ("topic", "slug")
+    list_filter = ("topic",)
+    search_fields = ("topic__title", "slug")
+    verbose_name_plural = "Topic Slug History"
+
+
 admin.site.register(Platform, PlatformAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Version, VersionAdmin)
+admin.site.register(TopicSlugHistory, TopicSlugHistoryAdmin)

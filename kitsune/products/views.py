@@ -1,5 +1,4 @@
 import json
-
 from datetime import datetime, timedelta
 
 from django.db.models import OuterRef, Subquery
@@ -7,12 +6,12 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.questions import config as aaq_config
 from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.wiki.decorators import check_simple_wiki_locale
-from kitsune.wiki.models import Revision
 from kitsune.wiki.facets import documents_for, topics_for
+from kitsune.wiki.models import Revision
 from kitsune.wiki.utils import get_featured_articles
 
 
@@ -76,10 +75,30 @@ def product_landing(request, slug):
 def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None):
     """The document listing page for a product + topic."""
 
-    topic_navigation = request.resolver_match.url_name in [
-        "products.topic_documents",
-        "products.topic_product_documents",
-    ]
+    topic_navigation = any(
+        [
+            request.resolver_match.url_name == "products.documents",
+            request.resolver_match.url_name == "products.subtopics",
+            topic_slug and not product_slug,
+        ]
+    )
+
+    if topic_slug:
+        try:
+            old_topic_slug = TopicSlugHistory.objects.get(slug=topic_slug)
+            redirect_params = {
+                "topic_slug": old_topic_slug.topic.slug,
+            }
+
+            if product_slug:
+                redirect_params["product_slug"] = product_slug
+            if subtopic_slug:
+                redirect_params["subtopic_slug"] = subtopic_slug
+
+            return redirect(document_listing, **redirect_params)
+        except TopicSlugHistory.DoesNotExist:
+            ...
+
     product = get_object_or_404(Product, slug=product_slug) if product_slug else None
     doc_kw = {
         "locale": request.LANGUAGE_CODE,
