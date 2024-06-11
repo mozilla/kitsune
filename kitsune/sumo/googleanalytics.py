@@ -288,13 +288,16 @@ def pageviews_by_document(period, verbose=False):
 
     for row in run_report(date_range, create_article_report_request, verbose=verbose):
         path = row.dimension_values[0].value
-        num_page_views = int(row.metric_values[0].value)
-        # The path is guaranteed to be a KB article path without any query parameters.
-        # If the URL path for KB articles changes, we'll need to continue to support
-        # the previous URL structure for a year -- the longest period of time we look
-        # backwards -- as well as the new URL structure.
+        # The path should be a KB article path without any query parameters, but in reality
+        # we've seen that it can sometimes be "/". If the URL path for KB articles changes,
+        # we'll need to continue to support the previous URL structure for a year -- the
+        # longest period of time we look backwards -- as well as the new URL structure.
         # Current URL structure: /{locale}/kb/{slug}
-        locale, slug = path.strip("/").split("/kb/")
+        try:
+            num_page_views = int(row.metric_values[0].value)
+            locale, slug = path.strip("/").split("/kb/")
+        except ValueError:
+            continue
         yield ((locale, slug), num_page_views)
 
 
@@ -307,14 +310,18 @@ def pageviews_by_question(period=LAST_YEAR, verbose=False):
 
     for row in run_report(date_range, create_question_report_request, verbose=verbose):
         path = row.dimension_values[0].value
-        num_page_views = int(row.metric_values[0].value)
-        # The path is guaranteed to be a question path without any query parameters.
-        # If the URL path for questions changes, we'll need to continue to support
-        # the previous URL structure for a year -- the longest period of time we look
-        # backwards -- as well as the new URL structure.
+        # The path should be a question path without any query parameters, but in reality
+        # we've seen that it can sometimes be "/". If the URL path for questions changes,
+        # we'll need to continue to support the previous URL structure for a year -- the
+        # longest period of time we look backwards -- as well as the new URL structure.
         # Current URL structure: /{locale}/questions/{question_id}
-        locale, question_id = path.strip("/").split("/questions/")
-        yield (int(question_id), num_page_views)
+        try:
+            num_page_views = int(row.metric_values[0].value)
+            locale, question_id = path.strip("/").split("/questions/")
+            question_id = int(question_id)
+        except ValueError:
+            continue
+        yield (question_id, num_page_views)
 
 
 def search_clicks_and_impressions(start_date, end_date, verbose=False):

@@ -73,6 +73,10 @@ class GoogleAnalyticsTests(TestCase):
                 metric_values=[MetricValue(value="1000")],
             ),
             Row(
+                dimension_values=[DimensionValue(value="/")],
+                metric_values=[MetricValue(value="7")],
+            ),
+            Row(
                 dimension_values=[DimensionValue(value="/es/kb/doc2-slug")],
                 metric_values=[MetricValue(value="2000")],
             ),
@@ -96,6 +100,10 @@ class GoogleAnalyticsTests(TestCase):
             Row(
                 dimension_values=[DimensionValue(value="/en-US/questions/123456")],
                 metric_values=[MetricValue(value="1000")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="/")],
+                metric_values=[MetricValue(value="7")],
             ),
             Row(
                 dimension_values=[DimensionValue(value="/es/questions/782348")],
