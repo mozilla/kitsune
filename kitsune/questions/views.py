@@ -163,7 +163,21 @@ def question_list(request, product_slug=None, topic_slug=None):
         products = None
 
     # Get all topics
-    topics = Topic.objects.filter(visible=True, slug=topic_slug) if topic_slug else []
+    if topic_slug:
+        topics = Topic.objects.filter(visible=True, slug=topic_slug)
+        if not topics:
+            raise Http404
+            # TODO: After https://github.com/mozilla/kitsune/pull/6053 merges.
+            # # Before we return 404, let's first check if we need to
+            # # redirect to a different topic slug.
+            # try:
+            #     tsh = TopicSlugHistory.objects.get(slug=topic_slug)
+            # except TopicSlugHistory.DoesNotExist:
+            #     raise Http404
+            # else:
+            #     return redirect("questions.list_by_topic", topic_slug=tsh.topic.slug)
+    else:
+        topics = []
 
     question_qs = Question.objects
 
