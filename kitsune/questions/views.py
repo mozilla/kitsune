@@ -33,7 +33,7 @@ from zenpy.lib.exception import APIException
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.products.views import _get_aaq_product_key
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -163,7 +163,17 @@ def question_list(request, product_slug=None, topic_slug=None):
         products = None
 
     # Get all topics
-    topics = Topic.objects.filter(visible=True, slug=topic_slug) if topic_slug else []
+    topics = []
+    if topic_slug:
+        try:
+            topic_history = TopicSlugHistory.objects.get(slug=topic_slug)
+
+            return redirect(question_list, topic_slug=topic_history.topic.slug)
+        except TopicSlugHistory.DoesNotExist:
+            ...
+        topics = Topic.objects.filter(visible=True, slug=topic_slug)
+        if not topics:
+            raise Http404()
 
     question_qs = Question.objects
 
