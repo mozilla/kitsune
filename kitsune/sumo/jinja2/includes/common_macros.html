@@ -486,27 +486,69 @@
 {% else %}
   {% set data_event_action = "sidebar navigation" %}
 {% endif %}
-<li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
-    data-event-action={{ data_event_action }} data-event-label="community discussions">{{ _('SUMO community discussions') }}</a>
+<li>
+  <a href="{{ url('forums.threads', 'contributors') }}" {% if active == "contributors" %} class="selected" {% endif %}
+     data-event-category="navigation" data-event-action={{ data_event_action }} 
+     data-event-label="community discussions">{{ _('SUMO community discussions') }}
+  </a>
 </li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social support discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'support-forum-contributors') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-    data-event-label="support forum home">{{ _('Support forum discussions') }}</a></li>
-<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action={{ data_event_action }}
-    data-event-label="article discussions">{{ _('Article discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
-    data-event-action={{ data_event_action }} data-event-label="L10N discussions">{{ _('Localization discussions') }}</a></li>
+<li>
+  <a href="{{ url('forums.threads', 'social-media') }}" {% if active == "social-media" %} class="selected" {% endif %}>
+     {{ _('Social support discussions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('forums.threads', 'support-forum-contributors') }}" {% if active == "support-forum-contributors" %} class="selected" {% endif %}
+     data-event-category="navigation" data-event-action={{ data_event_action }} data-event-label="support forum home">
+     {{ _('Support forum discussions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.locale_discussions') }}" {% if active == "article-discussions" %} class="selected" {% endif %}
+     data-event-category="navigation" data-event-action={{ data_event_action }} data-event-label="article discussions">
+     {{ _('Article discussions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('forums.threads', 'l10n-forum') }}" {% if active == "l10n-forum" %} class="selected" {% endif %} 
+     data-event-category="navigation" data-event-action={{ data_event_action }} data-event-label="L10N discussions">
+     {{ _('Localization discussions') }}
+  </a>
+</li>
 {% if context == "main-menu" %}
-  <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all discussions') }}</a></li>
+  <li>
+    <a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all discussions') }}
+    </a>
+  </li>
 {% endif %}
 {% if context == "sidebar-menu" %}
-  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile support discussions') }}</a></li>
-  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge base discussions') }}</a></li>
+  <li>
+    <a href="{{ url('forums.threads', 'mobile-support') }}" {% if active == "mobile-support" %} class="selected" {% endif %}>
+      {{ _('Mobile support discussions') }}
+    </a>
+  </li>
+  <li>
+    <a href="{{ url('forums.threads', 'knowledge-base-articles') }}" {% if active == "knowledge-base-articles" %} class="selected" {% endif %}>
+      {{ _('Knowledge base discussions') }}
+    </a>
+  </li>
 {% if user.has_perm('flagit.can_moderate') %}
-  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum moderator discussions') }}</a></li>
+  <li>
+    <a href="{{ url('forums.threads', 'forum-moderators') }}" {% if active == "forum-moderators" %} class="selected" {% endif %}>
+      {{ _('Forum moderator discussions') }}
+    </a>
+  </li>
 {% endif %}
-  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off topic discussions') }}</a></li>
-  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost thread discussions') }}</a></li>
+  <li>
+    <a href="{{ url('forums.threads', 'off-topic') }}" {% if active == "off-topic" %} class="selected" {% endif %}>
+      {{ _('Off topic discussions') }}
+    </a>
+  </li>
+  <li>
+    <a href="{{ url('forums.threads', 'lost-threads') }}" {% if active == "lost-threads" %} class="selected" {% endif %}>
+    {{ _('Lost thread discussions') }}
+    </a>
+  </li>
 {% endif %}
 {% endmacro %}
 
