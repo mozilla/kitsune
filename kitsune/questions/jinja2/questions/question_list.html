@@ -32,7 +32,11 @@
 {# This takes kwargs, even though it doesn't say so, because it uses them.
    It's a Jinja Magic thing. #}
 {% macro questions_url() %}
-  {{ url('questions.list', product_slug)|urlparams(None, request.GET, **kwargs) }}
+  {% if topics %}
+    {{ url('questions.list_by_topic', topic_slug)|urlparams(None, request.GET, **kwargs) }}
+  {% else %}
+    {{ url('questions.list', product_slug)|urlparams(None, request.GET, **kwargs) }}
+  {% endif %}
 {% endmacro %}
 
 {% block breadcrumbs %}{% endblock %}
