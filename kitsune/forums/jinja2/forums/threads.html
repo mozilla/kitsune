@@ -78,5 +78,5 @@
 {% endblock %}
 
 {% block side %}
-{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
+{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active=forum.slug) }}
 {% endblock %}
