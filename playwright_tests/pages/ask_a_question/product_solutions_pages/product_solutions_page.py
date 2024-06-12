@@ -19,8 +19,7 @@ class ProductSolutionsPage(BasePage):
 
     # Still need help locators.
     __still_need_help_subheading = "//div[contains(@class, 'aaq-widget')]/p"
-    __still_need_help_ask_now_button = "//a[normalize-space(text())='Ask Now']"
-    __contact_support_button = "//a[normalize-space(text())='Contact Support']"
+    __still_need_help_ask_now_button = "//a[normalize-space(text())='Continue']"
 
     # Featured articles locators.
     __featured_article_section_title = "//h2[contains(text(),'Featured Articles')]"
@@ -41,17 +40,11 @@ class ProductSolutionsPage(BasePage):
     def _click_ask_now_button(self):
         super()._click(self.__still_need_help_ask_now_button)
 
-    def _click_contact_support_button(self):
-        super()._click(self.__contact_support_button)
-
     def _get_aaq_subheading_text(self) -> str:
         return super()._get_text_of_element(self.__still_need_help_subheading)
 
     def _get_aaq_widget_button_name(self) -> str:
         return super()._get_text_of_element(self.__still_need_help_ask_now_button)
-
-    def _get_aaq_premium_widget_button_name(self) -> str:
-        return super()._get_text_of_element(self.__contact_support_button)
 
     def _get_still_need_help_locator(self) -> Locator:
         return super()._get_element_locator(self.__still_need_help_ask_now_button)
@@ -66,7 +59,7 @@ class ProductSolutionsPage(BasePage):
     # Featured article actions.
     def _click_on_a_featured_article_card(self, card_name: str):
         super()._click(f'//h2[contains(text(),"Featured Articles")]/../..//'
-                       f'a[text()="{card_name}"]')
+                       f'a[normalize-space(text())="{card_name}"]')
 
     def _get_all_featured_articles_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__featured_articles_cards)

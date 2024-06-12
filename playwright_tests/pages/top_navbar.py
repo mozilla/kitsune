@@ -7,35 +7,38 @@ class TopNavbar(BasePage):
     __sumo_nav_logo = "//div[@class='sumo-nav--logo']/a/img"
 
     # Get Help option
-    __get_help_option = ("//li[@class='mzp-c-menu-category mzp-has-drop-down "
-                         "mzp-js-expandable']/a[contains(text(), 'Get Help')]")
+    __ask_a_question_top_navbar = ("//li[@class='mzp-c-menu-category mzp-has-drop-down "
+                                   "mzp-js-expandable']/a[contains(text(), 'Ask a Question')]")
 
     # Explore our help articles locator.
-    __explore_our_help_articles_option = ("//a[@class='mzp-c-menu-item-link']//h4[text()='Explore "
-                                          "Our Help Articles']")
+    __explore_help_articles_top_navbar_option = ("//a[@class='mzp-c-menu-title sumo-nav--link' "
+                                                 "and normalize-space(text())='Explore Help "
+                                                 "Articles']")
+    __explore_our_help_articles_view_all_option = ("//ul[@class='mzp-c-menu-item-list "
+                                                   "sumo-nav--sublist']/li/a[normalize-space("
+                                                   "text())='View all products']")
 
     # Sub menu items ask a Question section
-    __ask_a_question_option = "//h4[contains(text(),'Ask a Question')]/parent::a"
     __aaq_firefox_browser_option = ("//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
                                     "Question')]/../..//a[contains(text(),'Firefox Browser')]")
     __browse_all_products_option = ("//div[@id='main-navigation']//a[normalize-space(text("
-                                    "))='Browse All Products']")
+                                    "))='View all']")
 
     # Contribute Tools
     __contribute_option = "//a[contains(text(),'Contribute')]"
 
-    # Contributor Tools
-    __contributor_tools_option = "//a[contains(text(),'Contributor Tools')]"
+    # Contributor Discussions
     __article_discussions_option = ("//div[@id='main-navigation']//a[normalize-space(text("
-                                    "))='Article Discussions']")
+                                    "))='Article discussions']")
+    # Contributor Tools
     __moderate_forum_content = ("//div[@id='main-navigation']//a[contains(text(), 'Moderate "
-                                "Forum Content')]")
+                                "forum content')]")
     __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                                 "normalize-space(text())='Recent Revisions']")
+                                 "normalize-space(text())='Recent revisions']")
     __dashboards_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                           "normalize-space(text())='Dashboards']")
+                           "normalize-space(text())='Knowledge base dashboards']")
     __media_gallery_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                              "normalize-space(text())='Media Gallery']")
+                              "normalize-space(text())='Media gallery']")
 
     # Sign in button
     __signin_signup_button = "//div[@id='profile-navigation']//a[contains(text(), 'Sign In/Up')]"
@@ -68,30 +71,30 @@ class TopNavbar(BasePage):
         super()._click(self.__contribute_option)
 
     def _click_on_article_discussions_option(self):
-        super()._hover_over_element(self.__contributor_tools_option)
+        super()._hover_over_element(self.__contribute_option)
         super()._click(self.__article_discussions_option)
 
     # Contributor tools
     def _click_on_moderate_forum_content_option(self):
-        super()._hover_over_element(self.__contributor_tools_option)
+        super()._hover_over_element(self.__contribute_option)
         super()._click(self.__moderate_forum_content)
 
     def _click_on_recent_revisions_option(self):
-        super()._hover_over_element(self.__contributor_tools_option)
+        super()._hover_over_element(self.__contribute_option)
         super()._click(self.__recent_revisions_option)
 
     def _click_on_dashboards_option(self):
-        super()._hover_over_element(self.__contributor_tools_option)
+        super()._hover_over_element(self.__contribute_option)
         super()._click(self.__dashboards_option)
 
     def _click_on_media_gallery_option(self):
-        super()._hover_over_element(self.__contributor_tools_option)
+        super()._hover_over_element(self.__contribute_option)
         super()._click(self.__media_gallery_option)
 
     # Explore our Help Articles actions.
-    def _click_on_explore_our_help_articles_option(self):
-        super()._hover_over_element(self.__get_help_option)
-        super()._click(self.__explore_our_help_articles_option)
+    def _click_on_explore_our_help_articles_view_all_option(self):
+        super()._hover_over_element(self.__explore_help_articles_top_navbar_option)
+        super()._click(self.__explore_our_help_articles_view_all_option)
 
     # Sign in option
     def _click_on_signin_signup_button(self):
@@ -123,15 +126,15 @@ class TopNavbar(BasePage):
         super()._click(self.__signed_in_my_questions_option)
 
     def _click_on_ask_a_question_option(self):
-        super()._hover_over_element(self.__get_help_option)
+        super()._hover_over_element(self.__ask_a_question_top_navbar)
         super()._click(self.__ask_a_question_option)
 
     def _click_on_ask_a_question_firefox_browser_option(self):
-        super()._hover_over_element(self.__get_help_option)
+        super()._hover_over_element(self.__ask_a_question_top_navbar)
         super()._click(self.__aaq_firefox_browser_option)
 
     def _click_on_browse_all_products_option(self):
-        super()._hover_over_element(self.__get_help_option)
+        super()._hover_over_element(self.__ask_a_question_top_navbar)
         super()._click(self.__browse_all_products_option)
 
     def _get_text_of_logged_in_username(self) -> str:

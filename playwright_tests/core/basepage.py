@@ -75,6 +75,7 @@ class BasePage:
 
     # Clicking on a particular element.
     def _click(self, xpath: str):
+        self._wait_for_selector(xpath)
         self._get_element_locator(xpath).click()
 
     # Clicking on a particular element without wait.
