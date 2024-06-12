@@ -24,9 +24,9 @@
 
         {% block above_login %}{% endblock %}
 
-        <p style="text-align:center; font-weight: bold; font-size: 150%">
+        <h2 class="sw-login-headline">
             <a href="{% url 'oidc_authentication_init' %}?next=/cms">{{ _("Sign in via SSO") }}</a>
-        </p>
+        </h2>
 
         {% block below_login %}{% endblock %}
 
