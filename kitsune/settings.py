@@ -553,6 +553,7 @@ if READ_ONLY:
     OIDC_ENABLE = False
     ENABLE_ADMIN = False
     WAGTAIL_ENABLE_ADMIN = False
+    WAGTAIL_ENABLE = False
 else:
     OIDC_ENABLE = config("OIDC_ENABLE", default=True, cast=bool)
     ENABLE_ADMIN = config("ENABLE_ADMIN", default=OIDC_ENABLE, cast=bool)
@@ -1310,6 +1311,7 @@ MOZILLA_ACCOUNT_ARTICLES = [
 ]
 
 # Wagtail settings
+WAGTAIL_ENABLE = config("WAGTAIL_ENABLE", default=False, cast=bool)
 WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=False, cast=bool)
 WAGTAIL_I18N_ENABLED = True
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES

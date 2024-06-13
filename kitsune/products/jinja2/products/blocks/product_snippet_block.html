@@ -1,0 +1,17 @@
+<div class="card card--product zoom-on-hover"> 
+  {% set product = value.product %}
+  <img class="card--icon" src="{{ product.image_url }}" alt="{{ product.title }}" />
+  <div class="card--details">
+    <h3 class="card--title">
+      <a class="expand-this-link" href="{{ url('products.product', slug=product.slug) }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+            "link_name": "product-home",
+            "link_detail": "{{ product.slug }}"
+          }'>
+        {{ product.title }}
+      </a>
+    </h3>
+    <p class="card--desc">{{ product.description }}</p>
+  </div>
+</div>
