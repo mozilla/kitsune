@@ -77,8 +77,8 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
     topic_navigation = any(
         [
-            request.resolver_match.url_name == "products.documents",
-            request.resolver_match.url_name == "products.subtopics",
+            request.resolver_match.url_name == "products.topic_documents",
+            request.resolver_match.url_name == "products.topic_product_documents",
             topic_slug and not product_slug,
         ]
     )
