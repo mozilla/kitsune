@@ -7,6 +7,13 @@ from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
+from wagtail import blocks
+from wagtail.fields import StreamField
+from wagtail.admin.panels import FieldPanel
+from wagtail.models import Page, PreviewableMixin
+from wagtail.snippets.blocks import SnippetChooserBlock
+from wagtail.snippets.models import register_snippet
+
 HOT_TOPIC_SLUG = "hot"
 
 
@@ -15,7 +22,10 @@ class ProductQuerySet(models.QuerySet):
         return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(codename="")
 
 
-class Product(ModelBase):
+# Wagtail: Registering our existing Product model as a Wagtail Snippet
+# And adding PreviewablerMixin to allow prevewing in the Wagtail Admin
+@register_snippet
+class Product(ModelBase, PreviewableMixin):
     title = models.CharField(max_length=255, db_index=True)
     codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
@@ -79,6 +89,46 @@ class Product(ModelBase):
 
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})
+
+    # Wagtail Product additions
+    panels = [
+        FieldPanel("title"),
+        FieldPanel("codename"),
+        FieldPanel("slug"),
+        FieldPanel("description"),
+        FieldPanel("image"),
+        FieldPanel("image_alternate"),
+        FieldPanel("display_order"),
+        FieldPanel("visible"),
+        FieldPanel("platforms"),
+    ]
+
+    def get_preview_template(self, request, mode_name):
+        return "products/product_card_preview.html"
+
+
+# Wagtail: This is a StructBlock that allows selection of a Product Snippet
+class ProductSnippetBlock(blocks.StructBlock):
+    product = SnippetChooserBlock(target_model="products.Product", required=True)
+
+    class Meta:
+        template = "products/blocks/product_snippet_block.html"
+        icon = "placehoder"
+        label = "Product Card"
+
+
+# Wagtail: This is the product index we want to serve
+class LandingPage(Page):
+    body = StreamField([("product_snippet", ProductSnippetBlock())])
+
+    content_panels = Page.content_panels + [FieldPanel("body")]
+
+    def get_template(self, request):
+        return "products/products.html"
+
+    class Meta:
+        verbose_name = "Product Index"
+        verbose_name_plural = "Product Indexes"
 
 
 # Note: This is the "new" Topic class

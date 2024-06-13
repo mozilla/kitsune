@@ -16,7 +16,7 @@ from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.utils import get_featured_articles
 
 
-@check_simple_wiki_locale
+@check_simple_wiki_locale  # Is this important for Wagtail?
 def product_list(request):
     """The product picker page."""
     template = "products/products.html"

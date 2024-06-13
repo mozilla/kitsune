@@ -9,6 +9,8 @@ from waffle.views import wafflejs
 from wagtail.urls import serve_pattern
 import wagtail.views
 
+from wagtail import urls as wagtail_urls
+
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
 from kitsune.sumo.i18n import i18n_patterns
@@ -24,6 +26,7 @@ from django.contrib import admin  # noqa
 admin.autodiscover()
 
 urlpatterns = i18n_patterns(
+    path("products/", include(wagtail_urls)),
     path("kb", include("kitsune.wiki.urls")),
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),

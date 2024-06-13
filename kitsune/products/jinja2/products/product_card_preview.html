@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% set title = _('Products') %}
+{% block contentwrap %}
+  <section class="mzp-l-content sumo-page-section" id="main-content">
+    <div class="sumo-card-grid is-product-wrap">
+      <div class="scroll-wrap">
+        <div class="card card--product zoom-on-hover"> 
+          <img class="card--icon" src="{{ object.image_url }}" alt="{{ object.title }}" />
+          <div class="card--details">
+            <h3 class="card--title">
+              <a class="expand-this-link" href=""
+                 data-event-name="link_click"
+                 data-event-parameters='{
+                   "link_name": "product-home",
+                   "link_detail": "{{ object.slug }}"
+                 }'>
+                {{ object.title }}
+              </a>
+            </h3>
+            <p class="card--desc">{{ object.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

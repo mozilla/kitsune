@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
-{% set title = _('Products') %}
+
 {% set crumbs = [(None, title)] %}
 {% set canonical_url = canonicalize(viewname='products') %}
 {% set ga_content_group = "list-products" %}
@@ -16,7 +16,7 @@
   </div>
   <div class="mzp-l-content narrow">
     <div class="home-search-section--content">
-      <h1 class="sumo-page-heading-xl">{{ title }}</h1>
+      <h1 class="sumo-page-heading-xl">{{ page.title }}</h1>
       {{ search_box(settings, id='support-search-masthead', params=search_params) }}
     </div>
   </div>
@@ -26,6 +26,12 @@
 
 {% block contentwrap %}
   <section class="mzp-l-content sumo-page-section" id="main-content">
-    {{ product_cards(products) }}
+    <div class="sumo-card-grid is-product-wrap">
+      <div class="scroll-wrap">
+        {% for block in page.body %}
+            {{ block.render() }}
+        {% endfor %}
+        <div class="sumo-card-grid is-product-wrap">
+    <div class="scroll-wrap">
   </section>
 {% endblock %}
