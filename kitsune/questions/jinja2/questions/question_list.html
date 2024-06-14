@@ -12,7 +12,7 @@
   {% set page_title = pgettext('DB: products.Product.title', products[0].title) %}
   {% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
 {% endif %}
-
+{# L10n: {title} will normally be the Product title, but sometimes can be 'All Products' or 'Multiple Products' #}
 {% set title = _('{title} Community Forum')|f(title=page_title) %}
 
 {% set crumbs = [(url('questions.home'), _('Community Forums')), (None, page_title)] %}
