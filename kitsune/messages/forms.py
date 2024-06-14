@@ -53,7 +53,11 @@ class MessageForm(forms.Form):
                 )
             ):
                 raise forms.ValidationError(
-                    _lazy("You are not allowed to send messages to groups without profiles ")
+                    # L10n: This message is shown when the user tries to send a message to a group
+                    # L10n: but that group doesn't have a profile.
+                    _lazy(
+                        "You are not allowed to send messages to groups that don't have profiles."
+                    )
                     + f"({', '.join(bad_group_names)})."
                 )
 
