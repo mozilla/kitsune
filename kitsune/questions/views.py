@@ -164,6 +164,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # Get all topics
     topics = []
+    topic_navigation = False
     if topic_slug:
         try:
             topic_history = TopicSlugHistory.objects.get(slug=topic_slug)
@@ -172,6 +173,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         except TopicSlugHistory.DoesNotExist:
             ...
         topics = Topic.objects.filter(visible=True, slug=topic_slug)
+        topic_navigation = True
         if not topics:
             raise Http404()
 
@@ -342,6 +344,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "topics": topics,
         "selected_topic": topics[0] if topics else None,
         "product_key": product_key,
+        "topic_navigation": topic_navigation,
     }
 
     if products:
