@@ -1,4 +1,3 @@
-from csp.decorators import csp_update
 from django.conf import settings
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
@@ -14,6 +13,7 @@ from wagtail.views import serve as wagtail_serve
 
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
+from kitsune.sumo.decorators import csp_allow_inline_scripts_and_styles
 from kitsune.sumo.i18n import i18n_patterns
 
 # Note: This must come before importing admin because it patches the
@@ -65,8 +65,7 @@ if settings.WAGTAIL_ENABLE_ADMIN:
             "cms/",
             include(
                 decorate_urlpatterns(
-                    wagtail_admin_urlpatterns,
-                    csp_update(script_src="'unsafe-inline'", style_src="'unsafe-inline'"),
+                    wagtail_admin_urlpatterns, csp_allow_inline_scripts_and_styles
                 )
             ),
         )
