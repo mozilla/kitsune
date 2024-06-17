@@ -1,9 +1,10 @@
 window.addEventListener("DOMContentLoaded", (event) => {
-    const geoIPUrl = 'https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d';
+    // const geoIPUrl = 'https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d';
+    const proxyUrl = "/questions/mozilla/location/"
     const countryField = document.querySelector('input#id_country');
 
     if (countryField) {
-        fetch(geoIPUrl)
+        fetch(proxyUrl)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Fetch failed, status ${response.status}`)
@@ -12,7 +13,17 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
         })
         .then(data => {
-            countryField.value = data.country_name;
+            
+            if(data && data.country_name) {
+                countryField.value = data.country_name;
+            } else {
+                countryField.value = '';
+                console.log('No country name found in response.');
+            }
         })
+        .catch(error => {
+            console.error('Error fetching country:', error);
+            countryField.value = '';
+        });
     }
 });

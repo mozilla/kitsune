@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import re_path
+from django.urls import path, re_path
 
 from kitsune.flagit import views as flagit_views
 from kitsune.questions import views
@@ -29,6 +29,8 @@ urlpatterns = [
         views.metrics,
         name="questions.locale_metrics",
     ),
+    # Mozilla location service proxy url
+    path("mozilla/location/", views.aaq_location_proxy, name="questions.location_proxy"),
     # AAQ
     re_path(r"^new$", views.aaq, name="questions.aaq_step1"),
     re_path(r"^new/(?P<product_key>[\w\-]+)$", views.aaq_step2, name="questions.aaq_step2"),

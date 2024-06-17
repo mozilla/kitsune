@@ -56,7 +56,7 @@ class ZendeskForm(forms.Form):
     description = forms.CharField(
         label=_lazy("Tell us more"), widget=forms.Textarea(), required=False
     )
-    country = forms.CharField(widget=forms.HiddenInput)
+    country = forms.CharField(widget=forms.HiddenInput, required=False)
 
     def __init__(self, *args, product, user=None, **kwargs):
         kwargs.update({"initial": {"product": product.slug}})

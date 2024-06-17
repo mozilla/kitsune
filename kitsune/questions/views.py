@@ -4,6 +4,7 @@ import random
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
+import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
@@ -19,6 +20,7 @@ from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
     HttpResponseRedirect,
+    JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -45,13 +47,7 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import (
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionLocale,
-    QuestionVote,
-)
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
 from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.sumo.decorators import ratelimit
@@ -489,6 +485,12 @@ def edit_details(request, question_id):
     question.save()
 
     return redirect(reverse("questions.details", kwargs={"question_id": question_id}))
+
+
+def aaq_location_proxy(request):
+    """Proxy request from the Mozilla service to our form."""
+    response = requests.get(settings.MOZILLA_LOCATION_SERVICE)
+    return JsonResponse(response.json())
 
 
 def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False):
