@@ -1314,6 +1314,10 @@ MOZILLA_ACCOUNT_ARTICLES = [
     "im-having-problems-confirming-my-firefox-account",
 ]
 
+MOZILLA_LOCATION_SERVICE = config(
+    "MOZILLA_LOCATION_SERVICE",
+    default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",  # noqa
+)
 # Wagtail settings
 WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=False, cast=bool)
 WAGTAIL_I18N_ENABLED = True
