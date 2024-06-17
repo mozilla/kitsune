@@ -1,8 +1,9 @@
+import re
 import allure
 import pytest
 import requests
 from pytest_check import check
-
+from playwright.sync_api import expect
 from playwright_tests.core.testutilities import TestUtilities
 from urllib.parse import urljoin
 
@@ -42,3 +43,14 @@ class TestFooter(TestUtilities):
             # We are currently treating them as pass cases.
             with check, allure.step(f"Verifying that {url} is not broken are not broken"):
                 assert response.status_code in set(range(400)) | {403, 429}
+
+    # C2316348
+    @pytest.mark.footerSectionTests
+    def test_locale_selector(self):
+        with allure.step("Verifying that all footer select options are redirecting the user to "
+                         "the correct page locale"):
+            for locale in self.sumo_pages.footer_section._get_all_footer_locales():
+                self.sumo_pages.footer_section._switch_to_a_locale(locale)
+                expect(
+                    self.page
+                ).to_have_url(re.compile(f".*{locale}"))
