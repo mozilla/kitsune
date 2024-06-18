@@ -9,6 +9,7 @@ class AuthPage(BasePage):
     __fxa_sign_in_page_header = "//h1[@id='fxa-signin-password-header']"
     __auth_page_main_header = "//h1[@class='sumo-page-heading']"
     __auth_page_subheading_text = "//div[@class='sumo-page-section']/p"
+    __cant_sign_in_to_my_Mozilla_account_link = "//div[@class='trouble-text']//a"
 
     # Continue with firefox accounts button
     __continue_with_firefox_accounts_button = "//p[@class='login-button-wrap']/a"
@@ -33,6 +34,9 @@ class AuthPage(BasePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
+
+    def _click_on_cant_sign_in_to_my_mozilla_account_link(self):
+        super()._click(self.__cant_sign_in_to_my_Mozilla_account_link)
 
     def _click_on_continue_with_firefox_accounts_button(self):
         super()._click(self.__continue_with_firefox_accounts_button)

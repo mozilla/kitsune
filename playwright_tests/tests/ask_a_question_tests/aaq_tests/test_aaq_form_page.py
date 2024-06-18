@@ -14,7 +14,7 @@ from playwright_tests.messages.contribute_messages.con_pages.con_page_messages i
     ContributePageMessages)
 
 
-class TestAAQPage(TestUtilities):
+class TestAAQPage(TestUtilities, AAQFormMessages):
 
     # C2188694, C2188695
     @pytest.mark.aaqPage
@@ -176,23 +176,23 @@ class TestAAQPage(TestUtilities):
                 with check, allure.step("Verifying that the correct in progress milestone is "
                                         "displayed"):
                     assert self.sumo_pages.aaq_form_page._get_in_progress_item_label(
-                    ) == AAQFormMessages.IN_PROGRESS_MILESTONE
+                    ) == super().IN_PROGRESS_MILESTONE
 
-                with allure.step(f"Clicking on the {AAQFormMessages.COMPLETED_MILESTONE_TWO} "
+                with allure.step(f"Clicking on the {super().COMPLETED_MILESTONE_TWO} "
                                  f"milestone and verifying that we are on the correct product "
                                  f"solutions page"):
                     self.sumo_pages.aaq_form_page._click_on_a_particular_completed_milestone(
-                        AAQFormMessages.COMPLETED_MILESTONE_TWO)
+                        super().COMPLETED_MILESTONE_TWO)
                     expect(
                         self.page
                     ).to_have_url(super().general_test_data["product_solutions"][product])
 
                 with allure.step(f"Navigating back to the aaq form and clicking on the "
-                                 f"{AAQFormMessages.COMPLETED_MILESTONE_ONE} milestone"):
+                                 f"{super().COMPLETED_MILESTONE_ONE} milestone"):
                     self.navigate_to_link(super().aaq_question_test_data["products_aaq_url"]
                                           [product])
                     self.sumo_pages.aaq_form_page._click_on_a_particular_completed_milestone(
-                        AAQFormMessages.COMPLETED_MILESTONE_ONE)
+                        super().COMPLETED_MILESTONE_ONE)
                     expect(
                         self.page
                     ).to_have_url(ContactSupportMessages.PAGE_URL_CHANGE_PRODUCT_REDIRECT)
@@ -440,3 +440,63 @@ class TestAAQPage(TestUtilities):
 
                     with allure.step("Deleting the posted question"):
                         self.sumo_pages.aaq_flow.deleting_question_flow()
+
+    # C1512592
+    @pytest.mark.aaqPage
+    def test_premium_products_aaq(self):
+        with allure.step("Signing in with an admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        with allure.step("Navigating to each premium product contact form and sending a ticket"):
+            for premium_product in super().general_test_data['premium_products']:
+                self.navigate_to_link(
+                    super().aaq_question_test_data['products_aaq_url'][premium_product]
+                )
+                if premium_product == 'Mozilla VPN':
+                    self.sumo_pages.aaq_flow.submit_an_aaq_question(
+                        subject=super().aaq_question_test_data['premium_aaq_question']['subject'],
+                        body=super().aaq_question_test_data['premium_aaq_question']['body'],
+                        is_premium=True
+                    )
+                else:
+                    self.sumo_pages.aaq_flow.submit_an_aaq_question(
+                        subject=super().aaq_question_test_data['premium_aaq_question']['subject'],
+                        body=super().aaq_question_test_data['premium_aaq_question']['body'],
+                        is_premium=True
+                    )
+
+            with allure.step("Verifying that the correct success message is displayed"):
+                assert self.sumo_pages.aaq_form_page._get_premium_card_submission_message(
+                ) == self.get_premium_ticket_submission_success_message(
+                    self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+                )
+
+    # C2635907
+    @pytest.mark.aaqPage
+    def test_loginless_mozilla_account_aaq(self):
+        with allure.step("Sending 4 loginless tickets and verifying that the user is successfully "
+                         "blocked after 3 submissions"):
+            i = 1
+            while i <= 4:
+                self.sumo_pages.top_navbar._click_on_signin_signup_button()
+                self.sumo_pages.auth_page._click_on_cant_sign_in_to_my_mozilla_account_link()
+                self.sumo_pages.aaq_flow.submit_an_aaq_question(
+                    subject=super().aaq_question_test_data['premium_aaq_question']['subject'],
+                    body=super().aaq_question_test_data['premium_aaq_question']['body'],
+                    is_premium=True,
+                    email=self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"],
+                    is_loginless=True
+                )
+                if i <= 3:
+                    with allure.step("Verifying that the correct success message is displayed"):
+                        assert self.sumo_pages.aaq_form_page._get_premium_card_submission_message(
+                        ) == self.get_premium_ticket_submission_success_message(
+                            self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+                        )
+                else:
+                    with allure.step("Verifying that submission error message is displayed"):
+                        assert self.sumo_pages.aaq_form_page._get_premium_card_submission_message(
+                        ) == self.LOGINLESS_RATELIMIT_REACHED_MESSAGE
+                i += 1

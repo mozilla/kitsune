@@ -8,3 +8,8 @@ class AAQFormMessages:
                  "understand the issue better than saying “something is wrong” or “the app is "
                  "broken”.")
     ERROR_MESSAGE = "This field is required."
+    LOGINLESS_RATELIMIT_REACHED_MESSAGE = "You've exceeded the number of submissions for today."
+
+    def get_premium_ticket_submission_success_message(self, user_email: str) -> str:
+        return (f"Done! Thank you for reaching out Mozilla Support. We've sent a confirmation "
+                f"email to {user_email}")

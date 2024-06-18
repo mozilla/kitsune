@@ -15,34 +15,42 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
     # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
     def submit_an_aaq_question(self,
                                subject: str,
-                               topic_name: str,
                                body: str,
-                               os="",
-                               attach_image=False):
-        question_subject = self.add__valid_data_to_all_aaq_fields_without_submitting(
-            subject,
-            topic_name,
-            body,
-            os,
-            attach_image
-        )
+                               topic_name='',
+                               attach_image=False,
+                               is_premium=False,
+                               email="",
+                               is_loginless=False
+                               ):
+        question_subject = ''
+        if is_premium:
+            self.add_valid_data_to_all_premium_products_aaq_fields(subject, body, is_loginless,
+                                                                   email)
+        else:
+            question_subject = self.add__valid_data_to_all_aaq_fields_without_submitting(
+                subject,
+                topic_name,
+                body,
+                attach_image
+            )
         # Submitting the question.
         super()._click_aaq_form_submit_button()
-        # Waiting for submitted question reply button visibility.
-        super()._is_post_reply_button_visible()
-        current_page_url = self._page.url
 
-        # Returning the posted question subject and url for further usage.
-        return {"aaq_subject": question_subject, "question_page_url": current_page_url,
-                "question_body": body}
+        # If the submission was done for freemium products we are retrieving the Question Subject,
+        # Question url & Question Body for further test usage.
+        if not is_premium:
+            # Waiting for submitted question reply button visibility.
+            super()._is_post_reply_button_visible()
+            current_page_url = self._page.url
+            return {"aaq_subject": question_subject, "question_page_url": current_page_url,
+                    "question_body": body}
 
-    # Populating the aaq form fields with given values without submitting the form.
-    # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
+    # Populating the aaq form fields for freemium products with given values without submitting the
+    # form.
     def add__valid_data_to_all_aaq_fields_without_submitting(self,
                                                              subject: str,
                                                              topic_value: str,
                                                              body_text: str,
-                                                             os='',
                                                              attach_image=False):
         aaq_subject = subject + super().generate_random_number(min_value=0, max_value=5000)
         # Adding text to subject field.
@@ -55,9 +63,6 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         super()._add_text_to_aaq_textarea_field(
             body_text
         )
-        # Some products contain another OS dropdown menu. We are selecting an option for those.
-        if os != "":
-            super()._select_aaq_form_os_value(os)
 
         if attach_image:
             # Uploading an image to the aaq question form.
@@ -70,6 +75,19 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
 
         # Returning the entered question subject for further usage.
         return aaq_subject
+
+    # Flow for adding valid data to premium products forms without submitting the ticket.
+    # We are currently choosing one random topic & os for each product ticket submission.
+    # Note: Some premium products forms (example: Mozilla VPN) has an extra "os" dropdown.
+    def add_valid_data_to_all_premium_products_aaq_fields(self, subject: str, body: str,
+                                                          is_loginless: bool, email: str):
+        if is_loginless:
+            super()._fill_contact_email_field(email)
+        super()._select_random_topic_by_value()
+        if super()._is_os_dropdown_menu_visible():
+            super()._select_random_os_by_value()
+        super()._add_text_to_premium_aaq_form_subject_field(subject)
+        super()._add_text_to_premium_aaq_textarea_body_field(body)
 
     # Adding an image to the aaq form.
     def adding_an_image_to_aaq_form(self):
@@ -105,7 +123,7 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         else:
             super()._click_aaq_form_cancel_button()
 
-    def delete_question_reply(self, answer_id: str, delete_reply:bool):
+    def delete_question_reply(self, answer_id: str, delete_reply: bool):
         super()._click_on_reply_more_options_button(answer_id)
         super()._click_on_delete_this_post_for_a_certain_reply(answer_id)
 

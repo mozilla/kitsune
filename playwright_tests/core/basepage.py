@@ -1,3 +1,4 @@
+import random
 from playwright.sync_api import Page, ElementHandle, Locator, TimeoutError
 
 
@@ -121,6 +122,17 @@ class BasePage:
     # Choosing an option by value from a select element.
     def _select_option_by_value(self, xpath: str, value: str):
         self._get_element_locator(xpath).select_option(value=value)
+
+    # Selecting a random dropdown menu option by 'value'.
+    def _select_random_option_by_value(self, dropdown_locator: str, xpath_options: str):
+        elements = []
+        for element in self._get_elements_locators(xpath_options):
+            locator_value = self._get_element_locator_attribute_value(element, 'value')
+            if locator_value == '':
+                continue
+            else:
+                elements.append(locator_value)
+        self._select_option_by_value(dropdown_locator, random.choice(elements))
 
     # Accept a dialog.
     def _accept_dialog(self):
