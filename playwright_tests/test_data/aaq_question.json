@@ -15,6 +15,10 @@
     "common_responses_category": "General",
     "common_responses_response": "Zoom feature"
   },
+  "premium_aaq_question": {
+    "subject": "playwright test ticket",
+    "body": "playwright test ticket"
+  },
   "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
   "troubleshooting_information": "Test Troubleshooting data",
   "troubleshoot_product_and_os_versions": ["Test os", "Test product version"],

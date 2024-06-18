@@ -4,6 +4,7 @@ from playwright_tests.core.basepage import BasePage
 
 class AAQFormPage(BasePage):
     __uploaded_image_title = ""
+    __premium_ticket_message = "//ul[@class='user-messages']//p"
 
     # Breadcrumb locators.
     __in_progress_item_label = ("//li[@class='progress--item is-current']//span["
@@ -16,7 +17,11 @@ class AAQFormPage(BasePage):
 
     # AAQ Subject locators.
     __aaq_subject_input_field = "//input[@id='id_title']"
+    __premium_aaq_subject_input_field = "//input[@id='id_subject']"
     __aaq_subject_input_field_error_message = "//input[@id='id_title']/following-sibling::ul/li"
+
+    # Loginless form locators.
+    __loginless_contact_email_input_field = "//input[@id='id_email']"
 
     # Product topic dropdown locators.
     __product_topic_options = "//select[@id='id_category']/option"
@@ -27,10 +32,12 @@ class AAQFormPage(BasePage):
                                                      "@class='errorlist']/li")
 
     # Product os dropdown locators (Available for Mozilla VPN product only).
+    __product_os_select_dropdown_options = "//select[@id='id_os']/option"
     __product_os_select_dropdown = "//select[@id='id_os']"
 
     # How can we help textarea field locators.
     __how_can_we_help_textarea = "//textarea[@id='id_content']"
+    __tell_us_more_premium_product_textarea = "//textarea[@id='id_description']"
     __how_can_we_help_textarea_error_field = ("//textarea[@id='id_content']/../following-sibling"
                                               "::ul/li")
 
@@ -66,6 +73,12 @@ class AAQFormPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    def _fill_contact_email_field(self, text: str):
+        super()._fill(self.__loginless_contact_email_input_field, text)
+
+    def _get_premium_card_submission_message(self) -> str:
+        return super()._get_text_of_element(self.__premium_ticket_message)
+
     # Breadcrumb actions.
     def _get_in_progress_item_label(self) -> str:
         return super()._get_text_of_element(self.__in_progress_item_label)
@@ -85,6 +98,12 @@ class AAQFormPage(BasePage):
 
     def _add_text_to_aaq_form_subject_field(self, text: str):
         super()._fill(self.__aaq_subject_input_field, text)
+
+    def _add_text_to_premium_aaq_form_subject_field(self, text: str):
+        super()._fill(self.__premium_aaq_subject_input_field, text)
+
+    def _add_text_to_premium_aaq_textarea_body_field(self, text: str):
+        super()._fill(self.__tell_us_more_premium_product_textarea, text)
 
     # Question body actions.
     def _get_value_of_question_body_textarea_field(self) -> str:
@@ -153,7 +172,7 @@ class AAQFormPage(BasePage):
         super()._fill(self.__product_os, text)
 
     def _select_aaq_form_os_value(self, value: str):
-        super()._select_option_by_value(self.__product_os_select_dropdown, value)
+        super()._select_option_by_value(self.__product_os_select_dropdown_options, value)
 
     # Troubleshooting information actions.
     def _add_text_to_troubleshooting_information_textarea(self, text: str):
@@ -161,6 +180,17 @@ class AAQFormPage(BasePage):
 
     def _click_on_learn_more_button(self):
         super()._click(self.__learn_more_button)
+
+    def _is_os_dropdown_menu_visible(self) -> bool:
+        return super()._is_element_visible(self.__product_os_select_dropdown)
+
+    def _select_random_os_by_value(self):
+        super()._select_random_option_by_value(self.__product_os_select_dropdown,
+                                               self.__product_os_select_dropdown_options)
+
+    def _select_random_topic_by_value(self):
+        super()._select_random_option_by_value(self.__product_topic_select_dropdown,
+                                               self.__product_topic_options)
 
     def _click_on_share_data_button(self):
         super()._click(self.__share_data_button)
