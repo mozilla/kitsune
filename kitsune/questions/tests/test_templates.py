@@ -1300,7 +1300,7 @@ class AAQTemplateTestCase(TestCase):
     data = {
         "title": "A test question",
         "content": "I have this question that I hope...",
-        "category": "fix-problems",
+        "category": "troubleshooting",
         "sites_affected": "http://example.com",
         "ff_version": "3.6.6",
         "os": "Intel Mac OS X 10.6",
@@ -1342,7 +1342,7 @@ class AAQTemplateTestCase(TestCase):
         for loc_code in (settings.LANGUAGE_CODE, "pt-BR"):
             loc, _ = QuestionLocale.objects.get_or_create(locale=loc_code)
             product.questions_locales.add(loc)
-        TopicFactory(slug="fix-problems", product=product)
+        TopicFactory(title="Troubleshooting", slug="troubleshooting", product=product)
         extra = {}
         if locale is not None:
             extra["locale"] = locale
@@ -1354,7 +1354,8 @@ class AAQTemplateTestCase(TestCase):
         s["in-aaq"] = True
         s.save()
 
-        return self.client.post(url, self.data, follow=True)
+        foo = self.client.post(url, self.data, follow=True)
+        return foo
 
     def test_full_workflow(self):
         response = self._post_new_question()
@@ -1372,7 +1373,7 @@ class AAQTemplateTestCase(TestCase):
         self.assertEqual(0, len(mail.outbox))
 
         # Verify product and topic assigned to question.
-        self.assertEqual("fix-problems", question.topic.slug)
+        self.assertEqual("troubleshooting", question.topic.slug)
         self.assertEqual("firefox", question.product.slug)
 
         # Verify troubleshooting information
