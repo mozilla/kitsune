@@ -103,18 +103,18 @@
     </h2>
     {% if aaq_context %}
       {% set link_detail = aaq_context.key %}
-      {% if request.user.is_authenticated and aaq_context.has_ticketing_support %}
-        {# user authenticated and ticketing support #}
-        <p> {{ _('Still need help? Continue to contact our support team.') }}</p>
-      {% elif request.user.is_authenticated and aaq_context.has_public_forum %}
-        {# user is authenticated and forum support #}
-        <p>{{ _('Still need help? Continue to ask your question on our forums.') }}</p>
-      {% elif not aaq_context.has_ticketing_support %}
-        {# user not authenticated and forum support #}
-        <p>{{ _('Still need help? Sign in to ask your question on our forums.') }}</p>
+      {% if request.user.is_authenticated %}
+        {% if aaq_context.has_ticketing_support %}
+          <p> {{ _('Still need help? Continue to contact our support team.') }}</p>
+        {% elif aaq_context.has_public_forum %}
+          <p>{{ _('Still need help? Continue to ask your question on our forums.') }}</p>
+        {% endif %}
       {% else %}
-        {# user not authenticated and ticketing support #}
-        <p>{{ _('Still need help? Sign in to contact our support team.') }}</p>
+        {% if aaq_context.has_ticketing_support %}
+          <p>{{ _('Still need help? Sign in to contact our support team.') }}</p>
+        {% elif aaq_context.has_public_forum %}
+          <p>{{ _('Still need help? Sign in to ask your question on our forums.') }}</p>
+        {% endif %}
       {% endif %}
 
       {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}

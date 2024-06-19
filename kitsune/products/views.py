@@ -99,7 +99,15 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         except TopicSlugHistory.DoesNotExist:
             ...
 
-    product = get_object_or_404(Product, slug=product_slug) if product_slug else None
+    product = None
+    if product_slug:
+        product = get_object_or_404(Product, slug=product_slug)
+        request.session["aaq_context"] = {
+            "has_ticketing_support": product.has_ticketing_support,
+            "key": _get_aaq_product_key(product_slug),
+            "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
+        }
+
     doc_kw = {
         "locale": request.LANGUAGE_CODE,
         "products": [product] if product else None,
@@ -135,11 +143,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         if subtopic_slug is not None:
             subtopic = get_object_or_404(Topic, slug=subtopic_slug, product=product, parent=topic)
             doc_kw["topics"] = [subtopic]
-
-        request.session["aaq_context"] = {
-            "has_ticketing_support": product.has_ticketing_support,
-            "key": _get_aaq_product_key(product_slug),
-        }
 
     if not topics.exists():
         raise Http404
