@@ -1,6 +1,7 @@
 import json
 from functools import wraps
 
+from csp.utils import build_policy
 from django import http
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -126,3 +127,29 @@ def skip_if_read_only_mode(fn):
             return fn(*args, **kwargs)
 
     return wrapper
+
+
+def csp_allow_inline_scripts_and_styles(fn):
+    """
+    Add a CSP header to the response of the decorated view that allows inline
+    scripts and styles. The CSP header is created from the CSP values in the
+    settings, and then updated to include the "'unsafe-inline'" source within
+    both the "style-src" and "script-src" directives. The CSP header is inserted
+    in the response so that the normal insertion of the header within the
+    CSPMiddleware is bypassed. That, in turn, prevents the CSPMiddleware from
+    adding the nonce sources, which would override the "'unsafe-inline'" sources
+    and effectively cause them to be ignored.
+    """
+
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        response = fn(*args, **kwargs)
+        response["Content-Security-Policy"] = build_policy(
+            update={
+                "style-src": "'unsafe-inline'",
+                "script-src": "'unsafe-inline'",
+            }
+        )
+        return response
+
+    return wrapped
