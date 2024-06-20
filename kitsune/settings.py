@@ -1200,6 +1200,7 @@ CSP_SCRIPT_SRC: tuple[str, ...] = (
 
 CSP_IMG_SRC = (
     "'self'",
+    "blob:",
     "data:",
     "https://*.mozaws.net",
     "https://*.webservices.mozgcp.net",
