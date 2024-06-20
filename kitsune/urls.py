@@ -41,6 +41,7 @@ urlpatterns = i18n_patterns(
     path("announcements/", include("kitsune.announcements.urls")),
     path("community/", include("kitsune.community.urls")),
     path("badges/", include("kitsune.kbadge.urls")),
+    path("documents/", include("wagtail.documents.urls")),
     path("", include("kitsune.products.urls")),
     path("", include("kitsune.dashboards.urls")),
     path("", include("kitsune.landings.urls")),
