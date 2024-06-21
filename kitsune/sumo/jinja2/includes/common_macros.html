@@ -148,12 +148,66 @@
             <h4 class="mzp-c-menu-item-title">{{ _('Explore by topic') }}</h4>
           </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('products.topic_documents', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
-              <li><a href="{{ url('products.topic_documents', topic_slug='protect-your-privacy') }}">{{ _('Protect your privacy') }}</a></li>
-              <li><a href="{{ url('products.topic_documents', topic_slug='manage-preferences-and-add-ons-firefox') }}">{{ _('Customize settings and preferences') }}</a></li>
-              <li><a href="{{ url('products.topic_documents', topic_slug='install-and-update') }}">{{ _('Install and update') }}</a></li>
-              <li><a href="{{ url('products.topic_documents', topic_slug='install-and-manage-add-ons-firefox') }}">{{ _('Install and manage add-ons') }}</a></li>
-              <li><a href="{{ url('products.topic_documents', topic_slug='emails-thunderbird') }}">{{ _('Emails') }}</a></li>
+              <li>
+                <a href="{{ url('products.topic_documents', topic_slug='troubleshooting') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.topic-home",
+                    "link_detail": "troubleshooting"
+                  }'>
+                   {{ _('Troubleshooting') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.topic_documents', topic_slug='protect-your-privacy') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.topic-home",
+                    "link_detail": "protect-your-privacy"
+                  }'>
+                   {{ _('Protect your privacy') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.topic_documents', topic_slug='customize-settings-and-preferences') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.topic-home",
+                    "link_detail": "desktop"
+                  }'>
+                   {{ _('Customize settings and preferences') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.topic_documents', topic_slug='install-and-update') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.topic-home",
+                    "link_detail": "install-and-update"
+                  }'>
+                   {{ _('Install and update') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.topic_documents', topic_slug='install-and-manage-add-ons') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.topic-home",
+                    "link_detail": "desktop"
+                  }'>
+                   {{ _('Install and manage add-ons') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('products.topic_documents', topic_slug='emails') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.topic-home",
+                    "link_detail": "emails"
+                  }'>
+                   {{ _('Emails') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
@@ -184,12 +238,66 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse by product') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('questions.list', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
-              <li><a href="{{ url('questions.list', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.list', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
-              <li><a href="{{ url('questions.list', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('View all forums') }}</a></li>
+              <li>
+                <a href="{{ url('questions.list', 'firefox')}}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "desktop"
+                  }'>
+                   {{ _('Firefox browser') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list', 'focus-firefox') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "focus"
+                  }'>
+                   {{ _('Firefox Focus') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list', 'ios') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "ios"
+                  }'>
+                   {{ _('Firefox for iOS') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list', 'thunderbird') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "thunderbird"
+                  }'>
+                   {{ _('Thunderbird') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list', 'mobile') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "mobile"
+                  }'>
+                   {{ _('Firefox for Android') }}
+                </a>
+              </li>
+              <li>
+                <a class="color-link" href="{{ url('questions.home') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "view-all-home"
+                  }'>
+                   {{ _('View all forums') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
@@ -206,12 +314,66 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='troubleshooting') }}">{{ _('Troubleshooting') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='protect-your-privacy') }}">{{ _('Protect your privacy') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='manage-preferences-and-add-ons-firefox') }}">{{ _('Customize settings and preferences') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}">{{ _('Install and update') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='install-and-manage-add-ons-firefox') }}">{{ _('Install and manage add-ons') }}</a></li>
-              <li><a href="{{ url('questions.list_by_topic', topic_slug='emails-thunderbird') }}">{{ _('Emails') }}</a></li>
+              <li>
+                <a href="{{ url('questions.list_by_topic', topic_slug='troubleshooting') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "troubleshoooting"
+                  }'>
+                   {{ _('Troubleshooting') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list_by_topic', topic_slug='protect-your-privacy') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "protect-your-privacy"
+                  }'>
+                   {{ _('Protect your privacy') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list_by_topic', topic_slug='customize-settings-and-preferences') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "customize-settings-and-preferences"
+                  }'>
+                   {{ _('Customize settings and preferences') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "install-and-update"
+                  }'>
+                   {{ _('Install and update') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list_by_topic', topic_slug='install-and-manage-add-ons') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "install-and-manage-add-ons"
+                  }'>
+                   {{ _('Install and manage add-ons') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.list_by_topic', topic_slug='emails') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.support-forum-home",
+                    "link_detail": "emails"
+                  }'>
+                   {{ _('Emails') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
@@ -243,20 +405,126 @@
               <h4 class="mzp-c-menu-item-title">{{ _('Get help with') }}</h4>
             </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist-aaq">
-              <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox browser') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'firefox-enterprise') }}">{{ _('Firefox for Enterprise') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'relay') }}">{{ _('Firefox Relay') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'monitor') }}">{{ _('Monitor') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'mozilla-account') }}">{{ _('Mozilla Account') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a
-                  href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'desktop') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "desktop"
+                  }'>
+                   {{ _('Firefox browser') }}
+                </a>
               </li>
-              <li><a href="{{ url('questions.aaq_step2', 'pocket') }}">{{ _('Pocket') }}</a></li>
-              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('View all') }}</a></li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'firefox-enterprise') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "firefox-enterprise"
+                  }'>
+                   {{ _('Firefox for Enterprise') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'relay') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "relay"
+                  }'>
+                   {{ _('Firefox Relay') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'thunderbird') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "thunderbird"
+                  }'>
+                   {{ _('Thunderbird') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'ios') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "ios"
+                  }'>
+                   {{ _('Firefox for iOS') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'focus') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "focus"
+                  }'>
+                   {{ _('Firefox Focus') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'monitor') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "monitor"
+                  }'>
+                   {{ _('Monitor') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'mozilla-account') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "mozilla-account"
+                  }'>
+                   {{ _('Mozilla Account') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'mobile') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "mobile"
+                  }'>
+                   {{ _('Firefox for Android') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "firefox-private-network-vpn"
+                  }'>
+                   {{ _('Mozilla VPN') }}
+                </a>
+              </li>
+              <li>
+                <a href="{{ url('questions.aaq_step2', 'pocket') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-2",
+                    "link_detail": "pocket"
+                  }'>
+                   {{ _('Pocket') }}
+                </a>
+              </li>
+              <li>
+                <a class="color-link" href="{{ url('questions.aaq_step1') }}"
+                   data-event-name="link_click"
+                   data-event-parameters='{
+                    "link_name": "main-menu.aaq-step-1",
+                    "link_detail": "view-all"
+                  }'>
+                   {{ _('View all') }}
+                </a>
+              </li>
             </ul>
           </section>
         </div>
