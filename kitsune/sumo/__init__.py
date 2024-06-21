@@ -17,6 +17,7 @@ NAVIGATION_TOPICS = OrderedDict(
         ],
         "Emails": ["emails-thunderbird"],
         "Customize settings and preferences": [
+            "customize-settings-and-preferences",
             "manage-preferences-and-add-ons-firefox",
             "customize-settings-firefox-android",
             "customize-preferences-ios",
