@@ -42,6 +42,9 @@ import dntEnabled from "./libs/dnt-helper";
     if (html.dataset.gaDefaultSlug) {
       configParameters.default_slug = html.dataset.gaDefaultSlug;
     }
+    if (html.dataset.gaArticleLocale) {
+      configParameters.article_locale = html.dataset.gaArticleLocale;
+    }
 
     w.gtag('config', GTM_CONTAINER_ID, configParameters);
   }

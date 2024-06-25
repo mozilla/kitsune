@@ -229,6 +229,12 @@ def document(request, document_slug, document=None):
     # to be used within GA as parameters/dimensions.
     ga_products = f"/{'/'.join(products.order_by('slug').values_list('slug', flat=True))}/"
     ga_topics = f"/{'/'.join(doc.get_topics().order_by('slug').values_list('slug', flat=True))}/"
+    # Provide the actual locale of the document that will also be used as a GA parameter/dimension.
+    ga_article_locale = (
+        doc.parent.locale
+        if (fallback_reason == "translation_not_approved") and doc.parent
+        else doc.locale
+    )
 
     # Switching devices section
     switching_devices_product = switching_devices_topic = switching_devices_subtopics = None
@@ -304,6 +310,7 @@ def document(request, document_slug, document=None):
         "products": products,
         "ga_topics": ga_topics,
         "ga_products": ga_products,
+        "ga_article_locale": ga_article_locale,
         "related_products": doc.related_products.exclude(pk=product.pk),
         "breadcrumb_items": breadcrumbs,
         "document_css_class": document_css_class,
