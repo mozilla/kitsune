@@ -11,7 +11,7 @@ from kitsune.questions.config import products as PRODUCTS_CONFIG
 # If it exists, the articles will be moved to the existing topic for each product.
 # If the topics is created, a redirect will be added to the old topic.
 TOPICS_TO_MIGRATE = {
-    "install-and-update:": [
+    "install-and-update": [
         "install-and-update-firefox",
         "install-and-update-firefox-ios",
         "download-and-install",
