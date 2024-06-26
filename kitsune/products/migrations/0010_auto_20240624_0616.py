@@ -94,7 +94,7 @@ def move_kb_articles(apps, schema_editor):
 
         match target_slug:
             case "install-and-update":
-                title = "Install and Update"
+                title = "Install and update"
             case "troubleshooting":
                 title = "Troubleshooting"
             case "protect-your-privacy":
