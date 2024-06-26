@@ -17,7 +17,7 @@ class FooterSection(BasePage):
         return super()._get_element_handles(self.__all_footer_links)
 
     def _get_all_footer_locales(self) -> list[str]:
-        return super()._get_attribute_values_of_elements(super()._get_elements_locators(
+        return super()._get_element_attribute_value(super()._get_elements_locators(
             self.__language_selector_options), "value")
 
     def _switch_to_a_locale(self, locale: str):

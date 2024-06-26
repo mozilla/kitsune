@@ -45,8 +45,8 @@ class ProductSupportForum(BasePage):
         id_values = []
         for element in elements:
             id_values.append(
-                super()._get_element_locator_attribute_value(
-                    locator=element, attribute="id"
+                super()._get_element_attribute_value(
+                    element, attribute="id"
                 )
             )
         return id_values

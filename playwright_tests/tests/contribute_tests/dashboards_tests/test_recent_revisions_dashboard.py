@@ -271,7 +271,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
                          "creating a new revision for the article"):
             self.navigate_to_link(article_url)
             self.start_existing_session(super().username_extraction_from_email(
-                self.user_secrets_accounts["TEST_ACCOUNT_12"]
+                self.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
             username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
             second_revision = self.sumo_pages.submit_kb_article_flow.submit_new_kb_revision()

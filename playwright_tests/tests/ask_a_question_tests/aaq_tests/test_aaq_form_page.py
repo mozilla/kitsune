@@ -267,7 +267,11 @@ class TestAAQPage(TestUtilities, AAQFormMessages):
 
                     with allure.step("Verifying that the correct implicit tags are added to the "
                                      "question"):
-                        slugs = [super().aaq_question_test_data['aaq_topic_tags'][product][topic]]
+                        topic_s = super().aaq_question_test_data['aaq_topic_tags'][product][topic]
+                        if isinstance(topic_s, list):
+                            slugs = topic_s
+                        else:
+                            slugs = [topic_s]
                         if (super().aaq_question_test_data['aaq_topic_tags'][product]
                             ['default_slug']
                                 != "none"):
@@ -454,6 +458,7 @@ class TestAAQPage(TestUtilities, AAQFormMessages):
                 self.navigate_to_link(
                     super().aaq_question_test_data['products_aaq_url'][premium_product]
                 )
+                self.wait_for_dom_to_load()
                 if premium_product == 'Mozilla VPN':
                     self.sumo_pages.aaq_flow.submit_an_aaq_question(
                         subject=super().aaq_question_test_data['premium_aaq_question']['subject'],

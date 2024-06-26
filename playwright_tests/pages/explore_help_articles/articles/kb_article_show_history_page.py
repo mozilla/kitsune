@@ -90,7 +90,7 @@ class KBArticleShowHistoryPage(BasePage):
 
     def _get_last_revision_id(self) -> str:
         revisions = super()._get_elements_locators(self.__article_revision_list_items)
-        return super()._get_element_locator_attribute_value(
+        return super()._get_element_attribute_value(
             revisions[0], "id"
         )
 
