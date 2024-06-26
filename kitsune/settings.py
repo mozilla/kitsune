@@ -944,6 +944,8 @@ GA_ACCOUNT = config(
 )  # Google API Service Account email address
 GA_PROPERTY_ID = config("GA_PROPERTY_ID", default="123456789")
 GTM_CONTAINER_ID = config("GTM_CONTAINER_ID", default="")  # Google container ID
+GA_DEBUG_MODE = config("GA_DEBUG_MODE", default=False, cast=bool)
+GA_CONSOLE_LOGGING = config("GA_CONSOLE_LOGGING", default=False, cast=bool)
 
 REDIS_BACKENDS = {
     # TODO: Make sure that db number is respected

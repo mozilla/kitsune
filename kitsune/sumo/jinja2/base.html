@@ -11,7 +11,9 @@
   {% if ga_default_slug %}data-ga-default-slug="{{ ga_default_slug }}"{% endif %}
   {% if ga_article_locale %}data-ga-article-locale="{{ ga_article_locale }}"{% endif %}
   {% if ga_topics %}data-ga-topics="{{ ga_topics }}"{% endif %}
-  {% if ga_products %}data-ga-products="{{ ga_products }}"{% endif %}>
+  {% if ga_products %}data-ga-products="{{ ga_products }}"{% endif %}
+  {% if settings.GA_CONSOLE_LOGGING %}data-ga-console-logging="true"{% endif %}
+  {% if settings.GA_DEBUG_MODE %}data-ga-debug-mode="true"{% endif %}>
 <head>
   {% include "includes/google-analytics.html" %}
 
