@@ -123,18 +123,16 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     if topic_navigation:
         # The same topics have different slugs for different products.
         # We need to map the slug to the title for the topics listed in NAVIGATION_TOPICS.
-        if topic_title := next((k for k, v in NAVIGATION_TOPICS.items() if topic_slug in v), None):
-            del topic_kw["slug"]
-            topic_kw["slug__in"] = NAVIGATION_TOPICS[topic_title]
-            topic_list = Topic.objects.filter(title__in=NAVIGATION_TOPICS.keys())
-            topic_subquery = (
-                topic_list.filter(slug=OuterRef("slug")).order_by("id").values("id")[:1]
-            )
-            topic_list = Topic.objects.filter(id__in=Subquery(topic_subquery))
         topics = Topic.objects.filter(**topic_kw)
+        topic_subquery = (
+            Topic.objects.filter(slug__in=NAVIGATION_TOPICS)
+            .filter(slug=OuterRef("slug"))
+            .order_by("id")
+            .values("id")[:1]
+        )
+        topic_list = Topic.objects.filter(id__in=Subquery(topic_subquery))
         doc_kw["topics"] = topics
-        # We are ignoring which topic is tied to which product
-        topic = topics.first()
+        topic = topic_list.filter(slug=topic_slug).first()
     else:
         topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
         topics = topics_for(request.user, product=product, parent=None)
