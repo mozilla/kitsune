@@ -207,9 +207,9 @@ class TestQuestionMetadata(TestCase):
     def test_category_property(self):
         """Test question.category property."""
         self.question.add_metadata(product="desktop")
-        self.question.add_metadata(category="fix-problems")
+        self.question.add_metadata(category="troubleshooting")
         self.assertEqual(
-            config.products["desktop"]["categories"]["fix-problems"],
+            config.products["desktop"]["categories"]["troubleshooting"],
             self.question.category_config,
         )
 
@@ -239,12 +239,14 @@ class TestQuestionMetadata(TestCase):
     def test_auto_tagging(self):
         """Make sure tags get applied based on metadata on first save."""
         Tag.objects.create(slug="green", name="green")
-        Tag.objects.create(slug="fix-problems", name="Fix problems")
+        Tag.objects.create(slug="troubleshooting", name="Troubleshooting")
         q = self.question
-        q.add_metadata(product="desktop", category="fix-problems", ff_version="3.6.8", os="GREen")
+        q.add_metadata(
+            product="desktop", category="troubleshooting", ff_version="3.6.8", os="GREen"
+        )
         q.save()
         q.auto_tag()
-        tags_eq(q, ["desktop", "fix-problems", "Firefox 3.6.8", "Firefox 3.6", "green"])
+        tags_eq(q, ["desktop", "troubleshooting", "Firefox 3.6.8", "Firefox 3.6", "green"])
 
     def test_auto_tagging_aurora(self):
         """Make sure versions with prerelease suffix are tagged properly."""

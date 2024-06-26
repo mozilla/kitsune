@@ -7,7 +7,13 @@ from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
+from kitsune.questions.models import (
+    Answer,
+    AnswerVote,
+    Question,
+    QuestionLocale,
+    QuestionVote,
+)
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests import Elastic7TestCase
@@ -29,7 +35,7 @@ class AAQSearchTests(Elastic7TestCase):
             "sites_affected": "http://example.com",
             "ff_version": "3.6.6",
             "os": "Intel Mac OS X 10.6",
-            "category": "fix-problems",
+            "category": "troubleshooting",
             "plugins": "* Shockwave Flash 10.1 r53",
             "useragent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X "
             "10.6; en-US; rv:1.9.2.6) Gecko/20100625 "
@@ -38,9 +44,9 @@ class AAQSearchTests(Elastic7TestCase):
         p = ProductFactory(slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
-        TopicFactory(slug="fix-problems", product=p)
+        TopicFactory(slug="troubleshooting", product=p)
         url = urlparams(
-            reverse("questions.aaq_step3", args=["desktop", "fix-problems"]),
+            reverse("questions.aaq_step3", args=["desktop", "troubleshooting"]),
             search="A test question",
         )
 

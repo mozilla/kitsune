@@ -34,37 +34,35 @@ products = OrderedDict(
                         # TODO: Just use the IA topics for this.
                         # See bug 979397
                         (
-                            "download-and-install",
+                            "install-and-update",
                             {
-                                "name": _lazy("Download, install and migration"),
-                                "topic": "download-and-install",
-                                "tags": ["download-and-install"],
+                                "name": _lazy("Install and update"),
+                                "topic": "install-and-update",
+                                "tags": ["install-and-update"],
                             },
                         ),
                         (
-                            "privacy-and-security",
+                            "protect-your-privacy",
                             {
-                                "name": _lazy("Privacy and security settings"),
-                                "topic": "privacy-and-security",
-                                "tags": ["privacy-and-security"],
+                                "name": _lazy("Protect your privacy"),
+                                "topic": "protect-your-privacy",
+                                "tags": ["protect-your-privacy"],
                             },
                         ),
                         (
                             "customize",
                             {
-                                "name": _lazy("Customize controls, options and add-ons"),
-                                "topic": "customize",
-                                "tags": ["customize"],
+                                "name": _lazy("Customize settings and preferences"),
+                                "topic": "customize-settings-and-preferences",
+                                "tags": ["customize-settings-and-preferences"],
                             },
                         ),
                         (
-                            "fix-problems",
+                            "troubleshooting",
                             {
-                                "name": _lazy(
-                                    "Fix slowness, crashing, error messages and " "other problems"
-                                ),
-                                "topic": "fix-problems",
-                                "tags": ["fix-problems"],
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
                             },
                         ),
                         (
@@ -140,37 +138,35 @@ products = OrderedDict(
                         # TODO: Just use the IA topics for this.
                         # See bug 979397
                         (
-                            "download-and-install",
+                            "install-and-update",
                             {
-                                "name": _lazy("Download, install and migration"),
-                                "topic": "download-and-install",
-                                "tags": ["download-and-install"],
+                                "name": _lazy("Install and update"),
+                                "topic": "install-and-update",
+                                "tags": ["install-and-update"],
                             },
                         ),
                         (
-                            "privacy-and-security",
+                            "protect-your-privacy",
                             {
-                                "name": _lazy("Privacy and security settings"),
-                                "topic": "privacy-and-security",
-                                "tags": ["privacy-and-security"],
+                                "name": _lazy("Protect your privacy"),
+                                "topic": "protect-your-privacy",
+                                "tags": ["protect-your-privacy"],
                             },
                         ),
                         (
                             "customize",
                             {
-                                "name": _lazy("Customize controls, options and add-ons"),
-                                "topic": "customize",
-                                "tags": ["customize"],
+                                "name": _lazy("Customize settings and preferences"),
+                                "topic": "customize-settings-and-preferences",
+                                "tags": ["customize-settings-and-preferences"],
                             },
                         ),
                         (
-                            "fix-problems",
+                            "troubleshooting",
                             {
-                                "name": _lazy(
-                                    "Fix slowness, crashing, error messages and " "other problems"
-                                ),
-                                "topic": "fix-problems",
-                                "tags": ["fix-problems"],
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
                             },
                         ),
                         (
@@ -244,11 +240,11 @@ products = OrderedDict(
                 "categories": OrderedDict(
                     [
                         (
-                            "install-and-update-firefox-ios",
+                            "install-and-update",
                             {
-                                "name": _lazy("Install and Update"),
-                                "topic": "install-and-update-firefox-ios",
-                                "tags": ["install-and-update-firefox-ios"],
+                                "name": _lazy("Install and update"),
+                                "topic": "install-and-update",
+                                "tags": ["install-and-update"],
                             },
                         ),
                         (
@@ -260,11 +256,11 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "crash",
+                            "troubleshooting",
                             {
-                                "name": _lazy("Crash"),
-                                "topic": "crashes-errors-and-other-issues",
-                                "tags": ["crash"],
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
                             },
                         ),
                         (
@@ -314,11 +310,11 @@ products = OrderedDict(
                 "categories": OrderedDict(
                     [
                         (
-                            "deploy-firefox-for-enterprise",
+                            "install-and-update",
                             {
-                                "name": _lazy("Deploy"),
-                                "topic": "deploy-firefox-for-enterprise",
-                                "tags": ["deployment"],
+                                "name": _lazy("Install and update"),
+                                "topic": "install-and-update",
+                                "tags": ["deployment", "install-and-update"],
                             },
                         ),
                         (
@@ -330,11 +326,11 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "manage-add-ons-enterprise",
+                            "install-and-manage-add-ons",
                             {
-                                "name": _lazy("Manage add-ons"),
-                                "topic": "manage-add-ons-enterprise",
-                                "tags": ["customization"],
+                                "name": _lazy("Install and manage add-ons"),
+                                "topic": "install-and-manage-add-ons",
+                                "tags": ["customization", "install-and-manage-add-ons"],
                             },
                         ),
                         (
@@ -381,8 +377,8 @@ products = OrderedDict(
                         (
                             "troubleshooting-reality",
                             {
-                                "name": _lazy("Troubleshooting Firefox Reality"),
-                                "topic": "troubleshooting-reality",
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
                                 "tags": ["troubleshooting"],
                             },
                         ),
@@ -577,38 +573,35 @@ products = OrderedDict(
                         # TODO: Just use the IA topics for this.
                         # See bug 979397
                         (
-                            "download-and-install",
+                            "install-and-update",
                             {
-                                "name": _lazy("Download, install and migration"),
-                                "topic": "download-install-and-migration",
-                                "tags": ["download-and-install"],
+                                "name": _lazy("Install and update"),
+                                "topic": "install-and-update",
+                                "tags": ["install-and-update"],
                             },
                         ),
                         (
-                            "privacy-and-security",
+                            "protect-your-privacy",
                             {
-                                "name": _lazy("Privacy and security settings"),
-                                "topic": "privacy-and-security-settings",
-                                "tags": ["privacy-and-security"],
+                                "name": _lazy("Protect your privacy"),
+                                "topic": "protect-your-privacy",
+                                "tags": ["protect-your-privacy"],
                             },
                         ),
                         (
                             "customize",
                             {
-                                "name": _lazy("Customize controls, options and add-ons"),
-                                "topic": "customize-controls-options-and-add-ons",
-                                "tags": ["customize"],
+                                "name": _lazy("Customize settings and preferences"),
+                                "topic": "customize-settings-and-preferences",
+                                "tags": ["customize-settings-and-preferences"],
                             },
                         ),
                         (
-                            "fix-problems",
+                            "troubleshooting",
                             {
-                                "name": _lazy(
-                                    "Fix slowness, crashing, error messages and " "other problems"
-                                ),
-                                "topic": "fix-slowness-crashing-error-messages-and-other-"
-                                "problems",
-                                "tags": ["fix-problems"],
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
                             },
                         ),
                         (
