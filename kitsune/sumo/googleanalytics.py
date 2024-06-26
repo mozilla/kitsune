@@ -33,6 +33,7 @@ PERIOD_TO_DAYS_AGO = {
     LAST_90_DAYS: "90daysAgo",
     LAST_YEAR: "365daysAgo",
 }
+VALID_LOCALES = frozenset(lang for lang in settings.SUMO_LANGUAGES if lang != "xx")
 
 
 def get_client():
@@ -300,10 +301,16 @@ def pageviews_by_document(period, verbose=False):
         # Current URL structure: /{locale}/kb/{slug}
         try:
             num_page_views = int(row.metric_values[0].value)
-            locale, slug = path.strip("/").split("/kb/")
+            url_locale, slug = path.strip("/").split("/kb/")
         except ValueError:
             continue
-        yield ((article_locale if article_locale else locale, slug), num_page_views)
+        # The locale of the article displayed -- the "article_locale" -- can be different
+        # from the locale in the URL due to locale fallbacks. There was a period during
+        # which the "article_locale" dimension did not exist in GA4, so we'll default to
+        # the locale in the URL if a valid "article_locale" value doesn't exist for this
+        # row (for example, "" or "(not set)").
+        article_locale = article_locale if article_locale in VALID_LOCALES else url_locale
+        yield ((article_locale, slug), num_page_views)
 
 
 def pageviews_by_question(period=LAST_YEAR, verbose=False):

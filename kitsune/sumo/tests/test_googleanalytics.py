@@ -71,7 +71,7 @@ class GoogleAnalyticsTests(TestCase):
             Row(
                 dimension_values=[
                     DimensionValue(value="/en-US/kb/doc1-slug"),
-                    DimensionValue(value=""),
+                    DimensionValue(value="(not set)"),
                 ],
                 metric_values=[MetricValue(value="1000")],
             ),
