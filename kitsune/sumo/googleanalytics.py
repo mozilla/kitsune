@@ -86,9 +86,13 @@ def create_page_view_report_request(content_group, date_range, offset=0, limit=1
     only for page views of the given content group, and limited to the results with the
     given offset and limit.
     """
+    dimensions = [Dimension(name="pagePath")]
+    if content_group == "kb-article":
+        dimensions.append(Dimension(name="customEvent:article_locale"))
+
     return RunReportRequest(
         property=f"properties/{settings.GA_PROPERTY_ID}",
-        dimensions=[Dimension(name="pagePath")],
+        dimensions=dimensions,
         metrics=[Metric(name="eventCount")],
         date_ranges=[date_range],
         dimension_filter=FilterExpression(
@@ -288,6 +292,7 @@ def pageviews_by_document(period, verbose=False):
 
     for row in run_report(date_range, create_article_report_request, verbose=verbose):
         path = row.dimension_values[0].value
+        article_locale = row.dimension_values[1].value
         # The path should be a KB article path without any query parameters, but in reality
         # we've seen that it can sometimes be "/". If the URL path for KB articles changes,
         # we'll need to continue to support the previous URL structure for a year -- the
@@ -298,7 +303,7 @@ def pageviews_by_document(period, verbose=False):
             locale, slug = path.strip("/").split("/kb/")
         except ValueError:
             continue
-        yield ((locale, slug), num_page_views)
+        yield ((article_locale if article_locale else locale, slug), num_page_views)
 
 
 def pageviews_by_question(period=LAST_YEAR, verbose=False):
