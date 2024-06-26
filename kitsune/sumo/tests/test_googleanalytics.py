@@ -69,29 +69,49 @@ class GoogleAnalyticsTests(TestCase):
         """Test googleanalytics.pageviews_by_document()."""
         run_report.return_value = (
             Row(
-                dimension_values=[DimensionValue(value="/en-US/kb/doc1-slug")],
+                dimension_values=[
+                    DimensionValue(value="/en-US/kb/doc1-slug"),
+                    DimensionValue(value=""),
+                ],
                 metric_values=[MetricValue(value="1000")],
             ),
             Row(
-                dimension_values=[DimensionValue(value="/")],
+                dimension_values=[
+                    DimensionValue(value="/"),
+                    DimensionValue(value=""),
+                ],
                 metric_values=[MetricValue(value="7")],
             ),
             Row(
-                dimension_values=[DimensionValue(value="/es/kb/doc2-slug")],
+                dimension_values=[
+                    DimensionValue(value="/es/kb/doc2-slug"),
+                    DimensionValue(value="en-US"),
+                ],
                 metric_values=[MetricValue(value="2000")],
             ),
             Row(
-                dimension_values=[DimensionValue(value="/de/kb/doc3-slug")],
+                dimension_values=[
+                    DimensionValue(value="/de/kb/doc3-slug"),
+                    DimensionValue(value="de"),
+                ],
                 metric_values=[MetricValue(value="3000")],
+            ),
+            Row(
+                dimension_values=[
+                    DimensionValue(value="/es/kb/doc4-slug"),
+                    DimensionValue(value="es"),
+                ],
+                metric_values=[MetricValue(value="4000")],
             ),
         )
 
         result = list(googleanalytics.pageviews_by_document(LAST_7_DAYS))
 
-        self.assertEqual(3, len(result))
+        self.assertEqual(4, len(result))
         self.assertEqual(result[0], (("en-US", "doc1-slug"), 1000))
-        self.assertEqual(result[1], (("es", "doc2-slug"), 2000))
+        self.assertEqual(result[1], (("en-US", "doc2-slug"), 2000))
         self.assertEqual(result[2], (("de", "doc3-slug"), 3000))
+        self.assertEqual(result[3], (("es", "doc4-slug"), 4000))
 
     @patch.object(googleanalytics, "run_report")
     def test_pageviews_by_question(self, run_report):
