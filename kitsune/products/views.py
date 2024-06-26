@@ -121,8 +121,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     }
 
     if topic_navigation:
-        # The same topics have different slugs for different products.
-        # We need to map the slug to the title for the topics listed in NAVIGATION_TOPICS.
         topics = Topic.objects.filter(**topic_kw)
         topic_subquery = (
             Topic.objects.filter(slug__in=NAVIGATION_TOPICS)
