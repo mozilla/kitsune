@@ -549,7 +549,9 @@
             aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
           <div class="sumo-nav--dropdown-col">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-              <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
+              <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}"
+                data-event-name="link_click"
+                data-event-parameters='{"link_name": "main-menu.contributor-discussions"}'>
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24">
                   <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -567,7 +569,9 @@
           </div>
           <div class="sumo-nav--dropdown-col">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-              <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}">
+              <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}"
+                data-event-name="link_click"
+                data-event-parameters='{"link_name": "main-menu.contributor-tools"}'>
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24">
                   <path
