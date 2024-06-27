@@ -22,6 +22,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.utils.cache import patch_vary_headers
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation.trans_real import parse_accept_lang_header
@@ -109,8 +110,9 @@ def doc_page_cache(view):
 
         response = view(request, document_slug, *args, **kwargs)
 
-        # We only cache if the response returns HTTP 200.
-        if response.status_code == 200:
+        # We only cache if the response returns HTTP 200 and depends
+        # only on the URL, not anything in the request headers.
+        if (response.status_code == 200) and ("vary" not in response):
             cache.set(cache_key, (response.content, dict(list(response.headers.items()))))
 
         return response
@@ -125,6 +127,17 @@ def document(request, document_slug, document=None):
 
     fallback_reason = None
     full_locale_name = None
+    vary_on_accept_language = False
+
+    def maybe_vary_on_accept_language(response):
+        """
+        Patch the VARY header in the response to include "Accept-Language"
+        if the Accept-Language header could vary the response, and return
+        the response.
+        """
+        if vary_on_accept_language:
+            patch_vary_headers(response, ["accept-language"])
+        return response
 
     doc = get_visible_document_or_404(
         request.user,
@@ -162,7 +175,7 @@ def document(request, document_slug, document=None):
                 # fallback locale. The custom fallback locale is defined in the
                 # FALLBACK_LOCALES array in kitsune/wiki/config.py. See bug 800880
                 # for more details
-                fallback_locale = get_fallback_locale(doc, request)
+                fallback_locale, vary_on_accept_language = get_fallback_locale(doc, request)
 
                 # If a fallback locale is defined, show the document in that locale,
                 # otherwise continue with the document in the default language.
@@ -201,7 +214,7 @@ def document(request, document_slug, document=None):
         url = urlparams(
             redirect_url, query_dict=request.GET, redirectslug=doc.slug, redirectlocale=doc.locale
         )
-        return HttpResponseRedirect(url)
+        return maybe_vary_on_accept_language(HttpResponseRedirect(url))
 
     # Get "redirected from" doc if we were redirected:
     redirect_slug = request.GET.get("redirectslug")
@@ -322,7 +335,7 @@ def document(request, document_slug, document=None):
         "product_titles": ", ".join(p.title for p in sorted(products, key=lambda p: p.title)),
     }
 
-    return render(request, "wiki/document.html", data)
+    return maybe_vary_on_accept_language(render(request, "wiki/document.html", data))
 
 
 def revision(request, document_slug, revision_id):
@@ -1725,7 +1738,12 @@ def what_links_here(request, document_slug):
 
 
 def get_fallback_locale(doc, request):
-    """Get best fallback local based on locale mapping"""
+    """
+    Attempt to find an acceptable fallback locale. Returns a tuple comprised of
+    the locale (None if no acceptable locale is found) and a boolean indicating
+    whether or not the incoming Accept-Language header could have been used to
+    determine the fallback locale.
+    """
 
     # Get locales that the current article is translated into.
     translated_locales = set(
@@ -1733,10 +1751,10 @@ def get_fallback_locale(doc, request):
     )
 
     # Build a list of the request locale and all the ACCEPT_LANGUAGE locales.
-    all_accepted_locales = [request.LANGUAGE_CODE.lower()]
+    all_acceptable_locales = [request.LANGUAGE_CODE.lower()]
     # Django's "parse_accept_lang_header()" always returns lowercase locales.
     accept_header = request.META.get("HTTP_ACCEPT_LANGUAGE") or ""
-    all_accepted_locales.extend(loc for loc, _ in parse_accept_lang_header(accept_header))
+    all_acceptable_locales.extend(loc for loc, _ in parse_accept_lang_header(accept_header))
 
     # For each locale specified in the user's ACCEPT_LANGUAGE header
     # check for, in order:
@@ -1745,20 +1763,27 @@ def get_fallback_locale(doc, request):
     #   * global overrides for the locale in settings.NON_SUPPORTED_LOCALES
     #   * wiki fallbacks for that locale
 
-    for locale in all_accepted_locales:
+    # In the loop below, return true for the second part of the result tuple
+    # only if we're past the first iteration, since only then have we used
+    # a locale from the incoming Accept-Language header. The first iteration
+    # of the loop only uses the locale provided in the incoming URL.
+
+    for i, locale in enumerate(all_acceptable_locales):
         if locale == settings.WIKI_DEFAULT_LANGUAGE.lower():
-            return None
+            return (None, i > 0)
 
         elif (normalized_locale := normalize_language(locale)) in translated_locales:
             # This path handles the settings.NON_SUPPORTED_LOCALES cases as well.
-            return normalized_locale
+            return (normalized_locale, i > 0)
 
         for fallback in FALLBACK_LOCALES.get(locale, []):
             if fallback in translated_locales:
-                return fallback
+                return (fallback, i > 0)
 
-    # If all fails, return None as fallback Locale
-    return None
+    # If all else fails, return None as the fallback locale, and return "True" for
+    # the second part of the result tuple, because if we've reached this point, the
+    # incoming Accept-Language header could have influenced the result.
+    return (None, True)
 
 
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
