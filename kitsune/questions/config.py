@@ -288,11 +288,11 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "private-browsing-mode",
+                            "protect-your-privacy",
                             {
-                                "name": _lazy("Private Browsing mode"),
-                                "topic": "privacy-settings-firefox-ios",
-                                "tags": ["privacy"],
+                                "name": _lazy("Protect your privacy"),
+                                "topic": "protect-your-privacy",
+                                "tags": ["protect-your-privacy"],
                             },
                         ),
                     ]
