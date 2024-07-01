@@ -2,17 +2,13 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.products.managers import NonArchivedManager, ProductManager
 from kitsune.sumo.fields import ImagePlusField
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
 HOT_TOPIC_SLUG = "hot"
-
-
-class ProductQuerySet(models.QuerySet):
-    def with_question_forums(self, request):
-        return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(codename="")
 
 
 class Product(ModelBase):
@@ -48,11 +44,15 @@ class Product(ModelBase):
 
     # Platforms this Product runs on.
     platforms = models.ManyToManyField("Platform")
+    # whether or not this product is archived
+    is_archived = models.BooleanField(default=False)
 
     class Meta(object):
         ordering = ["display_order"]
 
-    objects = ProductQuerySet.as_manager()
+    # Override default manager
+    objects = ProductManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return "%s" % self.title
@@ -79,6 +79,11 @@ class Product(ModelBase):
 
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})
+
+    def save(self, *args, **kwargs):
+        if self.is_archived:
+            self.topics.update(is_archived=True)
+        super().save(*args, **kwargs)
 
 
 # Note: This is the "new" Topic class
@@ -112,10 +117,16 @@ class Topic(ModelBase):
     in_aaq = models.BooleanField(
         default=False, help_text=_lazy("Whether this topic is shown to users in the AAQ or not.")
     )
+    # whether or not this topic is archived
+    is_archived = models.BooleanField(default=False)
 
     class Meta(object):
         ordering = ["product", "display_order"]
         unique_together = ("slug", "product")
+
+    # Override default manager
+    objects = NonArchivedManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return "[%s] %s" % (self.product.title, self.title)
@@ -191,6 +202,16 @@ class TopicSlugHistory(ModelBase):
     class Meta(object):
         ordering = ["-created"]
         verbose_name_plural = "Topic slug history"
+
+    def save(self, *args, **kwargs):
+        # Mark the old topics as archived
+        try:
+            old_topic = Topic.objects.get(slug=self.slug, product=self.topic.product)
+            old_topic.is_archived = True
+            old_topic.save()
+        except Topic.DoesNotExist:
+            ...
+        super().save(*args, **kwargs)
 
 
 class Version(ModelBase):
