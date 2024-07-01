@@ -362,6 +362,7 @@ def list_documents(request, category=None):
 @login_required
 def new_document(request):
     """Create a new wiki document."""
+    products = Product.objects.filter(visible=True)
     if request.method == "GET":
         doc_form = DocumentForm(initial_title=request.GET.get("title"))
         rev_form = RevisionForm()
@@ -371,7 +372,7 @@ def new_document(request):
             {
                 "document_form": doc_form,
                 "revision_form": rev_form,
-                "products": Product.objects.filter(visible=True),
+                "products": products,
             },
         )
 
@@ -391,7 +392,7 @@ def new_document(request):
         {
             "document_form": doc_form,
             "revision_form": rev_form,
-            "products": Product.objects.filter(visible=True),
+            "products": products,
         },
     )
 

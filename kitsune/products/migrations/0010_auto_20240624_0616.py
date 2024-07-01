@@ -171,5 +171,4 @@ class Migration(migrations.Migration):
         ("products", "0009_topicslughistory"),
     ]
 
-    operations = [move_kb_articles, backwards]
     operations = [migrations.RunPython(move_kb_articles, backwards)]

@@ -4,9 +4,9 @@ from kitsune.products.models import Platform, Product, Topic, TopicSlugHistory, 
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("title", "slug", "display_order", "visible", "codename")
+    list_display = ("title", "slug", "display_order", "visible", "codename", "is_archived")
     list_display_links = ("title", "slug")
-    list_editable = ("display_order", "visible")
+    list_editable = ("display_order", "visible", "is_archived")
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
 
@@ -17,9 +17,18 @@ class TopicAdmin(admin.ModelAdmin):
 
     parent.short_description = "Parent"  # type: ignore
 
-    list_display = ("product", "title", "slug", parent, "display_order", "visible", "in_aaq")
+    list_display = (
+        "product",
+        "title",
+        "slug",
+        parent,
+        "display_order",
+        "visible",
+        "in_aaq",
+        "is_archived",
+    )
     list_display_links = ("title", "slug")
-    list_editable = ("display_order", "visible", "in_aaq")
+    list_editable = ("display_order", "visible", "in_aaq", "is_archived")
     list_filter = ("product", "parent", "slug")
     search_fields = (
         "title",
