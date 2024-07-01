@@ -9,8 +9,6 @@ from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget i
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages)
 
 
 class TestPopularTopicsPage(TestUtilities):
@@ -73,40 +71,32 @@ class TestPopularTopicsPage(TestUtilities):
                 self.wait_for_url_to_be(topic_url)
 
                 self.logger.info("Verifying the subheading text")
-                if product_topic in super().general_test_data["premium_products"]:
-                    with check, allure.step(f"Verifying that the correct subheading page for "
-                                            f"{product_topic} is displayed"):
+                with check, allure.step(f"Verifying that the correct subheading page for "
+                                        f"{product_topic} is displayed"):
+                    if product_topic in super().general_test_data["premium_products"]:
                         assert self.sumo_pages.product_topics_page._get_aaq_subheading_text(
                         ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+                    else:
+                        assert self.sumo_pages.product_topics_page._get_aaq_subheading_text(
+                        ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
-                    with allure.step("Clicking on the AAQ button"):
-                        self.sumo_pages.product_topics_page._click_on_aaq_button()
+                with allure.step("Clicking on the AAQ button"):
+                    self.sumo_pages.product_topics_page._click_on_aaq_button()
 
-                    with allure.step("Signing in to SUMO and verifying that we are on the "
-                                     "correct AAQ form page"):
-                        if count == 0:
-                            self.sumo_pages.auth_flow_page.sign_in_flow(
-                                username=super().user_special_chars,
-                                account_password=super().user_secrets_pass
-                            )
-                            count += 1
-                        else:
-                            self.sumo_pages.auth_flow_page.login_with_existing_session()
-                        expect(
-                            self.page
-                        ).to_have_url(super(
-                        ).aaq_question_test_data["products_aaq_url"][product_topic], timeout=30000)
+                with allure.step("Signing in to SUMO and verifying that we are on the correct AAQ "
+                                 "form page"):
+                    if count == 0:
+                        self.sumo_pages.auth_flow_page.sign_in_flow(
+                            username=super().user_special_chars,
+                            account_password=super().user_secrets_pass
+                        )
+                        count += 1
+                    else:
+                        self.sumo_pages.auth_flow_page.login_with_existing_session()
+                    expect(
+                        self.page
+                    ).to_have_url(super(
+                    ).aaq_question_test_data["products_aaq_url"][product_topic], timeout=30000)
 
-                    with allure.step("Signing out from SUMO"):
-                        self.sumo_pages.top_navbar._click_on_sign_out_button()
-
-                else:
-                    assert self.sumo_pages.product_topics_page._get_aaq_subheading_text(
-                    ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
-
-                    with allure.step("Clicking on the AAQ button and verifying that we are on "
-                                     "the 'Get community support article'"):
-                        self.sumo_pages.product_topics_page._click_on_aaq_button()
-                        expect(
-                            self.page
-                        ).to_have_url(KBArticlePageMessages.GET_COMMUNITY_SUPPORT_ARTICLE_LINK)
+                with allure.step("Signing out from SUMO"):
+                    self.sumo_pages.top_navbar._click_on_sign_out_button()

@@ -202,7 +202,7 @@ class MyProfileEdit(BasePage):
         super()._click(self.__close_account_and_delete_all_profile_information_link)
 
     def _click_manage_firefox_account_button(self):
-        super()._click_without_wait(self.__manage_firefox_account_button)
+        super()._click(self.__manage_firefox_account_button, with_wait=False)
 
     def _click_make_email_visible_checkbox(self):
         super()._click(self.__make_email_visible_to_logged_in_users_checkbox)

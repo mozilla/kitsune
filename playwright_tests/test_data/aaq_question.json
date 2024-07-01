@@ -40,11 +40,10 @@
   },
   "aaq_topic_tags": {
     "Firefox": {
-      "Learn the Basics: get started": "get-started",
-      "Download, install and migration": "download-and-install",
-      "Privacy and security settings": "privacy-and-security",
-      "Customize controls, options and add-ons": "customize",
-      "Fix slowness, crashing, error messages and other problems": "fix-problems",
+      "Install and update": "install-and-update",
+      "Protect your privacy": "protect-your-privacy",
+      "Customize settings and preferences": "customize-settings-and-preferences",
+      "Troubleshooting": "troubleshooting",
       "Tips and tricks": "tips",
       "Bookmarks": "bookmarks",
       "Cookies": "cookies",
@@ -55,10 +54,10 @@
       "default_slug": "desktop"
       },
     "Firefox for Android": {
-      "Download, install and migration": "download-and-install",
-      "Privacy and security settings": "privacy-and-security",
-      "Customize controls, options and add-ons": "customize",
-      "Fix slowness, crashing, error messages and other problems": "fix-problems",
+      "Install and update": "install-and-update",
+      "Protect your privacy": "protect-your-privacy",
+      "Customize settings and preferences": "customize-settings-and-preferences",
+      "Troubleshooting": "troubleshooting",
       "Tips and tricks": "tips",
       "Bookmarks": "bookmarks",
       "Cookies": "cookies",
@@ -69,32 +68,32 @@
       "default_slug": "mobile"
     },
     "Firefox for iOS": {
-      "Install and Update": "install-and-update-firefox-ios",
+      "Install and update": "install-and-update",
       "How to use Firefox for iOS": "how-to-use-firefox-ios",
-      "Crash": "crash",
+      "Troubleshooting": "troubleshooting",
       "Sync": "sync",
       "Bookmarks": "bookmarks",
       "Tabs": "tabs",
-      "Private Browsing mode": "privacy",
+      "Protect your privacy": "protect-your-privacy",
       "default_slug": "ios"
     },
     "Firefox for Enterprise": {
-      "Deploy": "deployment",
+      "Install and update": [ "deployment", "install-and-update"],
       "Manage updates, policies & customization": "customization",
-      "Manage add-ons": "customization",
+      "Install and manage add-ons": ["customization", "install-and-manage-add-ons"],
       "Manage certificates": "customization",
       "default_slug": "none"
     },
     "Firefox Reality": {
       "Get started with Firefox Reality": "get-started",
-      "Troubleshooting Firefox Reality": "troubleshooting",
+      "Troubleshooting": "troubleshooting",
       "default_slug": "none"
     },
     "Thunderbird": {
-      "Download, install and migration": "download-and-install",
-      "Privacy and security settings": "privacy-and-security",
-      "Customize controls, options and add-ons": "customize",
-      "Fix slowness, crashing, error messages and other problems": "fix-problems",
+      "Install and update": "install-and-update",
+      "Protect your privacy": "protect-your-privacy",
+      "Customize settings and preferences": "customize-settings-and-preferences",
+      "Troubleshooting": "troubleshooting",
       "Calendar": "calendar",
       "Other": "other",
       "default_slug": "none"

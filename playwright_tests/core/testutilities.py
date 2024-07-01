@@ -73,25 +73,31 @@ class TestUtilities:
     user_special_chars = os.environ.get("TEST_ACCOUNT_SPECIAL_CHARS")
     user_secrets_pass = os.environ.get("TEST_ACCOUNTS_PS")
 
-    # Clearing restmail.
     def clear_fxa_email(self, fxa_username: str):
+        """
+        This helper function sends a delete request to clear the restmail inbox content for a given
+        fxa username.
+        """
         requests.delete(f"https://restmail.net/mail/{fxa_username}")
 
-    # Mechanism of fetching the fxa verification code from restamil.
     def get_fxa_verification_code(self, fxa_username: str, max_attempts=5, poll_interval=5) -> str:
+        """
+        This helper function pols the restmail inbox for the fxa verification code.
+        """
         for attempt in range(max_attempts):
             try:
+                # Steps:
+                # 1. Clearing the inbox for the given fxa username.
+                # 2. Parsing the inbox json encoded response for the x-signing-verify-code.
+                # 3. Clearing the inbox for the given fxa username if the verification code was
+                # fetched.
+                # 4. Returning the fxa verification code for furthe usage.
                 cleared_username = self.username_extraction_from_email(fxa_username)
-                # Fetching the FxA email verification code
                 response = requests.get(f"https://restmail.net/mail/{cleared_username}")
                 response.raise_for_status()
                 json_response = response.json()
                 fxa_verification_code = json_response[0]['headers']['x-signin-verify-code']
-                print(fxa_verification_code)
-
-                # clearing the email after the code is fetched
                 self.clear_fxa_email(cleared_username)
-
                 return fxa_verification_code
             except HTTPError as htt_err:
                 print(f"HTTP error occurred: {htt_err}. Polling again")
@@ -101,23 +107,40 @@ class TestUtilities:
                 print(fxa_verification_code)
                 time.sleep(poll_interval)
 
-    # Extracting username from e-mail mechanism.
     def username_extraction_from_email(self, string_to_analyze: str) -> str:
+        """
+        This helper function extracts the username from a given string/e-mail address.
+        """
         return re.match(r"(.+)@", string_to_analyze).group(1)
 
-    # Random number generator.
     def generate_random_number(self, min_value, max_value) -> str:
+        """
+        This helper function generates a random number based on a given min and max values.
+        """
         return str(random.randint(min_value, max_value))
 
-    # Extracting numbers from string.
     def number_extraction_from_string(self, string_to_analyze: str) -> int:
+        """
+        This helper function extracts the number from a given string.
+        """
         return int(re.findall(r"\d+", string_to_analyze)[0])
 
     def number_extraction_from_string_endpoint(self, endpoint: str, string_to_analyze: str) -> int:
+        """
+        This helper function extracts the number from a given SUMO endpoint.
+        """
         return int(re.findall(fr'{endpoint}(\d+)', string_to_analyze)[0])
 
-    # Defining the logging mechanism.
     def get_logger(self):
+        """
+        This helper function defines the logging mechanism in the following steps:
+        1. Retrieve the logger name from the call stack.
+        2. Create/ Get the logger.
+        3. Create a file handler.
+        4. Sets the log message format.
+        5. Attaching the formatter to the file handler and adding the file handler to the logger.
+        6. Sets the logging level to INFO.
+        """
         logger_name = inspect.stack()[1][3]
         logger = logging.getLogger(logger_name)
         file_handler = logging.FileHandler("reports/logs/logfile.log")
@@ -128,24 +151,35 @@ class TestUtilities:
 
         return logger
 
-    # Returning current page URL
     def get_page_url(self) -> str:
+        """
+        This helper function returns the current URL.
+        """
         return self.page.url
 
-    # Navigating back in history (browser back button)
     def navigate_back(self):
+        """
+        This helper function navigates back to the previous page. (browser back button)
+        """
         self.page.go_back()
 
-    # Navigating forward in history (browser forward button)
     def navigate_forward(self):
+        """
+        This helper function navigate forward. (browser forward button)
+        """
         self.page.go_forward()
 
-    # Navigating to SUMO homepage
     def navigate_to_homepage(self):
+        """
+        This helper function navigates directly to the SUMO hompage.
+        """
         self.page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
 
-    # Navigating to a specific given link and waiting for the load state to finish.
     def navigate_to_link(self, link: str):
+        """
+        This helper function navigates to a given link and awaits for the dom load to finish.
+        If a response error is encountered we are performing a page refresh.
+        """
         with self.page.expect_navigation() as navigation_info:
             self.page.goto(link)
         response = navigation_info.value
@@ -155,41 +189,65 @@ class TestUtilities:
             self.refresh_page()
 
     def set_extra_http_headers(self, headers):
+        """
+        This helper function sets some extra headers to the request.
+        """
         self.page.set_extra_http_headers(headers)
 
-    # Wait for a given timeout
     def wait_for_given_timeout(self, milliseconds: int):
+        """
+        This helper function awaits for a given timeout.
+        """
         self.page.wait_for_timeout(milliseconds)
 
-    # Waits for URL to be. Default timeout is 4000.
     def wait_for_url_to_be(self, expected_url: str, timeout=4000):
+        """
+        This helper function awaits for a given url based on a given timeout.
+        """
         self.page.wait_for_url(expected_url, timeout=timeout)
 
-    # Wait for page to load.
     def wait_for_page_to_load(self):
+        """
+        This helper function awaits for the load event to be fired.
+        """
         self.page.wait_for_load_state("load")
 
     def wait_for_dom_to_load(self):
+        """
+        This helper function awaits for the DOMContentLoaded event to be fired.
+        """
         self.page.wait_for_load_state("domcontentloaded")
 
     def wait_for_networkidle(self):
+        """
+        This helper function waits until there are no network connections for at least 500ms.
+        """
         self.page.wait_for_load_state("networkidle")
 
-    # Store authentication states
     def store_session_cookies(self, session_file_name: str):
+        """
+        This helper function stores the session state for further usage.
+        """
         self.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
 
-    # Deleting page cookies.
     def delete_cookies(self, tried_once=False):
+        """
+        This helper function deletes all cookies and performs a page refresh so that the outcome
+        is visible immediately.
+        """
         self.context.clear_cookies()
-        # Reloading the page for the deletion to take immediate action.
         self.refresh_page()
 
+        # In order to avoid test flakiness we are trying to delete the cookies again if the sign-in
+        # sign-up button is not visible after page refresh.
         if not self.sumo_pages.top_navbar.is_sign_in_up_button_displayed and not tried_once:
             self.delete_cookies(tried_once=True)
 
-    # Starting an existing session by applying session cookies.
     def start_existing_session(self, session_file_name: str, tried_once=False) -> str:
+        """
+        This helper function starts an existing session by applying the session cookies saved in
+        the /sessions/ folder.
+        """
         if not tried_once:
             self.delete_cookies()
         with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
@@ -199,43 +257,71 @@ class TestUtilities:
         # session
         self.refresh_page()
 
+        # In order to avoid test flakiness we are trying to re-apply the session cookies again if
+        # the sign-in/up button is still displayed instead of the session username.
         if self.sumo_pages.top_navbar.is_sign_in_up_button_displayed() and not tried_once:
             self.start_existing_session(session_file_name, tried_once=True)
         return session_file_name
 
     def refresh_page(self):
+        """
+        This helper function performs a page reload.
+        """
         self.page.reload()
 
-    # Fetching the user agent.
     def get_user_agent(self) -> str:
+        """
+        This helper function fetches the user agent.
+        """
         return self.page.evaluate('window.navigator.userAgent ')
 
-    # Replacing special chars from an account.
     def replace_special_chars_account(self, account: str) -> str:
+        """
+        This helper function replaces the special characters applied to the special chars test
+        username.
+        """
         return account.replace(account, "testMozillaSpecialChars")
 
-    # Removing a particular character from a given string.
     def remove_character_from_string(self, string: str, character_to_remove: str) -> str:
+        """
+        This helper function removes a given character from a given target string.
+        """
         return string.replace(character_to_remove, "")
 
     def create_slug_from_title(self, article_title: str) -> str:
+        """
+        This helper function automatically creates an article title slug based on the given article
+        title.
+        """
         initial_title = article_title.split()
         return '-'.join(initial_title).lower()
 
     def is_descending(self, list_of_items: list[str]):
+        """
+        This helper function evaluates if a given list of items are displayed in descending order.
+        """
         if all(list_of_items[i] >= list_of_items[i + 1] for i in range(len(list_of_items) - 1)):
             return True
         else:
             return False
 
     def extract_month_day_year_from_string(self, timestamp_str: str) -> str:
+        """
+        This helper function extracts the month/day/year from a given string.
+        """
         timestamp = datetime.strptime(timestamp_str, "%b %d, %Y, %I:%M:%S %p")
         return timestamp.strftime("%b %d, %Y")
 
     def convert_string_to_datetime(self, timestamp_str: str) -> str:
+        """
+        This helper function converts a given timestamp string to date-time.
+        """
         date_object = datetime.strptime(timestamp_str, "%m.%d.%Y")
         return date_object.strftime("%B {:d}, %Y").format(date_object.day)
 
     def extract_date_to_digit_format(self, date_str: str) -> int:
+        """
+        This helper function extracts the given date to digit format.
+        """
         date = datetime.strptime(date_str, "%b %d, %Y")
         return int(date.strftime("%m%d%Y"))
