@@ -38,6 +38,7 @@ social, instagram
 # product features
 addon, extension, theme
 awesome bar, address bar, url bar, location bar, location field, url field
+bookmarks bar, bookmark bar, bookmarks toolbar, bookmark toolbar
 home page, homepage, home screen, homescreen, awesome screen, firefox hub, start screen
 search bar, search field, search strip, search box
 search engine, search provider
