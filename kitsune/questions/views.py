@@ -162,8 +162,6 @@ def question_list(request, product_slug=None, topic_slug=None):
             )
             return HttpResponseRedirect("/")
 
-        products = None
-
     # Get all topics
     topics = []
     topic_navigation = False

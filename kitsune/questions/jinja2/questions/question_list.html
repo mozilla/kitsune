@@ -118,10 +118,6 @@
 </section>
 {% endblock %}
 
-
-
-
-
 {% block content %}
 {% if tags %}
   <div id="tagged" class="tag-notification">
@@ -314,7 +310,7 @@
         <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
         <li>
           <select id="products-topics-dropdown">
-            <option value="{{ url('questions.list_by_topic', topic_slug=topic_slug) }}" {% if selected_topic is none %}selected{% endif %}>
+            <option value="{{ url('questions.list', product_slug='all') }}" {% if selected_topic is none %}selected{% endif %}>
               All Topics
             </option>
             {% for topic in topic_list %}
