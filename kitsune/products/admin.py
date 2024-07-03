@@ -1,6 +1,27 @@
+from typing import Any
+
 from django.contrib import admin
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
 
 from kitsune.products.models import Platform, Product, Topic, TopicSlugHistory, Version
+
+
+class ArchivedFilter(admin.SimpleListFilter):
+    title = "Archived"
+    parameter_name = "is_archived"
+
+    def lookups(
+        self, request: HttpRequest, model_admin: admin.ModelAdmin
+    ) -> list[tuple[str, str]]:
+        return [("1", "Yes"), ("0", "No")]
+
+    def queryset(self, request: HttpRequest, queryset: QuerySet[Any]) -> QuerySet[Any]:
+        if self.value() == "1":
+            return queryset.filter(is_archived=True)
+        if self.value() == "0":
+            return queryset.filter(is_archived=False)
+        return queryset
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -9,6 +30,10 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ("display_order", "visible", "is_archived")
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
+    list_filter = (ArchivedFilter,)
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        return Product.all_objects.all()
 
 
 class TopicAdmin(admin.ModelAdmin):
@@ -29,7 +54,12 @@ class TopicAdmin(admin.ModelAdmin):
     )
     list_display_links = ("title", "slug")
     list_editable = ("display_order", "visible", "in_aaq", "is_archived")
-    list_filter = ("product", "parent", "slug")
+    list_filter = (
+        ArchivedFilter,
+        "product",
+        "parent",
+        "slug",
+    )
     search_fields = (
         "title",
         "slug",
@@ -38,6 +68,9 @@ class TopicAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        return Topic.all_objects.all()
 
 
 class VersionAdmin(admin.ModelAdmin):
