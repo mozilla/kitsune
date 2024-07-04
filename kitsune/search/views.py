@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.utils.translation import pgettext
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 from django.views.decorators.cache import cache_page
 
 from kitsune import search as constants
@@ -52,7 +52,7 @@ def _fallback_results(user, locale, product_slugs):
     products = []
     for slug in product_slugs:
         try:
-            p = Product.objects.get(slug=slug)
+            p = Product.active.get(slug=slug)
             products.append(p)
         except Product.DoesNotExist:
             pass
@@ -64,7 +64,7 @@ def _fallback_results(user, locale, product_slugs):
 
 
 def _get_product_title(product_title):
-    product = Product.objects.filter(slug__in=product_title).first()
+    product = Product.active.filter(slug__in=product_title).first()
     if product:
         product_titles = [pgettext("DB: products.Product.title", product.title)]
     else:
@@ -127,7 +127,7 @@ def simple_search(request):
         "q": cleaned["q"],
         "w": cleaned["w"],
         "lang_name": lang_name,
-        "products": Product.objects.filter(visible=True),
+        "products": Product.active.filter(visible=True),
     }
 
     if not is_json:

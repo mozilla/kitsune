@@ -122,7 +122,7 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {"products": Product.objects.with_question_forums(request)},
+        {"products": Product.active.with_question_forums(request)},
     )
 
 
@@ -172,7 +172,7 @@ def question_list(request, product_slug=None, topic_slug=None):
             return redirect(question_list, topic_slug=topic_history.topic.slug)
         except TopicSlugHistory.DoesNotExist:
             ...
-        topics = Topic.objects.filter(visible=True, slug=topic_slug)
+        topics = Topic.active.filter(visible=True, slug=topic_slug)
         topic_navigation = True
         if not topics:
             raise Http404()
@@ -307,19 +307,19 @@ def question_list(request, product_slug=None, topic_slug=None):
         recent_answered_percent = 0
 
     # List of products to fill the selector.
-    product_list = Product.objects.filter(visible=True)
+    product_list = Product.active.filter(visible=True)
 
     # List of topics to fill the selector.
     if products:
-        topic_list = Topic.objects.filter(visible=True, product=products[0])[:10]
+        topic_list = Topic.active.filter(visible=True, product=products[0])[:10]
     else:
         topic_subquery = (
-            Topic.objects.filter(slug__in=NAVIGATION_TOPICS)
+            Topic.active.filter(slug__in=NAVIGATION_TOPICS)
             .filter(slug=OuterRef("slug"))
             .order_by("id")
             .values("id")[:1]
         )
-        topic_list = Topic.objects.filter(id__in=Subquery(topic_subquery))
+        topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
 
     # Store current filters in the session
     if request.user.is_authenticated:
@@ -448,7 +448,7 @@ def question_details(
 
     extra_kwargs.update(ans_)
 
-    products = Product.objects.with_question_forums(request)
+    products = Product.active.with_question_forums(request)
     topics = topics_for(request.user, product=question.product)
 
     related_documents = question.related_documents
@@ -479,8 +479,8 @@ def question_details(
 @permission_required("questions.change_question")
 def edit_details(request, question_id):
     try:
-        product = Product.objects.get(id=request.POST.get("product"))
-        topic = Topic.objects.get(id=request.POST.get("topic"), product=product)
+        product = Product.active.get(id=request.POST.get("product"))
+        topic = Topic.active.get(id=request.POST.get("topic"), product=product)
         locale = request.POST.get("locale")
 
         # If locale is not in AAQ_LANGUAGES throws a ValueError
@@ -534,7 +534,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
     # If the selected product doesn't exist in DB, render a 404
     if step > 1:
         try:
-            product = Product.objects.get(slug=product_config["product"])
+            product = Product.active.get(slug=product_config["product"])
         except Product.DoesNotExist:
             raise Http404
         has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
@@ -1364,7 +1364,7 @@ def metrics(request, locale_code=None):
     data = {
         "current_locale": locale_code,
         "product": product,
-        "products": Product.objects.filter(visible=True),
+        "products": Product.active.filter(visible=True),
     }
 
     return render(request, template, data)

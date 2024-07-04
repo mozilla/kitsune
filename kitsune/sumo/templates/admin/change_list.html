@@ -70,8 +70,15 @@
     {% endblock %}
     {% if cl.formset.errors %}
         <p class="errornote">
-        {% blocktrans count cl.formset.errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+          {% blocktrans count cl.formset.errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
         </p>
+        <div class="errors">
+        <ul>
+          {% for error in cl.formset.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+    </div>
         {{ cl.formset.non_form_errors }}
     {% endif %}
     <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">

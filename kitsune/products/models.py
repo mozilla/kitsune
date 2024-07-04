@@ -47,12 +47,12 @@ class Product(ModelBase):
     # whether or not this product is archived
     is_archived = models.BooleanField(default=False)
 
+    # Override default manager
+    objects = models.Manager()
+    active = ProductManager()
+
     class Meta(object):
         ordering = ["display_order"]
-
-    # Override default manager
-    objects = ProductManager()
-    all_objects = models.Manager()
 
     def __str__(self):
         return "%s" % self.title
@@ -125,8 +125,8 @@ class Topic(ModelBase):
         unique_together = ("slug", "product")
 
     # Override default manager
-    objects = NonArchivedManager()
-    all_objects = models.Manager()
+    objects = models.Manager()
+    active = NonArchivedManager()
 
     def __str__(self):
         return "[%s] %s" % (self.product.title, self.title)
@@ -206,7 +206,7 @@ class TopicSlugHistory(ModelBase):
     def save(self, *args, **kwargs):
         # Mark the old topics as archived
         try:
-            old_topic = Topic.objects.get(slug=self.slug, product=self.topic.product)
+            old_topic = Topic.active.get(slug=self.slug, product=self.topic.product)
             old_topic.is_archived = True
             old_topic.save()
         except Topic.DoesNotExist:

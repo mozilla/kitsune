@@ -42,7 +42,7 @@ class SimpleSearchForm(BaseSearchForm):
         super(SimpleSearchForm, self).__init__(*args, **kwargs)
 
         product_field = self.fields["product"]
-        product_field.choices = Product.objects.values_list("slug", "title")
+        product_field.choices = Product.active.values_list("slug", "title")
 
     def clean_products(self):
         products = self.cleaned_data["products"]

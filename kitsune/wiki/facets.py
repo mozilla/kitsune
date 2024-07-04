@@ -27,7 +27,7 @@ def topics_for(user, product, parent=False):
         category__in=settings.IA_DEFAULT_CATEGORIES,
     )
 
-    qs = Topic.objects.filter(product=product)
+    qs = Topic.active.filter(product=product)
     qs = qs.filter(visible=True, document__in=docs).annotate(num_docs=Count("document")).distinct()
 
     if parent or parent is None:

@@ -1,13 +1,12 @@
 from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-
 from rest_framework import generics, serializers, status
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.api_utils import GenericAPIException, LocaleNegotiationMixin
-from kitsune.wiki.models import Document
 from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.wiki.models import Document
 
 
 class DocumentShortSerializer(serializers.ModelSerializer):
@@ -20,10 +19,10 @@ class DocumentDetailSerializer(DocumentShortSerializer):
     summary = serializers.CharField(read_only=True)
     url = serializers.CharField(source="get_absolute_url", read_only=True)
     products = serializers.SlugRelatedField(
-        many=True, slug_field="slug", queryset=Product.objects.all()
+        many=True, slug_field="slug", queryset=Product.active.all()
     )
     topics = serializers.SlugRelatedField(
-        many=True, slug_field="slug", queryset=Topic.objects.all()
+        many=True, slug_field="slug", queryset=Topic.active.all()
     )
 
     class Meta:

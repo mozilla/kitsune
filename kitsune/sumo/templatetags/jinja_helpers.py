@@ -3,10 +3,10 @@ import json as jsonlib
 import logging
 import re
 import urllib
-from zoneinfo import ZoneInfo
 
 import bleach
 import jinja2
+import wikimarkup.parser
 from babel import localedata
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
@@ -14,8 +14,7 @@ from django.conf import settings
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
-from django.utils.encoding import smart_bytes
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone, is_aware, is_naive
 from django.utils.translation import gettext as _
@@ -23,7 +22,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
-import wikimarkup.parser
+from zoneinfo import ZoneInfo
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser

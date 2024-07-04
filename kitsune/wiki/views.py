@@ -219,11 +219,11 @@ def document(request, document_slug, document=None):
 
     products = doc.get_products()
     if len(products) < 1:
-        product = Product.objects.filter(visible=True)[0]
+        product = Product.active.filter(visible=True)[0]
     else:
         product = products[0]
 
-    product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
+    product_topics = Topic.active.filter(product=product, visible=True, parent=None)
 
     # Create serialized versions of the document's associated products and topics
     # to be used within GA as parameters/dimensions.
@@ -246,8 +246,8 @@ def document(request, document_slug, document=None):
         ):
             raise Http404
 
-        switching_devices_product = Product.objects.get(slug="firefox")
-        switching_devices_topic = Topic.objects.get(
+        switching_devices_product = Product.active.get(slug="firefox")
+        switching_devices_topic = Topic.active.get(
             product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
         )
         switching_devices_subtopics = topics_for(
@@ -362,7 +362,7 @@ def list_documents(request, category=None):
 @login_required
 def new_document(request):
     """Create a new wiki document."""
-    products = Product.objects.filter(visible=True)
+    products = Product.active.filter(visible=True)
     if request.method == "GET":
         doc_form = DocumentForm(initial_title=request.GET.get("title"))
         rev_form = RevisionForm()
@@ -660,7 +660,7 @@ def preview_revision(request):
         doc = get_visible_document_or_404(request.user, locale=locale, slug=slug)
         products = doc.get_products()
     else:
-        products = Product.objects.all()
+        products = Product.active.all()
 
     data = {"content": wiki_to_html(wiki_content, request.LANGUAGE_CODE), "products": products}
     return render(request, "wiki/preview.html", data)
@@ -1612,8 +1612,8 @@ def _document_form_initial(document):
         "category": document.category,
         "is_localizable": document.is_localizable,
         "is_archived": document.is_archived,
-        "topics": Topic.objects.filter(document=document).values_list("id", flat=True),
-        "products": list(Product.objects.filter(document=document).values_list("id", flat=True)),
+        "topics": Topic.active.filter(document=document).values_list("id", flat=True),
+        "products": list(Product.active.filter(document=document).values_list("id", flat=True)),
         "related_documents": Document.objects.filter(related_documents=document).values_list(
             "id", flat=True
         ),

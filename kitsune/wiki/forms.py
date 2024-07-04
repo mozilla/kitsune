@@ -8,11 +8,15 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField
-from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
-from kitsune.wiki.models import Document, Revision, DraftRevision, MAX_REVISION_COMMENT_LENGTH
+from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
+from kitsune.wiki.models import (
+    MAX_REVISION_COMMENT_LENGTH,
+    Document,
+    DraftRevision,
+    Revision,
+)
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import ProductTopicsAndSubtopicsWidget, RelatedDocumentsWidget
-
 
 TITLE_REQUIRED = _lazy("Please provide a title.")
 TITLE_SHORT = _lazy(
@@ -82,10 +86,10 @@ class DocumentForm(forms.ModelForm):
         slug_field.initial = slugify(initial_title)
 
         topics_field = self.fields["topics"]
-        topics_field.choices = Topic.objects.values_list("id", "title")
+        topics_field.choices = Topic.active.values_list("id", "title")
 
         products_field = self.fields["products"]
-        products_field.choices = Product.objects.values_list("id", "title")
+        products_field.choices = Product.active.values_list("id", "title")
 
         related_documents_field = self.fields["related_documents"]
         related_documents_field.choices = Document.objects.values_list("id", "title")

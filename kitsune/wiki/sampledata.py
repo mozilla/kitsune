@@ -1,10 +1,9 @@
 import os
-
 from datetime import datetime
 
 from kitsune.products.models import Product, Topic
 from kitsune.products.tests import TopicFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 
 def read_file(filename):
@@ -18,7 +17,7 @@ FLASH_CONTENT = read_file("FlashCrashes.wiki")
 def generate_sampledata(options):
     # There are two products in our schema
     try:
-        firefox = Product.objects.get(slug="firefox")
+        firefox = Product.active.get(slug="firefox")
     except Product.DoesNotExist:
         # Note: This matches migration 156. When run in the tests, the
         # migrations don't happen.
@@ -32,7 +31,7 @@ def generate_sampledata(options):
         firefox.save()
 
     try:
-        mobile = Product.objects.get(slug="mobile")
+        mobile = Product.active.get(slug="mobile")
     except Product.DoesNotExist:
         # Note: This matches migration 156. When run in the tests, the
         # migrations don't happen.
@@ -67,7 +66,7 @@ def generate_sampledata(options):
 
         # 'hot' topic is created by a migration. Check for it's existence
         # before creating a new one.
-        if not Topic.objects.filter(product=p, slug="hot").exists():
+        if not Topic.active.filter(product=p, slug="hot").exists():
             TopicFactory(product=p, title="Hot topics", slug="hot")
 
     # Create a hot article
@@ -76,11 +75,11 @@ def generate_sampledata(options):
         content=FLASH_CONTENT, document=flash, is_approved=True, reviewed=datetime.now()
     )
     flash.products.add(firefox)
-    flash.topics.add(Topic.objects.get(product=firefox, slug="fix-problems"))
-    flash.topics.add(Topic.objects.get(product=firefox, slug="hot"))
+    flash.topics.add(Topic.active.get(product=firefox, slug="fix-problems"))
+    flash.topics.add(Topic.active.get(product=firefox, slug="hot"))
 
     # Generate 9 sample documents with 2 topics each
-    topics = list(Topic.objects.all())
+    topics = list(Topic.active.all())
     for i in range(9):
         d = DocumentFactory(
             title="Sample Article %s" % str(i + 1), slug="sample-article-%s" % str(i + 1)

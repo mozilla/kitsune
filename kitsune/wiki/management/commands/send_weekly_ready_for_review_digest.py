@@ -4,12 +4,16 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 from django.db.models import F, ObjectDoesNotExist, Q
-from django.utils.translation import pgettext
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 
 from kitsune.products.models import Product
 from kitsune.sumo import email_utils
-from kitsune.wiki.config import HOW_TO_CATEGORY, TEMPLATES_CATEGORY, TROUBLESHOOTING_CATEGORY
+from kitsune.wiki.config import (
+    HOW_TO_CATEGORY,
+    TEMPLATES_CATEGORY,
+    TROUBLESHOOTING_CATEGORY,
+)
 from kitsune.wiki.models import Document, Locale, Revision
 
 
@@ -44,7 +48,7 @@ class Command(BaseCommand):
         )
 
         locales = revs.values_list("document__locale", flat=True).distinct()
-        products = Product.objects.all()
+        products = Product.active.all()
 
         for loc in locales:
             doc_ids = (
