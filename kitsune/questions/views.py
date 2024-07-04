@@ -348,7 +348,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "all_products": product_slug == "all" or topics,
         "topic_list": topic_list,
         "topics": topics,
-        "selected_topic": topics[0] if topics else None,
+        "selected_topic_slug": topics[0].slug if topics else None,
         "product_key": product_key,
         "topic_navigation": topic_navigation,
     }
