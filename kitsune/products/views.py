@@ -19,7 +19,7 @@ from kitsune.wiki.utils import get_featured_articles
 def product_list(request):
     """The product picker page."""
     template = "products/products.html"
-    products = Product.objects.filter(visible=True)
+    products = Product.active.filter(visible=True)
     return render(request, template, {"products": products})
 
 
@@ -43,7 +43,7 @@ def product_landing(request, slug):
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         # Return a list of topics/subtopics for the product
         topic_list = list()
-        for t in Topic.objects.filter(product=product, visible=True):
+        for t in Topic.active.filter(product=product, visible=True):
             topic_list.append({"id": t.id, "title": t.title})
         return HttpResponse(json.dumps({"topics": topic_list}), content_type="application/json")
 
@@ -62,7 +62,7 @@ def product_landing(request, slug):
         {
             "product_key": _get_aaq_product_key(product.slug),
             "product": product,
-            "products": Product.objects.filter(visible=True),
+            "products": Product.active.filter(visible=True),
             "topics": topics_for(request.user, product=product, parent=None),
             "search_params": {"product": slug},
             "latest_version": latest_version,
@@ -121,14 +121,14 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     }
 
     if topic_navigation:
-        topics = Topic.objects.filter(**topic_kw)
+        topics = Topic.active.filter(**topic_kw)
         topic_subquery = (
-            Topic.objects.filter(slug__in=NAVIGATION_TOPICS)
+            Topic.active.filter(slug__in=NAVIGATION_TOPICS)
             .filter(slug=OuterRef("slug"))
             .order_by("id")
             .values("id")[:1]
         )
-        topic_list = Topic.objects.filter(id__in=Subquery(topic_subquery))
+        topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
         doc_kw["topics"] = topics
         topic = topic_list.filter(slug=topic_slug).first()
     else:
@@ -167,6 +167,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "search_params": {"product": product_slug},
             "topic_navigation": topic_navigation,
             "topic_list": topic_list,
-            "products": Product.objects.filter(visible=True, topics__in=topics),
+            "products": Product.active.filter(visible=True, topics__in=topics),
         },
     )

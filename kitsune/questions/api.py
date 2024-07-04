@@ -56,13 +56,13 @@ class QuestionSerializer(serializers.ModelSerializer):
     metadata = QuestionMetaDataSerializer(source="metadata_set", read_only=True, many=True)
     num_votes = serializers.ReadOnlyField()
     product = serializers.SlugRelatedField(
-        required=True, slug_field="slug", queryset=Product.objects.all()
+        required=True, slug_field="slug", queryset=Product.active.all()
     )
     tags = serializers.SerializerMethodField()
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
     solved_by = serializers.SerializerMethodField()
     taken_by = serializers.SerializerMethodField()
-    topic = TopicField(required=True, queryset=Topic.objects.all())
+    topic = TopicField(required=True, queryset=Topic.active.all())
     updated = DateTimeUTCField(read_only=True)
     updated_by = serializers.SerializerMethodField()
 

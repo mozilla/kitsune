@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
 from google.auth.exceptions import GoogleAuthError
-
 from OpenSSL.crypto import Error as OpenSSLError
 
 from kitsune.announcements.forms import AnnouncementForm

@@ -112,7 +112,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             profile.fxa_refresh_token = self.refresh_token
         profile.save()
         # User subscription information
-        products = Product.objects.filter(codename__in=subscriptions)
+        products = Product.active.filter(codename__in=subscriptions)
         profile.products.clear()
         profile.products.add(*products)
 
@@ -229,7 +229,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Follow avatars from FxA profiles
         profile.fxa_avatar = claims.get("avatar", "")
         # User subscription information
-        products = Product.objects.filter(codename__in=subscriptions)
+        products = Product.active.filter(codename__in=subscriptions)
         profile.products.clear()
         profile.products.add(*products)
 

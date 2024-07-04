@@ -8,18 +8,18 @@ from kitsune.products.models import Platform, Product, Topic, TopicSlugHistory, 
 
 
 class ArchivedFilter(admin.SimpleListFilter):
-    title = "Archived"
+    title = "Archived status"
     parameter_name = "is_archived"
 
     def lookups(
         self, request: HttpRequest, model_admin: admin.ModelAdmin
     ) -> list[tuple[str, str]]:
-        return [("1", "Yes"), ("0", "No")]
+        return [("archived", "Yes"), ("not_archived", "No")]
 
     def queryset(self, request: HttpRequest, queryset: QuerySet[Any]) -> QuerySet[Any]:
-        if self.value() == "1":
+        if self.value() == "archived":
             return queryset.filter(is_archived=True)
-        if self.value() == "0":
+        if self.value() == "not_archived":
             return queryset.filter(is_archived=False)
         return queryset
 
@@ -31,9 +31,6 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
     list_filter = (ArchivedFilter,)
-
-    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
-        return Product.all_objects.all()
 
 
 class TopicAdmin(admin.ModelAdmin):
@@ -68,9 +65,6 @@ class TopicAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
-
-    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
-        return Topic.all_objects.all()
 
 
 class VersionAdmin(admin.ModelAdmin):

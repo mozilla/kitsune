@@ -14,7 +14,7 @@ def home(request):
         request,
         "landings/home.html",
         {
-            "products": Product.objects.filter(visible=True),
+            "products": Product.active.filter(visible=True),
             "featured": get_featured_articles(locale=request.LANGUAGE_CODE),
         },
     )

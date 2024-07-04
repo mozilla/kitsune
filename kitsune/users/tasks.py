@@ -39,7 +39,7 @@ def process_event_subscription_state_change(event_id):
             event.save()
             return
 
-    products = Product.objects.filter(codename__in=body["capabilities"])
+    products = Product.active.filter(codename__in=body["capabilities"])
     if body["isActive"]:
         event.profile.products.add(*products)
     else:

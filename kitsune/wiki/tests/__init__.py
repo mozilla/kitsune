@@ -171,7 +171,7 @@ class HelpfulVoteFactory(factory.django.DjangoModelFactory):
 # Todo: This should probably be a non-Django factory class
 def new_document_data(topic_ids=None, product_ids=None):
     product_ids = product_ids or [ProductFactory().id]
-    p = Product.objects.get(id=product_ids[0])
+    p = Product.active.get(id=product_ids[0])
     topic_ids = topic_ids or [TopicFactory(product=p).id]
     return {
         "title": "A Test Article",

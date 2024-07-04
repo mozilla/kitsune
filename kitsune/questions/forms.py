@@ -2,8 +2,8 @@ import json
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
@@ -11,7 +11,6 @@ from kitsune.questions.models import Answer, Question
 from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
-
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy("URL of affected site")
@@ -239,7 +238,7 @@ class NewQuestionForm(EditQuestionForm):
         if category_config:
             t = category_config.get("topic")
             if t:
-                self.instance.topic = Topic.objects.get(slug=t, product=product)
+                self.instance.topic = Topic.active.get(slug=t, product=product)
 
         question = super(NewQuestionForm, self).save(*args, **kwargs)
 
