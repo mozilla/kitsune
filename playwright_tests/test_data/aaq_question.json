@@ -79,9 +79,8 @@
     },
     "Firefox for Enterprise": {
       "Install and update": [ "deployment", "install-and-update"],
-      "Manage updates, policies & customization": "customization",
       "Install and manage add-ons": ["customization", "install-and-manage-add-ons"],
-      "Manage certificates": "customization",
+      "Customize settings and preferences": "customize-settings-and-preferences",
       "default_slug": "none"
     },
     "Firefox Reality": {
