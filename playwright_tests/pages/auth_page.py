@@ -18,7 +18,7 @@ class AuthPage(BasePage):
     __use_a_different_account_button = "//a[text()='Use a different account']"
 
     # Already logged in 'Sign in' button
-    __user_logged_in_sign_in_button = "//button[@id='use-logged-in']"
+    __user_logged_in_sign_in_button = "//button[text()='Sign in']"
 
     # Email submission
     __enter_your_email_input_field = "//input[@name='email']"
