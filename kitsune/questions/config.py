@@ -318,14 +318,6 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "policies-customization-enterprise",
-                            {
-                                "name": _lazy("Manage updates, policies & customization"),
-                                "topic": "policies-customization-enterprise",
-                                "tags": ["customization"],
-                            },
-                        ),
-                        (
                             "install-and-manage-add-ons",
                             {
                                 "name": _lazy("Install and manage add-ons"),
@@ -334,11 +326,11 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "manage-certificates-firefox-enterprise",
+                            "customize",
                             {
-                                "name": _lazy("Manage certificates"),
-                                "topic": "manage-certificates-firefox-enterprise",
-                                "tags": ["customization"],
+                                "name": _lazy("Customize settings and preferences"),
+                                "topic": "customize-settings-and-preferences",
+                                "tags": ["customize-settings-and-preferences"],
                             },
                         ),
                     ]
