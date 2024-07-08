@@ -15,7 +15,7 @@ class AuthPage(BasePage):
     __continue_with_firefox_accounts_button = "//p[@class='login-button-wrap']/a"
 
     # Use a different account option
-    __use_a_different_account_button = "//a[@id='use-different']"
+    __use_a_different_account_button = "//a[text()='Use a different account']"
 
     # Already logged in 'Sign in' button
     __user_logged_in_sign_in_button = "//button[@id='use-logged-in']"
