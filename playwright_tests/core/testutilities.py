@@ -1,25 +1,20 @@
-import logging
-import inspect
 import requests
-import pytest
 import time
 import re
 import json
 import random
 import os
 from datetime import datetime
-
+from playwright.sync_api import Page
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
 
+from playwright_tests.pages.top_navbar import TopNavbar
 
-@pytest.mark.usefixtures("setup")
+
 class TestUtilities:
-    logger = None
-    page = None
-    context = None
-    sumo_pages = None
-    requested_browser = None
+    def __init__(self, page: Page):
+        self.page = page
 
     # Fetching test data from json files.
     with open("test_data/profile_edit.json", "r") as edit_test_data_file:
@@ -100,11 +95,10 @@ class TestUtilities:
                 self.clear_fxa_email(cleared_username)
                 return fxa_verification_code
             except HTTPError as htt_err:
-                print(f"HTTP error occurred: {htt_err}. Polling again")
+                print(htt_err)
                 time.sleep(poll_interval)
             except Exception as err:
-                print(f"Used: {cleared_username} Other error occurred: {err}. Polling again")
-                print(fxa_verification_code)
+                print(err)
                 time.sleep(poll_interval)
 
     def username_extraction_from_email(self, string_to_analyze: str) -> str:
@@ -130,26 +124,6 @@ class TestUtilities:
         This helper function extracts the number from a given SUMO endpoint.
         """
         return int(re.findall(fr'{endpoint}(\d+)', string_to_analyze)[0])
-
-    def get_logger(self):
-        """
-        This helper function defines the logging mechanism in the following steps:
-        1. Retrieve the logger name from the call stack.
-        2. Create/ Get the logger.
-        3. Create a file handler.
-        4. Sets the log message format.
-        5. Attaching the formatter to the file handler and adding the file handler to the logger.
-        6. Sets the logging level to INFO.
-        """
-        logger_name = inspect.stack()[1][3]
-        logger = logging.getLogger(logger_name)
-        file_handler = logging.FileHandler("reports/logs/logfile.log")
-        formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(name)s : %(message)s")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-        logger.setLevel(logging.INFO)
-
-        return logger
 
     def get_page_url(self) -> str:
         """
@@ -228,19 +202,20 @@ class TestUtilities:
         """
         This helper function stores the session state for further usage.
         """
-        self.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
+        self.page.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
 
     def delete_cookies(self, tried_once=False):
         """
         This helper function deletes all cookies and performs a page refresh so that the outcome
         is visible immediately.
         """
-        self.context.clear_cookies()
+        top_navbar = TopNavbar(self.page)
+        self.page.context.clear_cookies()
         self.refresh_page()
 
         # In order to avoid test flakiness we are trying to delete the cookies again if the sign-in
         # sign-up button is not visible after page refresh.
-        if not self.sumo_pages.top_navbar.is_sign_in_up_button_displayed and not tried_once:
+        if not top_navbar.is_sign_in_up_button_displayed and not tried_once:
             self.delete_cookies(tried_once=True)
 
     def start_existing_session(self, session_file_name: str, tried_once=False) -> str:
@@ -248,18 +223,19 @@ class TestUtilities:
         This helper function starts an existing session by applying the session cookies saved in
         the /sessions/ folder.
         """
+        top_navbar = TopNavbar(self.page)
         if not tried_once:
             self.delete_cookies()
         with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
             cookies_data = json.load(file)
-        self.context.add_cookies(cookies=cookies_data['cookies'])
+        self.page.context.add_cookies(cookies=cookies_data['cookies'])
         # A SUMO action needs to be done in order to have the page refreshed with the correct
         # session
         self.refresh_page()
 
         # In order to avoid test flakiness we are trying to re-apply the session cookies again if
         # the sign-in/up button is still displayed instead of the session username.
-        if self.sumo_pages.top_navbar.is_sign_in_up_button_displayed() and not tried_once:
+        if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
             self.start_existing_session(session_file_name, tried_once=True)
         return session_file_name
 

@@ -7,7 +7,7 @@ from playwright.sync_api import Page, ElementHandle, Locator, TimeoutError
 class BasePage:
 
     def __init__(self, page: Page):
-        self._page = page
+        self.page = page
 
     def _get_element_locator(self, xpath: str, with_wait=True) -> Locator:
         """
@@ -15,20 +15,20 @@ class BasePage:
         """
         if with_wait:
             self.__wait_for_dom_load_to_finnish()
-        return self._page.locator(xpath)
+        return self.page.locator(xpath)
 
     def _get_elements_locators(self, xpath: str) -> list[Locator]:
         """
         This helper function returns a list of element locators from a given xpath.
         """
         self.__wait_for_dom_load_to_finnish()
-        return self._page.locator(xpath).all()
+        return self.page.locator(xpath).all()
 
     def _get_current_page_url(self) -> str:
         """
         This helper function returns the current page URL.
         """
-        return self._page.url
+        return self.page.url
 
     def _get_element_handles(self, xpath: str) -> list[ElementHandle]:
         """
@@ -86,7 +86,7 @@ class BasePage:
         """
         This helper function pauses the execution for a given timeout.
         """
-        self._page.wait_for_timeout(timeout)
+        self.page.wait_for_timeout(timeout)
 
     def _get_element_input_value(self, xpath: str) -> str:
         """
@@ -98,13 +98,13 @@ class BasePage:
         """
         This helper function returns the inner text of a given locator via the page instance.
         """
-        return self._page.inner_text(xpath)
+        return self.page.inner_text(xpath)
 
     def _get_element_text_content(self, xpath: str) -> str:
         """
         This helper function returns the text content of a given locator via the page instance.
         """
-        return self._page.text_content(xpath)
+        return self.page.text_content(xpath)
 
     def _click(self, element: Union[str, Locator], with_wait=True):
         """
@@ -182,7 +182,7 @@ class BasePage:
         """
         This helper function accepts the displayed dialog.
         """
-        self._page.on("dialog", lambda dialog: dialog.accept())
+        self.page.on("dialog", lambda dialog: dialog.accept())
 
     def _hover_over_element(self, xpath: str):
         """
@@ -208,8 +208,8 @@ class BasePage:
         1. Waits for the dom load to finish.
         2. Waits for the load event to be fired when the whole page, including resources has loaded
         """
-        self._page.wait_for_load_state("domcontentloaded")
-        self._page.wait_for_load_state("load")
+        self.page.wait_for_load_state("domcontentloaded")
+        self.page.wait_for_load_state("load")
 
     def _wait_for_selector(self, xpath: str, timeout=3500):
         """
@@ -217,6 +217,6 @@ class BasePage:
         timeout.
         """
         try:
-            self._page.wait_for_selector(xpath, timeout=timeout)
+            self.page.wait_for_selector(xpath, timeout=timeout)
         except TimeoutError:
             print(f"{xpath} is not displayed")

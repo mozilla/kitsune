@@ -123,6 +123,7 @@ flake8 = "^7.0.0"
 pytest-check = "^2.3.1"
 allure-pytest = "^2.13.2"
 playwright = "^1.45.0"
+pytest-playwright = "^0.5.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

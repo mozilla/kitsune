@@ -12,8 +12,8 @@ from playwright_tests.flows.explore_articles_flows.article_flows.delete_kb_artic
     DeleteKbArticleFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.edit_article_meta_flow import \
     EditArticleMetaFlow
-from playwright_tests.flows.explore_articles_flows.article_flows.post_new_thread_flow import \
-    PostNewDiscussionThreadFlow
+from playwright_tests.flows.explore_articles_flows.article_flows.kb_article_threads_flow import \
+    KbThreads
 from playwright_tests.flows.messaging_system_flows.messaging_system_flow import (
     MessagingSystemFlows)
 from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFlow
@@ -204,9 +204,6 @@ class SumoPages:
         # KB article deletion Flow
         self.kb_article_deletion_flow = DeleteKbArticleFlow(page)
 
-        # KB article discussion Flow
-        self.post_kb_discussion_thread_flow = PostNewDiscussionThreadFlow(page)
-
         # KB article edit metadata Flow
         self.edit_article_metadata_flow = EditArticleMetaFlow(page)
 
@@ -215,3 +212,6 @@ class SumoPages:
 
         # User Group Flow
         self.user_group_flow = UserGroupFlow(page)
+
+        # KB article threads Flow
+        self.kb_article_thread_flow = KbThreads(page)

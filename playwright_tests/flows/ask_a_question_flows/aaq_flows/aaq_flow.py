@@ -41,7 +41,7 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         if not is_premium:
             # Waiting for submitted question reply button visibility.
             super()._is_post_reply_button_visible()
-            current_page_url = self._page.url
+            current_page_url = self.page.url
             return {"aaq_subject": question_subject, "question_page_url": current_page_url,
                     "question_body": body}
 
