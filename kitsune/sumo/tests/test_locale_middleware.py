@@ -45,6 +45,27 @@ class TestLocaleMiddleware(TestCase):
         response = self.client.get("/search/", HTTP_ACCEPT_LANGUAGE="en-US,fr;q=0.3")
         self.assertRedirects(response, "/en-US/search/")
 
+    def test_traditional_chinese_mappings(self):
+        """'zh-hant' or 'zh-hk' should be mapped to 'zh-TW' instead of 'zh-CN'"""
+        with self.subTest("zh-hant"):
+            response = self.client.get("/zh-hant/search/")
+            self.assertRedirects(response, "/zh-TW/search/")
+        with self.subTest("zh-Hant"):
+            response = self.client.get("/zh-Hant/search/")
+            self.assertRedirects(response, "/zh-TW/search/")
+        with self.subTest("zh-hk"):
+            response = self.client.get("/zh-hk/")
+            self.assertRedirects(response, "/zh-TW/")
+        with self.subTest("zh-HK"):
+            response = self.client.get("/zh-HK/")
+            self.assertRedirects(response, "/zh-TW/")
+        with self.subTest("zh-mo"):
+            response = self.client.get("/zh-mo/")
+            self.assertRedirects(response, "/zh-TW/")
+        with self.subTest("zh-MO"):
+            response = self.client.get("/zh-MO/")
+            self.assertRedirects(response, "/zh-TW/")
+
 
 class PreferredLanguageTests(TestCase):
     def test_anonymous_change_language(self):

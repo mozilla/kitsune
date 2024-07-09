@@ -13,6 +13,7 @@ LANGUAGES_WITH_FALLBACKS_REGEX = re.compile(
 FALLBACK_LANGUAGE_URL_MAP = dict(
     (k.lower(), v if v else "en-US") for k, v in settings.NON_SUPPORTED_LOCALES.items()
 )
+MAP_TO_TRADITIONAL_CHINESE = frozenset(("zh-hant", "zh-hk", "zh-mo"))
 
 
 class LocalePrefixPattern(django.urls.LocalePrefixPattern):
@@ -101,6 +102,14 @@ def normalize_path(path, force_language=False):
         if force_language:
             return f"/{force_language}{remaining_path}"
         elif actual_language_from_path != normalized_language_from_path:
+            if (normalized_language_from_path == "zh-CN") and (
+                actual_language_from_path.lower() in MAP_TO_TRADITIONAL_CHINESE
+            ):
+                # Django will always map any unsupported Traditional Chinese locale, like
+                # "zh-hant" or "zh-hk" for example, into Simplified Chinese ("zh-cn") because
+                # we're not using "strict" mode, and "zh-cn" is always the first "zh-" match.
+                # For these specific cases we should be mapping to "zh-tw" instead.
+                normalized_language_from_path = "zh-TW"
             return f"/{normalized_language_from_path}{remaining_path}"
     elif force_language:
         return f"/{force_language}{path}"
