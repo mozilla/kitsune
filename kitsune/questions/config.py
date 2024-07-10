@@ -349,36 +349,6 @@ products = OrderedDict(
             },
         ),
         (
-            "firefox-reality",
-            {
-                "name": _lazy("Firefox Reality"),
-                "subtitle": _lazy("Firefox for Virtual Reality headsets"),
-                "extra_fields": [],
-                "tags": [],
-                "product": "firefox-reality",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "get-started",
-                            {
-                                "name": _lazy("Get started with Firefox Reality"),
-                                "topic": "get-started",
-                                "tags": ["get-started"],
-                            },
-                        ),
-                        (
-                            "troubleshooting-reality",
-                            {
-                                "name": _lazy("Troubleshooting"),
-                                "topic": "troubleshooting",
-                                "tags": ["troubleshooting"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
             "firefox-private-network-vpn",
             {
                 "name": _lazy("Mozilla VPN"),
@@ -425,52 +395,6 @@ products = OrderedDict(
             },
         ),
         (
-            "firefox-private-network",
-            {
-                "name": _lazy("Firefox Private Network"),
-                "subtitle": _lazy("Browse securely on public Wi-Fi"),
-                "extra_fields": [],
-                "tags": [],
-                "product": "firefox-private-network",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "technical",
-                            {
-                                "name": _lazy("Technical"),
-                                "topic": "technical",
-                                "tags": ["technical"],
-                            },
-                        ),
-                        (
-                            "accounts",
-                            {
-                                "name": _lazy("Accounts"),
-                                "topic": "accounts",
-                                "tags": ["accounts"],
-                            },
-                        ),
-                        (
-                            "payments",
-                            {
-                                "name": _lazy("Payments"),
-                                "topic": "payments",
-                                "tags": ["payments"],
-                            },
-                        ),
-                        (
-                            "troubleshooting",
-                            {
-                                "name": _lazy("Troubleshooting"),
-                                "topic": "troubleshooting",
-                                "tags": ["troubleshooting"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
             "relay",
             {
                 "name": _lazy("Firefox Relay"),
@@ -501,55 +425,6 @@ products = OrderedDict(
                 "tags": ["pocket"],
                 "product": "pocket",
                 "categories": OrderedDict([]),
-            },
-        ),
-        (
-            "hubs",
-            {
-                "name": _lazy("Hubs"),
-                "subtitle": _lazy(
-                    "Virtual 3D meeting spaces for collaborating with friends, family, "
-                    "and colleagues on your browser or VR headset"
-                ),
-                "extra_fields": [],
-                "tags": ["hubs"],
-                "product": "hubs",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "hubs-avatars",
-                            {
-                                "name": _lazy("Avatars"),
-                                "topic": "hubs-avatars",
-                                "tags": ["hubs-avatars"],
-                            },
-                        ),
-                        (
-                            "hubs-accounts",
-                            {
-                                "name": _lazy("Accounts"),
-                                "topic": "hubs-accounts",
-                                "tags": ["hubs-accounts"],
-                            },
-                        ),
-                        (
-                            "hubs-rooms",
-                            {
-                                "name": _lazy("Rooms"),
-                                "topic": "hubs-rooms",
-                                "tags": ["hubs-rooms"],
-                            },
-                        ),
-                        (
-                            "hubs-moderators",
-                            {
-                                "name": _lazy("Moderators & Hosts"),
-                                "topic": "hubs-moderators",
-                                "tags": ["hubs-moderators"],
-                            },
-                        ),
-                    ]
-                ),
             },
         ),
         (
