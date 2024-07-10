@@ -270,80 +270,77 @@
 {%- endmacro %}
 
 {% macro show_for(products, header=None, close_button=False) -%}
-  {% if header == None %}
-    {% set header = _('Help with:') %}
-  {% endif %}
-
-  <section class="showfor" id="showfor-panel">
-    <script type="application/json" class="showfor-data">
-      {{ showfor_data(products) }}
-    </script>
-
-    <h3 class="{% if close_button %}sumo-card-heading{% else %}sidebar-subheading force-top-margin{% endif %}">{{ _('Customize this article') }}</h3>
-    {% if header %}
-      <p>
-        {{ header }}
-        {% if close_button %}
-          <span class="exit close-button" data-close-id="showfor-panel">&times;</span>
-        {% endif %}
-      </p>
+  {% if products|selectattr("visible")|list %}
+    {% if header == None %}
+      {% set header = _('Help with:') %}
     {% endif %}
 
-    {% for prod in products %}
-      {% if prod.visible %}
-        {% set has_versions = prod.versions.count() > 1 %}
-        {% set has_platforms = prod.platforms.count() > 1 %}
+    <section class="showfor" id="showfor-panel">
+      <script type="application/json" class="showfor-data">
+        {{ showfor_data(products) }}
+      </script>
 
-        <div class="product" data-product="{{ prod.slug }}">
-          <div class="field checkbox is-condensed">
-            <input
-              type="checkbox"
-              id="id_{{ prod.slug}}"
-              checked
-              value="product:{{ prod.slug }}"
-            />
-            <label for="id_{{ prod.slug}}">{{ prod.title }}</label>
-          </div>
-
-
-
-
-          {% if has_versions %}
-            <div class="selectbox-wrapper">
-              <select class="version">
-                {% for version in prod.versions.all() %}
-                  {% if version.visible %}
-                    <option value="version:{{ version.slug }}"
-                            data-min="{{ version.min_version }}"
-                            data-max="{{ version.max_version }}"
-                            {% if version.default %}selected{% endif %}>
-                      {{ version.name }}
-                    </option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
+      <h3 class="{% if close_button %}sumo-card-heading{% else %}sidebar-subheading force-top-margin{% endif %}">{{ _('Customize this article') }}</h3>
+      {% if header %}
+        <p>
+          {{ header }}
+          {% if close_button %}
+            <span class="exit close-button" data-close-id="showfor-panel">&times;</span>
           {% endif %}
-
-          {% if has_platforms %}
-            <div class="selectbox-wrapper">
-              <select class="platform">
-                {% for platform in prod.platforms.all() %}
-                  {% if platform.visible %}
-                    <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
-                      {{ platform.name }}
-                    </option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
-          {% endif %}
-        </div>
+        </p>
       {% endif %}
-    {% endfor %}
 
-  </section>
+      {% for prod in products %}
+        {% if prod.visible %}
+          {% set has_versions = prod.versions.count() > 1 %}
+          {% set has_platforms = prod.platforms.count() > 1 %}
 
+          <div class="product" data-product="{{ prod.slug }}">
+            <div class="field checkbox is-condensed">
+              <input
+                type="checkbox"
+                id="id_{{ prod.slug}}"
+                checked
+                value="product:{{ prod.slug }}"
+              />
+              <label for="id_{{ prod.slug}}">{{ prod.title }}</label>
+            </div>
+
+            {% if has_versions %}
+              <div class="selectbox-wrapper">
+                <select class="version">
+                  {% for version in prod.versions.all() %}
+                    {% if version.visible %}
+                      <option value="version:{{ version.slug }}"
+                              data-min="{{ version.min_version }}"
+                              data-max="{{ version.max_version }}"
+                              {% if version.default %}selected{% endif %}>
+                        {{ version.name }}
+                      </option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+
+            {% if has_platforms %}
+              <div class="selectbox-wrapper">
+                <select class="platform">
+                  {% for platform in prod.platforms.all() %}
+                    {% if platform.visible %}
+                      <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
+                        {{ platform.name }}
+                      </option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </section>
+  {% endif %}
 {%- endmacro %}
 
 {% macro vote_form(document, source=None) -%}
