@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Q, Subquery
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
@@ -85,18 +85,20 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
     if topic_slug:
         try:
-            old_topic_slug = TopicSlugHistory.objects.get(slug=topic_slug)
+            old_topic_slug = TopicSlugHistory.objects.get(
+                Q(slug=topic_slug) | Q(slug=subtopic_slug)
+            )
             redirect_params = {
                 "topic_slug": old_topic_slug.topic.slug,
             }
 
             if product_slug:
                 redirect_params["product_slug"] = product_slug
-            if subtopic_slug:
-                redirect_params["subtopic_slug"] = subtopic_slug
 
             return redirect(document_listing, **redirect_params)
         except TopicSlugHistory.DoesNotExist:
+            ...
+        except TopicSlugHistory.MultipleObjectsReturned:
             ...
 
     product = None
