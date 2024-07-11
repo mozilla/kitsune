@@ -4870,13 +4870,13 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "wagtail"
-version = "6.1.2"
+version = "6.1.3"
 description = "A Django content management system."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "wagtail-6.1.2-py3-none-any.whl", hash = "sha256:6858f89c4a050cbbb1702ce3cb605b8360b736c296c93193c4e72ea87427d431"},
-    {file = "wagtail-6.1.2.tar.gz", hash = "sha256:fdb82c6cd6f6ae5c1f7b2312166969d8601015b65cbb29ad120efac727d399c1"},
+    {file = "wagtail-6.1.3-py3-none-any.whl", hash = "sha256:b6c4d5705adf51a5e49ea416032dd0a6534588fc31c5c9a95f698e6ddec0a203"},
+    {file = "wagtail-6.1.3.tar.gz", hash = "sha256:8f4908ab1b6b963a8aa7adf8f0ec738cd1dc79b9816c6d5f59018f600a404378"},
 ]
 
 [package.dependencies]
@@ -5229,4 +5229,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "cb1b1f8a085dfeaf09524b689f751caae34e7446f29ce4084aba6b27399b5557"
+content-hash = "9d2afd2959397ceda4e3550c12d080fc84d2ba1384e3d18549911d009e007fd9"
