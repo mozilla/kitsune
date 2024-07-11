@@ -132,7 +132,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         )
         topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
         doc_kw["topics"] = topics
-        topic = topic_list.filter(slug=topic_slug).first()
+        topic = get_object_or_404(topic_list, slug=topic_slug)
     else:
         topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
         topics = topics_for(request.user, product=product, parent=None)
