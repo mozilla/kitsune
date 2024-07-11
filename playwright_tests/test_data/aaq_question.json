@@ -28,12 +28,9 @@
     "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios/form",
     "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise/form",
     "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus/form",
-    "Firefox Reality": "https://support.allizom.org/en-US/questions/new/firefox-reality/form",
     "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/firefox-private-network-vpn/form",
-    "Firefox Private Network": "https://support.allizom.org/en-US/questions/new/firefox-private-network/form",
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay/form",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket/form",
-    "Hubs": "https://support.allizom.org/en-US/questions/new/hubs/form",
     "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird/form",
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus/form",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account/form"
@@ -81,11 +78,6 @@
       "Install and update": [ "deployment", "install-and-update"],
       "Install and manage add-ons": ["customization", "install-and-manage-add-ons"],
       "Customize settings and preferences": "customize-settings-and-preferences",
-      "default_slug": "none"
-    },
-    "Firefox Reality": {
-      "Get started with Firefox Reality": "get-started",
-      "Troubleshooting": "troubleshooting",
       "default_slug": "none"
     },
     "Thunderbird": {
