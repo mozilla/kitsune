@@ -11,8 +11,6 @@ class ProductsPageMessages:
                            "data breach.",
         "Pocket": "Discover and save stories for later.",
         "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters.",
-        "Hubs": "Collaborate and engage with each other through spatialized audio and with media "
-                "from around the web.",
         "Firefox Focus": "Automatic privacy browser and content blocker",
         "Firefox for Enterprise": "Firefox Quantum for businesses",
         "Thunderbird": "Email software for Windows, Mac and Linux"

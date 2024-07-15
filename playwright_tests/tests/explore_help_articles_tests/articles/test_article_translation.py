@@ -329,8 +329,7 @@ class TestArticleTranslation(TestUtilities, KbTranslationMessages):
                     ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
 
     # C2625000
-    # Skipping this test for now due to the https://github.com/mozilla/sumo/issues/1820 failure
-    @pytest.mark.skip
+    @pytest.mark.kbArticleTranslation
     def test_fallback_languages(self):
         with allure.step("Verifying the language fallback"):
             for key, value in FALLBACK_LANGUAGES.items():
