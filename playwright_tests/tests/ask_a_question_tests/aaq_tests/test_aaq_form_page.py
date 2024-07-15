@@ -409,7 +409,7 @@ class TestAAQPage(TestUtilities, AAQFormMessages):
                          "submitting the form"):
             for product in super().general_test_data["freemium_products"]:
                 self.logger.info(product)
-                if product == 'Firefox Reality' or product == "Thunderbird":
+                if product == "Thunderbird":
                     continue
                 else:
                     self.navigate_to_link(super().aaq_question_test_data["products_aaq_url"]
