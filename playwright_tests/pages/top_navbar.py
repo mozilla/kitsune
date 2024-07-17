@@ -1,4 +1,5 @@
-from playwright.sync_api import Page, ElementHandle, Locator
+from playwright.sync_api import ElementHandle, Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,38 +8,55 @@ class TopNavbar(BasePage):
     __sumo_nav_logo = "//div[@class='sumo-nav--logo']/a/img"
 
     # Get Help option
-    __ask_a_question_top_navbar = ("//li[@class='mzp-c-menu-category mzp-has-drop-down "
-                                   "mzp-js-expandable']/a[contains(text(), 'Ask a Question')]")
+    __ask_a_question_top_navbar = (
+        "//li[@class='mzp-c-menu-category mzp-has-drop-down "
+        "mzp-js-expandable']/a[contains(text(), 'Ask a Question')]"
+    )
 
     # Explore our help articles locator.
-    __explore_help_articles_top_navbar_option = ("//a[@class='mzp-c-menu-title sumo-nav--link' "
-                                                 "and normalize-space(text())='Explore Help "
-                                                 "Articles']")
-    __explore_our_help_articles_view_all_option = ("//ul[@class='mzp-c-menu-item-list "
-                                                   "sumo-nav--sublist']/li/a[normalize-space("
-                                                   "text())='View all products']")
+    __explore_help_articles_top_navbar_option = (
+        "//a[@class='mzp-c-menu-title sumo-nav--link' "
+        "and normalize-space(text())='Explore Help "
+        "Articles']"
+    )
+    __explore_our_help_articles_view_all_option = (
+        "//ul[@class='mzp-c-menu-item-list "
+        "sumo-nav--sublist']/li/a[normalize-space("
+        "text())='View all products']"
+    )
 
     # Sub menu items ask a Question section
-    __aaq_firefox_browser_option = ("//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
-                                    "Question')]/../..//a[contains(text(),'Firefox Browser')]")
-    __browse_all_products_option = ("//div[@id='main-navigation']//a[normalize-space(text("
-                                    "))='View all']")
+    __aaq_firefox_browser_option = (
+        "//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
+        "Question')]/../..//a[contains(text(),'Firefox desktop')]"
+    )
+    __browse_all_products_option = (
+        "//div[@id='main-navigation']//a[normalize-space(text(" "))='View all']"
+    )
 
     # Contribute Tools
     __contribute_option = "//a[contains(text(),'Contribute')]"
 
     # Contributor Discussions
-    __article_discussions_option = ("//div[@id='main-navigation']//a[normalize-space(text("
-                                    "))='Article discussions']")
+    __article_discussions_option = (
+        "//div[@id='main-navigation']//a[normalize-space(text(" "))='Article discussions']"
+    )
     # Contributor Tools
-    __moderate_forum_content = ("//div[@id='main-navigation']//a[contains(text(), 'Moderate "
-                                "forum content')]")
-    __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                                 "normalize-space(text())='Recent revisions']")
-    __dashboards_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                           "normalize-space(text())='Knowledge base dashboards']")
-    __media_gallery_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                              "normalize-space(text())='Media gallery']")
+    __moderate_forum_content = (
+        "//div[@id='main-navigation']//a[contains(text(), 'Moderate " "forum content')]"
+    )
+    __recent_revisions_option = (
+        "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
+        "normalize-space(text())='Recent revisions']"
+    )
+    __dashboards_option = (
+        "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
+        "normalize-space(text())='Knowledge base dashboards']"
+    )
+    __media_gallery_option = (
+        "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
+        "normalize-space(text())='Media gallery']"
+    )
 
     # Sign in button
     __signin_signup_button = "//div[@id='profile-navigation']//a[contains(text(), 'Sign In/Up')]"
@@ -47,8 +65,9 @@ class TopNavbar(BasePage):
     __signed_in_username = "//span[@class='sumo-nav--username']"
     __signed_in_view_profile_option = "//h4[contains(text(), 'View Profile')]/parent::a"
     __signed_in_edit_profile_option = "//a[contains(text(),'Edit Profile')]"
-    __signed_in_my_questions_option = ("//div[@class='sumo-nav--dropdown-thirds']//a[contains("
-                                       "text(), 'My Questions')]")
+    __signed_in_my_questions_option = (
+        "//div[@class='sumo-nav--dropdown-thirds']//a[contains(" "text(), 'My Questions')]"
+    )
     __signed_in_settings_option = "//h4[contains(text(), 'Settings')]/parent::a"
     __signed_in_inbox_option = "//h4[contains(text(), 'Inbox')]/parent::a"
     __sign_out_button = "//a[contains(text(), 'Sign Out')]"
