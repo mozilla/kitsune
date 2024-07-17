@@ -4,12 +4,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
-from waffle.decorators import waffle_flag
 from waffle.views import wafflejs
 from wagtail.admin.urls import urlpatterns as wagtail_admin_urlpatterns
-from wagtail.urls import serve_pattern
 from wagtail.utils.urlpatterns import decorate_urlpatterns
-from wagtail.views import serve as wagtail_serve
 
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
@@ -49,11 +46,6 @@ urlpatterns = i18n_patterns(
     path("", include("kitsune.users.urls")),
     path("locales", sumo_views.locales, name="sumo.locales"),
     re_path(r"^windows7-support(?:\\/)?$", RedirectView.as_view(url="/home/?as=u")),
-    re_path(
-        rf"wagtail/{serve_pattern.lstrip('^')}",
-        waffle_flag("wagtail_experiments")(wagtail_serve),
-        name="wagtail_serve",
-    ),
 )
 
 if settings.OIDC_ENABLE:

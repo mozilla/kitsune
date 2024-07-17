@@ -9,6 +9,7 @@ from product_details import product_details
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.questions import config as aaq_config
 from kitsune.sumo import NAVIGATION_TOPICS
+from kitsune.sumo.decorators import prefer_cms
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Revision
@@ -33,6 +34,7 @@ def _get_aaq_product_key(slug):
 
 
 @check_simple_wiki_locale
+@prefer_cms
 def product_landing(request, slug):
     """The product landing page."""
     if slug == "firefox-accounts":
