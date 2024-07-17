@@ -1,32 +1,29 @@
-from django.urls import include, re_path
+from django.urls import include, path
 
 from kitsune.products import views
+from kitsune.sumo.decorators import prefer_cms
 
 product_patterns = [
-    re_path(r"^$", views.product_list, name="products"),
-    re_path(r"^(?P<slug>[^/]+)$", views.product_landing, name="products.product"),
-    re_path(
-        r"^(?P<product_slug>[^/]+)/(?P<topic_slug>[^/]+)$",
-        views.document_listing,
-        name="products.documents",
-    ),
-    re_path(
-        r"^(?P<product_slug>[^/]+)/(?P<topic_slug>[^/]+)/" r"(?P<subtopic_slug>[^/]+)$",
+    path("", views.product_list, name="products"),
+    path("<slug>/", prefer_cms(views.product_landing), name="products.product"),
+    path("<product_slug>/<topic_slug>/", views.document_listing, name="products.documents"),
+    path(
+        "<product_slug>/<topic_slug>/<subtopic_slug>/",
         views.document_listing,
         name="products.subtopics",
     ),
 ]
 
 topic_patterns = [
-    re_path(r"^(?P<topic_slug>[^/]+)$", views.document_listing, name="products.topic_documents"),
-    re_path(
-        r"(?P<topic_slug>[^/]+)/(?P<product_slug>[^/]+)$",
+    path("<topic_slug>/", views.document_listing, name="products.topic_documents"),
+    path(
+        "<topic_slug>/<slug>/",
         views.document_listing,
         name="products.topic_product_documents",
     ),
 ]
 
 urlpatterns = [
-    re_path(r"^products/", include(product_patterns)),
-    re_path(r"^topics/", include(topic_patterns)),
+    path("products/", include(product_patterns)),
+    path("topics/", include(topic_patterns)),
 ]
