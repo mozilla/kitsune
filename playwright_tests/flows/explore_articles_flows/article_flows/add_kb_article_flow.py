@@ -42,7 +42,7 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
                                  approve_first_revision=False,
                                  ready_for_localization=False
                                  ) -> dict[str, Any]:
-        self._page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
+        self.page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
         kb_article_test_data = super().kb_article_test_data
 
@@ -154,7 +154,7 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArt
             super()._add_text_to_expiry_date_field(expiry_date)
 
         # We need to evaluate in order to fetch the slug field value
-        slug = self._page.evaluate(
+        slug = self.page.evaluate(
             'document.getElementById("id_slug").value'
         )
 

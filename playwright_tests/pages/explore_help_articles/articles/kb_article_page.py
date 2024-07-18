@@ -101,3 +101,6 @@ class KBArticlePage(BasePage):
 
     def _click_on_volunteer_learn_more_option(self):
         super()._click(self.__learn_more_kb_article_option)
+
+    def _get_url(self) -> str:
+        return super()._get_current_page_url()

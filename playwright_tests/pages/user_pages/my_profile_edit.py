@@ -132,7 +132,7 @@ class MyProfileEdit(BasePage):
         super()._fill(self.__people_directory_username_field, text)
 
     def _send_text_to_matrix_nickname(self, text: str):
-        self._page.locator(self.__matrix_nickname_field).fill(text)
+        self.page.locator(self.__matrix_nickname_field).fill(text)
 
     def _sent_text_to_city_field(self, text: str):
         super()._fill(self.__city_field, text)
