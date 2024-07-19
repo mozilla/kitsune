@@ -11,7 +11,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics organized by product and with subtopics."""
 
     def render(self, name, value, attrs=None, renderer=None):
-        topics_and_subtopics = Topic.active.all()
+        topics_and_subtopics = Topic.active.filter(product__isnull=False)
         topics = [t for t in topics_and_subtopics if t.parent_id is None]
 
         for topic in topics:
