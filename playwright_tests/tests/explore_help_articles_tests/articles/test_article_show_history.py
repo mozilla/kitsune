@@ -1,7 +1,7 @@
 import allure
 from pytest_check import check
 import pytest
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import expect, Page
 
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
@@ -24,11 +24,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.kbArticleShowHistory
 @pytest.mark.create_delete_article(False)
 def test_kb_article_removal(page: Page, create_delete_article):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
     article_details = create_delete_article("TEST_ACCOUNT_12")[0]
-    revision_id_number = test_utilities.number_extraction_from_string(
+    revision_id_number = utilities.number_extraction_from_string(
         article_details['first_revision_id']
     )
 
@@ -43,7 +43,7 @@ def test_kb_article_removal(page: Page, create_delete_article):
     with check, allure.step("Verifying that manually navigating to the delete revision "
                             "endpoint returns 403"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 kb_show_history_page_messages.get_delete_revision_endpoint(
                     article_details["article_slug"], revision_id_number
                 ))
@@ -52,14 +52,14 @@ def test_kb_article_removal(page: Page, create_delete_article):
 
     with allure.step("Navigating back and verifying that the delete button for the article "
                      "is not displayed"):
-        test_utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_url"])
         expect(sumo_pages.kb_article_show_history_page._get_delete_this_document_button_locator(
         )).to_be_hidden()
 
     with check, allure.step("Verifying that manually navigating to the delete endpoint "
                             "returns 403"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 KBArticlePageMessages
                 .KB_ARTICLE_PAGE_URL + article_details['article_slug'] + QuestionPageMessages
                 .DELETE_QUESTION_URL_ENDPOINT
@@ -68,29 +68,29 @@ def test_kb_article_removal(page: Page, create_delete_article):
             assert response.status == 403
 
     with allure.step("Navigating back and deleting the user session"):
-        test_utilities.navigate_to_link(article_details["article_url"])
-        test_utilities.delete_cookies()
+        utilities.navigate_to_link(article_details["article_url"])
+        utilities.delete_cookies()
 
     with check, allure.step("Manually navigating to the delete revision endpoint and "
                             "verifying that the auth page is returned"):
-        test_utilities.navigate_to_link(kb_show_history_page_messages.get_delete_revision_endpoint(
+        utilities.navigate_to_link(kb_show_history_page_messages.get_delete_revision_endpoint(
             article_details["article_slug"], revision_id_number
         ))
-        assert FxAPageMessages.AUTH_PAGE_URL in test_utilities.get_page_url()
+        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
     with check, allure.step("Navigating back and verifying that manually navigating to the "
                             "delete endpoint returns the auth page"):
-        test_utilities.navigate_to_link(article_details["article_url"])
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(
             KBArticlePageMessages
             .KB_ARTICLE_PAGE_URL + article_details['article_slug'] + QuestionPageMessages
             .DELETE_QUESTION_URL_ENDPOINT
         )
-        assert FxAPageMessages.AUTH_PAGE_URL in test_utilities.get_page_url()
+        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
     with allure.step("Navigating back and verifying that the delete button is not available "
                      "for the only revision"):
-        test_utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_url"])
         expect(sumo_pages.kb_article_show_history_page._get_delete_revision_button_locator(
             article_details['first_revision_id'])).to_be_hidden()
 
@@ -99,8 +99,8 @@ def test_kb_article_removal(page: Page, create_delete_article):
         )).to_be_hidden()
 
     with allure.step("Signing in with an admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with check, allure.step("Clicking on the delete revision button for the only available "
@@ -155,7 +155,7 @@ def test_kb_article_removal(page: Page, create_delete_article):
                             "that the article was successfully deleted"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 KBArticlePageMessages.
                 KB_ARTICLE_PAGE_URL + article_details['article_slug'] + "/"
             )
@@ -166,9 +166,9 @@ def test_kb_article_removal(page: Page, create_delete_article):
 # C2490047, C2490048
 @pytest.mark.kbArticleShowHistory
 def test_kb_article_category_link_and_header(page: Page, create_delete_article):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    for category in test_utilities.general_test_data["kb_article_categories"]:
+    for category in utilities.general_test_data["kb_article_categories"]:
         if category != "Templates":
             with allure.step("Creating a new article"):
                 article_info = create_delete_article("TEST_ACCOUNT_MODERATOR",
@@ -199,16 +199,16 @@ def test_kb_article_category_link_and_header(page: Page, create_delete_article):
             sumo_pages.kb_article_show_history_page._click_on_show_history_category()
             expect(
                 page
-            ).to_have_url(test_utilities.different_endpoints['kb_categories_links'][category])
+            ).to_have_url(utilities.different_endpoints['kb_categories_links'][category])
 
         with allure.step("Navigating back and deleting the article"):
-            test_utilities.navigate_back()
+            utilities.navigate_back()
 
 
 # C2101637, C2489543, C2102169, C2489542
 @pytest.mark.kbArticleShowHistory
 def test_kb_article_contributor_removal(page: Page, create_delete_article):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
     article_details, username_one = create_delete_article("TEST_ACCOUNT_MODERATOR")
@@ -233,7 +233,7 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
     sumo_pages.kb_article_show_history_page._click_on_edit_contributors_option()
     sumo_pages.kb_article_show_history_page._click_on_delete_button_for_a_particular_contributor(
         username_one)
-    deletion_link = test_utilities.get_page_url()
+    deletion_link = utilities.get_page_url()
 
     with check, allure.step("Navigating back by hitting the cancel button. clicking on the "
                             "Article menu option and verifying that the user is displayed "
@@ -246,8 +246,8 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
     with allure.step("Navigating back to the 'Show History page' and signing in with a "
                      "non-admin account"):
         sumo_pages.kb_article_page._click_on_show_history_option()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     username_two = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -262,16 +262,14 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
     with check, allure.step("Manually navigating to the deletion link and verifying that 403 "
                             "is returned"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
-                deletion_link
-            )
+            utilities.navigate_to_link(deletion_link)
         response = navigation_info.value
         assert response.status == 403
 
     with check, allure.step("Navigating back, clicking on the Article menu and verifying "
                             "that the user is not displayed inside the article contributors "
                             "section"):
-        test_utilities.navigate_to_link(article_details['article_url'])
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_page._click_on_article_option()
         assert (username_two not in sumo_pages.kb_article_page
                 ._get_list_of_kb_article_contributors())
@@ -279,21 +277,21 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
     with allure.step("Navigating back to the 'Show History page', deleting the user session "
                      "and verifying that the 'Edit Contributors' options is not displayed"):
         sumo_pages.kb_article_page._click_on_show_history_option()
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.kb_article_show_history_page._get_edit_contributors_option_locator()
                ).to_be_hidden()
 
     with check, allure.step("Manually navigating to the deletion link and the user is "
                             "redirected to the auth page"):
-        test_utilities.navigate_to_link(deletion_link)
-        assert FxAPageMessages.AUTH_PAGE_URL in test_utilities.get_page_url()
+        utilities.navigate_to_link(deletion_link)
+        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
     with check, allure.step("Navigating back, signing in with a non-admin account and "
                             "verifying that the username two is not displayed inside the "
                             "Contributors list"):
-        test_utilities.navigate_to_link(article_details['article_url'])
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.navigate_to_link(article_details['article_url'])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         assert (username_two not in sumo_pages.kb_article_show_history_page
                 ._get_list_of_all_contributors())
@@ -359,15 +357,15 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
                 ._get_list_of_kb_article_contributors())
 
     with allure.step("Signing in with the removed username and creating a new revision"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         third_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with allure.step("Approving the revision and verifying that the user is added again "
                      "inside the contributors list"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.submit_kb_article_flow.approve_kb_revision(third_revision['revision_id'])
 
@@ -385,15 +383,15 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
 # C2101638
 @pytest.mark.kbArticleShowHistory
 def test_contributors_can_be_manually_added(page: Page, create_delete_article):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
     with allure.step("Clicking on the 'Edit Contributors' option, adding and selecting the "
                      "username from the search field"):
         create_delete_article("TEST_ACCOUNT_MODERATOR")
         sumo_pages.kb_article_show_history_page._click_on_edit_contributors_option()
-        new_contributor = test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        new_contributor = utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         )
         (sumo_pages.kb_article_show_history_page
          ._add_a_new_contributor_inside_the_contributor_field(new_contributor))
@@ -420,16 +418,16 @@ def test_contributors_can_be_manually_added(page: Page, create_delete_article):
 # C2101634, C2489553, C2102186
 @pytest.mark.kbArticleShowHistory
 def test_kb_article_contributor_profile_access(page: Page, create_delete_article):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_article_show_history_page = KBArticleShowHistoryPage(page)
     create_delete_article("TEST_ACCOUNT_MODERATOR", {"approve_first_revision": True})
     sumo_pages.kb_article_page._click_on_article_option()
-    article_url = test_utilities.get_page_url()
+    article_url = utilities.get_page_url()
 
     with allure.step("Signing in with a non-Admin account and creating a new revision"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
         username_two = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -437,13 +435,13 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
         second_revision_info = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Approving the revision and deleting the user session"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision_info['revision_id'])
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     with allure.step("Clicking on the second contributor and verifying that we are "
                      "redirected to it's profile page"):
@@ -452,14 +450,14 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
 
     with allure.step("Navigating back, clicking on the revision editor and verifying that we "
                      "are redirected to the editor homepage"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         kb_article_show_history_page._click_on_a_particular_revision_editor(
             second_revision_info['revision_id'], username_two
         )
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(username_two))
 
     with allure.step("Navigating back to the article main menu"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with allure.step("Clicking on the contributor listed inside the article page and "
                      "verifying that we are redirected to the editor homepage"):
@@ -467,9 +465,9 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(username_two))
 
     with allure.step("Navigating back and signin in with an admin account"):
-        test_utilities.navigate_back()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.navigate_back()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Clicking on the Article menu option, clicking on the contributor "
@@ -481,13 +479,13 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
 
     with allure.step("Navigating back to the article history, clicking on the second "
                      "contributor and verifying that we are redirected to it's profile page"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.kb_article_page._click_on_show_history_option()
         kb_article_show_history_page._click_on_a_particular_contributor(username_two)
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(username_two))
 
     with allure.step("Navigating back and clicking on the revision editor"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         kb_article_show_history_page._click_on_a_particular_revision_editor(
             second_revision_info['revision_id'], username_two
         )
@@ -496,31 +494,31 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(username_two))
 
     with allure.step("Navigating back and deleting the created article"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
 
 
 # C2499415, C2271120, C2101633
 @pytest.mark.kbArticleShowHistory
 def test_kb_article_revision_date_functionality(page: Page, create_delete_article):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account and creating a new article and "
                      "approving it's first revision"):
         article_details, main_user = create_delete_article("TEST_ACCOUNT_MODERATOR",
                                                            {"approve_first_revision": True})
         sumo_pages.kb_article_page._click_on_article_option()
-        article_url = test_utilities.get_page_url()
+        article_url = utilities.get_page_url()
 
     with allure.step("Signing in with a non-admin account"):
-        creator_username = test_utilities.start_existing_session(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']))
+        creator_username = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']))
 
     with allure.step("Submitting a new revision"):
         second_revision_info = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with allure.step("Deleting the user session and clicking on the first revision"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         revision_time = sumo_pages.kb_article_show_history_page._get_revision_time(
             second_revision_info['revision_id']
         )
@@ -534,7 +532,7 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
         ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS
 
     with allure.step("Navigating back and clicking on the revision time"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
             second_revision_info['revision_id'])
 
@@ -562,7 +560,7 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
 
     with check, allure.step("Verifying that the revision id is the correct one"):
         assert sumo_pages.kb_article_preview_revision_page._get_preview_revision_id_text(
-        ) == str(test_utilities.number_extraction_from_string(second_revision_info['revision_id']))
+        ) == str(utilities.number_extraction_from_string(second_revision_info['revision_id']))
 
     with check, allure.step("Verifying that the correct revision time is displayed"):
         assert (
@@ -580,9 +578,9 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
 
     with check, allure.step("Navigating back to the revision preview page and verifying that "
                             "the correct review comment is displayed"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         assert (sumo_pages.kb_article_preview_revision_page._get_preview_revision_comment_text(
-        ) == test_utilities.kb_article_test_data['changes_description'])
+        ) == utilities.kb_article_test_data['changes_description'])
 
     with check, allure.step("Verifying that the correct reviewed status is displayed"):
         assert (sumo_pages.kb_article_preview_revision_page._get_preview_revision_reviewed_text(
@@ -628,7 +626,7 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
         sumo_pages.kb_article_preview_revision_page._click_on_revision_source_foldout_section()
         assert (sumo_pages.kb_article_preview_revision_page
                 ._get_preview_revision_source_textarea_content(
-                ) == test_utilities.kb_article_test_data['updated_article_content'])
+                ) == utilities.kb_article_test_data['updated_article_content'])
 
     with allure.step("Verifying that the 'Revision Content' section is hidden by default"):
         expect(sumo_pages.kb_article_preview_revision_page._get_revision_content_html_locator(
@@ -641,8 +639,8 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
         )).to_be_visible()
 
     with allure.step("Signing in with an admin account and approving the revision"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Approving the second revision"):
@@ -651,7 +649,7 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
 
     with check, allure.step("Deleting the user session, clicking on the revision time and "
                             "verifying that the correct reviewed status is displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
             second_revision_info['revision_id']
         )
@@ -689,8 +687,8 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
         ) == main_user
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Clicking on the 'Edit article based on this revision option' and "
@@ -699,5 +697,5 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
          ._click_on_edit_article_based_on_this_revision_link())
         expect(page).to_have_url(
             article_url + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT + "/" + str(
-                test_utilities.number_extraction_from_string(second_revision_info['revision_id']))
+                utilities.number_extraction_from_string(second_revision_info['revision_id']))
         )

@@ -2,7 +2,7 @@ import allure
 from pytest_check import check
 import pytest
 from playwright.sync_api import expect, Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
@@ -17,14 +17,14 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C890926, C890931, C2091563
 @pytest.mark.skip
 def test_product_support_page(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.products_page._get_all_product_support_titles():
-            if card in test_utilities.general_test_data['product_support']:
+            if card in utilities.general_test_data['product_support']:
                 sumo_pages.products_page._click_on_a_particular_product_support_card(card)
 
                 with check, allure.step("Verifying that the correct page header is displayed"):
@@ -47,7 +47,7 @@ def test_product_support_page(page: Page):
                     assert (sumo_pages.product_support_page._get_still_need_help_widget_title()
                             ) == ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE
 
-                if card in test_utilities.general_test_data['premium_products']:
+                if card in utilities.general_test_data['premium_products']:
                     with check, allure.step("Verifying that the correct still need help "
                                             "content is displayed"):
                         assert (sumo_pages.product_support_page
@@ -104,7 +104,7 @@ def test_product_support_page(page: Page):
 
                 with allure.step("Navigate back, clicking on the 'Home' breadcrumb and "
                                  "verifying that we are redirected to the homepage"):
-                    test_utilities.navigate_back()
+                    utilities.navigate_back()
                     sumo_pages.product_support_page._click_on_product_support_home_breadcrumb()
                     expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
@@ -115,7 +115,7 @@ def test_product_support_page(page: Page):
 # C890929
 @pytest.mark.skip
 def test_product_support_page_frequent_topics_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
@@ -123,7 +123,7 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
     with allure.step("Clicking on all product cards"):
 
         for card in sumo_pages.products_page._get_all_product_support_titles():
-            if card in test_utilities.general_test_data['product_support']:
+            if card in utilities.general_test_data['product_support']:
                 sumo_pages.products_page._click_on_a_particular_product_support_card(card)
 
                 with check, allure.step("Verifying that the correct page header is displayed"):
@@ -138,23 +138,23 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
                                                 "card and verifying that the correct topic "
                                                 "page title is displayed"):
                             assert sumo_pages.product_topics_page._get_page_title() == topic
-                        test_utilities.navigate_back()
+                        utilities.navigate_back()
                 else:
                     print(f"{card} has no frequent topics displayed!!!")
                 with allure.step("Navigating back"):
-                    test_utilities.navigate_back()
+                    utilities.navigate_back()
 
 
 @pytest.mark.skip
 def test_product_support_page_featured_articles_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.products_page._get_all_product_support_titles():
-            if card in test_utilities.general_test_data['product_support']:
+            if card in utilities.general_test_data['product_support']:
                 sumo_pages.products_page._click_on_a_particular_product_support_card(card)
 
                 with check, allure.step("Verifying that the correct page header is displayed"):
@@ -181,25 +181,25 @@ def test_product_support_page_featured_articles_redirect(page: Page):
                             assert featured_article_names[count - 1] == (
                                 sumo_pages.kb_article_page._get_text_of_article_title())
                         count += 1
-                        test_utilities.navigate_back()
+                        utilities.navigate_back()
                 else:
                     print(f"{card} has no featured articles displayed!!!")
 
                 with allure.step("Navigating back"):
-                    test_utilities.navigate_back()
+                    utilities.navigate_back()
 
 
 # C890932
 @pytest.mark.skip
 def test_still_need_help_button_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.products_page._get_all_product_support_titles():
-            if card in test_utilities.general_test_data['product_support']:
+            if card in utilities.general_test_data['product_support']:
                 sumo_pages.products_page._click_on_a_particular_product_support_card(card)
 
                 with check, allure.step("Verifying that the correct page header is displayed"):
@@ -210,7 +210,7 @@ def test_still_need_help_button_redirect(page: Page):
                 with allure.step("Verifying that we are redirected to the correct product "
                                  "solutions page"):
                     expect(page).to_have_url(
-                        test_utilities.general_test_data['product_solutions'][card]
+                        utilities.general_test_data['product_solutions'][card]
                     )
 
                 with check, allure.step("Verifying that we are on the correct milestone"):

@@ -3,7 +3,7 @@ import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.mess_system_pages_messages.inbox_page_messages import (
     InboxPageMessages)
 from playwright_tests.messages.mess_system_pages_messages.new_message_page_messages import (
@@ -18,11 +18,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C891415
 @pytest.mark.messagingSystem
 def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_available(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating to the inbox page"):
@@ -52,24 +52,22 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
 # This test needs to be updated to fetch the username from a different place
 @pytest.mark.messagingSystem
 def test_private_messages_can_be_sent_via_user_profiles(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test1"
-    user_two = test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
+    user_two = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
     )
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
         ))
 
     sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Navigating to the profile page for user two"):
-        test_utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(username=user_two)
-        )
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username=user_two))
 
     with allure.step("Clicking on the 'Private Message button'"):
         sumo_pages.my_profile_page._click_on_private_message_button()
@@ -112,8 +110,8 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page):
                ).to_be_hidden()
 
     with allure.step("Signing in with the user which received the message"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
         ))
 
     with allure.step("Accessing the Inbox section"):
@@ -138,16 +136,16 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page):
 # C891419
 @pytest.mark.messagingSystem
 def test_private_message_can_be_sent_via_new_message_page(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test2"
-    test_user = test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
+    test_user = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
     )
 
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_3"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_3"]
         ))
 
     sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -176,8 +174,8 @@ def test_private_message_can_be_sent_via_new_message_page(page: Page):
 
     with allure.step("Signing in with the receiver account and verifying that the message is "
                      "displayed inside the inbox section"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
         sumo_pages.top_navbar._click_on_inbox_option()
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
@@ -193,11 +191,11 @@ def test_private_message_can_be_sent_via_new_message_page(page: Page):
 def test_navbar_options_redirect_to_the_correct_page_and_options_are_correctly_highlighted(
     page: Page
 ):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     with allure.step("Accessing the inbox section via the top-navbar"):
@@ -248,15 +246,15 @@ def test_navbar_options_redirect_to_the_correct_page_and_options_are_correctly_h
 # C891416
 @pytest.mark.messagingSystem
 def test_new_message_field_validation(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    user_two = test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
+    user_two = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
     )
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     with allure.step("Accessing the New Message page"):
@@ -298,7 +296,7 @@ def test_new_message_field_validation(page: Page):
 
     with allure.step("Adding 9990 characters inside the input field"):
         sumo_pages.new_message_page._fill_into_new_message_body_textarea(
-            text=test_utilities.user_message_test_data["valid_user_message"][
+            text=utilities.user_message_test_data["valid_user_message"][
                 "9990_characters_long_message"
             ])
 
@@ -322,7 +320,7 @@ def test_new_message_field_validation(page: Page):
 
     with allure.step("Adding one character inside the textarea field"):
         sumo_pages.new_message_page._type_into_new_message_body_textarea(
-            text=test_utilities.user_message_test_data["valid_user_message"]
+            text=utilities.user_message_test_data["valid_user_message"]
             ["one_character_message"]
         )
 
@@ -345,7 +343,7 @@ def test_new_message_field_validation(page: Page):
 
     with allure.step("Adding 9 characters inside the textarea field"):
         sumo_pages.new_message_page._type_into_new_message_body_textarea(
-            text=test_utilities.user_message_test_data["valid_user_message"]
+            text=utilities.user_message_test_data["valid_user_message"]
             ["9_characters_message"]
         )
 
@@ -380,16 +378,16 @@ def test_new_message_field_validation(page: Page):
 # C891417
 @pytest.mark.messagingSystem
 def test_new_message_cancel_button(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test3"
-    user_two = test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+    user_two = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
     )
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -420,8 +418,8 @@ def test_new_message_cancel_button(page: Page):
                ).to_be_hidden()
 
     with allure.step("Signing out and signing in with the receiver account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
     with allure.step("Navigating to the receiver inbox and verifying that no message was "
@@ -433,15 +431,15 @@ def test_new_message_cancel_button(page: Page):
 # C891418
 @pytest.mark.messagingSystem
 def test_new_message_preview(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+    test_user = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
     )
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     username = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -453,7 +451,7 @@ def test_new_message_preview(page: Page):
     with allure.step("Adding text inside the message content section"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
-            message_body=test_utilities.user_message_test_data["valid_user_message"]["message"],
+            message_body=utilities.user_message_test_data["valid_user_message"]["message"],
             submit_message=False
         )
 
@@ -516,8 +514,8 @@ def test_new_message_preview(page: Page):
 
     with allure.step("Signing in with the potential message receiver and verifying that no "
                      "message were received"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         sumo_pages.top_navbar._click_on_inbox_option()
         expect(sumo_pages.inbox_page._inbox_message(username=username)).to_be_hidden()
@@ -526,16 +524,16 @@ def test_new_message_preview(page: Page):
 # C891421, C891424
 @pytest.mark.messagingSystem
 def test_messages_can_be_selected_and_deleted(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test4"
-    test_user = test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+    test_user = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
     )
 
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
 
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -605,8 +603,8 @@ def test_messages_can_be_selected_and_deleted(page: Page):
         ) in SentMessagesPageMessages.MULTIPLE_MESSAGES_DELETION_BANNER_TEXT
 
     with allure.step("Signing in with the receiver account and navigating to the inbox"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         sumo_pages.top_navbar._click_on_inbox_option()
 
@@ -627,11 +625,11 @@ def test_messages_can_be_selected_and_deleted(page: Page):
 # C2566115, C2602253, C2602252
 @pytest.mark.messagingSystem
 def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-staff account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating to the new message page"):
@@ -640,30 +638,30 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
 
     with allure.step("Typing in a group name inside the To field"):
         sumo_pages.new_message_page._type_into_new_message_to_input_field(
-            test_utilities.user_message_test_data['test_groups'][0]
+            utilities.user_message_test_data['test_groups'][0]
         )
 
     with allure.step("Verifying that no users are returned"):
         expect(sumo_pages.new_message_page._get_no_user_to_locator()).to_be_visible(timeout=10000)
 
     with allure.step("Navigating to the groups page"):
-        test_utilities.navigate_to_link(test_utilities.general_test_data['groups'])
+        utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups._click_on_a_particular_group(
-            test_utilities.user_message_test_data['test_groups'][0])
+            utilities.user_message_test_data['test_groups'][0])
 
     with allure.step("Verifying that the pm group members button is not displayed"):
         expect(sumo_pages.user_groups._get_pm_group_members_button()).to_be_hidden()
 
     with allure.step("Deleting the user session and verifying that the pm group members "
                      "button is not displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.user_groups._get_pm_group_members_button()).to_be_hidden()
 
     # The PM group members button was removed for staff members as well.
     with allure.step("Signing in with a staff account and verifying that the pm group "
                      "members button is not displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
         expect(sumo_pages.user_groups._get_pm_group_members_button()).to_be_hidden()
 
@@ -671,14 +669,14 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
 # C2566115, C2566116, C2566119
 @pytest.mark.messagingSystem
 def test_staff_users_can_send_group_messages(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = 'Test5'
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
-    targeted_test_group = test_utilities.user_message_test_data['test_groups'][0]
+    targeted_test_group = utilities.user_message_test_data['test_groups'][0]
 
     with allure.step("Navigating to the new messages page"):
         sumo_pages.top_navbar._click_on_inbox_option()
@@ -703,9 +701,9 @@ def test_staff_users_can_send_group_messages(page: Page):
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
                      "was received and clearing the inbox"):
-        for user in test_utilities.general_test_data['testGroup1users']:
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts[user]
+        for user in utilities.general_test_data['testGroup1users']:
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts[user]
             ))
 
             sumo_pages.top_navbar._click_on_inbox_option()
@@ -716,9 +714,9 @@ def test_staff_users_can_send_group_messages(page: Page):
 
     with allure.step("Signing in with users from second test group and verifying that the "
                      "message was not received"):
-        for user in test_utilities.general_test_data["testGroup2users"]:
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts[user]
+        for user in utilities.general_test_data["testGroup2users"]:
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts[user]
             ))
 
             sumo_pages.top_navbar._click_on_inbox_option()
@@ -729,14 +727,14 @@ def test_staff_users_can_send_group_messages(page: Page):
 # C2566117, C2566119
 @pytest.mark.messagingSystem
 def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test6"
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
-    targeted_test_group = test_utilities.user_message_test_data['test_groups']
+    targeted_test_group = utilities.user_message_test_data['test_groups']
 
     with allure.step("Navigating to the new messages page"):
         sumo_pages.top_navbar._click_on_inbox_option()
@@ -756,16 +754,16 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
                     targeted_test_group)
 
     with allure.step("Deleting the outbox"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
                      "was received and clearing the inbox"):
-        for user in test_utilities.general_test_data['testGroup1users'] + (
-                test_utilities.general_test_data['testGroup2users'][1:]):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts[user]
+        for user in utilities.general_test_data['testGroup1users'] + (
+                utilities.general_test_data['testGroup2users'][1:]):
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts[user]
             ))
 
             sumo_pages.top_navbar._click_on_inbox_option()
@@ -778,18 +776,18 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
 # C2566118, C2566119, C2566120
 @pytest.mark.messagingSystem
 def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
         message_body = "Test7"
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
-    targeted_test_group = test_utilities.user_message_test_data['test_groups'][0]
-    targeted_user = [test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']),
-        test_utilities.username_extraction_from_email(test_utilities.
-                                                      user_secrets_accounts['TEST_ACCOUNT_12'])]
+    targeted_test_group = utilities.user_message_test_data['test_groups'][0]
+    targeted_user = [utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']),
+        utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12'])]
 
     with allure.step("Navigating to the new messages page"):
         sumo_pages.top_navbar._click_on_inbox_option()
@@ -810,15 +808,15 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
         check.equal(targeted_user, sumo_pages.sent_message_page._get_text_of_all_recipients())
 
     with allure.step("Deleting the outbox"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
                      "was received and clearing the inbox"):
-        for user in test_utilities.general_test_data['testGroup1users'] + ['TEST_ACCOUNT_12']:
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts[user]
+        for user in utilities.general_test_data['testGroup1users'] + ['TEST_ACCOUNT_12']:
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts[user]
             ))
 
             sumo_pages.top_navbar._click_on_inbox_option()
@@ -831,23 +829,23 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
 # C2566116
 @pytest.mark.messagingSystem
 def test_removed_group_users_do_not_receive_group_messages(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test8"
     with allure.step("Signing in with a staff account and removing a user from the targeted "
                      "group"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
-        targeted_test_group = test_utilities.user_message_test_data['test_groups'][0]
-        targeted_user = test_utilities.remove_character_from_string(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_special_chars
+        targeted_test_group = utilities.user_message_test_data['test_groups'][0]
+        targeted_user = utilities.remove_character_from_string(
+            utilities.username_extraction_from_email(
+                utilities.user_special_chars
             ),
             '*'
         )
 
-        test_utilities.navigate_to_link(test_utilities.general_test_data['groups'])
+        utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups._click_on_a_particular_group(targeted_test_group)
         sumo_pages.user_group_flow.remove_a_user_from_group(targeted_user)
 
@@ -865,10 +863,10 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
                      "was received and clearing the inbox"):
-        for user in test_utilities.general_test_data['testGroup1users']:
-            logged_user = test_utilities.start_existing_session(
-                test_utilities.username_extraction_from_email(
-                    test_utilities.user_secrets_accounts[user]
+        for user in utilities.general_test_data['testGroup1users']:
+            logged_user = utilities.start_existing_session(
+                utilities.username_extraction_from_email(
+                    utilities.user_secrets_accounts[user]
                 ))
             sumo_pages.top_navbar._click_on_inbox_option()
 
@@ -884,10 +882,10 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
                     message_body)
 
     with allure.step("Signing in with an staff account and adding the user back to the group"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
-        test_utilities.navigate_to_link(test_utilities.general_test_data['groups'])
+        utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups._click_on_a_particular_group(targeted_test_group)
         sumo_pages.user_group_flow.add_a_user_to_group(targeted_user)
 
@@ -895,11 +893,11 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
 # C2584835
 @pytest.mark.messagingSystem
 def test_unable_to_send_group_messages_to_profiless_groups(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
 
     with allure.step("Navigating to the new message page"):
@@ -915,20 +913,20 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page):
 
 @pytest.mark.messagingSystemCleanup
 def test_clear_inbox_and_outbox(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
 
-    for user in test_utilities.user_secrets_accounts:
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts[user]
+    for user in utilities.user_secrets_accounts:
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts[user]
         ))
 
         inbox_and_outbox_deletion(page)
 
-    test_utilities.delete_cookies()
+    utilities.delete_cookies()
     sumo_pages.auth_flow_page.sign_in_flow(
-        username=test_utilities.user_special_chars,
-        account_password=test_utilities.user_secrets_pass,
+        username=utilities.user_special_chars,
+        account_password=utilities.user_secrets_pass,
     )
     inbox_and_outbox_deletion(page)
 

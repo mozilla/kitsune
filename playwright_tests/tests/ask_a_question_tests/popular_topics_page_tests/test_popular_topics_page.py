@@ -3,7 +3,7 @@ import pytest
 from pytest_check import check
 
 from playwright.sync_api import TimeoutError, expect, Error, Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
     AAQWidgetMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
@@ -15,14 +15,14 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C890379
 @pytest.mark.productTopicsPage
 def test_popular_topics_navbar(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to product topics pages"):
-        for product_topic in test_utilities.general_test_data["product_topics"]:
-            topic_url = test_utilities.general_test_data["product_topics"][product_topic]
+        for product_topic in utilities.general_test_data["product_topics"]:
+            topic_url = utilities.general_test_data["product_topics"][product_topic]
             page.wait_for_timeout(400)
-            test_utilities.navigate_to_link(topic_url)
-            test_utilities.wait_for_url_to_be(topic_url)
+            utilities.navigate_to_link(topic_url)
+            utilities.wait_for_url_to_be(topic_url)
 
             for option in sumo_pages.product_topics_page._get_navbar_links_text():
                 with allure.step(f"Clicking on {option} navbar option"):
@@ -30,10 +30,10 @@ def test_popular_topics_navbar(page: Page):
                                   product_topics_page._get_navbar_option_link(option))
                     sumo_pages.product_topics_page._click_on_a_navbar_option(option)
                     try:
-                        test_utilities.wait_for_url_to_be(option_url)
+                        utilities.wait_for_url_to_be(option_url)
                     except (TimeoutError, Error):
                         sumo_pages.product_topics_page._click_on_a_navbar_option(option)
-                        test_utilities.wait_for_url_to_be(option_url)
+                        utilities.wait_for_url_to_be(option_url)
 
                 with check, allure.step("Verifying that the correct option is displayed"):
                     assert sumo_pages.product_topics_page._get_page_title() == option
@@ -45,13 +45,13 @@ def test_popular_topics_navbar(page: Page):
 #  C2428991
 @pytest.mark.productTopicsPage
 def test_learn_more_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to product topics pages"):
-        for product_topic in test_utilities.general_test_data["product_topics"]:
-            topic_url = test_utilities.general_test_data["product_topics"][product_topic]
-            test_utilities.navigate_to_link(topic_url)
-            test_utilities.wait_for_url_to_be(topic_url)
+        for product_topic in utilities.general_test_data["product_topics"]:
+            topic_url = utilities.general_test_data["product_topics"][product_topic]
+            utilities.navigate_to_link(topic_url)
+            utilities.wait_for_url_to_be(topic_url)
 
             with allure.step("Clicking on the 'Learn More' button"):
                 sumo_pages.product_topics_page._click_on_learn_more_button()
@@ -64,18 +64,18 @@ def test_learn_more_redirect(page: Page):
 # C2188690
 @pytest.mark.productTopicsPage
 def test_aaq_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to product topics pages"):
         count = 0
-        for product_topic in test_utilities.general_test_data["product_topics"]:
-            topic_url = test_utilities.general_test_data["product_topics"][product_topic]
-            test_utilities.navigate_to_link(topic_url)
-            test_utilities.wait_for_url_to_be(topic_url)
+        for product_topic in utilities.general_test_data["product_topics"]:
+            topic_url = utilities.general_test_data["product_topics"][product_topic]
+            utilities.navigate_to_link(topic_url)
+            utilities.wait_for_url_to_be(topic_url)
 
             with check, allure.step(f"Verifying that the correct subheading page for "
                                     f"{product_topic} is displayed"):
-                if product_topic in test_utilities.general_test_data["premium_products"]:
+                if product_topic in utilities.general_test_data["premium_products"]:
                     assert sumo_pages.product_topics_page._get_aaq_subheading_text(
                     ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
                 else:
@@ -89,14 +89,14 @@ def test_aaq_redirect(page: Page):
                              "form page"):
                 if count == 0:
                     sumo_pages.auth_flow_page.sign_in_flow(
-                        username=test_utilities.user_special_chars,
-                        account_password=test_utilities.user_secrets_pass
+                        username=utilities.user_special_chars,
+                        account_password=utilities.user_secrets_pass
                     )
                     count += 1
                 else:
                     sumo_pages.auth_flow_page.login_with_existing_session()
                 expect(page).to_have_url(
-                    test_utilities.aaq_question_test_data["products_aaq_url"][product_topic],
+                    utilities.aaq_question_test_data["products_aaq_url"][product_topic],
                     timeout=30000)
 
             with allure.step("Signing out from SUMO"):

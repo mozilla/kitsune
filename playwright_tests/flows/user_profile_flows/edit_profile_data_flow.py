@@ -1,5 +1,5 @@
 from playwright.sync_api import Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.pages.user_pages.my_profile_edit import MyProfileEdit
 from playwright_tests.pages.user_pages.my_profile_edit_contribution_areas_page import \
@@ -10,7 +10,7 @@ from playwright_tests.pages.user_pages.my_profile_user_navbar import UserNavbar
 
 
 class EditProfileDataFlow(MyProfileEdit,
-                          TestUtilities,
+                          Utilities,
                           MyProfileEditContributionAreasPage,
                           TopNavbar,
                           UserNavbar,

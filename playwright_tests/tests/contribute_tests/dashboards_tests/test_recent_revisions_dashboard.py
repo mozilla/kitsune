@@ -2,7 +2,7 @@ import allure
 import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
     KBArticleRevision)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
@@ -13,11 +13,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C2499112
 @pytest.mark.recentRevisionsDashboard
 def test_recent_revisions_revision_availability(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     username = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -25,12 +25,12 @@ def test_recent_revisions_revision_availability(page: Page):
     with allure.step("Creating a new kb article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
-    article_url = test_utilities.get_page_url()
+    article_url = utilities.get_page_url()
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "posted article is displayed for admin accounts"):
-        test_utilities.navigate_to_link(
-            test_utilities.general_test_data['dashboard_links']['recent_revisions']
+        utilities.navigate_to_link(
+            utilities.general_test_data['dashboard_links']['recent_revisions']
         )
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
@@ -40,7 +40,7 @@ def test_recent_revisions_revision_availability(page: Page):
 
     with allure.step("Deleting the user session and verifying that the revision is not "
                      "displayed for signed out users"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
                 article_details['article_title']
@@ -50,7 +50,7 @@ def test_recent_revisions_revision_availability(page: Page):
     with allure.step("Typing the article creator username inside the 'Users' field and "
                      "verifying that the article is not displayed"):
         sumo_pages.recent_revisions_page._fill_in_users_field(username)
-        test_utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(2000)
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
                 article_details['article_title']
@@ -60,8 +60,8 @@ def test_recent_revisions_revision_availability(page: Page):
     with allure.step("Clearing the user search field and signing in with a different "
                      "non-admin account"):
         sumo_pages.recent_revisions_page._clearing_the_user_field()
-        test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+        utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         )
 
     with allure.step("Verifying that the revision is not displayed for non-admin accounts"):
@@ -74,7 +74,7 @@ def test_recent_revisions_revision_availability(page: Page):
     with allure.step("Typing the article creator username inside the 'Users' field and "
                      "verifying that the article is not displayed"):
         sumo_pages.recent_revisions_page._fill_in_users_field(username)
-        test_utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(2000)
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
                 article_details['article_title']
@@ -84,18 +84,18 @@ def test_recent_revisions_revision_availability(page: Page):
     with allure.step("Clearing the user search field and signing in back with the admin "
                      "account"):
         sumo_pages.recent_revisions_page._clearing_the_user_field()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Navigating to the article page and deleting it"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with allure.step("Navigating back to the recent revisions page and verifying that the "
                      "article is no longer displayed"):
-        test_utilities.navigate_to_link(
-            test_utilities.general_test_data['dashboard_links']['recent_revisions']
+        utilities.navigate_to_link(
+            utilities.general_test_data['dashboard_links']['recent_revisions']
         )
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
@@ -107,11 +107,11 @@ def test_recent_revisions_revision_availability(page: Page):
 # C2266240
 @pytest.mark.recentRevisionsDashboard
 def test_second_revisions_availability(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing back in with the admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Creating a new kb article"):
@@ -119,11 +119,11 @@ def test_second_revisions_availability(page: Page):
             approve_first_revision=True
         )
 
-    article_url = test_utilities.get_page_url()
+    article_url = utilities.get_page_url()
 
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
     username = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -133,8 +133,8 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Navigating to the Recent Revisions dashboard and verifying that own "
                      "revision is visible"):
-        test_utilities.navigate_to_link(
-            test_utilities.general_test_data['dashboard_links']['recent_revisions']
+        utilities.navigate_to_link(
+            utilities.general_test_data['dashboard_links']['recent_revisions']
         )
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
@@ -144,7 +144,7 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Deleting user session and verifying that the recent revision is "
                      "displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
@@ -153,8 +153,8 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Signing in with a different non-admin user and verifying that the "
                      "revision is displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
@@ -164,9 +164,9 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Signing in with an admin account and verifying that the revision is "
                      "displayed"):
-        test_utilities.delete_cookies()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.delete_cookies()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
@@ -175,15 +175,15 @@ def test_second_revisions_availability(page: Page):
         ).to_be_visible()
 
     with allure.step("Navigating to the article and approving the revision"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision['revision_id'])
-        test_utilities.wait_for_given_timeout(1000)
+        utilities.wait_for_given_timeout(1000)
 
     with allure.step("Signing out and verifying that the revision is displayed inside the "
                      "Recent Revisions dashboard"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(
-            test_utilities.general_test_data['dashboard_links']['recent_revisions'])
+        utilities.delete_cookies()
+        utilities.navigate_to_link(
+            utilities.general_test_data['dashboard_links']['recent_revisions'])
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
@@ -192,8 +192,8 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Signing in with a different non-admin user account and verifying that "
                      "the revision is visible"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
@@ -202,20 +202,20 @@ def test_second_revisions_availability(page: Page):
         ).to_be_visible()
 
     with allure.step("Signing back in with an admin account an deleting the article"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with allure.step("Navigating back to the recent revision dashboard, signing out and "
                      "verifying that the revision is no longer displayed for the deleted kb "
                      "article"):
-        test_utilities.navigate_to_link(
-            test_utilities.general_test_data['dashboard_links']['recent_revisions']
+        utilities.navigate_to_link(
+            utilities.general_test_data['dashboard_links']['recent_revisions']
         )
-        test_utilities.wait_for_given_timeout(1000)
-        test_utilities.delete_cookies()
+        utilities.wait_for_given_timeout(1000)
+        utilities.delete_cookies()
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
@@ -224,8 +224,8 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Signing in with a different non-admin account and verifying that the "
                      "revision is no longer displayed for the deleted kb article"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         expect(
             sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
@@ -237,11 +237,11 @@ def test_second_revisions_availability(page: Page):
 # C2266240
 @pytest.mark.recentRevisionsDashboard
 def test_recent_revisions_dashboard_links(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
     first_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -251,12 +251,12 @@ def test_recent_revisions_dashboard_links(page: Page):
         )
 
     sumo_pages.kb_article_page._click_on_article_option()
-    article_url = test_utilities.get_page_url()
+    article_url = utilities.get_page_url()
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "'Show Diff' option is not available for first revisions"):
         sumo_pages.top_navbar._click_on_recent_revisions_option()
-        test_utilities.wait_for_given_timeout(3000)
+        utilities.wait_for_given_timeout(3000)
         expect(
             sumo_pages.recent_revisions_page._get_show_diff_article_locator(
                 article_title=article_details['article_title'], creator=first_username
@@ -265,9 +265,9 @@ def test_recent_revisions_dashboard_links(page: Page):
 
     with allure.step("Navigating to the article page, signing in with a non-admin user and "
                      "creating a new revision for the article"):
-        test_utilities.navigate_to_link(article_url)
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.navigate_to_link(article_url)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         username = sumo_pages.top_navbar._get_text_of_logged_in_username()
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
@@ -276,25 +276,25 @@ def test_recent_revisions_dashboard_links(page: Page):
                      "on the revision date link and verifying that the user is redirected to"
                      "the correct page"):
         sumo_pages.top_navbar._click_on_recent_revisions_option()
-        test_utilities.wait_for_given_timeout(3000)
-        test_utilities.delete_cookies()
+        utilities.wait_for_given_timeout(3000)
+        utilities.delete_cookies()
         sumo_pages.recent_revisions_page._click_on_revision_date_for_article(
             article_title=article_details['article_title'], username=username
         )
         expect(page).to_have_url(
             article_url + KBArticleRevision.
-            KB_REVISION_PREVIEW + str(test_utilities.number_extraction_from_string(
+            KB_REVISION_PREVIEW + str(utilities.number_extraction_from_string(
                 second_revision['revision_id']
             ))
         )
 
     with check, allure.step("Verifying that the revision id is the correct one"):
         assert sumo_pages.kb_article_preview_revision_page._get_preview_revision_id_text(
-        ) == str(test_utilities.number_extraction_from_string(second_revision['revision_id']))
+        ) == str(utilities.number_extraction_from_string(second_revision['revision_id']))
 
     with allure.step("Navigating back, clicking on the revision title and verifying that the "
                      "user is redirected to the article page"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.recent_revisions_page._click_on_article_title(
             article_title=article_details['article_title'], creator=username
         )
@@ -302,10 +302,10 @@ def test_recent_revisions_dashboard_links(page: Page):
 
     with check, allure.step("Navigating back and verifying that the correct comment is "
                             "displayed"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         assert sumo_pages.recent_revisions_page._get_revision_comment(
             article_title=article_details['article_title'], username=username
-        ) == test_utilities.kb_article_test_data['changes_description']
+        ) == utilities.kb_article_test_data['changes_description']
 
     with allure.step("Clicking on the editor and verifying that the user was redirected to "
                      "the correct page"):
@@ -316,7 +316,7 @@ def test_recent_revisions_dashboard_links(page: Page):
 
     with allure.step("Navigating back, clicking on the show diff option and verifying that"
                      "diff section is displayed"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.recent_revisions_page._click_on_show_diff_for_article(
             article_title=article_details['article_title'], creator=username
         )
@@ -329,22 +329,22 @@ def test_recent_revisions_dashboard_links(page: Page):
         expect(sumo_pages.recent_revisions_page._get_diff_section_locator()).to_be_hidden()
 
     with allure.step("Signing in with an admin account and deleting the article"):
-        test_utilities.delete_cookies()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.delete_cookies()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2266240, C2243449
 @pytest.mark.recentRevisionsDashboard
 def test_recent_revisions_dashboard_title_and_username_update(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing back in with the admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
     first_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -354,27 +354,27 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         )
 
     sumo_pages.kb_article_page._click_on_article_option()
-    article_url = test_utilities.get_page_url()
+    article_url = utilities.get_page_url()
 
     with allure.step("Changing the article title via the 'Edit Article Metadata' page"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            title=test_utilities.kb_article_test_data['updated_kb_article_title'] + article_details
+            title=utilities.kb_article_test_data['updated_kb_article_title'] + article_details
             ['article_title']
         )
 
     with allure.step("Editing the username"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
-        new_username = test_utilities.profile_edit_test_data['valid_user_edit']['username']
+        new_username = utilities.profile_edit_test_data['valid_user_edit']['username']
         sumo_pages.edit_my_profile_page._send_text_to_username_field(new_username)
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "correct new username and article title arte displayed"):
         sumo_pages.top_navbar._click_on_recent_revisions_option()
-        test_utilities.wait_for_given_timeout(3000)
+        utilities.wait_for_given_timeout(3000)
         expect(
             sumo_pages.recent_revisions_page._get_revision_and_username_locator(
-                article_title=(test_utilities.kb_article_test_data
+                article_title=(utilities.kb_article_test_data
                                ['updated_kb_article_title'] + article_details['article_title']),
                 username=new_username
             )
@@ -386,26 +386,26 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
     with allure.step("Deleting the article"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2266241
 @pytest.mark.recentRevisionsDashboard
 def test_recent_revisions_dashboard_filters(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     start_date = "04052023"
     end_date = "05012023"
     with allure.step("Navigating to the 'Recent Revisions' dashboard"):
-        test_utilities.navigate_to_link(
-            test_utilities.general_test_data['dashboard_links']['recent_revisions']
+        utilities.navigate_to_link(
+            utilities.general_test_data['dashboard_links']['recent_revisions']
         )
 
     with check, allure.step("Selecting the ro locale from the locale filter and verifying "
                             "that all the displayed revisions are for the 'ro' locale"):
         sumo_pages.recent_revisions_page._select_locale_option("ro")
-        test_utilities.wait_for_given_timeout(3000)
+        utilities.wait_for_given_timeout(3000)
         for tag in sumo_pages.recent_revisions_page._get_list_of_all_locale_tage():
             assert tag == "ro"
 
@@ -413,30 +413,30 @@ def test_recent_revisions_dashboard_filters(page: Page):
                             "filter and verifying that all the displayed revisions are for "
                             "the posted user"):
         sumo_pages.recent_revisions_page._select_locale_option("en-US")
-        test_utilities.wait_for_given_timeout(3000)
-        username = test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.wait_for_given_timeout(3000)
+        username = utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         )
         sumo_pages.recent_revisions_page._fill_in_users_field(username)
-        test_utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(2000)
         for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
             assert user == username
 
     with allure.step("Clearing the user filter, adding data inside the start and end fields"):
         sumo_pages.recent_revisions_page._clearing_the_user_field()
-        test_utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(2000)
 
         sumo_pages.recent_revisions_page._add_start_date("04052023")
         sumo_pages.recent_revisions_page._add_end_date("05012023")
-        test_utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the displayed revision dates are between ("
                             "inclusive) the set start and end date filters"):
         extracted_date = []
         date_filters = [int(start_date), int(end_date)]
         for date in sumo_pages.recent_revisions_page._get_all_revision_dates():
-            extracted_date.append(test_utilities.extract_date_to_digit_format(
-                test_utilities.extract_month_day_year_from_string(date)
+            extracted_date.append(utilities.extract_date_to_digit_format(
+                utilities.extract_month_day_year_from_string(date)
             ))
 
         for date in extracted_date:

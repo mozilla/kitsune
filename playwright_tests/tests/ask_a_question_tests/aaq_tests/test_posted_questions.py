@@ -3,7 +3,7 @@ import os
 import allure
 import pytest
 from pytest_check import check
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import expect, TimeoutError, Page
 
 from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
@@ -21,18 +21,18 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_5', ''])
 def test_posted_question_details(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account and posting a Firefox product "
                      "question"):
         post_firefox_product_question_flow(page, 'TEST_ACCOUNT_MESSAGE_5')
 
     with allure.step("Deleting user session"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     if username == 'TEST_ACCOUNT_MESSAGE_5':
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
         page.reload()
 
@@ -48,8 +48,8 @@ def test_posted_question_details(page: Page, username):
 
     with allure.step("Signing in with an admin account and verifying that the scam banner is "
                      "displayed and the still need help banner is displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         expect(sumo_pages.product_solutions_page._get_scam_banner_locator()).to_be_visible()
         expect(sumo_pages.product_solutions_page._get_still_need_help_locator()).to_be_visible()
@@ -65,29 +65,29 @@ def test_posted_question_details(page: Page, username):
 # C2191092,  C2191263
 @pytest.mark.postedQuestions
 def test_edit_this_question_functionality_not_signed_in(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account and posting a Firefox question"):
         post_firefox_product_question_flow(page, 'TEST_ACCOUNT_MODERATOR')
 
     with allure.step("Deleting user session and verifying that the 'edit this question' nav "
                      "option is not available"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_edit_this_question_option_locator()).to_be_hidden()
 
     with allure.step("Navigating to the edit endpoint and verifying that the user is "
                      "redirected to the auth page"):
-        test_utilities.navigate_to_link(
-            test_utilities.get_page_url() + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT
+        utilities.navigate_to_link(
+            utilities.get_page_url() + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT
         )
         assert (
-            FxAPageMessages.AUTH_PAGE_URL in test_utilities.get_page_url()
+            FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
         )
 
     with allure.step("Deleting the posted question"):
-        test_utilities.navigate_back()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.navigate_back()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
@@ -97,7 +97,7 @@ def test_edit_this_question_functionality_not_signed_in(page: Page):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_6', 'TEST_ACCOUNT_MODERATOR'])
 def test_cancel_edit_this_question_functionality(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -106,14 +106,14 @@ def test_cancel_edit_this_question_functionality(page: Page, username):
 
     if username == 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with check, allure.step("Navigating to the posted question, clicking on the 'Edit this "
                             "question' option and verifying that the subject field contains "
                             "the correct value"):
-        test_utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
         sumo_pages.question_page._click_on_edit_this_question_question_tools_option()
         assert sumo_pages.aaq_form_page._get_value_of_subject_input_field(
         ) == posted_question['question_details']['aaq_subject']
@@ -124,10 +124,10 @@ def test_cancel_edit_this_question_functionality(page: Page, username):
 
     with allure.step("Editing the question with new data"):
         sumo_pages.aaq_flow.editing_question_flow(
-            subject=test_utilities.aaq_question_test_data['valid_firefox_question']
+            subject=utilities.aaq_question_test_data['valid_firefox_question']
             ['subject_updated'],
-            body=test_utilities.aaq_question_test_data['valid_firefox_question']['body_updated'],
-            troubleshoot=test_utilities.aaq_question_test_data['troubleshooting_information'],
+            body=utilities.aaq_question_test_data['valid_firefox_question']['body_updated'],
+            troubleshoot=utilities.aaq_question_test_data['troubleshooting_information'],
             submit_edit=False
         )
 
@@ -154,9 +154,9 @@ def test_cancel_edit_this_question_functionality(page: Page, username):
             sumo_pages.question_page._click_on_the_additional_system_panel_close()
 
             if username != 'TEST_ACCOUNT_MODERATOR':
-                test_utilities.start_existing_session(
-                    test_utilities.username_extraction_from_email(
-                        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+                utilities.start_existing_session(
+                    utilities.username_extraction_from_email(
+                        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
                     ))
 
             sumo_pages.aaq_flow.deleting_question_flow()
@@ -165,7 +165,7 @@ def test_cancel_edit_this_question_functionality(page: Page, username):
 # C2191263
 @pytest.mark.postedQuestions
 def test_edit_other_user_question_non_admin(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -173,15 +173,15 @@ def test_edit_other_user_question_non_admin(page: Page):
 
     with allure.step("Signing in with a non admin user account and verifying that the 'Edit "
                      "this question' option is not available"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_edit_this_question_option_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the '/edit' endpoint and verifying that "
                             "403 is returned"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 posted_question['question_details']
                 ['question_page_url'] + QuestionPageMessages.
                 EDIT_QUESTION_URL_ENDPOINT)
@@ -189,9 +189,9 @@ def test_edit_other_user_question_non_admin(page: Page):
         assert response.status == 403
 
     with allure.step("Signing in with an admin account and deleting the posted question"):
-        test_utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
@@ -201,25 +201,23 @@ def test_edit_other_user_question_non_admin(page: Page):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_6', 'TEST_ACCOUNT_MODERATOR'])
 def test_edit_this_question_functionality(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
         posted_question = post_firefox_product_question_flow(page,
                                                              'TEST_ACCOUNT_MESSAGE_6')
-        user = test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts[username]
-        )
+        user = utilities.username_extraction_from_email(utilities.user_secrets_accounts[username])
 
     if username == 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with check, allure.step("Clicking on the 'Edit this question' option and verifying that "
                             "the subject and body fields contain the correct value"):
-        test_utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
         sumo_pages.question_page._click_on_edit_this_question_question_tools_option()
         assert sumo_pages.aaq_form_page._get_value_of_subject_input_field(
         ) == posted_question['question_details']['aaq_subject']
@@ -230,18 +228,18 @@ def test_edit_this_question_functionality(page: Page, username):
                             "modified text is displayed and the username is displayed inside"
                             " the modified text"):
         sumo_pages.aaq_flow.editing_question_flow(
-            subject=test_utilities.aaq_question_test_data['valid_firefox_question']
+            subject=utilities.aaq_question_test_data['valid_firefox_question']
             ['subject_updated'],
-            body=test_utilities.aaq_question_test_data['valid_firefox_question']['body_updated'],
-            troubleshoot=test_utilities.aaq_question_test_data['troubleshooting_information']
+            body=utilities.aaq_question_test_data['valid_firefox_question']['body_updated'],
+            troubleshoot=utilities.aaq_question_test_data['troubleshooting_information']
         )
         expect(sumo_pages.question_page._get_modified_question_locator()).to_be_visible()
 
         assert user in sumo_pages.question_page._get_modified_by_text()
         assert sumo_pages.question_page._get_question_header(
-        ) == test_utilities.aaq_question_test_data['valid_firefox_question']['subject_updated']
+        ) == utilities.aaq_question_test_data['valid_firefox_question']['subject_updated']
         assert sumo_pages.question_page._get_question_body(
-        ) == test_utilities.aaq_question_test_data['valid_firefox_question']['body_updated'] + '\n'
+        ) == utilities.aaq_question_test_data['valid_firefox_question']['body_updated'] + '\n'
 
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Verifying that the additional question details option is hidden"):
@@ -252,7 +250,7 @@ def test_edit_this_question_functionality(page: Page, username):
             sumo_pages.question_page._click_on_question_details_button()
             sumo_pages.question_page._click_on_more_system_details_option()
             expect(sumo_pages.question_page._get_more_information_with_text_locator(
-                test_utilities.aaq_question_test_data['troubleshooting_information']
+                utilities.aaq_question_test_data['troubleshooting_information']
             )
             ).to_be_visible()
 
@@ -260,8 +258,8 @@ def test_edit_this_question_functionality(page: Page, username):
 
     with allure.step("Deleting the posted question"):
         if username != 'TEST_ACCOUNT_MODERATOR':
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -270,7 +268,7 @@ def test_edit_this_question_functionality(page: Page, username):
 # C2191263
 @pytest.mark.postedQuestions
 def test_delete_question_cancel_button(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -282,14 +280,13 @@ def test_delete_question_cancel_button(page: Page):
 
     with allure.step("Navigating to the posted question by a different user an verifying "
                      "that the 'Delete this question' option is not available"):
-        test_utilities.navigate_to_link(posted_question_one['question_details']
-                                        ['question_page_url'])
+        utilities.navigate_to_link(posted_question_one['question_details']['question_page_url'])
         expect(sumo_pages.question_page._get_delete_this_question_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the delete endpoint and verifying that "
                             "403 is returned"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 posted_question_one['question_details']
                 ['question_page_url'] + QuestionPageMessages.DELETE_QUESTION_URL_ENDPOINT)
         response = navigation_info.value
@@ -297,14 +294,13 @@ def test_delete_question_cancel_button(page: Page):
 
     with allure.step("Navigating to the posted question by self and verifying that the "
                      "'Delete this question' option is not available"):
-        test_utilities.navigate_to_link(
-            posted_question_two['question_details']['question_page_url'])
+        utilities.navigate_to_link(posted_question_two['question_details']['question_page_url'])
         expect(sumo_pages.question_page._get_delete_this_question_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the delete endpoint and verifying that "
                             "403 is returned"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 posted_question_one['question_details']
                 ['question_page_url'] + QuestionPageMessages.DELETE_QUESTION_URL_ENDPOINT)
         response = navigation_info.value
@@ -312,10 +308,9 @@ def test_delete_question_cancel_button(page: Page):
 
     with allure.step("Signing in with an admin account, clicking on the delete question for "
                      "second question and clicking on the 'Cancel' confirmation button"):
-        test_utilities.navigate_to_link(
-            posted_question_two['question_details']['question_page_url'])
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.navigate_to_link(posted_question_two['question_details']['question_page_url'])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.question_page._click_delete_this_question_question_tools_option()
         sumo_pages.aaq_form_page._click_aaq_form_cancel_button()
@@ -325,8 +320,7 @@ def test_delete_question_cancel_button(page: Page):
 
     with allure.step("Deleting both questions"):
         sumo_pages.aaq_flow.deleting_question_flow()
-        test_utilities.navigate_to_link(
-            posted_question_one['question_details']['question_page_url'])
+        utilities.navigate_to_link(posted_question_one['question_details']['question_page_url'])
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
@@ -335,7 +329,7 @@ def test_delete_question_cancel_button(page: Page):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("status", ['locked', 'archived'])
 def test_lock_and_archive_this_question(page: Page, status):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account and posting a Firefox product "
                      "question"):
@@ -343,24 +337,21 @@ def test_lock_and_archive_this_question(page: Page, status):
 
     with allure.step("Signing in with a different non-admin user account and posting a "
                      "different question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
 
         question_info_two = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
-            body=test_utilities.aaq_question_test_data["valid_firefox_question"]
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False
         )
 
     with allure.step("Navigating to the first posted question"):
-        test_utilities.navigate_to_link(
-            posted_question['question_details']['question_page_url']
-        )
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
 
     if status == "locked":
         with allure.step("Verifying that the 'Lock this question' option is not available for "
@@ -372,7 +363,7 @@ def test_lock_and_archive_this_question(page: Page, status):
             expect(sumo_pages.question_page._get_archive_this_question_locator()).to_be_hidden()
 
     with allure.step("Navigating to the question posted by self"):
-        test_utilities.navigate_to_link(question_info_two['question_page_url'])
+        utilities.navigate_to_link(question_info_two['question_page_url'])
 
     if status == "locked":
         with allure.step("Verifying that the 'Lock this question is not available for self "
@@ -384,8 +375,8 @@ def test_lock_and_archive_this_question(page: Page, status):
             expect(sumo_pages.question_page._get_archive_this_question_locator()).to_be_hidden()
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     if status == "locked":
@@ -396,8 +387,8 @@ def test_lock_and_archive_this_question(page: Page, status):
             sumo_pages.question_page._click_on_archive_this_question_option()
 
     with allure.step("Signing in with a different non admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     if status == "locked":
@@ -417,7 +408,7 @@ def test_lock_and_archive_this_question(page: Page, status):
         expect(page).to_have_url(ContactSupportMessages.PAGE_URL)
 
     with allure.step("Navigating back to the question page"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
 
     if status == "locked":
         with allure.step("Verifying that the 'Unlock this question option' is not available'"):
@@ -440,11 +431,11 @@ def test_lock_and_archive_this_question(page: Page, status):
 
     with allure.step("Signing in with an admin account and verifying that the 'needs more "
                      "information from the user' checkbox is available"):
-        repliant_username = test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        repliant_username = utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         )
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         expect(sumo_pages.question_page._get_needs_more_information_checkbox_locator()
                ).to_be_visible()
@@ -456,20 +447,20 @@ def test_lock_and_archive_this_question(page: Page, status):
                      "is visible"):
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=repliant_username,
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
         expect(sumo_pages.question_page._get_posted_reply_locator(reply_id)).to_be_visible()
 
     with allure.step("Signing in with a normal user account and verifying that the admin's "
                      "reply is visible"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_posted_reply_locator(reply_id)).to_be_visible()
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     if status == "locked":
@@ -481,11 +472,11 @@ def test_lock_and_archive_this_question(page: Page, status):
 
     with allure.step("Signing in with a non-admin account and verifying that the 'Thread "
                      "locked' banner is not displayed"):
-        second_repliant = test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        second_repliant = utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         )
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_thread_locked_locator()).to_be_hidden()
 
@@ -493,16 +484,16 @@ def test_lock_and_archive_this_question(page: Page, status):
                      "is visible"):
         reply_id_two = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=second_repliant,
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
         expect(sumo_pages.question_page._get_posted_reply_locator(reply_id_two)).to_be_visible()
 
     with allure.step("Signing in with an admin account and deleting both questions"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             posted_question['question_details']['question_page_url']
         )
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -511,37 +502,35 @@ def test_lock_and_archive_this_question(page: Page, status):
 # C2191267, C2191116, C2134136, C2191091
 @pytest.mark.postedQuestions
 def test_subscribe_to_feed_option(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
     with allure.step("Posting a Firefox product question"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
 
         question_info_one = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
-            body=test_utilities.aaq_question_test_data["valid_firefox_question"]
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False
         )
 
     with allure.step("Signing in with a different non admin user account and posting a "
                      "Firefox product question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
 
         question_info_two = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
-            body=test_utilities.aaq_question_test_data["valid_firefox_question"]
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False
         )
@@ -549,9 +538,9 @@ def test_subscribe_to_feed_option(page: Page):
     with allure.step("Navigating to the first question, clicking on the 'Subscribe to feed' "
                      "option and verifying that the url is updated to the feed endpoint ("
                      "Chrome) or has the correct download info (Firefox)"):
-        test_utilities.navigate_to_link(question_info_one['question_page_url'])
+        utilities.navigate_to_link(question_info_one['question_page_url'])
 
-        if page.context.browser.browser_type.name == "chrome":
+        if page.context.browser.browser_type.name == "chromium":
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_one['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
@@ -572,13 +561,13 @@ def test_subscribe_to_feed_option(page: Page):
     with allure.step("Navigating to the first question, clicking on the 'Subscribe to feed' "
                      "option and verifying that the url is updated to the feed endpoint ("
                      "Chrome) or has the correct download info (Firefox)"):
-        test_utilities.navigate_to_link(question_info_two['question_page_url'])
-        if page.context.browser.browser_type.name == "chrome":
+        utilities.navigate_to_link(question_info_two['question_page_url'])
+        if page.context.browser.browser_type.name == "chromium":
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
             )
-            test_utilities.navigate_back()
+            utilities.navigate_back()
         else:
             with page.expect_download() as download_info:
                 sumo_pages.question_page._click_on_subscribe_to_feed_option()
@@ -596,14 +585,14 @@ def test_subscribe_to_feed_option(page: Page):
     with allure.step("Signing out and Navigating to the first question,clicking on the "
                      "'Subscribe to feed' option and verifying that the url is updated to "
                      "the feed endpoint (Chrome) or has the correct download info (Firefox)"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
-        if page.context.browser.browser_type.name == "chrome":
+        if page.context.browser.browser_type.name == "chromium":
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
             )
-            test_utilities.navigate_back()
+            utilities.navigate_back()
         else:
             with page.expect_download() as download_info:
                 sumo_pages.question_page._click_on_subscribe_to_feed_option()
@@ -622,16 +611,16 @@ def test_subscribe_to_feed_option(page: Page):
                      "clicking on the 'Subscribe to feed' option and verifying that the url "
                      "is updated to the feed endpoint (Chrome) or has the correct download "
                      "info (Firefox)"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        if page.context.browser.browser_type.name == "chrome":
+        if page.context.browser.browser_type.name == "chromium":
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
             )
-            test_utilities.navigate_back()
+            utilities.navigate_back()
         else:
             with page.expect_download() as download_info:
                 sumo_pages.question_page._click_on_subscribe_to_feed_option()
@@ -648,7 +637,7 @@ def test_subscribe_to_feed_option(page: Page):
 
     with allure.step("Deleting the posted question"):
         sumo_pages.aaq_flow.deleting_question_flow()
-        test_utilities.navigate_to_link(question_info_one['question_page_url'])
+        utilities.navigate_to_link(question_info_one['question_page_url'])
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
@@ -656,7 +645,7 @@ def test_subscribe_to_feed_option(page: Page):
 # C2191491
 @pytest.mark.postedQuestions
 def test_mark_as_spam_functionality(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -664,22 +653,22 @@ def test_mark_as_spam_functionality(page: Page):
 
     with allure.step("Deleting user session and verifying that the 'Mark as spam' option is "
                      "not displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_mark_as_spam_locator()).to_be_hidden()
 
     with allure.step("Signing in with a non admin user account and verifying that the 'Mark "
                      "as spam' option is not displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_mark_as_spam_locator()).to_be_hidden()
 
     with check, allure.step("Signing in with an admin account, clicking on the 'mark as "
                             "spam' option and verifying that the correct spam banner message"
                             " is displayed"):
-        username = test_utilities.start_existing_session(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        username = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
         sumo_pages.question_page._click_on_mark_as_spam_option()
         assert (QuestionPageMessages.MARKED_AS_SPAM_BANNER + username in sumo_pages.question_page.
@@ -687,49 +676,45 @@ def test_mark_as_spam_functionality(page: Page):
 
     with check, allure.step("Deleting the user session, navigating to the posted question "
                             "and verifying that the 404 is returned"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
-                posted_question['question_details']['question_page_url']
-            )
+            utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
         response = navigation_info.value
         assert response.status == 404
 
     with check, allure.step("Signing in with a non admin user account, navigating to the "
                             "posted question and verifying that 404 is returned"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
-                posted_question['question_details']['question_page_url']
-            )
+            utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
         response = navigation_info.value
         assert response.status == 404
 
     with allure.step("Signing in with an admin account, clicking on the 'Mark as spam' "
                      "option and verifying that the 'Mark as spam' banner is not displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.question_page._click_on_mark_as_spam_option()
         expect(sumo_pages.question_page._get_marked_as_spam_banner_locator()).to_be_hidden()
 
     with allure.step("Deleting the user session and verifying that the 'Marked as spam' "
                      "banner is not displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_marked_as_spam_banner_locator()).to_be_hidden()
 
     with allure.step("Signing in with a non admin user account and verifying that the "
                      "'Marked as spam' banner is not displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_marked_as_spam_banner_locator()).to_be_hidden()
 
     with allure.step("Signing in with an admin account and deleting the question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
@@ -738,7 +723,7 @@ def test_mark_as_spam_functionality(page: Page):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['', 'TEST_ACCOUNT_13'])
 def test_question_topics(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -751,12 +736,12 @@ def test_question_topics(page: Page, username):
         expect(sumo_pages.question_page._get_add_a_tag_button()).to_be_hidden()
 
     with allure.step("Deleting user session"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     if username == 'TEST_ACCOUNT_13':
         with allure.step("Signing in with a non admin user account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
 
     with allure.step("Verifying that the 'Add a tag' input field is not displayed"):
@@ -771,26 +756,26 @@ def test_question_topics(page: Page, username):
 
     with allure.step("Signing in with a admin user account, adding data inside the 'Add a "
                      "tag' input field"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.question_page._add_text_to_add_a_tag_input_field(
-            test_utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
+            utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
         sumo_pages.question_page._click_on_add_a_tag_button()
 
     with allure.step("Deleting user session"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     if username == 'TEST_ACCOUNT_13':
         with allure.step("Signing in with a non admin user account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
 
     with check, allure.step("Verifying that the tag is available for all users"):
         page.reload()
-        assert (test_utilities.aaq_question_test_data['valid_firefox_question']
+        assert (utilities.aaq_question_test_data['valid_firefox_question']
                 ['custom_tag'] in sumo_pages.question_page._get_question_tag_options())
 
     with allure.step("Verifying that the question tags are acting as filters"):
@@ -807,47 +792,45 @@ def test_question_topics(page: Page, username):
                 ):
                     assert (question in sumo_pages.product_support_forum.
                             _get_all_question_list_tags(article_id))
-                test_utilities.navigate_back()
+                utilities.navigate_back()
 
     with allure.step("Navigate back to the posted question, signing in with an admin account "
                      "and removing the newly added tag"):
-        test_utilities.navigate_to_link(
-            posted_question['question_details']['question_page_url']
-        )
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         page.reload()
         sumo_pages.question_page._click_on_tag_remove_button(
-            test_utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
+            utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
         # Adding a custom wait to avoid test flakiness.
-        test_utilities.wait_for_given_timeout(1000)
+        utilities.wait_for_given_timeout(1000)
 
     with allure.step("Verifying that the tag was removed"):
         expect(sumo_pages.question_page._get_a_certain_tag(
-            test_utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
+            utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
         ).to_be_hidden()
 
     with allure.step("Deleting the user session"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     if username == "TEST_ACCOUNT_13":
         with allure.step("Signing in with a non admin user account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
 
     with allure.step("Verifying that the tag was removed"):
         expect(sumo_pages.question_page._get_a_certain_tag(
-            test_utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
+            utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
         ).to_be_hidden()
 
     with allure.step("Deleting the posted question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -856,7 +839,7 @@ def test_question_topics(page: Page, username):
 # C2191091
 @pytest.mark.postedQuestions
 def test_email_updates_option_visibility(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -864,20 +847,20 @@ def test_email_updates_option_visibility(page: Page):
 
     with allure.step("Deleting user session and verifying that the 'Get  email updates' "
                      "option is displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_email_updates_option()).to_be_visible()
 
     with allure.step("Signing in with another non admin user account and verifying that the "
                      "'Get email updates' option is displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_email_updates_option()).to_be_visible()
 
     with allure.step("Signing in with an admin account and verifying that the 'Get email "
                      "updated' options is displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         expect(sumo_pages.question_page._get_email_updates_option()).to_be_visible()
 
@@ -888,7 +871,7 @@ def test_email_updates_option_visibility(page: Page):
 # C2191268
 @pytest.mark.postedQuestions
 def test_mark_reply_as_spam(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -897,18 +880,18 @@ def test_mark_reply_as_spam(page: Page):
     with allure.step("Submitting a reply to the question"):
         reply_id_one = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=posted_question['username_one'],
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
     with allure.step("Signin in with a different non admin user and submitting a reply to "
                      "the question"):
-        username_two = test_utilities.start_existing_session(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        username_two = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
         reply_id_two = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=username_two,
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
     with allure.step("Clicking on the self reply menu and verifying that the 'mark as spam' "
@@ -928,8 +911,8 @@ def test_mark_reply_as_spam(page: Page):
     with check, allure.step("Signing in with an admin account, clicking on the 'Marks as "
                             "Spam' option for one of the replies and verifying that the "
                             "'Marked as spam' message is displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.spam_marking_a_reply(reply_id_one)
         assert sumo_pages.question_page._get_marked_as_spam_text(
@@ -937,34 +920,34 @@ def test_mark_reply_as_spam(page: Page):
 
     with allure.step("Deleting user session and verifying that the reply marked as spam is "
                      "no longer displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_reply_section_locator(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with a user account and verifying that reply marked as spam "
                      "is no longer displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         expect(sumo_pages.question_page._get_reply_section_locator(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with the reply OP user account and verifying that the reply "
                      "marked as spam is no longer displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_reply_section_locator(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with the admin account, unmarking the reply from spam and "
                      "verifying that the 'Marked as spam' message is no longer displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.spam_marking_a_reply(reply_id_one)
         expect(sumo_pages.question_page._get_marked_as_spam_locator(reply_id_one)).to_be_hidden()
 
     with allure.step("Deleting the user session and verifying that the reply is visible to "
                      "the logged out users"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_reply_section_locator(reply_id_one)).to_be_visible()
 
     with allure.step("Verifying that the 'Marked as spam' message is no longer displayed"):
@@ -972,8 +955,8 @@ def test_mark_reply_as_spam(page: Page):
 
     with allure.step("Signing in with a different user and verifying that the reply is "
                      "visible again"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         expect(sumo_pages.question_page._get_reply_section_locator(reply_id_one)).to_be_visible()
 
@@ -982,8 +965,8 @@ def test_mark_reply_as_spam(page: Page):
 
     with allure.step("Signing in with the reply OP and verifying that the reply is visible "
                      "again"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         expect(sumo_pages.question_page._get_reply_section_locator(reply_id_one)).to_be_visible()
 
@@ -991,8 +974,8 @@ def test_mark_reply_as_spam(page: Page):
         expect(sumo_pages.question_page._get_marked_as_spam_locator(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with an admin account and deleting the posted question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
@@ -1002,18 +985,18 @@ def test_mark_reply_as_spam(page: Page):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_13', 'TEST_ACCOUNT_MODERATOR'])
 def test_edit_reply(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
         posted_question = post_firefox_product_question_flow(page, 'TEST_ACCOUNT_12')
 
-    page_url = test_utilities.get_page_url()
+    page_url = utilities.get_page_url()
 
     with allure.step("Submitting a reply to the question"):
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=posted_question['username_one'],
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
     with check, allure.step("Verifying that the reply contains the correct name and user "
@@ -1025,9 +1008,9 @@ def test_edit_reply(page: Page, username):
 
     if username == 'TEST_ACCOUNT_13':
         with allure.step("Signin in with a different non admin user"):
-            username_two = test_utilities.start_existing_session(
-                test_utilities.username_extraction_from_email(
-                    test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+            username_two = utilities.start_existing_session(
+                utilities.username_extraction_from_email(
+                    utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
                 ))
 
         with allure.step("Clicking on the more options for the reply posted by another user "
@@ -1039,19 +1022,19 @@ def test_edit_reply(page: Page, username):
         with check, allure.step("Manually navigating to edit reply endpoint and verifying "
                                 "that 403 is returned"):
             with page.expect_navigation() as navigation_info:
-                test_utilities.navigate_to_link(
+                utilities.navigate_to_link(
                     page_url + QuestionPageMessages.EDIT_REPLY_URL + str(
-                        test_utilities.number_extraction_from_string(reply_id))
+                        utilities.number_extraction_from_string(reply_id))
                 )
                 response = navigation_info.value
                 assert response.status == 403
 
         with check, allure.step("Navigating back and verifying that the reply contains the "
                                 "correct name and no user status"):
-            test_utilities.navigate_to_link(page_url)
+            utilities.navigate_to_link(page_url)
             reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=username_two,
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['question_reply']
             )
             assert sumo_pages.question_page._get_display_name_of_question_reply_author(
@@ -1063,9 +1046,9 @@ def test_edit_reply(page: Page, username):
                 )
             ).to_be_hidden()
     else:
-        username_two = test_utilities.start_existing_session(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        username_two = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with check, allure.step("Clicking on the 'Edit this post option' and verifying that the "
@@ -1073,18 +1056,18 @@ def test_edit_reply(page: Page, username):
         sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
         sumo_pages.question_page._click_on_edit_this_post_for_a_certain_reply(reply_id)
         assert sumo_pages.question_page._get_post_a_reply_textarea_text().strip(
-        ) in test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        ) in utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
 
     with allure.step("Editing the question reply"):
         sumo_pages.aaq_flow.editing_reply_flow(
-            reply_body=test_utilities.aaq_question_test_data['valid_firefox_question']
+            reply_body=utilities.aaq_question_test_data['valid_firefox_question']
             ['updated_reply'],
             submit_reply=False
         )
 
     with check, allure.step("Verifying that the question reply is the original one"):
         assert sumo_pages.question_page._get_posted_reply_text(reply_id).strip(
-        ) == test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        ) == utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
 
     with allure.step("Verifying that the 'Modified by' message is not displayed for the "
                      "reply"):
@@ -1096,16 +1079,16 @@ def test_edit_reply(page: Page, username):
         sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
         sumo_pages.question_page._click_on_edit_this_post_for_a_certain_reply(reply_id)
         assert sumo_pages.question_page._get_post_a_reply_textarea_text(
-        ) in test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        ) in utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
 
     with check, allure.step("Editing the reply and verifying that the reply contains the "
                             "updated text"):
         sumo_pages.aaq_flow.editing_reply_flow(
-            reply_body=test_utilities.aaq_question_test_data['valid_firefox_question']
+            reply_body=utilities.aaq_question_test_data['valid_firefox_question']
             ['updated_reply']
         )
         assert sumo_pages.question_page._get_posted_reply_text(reply_id).strip(
-        ) == test_utilities.aaq_question_test_data['valid_firefox_question']['updated_reply']
+        ) == utilities.aaq_question_test_data['valid_firefox_question']['updated_reply']
 
     with check, allure.step("Verifying that the 'Modified by' message is displayed for the "
                             "reply"):
@@ -1114,8 +1097,8 @@ def test_edit_reply(page: Page, username):
 
     with allure.step("Deleting the posted question"):
         if username == 'TEST_ACCOUNT_13':
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
@@ -1124,19 +1107,19 @@ def test_edit_reply(page: Page, username):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_13', 'TEST_ACCOUNT_MODERATOR'])
 def test_delete_reply(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
         posted_question = post_firefox_product_question_flow(page, 'TEST_ACCOUNT_12')
 
-    page_url = test_utilities.get_page_url()
+    page_url = utilities.get_page_url()
 
     with allure.step("Posting a reply to the question and verifying that the 'Delete this "
                      "post' option is not available for self posted reply"):
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=posted_question['username_one'],
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
         expect(sumo_pages.question_page._get_delete_this_post_reply_locator(reply_id)
                ).to_be_hidden()
@@ -1144,24 +1127,24 @@ def test_delete_reply(page: Page, username):
     with check, allure.step("Verifying that manually navigating to the delete page for the "
                             "posted reply returns 403"):
         with page.expect_navigation() as navigation_info:
-            test_utilities.navigate_to_link(
+            utilities.navigate_to_link(
                 page_url + QuestionPageMessages.DELETE_QUESTION_REPLY_URL + str(
-                    test_utilities.number_extraction_from_string(reply_id))
+                    utilities.number_extraction_from_string(reply_id))
             )
             response = navigation_info.value
             assert response.status == 403
 
     with allure.step("Navigating back to the question and posting a reply to it"):
-        test_utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
 
         if username == 'TEST_ACCOUNT_13':
-            username_two = test_utilities.start_existing_session(
-                test_utilities.username_extraction_from_email(
-                    test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+            username_two = utilities.start_existing_session(
+                utilities.username_extraction_from_email(
+                    utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
                 ))
             sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=username_two,
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['question_reply']
             )
 
@@ -1174,20 +1157,19 @@ def test_delete_reply(page: Page, username):
             with check, allure.step("Verifying that manually navigating to the delete page "
                                     "for the posted reply returns 403"):
                 with page.expect_navigation() as navigation_info:
-                    test_utilities.navigate_to_link(
+                    utilities.navigate_to_link(
                         page_url + QuestionPageMessages.DELETE_QUESTION_REPLY_URL + str(
-                            test_utilities.number_extraction_from_string(reply_id))
+                            utilities.number_extraction_from_string(reply_id))
                     )
                     response = navigation_info.value
                     assert response.status == 403
 
-            test_utilities.navigate_to_link(posted_question['question_details']
-                                            ['question_page_url'])
+            utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
 
     with allure.step("Signing in with an admin account and, clicking on the 'Cancel' delete "
                      "reply confirmation box and verifying that the reply was not deleted"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.delete_question_reply(reply_id, delete_reply=False)
         expect(sumo_pages.question_page._get_posted_reply_locator(reply_id)).to_be_visible()
@@ -1204,7 +1186,7 @@ def test_delete_reply(page: Page, username):
 # Need to re-verify this for signed out case before submitting this
 @pytest.mark.postedQuestions
 def test_i_have_this_problem_too(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -1218,7 +1200,7 @@ def test_i_have_this_problem_too(page: Page):
     with check, allure.step("Deleting the user session, clicking on the 'I have this problem "
                             "too' button and verifying tha the 'have this problem' counter "
                             "was successfully incremented"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         problem_counter += 1
         sumo_pages.question_page._click_i_have_this_problem_too_button()
         page.reload()
@@ -1227,8 +1209,8 @@ def test_i_have_this_problem_too(page: Page):
     with check, allure.step("Signing in with a different non-admin user account, clicking on "
                             "the 'I have this problem too' and verifying that the 'have this "
                             "problem' counter has incremented"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         sumo_pages.question_page._click_i_have_this_problem_too_button()
         page.reload()
@@ -1242,8 +1224,8 @@ def test_i_have_this_problem_too(page: Page):
     with check, allure.step("Signing in with an admin account, clicking on the 'I have this "
                             "problem too' and verifying that the 'have this problem' counter "
                             "incremented successfully"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         problem_counter += 1
         sumo_pages.question_page._click_i_have_this_problem_too_button()
@@ -1261,7 +1243,7 @@ def test_i_have_this_problem_too(page: Page):
 # C2192384
 @pytest.mark.postedQuestions
 def test_solves_this_problem(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -1270,19 +1252,19 @@ def test_solves_this_problem(page: Page):
     with allure.step("Posting a reply to the question"):
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=posted_question['username_one'],
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
     with allure.step("Deleting user session and verifying that the 'Solved the problem' "
                      "button is not displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.question_page._get_solved_the_problem_button_locator(reply_id)
                ).to_be_hidden()
 
     with allure.step("Signing in with a different user account and verifying that the "
                      "'Solved the problem' button is not displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         expect(sumo_pages.question_page._get_solved_the_problem_button_locator(reply_id)
                ).to_be_hidden()
@@ -1290,8 +1272,8 @@ def test_solves_this_problem(page: Page):
     with check, allure.step("Signing in with the first username, clicking on the 'Solved the "
                             "problem' button and verifying that the correct banner is "
                             "displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.question_page._click_on_solves_the_problem_button(reply_id)
         assert sumo_pages.question_page._get_solved_problem_banner_text(
@@ -1308,7 +1290,7 @@ def test_solves_this_problem(page: Page):
 
     with check, allure.step("Verifying the chosen solution text"):
         assert sumo_pages.question_page._get_chosen_solution_text(
-        ) == test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        ) == utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
 
     with allure.step("Clicking on the 'Read this answer in context' link and verifying that "
                      "the page url updates to point out to the posted reply"):
@@ -1319,7 +1301,7 @@ def test_solves_this_problem(page: Page):
 
     with check, allure.step("Navigating back, clicking on the undo button and verifying that "
                             "the correct banner is displayed"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.question_page._click_on_undo_button()
         assert sumo_pages.question_page._get_solved_problem_banner_text(
         ) == QuestionPageMessages.UNDOING_A_SOLUTION
@@ -1337,12 +1319,12 @@ def test_solves_this_problem(page: Page):
 
     with check, allure.step("Signing in with an admin account, clicking on the 'solved this "
                             "problem option' and verifying the chosen solution text"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.question_page._click_on_solves_the_problem_button(reply_id)
         assert sumo_pages.question_page._get_chosen_solution_text(
-        ) == test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        ) == utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
 
     with allure.step("Deleting the posted question"):
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -1353,7 +1335,7 @@ def test_solves_this_problem(page: Page):
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("quote_on", ['reply', 'question'])
 def test_quote_reply_functionality(page: Page, quote_on):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     # Using a user which doesn't have any special permissions applied & which doesn't belong to
     # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
@@ -1367,20 +1349,20 @@ def test_quote_reply_functionality(page: Page, quote_on):
         with allure.step("Posting a reply to the question"):
             reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=posted_question['username_one'],
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['question_reply']
             )
     with allure.step("Signing in with a different non-admin user"):
-        username_two = test_utilities.start_existing_session(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        username_two = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
 
     if quote_on == "reply":
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=username_two,
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=reply_id
@@ -1389,7 +1371,7 @@ def test_quote_reply_functionality(page: Page, quote_on):
         with allure.step("Posting a quoted reply for question"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=username_two,
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=question_id
@@ -1403,20 +1385,18 @@ def test_quote_reply_functionality(page: Page, quote_on):
     if quote_on == "reply":
         with check, allure.step("Verifying that the original reply is displayed inside the "
                                 "quote"):
-            assert (test_utilities
-                    .aaq_question_test_data['valid_firefox_question']
+            assert (utilities.aaq_question_test_data['valid_firefox_question']
                     ['question_reply'] == sumo_pages.question_page
                     ._get_blockquote_reply_text(quote_id).strip())
     else:
         with check, allure.step("Verifying that the question details is displayed inside the "
                                 "quote"):
-            assert (test_utilities
-                    .aaq_question_test_data['valid_firefox_question']
+            assert (utilities.aaq_question_test_data['valid_firefox_question']
                     ['simple_body_text'] == sumo_pages.question_page
                     ._get_blockquote_reply_text(quote_id).strip())
 
     with check, allure.step("Verifying that the new reply text is also displayed"):
-        assert (test_utilities
+        assert (utilities
                 .aaq_question_test_data['valid_firefox_question']['updated_reply'] in sumo_pages.
                 question_page._get_posted_reply_text(quote_id).strip())
 
@@ -1435,15 +1415,15 @@ def test_quote_reply_functionality(page: Page, quote_on):
             )
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     if quote_on == "reply":
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=username_two,
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=reply_id
@@ -1452,7 +1432,7 @@ def test_quote_reply_functionality(page: Page, quote_on):
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=username_two,
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=question_id
@@ -1466,17 +1446,17 @@ def test_quote_reply_functionality(page: Page, quote_on):
     if quote_on == "reply":
         with check, allure.step("Verifying that the original reply is displayed inside the "
                                 "quote"):
-            assert (test_utilities.aaq_question_test_data['valid_firefox_question']
+            assert (utilities.aaq_question_test_data['valid_firefox_question']
                     ['question_reply'] == sumo_pages.question_page
                     ._get_blockquote_reply_text(quote_id).strip())
     else:
         with check, allure.step("Verifying that the question is displayed inside the quote"):
-            assert (test_utilities.aaq_question_test_data['valid_firefox_question']
+            assert (utilities.aaq_question_test_data['valid_firefox_question']
                     ['simple_body_text'] == sumo_pages.question_page
                     ._get_blockquote_reply_text(quote_id).strip())
 
     with check, allure.step("Verifying that the new reply text is also displayed"):
-        assert (test_utilities.aaq_question_test_data['valid_firefox_question']
+        assert (utilities.aaq_question_test_data['valid_firefox_question']
                 ['updated_reply'] == sumo_pages.question_page
                 ._get_posted_reply_text(quote_id).strip())
 
@@ -1502,7 +1482,7 @@ def test_quote_reply_functionality(page: Page, quote_on):
 # C2191117, C2191223, C2191226
 @pytest.mark.postedQuestions
 def test_quote_reply_functionality_signed_out(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -1512,7 +1492,7 @@ def test_quote_reply_functionality_signed_out(page: Page):
     with allure.step("Deleting user session, clicking on the 'Quote' option for the question "
                      "and verifying that the url has updated to contain the correct fragment"
                      " identifier"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         sumo_pages.question_page._click_on_reply_more_options_button(question_id)
         sumo_pages.question_page._click_on_quote_for_a_certain_reply(question_id)
         expect(page).to_have_url(
@@ -1536,19 +1516,19 @@ def test_quote_reply_functionality_signed_out(page: Page):
 
     with allure.step("Navigating back to the question page,signing in back with the op and "
                      "leaving a question reply"):
-        test_utilities.navigate_back()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.navigate_back()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=posted_question['username_one'],
-            reply=test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
     with allure.step("Deleting user session, clicking on the quote option fro the reply and "
                      "verifying that the url has updated to contain the correct fragment "
                      "identifier"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
         sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
         expect(page).to_have_url(
@@ -1573,11 +1553,11 @@ def test_quote_reply_functionality_signed_out(page: Page):
 
     with allure.step("Navigating back to the question page, clicking on the 'log in to your "
                      "account' link and proceeding with the auth flow with an admin account"):
-        test_utilities.navigate_back()
+        utilities.navigate_back()
         sumo_pages.question_page._click_on_log_in_to_your_account_signed_out_card_link()
         sumo_pages.auth_flow_page.sign_in_flow(
-            username=test_utilities.user_special_chars,
-            account_password=test_utilities.user_secrets_pass,
+            username=utilities.user_special_chars,
+            account_password=utilities.user_secrets_pass,
         )
 
     with allure.step("Verifying that we are redirected back to the question page"):
@@ -1587,8 +1567,8 @@ def test_quote_reply_functionality_signed_out(page: Page):
         expect(sumo_pages.question_page._get_post_a_reply_textarea_locator()).to_be_visible()
 
     with allure.step("Signing in with an admin account and deleting the posted question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
@@ -1597,7 +1577,7 @@ def test_quote_reply_functionality_signed_out(page: Page):
 # Currently fails due to https://github.com/mozilla/sumo/issues/1216
 @pytest.mark.skip
 def test_question_reply_votes(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     number_of_thumbs_up_votes = 0
     number_of_thumbs_down_votes = 0
@@ -1609,7 +1589,7 @@ def test_question_reply_votes(page: Page):
 
     with allure.step("Posting a reply to the question"):
         sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            test_utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
         reply_id = sumo_pages.question_page._click_on_post_reply_button(
             posted_question['username_one']
@@ -1620,8 +1600,8 @@ def test_question_reply_votes(page: Page):
 
     with check, allure.step("Signing in a different user and verifying that the correct vote "
                             "header is displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_13']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_13']
         ))
         assert sumo_pages.question_page._get_reply_vote_heading(
             reply_id) == QuestionPageMessages.HELPFUL_VOTE_HEADER
@@ -1635,7 +1615,7 @@ def test_question_reply_votes(page: Page):
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
                             "thumbs up votes is displayed"):
-        test_utilities.refresh_page()
+        utilities.refresh_page()
         assert int(sumo_pages.question_page._get_helpful_count(reply_id
                                                                )) == number_of_thumbs_up_votes
 
@@ -1654,7 +1634,7 @@ def test_question_reply_votes(page: Page):
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
                             "thumbs up votes is displayed"):
-        test_utilities.refresh_page()
+        utilities.refresh_page()
         assert int(sumo_pages.question_page._get_helpful_count(reply_id)
                    ) == number_of_thumbs_up_votes
 
@@ -1664,13 +1644,13 @@ def test_question_reply_votes(page: Page):
                    ) == number_of_thumbs_down_votes
 
     with allure.step("Deleting the user session and clicking on the 'thumbs up' button"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         sumo_pages.question_page._click_reply_vote_thumbs_up_button(reply_id)
         number_of_thumbs_up_votes += 1
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
                             "thumbs up votes is displayed"):
-        test_utilities.refresh_page()
+        utilities.refresh_page()
         assert int(sumo_pages.question_page._get_helpful_count(reply_id)
                    ) == number_of_thumbs_up_votes
 
@@ -1689,7 +1669,7 @@ def test_question_reply_votes(page: Page):
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
                             "thumbs up votes is displayed"):
-        test_utilities.refresh_page()
+        utilities.refresh_page()
         assert int(sumo_pages.question_page._get_helpful_count(reply_id
                                                                )) == number_of_thumbs_up_votes
 
@@ -1698,8 +1678,8 @@ def test_question_reply_votes(page: Page):
     )
 
     with allure.step("Signing in with an admin account and clicking on the vote down button"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
         sumo_pages.question_page._click_reply_vote_thumbs_down_button(reply_id)
         number_of_thumbs_down_votes += 1
@@ -1710,7 +1690,7 @@ def test_question_reply_votes(page: Page):
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
                             "thumbs up votes is displayed"):
-        test_utilities.refresh_page()
+        utilities.refresh_page()
         assert int(sumo_pages.question_page._get_helpful_count(reply_id
                                                                )) == number_of_thumbs_up_votes
 
@@ -1731,7 +1711,7 @@ def test_question_reply_votes(page: Page):
                           ('question_reply', 'TEST_ACCOUNT_13'),
                           ('question_reply', 'TEST_ACCOUNT_MODERATOR')])
 def test_report_abuse(page: Page, flagged_content, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -1741,12 +1721,12 @@ def test_report_abuse(page: Page, flagged_content, username):
         with allure.step("Posting a reply to the question"):
             reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=posted_question['username_one'],
-                reply=test_utilities.aaq_question_test_data['valid_firefox_question']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']
                 ['question_reply']
             )
 
     with allure.step("Deleting user session"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     if flagged_content == "question_content":
         with allure.step("Clicking on the more options for the question and verifying that "
@@ -1769,34 +1749,34 @@ def test_report_abuse(page: Page, flagged_content, username):
 
     if username == "TEST_ACCOUNT_MODERATOR":
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
             ))
     else:
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_13']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_13']
             ))
 
     if flagged_content == "question_content":
         with allure.step("Reporting the question as abusive"):
             sumo_pages.aaq_flow.report_question_abuse(
                 answer_id=sumo_pages.question_page._get_question_id(),
-                text=test_utilities.aaq_question_test_data['valid_firefox_question']
+                text=utilities.aaq_question_test_data['valid_firefox_question']
                 ['report_abuse_text']
             )
     else:
         with allure.step("Reporting the question reply as abusive"):
             sumo_pages.aaq_flow.report_question_abuse(
                 answer_id=reply_id,
-                text=test_utilities.aaq_question_test_data['valid_firefox_question']
+                text=utilities.aaq_question_test_data['valid_firefox_question']
                 ['report_abuse_text']
             )
 
     if username == "TEST_ACCOUNT_13":
         with allure.step("Signing in with a admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
             ))
 
     with allure.step("Navigating to 'Moderate forum content page' and verifying that the "
@@ -1827,14 +1807,14 @@ def test_report_abuse(page: Page, flagged_content, username):
         ).to_be_hidden()
 
     with allure.step("Navigating back to the posted question and deleting it"):
-        test_utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
+        utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
 # C2191261
 @pytest.mark.postedQuestions
 def test_common_responses(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
@@ -1842,36 +1822,34 @@ def test_common_responses(page: Page):
 
     with allure.step("Signing in with a different account, clicking on the 'Common "
                      "Responses' option and selecting one from the list"):
-        username = test_utilities.start_existing_session(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_13']
+        username = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_13']
             ))
         sumo_pages.question_page._click_on_common_responses_option()
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_a_particular_category_option(
-            test_utilities.aaq_question_test_data["valid_firefox_question"]
-            ["common_responses_category"]
+            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
         )
         sumo_pages.question_page._type_into_common_responses_search_field(
-            test_utilities.aaq_question_test_data["valid_firefox_question"]
-            ["common_responses_response"]
+            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
 
     with allure.step("Verifying that the only item in the category field is the searched "
                      "option"):
         response_options = sumo_pages.question_page._get_list_of_responses()
         assert (
-            len(response_options) == 1 and response_options[0] == test_utilities.
+            len(response_options) == 1 and response_options[0] == utilities.
             aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
 
     with allure.step("Clicking on the response option and on the 'Cancel' panel button"):
         sumo_pages.question_page._click_on_a_particular_response_option(
-            test_utilities.aaq_question_test_data["valid_firefox_question"]
+            utilities.aaq_question_test_data["valid_firefox_question"]
             ["common_responses_response"]
         )
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_common_responses_cancel_button()
 
     with check, allure.step("Verifying that the form textarea does not contain the common "
@@ -1881,33 +1859,30 @@ def test_common_responses(page: Page):
     with allure.step("Clicking on the 'Common Responses' option and selecting a response "
                      "from the list"):
         sumo_pages.question_page._click_on_common_responses_option()
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_a_particular_category_option(
-            test_utilities.aaq_question_test_data["valid_firefox_question"]
-            ["common_responses_category"]
+            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
         )
         sumo_pages.question_page._type_into_common_responses_search_field(
-            test_utilities.aaq_question_test_data["valid_firefox_question"]
-            ["common_responses_response"]
+            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
 
     with allure.step("Verifying that the only item in the category field is the searched "
                      "option"):
         response_options = sumo_pages.question_page._get_list_of_responses()
         assert (
-            len(response_options) == 1 and response_options[0] == test_utilities
+            len(response_options) == 1 and response_options[0] == utilities
             .aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
 
     with allure.step("Clicking on the response option"):
         sumo_pages.question_page._click_on_a_particular_response_option(
-            test_utilities.aaq_question_test_data["valid_firefox_question"]
-            ["common_responses_response"]
+            utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_switch_to_mode()
-        test_utilities.wait_for_networkidle()
+        utilities.wait_for_networkidle()
         response = sumo_pages.question_page._get_text_of_response_preview()
 
     with check, allure.step("Clicking on the Insert Response, post reply and verifying that "
@@ -1921,28 +1896,27 @@ def test_common_responses(page: Page):
             reply_id).strip() in response.strip()
 
     with allure.step("Signing in  with an admin account and deleting the posted question"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
 def post_firefox_product_question_flow(page: Page, username: str):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    username_one = test_utilities.start_existing_session(
-        test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts[username]
+    username_one = utilities.start_existing_session(
+        utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts[username]
         ))
 
     with allure.step("Posting a Firefox product question"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
 
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
-            body=test_utilities.aaq_question_test_data["valid_firefox_question"]
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False
         )

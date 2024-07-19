@@ -1,6 +1,6 @@
 from playwright.sync_api import Page
 from typing import Any
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
     AddKbMediaFlow
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
@@ -16,7 +16,7 @@ from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_pag
     SubmitKBArticlePage)
 
 
-class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticlePage,
+class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticlePage,
                        KBArticleShowHistoryPage, KBArticleReviewRevisionPage, EditKBArticlePage):
 
     def __init__(self, page: Page):

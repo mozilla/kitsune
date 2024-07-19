@@ -3,7 +3,7 @@ import pytest
 from playwright.sync_api import Page
 from pytest_check import check
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.my_profile_pages_messages.edit_settings_page_messages import (
     EditSettingsPageMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
@@ -12,11 +12,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C891396,  C2108836
 @pytest.mark.userSettings
 def test_all_checkboxes_can_be_selected_and_saved(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with check, allure.step("Checking all user settings and verifying that the correct "

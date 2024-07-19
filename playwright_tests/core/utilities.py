@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
 
 
-class TestUtilities:
+class Utilities:
     def __init__(self, page: Page):
         self.page = page
 

@@ -1,4 +1,4 @@
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import Page
 
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import \
@@ -10,7 +10,7 @@ from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_pag
     SubmitKBArticlePage
 
 
-class EditArticleMetaFlow(TestUtilities, KBArticleEditMetadata, SubmitKBArticlePage,
+class EditArticleMetaFlow(Utilities, KBArticleEditMetadata, SubmitKBArticlePage,
                           KBArticlePage):
 
     def __init__(self, page: Page):
