@@ -2,7 +2,7 @@ import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
@@ -15,13 +15,13 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.homePageTests
 def test_join_our_community_card_learn_more_redirects_to_contribute_page(page: Page):
     sumo_pages = SumoPages(page)
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     with allure.step("Clicking on the 'Learn More' option"):
         sumo_pages.homepage._click_learn_more_option()
 
     with allure.step("Verifying that we are redirected to the 'Contribute' page successfully"):
         assert (
-            test_utilities.get_page_url()
+            utilities.get_page_url()
             == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
         ), "We are not on the Contribute page!"
 
@@ -45,7 +45,7 @@ def test_join_our_community_card_has_the_correct_content(page: Page):
 @pytest.mark.homePageTests
 def test_homepage_feature_articles_are_available_and_interactable(page: Page):
     sumo_pages = SumoPages(page)
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     with check, allure.step(
         "Verifying if the correct number of featured articles are present on the homepage"
     ):
@@ -65,7 +65,7 @@ def test_homepage_feature_articles_are_available_and_interactable(page: Page):
                 f"Received: {sumo_pages.kb_article_page._get_text_of_article_title()}")
 
             with allure.step("Navigating back to the previous page"):
-                test_utilities.navigate_back()
+                utilities.navigate_back()
                 counter += 1
 
 
@@ -73,7 +73,7 @@ def test_homepage_feature_articles_are_available_and_interactable(page: Page):
 @pytest.mark.homePageTests
 def test_product_cards_are_functional_and_redirect_to_the_proper_support_page(page: Page):
     sumo_pages = SumoPages(page)
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     with allure.step("Verifying that the product cards redirect to the correct support page"):
         card_titles = sumo_pages.homepage._get_text_of_product_card_titles()
         counter = 0
@@ -89,5 +89,5 @@ def test_product_cards_are_functional_and_redirect_to_the_proper_support_page(pa
                 f"{sumo_pages.product_support_page._get_product_support_title_text()}")
 
             with allure.step("Navigating back to the previous page"):
-                test_utilities.navigate_back()
+                utilities.navigate_back()
                 counter += 1

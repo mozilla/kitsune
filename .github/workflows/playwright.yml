@@ -1,7 +1,7 @@
 name: Playwright Tests
 on:
     schedule:
-        # Playwright tests are running automatically in Firefox on each Monday & in Chrome on each Friday.
+        # Playwright tests are running automatically in Firefox on each Monday & in Chromium on each Friday.
         - cron: '0 5 * * 1,5'
     workflow_dispatch:
         inputs:
@@ -12,7 +12,7 @@ on:
                 type: choice
                 options:
                     - firefox
-                    - chrome
+                    - chromium
             TestSuite:
                 description: Test Suite to run
                 required: true
@@ -82,7 +82,7 @@ jobs:
                 if [ $current_day -eq 1 ]; then
                     echo "BROWSER=firefox" >> $GITHUB_ENV
                 elif [ $current_day -eq 5 ]; then
-                    echo "BROWSER=chrome" >> $GITHUB_ENV
+                    echo "BROWSER=chromium" >> $GITHUB_ENV
                 fi
             elif [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
                 echo "BROWSER=${{inputs.Browsers}}" >> $GITHUB_ENV

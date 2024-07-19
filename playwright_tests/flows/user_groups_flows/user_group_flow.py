@@ -1,9 +1,9 @@
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.contribute.groups_page import GroupsPage
 from playwright.sync_api import Page
 
 
-class UserGroupFlow(TestUtilities, GroupsPage):
+class UserGroupFlow(Utilities, GroupsPage):
     def __init__(self, page: Page):
         super().__init__(page)
 

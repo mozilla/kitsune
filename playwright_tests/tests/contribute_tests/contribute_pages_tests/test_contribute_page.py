@@ -4,7 +4,7 @@ from playwright.sync_api import Page
 from pytest_check import check
 import requests
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_forum_messages import (
     ContributeForumMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_help_articles_messages import (
@@ -88,7 +88,7 @@ def test_contribute_page_images_are_not_broken(page: Page):
 # C1949333
 @pytest.mark.contributePagesTests
 def test_contribute_page_breadcrumbs(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the Contribute top-navbar option"):
         sumo_pages.top_navbar._click_on_contribute_top_navbar_option()
@@ -103,13 +103,13 @@ def test_contribute_page_breadcrumbs(page: Page):
 
     with allure.step("Verifying that the home breadcrumb redirects to the homepage"):
         sumo_pages.contribute_page._click_on_home_breadcrumb()
-        assert test_utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+        assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
 
 
 # C1949335,C1949336,C1949337,C1949338,C1949339,C1949355
 @pytest.mark.contributePagesTests
 def test_way_to_contribute_redirects_to_correct_page(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the Contribute top-navbar option"):
         sumo_pages.top_navbar._click_on_contribute_top_navbar_option()
@@ -128,6 +128,6 @@ def test_way_to_contribute_redirects_to_correct_page(page: Page):
         sumo_pages.contribute_page._click_on_way_to_contribute_card(card)
         with check, allure.step("Verifying that the 'way to contribute_messages' cards are "
                                 "redirecting to the correct SUMO page"):
-            assert ways_to_contribute_links[counter] == test_utilities.get_page_url()
-        test_utilities.navigate_back()
+            assert ways_to_contribute_links[counter] == utilities.get_page_url()
+        utilities.navigate_back()
         counter += 1

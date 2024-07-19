@@ -4,7 +4,7 @@ import requests
 from playwright.sync_api import Page
 from pytest_check import check
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_forum_messages import (
     ContributeForumMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_help_articles_messages import (
@@ -24,10 +24,10 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C2165414
 @pytest.mark.contributePagesTests
 def test_contribute_article_page_text(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the Contribute with help Article page"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
         )
 
@@ -105,10 +105,10 @@ def test_contribute_article_page_text(page: Page):
 # C2165414
 @pytest.mark.contributePagesTests
 def test_contribute_article_page_images_are_not_broken(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the Contribute with help Article page"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
         )
 
@@ -122,10 +122,10 @@ def test_contribute_article_page_images_are_not_broken(page: Page):
 # C2165415
 @pytest.mark.contributePagesTests
 def test_contribute_article_page_breadcrumbs(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the Contribute Forum page"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
         )
 
@@ -148,24 +148,24 @@ def test_contribute_article_page_breadcrumbs(page: Page):
         if counter == 1:
             with check, allure.step("Verifying that the Contribute breadcrumb redirects to "
                                     "the Contribute page"):
-                assert test_utilities.get_page_url(
+                assert utilities.get_page_url(
                 ) == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
-            test_utilities.navigate_forward()
+            utilities.navigate_forward()
             counter -= 1
         elif counter == 0:
             with check, allure.step("Verifying that the Home breadcrumb redirects to the "
                                     "Homepage"):
-                assert test_utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+                assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
 
 
 # Need to add tests for "How you can contribute_messages" section
 # C2165418
 @pytest.mark.contributePagesTests
 def test_contribute_article_other_ways_to_contribute_redirect_to_the_correct_page(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the Contribute Forum page"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
         )
 
@@ -184,6 +184,6 @@ def test_contribute_article_other_ways_to_contribute_redirect_to_the_correct_pag
         sumo_pages.ways_to_contribute_pages._click_on_other_way_to_contribute_card(card)
         with check, allure.step(f"Verifying that the {ways_to_contribute_links[counter]} "
                                 f"redirects to the correct page"):
-            assert ways_to_contribute_links[counter] == test_utilities.get_page_url()
-        test_utilities.navigate_back()
+            assert ways_to_contribute_links[counter] == utilities.get_page_url()
+        utilities.navigate_back()
         counter += 1

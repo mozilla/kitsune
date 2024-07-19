@@ -3,7 +3,7 @@ import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.mess_system_pages_messages.edit_cont_areas_page_messages import (
     EditContributionAreasPageMessages)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
@@ -14,11 +14,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C2206070
 @pytest.mark.userContributionTests
 def test_all_checkboxes_can_be_selected_and_saved(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
     original_user = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -45,19 +45,19 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
 
     with allure.step("Signing in with a different account and verifying that the original user "
                      "groups are displayed"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_13']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_13']
         ))
 
     with allure.step("Navigating to the user page and verifying that the user groups is "
                      "successfully displayed"):
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
         assert sumo_pages.my_profile_page._get_my_profile_groups_items_text(
         ) == contribution_options
 
     with allure.step("Signing in back with the original user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Accessing the edit contribution areas page and unchecking all checkboxes"):
@@ -74,13 +74,13 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
         expect(sumo_pages.my_profile_page._groups_section_element()).to_be_hidden()
 
     with allure.step("Logging in with a different user and accessing the original user profile"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_13']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_13']
         ))
 
     with allure.step("Navigating to the my profile page and verifying that the groups section is "
                      "no longer displayed for the original user"):
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
         expect(
             sumo_pages.my_profile_page._groups_section_element()
         ).to_be_hidden()

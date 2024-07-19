@@ -3,7 +3,7 @@ import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import (
     EditMyProfilePageMessages)
@@ -15,11 +15,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C891529
 @pytest.mark.editUserProfileTests
 def test_username_field_is_automatically_populated(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user and navigating to the 'Edit Profile' page"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
 
@@ -35,11 +35,11 @@ def test_username_field_is_automatically_populated(page: Page):
 # Might want to extend the coverage
 @pytest.mark.editUserProfileTests
 def test_edit_profile_field_validation_with_symbols(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating to the profile edit page"):
@@ -50,7 +50,7 @@ def test_edit_profile_field_validation_with_symbols(page: Page):
     with allure.step("Clearing the username, display name fields and inserting the new one"):
         sumo_pages.edit_my_profile_page._clear_username_field()
         sumo_pages.edit_my_profile_page._clear_display_name_field()
-        profile_edit_data = test_utilities.profile_edit_test_data
+        profile_edit_data = utilities.profile_edit_test_data
 
         if page.context.browser.browser_type.name == "chromium":
             new_username = profile_edit_data["valid_user_edit_with_symbols"][
@@ -105,11 +105,11 @@ def test_edit_profile_field_validation_with_symbols(page: Page):
 # C1491017
 @pytest.mark.editUserProfileTests
 def test_username_with_invalid_symbols(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Accessing the edit profile page"):
@@ -119,7 +119,7 @@ def test_username_with_invalid_symbols(page: Page):
 
     with allure.step("Clearing the username input field and adding an invalid user"):
         sumo_pages.edit_my_profile_page._clear_username_field()
-        profile_edit_data = test_utilities.profile_edit_test_data
+        profile_edit_data = utilities.profile_edit_test_data
         new_username = profile_edit_data["invalid_username_with_symbols"][
             "username_with_invalid_symbols"
         ]
@@ -141,11 +141,11 @@ def test_username_with_invalid_symbols(page: Page):
 #  C891530,  C2107866
 @pytest.mark.editUserProfileTests
 def test_cancel_profile_edit(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a normal user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Accessing the Edit My Profile page"):
@@ -165,11 +165,11 @@ def test_cancel_profile_edit(page: Page):
 #  C946232
 @pytest.mark.editUserProfileTests
 def test_manage_firefox_account_redirects_to_firefox_account_settings_page(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Accessing the 'Edit my profile' page and clicking on the 'Manage "
@@ -187,11 +187,11 @@ def test_manage_firefox_account_redirects_to_firefox_account_settings_page(page:
 #  C1491461
 @pytest.mark.editUserProfileTests
 def test_duplicate_usernames_are_not_allowed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -203,8 +203,8 @@ def test_duplicate_usernames_are_not_allowed(page: Page):
                      "to it"):
         sumo_pages.edit_my_profile_page._clear_username_field()
         sumo_pages.edit_my_profile_page._send_text_to_username_field(
-            test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
             )
         )
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
@@ -228,11 +228,11 @@ def test_duplicate_usernames_are_not_allowed(page: Page):
 #  C1491462
 @pytest.mark.editUserProfileTests
 def test_profile_username_field_cannot_be_left_empty(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -244,7 +244,7 @@ def test_profile_username_field_cannot_be_left_empty(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
     with check, allure.step("Verifying that we are still on the edit profile page"):
-        assert test_utilities.get_page_url() == EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL
+        assert utilities.get_page_url() == EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL
 
     with allure.step("Verifying that the displayed username inside the top navbar is the "
                      "original one"):
@@ -260,16 +260,16 @@ def test_profile_username_field_cannot_be_left_empty(page: Page):
 # C1491018, C891531,C1491021
 @pytest.mark.editUserProfileTests
 def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
 
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']
         ))
 
     original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
-    new_username = test_utilities.profile_edit_test_data["uppercase_lowercase_valid_username"][
+    new_username = utilities.profile_edit_test_data["uppercase_lowercase_valid_username"][
         "uppercase_lowercase_username"
     ]
 
@@ -299,21 +299,21 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
 #  C1491463, C1491464
 @pytest.mark.editUserProfileTests
 def test_display_name_replaces_the_username_text(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_1']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_1']
         ))
 
     original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     if page.context.browser.browser_type.name == "chromium":
-        new_display_name = test_utilities.profile_edit_test_data["valid_user_edit"][
+        new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
             "display_name_chrome"
         ]
     elif page.context.browser.browser_type.name == "firefox":
-        new_display_name = test_utilities.profile_edit_test_data["valid_user_edit"][
+        new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
             "display_name_firefox"
         ]
 
@@ -350,18 +350,18 @@ def test_display_name_replaces_the_username_text(page: Page):
 # https://github.com/mozilla/sumo/issues/1345
 @pytest.mark.skip
 def test_biography_field_accepts_html_tags(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     with allure.step("Accessing the edit profile page via top-navbar and adding data inside "
                      "the biography field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_biography_textarea_field()
-        html_test_data = test_utilities.profile_edit_test_data
+        html_test_data = utilities.profile_edit_test_data
         sumo_pages.edit_my_profile_page._send_text_to_biography_field(
             html_test_data["biography_field_with_html_data"]["biography_html_data"]
         )
@@ -371,13 +371,13 @@ def test_biography_field_accepts_html_tags(page: Page):
 #  C2107899, C2107899
 @pytest.mark.editUserProfileTests
 def test_make_my_email_address_visible_checkbox_checked(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    logged_in_email = test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+    logged_in_email = utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
 
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -395,34 +395,34 @@ def test_make_my_email_address_visible_checkbox_checked(page: Page):
         ) == logged_in_email
 
     with allure.step("Signing in with a different user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
     with check, allure.step("Accessing the previous user profile and verifying that the email"
                             " address is displayed"):
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_text_of_publicly_displayed_username(
         ) == logged_in_email
 
     with allure.step("Signing out"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
 
     with allure.step("Accessing the previous user profile and verifying that the email "
                      "address is not displayed to signed out users"):
         # This also needs an update
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         expect(sumo_pages.my_profile_page._publicly_displayed_email_element()).to_be_hidden()
 
 
 #  C2107899
 @pytest.mark.editUserProfileTests
 def test_make_my_email_address_visible_checkbox_unchecked(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -439,70 +439,68 @@ def test_make_my_email_address_visible_checkbox_unchecked(page: Page):
         expect(sumo_pages.my_profile_page._publicly_displayed_email_element()).to_be_hidden()
 
     with allure.step("Signing in with a different non-admin user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
     with allure.step("Accessing the previous user profile and verifying that the email "
                      "address is not displayed"):
         # This also needs an update
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         expect(sumo_pages.my_profile_page._publicly_displayed_email_element()).to_be_hidden()
 
 
 # C2107900, C2107900
 @pytest.mark.editUserProfileTests
 def test_website_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page and updating the website field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
-        website_field_test_data = (test_utilities.
-                                   profile_edit_test_data["valid_user_edit"]["website"])
+        website_field_test_data = utilities.profile_edit_test_data["valid_user_edit"]["website"]
         sumo_pages.edit_my_profile_page._clear_website_field()
-        sumo_pages.edit_my_profile_page._send_text_to_website_field(
-            website_field_test_data)
+        sumo_pages.edit_my_profile_page._send_text_to_website_field(website_field_test_data)
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
     with check, allure.step("Verify that the correct website is displayed"):
         assert sumo_pages.my_profile_page._get_my_profile_website_text() == website_field_test_data
 
     with allure.step("Signing in with a different non-admin user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
     with check, allure.step("Verifying that the correct website information is displayed for the "
                             "first user"):
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_website_text() == website_field_test_data
 
     with check, allure.step("Clicking on the website and verifying that the user is redirected to "
                             "the correct page"):
         sumo_pages.my_profile_page._click_on_my_website_link()
-        assert website_field_test_data in test_utilities.get_page_url()
+        assert website_field_test_data in utilities.get_page_url()
 
     with check, allure.step("Navigating back to the SUMO page, signing out and verifying that the "
                             "correct website is displayed for the first user"):
-        test_utilities.navigate_back()
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_back()
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_website_text() == website_field_test_data
 
     with check, allure.step("Clicking on the website and verifying that the user is "
                             "redirected to the correct page"):
         sumo_pages.my_profile_page._click_on_my_website_link()
-        assert website_field_test_data in test_utilities.get_page_url()
+        assert website_field_test_data in utilities.get_page_url()
 
     with allure.step("Navigating back to the SUMO page and clearing the website field"):
-        test_utilities.navigate_back()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.navigate_back()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_website_field()
@@ -512,18 +510,18 @@ def test_website_information_is_displayed(page: Page):
 # C2107901, C2107901
 @pytest.mark.editUserProfileTests
 def test_twitter_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Accessing the Edit My Profile' page, clearing and adding data inside the "
                      "twitter input field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
-        twitter_field_test_data = test_utilities.profile_edit_test_data["valid_user_edit"][
+        twitter_field_test_data = utilities.profile_edit_test_data["valid_user_edit"][
             "twitter_username"
         ]
         sumo_pages.edit_my_profile_page._clear_twitter_field()
@@ -538,38 +536,38 @@ def test_twitter_information_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "website information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_twitter_text() == twitter_field_test_data
 
     with allure.step("Clicking on the twitter link and verifying that the user is redirected "
                      "correctly"):
         sumo_pages.my_profile_page._click_on_twitter_link()
-        test_utilities.wait_for_given_timeout(2000)
-        assert (MyProfileMessages.TWITTER_REDIRECT_LINK + twitter_field_test_data in test_utilities
+        utilities.wait_for_given_timeout(2000)
+        assert (MyProfileMessages.TWITTER_REDIRECT_LINK + twitter_field_test_data in utilities
                 .get_page_url())
 
     with check, allure.step("Navigating back to the SUMO page, signing out, accessing the profile "
                             "and verifying that the twitter information is displayed"):
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_twitter_text() == twitter_field_test_data
 
     with check, allure.step("Clicking on the twitter link and verifying that the user is "
                             "redirected correctly"):
         sumo_pages.my_profile_page._click_on_twitter_link()
-        test_utilities.wait_for_given_timeout(2000)
-        assert (MyProfileMessages.TWITTER_REDIRECT_LINK + twitter_field_test_data in test_utilities
+        utilities.wait_for_given_timeout(2000)
+        assert (MyProfileMessages.TWITTER_REDIRECT_LINK + twitter_field_test_data in utilities
                 .get_page_url())
 
     with allure.step("Navigating back to the SUMO page and clearing the twitter input field "
                      "changes"):
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_twitter_field()
@@ -579,11 +577,11 @@ def test_twitter_information_is_displayed(page: Page):
 # C2107903, C2107903
 @pytest.mark.editUserProfileTests
 def test_community_portal_username_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -591,7 +589,7 @@ def test_community_portal_username_is_displayed(page: Page):
                      "'Community Portal' input field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
         community_portal_field_test_data = (
-            test_utilities.profile_edit_test_data["valid_user_edit"]["community_portal_username"])
+            utilities.profile_edit_test_data["valid_user_edit"]["community_portal_username"])
         sumo_pages.edit_my_profile_page._clear_community_portal_field()
         sumo_pages.edit_my_profile_page._send_text_to_community_portal_field(
             community_portal_field_test_data)
@@ -605,37 +603,37 @@ def test_community_portal_username_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "community portal information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_community_portal_text(
         ) == community_portal_field_test_data
 
     with check, allure.step("Clicking on the community portal link and verifying that the user is "
                             "redirected correctly"):
         sumo_pages.my_profile_page._click_on_community_portal_link()
-        assert MyProfileMessages.COMMUNITY_PORTAL_LINK in test_utilities.get_page_url()
+        assert MyProfileMessages.COMMUNITY_PORTAL_LINK in utilities.get_page_url()
 
     with check, allure.step("Navigating back to the SUMO page, signing out, accessing the "
                             "profile and verifying that the community portal information is "
                             "displayed"):
-        test_utilities.navigate_back()
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_back()
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_community_portal_text(
         ) == community_portal_field_test_data
 
     with check, allure.step("Clicking on the community portal link and verifying that the user is "
                             "redirected correctly"):
         sumo_pages.my_profile_page._click_on_community_portal_link()
-        assert MyProfileMessages.COMMUNITY_PORTAL_LINK in test_utilities.get_page_url()
+        assert MyProfileMessages.COMMUNITY_PORTAL_LINK in utilities.get_page_url()
 
     with allure.step("Navigating back to the SUMO page, and clearing the community portal "
                      "field changes"):
-        test_utilities.navigate_back()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.navigate_back()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_community_portal_field()
@@ -645,11 +643,11 @@ def test_community_portal_username_is_displayed(page: Page):
 # C2107902,C2107902
 @pytest.mark.editUserProfileTests
 def test_people_directory_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -657,7 +655,7 @@ def test_people_directory_information_is_displayed(page: Page):
                      "'People Directory' input field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
         people_directory_field_test_data = (
-            test_utilities.profile_edit_test_data["valid_user_edit"]["people_directory_username"])
+            utilities.profile_edit_test_data["valid_user_edit"]["people_directory_username"])
         sumo_pages.edit_my_profile_page._clear_people_directory_field()
         sumo_pages.edit_my_profile_page._send_text_to_people_directory_username(
             people_directory_field_test_data
@@ -672,23 +670,23 @@ def test_people_directory_information_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "people directory information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_people_directory_text(
         ) == people_directory_field_test_data
 
     with check, allure.step("Signing out, accessing the profile and verifying that the people "
                             "directory information is displayed"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert sumo_pages.my_profile_page._get_my_profile_people_directory_text(
         ) == people_directory_field_test_data
 
     with allure.step("Clearing the people directory field changes"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_people_directory_field()
@@ -698,18 +696,18 @@ def test_people_directory_information_is_displayed(page: Page):
 # C2107933, C2107933
 @pytest.mark.editUserProfileTests
 def test_matrix_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside the "
                      "Matrix input field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
-        matrix_field_test_data = test_utilities.profile_edit_test_data["valid_user_edit"][
+        matrix_field_test_data = utilities.profile_edit_test_data["valid_user_edit"][
             "matrix_nickname"
         ]
         sumo_pages.edit_my_profile_page._clear_matrix_field()
@@ -723,21 +721,21 @@ def test_matrix_information_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "Matrix information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert matrix_field_test_data in sumo_pages.my_profile_page._get_my_profile_matrix_text()
 
     with check, allure.step("Signing out, accessing the profile and verifying that the "
                             "Matrix information is displayed"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert matrix_field_test_data in sumo_pages.my_profile_page._get_my_profile_matrix_text()
 
     with allure.step("Clearing the Matrix field changes"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
         sumo_pages.top_navbar._click_on_edit_profile_option()
@@ -748,21 +746,21 @@ def test_matrix_information_is_displayed(page: Page):
 # C2107934, C2107934
 @pytest.mark.editUserProfileTests
 def test_country_location_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside the "
                      "country input field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
-        country_field_test_data_code = test_utilities.profile_edit_test_data["valid_user_edit"][
+        country_field_test_data_code = utilities.profile_edit_test_data["valid_user_edit"][
             "country_code"
         ]
-        country_field_test_data_value = test_utilities.profile_edit_test_data["valid_user_edit"][
+        country_field_test_data_value = utilities.profile_edit_test_data["valid_user_edit"][
             "country_value"
         ]
         sumo_pages.edit_my_profile_page._clear_country_dropdown_field()
@@ -776,23 +774,23 @@ def test_country_location_information_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "Country information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert (country_field_test_data_value in sumo_pages.my_profile_page.
                 _get_text_of_profile_subheading_location())
 
     with check, allure.step("Signing out, accessing the profile and verifying that the Country "
                             "information is displayed"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert (country_field_test_data_value in sumo_pages.my_profile_page.
                 _get_text_of_profile_subheading_location())
 
     with allure.step("Clearing the Country field changes"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
         sumo_pages.top_navbar._click_on_edit_profile_option()
@@ -803,11 +801,11 @@ def test_country_location_information_is_displayed(page: Page):
 # C2107935, C2107935
 @pytest.mark.editUserProfileTests
 def test_city_location_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -815,7 +813,7 @@ def test_city_location_information_is_displayed(page: Page):
                      "the City input field"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
         city_field_test_data_value = (
-            test_utilities.profile_edit_test_data["valid_user_edit"]["city"])
+            utilities.profile_edit_test_data["valid_user_edit"]["city"])
         sumo_pages.edit_my_profile_page._clear_city_field()
         sumo_pages.edit_my_profile_page._sent_text_to_city_field(
             city_field_test_data_value)
@@ -827,23 +825,23 @@ def test_city_location_information_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "City information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert (city_field_test_data_value in sumo_pages.my_profile_page
                 ._get_text_of_profile_subheading_location())
 
     with check, allure.step("Signing out, accessing the profile and verifying that the City "
                             "information is displayed"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert (city_field_test_data_value in sumo_pages.my_profile_page.
                 _get_text_of_profile_subheading_location())
 
     with allure.step("Clearing the City field changes"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_city_field()
@@ -853,11 +851,11 @@ def test_city_location_information_is_displayed(page: Page):
 # C2107938, C2107938
 @pytest.mark.editUserProfileTests
 def test_involved_since_information_is_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -865,11 +863,11 @@ def test_involved_since_information_is_displayed(page: Page):
                      "the involved since input fields"):
         sumo_pages.top_navbar._click_on_edit_profile_option()
         involved_since_month_number_test_data = (
-            test_utilities.profile_edit_test_data["valid_user_edit"]["involved_from_month_number"])
+            utilities.profile_edit_test_data["valid_user_edit"]["involved_from_month_number"])
         involved_since_month_test_data_value = (
-            test_utilities.profile_edit_test_data["valid_user_edit"]["involved_from_month_value"])
+            utilities.profile_edit_test_data["valid_user_edit"]["involved_from_month_value"])
         involved_since_year_test_data_value = (
-            test_utilities.profile_edit_test_data["valid_user_edit"]["involved_from_year"])
+            utilities.profile_edit_test_data["valid_user_edit"]["involved_from_year"])
         sumo_pages.edit_my_profile_page._clear_involved_from_month_select_field()
         sumo_pages.edit_my_profile_page._clear_involved_from_year_select_field()
         sumo_pages.edit_my_profile_page._select_involved_from_month_option_by_value(
@@ -886,23 +884,23 @@ def test_involved_since_information_is_displayed(page: Page):
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
                             "involved from information is displayed for the first user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert (involved_since_month_test_data_value and involved_since_year_test_data_value in
                 sumo_pages.my_profile_page._get_my_contributed_from_text())
 
     with check, allure.step("Signing out, accessing the profile and verifying that the "
                             "involved from information is displayed"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
         assert (involved_since_month_test_data_value and involved_since_year_test_data_value in
                 sumo_pages.my_profile_page._get_my_contributed_from_text())
 
     with allure.step("Clearing the involved from field changes"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
         sumo_pages.top_navbar._click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page._clear_involved_from_month_select_field()
@@ -913,26 +911,24 @@ def test_involved_since_information_is_displayed(page: Page):
 # C2087552, C2108840
 @pytest.mark.editUserProfileTests
 def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    target_username = test_utilities.remove_character_from_string(
-        test_utilities.username_extraction_from_email(
-            test_utilities.user_special_chars
+    target_username = utilities.remove_character_from_string(
+        utilities.username_extraction_from_email(
+            utilities.user_special_chars
         ),
         "*",
     )
 
     with allure.step("Accessing a user profile while not being signed in to SUMO"):
-        test_utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(target_username)
-        )
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(target_username))
 
     with allure.step("Verifying that the 'Edit user profile' option is not displayed"):
         expect(sumo_pages.my_profile_page._edit_user_profile_option_element()).to_be_hidden()
 
     with allure.step("Navigating to the profile edit link directly and verifying that the "
                      "user is redirected to the auth page"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             EditMyProfilePageMessages.get_url_of_other_profile_edit_page(target_username)
         )
         assert (
@@ -943,12 +939,10 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
     with allure.step("Signing in with another non-admin account and accessing another user "
                      "account"):
         sumo_pages.top_navbar._click_on_sumo_nav_logo()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        test_utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(target_username)
-        )
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(target_username))
 
     with allure.step("Verifying that the 'Edit user profile' option is not displayed"):
         expect(sumo_pages.my_profile_page._edit_user_profile_option_element()).to_be_hidden()
@@ -956,7 +950,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
     with check, allure.step("Navigating to the profile edit link directly, verifying that "
                             "the correct message is displayed and that the edit form is not "
                             "displayed"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             EditMyProfilePageMessages.get_url_of_other_profile_edit_page(target_username)
         )
         assert sumo_pages.edit_my_profile_page._get_access_denied_header_text(
@@ -969,22 +963,22 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
 # C2108839
 @pytest.mark.editUserProfileTests
 def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-    target_username = test_utilities.remove_character_from_string(
-        test_utilities.username_extraction_from_email(
-            test_utilities.user_special_chars
+    target_username = utilities.remove_character_from_string(
+        utilities.username_extraction_from_email(
+            utilities.user_special_chars
         ),
         "*",
     )
     with allure.step("Accessing another user profile and verifying that the 'Report Abuse' "
                      "option is displayed"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             MyProfileMessages.get_my_profile_stage_url(target_username)
         )
         expect(sumo_pages.my_profile_page._is_report_user_option_displayed()).to_be_visible()
@@ -1001,8 +995,8 @@ def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: 
 
     with allure.step("Signing out and verifying that the 'Report Abuse' option is not "
                      "displayed on user profiles"):
-        test_utilities.delete_cookies()
-        test_utilities.navigate_to_link(
+        utilities.delete_cookies()
+        utilities.navigate_to_link(
             MyProfileMessages.get_my_profile_stage_url(target_username)
         )
         expect(sumo_pages.my_profile_page._is_report_user_option_displayed()).to_be_hidden()
@@ -1011,19 +1005,17 @@ def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: 
 # C2108841
 @pytest.mark.editUserProfileTests
 def test_private_message_button_redirects_non_signed_in_users_to_the_fxa_login_flow(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    target_username = test_utilities.remove_character_from_string(
-        test_utilities.username_extraction_from_email(
-            test_utilities.user_special_chars
+    target_username = utilities.remove_character_from_string(
+        utilities.username_extraction_from_email(
+            utilities.user_special_chars
         ),
         "*",
     )
 
     with allure.step("Accessing a user profile"):
-        test_utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(target_username)
-        )
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(target_username))
 
     with allure.step("Clicking on the 'Private Message' button and verifying that the non-signed "
                      "in user is redirected to the fxa page"):
@@ -1036,18 +1028,16 @@ def test_private_message_button_redirects_non_signed_in_users_to_the_fxa_login_f
 # C916055, C916054
 @pytest.mark.editUserProfileTests
 def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    target_username = test_utilities.remove_character_from_string(
-        test_utilities.username_extraction_from_email(
-            test_utilities.user_special_chars
+    target_username = utilities.remove_character_from_string(
+        utilities.username_extraction_from_email(
+            utilities.user_special_chars
         ),
         "*",
     )
     with allure.step("Navigating ot a user profile while not signed in with a user"):
-        test_utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(target_username)
-        )
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(target_username))
 
     with allure.step("Verifying that the deactivate user buttons are not displayed"):
         expect(sumo_pages.my_profile_page._is_deactivate_this_user_button_displayed()
@@ -1058,13 +1048,13 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
 
     with allure.step("Signing in with a non-admin account"):
         sumo_pages.top_navbar._click_on_sumo_nav_logo()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     with allure.step("Accessing another user profile and verifying that the deactivate "
                      "buttons are not displayed"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             MyProfileMessages.get_my_profile_stage_url(target_username)
         )
         expect(sumo_pages.my_profile_page._is_deactivate_this_user_button_displayed()
@@ -1074,16 +1064,14 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
 
     with allure.step("Signing in with an admin account"):
         sumo_pages.top_navbar._click_on_sumo_nav_logo()
-        test_utilities.delete_cookies()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.delete_cookies()
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Accessing another user profile and verifying that the deactivate user "
                      "buttons are displayed"):
-        test_utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(target_username)
-        )
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(target_username))
         expect(sumo_pages.my_profile_page._is_deactivate_this_user_button_displayed()
                ).to_be_visible()
         expect(sumo_pages.my_profile_page._deactivate_user_and_mark_content_as_spam_button()

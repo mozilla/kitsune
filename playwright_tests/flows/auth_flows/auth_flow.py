@@ -1,9 +1,9 @@
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.auth_page import AuthPage
 from playwright_tests.pages.homepage import Homepage
 
 
-class AuthFlowPage(TestUtilities, AuthPage, Homepage):
+class AuthFlowPage(Utilities, AuthPage, Homepage):
     # Providing OTP code to FxA auth.
     def __provide_otp_code(self, otp_code: str):
         super()._add_data_to_otp_code_input_field(otp_code)

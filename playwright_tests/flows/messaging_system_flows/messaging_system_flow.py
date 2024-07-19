@@ -1,11 +1,11 @@
 from playwright.sync_api import Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.messaging_system_pages.inbox_page import InboxPage
 from playwright_tests.pages.messaging_system_pages.new_message import NewMessagePage
 from playwright_tests.pages.messaging_system_pages.sent_messages import SentMessagePage
 
 
-class MessagingSystemFlows(TestUtilities, NewMessagePage, SentMessagePage, InboxPage):
+class MessagingSystemFlows(Utilities, NewMessagePage, SentMessagePage, InboxPage):
     def __init__(self, page: Page):
         super().__init__(page)
 

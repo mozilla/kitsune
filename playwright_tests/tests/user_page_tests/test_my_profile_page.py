@@ -3,7 +3,7 @@ import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
     MyProfileMessages)
@@ -15,11 +15,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 # C891409
 @pytest.mark.userProfile
 def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
     original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
@@ -41,14 +41,14 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
 #  C891411
 @pytest.mark.userProfile
 def test_my_profile_sign_out_button_functionality(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
         sumo_pages.top_navbar._click_on_signin_signup_button()
 
         sumo_pages.auth_flow_page.sign_in_flow(
-            username=test_utilities.user_special_chars,
-            account_password=test_utilities.user_secrets_pass
+            username=utilities.user_special_chars,
+            account_password=utilities.user_secrets_pass
         )
 
     with allure.step("Accessing the my profile page, clicking on the sign out button and "
@@ -64,25 +64,23 @@ def test_my_profile_sign_out_button_functionality(page: Page):
 # C2108828
 @pytest.mark.userProfile
 def test_provided_solutions_number_is_successfully_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
     repliant_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question for "
                      "the Firefox product"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
-        )
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         question_info = (
             sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=test_utilities.
+                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=test_utilities.
+                body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"]
             )
         )
@@ -90,13 +88,13 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
     with allure.step("Navigating to the user profile page and extracting the original number "
                      "of posted question solutions"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        original_number_of_solutions = test_utilities.number_extraction_from_string(
+        original_number_of_solutions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_solutions_text()
         )
 
     with allure.step("Navigating to the previously posted question and posting a reply to it"):
-        test_utilities.navigate_to_link(question_info["question_page_url"])
-        question_test_data = test_utilities.question_test_data
+        utilities.navigate_to_link(question_info["question_page_url"])
+        question_test_data = utilities.question_test_data
         sumo_pages.question_page._add_text_to_post_a_reply_textarea(
             question_test_data["question_reply_solution"]
         )
@@ -111,16 +109,16 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
                      "solution and verifying that the original number of solutions has "
                      "incremented"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        test_utilities.number_extraction_from_string(
+        utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_solutions_text()
         )
-        assert (test_utilities.number_extraction_from_string(
+        assert (utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_solutions_text(
             )) == original_number_of_solutions + 1)
 
     with allure.step("Deleting the posted question and verifying that we are redirected to "
                      "the product support forum page after deletion"):
-        test_utilities.navigate_to_link(question_info["question_page_url"])
+        utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page._click_delete_this_question_question_tools_option()
         sumo_pages.question_page._click_delete_this_question_button()
         expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
@@ -129,37 +127,37 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
 # C890832,  C2094281
 @pytest.mark.userProfile
 def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin user"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
     repliant_user = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'My profile' page and extracting the number of posted "
                      "answers"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        original_number_of_answers = test_utilities.number_extraction_from_string(
+        original_number_of_answers = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_answers_text()
         )
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
+        utilities.navigate_to_link(
+            utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
         )
         question_info = (
             sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=test_utilities.
+                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=test_utilities.
+                body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"]
             )
         )
 
     with allure.step("Posting a reply for the question"):
-        question_test_data = test_utilities.question_test_data
+        question_test_data = utilities.question_test_data
         reply_text = question_test_data["non_solution_reply"]
         sumo_pages.question_page._add_text_to_post_a_reply_textarea(reply_text)
         answer_id = sumo_pages.question_page._click_on_post_reply_button(
@@ -169,11 +167,11 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
     with allure.step("Accessing the 'My profile' page and verifying that the number of "
                      "answers has incremented successfully"):
         sumo_pages.question_page._click_on_the_reply_author(answer_id)
-        test_utilities.number_extraction_from_string(
+        utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_answers_text()
         )
         assert (
-            test_utilities.number_extraction_from_string(
+            utilities.number_extraction_from_string(
                 sumo_pages.my_profile_page._get_my_profile_answers_text()
             ) == original_number_of_answers + 1
         )
@@ -187,27 +185,25 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
 
     with allure.step("Deleting the posted question and verifying that the user is redirected "
                      "to the product support forum page"):
-        test_utilities.navigate_to_link(question_info["question_page_url"])
+        utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page._click_delete_this_question_question_tools_option()
         sumo_pages.question_page._click_delete_this_question_button()
-        expect(
-            sumo_pages.product_support_page._product_product_title_element()
-        ).to_be_visible()
+        expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
 
 
 #  C2094285, C2094284, C891309
 @pytest.mark.userProfile
 def test_number_of_posted_articles_is_successfully_displayed(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Accessing the profile page and extracting the number of documents"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        original_number_of_documents = test_utilities.number_extraction_from_string(
+        original_number_of_documents = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_documents_text()
         )
 
@@ -218,7 +214,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
                      "documents has incremented"):
         sumo_pages.top_navbar._click_on_view_profile_option()
         assert (
-            test_utilities.number_extraction_from_string(
+            utilities.number_extraction_from_string(
                 sumo_pages.my_profile_page._get_my_profile_documents_text()
             ) == original_number_of_documents + 1
         )
@@ -241,17 +237,17 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
 # C1491023
 @pytest.mark.userProfile
 def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an account that contains SUMO-supported and "
                      "unsupported characters"):
         sumo_pages.top_navbar._click_on_signin_signup_button()
 
-        username = test_utilities.username_extraction_from_email(
-            test_utilities.remove_character_from_string(
+        username = utilities.username_extraction_from_email(
+            utilities.remove_character_from_string(
                 sumo_pages.auth_flow_page.sign_in_flow(
-                    username=test_utilities.user_special_chars,
-                    account_password=test_utilities.user_secrets_pass
+                    username=utilities.user_special_chars,
+                    account_password=utilities.user_secrets_pass
                 ),
                 "*",
             ))

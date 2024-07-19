@@ -3,7 +3,7 @@ import pytest
 from pytest_check import check
 
 from playwright.sync_api import expect, TimeoutError, Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
     AAQWidgetMessages)
 from playwright_tests.messages.ask_a_question_messages.product_solutions_messages import (
@@ -15,7 +15,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 #  C890370
 @pytest.mark.skip
 def test_featured_articles_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
@@ -45,13 +45,13 @@ def test_featured_articles_redirect(page: Page):
                         feature_article_page.close()
             else:
                 print(f"{card} has no featured articles displayed!!!")
-            test_utilities.navigate_back()
+            utilities.navigate_back()
 
 
 #  C890375, C890379
 @pytest.mark.productSolutionsPage
 def test_popular_topics_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
@@ -89,19 +89,19 @@ def test_popular_topics_redirect(page: Page):
         else:
             print(f"{card} has no featured articles displayed!!!")
 
-        test_utilities.navigate_back()
+        utilities.navigate_back()
 
 
 # C890382
 @pytest.mark.productSolutionsPage
 def test_ask_now_widget_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
         sumo_pages.top_navbar._click_on_browse_all_products_option()
     count = 0
-    for freemium_product in test_utilities.general_test_data["freemium_products"]:
+    for freemium_product in utilities.general_test_data["freemium_products"]:
         with allure.step(f"Clicking on the {freemium_product} card "):
             sumo_pages.contact_support_page._click_on_a_particular_card(freemium_product)
         with check, allure.step("verifying that the correct 'Still need help' subtext is "
@@ -118,8 +118,8 @@ def test_ask_now_widget_redirect(page: Page):
             sumo_pages.product_solutions_page._click_ask_now_button()
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(
-                    username=test_utilities.user_special_chars,
-                    account_password=test_utilities.user_secrets_pass,
+                    username=utilities.user_special_chars,
+                    account_password=utilities.user_secrets_pass,
                 )
                 count += 1
             else:
@@ -127,7 +127,7 @@ def test_ask_now_widget_redirect(page: Page):
 
         with allure.step("Verifying that we are on the correct AAQ form page"):
             expect(page).to_have_url(
-                test_utilities.aaq_question_test_data["products_aaq_url"][freemium_product],
+                utilities.aaq_question_test_data["products_aaq_url"][freemium_product],
                 timeout=30000)
 
         with allure.step("Signing out and accessing the contact support page via the top "
@@ -139,13 +139,13 @@ def test_ask_now_widget_redirect(page: Page):
 # C890382
 @pytest.mark.productSolutionsPage
 def test_contact_support_widget_redirect(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
         sumo_pages.top_navbar._click_on_browse_all_products_option()
     count = 0
-    for premium_product in test_utilities.general_test_data["premium_products"]:
+    for premium_product in utilities.general_test_data["premium_products"]:
         with allure.step(f"Clicking on the {premium_product} card"):
             sumo_pages.contact_support_page._click_on_a_particular_card(premium_product)
 
@@ -164,8 +164,8 @@ def test_contact_support_widget_redirect(page: Page):
 
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(
-                    username=test_utilities.user_special_chars,
-                    account_password=test_utilities.user_secrets_pass,
+                    username=utilities.user_special_chars,
+                    account_password=utilities.user_secrets_pass,
                 )
                 count += 1
             else:
@@ -173,7 +173,7 @@ def test_contact_support_widget_redirect(page: Page):
 
         with allure.step("Verifying that we are on the correct AAQ form page"):
             expect(page).to_have_url(
-                test_utilities.aaq_question_test_data["products_aaq_url"][premium_product],
+                utilities.aaq_question_test_data["products_aaq_url"][premium_product],
                 timeout=30000)
 
         with allure.step("Signing out and access the contact support page via the top navbar "

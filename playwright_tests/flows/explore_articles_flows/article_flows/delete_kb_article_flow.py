@@ -1,4 +1,4 @@
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import Page
 
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
@@ -7,7 +7,7 @@ from playwright_tests.pages.explore_help_articles.articles.kb_article_show_histo
 from playwright_tests.pages.top_navbar import TopNavbar
 
 
-class DeleteKbArticleFlow(TestUtilities, KBArticleShowHistoryPage, KBArticlePage, TopNavbar):
+class DeleteKbArticleFlow(Utilities, KBArticleShowHistoryPage, KBArticlePage, TopNavbar):
 
     def __init__(self, page: Page):
         super().__init__(page)

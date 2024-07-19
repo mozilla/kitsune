@@ -2,7 +2,7 @@ import allure
 import pytest
 from playwright.sync_api import expect, Page
 from pytest_check import check
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
     KBArticlePageMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
@@ -14,13 +14,13 @@ with open('test_data/test_article', 'r') as file:
 # C2188031
 @pytest.mark.articleThreads
 def test_article_thread_field_validation(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         sumo_pages.kb_article_page._click_on_editing_tools_discussion_option()
 
     with allure.step("Clicking on the 'Post a new thread button' and clicking on the 'Post "
@@ -44,7 +44,7 @@ def test_article_thread_field_validation(page: Page):
                      "input field"):
         sumo_pages.kb_article_discussion_page._clear_new_thread_title_field()
         sumo_pages.kb_article_discussion_page._add_text_to_new_thread_title_field(
-            test_utilities.kb_new_thread_test_data['new_thread_reduced_title']
+            utilities.kb_new_thread_test_data['new_thread_reduced_title']
         )
 
     with allure.step("Clicking on the 'Post Thread' button and verifying that we are on the "
@@ -66,7 +66,7 @@ def test_article_thread_field_validation(page: Page):
         sumo_pages.kb_article_discussion_page._clear_new_thread_title_field()
         sumo_pages.kb_article_discussion_page._clear_new_thread_body_field()
         sumo_pages.kb_article_discussion_page._add_text_to_new_thread_body_input_field(
-            test_utilities.kb_new_thread_test_data['new_thread_reduced_body']
+            utilities.kb_new_thread_test_data['new_thread_reduced_body']
         )
 
     with allure.step("Clicking on the 'Post Thread' button and verifying that we are on the "
@@ -79,11 +79,11 @@ def test_article_thread_field_validation(page: Page):
                      "'Cancel' button and verifying that the article is not displayed inside "
                      "the discussion thread list"):
         sumo_pages.kb_article_discussion_page._add_text_to_new_thread_title_field(
-            test_utilities.kb_new_thread_test_data['new_thread_reduced_title']
+            utilities.kb_new_thread_test_data['new_thread_reduced_title']
         )
         sumo_pages.kb_article_discussion_page._click_on_cancel_new_thread_button()
         expect(sumo_pages.kb_article_discussion_page._get_thread_by_title_locator(
-            test_utilities.kb_new_thread_test_data['new_thread_reduced_title']
+            utilities.kb_new_thread_test_data['new_thread_reduced_title']
         )
         ).to_be_hidden()
 
@@ -91,21 +91,21 @@ def test_article_thread_field_validation(page: Page):
                      "required characters inside both title and content fields"):
         sumo_pages.kb_article_discussion_page._click_on_post_a_new_thread_option()
         sumo_pages.kb_article_discussion_page._add_text_to_new_thread_title_field(
-            test_utilities.kb_new_thread_test_data['new_thread_reduced_title']
+            utilities.kb_new_thread_test_data['new_thread_reduced_title']
         )
         sumo_pages.kb_article_discussion_page._add_text_to_new_thread_body_input_field(
-            test_utilities.kb_new_thread_test_data['new_thread_reduced_body']
+            utilities.kb_new_thread_test_data['new_thread_reduced_body']
         )
 
     with allure.step("Clicking on the 'Post Thread' button, manually navigating to the "
                      "discuss endpoint and verifying that the posted thread is successfully "
                      "displayed"):
         sumo_pages.kb_article_discussion_page._click_on_submit_new_thread_button()
-        thread_url = test_utilities.get_page_url()
-        thread_id = str(test_utilities.number_extraction_from_string_endpoint(
+        thread_url = utilities.get_page_url()
+        thread_id = str(utilities.number_extraction_from_string_endpoint(
             KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT, thread_url)
         )
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT)
         expect(sumo_pages.kb_article_discussion_page._get_posted_thread_locator(thread_id)
                ).to_be_visible()
@@ -117,29 +117,29 @@ def test_article_thread_field_validation(page: Page):
 # C2260840
 @pytest.mark.articleThreads
 def test_thread_replies_counter_increment(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Manually navigating to the article endpoint and clicking on the "
                      "article option"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with check, allure.step("Clicking on the 'Post a new thread button', posting a new kb "
                             "article discussion thread and verifying that the thread counter"
                             " is not 0"):
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
-        assert (test_utilities.number_extraction_from_string(
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_thread_page_counter_replies_text())) == 0
 
     with check, allure.step("Manually navigating to the discuss endpoint "
                             "and verifying that the reply counter for the posted thread has "
                             "incremented successfully"):
-        test_utilities.navigate_to_link(thread_info["article_discussion_url"])
-        assert (test_utilities.number_extraction_from_string(
+        utilities.navigate_to_link(thread_info["article_discussion_url"])
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_article_discussions_thread_counter(
                 thread_info['thread_id']))) == 0
 
@@ -148,17 +148,17 @@ def test_thread_replies_counter_increment(page: Page):
         sumo_pages.kb_article_discussion_page._click_on_a_particular_thread(
             thread_info['thread_id'])
         sumo_pages.kb_article_thread_flow.post_reply_to_thread(
-            test_utilities.kb_new_thread_test_data['thread_reply_body'])
+            utilities.kb_new_thread_test_data['thread_reply_body'])
 
     with check, allure.step("Verifying that the thread counter is 1"):
-        assert (test_utilities.number_extraction_from_string(
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_thread_page_counter_replies_text())) == 1
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that "
                             "the reply counter for the posted thread has incremented "
                             "successfully"):
-        test_utilities.navigate_to_link(thread_info["article_discussion_url"])
-        assert (test_utilities.number_extraction_from_string(
+        utilities.navigate_to_link(thread_info["article_discussion_url"])
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_article_discussions_thread_counter(
                 thread_info['thread_id']))) == 1
 
@@ -169,13 +169,13 @@ def test_thread_replies_counter_increment(page: Page):
 # C2260840, C2260809
 @pytest.mark.articleThreads
 def test_thread_replies_counter_decrement(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a normal account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with allure.step("Clicking on the 'Post a new thread button' and posting a new kb "
                      "article discussion thread"):
@@ -183,26 +183,26 @@ def test_thread_replies_counter_decrement(page: Page):
 
     with allure.step("Posting a new reply with the same user"):
         thread_reply_info = sumo_pages.kb_article_thread_flow.post_reply_to_thread(
-            test_utilities.kb_new_thread_test_data['thread_reply_body'])
+            utilities.kb_new_thread_test_data['thread_reply_body'])
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
 
     with check, allure.step("Posting a new reply with the same user and verifying that the "
                             "reply counter for the posted thread has incremented "
                             "successfully"):
         sumo_pages.kb_article_thread_flow.post_reply_to_thread(
-            test_utilities.kb_new_thread_test_data['thread_reply_body']
+            utilities.kb_new_thread_test_data['thread_reply_body']
         )
-        assert (test_utilities.number_extraction_from_string(
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_thread_page_counter_replies_text()) == 2)
 
     with allure.step("Manually navigating to the discuss endpoint and verifying that the "
                      "reply counter for the posted thread has incremented successfully"):
-        test_utilities.navigate_to_link(thread_info['article_discussion_url'])
-        assert (test_utilities.number_extraction_from_string(
+        utilities.navigate_to_link(thread_info['article_discussion_url'])
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_article_discussions_thread_counter(
                 thread_info['thread_id'])) == 2)
 
@@ -214,14 +214,14 @@ def test_thread_replies_counter_decrement(page: Page):
                             "the reply counter for the posted thread has incremented "
                             "successfully"):
         sumo_pages.kb_article_thread_flow.delete_reply_to_thread(thread_reply_info['reply_id'])
-        assert (test_utilities.number_extraction_from_string(
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_thread_page_counter_replies_text()) == 1)
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that "
                             "the reply counter for the posted thread has decremented "
                             "successfully"):
-        test_utilities.navigate_to_link(thread_info['article_discussion_url'])
-        assert (test_utilities.number_extraction_from_string(
+        utilities.navigate_to_link(thread_info['article_discussion_url'])
+        assert (utilities.number_extraction_from_string(
             sumo_pages.kb_article_discussion_page._get_article_discussions_thread_counter(
                 thread_info['thread_id'])) == 1)
 
@@ -232,38 +232,38 @@ def test_thread_replies_counter_decrement(page: Page):
 @pytest.mark.articleThreads
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR', ''])
 def test_article_thread_author_filter(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Navigating back to the article discussion page and signing in with a "
                      "non-admin account"):
-        test_utilities.navigate_to_link(thread_info['article_discussion_url'])
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.navigate_to_link(thread_info['article_discussion_url'])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Navigating back to the article discussion page"):
-        test_utilities.navigate_to_link(thread_info['article_discussion_url'])
+        utilities.navigate_to_link(thread_info['article_discussion_url'])
 
     if username == 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
     elif username != 'TEST_ACCOUNT_12':
         with allure.step("Signing out from SUMO"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
 
     with check, allure.step("Clicking on the 'Author' filter and verifying that the authors "
                             "are in reverse alphabetical order"):
@@ -285,13 +285,13 @@ def test_article_thread_author_filter(page: Page, username):
 @pytest.mark.articleThreads
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR', ''])
 def test_article_thread_replies_filter(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with allure.step("Clicking on the 'Post a new thread button' and posting a new kb "
                      "article discussion thread"):
@@ -299,7 +299,7 @@ def test_article_thread_replies_filter(page: Page, username):
 
     with allure.step("Posting a new reply with the same user"):
         sumo_pages.kb_article_thread_flow.post_reply_to_thread(
-            test_utilities.kb_new_thread_test_data['thread_reply_body']
+            utilities.kb_new_thread_test_data['thread_reply_body']
         )
 
     with allure.step("Navigating back to the article discussion page and posting a new kb "
@@ -307,27 +307,27 @@ def test_article_thread_replies_filter(page: Page, username):
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Navigating back to the article discussion page"):
-        test_utilities.navigate_to_link(thread_info['article_discussion_url'])
+        utilities.navigate_to_link(thread_info['article_discussion_url'])
 
     if username == "TEST_ACCOUNT_12":
         with allure.step("Signing in with a non admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))
     elif username == '':
         with allure.step("Deleting user session"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
 
     with allure.step("Clicking on the 'Replies' filter and verifying that the replies is in "
                      "descending order"):
         sumo_pages.kb_article_discussion_page._click_on_article_thread_replies_filter()
-        assert test_utilities.is_descending(
+        assert utilities.is_descending(
             sumo_pages.kb_article_discussion_page._get_all_article_threads_replies())
 
     with check, allure.step("Clicking on the 'Replies' filter again and verifying that the "
                             "replies is in ascending order"):
         sumo_pages.kb_article_discussion_page._click_on_article_thread_replies_filter()
-        assert not test_utilities.is_descending(
+        assert not utilities.is_descending(
             sumo_pages.kb_article_discussion_page._get_all_article_threads_replies())
 
     with allure.step("Clearing both created threads"):
@@ -337,17 +337,17 @@ def test_article_thread_replies_filter(page: Page, username):
 
 @pytest.mark.articleThreads
 def test_article_lock_thread_non_admin_users(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account and creating an article"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
     article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
     with allure.step("Signing in with an admin account and approving the article"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=article_details['first_revision_id']
@@ -358,19 +358,19 @@ def test_article_lock_thread_non_admin_users(page: Page):
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating back to the discussions page and posting a new kb article "
                      "discussion thread"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Navigating back to the discussions page, clicking on the thread posted "
                      "by another user and verifying that the 'Lock thread' option is not "
                      "available"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         sumo_pages.kb_article_discussion_page._click_on_a_particular_thread(
             thread_info_one['thread_id'])
         expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator()
@@ -379,7 +379,7 @@ def test_article_lock_thread_non_admin_users(page: Page):
     with allure.step("Navigating back to the article discussions page, clicking on the "
                      "thread posted by self and verifying that the 'Lock thread' option is "
                      "not available"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         sumo_pages.kb_article_discussion_page._click_on_a_particular_thread(
             thread_info_two['thread_id'])
         expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator()
@@ -387,15 +387,15 @@ def test_article_lock_thread_non_admin_users(page: Page):
 
     with allure.step("Deleting user sessions and verifying that the 'Lock thread' options is "
                      "not available"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator()
                ).to_be_hidden()
 
     with allure.step("Signing in with an admin account and deleting the kb article"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -403,33 +403,33 @@ def test_article_lock_thread_non_admin_users(page: Page):
 @pytest.mark.articleThreads
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MODERATOR', 'TEST_ACCOUNT_12', ''])
 def test_article_lock_thread_functionality(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating back to the discussions page and posting a new discussion "
                      "thread"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Clicking on the thread posted by self user and locking the thread"):
@@ -440,15 +440,15 @@ def test_article_lock_thread_functionality(page: Page, username):
     if username == 'TEST_ACCOUNT_12':
         with check, allure.step("Signing in with a non-admin account and verifying that the "
                                 "correct thread locked message is displayed"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             assert (sumo_pages.kb_article_discussion_page._get_text_of_locked_article_thread_text(
             ) == KBArticlePageMessages.KB_ARTICLE_LOCKED_THREAD_MESSAGE)
 
     elif username == '':
         with allure.step("Deleting user session"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Post a reply' textarea field is not displayed"):
         expect(sumo_pages.kb_article_discussion_page._get_thread_post_a_reply_textarea_field()
@@ -458,12 +458,12 @@ def test_article_lock_thread_functionality(page: Page, username):
         expect(sumo_pages.kb_article_discussion_page._get_locked_article_status()).to_be_visible()
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     if username != 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with allure.step("Clicking on the thread posted by the other user and clicking on the "
@@ -475,14 +475,14 @@ def test_article_lock_thread_functionality(page: Page, username):
     if username == 'TEST_ACCOUNT_12':
         with check, allure.step("Signing in with a non-admin account and verifying that the "
                                 "correct thread locked message is displayed"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             assert (sumo_pages.kb_article_discussion_page._get_text_of_locked_article_thread_text(
             ) == KBArticlePageMessages.KB_ARTICLE_LOCKED_THREAD_MESSAGE)
     elif username == '':
         with allure.step("Deleting user session"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Locked' status is displayed under article header"):
         expect(sumo_pages.kb_article_discussion_page._get_locked_article_status()).to_be_visible()
@@ -500,36 +500,36 @@ def test_article_lock_thread_functionality(page: Page, username):
 @pytest.mark.articleThreads
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MODERATOR', 'TEST_ACCOUNT_12', ''])
 def test_article_unlock_thread_functionality(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Navigating to the article endpoint"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Signing in with a normal user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with check, allure.step("Clicking on the thread posted by self user and verifying that "
@@ -548,22 +548,22 @@ def test_article_unlock_thread_functionality(page: Page, username):
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Signing in with a non-admin account and verifying that the 'Unlock "
                          "this thread' option is not displayed"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator(
             )).to_be_hidden()
     if username == '':
         with allure.step("Deleting user session and verifying that the 'Unlock this thread' "
                          "option is no displayed"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
             expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator(
             )).to_be_hidden()
 
     if username != 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with allure.step("Clicking on the 'Unlock this thread'"):
@@ -572,15 +572,15 @@ def test_article_unlock_thread_functionality(page: Page, username):
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Signing in with a non-admin account and verifying that the "
                          "textarea field is available"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             expect(sumo_pages.kb_article_discussion_page._get_thread_post_a_reply_textarea_field(
             )).to_be_visible()
     if username == '':
         with allure.step("Deleting user session and verifying that the textarea field is not "
                          "available"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
             expect(sumo_pages.kb_article_discussion_page._get_thread_post_a_reply_textarea_field(
             )).to_be_hidden()
 
@@ -593,13 +593,13 @@ def test_article_unlock_thread_functionality(page: Page, username):
 
     if username != "TEST_ACCOUNT_MODERATOR":
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with allure.step("Navigating back the article page and clicking on the thread posted by "
                      "another user"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         sumo_pages.kb_article_discussion_page._click_on_a_particular_thread(
             thread_info_two['thread_id'])
 
@@ -617,38 +617,38 @@ def test_article_unlock_thread_functionality(page: Page, username):
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Signing in with a non-admin account and verifying that the 'Unlock "
                          "this thread' option is displayed"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator(
             )).to_be_hidden()
     if username == '':
         with allure.step("Deleting the user session and verifying that the 'Unlock this "
                          "thread' option is not displayed"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
             expect(sumo_pages.kb_article_discussion_page._get_lock_this_article_thread_locator(
             )).to_be_hidden()
 
     if username != 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account and clicking on the 'Unlock this "
                          "thread' option"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
     sumo_pages.kb_article_discussion_page._click_on_lock_this_article_thread_option()
 
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Signing in with a non-admin account and verifying that the "
                          "textarea field is available"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             expect(sumo_pages.kb_article_discussion_page._get_thread_post_a_reply_textarea_field(
             )).to_be_visible()
     if username == '':
         with allure.step("Deleting user session and verifying that the textarea field is not "
                          "available"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
             expect(sumo_pages.kb_article_discussion_page._get_thread_post_a_reply_textarea_field(
             )).to_be_hidden()
 
@@ -668,11 +668,11 @@ def test_article_unlock_thread_functionality(page: Page, username):
 @pytest.mark.articleThreads
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MODERATOR', 'TEST_ACCOUNT_12', ''])
 def test_article_thread_sticky(page: Page, username):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Posting a new kb article"):
@@ -684,12 +684,12 @@ def test_article_thread_sticky(page: Page, username):
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Signing in with a normal user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one['article_discussion_url'])
+        utilities.navigate_to_link(thread_info_one['article_discussion_url'])
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread(
@@ -701,11 +701,11 @@ def test_article_thread_sticky(page: Page, username):
                ).to_be_hidden()
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one['article_discussion_url'])
+        utilities.navigate_to_link(thread_info_one['article_discussion_url'])
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Clicking on the thread posted by self and clicking on the 'sticky this "
@@ -721,15 +721,15 @@ def test_article_thread_sticky(page: Page, username):
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Signing in with a non-admin account and verifying that the "
                          "unsticky this thread option is not available"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
             expect(sumo_pages.kb_article_discussion_page._get_sticky_this_thread_locator()
                    ).to_be_hidden()
     if username == '':
         with allure.step("Deleting user session and verifying that the unsticky this thread "
                          "option is not available"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
             expect(sumo_pages.kb_article_discussion_page._get_sticky_this_thread_locator()
                    ).to_be_hidden()
 
@@ -739,14 +739,14 @@ def test_article_thread_sticky(page: Page, username):
 
     with check, allure.step("Navigating back to the discussions page and verifying that the "
                             "sticky article is displayed in top of the list"):
-        test_utilities.navigate_to_link(thread_info_one['article_discussion_url'])
+        utilities.navigate_to_link(thread_info_one['article_discussion_url'])
         assert sumo_pages.kb_article_discussion_page._get_all_article_threads_titles(
         )[0] == thread_info_one['thread_title']
 
     if username != 'TEST_ACCOUNT_MODERATOR':
         with allure.step("Signing in with an admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
     with check, allure.step("Clicking on the unsitcky this thread and verifying that the "
@@ -759,12 +759,12 @@ def test_article_thread_sticky(page: Page, username):
 
     if username == 'TEST_ACCOUNT_12':
         with allure.step("Signing in with a non-admin account"):
-            test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-                test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
     if username == '':
         with allure.step("Deleting user session"):
-            test_utilities.delete_cookies()
+            utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Sticky' status is not displayed"):
         expect(sumo_pages.kb_article_discussion_page._get_sticky_this_thread_status_locator()
@@ -772,15 +772,15 @@ def test_article_thread_sticky(page: Page, username):
 
     with check, allure.step("Navigating back to the discussions page and verifying that the "
                             "sticky article is not displayed in top of the list"):
-        test_utilities.navigate_to_link(thread_info_one['article_discussion_url'])
+        utilities.navigate_to_link(thread_info_one['article_discussion_url'])
         assert sumo_pages.kb_article_discussion_page._get_all_article_threads_titles(
         )[0] == thread_info_two['thread_title']
 
     with allure.step("Signing in with an admin account and deleting the kb article"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -788,32 +788,32 @@ def test_article_thread_sticky(page: Page, username):
 @pytest.mark.articleThreads
 @pytest.mark.parametrize("thread_author", ['self', 'other'])
 def test_article_thread_content_edit(page: Page, thread_author):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Manually navigating to the article endpoint and posting a new kb "
                      "article discussion thread"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Signing in with a non-admin user account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
     with allure.step("Navigating back to the discussions page and posting a new kb article "
                      "discussion thread"):
-        test_utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_url)
         thread_info_two = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Adding data inside the edit this thread title field and clicking on "
                      "the cancel button"):
         sumo_pages.kb_article_thread_flow._edit_article_thread(
-            thread_title=test_utilities.kb_new_thread_test_data['updated_thread_title'],
+            thread_title=utilities.kb_new_thread_test_data['updated_thread_title'],
             submit_edit=False
         )
 
@@ -824,26 +824,26 @@ def test_article_thread_content_edit(page: Page, thread_author):
     with allure.step("Adding data inside the edit this thread title field and clicking on "
                      "the update button"):
         sumo_pages.kb_article_thread_flow._edit_article_thread(
-            thread_title=test_utilities.kb_new_thread_test_data['updated_thread_title']
+            thread_title=utilities.kb_new_thread_test_data['updated_thread_title']
         )
 
     with check, allure.step("Verifying that the thread title was changed"):
         assert sumo_pages.kb_article_discussion_page._get_thread_title_text(
-        ) == test_utilities.kb_new_thread_test_data['updated_thread_title']
+        ) == utilities.kb_new_thread_test_data['updated_thread_title']
 
     with allure.step("Deleting user session and verifying that the edit this thread option "
                      "is not displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         expect(sumo_pages.kb_article_discussion_page._get_edit_this_thread_locator()
                ).to_be_hidden()
 
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     if thread_author == 'self':
         with allure.step("Clicking on the self posted thread"):
@@ -857,7 +857,7 @@ def test_article_thread_content_edit(page: Page, thread_author):
     with allure.step("Clicking on the 'Edit this thread', adding data inside the title field "
                      "and clicking on the cancel button"):
         sumo_pages.kb_article_thread_flow._edit_article_thread(
-            test_utilities.kb_new_thread_test_data['second_thread_updated_title'], False
+            utilities.kb_new_thread_test_data['second_thread_updated_title'], False
         )
 
     if thread_author == 'self':
@@ -867,24 +867,24 @@ def test_article_thread_content_edit(page: Page, thread_author):
     else:
         with check, allure.step("Verifying that the thread title was not changed"):
             assert sumo_pages.kb_article_discussion_page._get_thread_title_text(
-            ) == test_utilities.kb_new_thread_test_data['updated_thread_title']
+            ) == utilities.kb_new_thread_test_data['updated_thread_title']
 
     with allure.step("Adding data inside the edit this thread title field and clicking on "
                      "the update button"):
         sumo_pages.kb_article_thread_flow._edit_article_thread(
-            thread_title=test_utilities.kb_new_thread_test_data['second_thread_updated_title']
+            thread_title=utilities.kb_new_thread_test_data['second_thread_updated_title']
         )
 
     with check, allure.step("Verifying that the thread title was changed"):
         assert sumo_pages.kb_article_discussion_page._get_thread_title_text(
-        ) == test_utilities.kb_new_thread_test_data['second_thread_updated_title']
+        ) == utilities.kb_new_thread_test_data['second_thread_updated_title']
 
     with allure.step("Navigating back to the discussions page"):
-        test_utilities.navigate_to_link(thread_info_one["article_discussion_url"])
+        utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     with check, allure.step("Verifying that the updated thread title is displayed inside the "
                             "threads list"):
-        assert (test_utilities.kb_new_thread_test_data
+        assert (utilities.kb_new_thread_test_data
                 ['second_thread_updated_title'] in sumo_pages.kb_article_discussion_page
                 ._get_all_article_threads_titles())
 
@@ -900,16 +900,16 @@ def test_posting_a_new_kb_test_article(page: Page):
     article upon which the majority of the test are performed.
     This needs to be placed before the articleThreads inside the yml file.
     """
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
     ))
 
     sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
     sumo_pages.kb_article_page._click_on_article_option()
     with open("test_data/test_article", 'w') as file:
-        file.write(test_utilities.get_page_url())
+        file.write(utilities.get_page_url())
 
 
 @pytest.mark.afterThreadTests
@@ -919,12 +919,12 @@ def test_delete_kb_test_article(page: Page):
     threads tests.
     This needs to be executed after the articleThreads tests in the yml.
     """
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
     ))
-    test_utilities.navigate_to_link(article_url)
+    utilities.navigate_to_link(article_url)
     sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with open("test_data/test_article", 'w'):
@@ -935,16 +935,14 @@ def __clearing_newly_created_thread(page: Page, thread_id: str):
     """
     Test article threads helper function which deletes a thread which has the given thread_id.
     """
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-        test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
     ))
 
-    test_utilities.navigate_to_link(
-        article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
-    )
+    utilities.navigate_to_link(article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT)
 
     sumo_pages.kb_article_thread_flow.delete_article_thread(thread_id)
-    test_utilities.navigate_to_link(
+    utilities.navigate_to_link(
         article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT)

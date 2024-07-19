@@ -2,7 +2,7 @@ from typing import Any
 
 from playwright.sync_api import Page
 
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
     KBArticleReviewRevisionPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import \
@@ -13,7 +13,7 @@ from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_pag
     SubmitKBArticlePage
 
 
-class KbArticleTranslationFlow(TranslateArticlePage, TestUtilities, SubmitKBArticlePage,
+class KbArticleTranslationFlow(TranslateArticlePage, Utilities, SubmitKBArticlePage,
                                KBArticleShowHistoryPage, KBArticleReviewRevisionPage):
     def __init__(self, page: Page):
         super().__init__(page)

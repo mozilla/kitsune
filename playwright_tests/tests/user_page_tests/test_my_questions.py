@@ -2,7 +2,7 @@ import allure
 import pytest
 
 from playwright.sync_api import expect, Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.my_profile_pages_messages.my_questions_page_messages import (
     MyQuestionsPageMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
@@ -11,30 +11,30 @@ from playwright_tests.pages.sumo_pages import SumoPages
 #  C2094280,  C890790
 @pytest.mark.userQuestions
 def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Accessing the 'My profile' page and extracting the original number of "
                      "posted questions"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        original_number_of_questions = test_utilities.number_extraction_from_string(
+        original_number_of_questions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
 
     with allure.step("Navigating to the AAQ form and posting a new AAQ question"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
+        utilities.navigate_to_link(
+            utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
         )
         question_info = (
             sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=test_utilities
+                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=utilities
                 .aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=test_utilities.
+                body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"]
             )
         )
@@ -42,13 +42,13 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
     with allure.step("Navigating back to the profile page and verifying that the number of "
                      "questions has incremented"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        new_number = test_utilities.number_extraction_from_string(
+        new_number = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
         assert new_number == original_number_of_questions + 1
 
     with allure.step("Deleting the posted question"):
-        test_utilities.navigate_to_link(question_info["question_page_url"])
+        utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page._click_delete_this_question_question_tools_option()
         sumo_pages.question_page._click_delete_this_question_button()
 
@@ -61,17 +61,17 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
 # C1296000, #  C890790
 @pytest.mark.userQuestions
 def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
     with allure.step("Accessing the 'My profile' and extracting the number of questions "
                      "listed inside the my profile page"):
         sumo_pages.top_navbar._click_on_view_profile_option()
-        number_of_questions = test_utilities.number_extraction_from_string(
+        number_of_questions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
 
@@ -85,13 +85,13 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
 # C890821
 @pytest.mark.userQuestions
 def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Page):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a user which has no posted questions"):
         sumo_pages.top_navbar._click_on_signin_signup_button()
         sumo_pages.auth_flow_page.sign_in_flow(
-            username=test_utilities.user_special_chars,
-            account_password=test_utilities.user_secrets_pass
+            username=utilities.user_special_chars,
+            account_password=utilities.user_secrets_pass
         )
 
     original_user = sumo_pages.top_navbar._get_text_of_logged_in_username()
@@ -110,15 +110,13 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question for "
                      "the Firefox product"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
-        )
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         question_info = (
             sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=test_utilities
+                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=utilities
                 .aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=test_utilities.
+                body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"]
             )
         )
@@ -131,16 +129,16 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 
     with allure.step("Signing in with an admin account and deleting the posted question"):
         sumo_pages.top_navbar._click_on_sign_out_button()
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        test_utilities.navigate_to_link(question_info["question_page_url"])
+        utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page._click_delete_this_question_question_tools_option()
         sumo_pages.question_page._click_delete_this_question_button()
 
     with allure.step("Accessing the original user and verifying that the correct message is "
                      "displayed"):
-        test_utilities.navigate_to_link(
+        utilities.navigate_to_link(
             MyQuestionsPageMessages.get_stage_my_questions_url(original_user)
         )
         assert (
@@ -150,7 +148,7 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 
     with allure.step("Signing in with the original user and verifying that the correct "
                      "message and the question list is no longer displayed"):
-        test_utilities.delete_cookies()
+        utilities.delete_cookies()
         sumo_pages.top_navbar._click_on_signin_signup_button()
         sumo_pages.auth_flow_page.login_with_existing_session()
         sumo_pages.top_navbar._click_on_view_profile_option()
@@ -166,23 +164,21 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 def test_my_question_page_reflects_posted_questions_and_redirects_to_the_correct_question(
     page: Page
 ):
-    test_utilities = TestUtilities(page)
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        test_utilities.start_existing_session(test_utilities.username_extraction_from_email(
-            test_utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question"):
-        test_utilities.navigate_to_link(
-            test_utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
-        )
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         question_info = (
             sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=test_utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=test_utilities.
+                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=test_utilities.
+                body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"]
             )
         )
@@ -191,8 +187,7 @@ def test_my_question_page_reflects_posted_questions_and_redirects_to_the_correct
                      "element from the My Questions page is the recently posted question"):
         sumo_pages.top_navbar._click_on_my_questions_profile_option()
         assert sumo_pages.my_questions_page._get_text_of_first_listed_question().replace(
-            " ", ""
-        ) == question_info["aaq_subject"].replace(" ", "")
+            " ", "") == question_info["aaq_subject"].replace(" ", "")
 
     with allure.step("Clicking on the first list item and verifying that the user is "
                      "redirected to the correct question"):

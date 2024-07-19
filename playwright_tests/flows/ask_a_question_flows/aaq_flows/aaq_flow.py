@@ -1,5 +1,5 @@
 from playwright.sync_api import Page
-from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.ask_a_question.product_solutions_pages.product_solutions_page import (
     ProductSolutionsPage)
 from playwright_tests.pages.top_navbar import TopNavbar
@@ -7,7 +7,7 @@ from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFor
 from playwright_tests.pages.ask_a_question.posted_question_pages.questions_page import QuestionPage
 
 
-class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, QuestionPage):
+class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, Utilities, QuestionPage):
     def __init__(self, page: Page):
         super().__init__(page)
 
