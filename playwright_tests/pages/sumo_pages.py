@@ -19,6 +19,10 @@ from playwright_tests.flows.messaging_system_flows.messaging_system_flow import 
 from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFlow
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions_pages.\
+    contributor_discussions_page import ContributorDiscussionPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions_pages.\
+    discussions_page import DiscussionsPage
 from playwright_tests.pages.contribute.contributor_tools_pages.article_discussions_page import \
     ArticleDiscussionsPage
 from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
@@ -59,6 +63,7 @@ from playwright_tests.pages.ask_a_question.contact_support_pages.contact_support
 from playwright_tests.pages.contribute.contribute_pages.contribute_page import ContributePage
 from playwright_tests.pages.contribute.contribute_pages.ways_to_contribute_pages import (
     WaysToContributePages)
+from playwright_tests.pages.explore_help_articles.explore_by_topic_page import ExploreByTopicPage
 from playwright_tests.pages.footer import FooterSection
 from playwright_tests.pages.community_forums.forums_pages.product_support_forum import (
     ProductSupportForum)
@@ -135,6 +140,7 @@ class SumoPages:
 
         # Explore our help articles products page.
         self.products_page = ProductsPage(page)
+        self.explore_by_product_page = ExploreByTopicPage(page)
 
         # KB Articles.
         self.kb_submit_kb_article_form_page = SubmitKBArticlePage(page)
@@ -182,6 +188,10 @@ class SumoPages:
 
         # Moderate Forum Page
         self.moderate_forum_content_page = ModerateForumContent(page)
+
+        # Discussions pages
+        self.contributor_discussions_page = ContributorDiscussionPage(page)
+        self.discussions_page = DiscussionsPage(page)
 
         # Auth flow Page.
         self.auth_flow_page = AuthFlowPage(page)
