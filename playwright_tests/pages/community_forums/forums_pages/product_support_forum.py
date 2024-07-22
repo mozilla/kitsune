@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
@@ -15,6 +17,7 @@ class ProductSupportForum(BasePage):
 
     # Side navbar filter options
     __side_navbar_filter_options = "//ul[@class='sidebar-nav--list']//a"
+    __topic_dropdown_selected_option = "//select[@id='products-topics-dropdown']/option[@selected]"
 
     # Question list
     __all_question_list_tags = "//li[@class='tag']"
@@ -26,6 +29,10 @@ class ProductSupportForum(BasePage):
     # Ask the Community actions
     def _click_on_the_ask_the_community_button(self):
         super()._click(self.__ask_the_community_button)
+
+    def _get_selected_topic_option(self) -> str:
+        option = super()._get_text_of_element(self.__topic_dropdown_selected_option)
+        return re.sub(r'\s+', ' ', option).strip()
 
     # Showing Questions Tagged section actions
     def _get_text_of_selected_tag_filter_option(self) -> str:

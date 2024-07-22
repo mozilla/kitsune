@@ -54,6 +54,12 @@ class BasePage:
         """
         return self._get_element_locator(xpath).inner_text()
 
+    def _get_text_of_locator(self, locator: Locator) -> str:
+        """
+        This helper function returns the inner text of a given locator.
+        """
+        return locator.inner_text()
+
     def _is_element_empty(self, xpath: str) -> bool:
         """
         This helper function returns checks if the given xpath has an inner text.
@@ -192,9 +198,15 @@ class BasePage:
 
     def _is_element_visible(self, xpath: str) -> bool:
         """
-        This helper function checks if a given element locator is visible.
+        This helper function finds the locator of the given xpath and checks if it is visible.
         """
         return self._get_element_locator(xpath).is_visible()
+
+    def _is_locator_visible(self, locator: Locator) -> bool:
+        """
+        This helper function checks if the given locator is visible.
+        """
+        return locator.is_visible()
 
     def _is_checkbox_checked(self, xpath: str) -> bool:
         """
