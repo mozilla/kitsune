@@ -100,7 +100,9 @@ class Topic(ModelBase):
     )
 
     # Topics are product-specific
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="topics")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="topics", null=True
+    )
     products = models.ManyToManyField(Product, through="ProductTopic", related_name="m2m_topics")
 
     # Topics can optionally have a parent.
@@ -129,7 +131,9 @@ class Topic(ModelBase):
     active = NonArchivedManager()
 
     def __str__(self):
-        return "[%s] %s" % (self.product.title, self.title)
+        if self.product:
+            return f"{self.product.title} {self.title}"
+        return self.title
 
     @property
     def image_url(self):
