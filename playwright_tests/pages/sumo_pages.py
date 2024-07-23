@@ -140,7 +140,7 @@ class SumoPages:
 
         # Explore our help articles products page.
         self.products_page = ProductsPage(page)
-        self.explore_by_product_page = ExploreByTopicPage(page)
+        self.explore_by_topic_page = ExploreByTopicPage(page)
 
         # KB Articles.
         self.kb_submit_kb_article_form_page = SubmitKBArticlePage(page)

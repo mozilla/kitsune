@@ -112,6 +112,12 @@ class BasePage:
         """
         return self.page.text_content(xpath)
 
+    def _get_text_content_of_all_locators(self, locator: Locator) -> list[str]:
+        """
+        This helper function returns a list of text content for the given locator.
+        """
+        return locator.all_text_contents()
+
     def _click(self, element: Union[str, Locator], with_wait=True):
         """
         This helper function clicks on a given element locator.
