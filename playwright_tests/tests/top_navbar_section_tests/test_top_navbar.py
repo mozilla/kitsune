@@ -89,7 +89,7 @@ def test_explore_by_product_redirects(page: Page):
                         PRODUCTS_PAGE_HEADER)
 
 
-# C2462867
+# C2462867, C2663957
 @pytest.mark.topNavbarTests
 def test_explore_by_topic_redirects(page: Page):
     sumo_pages = SumoPages(page)
@@ -106,18 +106,18 @@ def test_explore_by_topic_redirects(page: Page):
                 sumo_pages.top_navbar._hover_over_explore_by_product_top_navbar_option()
                 sumo_pages.top_navbar._click(option)
 
-            assert (current_option == sumo_pages.explore_by_product_page
+            assert (current_option == sumo_pages.explore_by_topic_page
                     ._get_explore_by_topic_page_header())
 
             with allure.step("Verifying that the correct option is selected inside the 'All "
                              "Topics' side navbar"):
-                assert (current_option == sumo_pages.explore_by_product_page
+                assert (current_option == sumo_pages.explore_by_topic_page
                         ._get_selected_topic_side_navbar_option())
 
             with allure.step("Verifying that the 'All Products' option is displayed inside the "
                              "'Filter by product' dropdown"):
-                assert (sumo_pages.explore_by_product_page
-                        ._get_current_topic_filter_dropdown_option()) == 'All Products'
+                assert (sumo_pages.explore_by_topic_page
+                        ._get_current_product_filter_dropdown_option()) == 'All Products'
 
 
 # C2462868

@@ -6,3 +6,4 @@ class AAQWidgetMessages:
                                               "team.")
     FREEMIUM_AAQ_SUBHEADING_TEXT = "Still need help? Continue to ask your question on our forums."
     PREMIUM_AAQ_SUBHEADING_TEXT = "Still need help? Continue to contact our support team."
+    NEUTRAL_AAQ_SUBHEADING_TEXT = "Still need help? Continue to ask your question and get help."
