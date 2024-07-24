@@ -2362,6 +2362,101 @@ class FallbackSystem(TestCase):
             self.assertNotIn(en_content, doc_content)
             self.assertIn("This article is translated into pt-BR", doc_content)
 
+    def test_skip_of_document_cache_when_fallback_uses_accept_language(self):
+        en_doc, es_doc = self.create_documents("es")
+        url = reverse("wiki.document", args=[en_doc.slug], locale="fr")
+
+        # First, request the document in French via the English slug. Since a
+        # French translation doesn't exist, the Accept-Language header is used
+        # to determine that the Spanish translation can be returned instead.
+        # This shouldn't be cached, because the response depends on the user's
+        # Accept-Language header.
+        headers = {"accept-language": "fr;q=0.8,es;q=0.7"}
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertIn("vary", response)
+        self.assertIn("accept-language", response["vary"])
+        doc = pq(response.content)
+        self.assertEqual(doc("html").attr("lang"), "fr")
+        self.assertEqual(doc("html").attr("data-ga-article-locale"), "es")
+        self.assertIn("This article is translated into es", doc("#doc-content").text())
+
+        # If another user makes the same request, the French content via the
+        # English slug, but this user will only accept English content as a
+        # fallback, then let's make sure the previous request wasn't cached,
+        # because if it was cached, the Spanish content would be returned.
+        headers = {"accept-language": "fr;q=0.8,en-us;q=0.7"}
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertIn("vary", response)
+        self.assertIn("accept-language", response["vary"])
+        doc = pq(response.content)
+        doc_content = doc("#doc-content").text()
+        self.assertEqual(doc("html").attr("lang"), "fr")
+        self.assertEqual(doc("html").attr("data-ga-article-locale"), "en-US")
+        self.assertIn("This article is in English", doc_content)
+
+    def test_vary_header_when_fallback_uses_accept_language(self):
+        en_doc, es_doc = self.create_documents("es")
+        url = reverse("wiki.document", args=[en_doc.slug], locale="fr")
+
+        with self.subTest("default in accept-language"):
+            headers = {"accept-language": "fr;q=0.8,en-us;q=0.7"}
+            response = self.client.get(url, headers=headers)
+            self.assertEqual(200, response.status_code)
+            self.assertIn("vary", response)
+            self.assertIn("accept-language", response["vary"])
+            doc = pq(response.content)
+            self.assertEqual(doc("html").attr("lang"), "fr")
+            self.assertEqual(doc("html").attr("data-ga-article-locale"), "en-US")
+            self.assertIn("This article is in English", doc("#doc-content").text())
+
+        with self.subTest("another translation in accept-language"):
+            headers = {"accept-language": "fr;q=0.8,es;q=0.7"}
+            response = self.client.get(url, headers=headers)
+            self.assertEqual(200, response.status_code)
+            self.assertIn("vary", response)
+            self.assertIn("accept-language", response["vary"])
+            doc = pq(response.content)
+            self.assertEqual(doc("html").attr("lang"), "fr")
+            self.assertEqual(doc("html").attr("data-ga-article-locale"), "es")
+            self.assertIn("This article is translated into es", doc("#doc-content").text())
+
+        with self.subTest("hard-coded fallback in accept-language"):
+            headers = {"accept-language": "fr;q=0.8,ca;q=0.7"}
+            response = self.client.get(url, headers=headers)
+            self.assertEqual(200, response.status_code)
+            self.assertIn("vary", response)
+            self.assertIn("accept-language", response["vary"])
+            doc = pq(response.content)
+            self.assertEqual(doc("html").attr("lang"), "fr")
+            self.assertEqual(doc("html").attr("data-ga-article-locale"), "es")
+            self.assertIn("This article is translated into es", doc("#doc-content").text())
+
+        with self.subTest("no fallback found"):
+            headers = {"accept-language": "fr;q=0.8"}
+            response = self.client.get(url, headers=headers)
+            self.assertEqual(200, response.status_code)
+            self.assertIn("vary", response)
+            self.assertIn("accept-language", response["vary"])
+            doc = pq(response.content)
+            self.assertEqual(doc("html").attr("lang"), "fr")
+            self.assertEqual(doc("html").attr("data-ga-article-locale"), "en-US")
+            self.assertIn("This article is in English", doc("#doc-content").text())
+
+    def test_vary_header_when_fallback_does_not_use_accept_language(self):
+        en_doc, es_doc = self.create_documents("es")
+        url = reverse("wiki.document", args=[en_doc.slug], locale="ca")
+        headers = {"accept-language": "en-us;q=0.8"}
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertIn("vary", response)
+        self.assertNotIn("accept-language", response["vary"])
+        doc = pq(response.content)
+        self.assertEqual(doc("html").attr("lang"), "ca")
+        self.assertEqual(doc("html").attr("data-ga-article-locale"), "es")
+        self.assertIn("This article is translated into es", doc("#doc-content").text())
+
 
 class PocketArticleTests(TestCase):
     """Pocket article redirect tests."""
