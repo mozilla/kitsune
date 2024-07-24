@@ -126,7 +126,12 @@
       <button data-sumo-toggle-nav="#main-navigation" class="sumo-nav--toggle-button" type="button" aria-controls="main-navigation">Menu</button>
       <a class="sumo-nav--avatar-button" data-sumo-toggle-nav="#profile-navigation" aria-controls="profile-navigation" aria-role="button">
         {% if user.is_authenticated %}
-        <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+        <div class="avatar-container">
+          <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+          {% if unread_message_count > 0 %}
+          <div class="avatar-container-message-alert"></div>
+          {% endif %}
+        </div>
         {% else %}
         <img class="avatar" src="{{ webpack_static('sumo/img/default-FFA-avatar.png') }}" alt="Avatar for Username">
         {% endif %}

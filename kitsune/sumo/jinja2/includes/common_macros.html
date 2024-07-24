@@ -612,7 +612,12 @@
   {% if user.is_authenticated %}
   <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" rel="nofollow" href="{{ url('users.auth') }}">
     <span class="sumo-nav--username">{{ display_name(user) }}</span>
-    <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+    <div class="avatar-container">
+      <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+      {% if unread_message_count > 0 %}
+      <div class="avatar-container-message-alert"></div>
+      {% endif %}
+    </div>
   </a>
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
     <div class="sumo-nav--dropdown-container">
@@ -667,7 +672,7 @@
                   <path d="M22 6l-10 7L2 6" />
                 </g>
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}</h4>
+              <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}{% if unread_message_count > 0 %}<span class="message-count-alert">{{ unread_message_count }}</span>{% endif %}</h4>
               <p class="mzp-c-menu-item-desc">
                 {{ _('Exchange messages with other contributors.') }}
               </p>
