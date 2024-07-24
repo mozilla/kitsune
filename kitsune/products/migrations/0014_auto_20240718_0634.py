@@ -6,25 +6,25 @@ NEW_TOPICS_DATA = [
     {
         "title": "Backup, recovery, and sync",
         "slug": "backup-recovery-and-sync",
-        "description": "Learn how to back up, recover, and sync your data across different platforms and devices.",
+        "description": "Sync your data across different platforms and devices, backup what’s important, and recover it if it’s lost.",
         "products": ["firefox", "mobile", "ios", "relay", "mozilla-account"],
         "subtopics": [
             {
                 "title": "Backup data",
                 "slug": "backup-data",
-                "description": "Discover methods to securely back up your important data.",
+                "description": "From passwords to bookmarks, discover ways to back up your important data.",
                 "products": ["firefox", "mobile", "ios", "mozilla-account"],
             },
             {
                 "title": "Recover data",
                 "slug": "recover-data",
-                "description": "Follow steps to recover lost or deleted data.",
+                "description": "Learn how to recover your lost data.",
                 "products": ["firefox", "mobile", "ios", "mozilla-account"],
             },
             {
                 "title": "Sync data",
                 "slug": "sync-data",
-                "description": "Sync your data across multiple devices seamlessly.",
+                "description": "Sync your data across different platforms and devices.",
                 "products": ["firefox", "mobile", "ios", "mozilla-account"],
             },
         ],
@@ -32,7 +32,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Browse",
         "slug": "browse",
-        "description": "Explore how to browse the web efficiently and effectively.",
+        "description": "Explore how to navigate the web efficiently and effectively with Mozilla’s products.",
         "products": ["firefox", "mobile", "ios", "pocket", "hubs"],
         "subtopics": [
             {
@@ -50,19 +50,19 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Bookmarks",
                 "slug": "bookmarks",
-                "description": "Save and organize your favorite web pages with bookmarks.",
+                "description": "Save and organize your favorite web content with bookmarks.",
                 "products": ["firefox", "mobile", "ios"],
             },
             {
                 "title": "Multimedia",
                 "slug": "multimedia",
-                "description": "Play and manage multimedia content on the web.",
+                "description": "Everything you need to know about audio, video, images, and more.",
                 "products": ["firefox", "mobile", "ios"],
             },
             {
                 "title": "Links",
                 "slug": "links",
-                "description": "Handle web links efficiently.",
+                "description": "Use web links in Mozilla’s products.",
                 "products": ["firefox", "mobile", "ios"],
             },
         ],
@@ -70,7 +70,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Performance and connectivity",
         "slug": "performance-and-connectivity",
-        "description": "Optimize performance and connectivity for a smoother experience.",
+        "description": "Deal with error messages, crashing applications, connectivity issues, and slow performance.",
         "products": [
             "firefox",
             "mobile",
@@ -85,7 +85,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Crashing and slow performance",
                 "slug": "crashing-and-slow-performance",
-                "description": "Troubleshoot issues with crashing or slow performance.",
+                "description": "Troubleshoot issues with app crashes or slow performance.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -107,14 +107,14 @@ NEW_TOPICS_DATA = [
     {
         "title": "Accessibility",
         "slug": "accessibility",
-        "description": "Enhance accessibility features for better usability.",
+        "description": "Learn about Mozilla products’ accessibility features and settings for better usability.",
         "products": ["firefox", "mobile", "ios", "pocket", "thunderbird", "mozilla-account"],
         "subtopics": [],
     },
     {
         "title": "Download and save",
         "slug": "download-and-save",
-        "description": "Learn how to download and save files from the web.",
+        "description": "Manage your downloaded files and saved content",
         "products": ["firefox", "mobile", "ios", "pocket", "mdn-plus"],
         "subtopics": [
             {
@@ -126,7 +126,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Save content",
                 "slug": "save-content",
-                "description": "Save web content for offline use.",
+                "description": "Save your favorite content for later.",
                 "products": ["firefox", "mobile", "ios", "pocket"],
             },
         ],
@@ -134,7 +134,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Search, tag, and share",
         "slug": "search-tag-and-share",
-        "description": "Search, tag and share content efficiently.",
+        "description": "Learn about search functionality and how to organize or share content in Mozilla products.",
         "products": ["firefox", "mobile", "ios", "pocket", "focus-firefox", "thunderbird"],
         "subtopics": [
             {
@@ -146,13 +146,13 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Tags",
                 "slug": "tags",
-                "description": "Organize your content using tags.",
+                "description": "Categorize and organize efficiently with tags.",
                 "products": ["firefox", "mobile", "ios", "pocket"],
             },
             {
                 "title": "Share content",
                 "slug": "share-content",
-                "description": "Share your favorite content with others.",
+                "description": "Learn how to share links, content, messages, and more.",
                 "products": ["firefox", "mobile", "ios", "pocket"],
             },
         ],
@@ -160,7 +160,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Installation and updates",
         "slug": "installation-and-updates",
-        "description": "Install and update your software to the latest version.",
+        "description": "Learn how to install your favorite Mozilla products and keep them updated.",
         "products": [
             "firefox",
             "mobile",
@@ -175,7 +175,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Install",
                 "slug": "install",
-                "description": "Step-by-step guide to installing the software.",
+                "description": "Learn about how to install Mozilla’s products on your devices.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -190,7 +190,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Update",
                 "slug": "update",
-                "description": "Keep your software up to date with the latest features and improvements.",
+                "description": "Keep the Mozilla products you use up to date with the latest features and improvements.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -207,7 +207,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Settings",
         "slug": "settings",
-        "description": "Customize your settings to enhance your experience.",
+        "description": "Manage and customize your product experience with settings, add-ons, and more.",
         "products": [
             "firefox",
             "mobile",
@@ -226,7 +226,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Import and export settings",
                 "slug": "import-and-export-settings",
-                "description": "Learn how to import and export settings for easy setup.",
+                "description": "Learn how to import and export product settings for easy setup and migration.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -241,7 +241,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Customization",
                 "slug": "customization",
-                "description": "Customize the appearance and functionality to suit your preferences.",
+                "description": "Customize product appearance and functionality to suit your preferences.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -257,7 +257,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Autofill",
                 "slug": "autofill",
-                "description": "Save time by using autofill for forms and other fields.",
+                "description": "Automatically fill your personal information into form fields and more.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -272,7 +272,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Languages",
                 "slug": "languages",
-                "description": "Change and manage the languages used in your software.",
+                "description": "Change and manage language settings in Mozilla’s products.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -288,7 +288,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Add-ons, extensions, and themes",
                 "slug": "add-ons-extensions-and-themes",
-                "description": "Enhance your software with add-ons, extensions, and themes.",
+                "description": "Enhance product functionality with add-ons, extensions, and themes.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -307,7 +307,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Privacy and security",
         "slug": "privacy-and-security",
-        "description": "Protect your privacy and secure your data.",
+        "description": "Learn how to protect your privacy and secure your data.",
         "products": [
             "firefox",
             "mobile",
@@ -340,7 +340,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Encryption",
                 "slug": "encryption",
-                "description": "Secure your data with encryption.",
+                "description": "Use encryption features to keep yourself and your data secure.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -355,13 +355,13 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Masking",
                 "slug": "masking",
-                "description": "Mask your online activity for better privacy.",
+                "description": "Mask your email and phone number to better protect your privacy.",
                 "products": ["firefox", "mobile", "ios", "relay", "mozilla-account"],
             },
             {
                 "title": "Security",
                 "slug": "security",
-                "description": "Keep your software secure with these tips.",
+                "description": "Keep yourself secure online.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -379,7 +379,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Passwords and sign in",
         "slug": "passwords-and-sign-in",
-        "description": "Manage your passwords and sign-in securely.",
+        "description": "Manage your passwords and securely access your accounts.",
         "products": [
             "firefox",
             "mobile",
@@ -422,7 +422,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Two-factor authentication",
                 "slug": "two-factor-authentication",
-                "description": "Add an extra layer of security with two-factor authentication.",
+                "description": "Use two-factor authentication to add an extra layer of security when signing in.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -442,7 +442,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Accounts",
         "slug": "accounts",
-        "description": "Manage your accounts and profiles.",
+        "description": "Manage your accounts and profiles for Mozilla’s products and services.",
         "products": [
             "firefox",
             "mobile",
@@ -458,7 +458,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Profiles",
                 "slug": "profiles",
-                "description": "Create and manage different profiles in your software.",
+                "description": "Create and manage user profiles.",
                 "products": [
                     "firefox",
                     "mobile",
@@ -484,7 +484,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Account recovery",
                 "slug": "account-recovery",
-                "description": "Recover your account if you encounter issues.",
+                "description": "Recover your account if you lose access to it or encounter issues.",
                 "products": [
                     "firefox-private-network-vpn",
                     "pocket",
@@ -497,7 +497,7 @@ NEW_TOPICS_DATA = [
     {
         "title": "Billing and subscriptions",
         "slug": "billing-and-subscriptions",
-        "description": "Manage your billing information and subscriptions.",
+        "description": "Manage your subscriptions and payment details for Mozilla’s premium products.",
         "products": [
             "firefox-private-network-vpn",
             "relay",
@@ -511,7 +511,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Manage billing",
                 "slug": "manage-billing",
-                "description": "Update and manage your billing information.",
+                "description": "Manage your payment details and billing information.",
                 "products": [
                     "firefox-private-network-vpn",
                     "relay",
@@ -524,7 +524,7 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Manage subscriptions",
                 "slug": "manage-subscriptions",
-                "description": "Manage your subscriptions and payment methods.",
+                "description": "Manage your subscriptions to Mozilla’s premium products and services.",
                 "products": [
                     "firefox-private-network-vpn",
                     "relay",
@@ -539,13 +539,13 @@ NEW_TOPICS_DATA = [
     {
         "title": "Email and messaging",
         "slug": "email-and-messaging",
-        "description": "Learn how to manage your emails and messaging services.",
+        "description": "Read, send, and manage your emails and messages.",
         "products": ["thunderbird", "relay"],
         "subtopics": [
             {
                 "title": "Contacts",
                 "slug": "contacts",
-                "description": "Manage your email contacts efficiently.",
+                "description": "Manage your email contacts.",
                 "products": ["thunderbird"],
             },
             {
@@ -557,19 +557,19 @@ NEW_TOPICS_DATA = [
             {
                 "title": "Instant messaging",
                 "slug": "instant-messaging",
-                "description": "Set up and use instant messaging services.",
+                "description": "Features and functionality to use with instant messaging.",
                 "products": ["thunderbird"],
             },
             {
                 "title": "Attachments",
                 "slug": "attachments",
-                "description": "Handle email attachments effectively.",
+                "description": "Learn how to use and manage email attachments.",
                 "products": ["thunderbird"],
             },
             {
                 "title": "Send and receive email",
                 "slug": "send-and-receive-email",
-                "description": "Learn how to send and receive emails properly.",
+                "description": "Everything you need to know about sending and receiving emails.",
                 "products": ["thunderbird", "relay"],
             },
             {
