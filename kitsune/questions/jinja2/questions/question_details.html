@@ -422,7 +422,7 @@
                         class="tag-adder">
                     {% csrf_token %}
                     <div class="field is-condensed">
-                      <label for="id_tag_input">Add a tag:</label>
+                      <label for="id_tag_input">{{ _('Add a tag') }}:</label>
                       <input id="id_tag_input" type="text" name="tag-name" size="12" maxlength="100"
                         class="searchbox autocomplete-tags {% if tag_adding_error %} invalid{% endif %}"
                         value="{{ tag_adding_value }}" />
