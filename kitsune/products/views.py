@@ -116,14 +116,20 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     }
     subtopic = None
     topic_list = []
+    product_topics = []
     topic_kw = {
         "slug": topic_slug,
-        "parent__isnull": True,
         "visible": True,
     }
 
     if topic_navigation:
-        topics = Topic.active.filter(**topic_kw)
+        try:
+            topic = Topic.active.get(**topic_kw)
+        except Topic.DoesNotExist:
+            raise Http404
+        except Topic.MultipleObjectsReturned:
+            topic = Topic.active.filter(**topic_kw).first()
+
         topic_subquery = (
             Topic.active.filter(slug__in=NAVIGATION_TOPICS)
             .filter(slug=OuterRef("slug"))
@@ -131,19 +137,15 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             .values("id")[:1]
         )
         topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
-        doc_kw["topics"] = topics
-        topic = get_object_or_404(topic_list, slug=topic_slug)
     else:
         topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
-        topics = topics_for(request.user, product=product, parent=None)
+        product_topics = topics_for(request.user, product=product, parent=None)
 
-        doc_kw["topics"] = [topic]
         if subtopic_slug is not None:
             subtopic = get_object_or_404(Topic, slug=subtopic_slug, product=product, parent=topic)
             doc_kw["topics"] = [subtopic]
 
-    if not topics.exists():
-        raise Http404
+    doc_kw["topics"] = [topic]
     template = "products/documents.html"
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
@@ -162,13 +164,13 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "product": product,
             "topic": topic,
             "subtopic": subtopic,
-            "topics": topics,
+            "topics": product_topics,
             "subtopics": topics_for(request.user, product=product, parent=topic),
             "documents": documents,
             "fallback_documents": fallback_documents,
             "search_params": {"product": product_slug},
             "topic_navigation": topic_navigation,
             "topic_list": topic_list,
-            "products": Product.active.filter(topics__in=topics),
+            "products": Product.active.filter(topics__in=product_topics),
         },
     )
