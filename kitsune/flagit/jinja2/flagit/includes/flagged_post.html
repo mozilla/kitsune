@@ -20,7 +20,7 @@
 </p>
 <h3 class="sumo-page-intro">{{ _('Take Action:') }}</h3>
 <div class="actions sumo-button-wrap">
-  <a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">View</a>
+  <a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">{{ _('View') }}</a>
   {% if object.content_type.name == 'KB Forum Post' %}
     {% if user.has_perm('kbforums.change_post') %}
       <a class="sumo-button button-sm edit" rel="ugc nofollow" href="{{ url('wiki.discuss.edit_post', object.content_object.thread.document.slug, object.content_object.thread.id, object.content_object.id) }}">{{ _('Edit') }}</a>
