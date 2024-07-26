@@ -17,7 +17,7 @@ export default function tabsInit() {
     primary.insertAdjacentHTML('beforeend', `
     <li class="tabs--item-more">
       <button class="tabs--button" type="button" aria-haspopup="true" aria-expanded="false">
-        {{ _('More') }}
+        ${gettext("More")}
       </button>
       <ul class="tabs--dropdown elevation-01">
         ${primary.innerHTML}
