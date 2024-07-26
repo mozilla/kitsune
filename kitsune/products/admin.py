@@ -7,6 +7,7 @@ from django.http import HttpRequest
 from kitsune.products.models import (
     Platform,
     Product,
+    ProductTopic,
     Topic,
     TopicSlugHistory,
     Version,
@@ -20,14 +21,24 @@ class ArchivedFilter(admin.SimpleListFilter):
     def lookups(
         self, request: HttpRequest, model_admin: admin.ModelAdmin
     ) -> list[tuple[str, str]]:
-        return [("archived", "Yes"), ("not_archived", "No")]
+        return [("all", "All"), ("archived", "Yes"), ("not_archived", "No")]
 
     def queryset(self, request: HttpRequest, queryset: QuerySet[Any]) -> QuerySet[Any]:
         if self.value() == "archived":
             return queryset.filter(is_archived=True)
         if self.value() == "not_archived":
             return queryset.filter(is_archived=False)
+        if self.value() == "all":
+            return queryset
         return queryset
+
+    def choices(self, changelist):
+        for lookup, title in self.lookup_choices:
+            yield {
+                "selected": self.value() == lookup,
+                "query_string": changelist.get_query_string({self.parameter_name: lookup}, []),
+                "display": title,
+            }
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -38,22 +49,41 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     list_filter = (ArchivedFilter,)
 
+    def changelist_view(self, request, extra_context=None):
+        if "is_archived" not in request.GET:
+            q = request.GET.copy()
+            q["is_archived"] = "not_archived"
+            request.GET = q
+            request.META["QUERY_STRING"] = request.GET.urlencode()
+        return super().changelist_view(request, extra_context=extra_context)
+
+
+class ProductTopicInline(admin.TabularInline):
+    model = ProductTopic
+    extra = 1
+    show_change_link = True
+
 
 class TopicAdmin(admin.ModelAdmin):
     def parent(obj):
         return obj.parent
 
+    def get_products(obj):
+        return ", ".join([p.title for p in obj.products.all()])
+
     parent.short_description = "Parent"  # type: ignore
+    get_products.short_description = "Products"  # type: ignore
 
     list_display = (
-        "product",
         "title",
         "slug",
         parent,
+        get_products,
         "display_order",
         "visible",
         "in_aaq",
         "is_archived",
+        "product",
     )
     list_display_links = ("title", "slug")
     list_editable = ("display_order", "visible", "in_aaq", "is_archived")
@@ -63,6 +93,7 @@ class TopicAdmin(admin.ModelAdmin):
         "parent",
         "slug",
     )
+    inlines = [ProductTopicInline]
     search_fields = (
         "title",
         "slug",
@@ -71,6 +102,14 @@ class TopicAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
+
+    def changelist_view(self, request, extra_context=None):
+        if "is_archived" not in request.GET:
+            q = request.GET.copy()
+            q["is_archived"] = "not_archived"
+            request.GET = q
+            request.META["QUERY_STRING"] = request.GET.urlencode()
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 class VersionAdmin(admin.ModelAdmin):
