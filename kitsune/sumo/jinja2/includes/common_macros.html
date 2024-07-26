@@ -672,7 +672,10 @@
                   <path d="M22 6l-10 7L2 6" />
                 </g>
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}{% if unread_message_count > 0 %}<span class="message-count-alert">{{ unread_message_count }}</span>{% endif %}</h4>
+              <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}</h4>
+              {% if unread_message_count > 0 %}
+              <span class="message-count-alert">{{ unread_message_count }}</span>
+              {% endif %}
               <p class="mzp-c-menu-item-desc">
                 {{ _('Exchange messages with other contributors.') }}
               </p>
