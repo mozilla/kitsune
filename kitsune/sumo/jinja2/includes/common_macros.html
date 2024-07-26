@@ -51,6 +51,97 @@
 </div>
 {% endmacro %}
 
+{% macro browse_by_topic(product=True) %}
+  {% set row_one_left_slug="settings" %}
+  {% set row_one_right_slug="installation-and-updates" %}
+  {% set row_two_left_slug="email-and-messaging" %}
+  {% set row_two_right_slug="performance-and-connectivity" %}
+  {% set row_three_left_slug="privacy-and-security" %}
+  {% set row_three_right_slug="browse" %}
+
+  {% if product %}
+    {% set link_name = "main-menu.topic-home" %}
+    {% set row_one_left_url = url('products.topic_documents', topic_slug=row_one_left_slug ) %}
+    {% set row_one_right_url = url('products.topic_documents', topic_slug=row_one_right_slug ) %}
+    {% set row_two_left_url = url('products.topic_documents', topic_slug=row_two_left_slug ) %}
+    {% set row_two_right_url = url('products.topic_documents', topic_slug=row_two_right_slug ) %}
+    {% set row_three_left_url = url('products.topic_documents', topic_slug=row_three_left_slug ) %}
+    {% set row_three_right_url = url('products.topic_documents', topic_slug=row_three_right_slug ) %}
+
+  {% else %}
+    {% set link_name = "main-menu.support-forum-home" %}
+    {% set row_one_left_url = url('questions.list_by_topic', topic_slug=row_one_left_slug ) %}
+    {% set row_one_right_url = url('questions.list_by_topic', topic_slug=row_one_right_slug ) %}
+    {% set row_two_left_url = url('questions.list_by_topic', topic_slug=row_two_left_slug ) %}
+    {% set row_two_right_url = url('questions.list_by_topic', topic_slug=row_two_right_slug ) %}
+    {% set row_three_left_url = url('questions.list_by_topic', topic_slug=row_three_left_slug ) %}
+    {% set row_three_right_url = url('questions.list_by_topic', topic_slug=row_three_right_slug ) %}
+  {% endif %}
+
+  <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+    <li>
+      <a href="{{ row_one_left_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ row_one_left_slug }}"
+        }'>
+          {{ _(row_one_left_slug|slug_to_title) }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ row_one_right_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ row_one_right_slug }}"
+        }'>
+          {{ _(row_one_right_slug|slug_to_title) }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ row_two_left_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ row_two_left_slug }}"
+        }'>
+          {{ _(row_two_left_slug|slug_to_title) }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ row_two_right_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ row_two_right_slug }}"
+        }'>
+          {{ _(row_two_right_slug|slug_to_title) }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ row_three_left_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ row_three_left_slug }}"
+        }'>
+          {{ _(row_three_left_slug|slug_to_title) }}
+      </a>
+    </li>
+    <li>
+      <a href="{{ row_three_right_url }}"
+          data-event-name="link_click"
+          data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ row_three_right_slug }}"
+        }'>
+          {{ _(row_three_right_slug|slug_to_title) }}
+      </a>
+    </li>
+  </ul>
+{% endmacro %}
+
 {% macro aux_nav(user, hide_aaq_link=False) %}
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
   <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true"
@@ -134,81 +225,18 @@
           </section>
         </div>
         <div class="sumo-nav--dropdown-col">
-
-
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-          <div class="mzp-c-menu-item-head">
-            <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
-                stroke-linecap="round">
-                <rect stroke-linejoin="round" width="18" height="18" rx="2" />
-                <path d="M4 5h10M4 9h10M4 13h4" />
-              </g>
-            </svg>
-            <h4 class="mzp-c-menu-item-title">{{ _('Explore by topic') }}</h4>
-          </div>
-            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li>
-                <a href="{{ url('products.topic_documents', topic_slug='troubleshooting') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.topic-home",
-                    "link_detail": "troubleshooting"
-                  }'>
-                   {{ _('Troubleshooting') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('products.topic_documents', topic_slug='protect-your-privacy') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.topic-home",
-                    "link_detail": "protect-your-privacy"
-                  }'>
-                   {{ _('Protect your privacy') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('products.topic_documents', topic_slug='customize-settings-and-preferences') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.topic-home",
-                    "link_detail": "customize-settings-and-preferences"
-                  }'>
-                   {{ _('Customize settings and preferences') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('products.topic_documents', topic_slug='install-and-update') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.topic-home",
-                    "link_detail": "install-and-update"
-                  }'>
-                   {{ _('Install and update') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('products.topic_documents', topic_slug='install-and-manage-add-ons') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.topic-home",
-                    "link_detail": "install-and-manage-add-ons"
-                  }'>
-                   {{ _('Install and manage add-ons') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('products.topic_documents', topic_slug='emails') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.topic-home",
-                    "link_detail": "emails"
-                  }'>
-                   {{ _('Emails') }}
-                </a>
-              </li>
-            </ul>
+            <div class="mzp-c-menu-item-head">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                  stroke-linecap="round">
+                  <rect stroke-linejoin="round" width="18" height="18" rx="2" />
+                  <path d="M4 5h10M4 9h10M4 13h4" />
+                </g>
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Explore by topic') }}</h4>
+            </div>
+            {{ browse_by_topic() }}
           </section>
         </div>
       </div>
@@ -311,68 +339,7 @@
               </svg>
               <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
             </div>
-            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li>
-                <a href="{{ url('questions.list_by_topic', topic_slug='troubleshooting') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.support-forum-home",
-                    "link_detail": "troubleshoooting"
-                  }'>
-                   {{ _('Troubleshooting') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.list_by_topic', topic_slug='protect-your-privacy') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.support-forum-home",
-                    "link_detail": "protect-your-privacy"
-                  }'>
-                   {{ _('Protect your privacy') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.list_by_topic', topic_slug='customize-settings-and-preferences') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.support-forum-home",
-                    "link_detail": "customize-settings-and-preferences"
-                  }'>
-                   {{ _('Customize settings and preferences') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.list_by_topic', topic_slug='install-and-update') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.support-forum-home",
-                    "link_detail": "install-and-update"
-                  }'>
-                   {{ _('Install and update') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.list_by_topic', topic_slug='install-and-manage-add-ons') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.support-forum-home",
-                    "link_detail": "install-and-manage-add-ons"
-                  }'>
-                   {{ _('Install and manage add-ons') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.list_by_topic', topic_slug='emails') }}"
-                   data-event-name="link_click"
-                   data-event-parameters='{
-                    "link_name": "main-menu.support-forum-home",
-                    "link_detail": "emails"
-                  }'>
-                   {{ _('Emails') }}
-                </a>
-              </li>
-            </ul>
+            {{ browse_by_topic(product=False) }}
           </section>
         </div>
       </div>
