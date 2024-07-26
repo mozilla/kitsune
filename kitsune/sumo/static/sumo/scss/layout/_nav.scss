@@ -65,6 +65,10 @@
     }
   }
 
+  &--username {
+    @include p.bidi(((margin, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),));
+  }
+
   &--link {
     &.has-avatar {
       @include p.bidi(((padding-right, 0, 24px),
@@ -73,7 +77,6 @@
 
       .avatar {
         display: block;
-        @include p.bidi(((margin, -6px 0 -6px 20px, -6px 20px -6px 0), ));
         width: 36px;
         height: 36px;
         border-radius: 50%;
@@ -393,4 +396,39 @@ html {
   @media #{p.$mq-lg} {
     scroll-padding-top: 74px;
   }
+}
+
+.avatar-container {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  @media screen and (max-width: p.$screen-md) {
+    width: p.$spacing-xl;
+    height: p.$spacing-xl;
+  }
+}
+
+.avatar-container-message-alert {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: red;
+  @media screen and (max-width: p.$screen-md) {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+.message-count-alert {
+  border-radius: 50%;
+  background-color: red;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.25rem 0.50rem;
+  @include p.bidi(((margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),));
+  vertical-align: middle;
 }
