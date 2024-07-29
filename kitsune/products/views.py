@@ -117,6 +117,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     subtopic = None
     topic_list = []
     product_topics = []
+    relevant_products = []
     topic_kw = {
         "slug": topic_slug,
         "visible": True,
@@ -137,6 +138,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             .values("id")[:1]
         )
         topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
+        relevant_products = Product.active.filter(m2m_topics=topic)
     else:
         topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
         product_topics = topics_for(request.user, product=product, parent=None)
@@ -171,6 +173,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             "search_params": {"product": product_slug},
             "topic_navigation": topic_navigation,
             "topic_list": topic_list,
-            "products": Product.active.filter(topics__in=product_topics),
+            "products": relevant_products,
         },
     )
