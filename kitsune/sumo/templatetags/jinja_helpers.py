@@ -3,6 +3,7 @@ import json as jsonlib
 import logging
 import re
 import urllib
+from zoneinfo import ZoneInfo
 
 import bleach
 import jinja2
@@ -22,7 +23,6 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
-from zoneinfo import ZoneInfo
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser
@@ -560,3 +560,11 @@ def show_header_fx_download(context):
         return product.slug != "firefox"
     else:
         return True
+
+
+@library.filter
+def slug_to_title(slug):
+    """
+    Convert a slug to a title.
+    """
+    return slug.replace("-", " ").capitalize()
