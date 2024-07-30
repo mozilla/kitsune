@@ -11,11 +11,25 @@ from kitsune.sumo.utils import webpack_static
 HOT_TOPIC_SLUG = "hot"
 
 
-class Product(ModelBase):
+class BaseProductTopic(ModelBase):
+    """Abstract base class for Product and Topic."""
+
     title = models.CharField(max_length=255, db_index=True)
+    description = models.TextField()
+    # Whether or not is visible in the ui to users.
+    visible = models.BooleanField(default=False)
+    # whether or not is archived
+    is_archived = models.BooleanField(default=False)
+    # Dictates the display order in lists
+    display_order = models.IntegerField()
+
+    class Meta:
+        abstract = True
+
+
+class Product(BaseProductTopic):
     codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
-    description = models.TextField()
     image = ImagePlusField(
         upload_to=settings.PRODUCT_IMAGE_PATH,
         null=True,
@@ -35,17 +49,8 @@ class Product(ModelBase):
     image_cachebuster = models.CharField(max_length=32, default=None, null=True, editable=False)
     sprite_height = models.IntegerField(default=None, null=True, editable=False)
 
-    # Dictates the order in which products are displayed in product
-    # lists.
-    display_order = models.IntegerField()
-
-    # Whether or not this product is visible in the KB ui to users.
-    visible = models.BooleanField(default=False)
-
     # Platforms this Product runs on.
     platforms = models.ManyToManyField("Platform")
-    # whether or not this product is archived
-    is_archived = models.BooleanField(default=False)
 
     # Override default manager
     objects = models.Manager()
@@ -86,12 +91,9 @@ class Product(ModelBase):
         super().save(*args, **kwargs)
 
 
-# Note: This is the "new" Topic class
-class Topic(ModelBase):
-    title = models.CharField(max_length=255, db_index=True)
+class Topic(BaseProductTopic):
     # We don't use a SlugField here because it isn't unique by itself.
     slug = models.CharField(max_length=255, db_index=True)
-    description = models.TextField()
     image = ImagePlusField(
         upload_to=settings.TOPIC_IMAGE_PATH,
         null=True,
@@ -101,7 +103,7 @@ class Topic(ModelBase):
 
     # Topics are product-specific
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="topics", null=True
+        Product, on_delete=models.CASCADE, related_name="topics", null=True, blank=True
     )
     products = models.ManyToManyField(Product, through="ProductTopic", related_name="m2m_topics")
 
@@ -110,17 +112,14 @@ class Topic(ModelBase):
         "self", on_delete=models.CASCADE, related_name="subtopics", null=True, blank=True
     )
 
-    # Dictates the order in which topics are displayed in topic lists.
-    display_order = models.IntegerField()
-
-    # Whether or not this topic is visible in the ui to users.
-    visible = models.BooleanField(default=False)
     # Whether or not this topic is used in the AAQ.
     in_aaq = models.BooleanField(
         default=False, help_text=_lazy("Whether this topic is shown to users in the AAQ or not.")
     )
-    # whether or not this topic is archived
-    is_archived = models.BooleanField(default=False)
+    # Whether or not this topic is displayed in navigation menus
+    in_nav = models.BooleanField(
+        default=False, help_text=_lazy("Whether this topic is shown in navigation menus.")
+    )
 
     class Meta(object):
         ordering = ["product", "display_order"]

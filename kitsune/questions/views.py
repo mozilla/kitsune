@@ -12,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import Q
 from django.db.models.functions import Now
 from django.http import (
     Http404,
@@ -47,15 +47,8 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import (
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionLocale,
-    QuestionVote,
-)
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
-from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -310,16 +303,11 @@ def question_list(request, product_slug=None, topic_slug=None):
     product_list = Product.active.filter(visible=True)
 
     # List of topics to fill the selector.
+    topic_list = Topic.active.filter(visible=True)
     if products:
-        topic_list = Topic.active.filter(visible=True, product=products[0])[:10]
+        topic_list = topic_list.filter(product=products[0])[:10]
     else:
-        topic_subquery = (
-            Topic.active.filter(slug__in=NAVIGATION_TOPICS)
-            .filter(slug=OuterRef("slug"))
-            .order_by("id")
-            .values("id")[:1]
-        )
-        topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
+        topic_list = topic_list.filter(in_nav=True)
 
     # Store current filters in the session
     if request.user.is_authenticated:
