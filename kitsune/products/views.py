@@ -1,14 +1,13 @@
 import json
 from datetime import datetime, timedelta
 
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.questions import config as aaq_config
-from kitsune.sumo import NAVIGATION_TOPICS
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Revision
@@ -131,13 +130,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         except Topic.MultipleObjectsReturned:
             topic = Topic.active.filter(**topic_kw).first()
 
-        topic_subquery = (
-            Topic.active.filter(slug__in=NAVIGATION_TOPICS)
-            .filter(slug=OuterRef("slug"))
-            .order_by("id")
-            .values("id")[:1]
-        )
-        topic_list = Topic.active.filter(id__in=Subquery(topic_subquery))
+        topic_list = Topic.active.filter(in_nav=True)
         relevant_products = Product.active.filter(m2m_topics=topic)
     else:
         topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
