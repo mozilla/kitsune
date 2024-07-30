@@ -17,16 +17,22 @@ class TopicModelTests(TestCase):
     def test_absolute_url(self):
         p = ProductFactory()
         t = TopicFactory(product=p)
-        expected = "/en-US/products/{p}/{t}".format(p=p.slug, t=t.slug)
-        actual = t.get_absolute_url()
+        expected = f"/en-US/products/{p.slug}/{t.slug}"
+        actual = t.get_absolute_url(p.slug)
         self.assertEqual(actual, expected)
 
     def test_absolute_url_subtopic(self):
         p = ProductFactory()
         t1 = TopicFactory(product=p)
         t2 = TopicFactory(parent=t1, product=p)
-        expected = "/en-US/products/{p}/{t1}/{t2}".format(p=p.slug, t1=t1.slug, t2=t2.slug)
-        actual = t2.get_absolute_url()
+        expected = f"/en-US/products/{p.slug}/{t1.slug}/{t2.slug}"
+        actual = t2.get_absolute_url(p.slug)
+        self.assertEqual(actual, expected)
+
+    def test_absolute_url_topics(self):
+        t = TopicFactory()
+        expected = f"/en-US/topics/{t.slug}"
+        actual = t.get_absolute_url()
         self.assertEqual(actual, expected)
 
 
