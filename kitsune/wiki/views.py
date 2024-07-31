@@ -1,8 +1,9 @@
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from datetime import time as datetime_time
+from datetime import timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -14,12 +15,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
-from django.http import (
-    Http404,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseRedirect,
-)
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.cache import patch_vary_headers
@@ -234,7 +230,7 @@ def document(request, document_slug, document=None):
     if len(products) < 1:
         product = Product.active.filter(visible=True)[0]
     else:
-        product = products[0]
+        product = products.first()
 
     product_topics = Topic.active.filter(product=product, visible=True, parent=None)
 
@@ -283,15 +279,9 @@ def document(request, document_slug, document=None):
     # picking a product later.
     document_topics = doc.topics.order_by("display_order")
     if len(document_topics) > 0:
-        topic = document_topics[0]
-        first_topic = topic
-        while topic is not None:
-            breadcrumbs.append((topic.get_absolute_url(), topic.title))
-            topic = topic.parent
-        # Get the product
-        breadcrumbs.append((first_topic.product.get_absolute_url(), first_topic.product.title))
-    else:
-        breadcrumbs.append((product.get_absolute_url(), product.title))
+        topic = document_topics.first()
+        breadcrumbs.append((topic.get_absolute_url(product.slug), topic.title))
+    breadcrumbs.append((product.get_absolute_url(), product.title))
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
     votes = HelpfulVote.objects.filter(revision=doc.current_revision).aggregate(

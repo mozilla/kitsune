@@ -163,25 +163,18 @@ class Topic(BaseProductTopic):
         query.update(kwargs)
         return Document.objects.visible(**query)
 
-    def get_absolute_url(self):
-        if self.parent is None:
-            return reverse(
-                "products.documents",
-                kwargs={
-                    "product_slug": self.product.slug,
-                    "topic_slug": self.slug,
-                },
-            )
-        else:
-            assert self.parent.parent is None
-            return reverse(
-                "products.subtopics",
-                kwargs={
-                    "product_slug": self.product.slug,
-                    "topic_slug": self.parent.slug,
-                    "subtopic_slug": self.slug,
-                },
-            )
+    def get_absolute_url(self, product_slug=None):
+        kwargs = {"topic_slug": self.slug}
+        named_url = "products.topic_documents"
+        if product_slug:
+            kwargs.update({"product_slug": product_slug})
+            named_url = "products.documents"
+
+            if self.parent:
+                assert self.parent.parent is None
+                kwargs.update({"topic_slug": self.parent.slug, "subtopic_slug": self.slug})
+                named_url = "products.subtopics"
+        return reverse(named_url, kwargs=kwargs)
 
 
 class ProductTopic(ModelBase):
