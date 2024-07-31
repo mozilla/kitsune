@@ -528,8 +528,11 @@ def migrate_topics(apps, schema_editor):
                     slug=entry["old_slug"], defaults={"topic": new_topic}
                 )
                 if not created:
-                    topic_slug.topic = new_topic
-                    topic_slug.save()
+                    if topic_slug.slug == new_topic.slug:
+                        topic_slug.delete()
+                    else:
+                        topic_slug.topic = new_topic
+                        topic_slug.save()
 
             # Archive the old topic
             old_topic.is_archived = True
