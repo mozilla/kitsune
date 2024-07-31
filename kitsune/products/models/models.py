@@ -8,10 +8,12 @@ from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
+from wagtail.models import PreviewableMixin
+
 HOT_TOPIC_SLUG = "hot"
 
 
-class Product(ModelBase):
+class Product(ModelBase, PreviewableMixin):
     title = models.CharField(max_length=255, db_index=True)
     codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
