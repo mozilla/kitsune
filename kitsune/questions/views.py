@@ -125,6 +125,12 @@ def question_list(request, product_slug=None, topic_slug=None):
         messages.add_message(request, messages.WARNING, "You cannot list questions at this time.")
         return HttpResponseRedirect("/")
 
+    topic_navigation = any(
+        [
+            request.resolver_match.url_name == "questions.list_by_topic",
+            topic_slug and not product_slug,
+        ]
+    )
     filter_ = request.GET.get("filter")
     owner = request.GET.get("owner", request.session.get("questions_owner", "all"))
     show = request.GET.get("show")
@@ -157,7 +163,6 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # Get all topics
     topics = []
-    topic_navigation = False
     if topic_slug:
         try:
             topic_history = TopicSlugHistory.objects.get(slug=topic_slug)
@@ -166,7 +171,6 @@ def question_list(request, product_slug=None, topic_slug=None):
         except TopicSlugHistory.DoesNotExist:
             ...
         topics = Topic.active.filter(visible=True, slug=topic_slug)
-        topic_navigation = True
         if not topics:
             raise Http404()
 
