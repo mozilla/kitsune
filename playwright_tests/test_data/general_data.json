@@ -12,7 +12,8 @@
     "Mozilla VPN",
     "Firefox Relay",
     "Pocket",
-    "Mozilla Account"
+    "Mozilla Account",
+    "Mozilla Monitor"
   ],
   "kb_article_categories": [
     "Troubleshooting",
@@ -56,6 +57,7 @@
     "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise",
     "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus",
     "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/firefox-private-network-vpn",
+    "Mozilla Monitor": "https://support.allizom.org/en-US/questions/new/monitor",
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket",
     "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird",

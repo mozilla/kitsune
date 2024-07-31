@@ -1827,14 +1827,13 @@ def test_common_responses(page: Page):
                 utilities.user_secrets_accounts['TEST_ACCOUNT_13']
             ))
         sumo_pages.question_page._click_on_common_responses_option()
-        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_a_particular_category_option(
             utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
         )
         sumo_pages.question_page._type_into_common_responses_search_field(
             utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
-        utilities.wait_for_networkidle()
+        utilities.wait_for_given_timeout(3000)
 
     with allure.step("Verifying that the only item in the category field is the searched "
                      "option"):
@@ -1849,7 +1848,6 @@ def test_common_responses(page: Page):
             utilities.aaq_question_test_data["valid_firefox_question"]
             ["common_responses_response"]
         )
-        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_common_responses_cancel_button()
 
     with check, allure.step("Verifying that the form textarea does not contain the common "
@@ -1859,14 +1857,13 @@ def test_common_responses(page: Page):
     with allure.step("Clicking on the 'Common Responses' option and selecting a response "
                      "from the list"):
         sumo_pages.question_page._click_on_common_responses_option()
-        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_a_particular_category_option(
             utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
         )
         sumo_pages.question_page._type_into_common_responses_search_field(
             utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
-        utilities.wait_for_networkidle()
+        utilities.wait_for_given_timeout(3000)
 
     with allure.step("Verifying that the only item in the category field is the searched "
                      "option"):
@@ -1880,9 +1877,7 @@ def test_common_responses(page: Page):
         sumo_pages.question_page._click_on_a_particular_response_option(
             utilities.aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
         )
-        utilities.wait_for_networkidle()
         sumo_pages.question_page._click_on_switch_to_mode()
-        utilities.wait_for_networkidle()
         response = sumo_pages.question_page._get_text_of_response_preview()
 
     with check, allure.step("Clicking on the Insert Response, post reply and verifying that "
