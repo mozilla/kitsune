@@ -219,8 +219,8 @@
                   {% if question.topic %}
                     {% set topic = question.topic %}
                     <li class="tag">
-                      <a class="tag-name" href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                        {{ pgettext('DB: products.Product.title', topic.product.title) }}
+                      <a class="tag-name" href="{{ url('questions.list', question.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                        {{ pgettext('DB: products.Product.title', question.product.title) }}
                       </a>
                     </li>
                   {% endif %}

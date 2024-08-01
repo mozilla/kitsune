@@ -17,13 +17,7 @@ from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetad
 from kitsune.questions.tests import AnswerFactory, QuestionFactory, tags_eq
 from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import (
-    TestCase,
-    attrs_eq,
-    emailmessage_raise_smtp,
-    get,
-    post,
-)
+from kitsune.sumo.tests import TestCase, attrs_eq, emailmessage_raise_smtp, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.tidings.models import Watch
@@ -1126,13 +1120,16 @@ class QuestionsTemplateTestCase(TestCase):
 
     def test_topic_filter(self):
         p = ProductFactory()
-        t1 = TopicFactory(product=p)
-        t2 = TopicFactory(product=p)
-        t3 = TopicFactory(product=p)
+        t1 = TopicFactory()
+        t2 = TopicFactory()
+        t3 = TopicFactory()
+        t1.products.add(p)
+        t2.products.add(p)
+        t3.products.add(p)
 
-        q1 = QuestionFactory()
-        q2 = QuestionFactory(topic=t1)
-        q3 = QuestionFactory(topic=t2)
+        q1 = QuestionFactory(product=p)
+        q2 = QuestionFactory(topic=t1, product=p)
+        q3 = QuestionFactory(topic=t2, product=p)
 
         url = reverse("questions.list", args=["all"])
 
@@ -1206,8 +1203,9 @@ class QuestionsTemplateTestCase(TestCase):
 
     def test_product_shows_without_tags(self):
         p = ProductFactory()
-        t = TopicFactory(product=p)
-        q = QuestionFactory(topic=t)
+        t = TopicFactory()
+        t.products.add(p)
+        q = QuestionFactory(topic=t, product=p)
 
         response = self.client.get(urlparams(reverse("questions.list", args=["all"]), show=""))
         doc = pq(response.content)
