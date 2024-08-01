@@ -70,8 +70,10 @@
 
 var TEMPLATE = (
   '<div class="kbox-container">' +
-  '<a href="#close" class="kbox-close">&#x2716;</a>' +
+  '<div class="kbox-header">' +
   '<div class="kbox-title"></div>' +
+  '<a href="#close" class="kbox-close">&#x2716;</a>' +
+  '</div>' +
   '<div class="kbox-wrap"><div class="kbox-placeholder"/></div>' +
   '</div>'
 ),
@@ -214,8 +216,7 @@ KBox.prototype = {
     }
   },
   setPosition: function (position) {
-    var self = this,
-      toX, toY, $parent, parentOffset, minX, minY, scrollL, scrollT;
+    var self = this;
     if (!position) {
       position = self.options.position;
     }

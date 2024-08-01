@@ -111,10 +111,7 @@ jQuery.fn.ajaxSubmitInput = function (options) {
         $form = '<form class="upload-input" action="' +
                 options.url + '" target="' + iframeName +
                 '" method="post" enctype="multipart/form-data"/>',
-        $iframe = $('<iframe hidden name="' + iframeName +
-                   '" style="position:absolute;top:-9999px;" />')
-                   //'" style="position:fixed;top:0px;width:500px;height:350px" />')
-                    .appendTo('body'),
+        $iframe = $(`<iframe hidden name="${iframeName}" />`).appendTo('body'),
         passJSON;
 
     if (options.accept) {

@@ -28,8 +28,7 @@ import "sumo/js/kbox";
     'invalid': gettext('Invalid image. Please select a valid image file.'),
     'toolarge': gettext('Image too large. Please select a smaller image file.'),
     'cancelled': gettext('Upload cancelled. Please select an image file.'),
-    'deleted': gettext('File deleted. Please select an image file.'),
-    'del': gettext('Delete this image')
+    'deleted': gettext('File deleted. Please select an image file.')
   };
 
   // Save all initial values of input details:
@@ -94,12 +93,13 @@ import "sumo/js/kbox";
 
       // Bind cancel upload event.
       $('.progress a', self.$modal).on("click", function cancelUpload(ev) {
-        var type = $(this).attr('class');
+        var type = $(this).data('type');
         ev.preventDefault();
         self.cancelUpload($(this));
-        self.setInputError($(this).closest('.upload-form')
-        .find('input[name="' + type + '"]'),
-        'cancelled');
+        self.setInputMessage(
+          $(this).closest('.upload-form').find('input[name="' + type + '"]'),
+          'cancelled'
+        );
         return false;
       });
 
@@ -225,8 +225,7 @@ import "sumo/js/kbox";
     startUpload: function($input) {
       var $form = $input.closest('.upload-form'),
         filename = $input.val().split(/[\/\\]/).pop(),
-        $progress = $('.progress', $form)
-      .filter('.' + $input.attr('name'));
+        $progress = $('.progress', $form).filter(`.${$input.attr('name')}`);
       // truncate filename
       if (filename.length > CONSTANTS.maxFilenameLength) {
         filename = filename.substr(0, CONSTANTS.maxFilenameLength) +
@@ -234,7 +233,7 @@ import "sumo/js/kbox";
       }
       $form.find('.upload-media.' + $input.attr('name')).hideFade();
       var message = interpolate(gettext('Uploading "%s"...'), [filename]);
-      $progress.filter('.row-right').find('span').text(message);
+      $progress.find('.progress-message').text(message);
       $progress.showFade();
       $form.find('.metadata').show();
       return {filename: filename};
@@ -273,11 +272,12 @@ import "sumo/js/kbox";
     uploadSuccess: function($input, iframeJSON, filename) {
       var type = $input.attr('name'),
         $form = $input.closest('.upload-form'),
-        $cancel_btn = $('.upload-action input[name="cancel"]', $form),
-        $content, attrs = {},
-        $preview_area,
+        $cancel_btn = $('input[name="cancel"]', $form),
+        $content,
+        $previewArea,
+        $previewImage,
+        $previewImageContainer,
         upFile = iframeJSON.file;
-      var message = CONSTANTS.messages[type].del;
 
       // Upload is no longer in progress.
       $form.find('.progress.' + type).hideFade();
@@ -285,38 +285,36 @@ import "sumo/js/kbox";
       // generate preview
       if (type === 'file') {
         // create thumbnail
-        $content = $('<img/>')
-        .attr({
-          alt: upFile.name, title: upFile.name,
-          width: upFile.width, height: upFile.height,
+        $content = $('<img/>').attr({
+          class: 'preview',
+          alt: upFile.name,
+          title: upFile.name,
           src: upFile.thumbnail_url
-        })
-        .wrap('<div class="preview-' + type + '"/>').parent();
+        });
       }
-      $preview_area = $('.preview.' + type, $form);
-      $preview_area.filter('.row-right').html($content);
+      $previewArea = $(`.preview.${type}`, $form);
+      $previewImageContainer = $previewArea.find(".preview-image");
+      $previewImage = $previewImageContainer.find("img");
+      if ($previewImage.length) {
+        $previewImage.replaceWith($content);
+      } else {
+        $previewImageContainer.append($content);
+      }
       // Create cancel button.
-      attrs['data-action'] = $cancel_btn.data('action') +
-      '?field=' + type;
-      attrs['data-name'] = type;
-      $cancel_btn.clone().val(message).attr(attrs)
-      .removeClass('kbox-cancel')
-      .appendTo($preview_area.filter('.row-right'))
-      .makeCancelUpload();
+      $cancel_btn.makeCancelUpload();
       // Show the preview area and make it a draft
-      $preview_area.showFade();
+      $previewArea.showFade();
       $form.addClass('draft');
     },
     /*
-    * Little helper function to set an error next to the file input.
+    * Little helper function to display a message next to the file input.
     * Takes the file $input and a reason.
     */
-    setInputError: function($input, reason) {
+    setInputMessage: function($input, reason) {
       var type = $input.attr('name');
       var message = CONSTANTS.messages[type][reason];
-      var $row_input = $('.upload-media.row-right.' + type);
-      $row_input.find('div.details').addClass('error')
-      .html(message);
+      var $uploadDetails = $(`.upload-media.${type}`).find('div.details');
+      $uploadDetails.html(message);
     },
     /*
     * Fired if isValidFile or isTooLarge is false or server returned failure.
@@ -329,7 +327,7 @@ import "sumo/js/kbox";
       // Cancel existing upload.
       $('.progress.' + type).find('a.' + type).trigger('click');
       // Show an error message.
-      self.setInputError($input, reason);
+      self.setInputMessage($input, reason);
     },
     /*
     * Fired when deleting an uploaded image.
@@ -343,8 +341,7 @@ import "sumo/js/kbox";
         $mediaForm = $input.closest('.upload-form'),
         type = $input.data('name');
       // Clean up all the preview and progress information.
-      $mediaForm.find('.preview.' + type).hideFade()
-      .filter('.row-right').html('');
+      $mediaForm.find('.preview.' + type).hideFade();
 
       // Send ajax request over to remove file.
       $.ajax({
@@ -354,8 +351,10 @@ import "sumo/js/kbox";
         dataType: 'json'
         // Ignore the response, nothing to do.
       });
-      self.setInputError($mediaForm.find('input[name="' + type + '"]'),
-      'deleted');
+      self.setInputMessage(
+        $mediaForm.find('input[name="' + type + '"]'),
+        'deleted'
+       );
       self._reUpload($mediaForm, type);
     },
     /*
@@ -366,7 +365,7 @@ import "sumo/js/kbox";
     */
     cancelUpload: function($a) {
       var self = this,
-        type = $a.attr('class'),
+        type = $a.data('type'),
         $form = $a.closest('form');
       var $input = $form.find('input[name="' + type + '"]');
       var form_target = $input.closest('form').attr('target');
@@ -452,10 +451,8 @@ import "sumo/js/kbox";
       self.$modal.find('.metadata').hide();
       // Clean up all the preview and progress information.
       self.$modal.find('.progress,.preview').hideFade();
-      self.$modal.find('.preview.row-right').html('');
-      self.$modal.find('.progress.row-right span').html('');
       // Show all the file inputs with default messages.
-      $uploads.filter('.row-right').each(function () {
+      $uploads.each(function () {
         var $input = $(this).find('input[type="file"]'),
           type = $input.attr('name');
         $input.closest('form')[0].reset();
@@ -478,7 +475,7 @@ import "sumo/js/kbox";
     return true;
   }
 
-  var kbox = $('#gallery-upload-modal').kbox({preClose: preClose});
+  var kbox = $('#gallery-upload-modal').kbox({preClose: preClose, position: 'none'});
 
   // Open modal window from media page
   if (document.location.hash === '#upload' ||

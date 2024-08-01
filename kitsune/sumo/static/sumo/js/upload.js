@@ -118,7 +118,9 @@ $(function () {
       ev.preventDefault();
       var imgUrl = $(this).attr('href'),
         image = new Image(),
-        html = '<div><img class="loading" /></div>',
+        currentPosX = window.scrollX,
+        currentPosY = window.scrollY,
+        html = '<img class="loading image-attachment" />',
         kbox = new KBox(html, {
           modal: true,
           title: gettext('Image Attachment'),
@@ -126,44 +128,20 @@ $(function () {
           destroy: true,
           position: 'none', // Disable automatic positioning
           closeOnOutClick: true,
-          closeOnEsc: true
+          closeOnEsc: true,
+          preClose: function () {
+            window.scroll(currentPosX, currentPosY);
+            return true;
+          }
         });
       kbox.open();
 
       let $img = $('#image-attachment-kbox img');
-      let $container = $('#image-attachment-kbox');
-      function setDimensions() {
-        // Calculate maximum dimensions based on 80% viewport size
-        let maxWidth = $(window).width() * 0.8;
-        let maxHeight = $(window).height() * 0.8;
-        let imgWidth = image.width;
-        let imgHeight = image.height;
-
-
-        // Calculate the aspect ratio
-        let aspectRatio = imgWidth / imgHeight;
-
-        // Resize the image maintaining the aspect ratio
-        if (imgWidth > maxWidth || imgHeight > maxHeight) {
-          if (imgWidth / maxWidth > imgHeight / maxHeight) {
-            imgWidth = maxWidth;
-            imgHeight = maxWidth / aspectRatio;
-          } else {
-            imgHeight = maxHeight;
-            imgWidth = maxHeight * aspectRatio;
-          }
-        }
-
-        $img.width(imgWidth);
-        $img.height(imgHeight);
-        $container.css({
-          'width': imgWidth,
-          'overflow': 'hidden'
-        });
+      function loadImage() {
         $img.removeClass('loading').attr('src', imgUrl);
-        kbox.setPosition('center'); // Center the modal after resizing
+        window.scroll({top: 0});
       }
-      image.onload = setDimensions;
+      image.onload = loadImage;
       image.src = imgUrl;
     });
   }
