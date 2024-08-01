@@ -7,14 +7,12 @@ from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_
     AddKbArticleFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.delete_kb_article_flow import \
     DeleteKbArticleFlow
-from playwright_tests.pages.auth_page import AuthPage
 
 
 @pytest.fixture
 def create_delete_article(request, page: Page):
     utilities = Utilities(page)
     submit_kb_article_flow = AddKbArticleFlow(page)
-    auth_page = AuthPage(page)
     kb_article_deletion_flow = DeleteKbArticleFlow(page)
     auto_close = True
     marker = request.node.get_closest_marker("create_delete_article")
@@ -57,11 +55,11 @@ def create_delete_article(request, page: Page):
     yield _create_delete_article
 
     if auto_close:
+        utilities.delete_cookies()
         for article_link in created_articles_url:
             utilities.navigate_to_link(article_link)
-            if auth_page._is_logged_in_sign_in_button_displayed():
-                utilities.start_existing_session(
-                    utilities.username_extraction_from_email(
-                        utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-                    ))
+            utilities.start_existing_session(
+                utilities.username_extraction_from_email(
+                    utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+                ))
             kb_article_deletion_flow.delete_kb_article()

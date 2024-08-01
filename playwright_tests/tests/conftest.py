@@ -12,6 +12,7 @@ def navigate_to_homepage(page: Page):
     This fixture is used in all functions. It navigates to the SuMo homepage and returns the page
     object.
     """
+    page.set_default_navigation_timeout(120000)
     page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
     return page
 

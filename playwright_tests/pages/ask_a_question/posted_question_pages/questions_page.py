@@ -551,7 +551,8 @@ class QuestionPage(BasePage):
         return super()._get_text_of_elements(self.__common_responses_responses_options)
 
     def _click_on_a_particular_category_option(self, option: str):
-        super()._click(f"//ul[@class='category-list']/li[text()='{option}']")
+        super()._click(f"//ul[@class='category-list']/li[text()='{option}']",
+                       with_wait=True)
 
     def _click_on_a_particular_response_option(self, option: str):
         super()._click(f"//ul[@class='sidebar-nav']/li[text()='{option}']")
@@ -568,10 +569,10 @@ class QuestionPage(BasePage):
         return super()._get_text_of_element(self.__common_responses_response_preview)
 
     def _click_on_switch_to_mode(self):
-        super()._click(self.__common_responses_switch_to_mode)
+        super()._click(self.__common_responses_switch_to_mode, with_wait=True)
 
     def _click_on_common_responses_cancel_button(self):
-        super()._click(self.__common_responses_cancel_button)
+        super()._click(self.__common_responses_cancel_button, with_wait=True)
 
     def _click_on_common_responses_insert_response_button(self):
         super()._click(self.__common_responses_insert_response_button)

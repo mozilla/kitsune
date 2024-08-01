@@ -131,6 +131,6 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page):
 def test_incorrect_kb_topic_listing_redirect(page: Page):
     utilities = Utilities(page)
     with page.expect_navigation() as navigation_info:
-        utilities.navigate_to_link("https://support.allizom.org/en-US/topics/get-started")
+        utilities.navigate_to_link("https://support.allizom.org/en-US/topics/testt")
     response = navigation_info.value
     assert response.status == 404
