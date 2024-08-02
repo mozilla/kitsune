@@ -1321,6 +1321,7 @@ MOZILLA_LOCATION_SERVICE = config(
     "MOZILLA_LOCATION_SERVICE",
     default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",  # noqa
 )
+
 # Wagtail settings
 WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=False, cast=bool)
 WAGTAIL_I18N_ENABLED = True
@@ -1366,3 +1367,4 @@ WAGTAILADMIN_PERMITTED_LANGUAGES = [
 WAGTAIL_SITE_NAME = config("WAGTAIL_SITE_NAME", default="Mozilla Support CMS")
 WAGTAILADMIN_BASE_URL = config("WAGTAILADMIN_BASE_URL", default="")
 WAGTAILIMAGES_MAX_UPLOAD_SIZE = IMAGE_MAX_FILESIZE
+WAGTAILDOCS_DOCUMENT_MODEL = "sumo.WagtailDocument"
