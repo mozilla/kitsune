@@ -511,6 +511,11 @@ def edit_init_and_perms(request, document_slug, revision_id=None, doctype="doc")
         url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
         return HttpResponseRedirect(url)
 
+    # If this document has a parent, then the edit is handled by the
+    # translate view. Pass it on.
+    if doc.parent:
+        return translate(request, doc.parent.slug, revision_id)
+
     if revision_id:
         rev = get_object_or_404(Revision, pk=revision_id, document=doc)
     else:
