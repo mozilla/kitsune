@@ -501,7 +501,7 @@ def test_lock_and_archive_this_question(page: Page, status):
 
 # C2191267, C2191116, C2134136, C2191091
 @pytest.mark.postedQuestions
-def test_subscribe_to_feed_option(page: Page):
+def test_subscribe_to_feed_option(page: Page, is_firefox):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non admin user account"):
@@ -540,7 +540,7 @@ def test_subscribe_to_feed_option(page: Page):
                      "Chrome) or has the correct download info (Firefox)"):
         utilities.navigate_to_link(question_info_one['question_page_url'])
 
-        if page.context.browser.browser_type.name == "chromium":
+        if not is_firefox:
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_one['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
@@ -562,7 +562,7 @@ def test_subscribe_to_feed_option(page: Page):
                      "option and verifying that the url is updated to the feed endpoint ("
                      "Chrome) or has the correct download info (Firefox)"):
         utilities.navigate_to_link(question_info_two['question_page_url'])
-        if page.context.browser.browser_type.name == "chromium":
+        if not is_firefox:
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
@@ -587,7 +587,7 @@ def test_subscribe_to_feed_option(page: Page):
                      "the feed endpoint (Chrome) or has the correct download info (Firefox)"):
         utilities.delete_cookies()
 
-        if page.context.browser.browser_type.name == "chromium":
+        if not is_firefox:
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
@@ -615,7 +615,7 @@ def test_subscribe_to_feed_option(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        if page.context.browser.browser_type.name == "chromium":
+        if not is_firefox:
             sumo_pages.question_page._click_on_subscribe_to_feed_option()
             expect(page).to_have_url(
                 question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
