@@ -51,7 +51,7 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
 # C2094292
 # This test needs to be updated to fetch the username from a different place
 @pytest.mark.messagingSystem
-def test_private_messages_can_be_sent_via_user_profiles(page: Page):
+def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     message_body = "Test1"
@@ -75,7 +75,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page):
     with allure.step("Verifying that the receiver is automatically added inside the 'To' "
                      "field"):
         # Firefox GH runner fails here. We are running this assertion only in Chrome for now
-        if page.context.browser.browser_type.name == "chromium":
+        if not is_firefox:
             assert sumo_pages.new_message_page._get_user_to_text() == user_two, (
                 f"Incorrect 'To' receiver. Expected: {user_two}. "
                 f"Received: {sumo_pages.new_message_page._get_user_to_text()}"

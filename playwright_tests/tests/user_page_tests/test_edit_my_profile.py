@@ -34,7 +34,7 @@ def test_username_field_is_automatically_populated(page: Page):
 # This test is currently covering the: my profile section, top navbar, and posted questions.
 # Might want to extend the coverage
 @pytest.mark.editUserProfileTests
-def test_edit_profile_field_validation_with_symbols(page: Page):
+def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
@@ -52,11 +52,11 @@ def test_edit_profile_field_validation_with_symbols(page: Page):
         sumo_pages.edit_my_profile_page._clear_display_name_field()
         profile_edit_data = utilities.profile_edit_test_data
 
-        if page.context.browser.browser_type.name == "chromium":
+        if not is_firefox:
             new_username = profile_edit_data["valid_user_edit_with_symbols"][
                 "username_with_valid_symbols_chrome"
             ]
-        elif page.context.browser.browser_type.name == "firefox":
+        else:
             new_username = profile_edit_data["valid_user_edit_with_symbols"][
                 "username_with_valid_symbols_firefox"
             ]
@@ -298,7 +298,7 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
 
 #  C1491463, C1491464
 @pytest.mark.editUserProfileTests
-def test_display_name_replaces_the_username_text(page: Page):
+def test_display_name_replaces_the_username_text(page: Page, is_firefox):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
@@ -308,11 +308,11 @@ def test_display_name_replaces_the_username_text(page: Page):
 
     original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-    if page.context.browser.browser_type.name == "chromium":
+    if not is_firefox:
         new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
             "display_name_chrome"
         ]
-    elif page.context.browser.browser_type.name == "firefox":
+    else:
         new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
             "display_name_firefox"
         ]
