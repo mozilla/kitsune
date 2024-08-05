@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
@@ -10,7 +10,7 @@ from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.questions import config as aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
-from kitsune.wiki.models import Revision
+from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.utils import get_featured_articles
 
 
@@ -131,7 +131,9 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             topic = Topic.active.filter(**topic_kw).first()
 
         topic_list = Topic.active.filter(in_nav=True)
-        relevant_products = Product.active.filter(m2m_topics=topic)
+        relevant_products = Product.active.filter(m2m_topics=topic).filter(
+            Exists(Document.objects.visible(topics=topic, products=OuterRef("pk")))
+        )
     else:
         topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
         product_topics = topics_for(request.user, product=product, parent=None)
