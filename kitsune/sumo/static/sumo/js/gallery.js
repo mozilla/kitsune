@@ -22,6 +22,8 @@ import "sumo/js/kbox";
     }
   };
 
+  let originalPosX, originalPosY;
+
   CONSTANTS.messages.server = gettext('Could not upload file. Please try again later.');
   CONSTANTS.messages.file = {
     'server': CONSTANTS.messages.server,
@@ -470,12 +472,21 @@ import "sumo/js/kbox";
 
   // Initialize GalleryUpload and kbox
   GalleryUpload.init();
-  function preClose() {
-    GalleryUpload.modalClose();
-    return true;
-  }
 
-  var kbox = $('#gallery-upload-modal').kbox({preClose: preClose, position: 'none'});
+  var kbox = $('#gallery-upload-modal').kbox({
+    position: 'none',
+    preOpen: function () {
+      originalPosX = window.scrollX;
+      originalPosY = window.scrollY;
+      window.scroll({top: 0});
+      return true;
+    },
+    preClose: function () {
+      window.scroll(originalPosX, originalPosY);
+      GalleryUpload.modalClose();
+      return true;
+    }
+  });
 
   // Open modal window from media page
   if (document.location.hash === '#upload' ||
