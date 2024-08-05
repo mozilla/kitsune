@@ -14,16 +14,15 @@ from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import Count, Exists, F, Max, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
-
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
-from django.utils.translation import gettext as _
 from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.questions.models import QuestionLocale
+from kitsune.questions.models import AAQConfig
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -232,7 +231,7 @@ def l10n_overview_rows(locale, product=None, user=None):
 
     if product:
         total = total.filter(products=product)
-        if not product.questions_locales.filter(locale=locale).exists():
+        if not product.questions_enabled(locale):
             # The product does not have a forum for this locale.
             ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
@@ -709,7 +708,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
         if self.product:
             qs = qs.filter(products=self.product)
-            if not self.product.questions_locales.filter(locale=self.locale).exists():
+            if not self.product.questions_enabled(locale=self.locale):
                 # The product does not have a forum for this locale.
                 ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
@@ -1132,7 +1131,7 @@ class CannedResponsesReadout(Readout):
 
     @classmethod
     def should_show_to(cls, request):
-        return request.LANGUAGE_CODE in QuestionLocale.objects.locales_list()
+        return request.LANGUAGE_CODE in AAQConfig.objects.locales_list()
 
     def get_queryset(self, max=None):
         qs = (

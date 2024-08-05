@@ -329,9 +329,11 @@ class Event(object):
             getattr(Watch, "uncached", Watch.objects)
             .filter(
                 user_condition,
-                Q(content_type=ContentType.objects.get_for_model(cls.content_type))
-                if cls.content_type
-                else Q(),
+                (
+                    Q(content_type=ContentType.objects.get_for_model(cls.content_type))
+                    if cls.content_type
+                    else Q()
+                ),
                 Q(object_id=object_id) if object_id else Q(),
                 event_type=cls.event_type,
             )

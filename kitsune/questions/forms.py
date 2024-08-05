@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.models import Answer, Question
+from kitsune.questions.models import AAQConfig, Answer, Question
 from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
@@ -64,10 +64,7 @@ class EditQuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = [
-            "title",
-            "content",
-        ]
+        fields = ["title", "content"]
 
     def __init__(self, product=None, *args, **kwargs):
         """Init the form.
@@ -81,51 +78,8 @@ class EditQuestionForm(forms.ModelForm):
         extra_fields = []
 
         if product:
-            extra_fields += product.get("extra_fields", [])
-
-        if "sites_affected" in extra_fields:
-            field = forms.CharField(
-                label=SITE_AFFECTED_LABEL,
-                initial="http://",
-                required=False,
-                max_length=255,
-                widget=forms.TextInput(),
-            )
-            self.fields["sites_affected"] = field
-
-        if "crash_id" in extra_fields:
-            field = forms.CharField(
-                label=CRASH_ID_LABEL,
-                help_text=CRASH_ID_HELP,
-                required=False,
-                max_length=255,
-                widget=forms.TextInput(),
-            )
-            self.fields["crash_id"] = field
-
-        if "frequency" in extra_fields:
-            field = forms.ChoiceField(
-                label=FREQUENCY_LABEL, choices=FREQUENCY_CHOICES, required=False
-            )
-            self.fields["frequency"] = field
-
-        if "started" in extra_fields:
-            field = forms.CharField(
-                label=STARTED_LABEL,
-                required=False,
-                max_length=255,
-                widget=forms.TextInput(),
-            )
-            self.fields["started"] = field
-
-        if "addon" in extra_fields:
-            field = forms.CharField(
-                label=ADDON_LABEL,
-                required=False,
-                max_length=255,
-                widget=forms.TextInput(),
-            )
-            self.fields["addon"] = field
+            aaq_config = AAQConfig.objects.get(product=product, is_active=True)
+            extra_fields = aaq_config.extra_fields
 
         if "ff_version" in extra_fields:
             self.fields["ff_version"] = forms.CharField(
@@ -158,7 +112,7 @@ class EditQuestionForm(forms.ModelForm):
     def metadata_field_keys(self):
         """Returns the keys of the metadata fields for the current
         form instance"""
-        non_metadata_fields = ["title", "content", "email", "notifications"]
+        non_metadata_fields = ["title", "content", "email", "notifications", "category"]
 
         def metadata_filter(x):
             return x not in non_metadata_fields
@@ -208,7 +162,12 @@ class EditQuestionForm(forms.ModelForm):
 class NewQuestionForm(EditQuestionForm):
     """Form to start a new question"""
 
-    category = forms.ChoiceField(label=CATEGORY_LABEL, choices=[])
+    category = forms.ModelChoiceField(
+        label=CATEGORY_LABEL,
+        queryset=Topic.objects.none(),
+        empty_label="Please select",
+        required=True,
+    )
 
     # Collect user agent only when making a question for the first time.
     # Otherwise, we could grab moderators' user agents.
@@ -223,22 +182,17 @@ class NewQuestionForm(EditQuestionForm):
         super(NewQuestionForm, self).__init__(product=product, *args, **kwargs)
 
         if product:
-            category_choices = [
-                (key, value["name"]) for key, value in product["categories"].items()
-            ]
-            category_choices.insert(0, ("", "Please select"))
-            self.fields["category"].choices = category_choices
+            topics = Topic.active.filter(products=product, in_aaq=True)
+            self.fields["category"].queryset = topics
 
-    def save(self, user, locale, product, product_config, *args, **kwargs):
+    def save(self, user, locale, product, *args, **kwargs):
         self.instance.creator = user
         self.instance.locale = locale
         self.instance.product = product
 
-        category_config = product_config["categories"][self.cleaned_data["category"]]
-        if category_config:
-            t = category_config.get("topic")
-            if t:
-                self.instance.topic = Topic.active.get(slug=t, products=product)
+        category = self.cleaned_data["category"]
+        if category:
+            self.instance.topic = category
 
         question = super(NewQuestionForm, self).save(*args, **kwargs)
 
@@ -253,11 +207,6 @@ class NewQuestionForm(EditQuestionForm):
 
         # User successfully submitted a new question
         question.add_metadata(**self.cleaned_metadata)
-
-        if product_config:
-            # TODO: This add_metadata call should be removed once we are
-            # fully IA-driven (sync isn't special case anymore).
-            question.add_metadata(product=product_config["key"])
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()

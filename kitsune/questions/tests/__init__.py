@@ -2,7 +2,15 @@ from datetime import datetime
 
 import factory
 
-from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
+from kitsune.products.tests import ProductFactory
+from kitsune.questions.models import (
+    AAQConfig,
+    Answer,
+    AnswerVote,
+    Question,
+    QuestionLocale,
+    QuestionVote,
+)
 from kitsune.sumo.tests import FuzzyUnicode, TestCase
 from kitsune.users.tests import UserFactory
 
@@ -53,15 +61,34 @@ class QuestionLocaleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = QuestionLocale
 
+
+class AAQConfigFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AAQConfig
+
+    title = FuzzyUnicode()
+    product = factory.SubFactory(ProductFactory)
+    is_active = True
+
     @factory.post_generation
-    def products(obj, create, extracted, **kwargs):
+    def enabled_locales(obj, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
-            for product in extracted:
-                obj.products.add(product)
+            for locale in extracted:
+                obj.enabled_locales.add(locale)
+
+    @factory.post_generation
+    def associated_tags(obj, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for tag in extracted:
+                obj.associated_tags.add(tag)
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):

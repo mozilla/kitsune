@@ -7,8 +7,20 @@ from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.questions.models import (
+    AAQConfig,
+    Answer,
+    AnswerVote,
+    Question,
+    QuestionLocale,
+    QuestionVote,
+)
+from kitsune.questions.tests import (
+    AAQConfigFactory,
+    AnswerFactory,
+    QuestionFactory,
+    QuestionLocaleFactory,
+)
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -23,24 +35,23 @@ class AAQSearchTests(Elastic7TestCase):
 
     def test_ratelimit(self):
         """Make sure posting new questions is ratelimited"""
+        p = ProductFactory(slug="firefox")
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
+        topic = TopicFactory(slug="troubleshooting", products=[p], in_aaq=True)
         data = {
             "title": "A test question",
             "content": "I have this question that I hope...",
-            "sites_affected": "http://example.com",
+            "category": topic.id,
             "ff_version": "3.6.6",
             "os": "Intel Mac OS X 10.6",
-            "category": "troubleshooting",
             "plugins": "* Shockwave Flash 10.1 r53",
             "useragent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X "
             "10.6; en-US; rv:1.9.2.6) Gecko/20100625 "
             "Firefox/3.6.6",
         }
-        p = ProductFactory(slug="firefox")
-        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(locale)
-        TopicFactory(slug="troubleshooting", products=[p])
         url = urlparams(
-            reverse("questions.aaq_step3", args=["desktop", "troubleshooting"]),
+            reverse("questions.aaq_step3", args=["firefox"]),
             search="A test question",
         )
 
@@ -75,7 +86,7 @@ class AAQTests(TestCase):
     def setUp(self):
         product = ProductFactory(title="Firefox", slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        product.questions_locales.add(locale)
+        AAQConfigFactory(product=product, enabled_locales=[locale], is_active=True)
 
     def test_non_authenticated_user(self):
         """
@@ -107,7 +118,7 @@ class AAQTests(TestCase):
         """
         user = UserFactory(is_superuser=False)
         self.client.login(username=user.username, password="testpass")
-        url = reverse("questions.aaq_step3", args=["desktop"])
+        url = reverse("questions.aaq_step3", args=["firefox"])
         response = self.client.get(url, follow=True)
         assert not template_used(response, "users/auth.html")
         assert template_used(response, "questions/new_question.html")
@@ -257,10 +268,10 @@ class TestQuestionList(TestCase):
 
         for locale in (settings.LANGUAGE_CODE, "pt-BR"):
             QuestionLocale.objects.get_or_create(locale=locale)
-
         self.assertEqual(Question.objects.count(), 0)
         p = ProductFactory(slug="firefox")
         TopicFactory(title="Fix problems", slug="fix-problems", products=[p])
+        AAQConfigFactory(product=p, is_active=True, enabled_locales=QuestionLocale.objects.all())
 
         QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
         QuestionFactory(title="question donuts?", product=p, locale="en-US")
@@ -552,17 +563,16 @@ class TestEditDetails(TestCase):
         assert u.has_perm("questions.change_question")
         self.user = u
 
-        for locale in (settings.LANGUAGE_CODE, "hu"):
-            QuestionLocale.objects.get_or_create(locale=locale)
+        AAQConfigFactory(
+            enabled_locales=[
+                QuestionLocaleFactory(locale=settings.LANGUAGE_CODE),
+                QuestionLocaleFactory(locale="hu"),
+            ]
+        )
 
-        p = ProductFactory()
-        t = TopicFactory(products=[p])
-
-        q = QuestionFactory(product=p, topic=t)
-
-        self.product = p
-        self.topic = t
-        self.question = q
+        self.product = ProductFactory()
+        self.topic = TopicFactory(products=[self.product])
+        self.question = QuestionFactory(product=self.product, topic=self.topic)
 
     def _request(self, user=None, data=None):
         """Make a request to edit details"""
@@ -654,7 +664,7 @@ class TestEditDetails(TestCase):
     def test_change_locale(self):
         locale = "hu"
 
-        assert locale in QuestionLocale.objects.locales_list()
+        assert locale in AAQConfig.objects.locales_list()
         assert locale != self.question.locale
 
         data = {"product": self.product.id, "topic": self.topic.id, "locale": locale}

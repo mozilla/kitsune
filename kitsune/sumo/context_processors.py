@@ -3,7 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from django.utils import translation
 
-from kitsune.questions.models import QuestionLocale
+from kitsune.questions.models import AAQConfig
 
 
 def global_settings(request):
@@ -22,7 +22,7 @@ def i18n(request):
 
 def aaq_languages(request):
     """Adds the list of AAQ languages to the context."""
-    return {"AAQ_LANGUAGES": QuestionLocale.objects.locales_list()}
+    return {"AAQ_LANGUAGES": AAQConfig.objects.locales_list()}
 
 
 def current_year(request):

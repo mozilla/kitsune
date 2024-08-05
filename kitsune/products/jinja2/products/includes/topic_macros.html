@@ -27,8 +27,8 @@
   </div>
 {%- endmacro %}
 
-{% macro topic_metadata(topics, product=None, product_key=None) %}
-{% if product_key and not settings.READ_ONLY %}
+{% macro topic_metadata(topics, product=None) %}
+{% if product and not settings.READ_ONLY %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner">
     <div class="card card--ribbon is-inverse heading-is-one-line">
       <div class="card--details">
@@ -52,11 +52,11 @@
           {% endif %}
         </p>
         <a class="sumo-button primary-button button-lg"
-          href="{{ url('questions.aaq_step2', product_key=product_key) }}"
+          href="{{ url('questions.aaq_step2', product_slug=product.slug) }}"
           data-event-name="link_click"
           data-event-parameters='{
             "link_name": "aaq-banner.aaq-step-2",
-            "link_detail": "{{ product_key }}"
+            "link_detail": "{{ product.slug }}"
           }'>
           {% if product and product.has_ticketing_support %}
             {{ _('Get Support') }}

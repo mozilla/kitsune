@@ -89,6 +89,7 @@ class TopicAdmin(admin.ModelAdmin):
     list_editable = ("display_order", "visible", "in_aaq", "in_nav", "is_archived")
     list_filter = (
         ArchivedFilter,
+        "in_aaq",
         "parent",
         "slug",
     )

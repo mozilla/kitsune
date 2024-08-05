@@ -24,7 +24,7 @@ class SearchMixin(object):
     @classmethod
     def get_mapping_type(cls):
         """Return the MappingType for this model"""
-        ...
+        pass
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
@@ -58,45 +58,45 @@ class SearchMappingType(object):
 
     @classmethod
     def search(cls):
-        ...
+        pass
 
     @classmethod
     def get_index(cls):
-        ...
+        pass
 
     @classmethod
     def get_index_group(cls):
-        ...
+        pass
 
     @classmethod
     def get_query_fields(cls):
         """Return the list of fields for query"""
-        ...
+        pass
 
     @classmethod
     def get_localized_fields(cls):
-        ...
+        pass
 
     @classmethod
     def get_indexable(cls, seconds_ago=0):
-        ...
+        pass
 
     @classmethod
     def reshape(cls, results):
-        ...
+        pass
 
     @classmethod
     def index(cls, *args, **kwargs):
-        ...
+        pass
 
     @classmethod
     def unindex(cls, *args, **kwargs):
-        ...
+        pass
 
     @classmethod
     def morelikethis(cls, id_, s, fields):
         """MoreLikeThis API"""
-        ...
+        pass
 
 
 # class RecordManager(models.Manager):

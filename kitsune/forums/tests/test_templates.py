@@ -85,16 +85,15 @@ class PostsTemplateTests(TestCase):
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
 
-    # TODO: This test should be enabled once the responsive redesign milestone is complete.
-    # def test_long_title_truncated_in_crumbs(self):
-    # """A very long thread title gets truncated in the breadcrumbs"""
-    # t = ThreadFactory(title="A thread with a very very very very long title")
-    # PostFactory(thread=t)
-    #
-    # response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
-    # doc = pq(response.content)
-    # crumb = doc("#breadcrumbs li:last-child")
-    # self.assertEqual(crumb.text(), "A thread with a very very very very...")
+    def test_long_title_truncated_in_crumbs(self):
+        """A very long thread title gets truncated in the breadcrumbs"""
+        t = ThreadFactory(title="A thread with a very very very very long title")
+        PostFactory(thread=t)
+
+        response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
+        doc = pq(response.content)
+        crumb = doc("#breadcrumbs li:last-child")
+        self.assertEqual(crumb.text(), "A thread with a very very very very...")
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""

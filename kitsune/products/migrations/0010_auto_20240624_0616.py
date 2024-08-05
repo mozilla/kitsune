@@ -3,8 +3,6 @@
 
 from django.db import migrations
 
-from kitsune.questions.config import products as PRODUCTS_CONFIG
-
 # The key is the topic slug to migrate to and the value is the list
 # of topic slugs to migrate from,
 # If the topic for each product does not exist, it will be created

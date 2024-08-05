@@ -12,10 +12,10 @@
 
 {% block contentwrap %}
 {% set aaq_context = request.session.get('aaq_context') %}
-{% if aaq_context and aaq_context.key %}
+{% if aaq_context and aaq_context.product_slug %}
 <section class="sumo-page-section question-masthead shade-bg">
   <div class="mzp-l-content">
-    {{ progress_bar(3, product_key=aaq_context.key) }}
+    {{ progress_bar(3, product_slug=aaq_context.product_slug) }}
   </div>
 </section>
 {% endif %}
@@ -50,7 +50,7 @@
                   </p>
                   <div class="trouble-text">
                     <p class="help-text">
-                      <a href="{{ url('questions.aaq_step3', product_key='mozilla-account') }}">{{ _("I can't sign in to my Mozilla account") }}</a>
+                      <a href="{{ url('questions.aaq_step3', product_slug='mozilla-account') }}">{{ _("I can't sign in to my Mozilla account") }}</a>
                     </p>
                   </div>
                 </div>

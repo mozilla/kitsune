@@ -82,9 +82,9 @@ def get_featured_articles(product, locale):
                 locale__in=(locale, settings.WIKI_DEFAULT_LANGUAGE)
             )
             if (
-                localized_article := article
-                if article.locale == locale
-                else article.translated_to(locale)
+                localized_article := (
+                    article if article.locale == locale else article.translated_to(locale)
+                )
             )
         ]
     else:

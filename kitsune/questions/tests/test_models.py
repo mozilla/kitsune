@@ -9,7 +9,7 @@ from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.questions import config
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import (
     AlreadyTakenException,
     Answer,
@@ -199,20 +199,6 @@ class TestQuestionMetadata(TestCase):
         self.question.add_metadata(crash_id="1234567890")
         self.assertEqual("1234567890", self.question.metadata["crash_id"])
 
-    def test_product_property(self):
-        """Test question.product property."""
-        self.question.add_metadata(product="desktop")
-        self.assertEqual(config.products["desktop"], self.question.product_config)
-
-    def test_category_property(self):
-        """Test question.category property."""
-        self.question.add_metadata(product="desktop")
-        self.question.add_metadata(category="troubleshooting")
-        self.assertEqual(
-            config.products["desktop"]["categories"]["troubleshooting"],
-            self.question.category_config,
-        )
-
     def test_clear_mutable_metadata(self):
         """Make sure it works and clears the internal cache.
 
@@ -240,13 +226,14 @@ class TestQuestionMetadata(TestCase):
         """Make sure tags get applied based on metadata on first save."""
         Tag.objects.create(slug="green", name="green")
         Tag.objects.create(slug="troubleshooting", name="Troubleshooting")
+        Tag.objects.create(slug="firefox", name="Firefox")
         q = self.question
-        q.add_metadata(
-            product="desktop", category="troubleshooting", ff_version="3.6.8", os="GREen"
-        )
+        q.product = ProductFactory(slug="firefox")
+        q.topic = TopicFactory(slug="troubleshooting")
+        q.add_metadata(ff_version="3.6.8", os="GREen")
         q.save()
         q.auto_tag()
-        tags_eq(q, ["desktop", "troubleshooting", "Firefox 3.6.8", "Firefox 3.6", "green"])
+        tags_eq(q, ["firefox", "troubleshooting", "Firefox 3.6.8", "Firefox 3.6", "green"])
 
     def test_auto_tagging_aurora(self):
         """Make sure versions with prerelease suffix are tagged properly."""

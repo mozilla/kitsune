@@ -102,8 +102,8 @@
         {% endif %}
       </div>
       <div class="sumo-l-two-col--sidebar forum--masthead-cta">
-      {% if product_key %}
-        {% set aaq_url = url('questions.aaq_step2', product_key=product_key) %}
+      {% if product_slug and not multiple_products %}
+        {% set aaq_url = url('questions.aaq_step2', product_slug=product_slug) %}
       {% else %}
         {% set aaq_url = url('questions.aaq_step1') %}
       {% endif %}

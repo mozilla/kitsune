@@ -70,6 +70,6 @@ class ZendeskForm(forms.Form):
         if product.slug not in PRODUCTS_WITH_OS:
             del self.fields["os"]
 
-    def send(self, user, product_config):
+    def send(self, user, product):
         client = ZendeskClient()
-        return client.create_ticket(user, self.cleaned_data, product_config)
+        return client.create_ticket(user, self.cleaned_data, product)

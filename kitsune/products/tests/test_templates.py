@@ -5,6 +5,7 @@ from pyquery import PyQuery as pq
 from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
@@ -19,7 +20,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         for i in range(3):
             p = ProductFactory(visible=True)
-            p.questions_locales.add(locale)
+            AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
 
         # GET the products page and verify the content.
         r = self.client.get(reverse("products"), follow=True)
@@ -32,7 +33,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Create a product.
         p = ProductFactory()
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(locale)
+        AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
 
         # Create some topics.
         TopicFactory(slug=HOT_TOPIC_SLUG, products=[p], visible=True)

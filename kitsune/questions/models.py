@@ -25,7 +25,7 @@ from taggit.models import Tag
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
-from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
+from kitsune.questions.managers import AAQConfigManager, AnswerManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
@@ -36,7 +36,6 @@ from kitsune.tags.models import BigVocabTaggableManager
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
-
 
 log = logging.getLogger("k.questions")
 
@@ -246,12 +245,13 @@ class Question(AAQBase):
 
     @property
     def product_config(self):
-        """Return the product config this question is about or an empty
-        mapping if unknown."""
-        md = self.metadata
-        if "product" in md:
-            return config.products.get(md["product"], {})
-        return {}
+        """Return the product config this question is about or None"""
+        try:
+            aaq_config = AAQConfig.objects.get(is_active=True, product=self.product)
+        except AAQConfig.DoesNotExist:
+            return None
+        else:
+            return aaq_config
 
     @property
     def product_slug(self):
@@ -263,22 +263,17 @@ class Question(AAQBase):
 
         return self._product_slug
 
-    @property
-    def category_config(self):
-        """Return the category this question refers to or an empty mapping if
-        unknown."""
-        md = self.metadata
-        if self.product_config and "category" in md:
-            return self.product_config["categories"].get(md["category"], {})
-        return {}
-
     def auto_tag(self):
         """Apply tags to myself that are implied by my metadata.
 
         You don't need to call save on the question after this.
 
         """
-        to_add = self.product_config.get("tags", []) + self.category_config.get("tags", [])
+        to_add = []
+        if product_config := self.product_config:
+            for tag in product_config.associated_tags.all():
+                to_add.append(tag)
+
         version = self.metadata.get("ff_version", "")
 
         # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
@@ -299,15 +294,19 @@ class Question(AAQBase):
             to_add.append("Firefox %s" % version)
             to_add.append("beta")
 
-        self.tags.add(*to_add)
-
         # Add a tag for the OS if it already exists as a tag:
-        os = self.metadata.get("os")
-        if os:
+        if os := self.metadata.get("os"):
             try:
                 add_existing_tag(os, self.tags)
             except Tag.DoesNotExist:
                 pass
+        product_md = self.metadata.get("product")
+        topic_md = self.metadata.get("category")
+        if self.product and not product_md:
+            to_add.append(self.product.slug)
+        if self.topic and not topic_md:
+            to_add.append(self.topic.slug)
+        self.tags.add(*to_add)
 
     def get_absolute_url(self):
         # Note: If this function changes, we need to change it in
@@ -800,20 +799,34 @@ class QuestionVisits(ModelBase):
 
 class QuestionLocale(ModelBase):
     locale = LocaleField(choices=settings.LANGUAGE_CHOICES_ENGLISH, unique=True)
-    products = models.ManyToManyField(Product, related_name="questions_locales")
-
-    objects = QuestionLocaleManager()
 
     class Meta:
         verbose_name = "AAQ enabled locale"
 
+    def __str__(self) -> str:
+        return self.locale
+
 
 class AAQConfig(ModelBase):
+    title = models.CharField(max_length=255, default="")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="aaq_configs")
-    pinned_articles = models.ManyToManyField(Document)
+    pinned_articles = models.ManyToManyField(Document, null=True, blank=True)
+    associated_tags = models.ManyToManyField(Tag, null=True, blank=True)
+    enabled_locales = models.ManyToManyField(QuestionLocale)
+    # Whether the configuration is active or not. Only one can be active per product
+    is_active = models.BooleanField(default=False)
+    extra_fields = models.JSONField(default=list, blank=True)
+
+    objects = AAQConfigManager()
 
     class Meta:
         verbose_name = "AAQ configuration"
+        constraints = [
+            models.UniqueConstraint(fields=["product", "is_active"], name="unique_active_config")
+        ]
+
+    def __str__(self):
+        return f"{self.product} Configuration"
 
 
 class Answer(AAQBase):

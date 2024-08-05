@@ -19,6 +19,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    HttpResponsePermanentRedirect,
     HttpResponseRedirect,
     JsonResponse,
 )
@@ -36,7 +37,6 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.products.views import _get_aaq_product_key
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
@@ -47,7 +47,7 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
+from kitsune.questions.models import AAQConfig, Answer, AnswerVote, Question, QuestionVote
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
@@ -160,9 +160,11 @@ def question_list(request, product_slug=None, topic_slug=None):
                 request, messages.WARNING, "You cannot list all questions at this time."
             )
             return HttpResponseRedirect("/")
+        products = Product.active.with_question_forums(request)
 
     # Get all topics
     topics = []
+
     if topic_slug:
         try:
             topic_history = TopicSlugHistory.objects.get(slug=topic_slug)
@@ -250,14 +252,13 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # Filter by products.
     multiple = False
-    product_key = None
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
         question_qs = question_qs.filter(product__in=products)
         multiple = len(products) > 1
         if not multiple:
-            product_key = _get_aaq_product_key(products[0].slug)
+            product_slug = products[0].slug
 
     # Filter by topic.
     if topics:
@@ -266,7 +267,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         question_qs = question_qs.filter(topic__in=topics)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
-    if request.LANGUAGE_CODE in QuestionLocale.objects.locales_list():
+    if request.LANGUAGE_CODE in AAQConfig.objects.locales_list():
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
         locale_query = Q(locale=request.LANGUAGE_CODE)
@@ -341,7 +342,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "topic_list": topic_list,
         "topics": topics,
         "selected_topic_slug": topics[0].slug if topics else None,
-        "product_key": product_key,
+        "product_slug": product_slug,
         "topic_navigation": topic_navigation,
     }
 
@@ -476,7 +477,7 @@ def edit_details(request, question_id):
         locale = request.POST.get("locale")
 
         # If locale is not in AAQ_LANGUAGES throws a ValueError
-        tuple(QuestionLocale.objects.locales_list()).index(locale)
+        tuple(AAQConfig.objects.locales_list()).index(locale)
     except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 
@@ -495,15 +496,28 @@ def aaq_location_proxy(request):
     return JsonResponse(response.json())
 
 
-def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False):
+def aaq(request, product_slug=None, step=1, is_loginless=False):
     """Ask a new question."""
+    # After the migration to a DB based AAQ, we need to account for
+    # product slugs that were not present in the questions config.
+    should_redirect = True
+    match product_slug:
+        case "desktop":
+            product_slug = "firefox"
+        case "focus":
+            product_slug = "focus-firefox"
+        case _:
+            should_redirect = False
+
+    if should_redirect:
+        return HttpResponsePermanentRedirect(reverse("questions.aaq_step2", args=[product_slug]))
 
     template = "questions/new_question.html"
 
     # Check if the user is using a mobile device,
     # render step 2 if they are
-    product_key = product_key or request.GET.get("product")
-    if product_key is None:
+    product_slug = product_slug or request.GET.get("product")
+    if product_slug is None:
         change_product = False
         if request.GET.get("q") == "change_product":
             change_product = True
@@ -512,43 +526,41 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
 
         if is_mobile_device and not change_product:
             user_agent = request.META.get("HTTP_USER_AGENT", "")
-            product_key = get_mobile_product_from_ua(user_agent)
-            if product_key:
+            if product_slug := get_mobile_product_from_ua(user_agent):
                 # redirect needed for InAAQMiddleware
-                step_2 = reverse("questions.aaq_step2", kwargs={"product_key": product_key})
+                step_2 = reverse("questions.aaq_step2", args=[product_slug])
                 return HttpResponseRedirect(step_2)
 
-    # Return 404 if the product doesn't exist in config
-    product_config = config.products.get(product_key)
-    if product_key and not product_config:
-        raise Http404
-
-    # If the selected product doesn't exist in DB, render a 404
-    if step > 1:
+    # Return 404 if the products does not have an AAQ form or if it is archived
+    product = None
+    products_with_aaqs = Product.active.with_question_forums(request)
+    if product_slug:
         try:
-            product = Product.active.get(slug=product_config["product"])
+            product = Product.active.get(slug=product_slug)
         except Product.DoesNotExist:
             raise Http404
-        has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
-        has_ticketing_support = product.has_ticketing_support
-        request.session["aaq_context"] = {
-            "key": product_key,
-            "has_public_forum": has_public_forum,
-            "has_ticketing_support": has_ticketing_support,
-        }
+        else:
+            if product not in products_with_aaqs:
+                raise Http404
 
     context = {
-        "products": config.products,
-        "current_product": product_config,
+        "products": products_with_aaqs,
+        "current_product": product,
         "current_step": step,
         "host": Site.objects.get_current().domain,
         "is_loginless": is_loginless,
         "ga_content_group": f"aaq-step-{step}",
     }
-
+    # If the selected product doesn't exist in DB, render a 404
     if step > 1:
-        context["has_ticketing_support"] = has_ticketing_support
-        context["ga_products"] = f"/{product.slug}/"
+        has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
+        request.session["aaq_context"] = {
+            "product_slug": product_slug,
+            "has_public_forum": has_public_forum,
+            "has_ticketing_support": product.has_ticketing_support,
+        }
+        context["has_ticketing_support"] = product.has_ticketing_support
+        context["ga_products"] = f"/{product_slug}/"
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
@@ -558,7 +570,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         context["cancel_url"] = get_next_url(request) or (
             reverse("products.product", args=[product.slug])
             if is_loginless
-            else reverse("questions.aaq_step2", args=[product_key])
+            else reverse("questions.aaq_step2", args=[product_slug])
         )
 
         # Check if the selected product has a forum in the user's locale
@@ -576,7 +588,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
 
             return HttpResponseRedirect(path)
 
-        if has_ticketing_support:
+        if product.has_ticketing_support:
             zendesk_form = ZendeskForm(
                 data=request.POST or None,
                 product=product,
@@ -586,7 +598,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
 
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
                 try:
-                    zendesk_form.send(request.user, product_config)
+                    zendesk_form.send(request.user, product)
                     email = zendesk_form.cleaned_data["email"]
                     messages.add_message(
                         request,
@@ -616,9 +628,8 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
             return render(request, template, context)
 
         form = NewQuestionForm(
-            product=product_config,
+            product=product,
             data=request.POST or None,
-            initial={"category": category_key},
         )
         context["form"] = form
 
@@ -627,7 +638,6 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
                 user=request.user,
                 locale=request.LANGUAGE_CODE,
                 product=product,
-                product_config=product_config,
             )
 
             if form.cleaned_data.get("is_spam"):
@@ -665,23 +675,26 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
     return render(request, template, context)
 
 
-def aaq_step2(request, product_key):
+def aaq_step2(request, product_slug):
     """Step 2: The product is selected."""
-    return aaq(request, product_key=product_key, step=2)
+    return aaq(request, product_slug=product_slug, step=2)
 
 
-def aaq_step3(request, product_key, category_key=None):
+def aaq_step3(request, product_slug):
     """Step 3: Show full question form."""
 
     # Since removing the @login_required decorator for MA form
     # need to catch unauthenticated, non-MA users here """
     referer = request.META.get("HTTP_REFERER", "")
-    is_loginless = (product_key in settings.LOGIN_EXCEPTIONS) and any(
+    is_loginless = (product_slug in settings.LOGIN_EXCEPTIONS) and any(
         uri in referer
         for uri in settings.MOZILLA_ACCOUNT_ARTICLES
         + [
             path.removeprefix(f"/{request.LANGUAGE_CODE}")
-            for path in (reverse("users.auth"), reverse("questions.aaq_step3", args=[product_key]))
+            for path in (
+                reverse("users.auth"),
+                reverse("questions.aaq_step3", args=[product_slug]),
+            )
         ]
     )
 
@@ -691,8 +704,7 @@ def aaq_step3(request, product_key, category_key=None):
     return aaq(
         request,
         is_loginless=is_loginless,
-        product_key=product_key,
-        category_key=category_key,
+        product_slug=product_slug,
         step=3,
     )
 
@@ -714,13 +726,13 @@ def edit_question(request, question_id):
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
         form = EditQuestionForm(
-            product=question.product_config,
+            product=question.product,
             initial=initial,
         )
     else:
         form = EditQuestionForm(
             data=request.POST,
-            product=question.product_config,
+            product=question.product,
         )
 
         if form.is_valid():
@@ -746,8 +758,7 @@ def edit_question(request, question_id):
         "question": question,
         "form": form,
         "images": images,
-        "current_product": question.product_config,
-        "current_category": question.category_config,
+        "current_product": question.product,
     }
 
     return render(request, "questions/edit_question.html", context)
