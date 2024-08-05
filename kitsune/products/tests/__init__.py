@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from django.template.defaultfilters import slugify
-
 import factory
-import factory.fuzzy
 import factory.django
+import factory.fuzzy
+from django.template.defaultfilters import slugify
 
 from kitsune.products.models import Product, Topic, Version
 from kitsune.sumo.tests import FuzzyUnicode
@@ -33,10 +32,19 @@ class TopicFactory(factory.django.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
     description = FuzzyUnicode()
     image = factory.django.ImageField()
-    product = factory.SubFactory(ProductFactory)
     display_order = factory.fuzzy.FuzzyInteger(10)
     visible = True
     in_aaq = factory.fuzzy.FuzzyChoice([True, False])
+
+    @factory.post_generation
+    def products(topic, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for t in extracted:
+                topic.products.add(t)
 
 
 class VersionFactory(factory.django.DjangoModelFactory):

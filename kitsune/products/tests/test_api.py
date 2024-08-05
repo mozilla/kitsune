@@ -28,8 +28,8 @@ class TestTopicListView(TestCase):
 
     def test_expected_output(self):
         p = ProductFactory()
-        t1 = TopicFactory(product=p, visible=True, display_order=1)
-        t2 = TopicFactory(product=p, visible=True, display_order=2)
+        t1 = TopicFactory(products=[p], visible=True, display_order=1)
+        t2 = TopicFactory(products=[p], visible=True, display_order=2)
 
         url = reverse("topic-list", kwargs={"product": p.slug})
         res = self.client.get(url)

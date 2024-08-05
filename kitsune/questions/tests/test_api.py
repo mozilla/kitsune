@@ -30,7 +30,7 @@ class TestQuestionSerializerDeserialization(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.product = ProductFactory()
-        self.topic = TopicFactory(product=self.product)
+        self.topic = TopicFactory(products=[self.product])
         self.request = mock.Mock()
         self.request.user = self.user
         self.context = {
@@ -82,7 +82,7 @@ class TestQuestionSerializerDeserialization(TestCase):
         # First make another product, and a colliding topic.
         # It has the same slug, but a different product.
         new_product = ProductFactory()
-        TopicFactory(product=new_product, slug=self.topic.slug)
+        TopicFactory(products=[new_product], slug=self.topic.slug)
         serializer = api.QuestionSerializer(context=self.context, data=self.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
@@ -205,7 +205,7 @@ class TestQuestionViewSet(TestCase):
     def test_create(self):
         u = UserFactory()
         p = ProductFactory()
-        t = TopicFactory(product=p)
+        t = TopicFactory(products=[p])
         self.client.force_authenticate(user=u)
         data = {
             "title": "How do I start Firefox?",

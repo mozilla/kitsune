@@ -74,7 +74,7 @@ class ForumTestFeeds(TestCase):
     def test_question_feed_with_product_and_topic(self):
         """Test that questions feeds with products and topics work."""
         p = ProductFactory()
-        t = TopicFactory(product=p)
+        t = TopicFactory(products=[p])
         url = urlparams(reverse("questions.list", args=[p.slug]), topic=t.slug)
         res = self.client.get(url)
         self.assertEqual(200, res.status_code)

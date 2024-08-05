@@ -4,11 +4,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from rest_framework import generics, serializers
 
 from kitsune.products.models import Platform, Product, Topic
-from kitsune.sumo.api_utils import (
-    ImageUrlField,
-    LocaleNegotiationMixin,
-    LocalizedCharField,
-)
+from kitsune.sumo.api_utils import ImageUrlField, LocaleNegotiationMixin, LocalizedCharField
 from kitsune.wiki.api import DocumentShortSerializer
 
 
@@ -115,7 +111,7 @@ class TopicList(LocaleNegotiationMixin, generics.ListAPIView):
     serializer_class = RootTopicSerializer
 
     def get_queryset(self):
-        queryset = self.queryset.filter(product__slug=self.kwargs["product"])
+        queryset = self.queryset.filter(products__slug=self.kwargs["product"])
         visible = bool(self.request.query_params.get("visible", True))
         queryset = queryset.filter(visible=visible)
         return queryset

@@ -309,7 +309,7 @@ def question_list(request, product_slug=None, topic_slug=None):
     # List of topics to fill the selector.
     topic_list = Topic.active.filter(visible=True)
     if products:
-        topic_list = topic_list.filter(product=products[0])[:10]
+        topic_list = topic_list.filter(products=products[0])[:10]
     else:
         topic_list = topic_list.filter(in_nav=True)
 
@@ -472,7 +472,7 @@ def question_details(
 def edit_details(request, question_id):
     try:
         product = Product.active.get(id=request.POST.get("product"))
-        topic = Topic.active.get(id=request.POST.get("topic"), product=product)
+        topic = Topic.active.get(id=request.POST.get("topic"), products=product)
         locale = request.POST.get("locale")
 
         # If locale is not in AAQ_LANGUAGES throws a ValueError

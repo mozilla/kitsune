@@ -98,8 +98,8 @@ class TopicAdmin(admin.ModelAdmin):
     search_fields = (
         "title",
         "slug",
-        "product__title",
-        "product__slug",
+        "products__title",
+        "products__slug",
     )
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}

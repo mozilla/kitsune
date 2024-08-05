@@ -238,7 +238,7 @@ class NewQuestionForm(EditQuestionForm):
         if category_config:
             t = category_config.get("topic")
             if t:
-                self.instance.topic = Topic.active.get(slug=t, product=product)
+                self.instance.topic = Topic.active.get(slug=t, products=product)
 
         question = super(NewQuestionForm, self).save(*args, **kwargs)
 

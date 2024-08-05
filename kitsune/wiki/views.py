@@ -232,7 +232,7 @@ def document(request, document_slug, document=None):
     else:
         product = products.first()
 
-    product_topics = Topic.active.filter(product=product, visible=True, parent=None)
+    product_topics = Topic.active.filter(products=product, visible=True, parent=None)
 
     # Create serialized versions of the document's associated products and topics
     # to be used within GA as parameters/dimensions.
@@ -257,7 +257,7 @@ def document(request, document_slug, document=None):
 
         switching_devices_product = Product.active.get(slug="firefox")
         switching_devices_topic = Topic.active.get(
-            product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
+            products=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
         )
         switching_devices_subtopics = topics_for(
             request.user, product=switching_devices_product, parent=switching_devices_topic
