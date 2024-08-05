@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from django import forms
 from django.template.loader import render_to_string
 
-from kitsune.products.models import Topic
+from kitsune.products.models import Product, Topic
 from kitsune.wiki.models import Document
 
 
@@ -11,21 +11,28 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics organized by product and with subtopics."""
 
     def render(self, name, value, attrs=None, renderer=None):
-        topics_and_subtopics = Topic.active.filter(products__isnull=False)
-        topics = [t for t in topics_and_subtopics if t.parent_id is None]
+        topics_by_product = {}
+        for product in Product.active.filter(m2m_topics__isnull=False):
+            # Get all of the topics and subtopics that apply to this product.
+            topics_and_subtopics = Topic.active.filter(products=product)
+            # Get the topics only.
+            topics = [t for t in topics_and_subtopics if t.parent_id is None]
 
-        for topic in topics:
-            self.process_topic(value, topic)
+            for topic in topics:
+                self.process_topic(value, topic)
 
-            topic.my_subtopics = [t for t in topics_and_subtopics if t.parent_id == topic.id]
+                # Get all of the subtopics for this topic.
+                topic.my_subtopics = [t for t in topics_and_subtopics if t.parent_id == topic.id]
 
-            for subtopic in topic.my_subtopics:
-                self.process_topic(value, subtopic)
+                for subtopic in topic.my_subtopics:
+                    self.process_topic(value, subtopic)
+
+            topics_by_product[product.title] = topics
 
         return render_to_string(
             "wiki/includes/product_topics_widget.html",
             {
-                "topics": topics,
+                "topics_by_product": topics_by_product,
                 "name": name,
             },
         )

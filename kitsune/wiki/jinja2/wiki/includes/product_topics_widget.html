@@ -1,8 +1,8 @@
 <section id="accordion" class="mzp-c-details products">
-  {% for group in topics|groupby('product_id') %}
-  <h3 class="sumo-card-heading">{{ group.list[0].product }}</h3>
+  {% for product_title, topics in topics_by_product.items() %}
+  <h3 class="sumo-card-heading">{{ product_title }}</h3>
   <ul class="checkbox-list">
-    {% for topic in group.list %}
+    {% for topic in topics %}
     <li>
     <div class="field checkbox is-condensed">
       <input type="checkbox" name="{{ name }}" id="id_{{ topic.id }}" value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
