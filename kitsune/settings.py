@@ -629,8 +629,6 @@ ANONYMOUS_USER_NAME = None
 
 ACCOUNT_ACTIVATION_DAYS = 30
 
-PASSWORD_HASHERS = ("kitsune.users.hashers.SHA256PasswordHasher",)
-
 USERNAME_BLACKLIST = path("kitsune", "configs", "username-blacklist.txt")
 
 ROOT_URLCONF = "%s.urls" % PROJECT_MODULE
