@@ -28,34 +28,30 @@
 
 {% macro submit_row(form, type) %}
   <div class="upload-action sumo-button-wrap reverse-on-desktop align-full">
-    <input type="submit" class="sumo-button primary-button" name="upload" value="{{ _('Upload file') }}">
+    <input type="submit" class="sumo-button primary-button" name="upload" value="{{ _('Upload') }}">
     <input type="submit" name="cancel" class="sumo-button kbox-cancel {% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}" value="{{ _('Cancel') }}">
   </div>
 {% endmacro %}
 
 {% macro image_preview(form, type, name) %}
-  {% set classes = 'preview ' + name %}
-  {% if form.instance.pk and type == 'image' %}
-    {% set html =
-      '<div class="preview-{type} {name}">
-        <img src="{thumbnail_url}">
-      </div>
-      <input type="submit" name="cancel" class="sumo-button button-sm draft link-btn"
-              data-name="{name}" data-action="{action}" value="{value}">'|fe(
-        type=type, name=name,
-        thumbnail_url=form.instance.thumbnail_url_if_set(),
-        action=url('gallery.cancel_draft', media_type=type),
-        value=_('Delete this image')) %}
-    {% set classes = classes + ' on' %}
-  {% else %}
-    {% set classes = classes + ' off' %}
+  {% if type == 'image' %}
+  <div class="field preview {{ name }} {% if form.instance.pk %}on{% else %}off{% endif %}">
+    <label>{{ _('Preview') }}</label>
+    <div class="preview-{{ type }} {{ name }}">
+      {% if form.instance.pk %}
+      <img class="preview" src="{{ form.instance.file.url }}" />
+      {% endif %}
+    </div>
+    <input type="submit" name="cancel" class="sumo-button button-sm draft link-btn"
+      data-name="{{ name }}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}"
+      value="{{ _('Delete this image') }}" />
+  </div>
   {% endif %}
-  {{ raw_row(html, classes, _('Preview')) }}
 {% endmacro %}
 
 {% macro image_fields(form, type, name) %}
     {{ form_row(form, name, classes='upload-media') }}
-    {{ raw_row('<span></span><a class="{name}" href="{url}">{text}</a>'|fe(
+    {{ raw_row('<div class="progress-message"></div><a class="{name} sumo-button" data-type="{name}" href="{url}">{text}</a>'|fe(
                  name=name, text=_('Cancel'),
                  url=url('gallery.gallery', media_type=media_type)),
                'progress ' + name, _('Progress')) }}
@@ -79,11 +75,10 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
 <div
   class="gallery-upload-modal hide-until-expanded attachments-upload"
   id="gallery-upload-modal"
-  title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}"
+  title="Upload Media File"
   data-modal="true"
   data-target="#btn-upload"
   data-id="upload-kbox"
-  data-position="center"
   data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
   <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
     data-post-url="{{ url('gallery.upload_async', media_type='image') }}"

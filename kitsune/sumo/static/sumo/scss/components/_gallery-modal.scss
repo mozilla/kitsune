@@ -6,4 +6,16 @@
   .off {
     display: none;
   }
+
+  .preview-image {
+    width: 300px;
+    height: 300px;
+    max-width: 300px;
+    max-height: 300px;
+    img.preview {
+      max-width: 300px;
+      max-height: 300px;
+      object-fit: scale-down;
+    }
+  }
 }

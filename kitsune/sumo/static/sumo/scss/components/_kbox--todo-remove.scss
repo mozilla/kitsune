@@ -30,9 +30,7 @@
 
 .kbox-close {
   font-size: 22px !important;
-  position: absolute;
-  right: p.$spacing-sm;
-  top: 5px;
+  @include p.bidi(((margin, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),));
 
   &:link,
   &:visited,
@@ -50,17 +48,21 @@
   }
 }
 
-.kbox-title {
-  @include c.text-display-sm;
-  font-weight: bold;
-  color: var(--color-heading);
-  display: block;
-  margin: 0;
-  padding: p.$spacing-xl p.$spacing-xl 0;
+.kbox-header {
+  display: flex;
+  justify-content: space-between;
+
+  .kbox-title {
+    @include c.text-display-sm;
+    font-weight: bold;
+    color: var(--color-heading);
+    margin: 0;
+    padding: p.$spacing-xl p.$spacing-xl 0;
+  }
 }
 
 .kbox-wrap {
-  padding: p.$spacing-xl;
+  padding: p.$spacing-lg;
 
   .hide-until-expanded {
     display: block;
@@ -69,18 +71,57 @@
 
 #kbox-overlay {
   background: rgba(0, 0, 0, 0.85);
-  height: 100%;
-  left: 0;
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
   z-index: 98;
 }
 
 #upload-kbox {
+  top: 10%;
   left: 50%;
-  margin: 0 10px;
-  top: 10vh;
-  max-width: 580px;
-  width: calc(100% - 20px);
+  transform: translateX(-50%);
+  padding: p.$spacing-sm;
+  box-sizing: content-box;
+  width: 80%;
+  height: auto;
+  max-width: 560px;
+  @media screen and (max-width: p.$screen-sm) {
+    max-width: 96%;
+  }
+  @media screen and (max-width: p.$screen-xs) {
+    max-width: 96%;
+  }
+}
+
+#image-attachment-kbox {
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: p.$spacing-sm;
+  box-sizing: content-box;
+  width: 70%;
+  max-width: 70%;
+  height: auto;
+  @media screen and (max-width: p.$screen-sm) {
+    width: 96%;
+    max-width: 96%;
+  }
+  @media screen and (max-width: p.$screen-xs) {
+    width: 96%;
+    max-width: 96%;
+  }
+
+  .kbox-wrap {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    padding: p.$spacing-sm;
+    img.image-attachment {
+      object-fit: scale-down;
+    }
+  }
 }
