@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-
 from rest_framework import serializers
 
 
@@ -14,4 +13,4 @@ class TopicField(serializers.SlugRelatedField):
         if product_slug is None:
             raise ValidationError(self.error_messages["missing_product"])
 
-        return self.queryset.get(**{self.slug_field: topic_slug, "product__slug": product_slug})
+        return self.queryset.get(**{self.slug_field: topic_slug, "products__slug": product_slug})

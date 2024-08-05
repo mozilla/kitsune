@@ -31,12 +31,12 @@ class TestFacetHelpers(TestCase):
         self.mobile = ProductFactory(slug="mobile")
 
         # Create topics
-        self.general_d = TopicFactory(product=self.desktop, slug="general")
-        self.bookmarks_d = TopicFactory(product=self.desktop, slug="bookmarks")
-        self.sync_d = TopicFactory(product=self.desktop, slug="sync")
-        self.general_m = TopicFactory(product=self.mobile, slug="general")
-        self.bookmarks_m = TopicFactory(product=self.mobile, slug="bookmarks")
-        self.sync_m = TopicFactory(product=self.mobile, slug="sync")
+        self.general_d = TopicFactory(products=[self.desktop], slug="general")
+        self.bookmarks_d = TopicFactory(products=[self.desktop], slug="bookmarks")
+        self.sync_d = TopicFactory(products=[self.desktop], slug="sync")
+        self.general_m = TopicFactory(products=[self.mobile], slug="general")
+        self.bookmarks_m = TopicFactory(products=[self.mobile], slug="bookmarks")
+        self.sync_m = TopicFactory(products=[self.mobile], slug="sync")
 
         # Set up documents.
         self.doc1 = DocumentFactory(

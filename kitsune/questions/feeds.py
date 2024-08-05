@@ -1,16 +1,15 @@
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
-from django.utils.html import strip_tags, escape
+from django.utils.html import escape, strip_tags
 from django.utils.translation import gettext as _
-
 from taggit.models import Tag
 
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.models import Question
 from kitsune.sumo.feeds import Feed
-from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.urlresolvers import reverse
 
 
 class QuestionsFeed(Feed):
@@ -28,7 +27,7 @@ class QuestionsFeed(Feed):
 
             if topic_slug:
                 query["topic"] = get_object_or_404(
-                    Topic, slug=topic_slug, product__slug=product_slug
+                    Topic, slug=topic_slug, products__slug=product_slug
                 )
         if locale:
             query["locale"] = locale

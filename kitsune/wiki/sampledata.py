@@ -46,28 +46,32 @@ def generate_sampledata(options):
 
     for p in [firefox, mobile]:
         # Create the top 10 topics used
-        TopicFactory(product=p, title="Learn the Basics: get started", slug="get-started")
+        TopicFactory(products=[p], title="Learn the Basics: get started", slug="get-started")
         TopicFactory(
-            product=p, title="Download, install and migration", slug="download-and-install"
+            products=[p], title="Download, install and migration", slug="download-and-install"
         )
-        TopicFactory(product=p, title="Privacy and security settings", slug="privacy-and-security")
-        TopicFactory(product=p, title="Customize controls, options and add-ons", slug="customize")
         TopicFactory(
-            product=p,
+            products=[p], title="Privacy and security settings", slug="privacy-and-security"
+        )
+        TopicFactory(
+            products=[p], title="Customize controls, options and add-ons", slug="customize"
+        )
+        TopicFactory(
+            products=[p],
             title="Fix slowness, crashing, error messages and other problems",
             slug="fix-problems",
         )
-        TopicFactory(product=p, title="Tips and tricks", slug="tips")
-        TopicFactory(product=p, title="Bookmarks", slug="bookmarks")
-        TopicFactory(product=p, title="Cookies", slug="cookies")
-        TopicFactory(product=p, title="Tabs", slug="tabs")
-        TopicFactory(product=p, title="Websites", slug="websites")
-        TopicFactory(product=p, title="Other", slug="other")
+        TopicFactory(products=[p], title="Tips and tricks", slug="tips")
+        TopicFactory(products=[p], title="Bookmarks", slug="bookmarks")
+        TopicFactory(products=[p], title="Cookies", slug="cookies")
+        TopicFactory(products=[p], title="Tabs", slug="tabs")
+        TopicFactory(products=[p], title="Websites", slug="websites")
+        TopicFactory(products=[p], title="Other", slug="other")
 
         # 'hot' topic is created by a migration. Check for it's existence
         # before creating a new one.
-        if not Topic.active.filter(product=p, slug="hot").exists():
-            TopicFactory(product=p, title="Hot topics", slug="hot")
+        if not Topic.active.filter(products=p, slug="hot").exists():
+            TopicFactory(products=[p], title="Hot topics", slug="hot")
 
     # Create a hot article
     flash = DocumentFactory(title="Flash 11.3 crashes", slug="flash-113-crashes")
@@ -75,8 +79,8 @@ def generate_sampledata(options):
         content=FLASH_CONTENT, document=flash, is_approved=True, reviewed=datetime.now()
     )
     flash.products.add(firefox)
-    flash.topics.add(Topic.active.get(product=firefox, slug="fix-problems"))
-    flash.topics.add(Topic.active.get(product=firefox, slug="hot"))
+    flash.topics.add(Topic.active.get(products=firefox, slug="fix-problems"))
+    flash.topics.add(Topic.active.get(products=firefox, slug="hot"))
 
     # Generate 9 sample documents with 2 topics each
     topics = list(Topic.active.all())

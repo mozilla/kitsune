@@ -1340,7 +1340,7 @@ class AAQTemplateTestCase(TestCase):
         for loc_code in (settings.LANGUAGE_CODE, "pt-BR"):
             loc, _ = QuestionLocale.objects.get_or_create(locale=loc_code)
             product.questions_locales.add(loc)
-        TopicFactory(title="Troubleshooting", slug="troubleshooting", product=product)
+        TopicFactory(title="Troubleshooting", slug="troubleshooting", products=[product])
         extra = {}
         if locale is not None:
             extra["locale"] = locale

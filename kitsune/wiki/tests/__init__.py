@@ -172,7 +172,7 @@ class HelpfulVoteFactory(factory.django.DjangoModelFactory):
 def new_document_data(topic_ids=None, product_ids=None):
     product_ids = product_ids or [ProductFactory().id]
     p = Product.active.get(id=product_ids[0])
-    topic_ids = topic_ids or [TopicFactory(product=p).id]
+    topic_ids = topic_ids or [TopicFactory(products=[p]).id]
     return {
         "title": "A Test Article",
         "slug": "a-test-article",

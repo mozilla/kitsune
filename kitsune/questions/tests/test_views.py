@@ -7,13 +7,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.models import (
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionLocale,
-    QuestionVote,
-)
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests import Elastic7TestCase
@@ -44,7 +38,7 @@ class AAQSearchTests(Elastic7TestCase):
         p = ProductFactory(slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
-        TopicFactory(slug="troubleshooting", product=p)
+        TopicFactory(slug="troubleshooting", products=[p])
         url = urlparams(
             reverse("questions.aaq_step3", args=["desktop", "troubleshooting"]),
             search="A test question",
@@ -266,7 +260,7 @@ class TestQuestionList(TestCase):
 
         self.assertEqual(Question.objects.count(), 0)
         p = ProductFactory(slug="firefox")
-        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
+        TopicFactory(title="Fix problems", slug="fix-problems", products=[p])
 
         QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
         QuestionFactory(title="question donuts?", product=p, locale="en-US")
@@ -562,7 +556,7 @@ class TestEditDetails(TestCase):
             QuestionLocale.objects.get_or_create(locale=locale)
 
         p = ProductFactory()
-        t = TopicFactory(product=p)
+        t = TopicFactory(products=[p])
 
         q = QuestionFactory(product=p, topic=t)
 
@@ -623,7 +617,7 @@ class TestEditDetails(TestCase):
 
     def test_change_topic(self):
         """Test changing the topic"""
-        t_new = TopicFactory(product=self.product)
+        t_new = TopicFactory(products=[self.product])
 
         data = {
             "product": self.product.id,
@@ -642,8 +636,8 @@ class TestEditDetails(TestCase):
 
     def test_change_product(self):
         """Test changing the product"""
-        t_new = TopicFactory()
-        p_new = t_new.product
+        t_new = TopicFactory(products=[ProductFactory()])
+        p_new = t_new.products.first()
 
         assert self.topic.id != t_new.id
         assert self.product.id != p_new.id

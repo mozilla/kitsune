@@ -42,7 +42,7 @@ def product_landing(request, slug):
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         # Return a list of topics/subtopics for the product
         topic_list = list()
-        for t in Topic.active.filter(product=product, visible=True):
+        for t in Topic.active.filter(products=product, visible=True):
             topic_list.append({"id": t.id, "title": t.title})
         return HttpResponse(json.dumps({"topics": topic_list}), content_type="application/json")
 
@@ -135,7 +135,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             Exists(Document.objects.visible(topics=topic, products=OuterRef("pk")))
         )
     else:
-        topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
+        topic = get_object_or_404(Topic, slug=topic_slug, products=product, parent__isnull=True)
         product_topics = topics_for(request.user, product=product, parent=None)
 
         if subtopic_slug is not None:

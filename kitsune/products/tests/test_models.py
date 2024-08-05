@@ -6,9 +6,9 @@ class TopicModelTests(TestCase):
     def test_path(self):
         """Verify that the path property works."""
         p = ProductFactory(slug="p")
-        t1 = TopicFactory(product=p, slug="t1")
-        t2 = TopicFactory(product=p, slug="t2", parent=t1)
-        t3 = TopicFactory(product=p, slug="t3", parent=t2)
+        t1 = TopicFactory(products=[p], slug="t1")
+        t2 = TopicFactory(products=[p], slug="t2", parent=t1)
+        t3 = TopicFactory(products=[p], slug="t3", parent=t2)
 
         self.assertEqual(t1.path, [t1.slug])
         self.assertEqual(t2.path, [t1.slug, t2.slug])
@@ -16,15 +16,15 @@ class TopicModelTests(TestCase):
 
     def test_absolute_url(self):
         p = ProductFactory()
-        t = TopicFactory(product=p)
+        t = TopicFactory(products=[p])
         expected = f"/en-US/products/{p.slug}/{t.slug}"
         actual = t.get_absolute_url(p.slug)
         self.assertEqual(actual, expected)
 
     def test_absolute_url_subtopic(self):
         p = ProductFactory()
-        t1 = TopicFactory(product=p)
-        t2 = TopicFactory(parent=t1, product=p)
+        t1 = TopicFactory(products=[p])
+        t2 = TopicFactory(parent=t1, products=[p])
         expected = f"/en-US/products/{p.slug}/{t1.slug}/{t2.slug}"
         actual = t2.get_absolute_url(p.slug)
         self.assertEqual(actual, expected)
