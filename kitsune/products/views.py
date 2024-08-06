@@ -135,11 +135,15 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             Exists(Document.objects.visible(topics=topic, products=OuterRef("pk")))
         )
     else:
-        topic = get_object_or_404(Topic, slug=topic_slug, products=product, parent__isnull=True)
+        topic = get_object_or_404(
+            Topic.active, slug=topic_slug, products=product, parent__isnull=True
+        )
         product_topics = topics_for(request.user, product=product, parent=None)
 
         if subtopic_slug is not None:
-            subtopic = get_object_or_404(Topic, slug=subtopic_slug, product=product, parent=topic)
+            subtopic = get_object_or_404(
+                Topic.active, slug=subtopic_slug, product=product, parent=topic
+            )
             doc_kw["topics"] = [subtopic]
 
     doc_kw["topics"] = [topic]
