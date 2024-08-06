@@ -35,6 +35,7 @@ class TopicFactory(factory.django.DjangoModelFactory):
     display_order = factory.fuzzy.FuzzyInteger(10)
     visible = True
     in_aaq = factory.fuzzy.FuzzyChoice([True, False])
+    is_archived = False
 
     @factory.post_generation
     def products(topic, create, extracted, **kwargs):

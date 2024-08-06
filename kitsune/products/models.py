@@ -101,10 +101,6 @@ class Topic(BaseProductTopic):
         max_length=settings.MAX_FILEPATH_LENGTH,
     )
 
-    # Topics are product-specific
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="topics", null=True, blank=True
-    )
     products = models.ManyToManyField(Product, through="ProductTopic", related_name="m2m_topics")
 
     # Topics can optionally have a parent.
@@ -122,16 +118,13 @@ class Topic(BaseProductTopic):
     )
 
     class Meta(object):
-        ordering = ["product", "display_order"]
-        unique_together = ("slug", "product")
+        ordering = ["title", "display_order"]
 
     # Override default manager
     objects = models.Manager()
     active = NonArchivedManager()
 
     def __str__(self):
-        if self.product:
-            return f"{self.product.title} {self.title}"
         return self.title
 
     @property
@@ -156,7 +149,7 @@ class Topic(BaseProductTopic):
         query = {
             "user": user,
             "topics": self,
-            "products": self.product,
+            "products__in": self.products,
             "is_archived": False,
             "category__in": settings.IA_DEFAULT_CATEGORIES,
         }
