@@ -1298,9 +1298,7 @@ LEGACY_CONTRIBUTOR_GROUPS = [
 FIREFOX_SWITCHING_DEVICES_ARTICLES = config(
     "FIREFOX_SWITCHING_DEVICES_ARTICLES", default="switching-devices", cast=Csv()
 )
-FIREFOX_SWITCHING_DEVICES_TOPIC = config(
-    "FIREFOX_SWITCHING_DEVICES_TOPIC", default="back-up-your-data"
-)
+FIREFOX_SWITCHING_DEVICES_TOPIC = config("FIREFOX_SWITCHING_DEVICES_TOPIC", default="backup-data")
 
 # Slugs of articles that have a special CTA for Mozilla account
 MOZILLA_ACCOUNT_ARTICLES = [
