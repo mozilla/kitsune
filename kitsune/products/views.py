@@ -142,7 +142,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
         if subtopic_slug is not None:
             subtopic = get_object_or_404(
-                Topic.active, slug=subtopic_slug, product=product, parent=topic
+                Topic.active, slug=subtopic_slug, products=product, parent=topic
             )
             doc_kw["topics"] = [subtopic]
 
