@@ -27,7 +27,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
                 for subtopic in topic.my_subtopics:
                     self.process_topic(value, subtopic)
 
-            topics_by_product[product.title] = topics
+            topics_by_product[product] = topics
 
         return render_to_string(
             "wiki/includes/product_topics_widget.html",
