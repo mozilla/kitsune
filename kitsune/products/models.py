@@ -85,11 +85,6 @@ class Product(BaseProductTopic):
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})
 
-    def save(self, *args, **kwargs):
-        if self.is_archived:
-            self.topics.update(is_archived=True)
-        super().save(*args, **kwargs)
-
 
 class Topic(BaseProductTopic):
     # We don't use a SlugField here because it isn't unique by itself.
