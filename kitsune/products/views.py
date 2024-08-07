@@ -146,7 +146,8 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             )
             doc_kw["topics"] = [subtopic]
 
-    doc_kw["topics"] = [topic]
+    if not doc_kw.get("topics"):
+        doc_kw["topics"] = [topic]
     template = "products/documents.html"
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
