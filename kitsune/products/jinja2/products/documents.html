@@ -51,10 +51,10 @@
 
 {% block content %}
     <article id="document-list">
-      {% if product %}
-        {% include 'products/includes/product_documents.html' %}
-      {% else %}
+      {% if topic_navigation %}
         {% include 'products/includes/topic_documents.html' %}
+      {% else %}
+        {% include 'products/includes/product_documents.html' %}
       {% endif %}
 
       <section class="topic-list">
