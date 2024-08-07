@@ -232,7 +232,7 @@ def document(request, document_slug, document=None):
     else:
         product = products.first()
 
-    product_topics = Topic.active.filter(products=product, visible=True, parent=None)
+    product_topics = Topic.active.filter(products=product, visible=True)
 
     # Create serialized versions of the document's associated products and topics
     # to be used within GA as parameters/dimensions.
