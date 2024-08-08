@@ -11,6 +11,7 @@
     display: flex;
     width: 100%;
     box-sizing: border-box; // Include padding and border in width calculations
+    background-color: #fff;
 
     .email-cell {
         padding: 8px;
@@ -21,6 +22,7 @@
         text-overflow: ellipsis; // Add ellipsis for overflowing text
         white-space: nowrap; // Prevent text from wrapping
         flex-shrink: 0; // Prevent columns from shrinking
+        font-weight: normal;
 
         &:first-child { width: 5%; } // Checkbox cell
         &:nth-child(2) { width: 10%; } // Avatar cell
@@ -37,11 +39,9 @@
         }
     }
 
-    &.read {
-        background-color: #f9f9f9; // Set white background for the whole row if read
-
+    &.unread {
         .email-cell {
-            background-color: #f9f9f9; // Ensure each cell in a read message also has a white background
+            font-weight: bold; // Differentiate unread messages with a bold font
         }
     }
 }
