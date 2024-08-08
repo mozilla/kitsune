@@ -329,11 +329,11 @@ class SumoSearch(SumoSearchInterface):
 
     @overload
     def __getitem__(self, key: int) -> dict:
-        ...
+        pass
 
     @overload
     def __getitem__(self, key: slice) -> list[dict]:
-        ...
+        pass
 
     def __getitem__(self, key):
         if self.last_key is None or self.last_key != key:

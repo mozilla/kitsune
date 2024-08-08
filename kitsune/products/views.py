@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.questions import config as aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
@@ -20,15 +19,6 @@ def product_list(request):
     template = "products/products.html"
     products = Product.active.filter(visible=True)
     return render(request, template, {"products": products})
-
-
-def _get_aaq_product_key(slug):
-    product_key = ""
-    for k, v in aaq_config.products.items():
-        if isinstance(v, dict):
-            if v.get("product") == slug:
-                product_key = k
-    return product_key or None
 
 
 @check_simple_wiki_locale
@@ -59,7 +49,6 @@ def product_landing(request, slug):
         request,
         "products/product.html",
         {
-            "product_key": _get_aaq_product_key(product.slug),
             "product": product,
             "products": Product.active.filter(visible=True),
             "topics": topics_for(request.user, product=product, parent=None),
@@ -105,7 +94,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
         product = get_object_or_404(Product, slug=product_slug)
         request.session["aaq_context"] = {
             "has_ticketing_support": product.has_ticketing_support,
-            "key": _get_aaq_product_key(product_slug),
+            "product_slug": product_slug,
             "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
         }
 

@@ -90,7 +90,7 @@ def doc_page_cache(view):
         if (
             request.user.is_authenticated
             or request.GET.get("redirect") == "no"
-            or request.session.get("product_key")
+            or request.session.get("product_slug")
             or settings.DEV
         ):
             return view(request, document_slug, *args, **kwargs)
@@ -608,7 +608,6 @@ def edit_document_metadata(request, document_slug, revision_id=None):
             try:
                 doc = doc_form.save(None)
             except (TitleCollision, SlugCollision) as metadata_error:
-                # TODO: .add_error() when we upgrade to Django 1.7
                 errors = doc_form._errors.setdefault("title", ErrorList())
                 message = "The {type} you selected is already in use."
                 message = message.format(

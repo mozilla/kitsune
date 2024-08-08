@@ -12,7 +12,7 @@ from kitsune.community.utils import (
 )
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
-from kitsune.questions.models import QuestionLocale
+from kitsune.questions.models import AAQConfig
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.search import ProfileSearch
 from kitsune.sumo.parser import get_object_fallback
@@ -59,7 +59,7 @@ def home(request):
 
         # If the locale is enabled for the Support Forum, show the top
         # contributors for that locale
-        if locale in QuestionLocale.objects.locales_list():
+        if locale in AAQConfig.objects.locales_list():
             data["top_contributors_questions"], _ = top_contributors_questions(
                 locale=locale, product=product
             )
@@ -117,7 +117,7 @@ def top_contributors(request, area):
             results, total = top_contributors_questions(
                 locale=locale, product=product, count=page_size, page=page
             )
-            locales = QuestionLocale.objects.locales_list()
+            locales = AAQConfig.objects.locales_list()
         case "kb":
             results, total = top_contributors_kb(product=product, count=page_size, page=page)
             locales = None

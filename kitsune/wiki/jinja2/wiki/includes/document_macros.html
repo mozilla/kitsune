@@ -426,8 +426,8 @@
   {% endif %}
 {% endmacro %}
 
-{% macro inpage_contact_cta(product=None, product_key=None) %}
-{% if product_key %}
+{% macro inpage_contact_cta(product=None, product_slug=None) %}
+{% if product_slug %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner">
     <div class="card card--ribbon is-inverse heading-is-one-line">
       <div class="card--details">
@@ -446,11 +446,11 @@
             {{ _("If you've tried the steps above and you're still unable to sign in, send a message to our support team.") }}
         </p>
         <a class="sumo-button primary-button button-lg"
-          href="{{ url('questions.aaq_step3', product_key=product_key) }}"
+          href="{{ url('questions.aaq_step3', product_slug=product_slug) }}"
           data-event-name="link_click"
           data-event-parameters='{
             "link_name": "in-article-aaq-banner.aaq-step-3",
-            "link_detail": "{{ product_key }}"
+            "link_detail": "{{ product_slug }}"
           }'>
             {{ _('Contact Support') }}
         </a>

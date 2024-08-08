@@ -14,7 +14,7 @@ from taggit.models import Tag
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetadata
-from kitsune.questions.tests import AnswerFactory, QuestionFactory, tags_eq
+from kitsune.questions.tests import AAQConfigFactory, AnswerFactory, QuestionFactory, tags_eq
 from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase, attrs_eq, emailmessage_raise_smtp, get, post
@@ -1217,9 +1217,10 @@ class QuestionsTemplateTestCase(TestCase):
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     def test_locked_questions_dont_appear(self):
         """Locked questions are not listed on the no-replies list."""
-        QuestionFactory()
-        QuestionFactory()
-        QuestionFactory(is_locked=True)
+        p = ProductFactory()
+        QuestionFactory(product=p)
+        QuestionFactory(product=p)
+        QuestionFactory(product=p, is_locked=True)
 
         url = reverse("questions.list", args=["all"])
         url = urlparams(url, filter="no-replies")
@@ -1240,16 +1241,16 @@ class QuestionEditingTests(TestCase):
 
     def test_extra_fields(self):
         """The edit-question form should show appropriate metadata fields."""
-        question_id = QuestionFactory().id
+        product = ProductFactory()
+        question_id = QuestionFactory(product=product).id
+        AAQConfigFactory(product=product)
         response = get(self.client, "questions.edit_question", kwargs={"question_id": question_id})
         self.assertEqual(response.status_code, 200)
 
         # Make sure each extra metadata field is in the form:
         doc = pq(response.content)
         q = Question.objects.get(pk=question_id)
-        extra_fields = q.product_config.get("extra_fields", []) + q.category_config.get(
-            "extra_fields", []
-        )
+        extra_fields = q.product_config.extra_fields
         for field in extra_fields:
             assert doc("input[name=%s]" % field) or doc("textarea[name=%s]" % field), (
                 "The %s field is missing from the edit page." % field
@@ -1267,8 +1268,9 @@ class QuestionEditingTests(TestCase):
 
     def test_post(self):
         """Posting a valid edit form should save the question."""
-        p = ProductFactory(slug="desktop")
+        p = ProductFactory(slug="firefox")
         q = QuestionFactory(product=p)
+        AAQConfigFactory(product=p)
         response = post(
             self.client,
             "questions.edit_question",
@@ -1299,7 +1301,6 @@ class AAQTemplateTestCase(TestCase):
         "title": "A test question",
         "content": "I have this question that I hope...",
         "category": "troubleshooting",
-        "sites_affected": "http://example.com",
         "ff_version": "3.6.6",
         "os": "Intel Mac OS X 10.6",
         "plugins": "* Shockwave Flash 10.1 r53",
@@ -1332,30 +1333,36 @@ class AAQTemplateTestCase(TestCase):
         super(AAQTemplateTestCase, self).setUp()
 
         self.user = UserFactory()
+        self.product = ProductFactory(title="Firefox", slug="firefox")
+        self.aaq_config = AAQConfigFactory(product=self.product, is_active=True)
         self.client.login(username=self.user.username, password="testpass")
 
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
-        product = ProductFactory(title="Firefox", slug="firefox")
         for loc_code in (settings.LANGUAGE_CODE, "pt-BR"):
             loc, _ = QuestionLocale.objects.get_or_create(locale=loc_code)
-            product.questions_locales.add(loc)
-        TopicFactory(title="Troubleshooting", slug="troubleshooting", products=[product])
+            self.aaq_config.enabled_locales.add(loc)
+        topic = TopicFactory(
+            title="Troubleshooting", slug="troubleshooting", products=[self.product], in_aaq=True
+        )
+        self.data["category"] = topic.id
         extra = {}
         if locale is not None:
+            q_loc, _ = QuestionLocale.objects.get_or_create(locale=locale)
+            self.aaq_config.enabled_locales.add(q_loc)
             extra["locale"] = locale
-        url = urlparams(reverse("questions.aaq_step3", args=["desktop"], **extra))
+        url = urlparams(reverse("questions.aaq_step3", args=["firefox"], **extra))
 
         # Set 'in-aaq' for the session. It isn't already set because this
         # test doesn't do a GET of the form first.
-        s = self.client.session
-        s["in-aaq"] = True
-        s.save()
+        self.client.session["in-aaq"] = True
+        self.client.session.save()
 
-        foo = self.client.post(url, self.data, follow=True)
-        return foo
+        return self.client.post(url, self.data, follow=True)
 
     def test_full_workflow(self):
+        self.aaq_config.extra_fields = ["troubleshooting"]
+        self.aaq_config.save()
         response = self._post_new_question()
         self.assertEqual(200, response.status_code)
         assert "Done!" in pq(response.content)("ul.user-messages li").text()
@@ -1407,31 +1414,22 @@ class AAQTemplateTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(404, response.status_code)
 
-    def test_invalid_category_302(self):
-        ProductFactory(slug="firefox")
-        url = reverse("questions.aaq_step3", args=["desktop", "lipsum"])
-        response = self.client.get(url)
-        self.assertEqual(302, response.status_code)
-
 
 class ProductForumTemplateTestCase(TestCase):
     def test_product_forum_listing(self):
         firefox = ProductFactory(title="Firefox", slug="firefox")
         android = ProductFactory(title="Firefox for Android", slug="mobile")
-        fxos = ProductFactory(title="Firefox OS", slug="firefox-os")
-        openbadges = ProductFactory(title="Open Badges", slug="open-badges")
+        mza = ProductFactory(title="Mozilla Account", slug="mozilla-account")
 
         lcl, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        firefox.questions_locales.add(lcl)
-        android.questions_locales.add(lcl)
-        fxos.questions_locales.add(lcl)
+        AAQConfigFactory(product=firefox, is_active=True, enabled_locales=[lcl])
+        AAQConfigFactory(product=android, is_active=True, enabled_locales=[lcl])
 
         response = self.client.get(reverse("questions.home"))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(3, len(doc(".product-list .product")))
+        self.assertEqual(2, len(doc(".product-list .product")))
         product_list_html = doc(".product-list").html()
         assert firefox.title in product_list_html
         assert android.title in product_list_html
-        assert fxos.title in product_list_html
-        assert openbadges.title not in product_list_html
+        assert mza.title not in product_list_html

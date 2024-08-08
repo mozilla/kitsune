@@ -188,8 +188,9 @@ class SetRemoteAddrFromForwardedForMiddlewareTestCase(TestCase):
             (2, "3.3.3.3, 4.4.4.4,5.5.5.5", "3.3.3.3"),
             (2, "999.255.255.1, 4.4.4.4,5.5.5.5", "127.0.0.1"),
         ]:
-            with self.settings(TRUSTED_PROXY_COUNT=proxy_count), self.subTest(
-                f"{proxy_count} with {forwarded_for}"
+            with (
+                self.settings(TRUSTED_PROXY_COUNT=proxy_count),
+                self.subTest(f"{proxy_count} with {forwarded_for}"),
             ):
                 request = rf.get("/", HTTP_X_FORWARDED_FOR=forwarded_for)
                 mw(request)

@@ -12,6 +12,7 @@ from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions import api
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import (
+    AAQConfigFactory,
     AnswerFactory,
     AnswerVoteFactory,
     QuestionFactory,
@@ -535,8 +536,11 @@ class TestQuestionViewSet(TestCase):
 
     def test_auto_tagging(self):
         """Test that questions created via the API are auto-tagged."""
-        TagFactory(name="desktop")
-        q = QuestionFactory()
+        tag = TagFactory(name="desktop")
+        product = ProductFactory()
+        AAQConfigFactory(product=product, is_active=True, associated_tags=[tag])
+
+        q = QuestionFactory(product=product)
         self.client.force_authenticate(user=q.creator)
         tags_eq(q, [])
 

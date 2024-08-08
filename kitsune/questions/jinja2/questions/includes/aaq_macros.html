@@ -7,33 +7,27 @@
   <div class="sumo-page-section--inner">
     <div id="product-picker" class="sumo-card-grid stack-on-mobile">
       <div class="scroll-wrap">
-        {% for key, product in products.items() %}
-        <div class="card card--product zoom-on-hover">
-          {% if key == 'other' %}
-          <img src="{{ webpack_static('sumo/img/mozilla-icon.png') }}"
-              alt="{{ _(product.name) }}"
-              class="card--icon">
-          {% else %}
-          <img src="{{ image_for_product(product.product) }}"
+        {% for product in products %}
+          <div class="card card--product zoom-on-hover">
+          <img src="{{ image_for_product(product) }}"
               alt="{{ pgettext('DB: products.Product.title', product.title) }}"
               class="card--icon">
-          {% endif %}
 
-          <div class="card--details">
-            <h3 class="card--title">
-              <a class="expand-this-link title"
-                href="{{ url('questions.aaq_step2', product_key=key) }}"
-                data-event-name="link_click"
-                data-event-parameters='{
-                  "link_name": "aaq-step-2",
-                  "link_detail": "{{ product.slug }}"
-                }'>
-                {{ product.name }}
-              </a>
-            </h3>
-            <p class="card--desc">{{ product.subtitle }}</p>
+            <div class="card--details">
+              <h3 class="card--title">
+                <a class="expand-this-link title"
+                  href="{{ url('questions.aaq_step2', product_slug=product.slug) }}"
+                  data-event-name="link_click"
+                  data-event-parameters='{
+                    "link_name": "aaq-step-2",
+                    "link_detail": "{{ product.slug }}"
+                  }'>
+                  {{ product.title }}
+                </a>
+              </h3>
+              <p class="card--desc">{{ product.description }}</p>
+            </div>
           </div>
-        </div>
         {% endfor %}
         <div class="card card--centered-button">
           <a class="sumo-button primary-button button-lg" href="{{ url('questions.home') }}">{{ _('Browse All Product Forums')}}</a>
@@ -43,7 +37,7 @@
   </div>
 {%- endmacro %}
 
-{% macro progress_bar(step, product_key=None) %}
+{% macro progress_bar(step, product_slug=None) %}
   <ul class="progress">
     <li class="progress--item {% if step > 1 %}is-complete{% elif step == 1 %}is-current{% endif %}">
       <a class="progress--link"
@@ -64,8 +58,8 @@
     </li>
     <li class="progress--item {% if step > 2 %}is-complete{% elif step == 2 %}is-current{% endif %}">
       <a class="progress--link"
-        {% if step == 3 and product_key %}
-          href="{{ url('questions.aaq_step2', product_key) }}"
+        {% if step == 3 and product_slug %}
+          href="{{ url('questions.aaq_step2', product_slug) }}"
         {% else %}
           href="#" disabled
         {% endif %}>
@@ -102,7 +96,7 @@
       {{ _('Ask a Question') }}
     </h2>
     {% if aaq_context %}
-      {% set link_detail = aaq_context.key %}
+      {% set link_detail = aaq_context.product_slug %}
       {% if request.user.is_authenticated %}
         {% if aaq_context.has_ticketing_support %}
           <p> {{ _('Still need help? Continue to contact our support team.') }}</p>
@@ -122,7 +116,7 @@
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
         {% set link_name = "aaq-widget.aaq-step-3" %}
-        {% set next_step = url('questions.aaq_step3', product_key=aaq_context.key) %}
+        {% set next_step = url('questions.aaq_step3', product_slug=aaq_context.product_slug) %}
       {% endif %}
     {% else %}
       <p>{{ _('Still need help? Continue to ask your question and get help.') }}</p>
@@ -184,7 +178,7 @@
         <div class="text-center-to-left-on-large aaq-popular-topics">
           <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
         </div>
-        {{ help_topics(topics, product_slug=product.product, new_tab=True) }}
+        {{ help_topics(topics, product_slug=product.slug, new_tab=True) }}
       </div>
   </section>
 </div>

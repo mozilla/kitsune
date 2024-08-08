@@ -33,14 +33,8 @@ urlpatterns = [
     path("mozilla/location/", views.aaq_location_proxy, name="questions.location_proxy"),
     # AAQ
     re_path(r"^new$", views.aaq, name="questions.aaq_step1"),
-    re_path(r"^new/(?P<product_key>[\w\-]+)$", views.aaq_step2, name="questions.aaq_step2"),
-    re_path(r"^new/(?P<product_key>[\w\-]+)/form$", views.aaq_step3, name="questions.aaq_step3"),
-    # maintain backwards compatibility with old aaq urls:
-    re_path(
-        r"^new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)",
-        views.aaq_step3,
-        name="questions.aaq_step3",
-    ),
+    re_path(r"^new/(?P<product_slug>[\w\-]+)$", views.aaq_step2, name="questions.aaq_step2"),
+    re_path(r"^new/(?P<product_slug>[\w\-]+)/form$", views.aaq_step3, name="questions.aaq_step3"),
     # TODO: Factor out `/(?P<question_id>\d+)` below
     re_path(r"^(?P<question_id>\d+)$", views.question_details, name="questions.details"),
     re_path(r"^(?P<question_id>\d+)/edit$", views.edit_question, name="questions.edit_question"),

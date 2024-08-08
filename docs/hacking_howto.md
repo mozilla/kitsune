@@ -26,7 +26,7 @@ and follow the following steps.
     ```
 
 3. Pull base Kitsune Docker images, install node packages and build the Webpack bundle, and create your database.
-    On non-Apple silicon:
+   On non-Apple silicon:
 
     ```
     make init
@@ -39,12 +39,12 @@ and follow the following steps.
     ```
 
     Then:
-    
+
     ```
     make build
     ```
 
-3. Run Kitsune.
+4. Run Kitsune.
 
     ```
     make run
@@ -163,7 +163,7 @@ running this command::
     Create a topic in the admin interface with its `slug` set to `download-and-install` and its product set to the product you just created.
 
 3.  Finally add an AAQ locale for that product.
-    You can do this through the admin interface at `/admin/questions/questionlocale/add/`.
+    You can do this through the admin interface at `/admin/questions/aaqconfig`.
 
 ### Get search working
 
@@ -215,7 +215,7 @@ every time you commit,
 pre-commit will check your changes for style problems.
 To run it manually you can use the command:
 
-```bash 
+```bash
 $ pre-commit run
 ```
 
@@ -230,7 +230,7 @@ For more details see the [pre-commit docs](https://pre-commit.com).
 
 ### Product Details Initialization
 
-!!! note 
+!!! note
 
     One of the packages Kitsune uses, ``product_details``, needs to fetch
     JSON files containing historical Firefox version data and write them

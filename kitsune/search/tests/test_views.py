@@ -19,9 +19,6 @@ class TestSearchSEO(Elastic7TestCase):
         self.assertTrue("text/html" in response["content-type"])
         doc = pq(response.content)
         self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
-        # TODO: Are these old Webtrends meta tags even useful any longer?
-        self.assertEqual(doc('meta[name="WT.oss"]').attr("content"), "firefox")
-        self.assertEqual(doc('meta[name="WT.oss_r"]').attr("content"), "0")
 
     def test_simple_search_json(self):
         """
@@ -44,9 +41,6 @@ class TestSearchSEO(Elastic7TestCase):
         self.assertTrue("text/html" in response["content-type"])
         doc = pq(response.content)
         self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
-        # TODO: Are these old Webtrends meta tags even useful any longer?
-        self.assertFalse(doc.find('meta[name="WT.oss"]'))
-        self.assertFalse(doc.find('meta[name="WT.oss_r"]'))
 
     def test_invalid_search_json(self):
         """

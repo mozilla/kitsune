@@ -16,5 +16,5 @@ class ContactSupportMessages:
         "Pocket": "The web’s most intriguing articles",
         "Thunderbird": "Email software for Windows, Mac and Linux",
         "Firefox Focus": "Automatic privacy browser and content blocker",
-        "Mozilla Account": "Mozilla account is the account system for Mozilla"
+        "Mozilla Account": "Mozilla account is the account system for Mozilla",
     }

@@ -80,7 +80,7 @@ class Product(BaseProductTopic):
         return bool(self.codename)
 
     def questions_enabled(self, locale):
-        return self.questions_locales.filter(locale=locale).exists()
+        return self.aaq_configs.filter(is_active=True, enabled_locales__locale=locale).exists()
 
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})
