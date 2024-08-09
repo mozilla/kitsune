@@ -29,7 +29,7 @@
             </li>
             <!-- Repeat the following div for each email message -->
           {% for message in msgs.object_list %}
-            <li class="email-row{% if message.read %} read{% endif %}">
+            <li class="email-row{% if not message.read %} unread{% endif %}">
                 <div class="email-cell check">
                     <input class="field checkbox no-label" type="checkbox" aria-label="Select this message" name="id" value="{{ message.id }}" id="id_checkbox_{{ message.id }}">
                 </div>
