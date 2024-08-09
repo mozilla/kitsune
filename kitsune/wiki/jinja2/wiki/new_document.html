@@ -45,6 +45,12 @@
                   {{ field|label_with_help }}
                 {% else %}
                   {{ field|label_with_help }}
+                  {% if field.name in ['products', 'topics'] %}
+                    <span id="relevant-{{ field.name }}-disabled-message" hidden>{{ _("Disabled " + field.name + " are not available given the selections") }}</span>
+                    <img id="relevant-{{ field.name }}-selected-checkmark" class="relevant-{{ field.name }}-selected" src="{{ webpack_static('sumo/img/green-checkmark.svg') }}" alt="checkmark" hidden/>
+                    <span id="relevant-{{ field.name }}-selected-message" class="relevant-{{ field.name }}-selected" hidden></span>
+                    <a href="#" id="relevant-{{ field.name }}-clear-selected" class="relevant-{{ field.name }}-selected" hidden>{{ _("Clear") }}</a>
+                  {% endif %}
                   {{ field|safe }}
                 {% endif %}
                 {{ field.errors }}

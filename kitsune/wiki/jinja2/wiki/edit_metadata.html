@@ -34,7 +34,7 @@
           <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
             {% csrf_token %}
             {% if in_staff_group(request.user) %}
-              <div class="mzp-c-emphasis-box field">
+              <div class="mzp-c-emphasis-box field has-large-textarea">
                 <fieldset>
                     <legend>{{ _("Restrict Visibility") }}</legend>
                     <span class="{% if document_form.restrict_to_groups.errors %}has-error{% endif %}">
@@ -47,8 +47,15 @@
             {% endif %}
               {% for field in document_form.visible_fields() if
                 (field.name != 'restrict_to_groups') and (field.name != 'is_localizable' or not document.translations.exists()) %}
-                <div class="field">
-                  {{ field|label_with_help }}{{ field }}
+                <div class="field has-large-textarea">
+                  {{ field|label_with_help }}
+                  {% if field.name in ['products', 'topics'] %}
+                    <span id="relevant-{{ field.name }}-disabled-message" hidden>{{ _("Disabled " + field.name + " are not available given the selections") }}</span>
+                    <img id="relevant-{{ field.name }}-selected-checkmark" class="relevant-{{ field.name }}-selected" src="{{ webpack_static('sumo/img/green-checkmark.svg') }}" alt="checkmark" hidden/>
+                    <span id="relevant-{{ field.name }}-selected-message" class="relevant-{{ field.name }}-selected" hidden></span>
+                    <a href="#" id="relevant-{{ field.name }}-clear-selected" class="relevant-{{ field.name }}-selected" hidden>{{ _("Clear") }}</a>
+                  {% endif %}
+                  {{ field }}
                 </div>
               {% endfor %}
             {% if document.translations.exists() %}

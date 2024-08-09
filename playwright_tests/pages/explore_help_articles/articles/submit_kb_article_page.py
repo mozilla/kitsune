@@ -23,11 +23,13 @@ class SubmitKBArticlePage(BasePage):
     __kb_article_insert_media_modal_insert_button = "//button[contains(text(), 'Insert Media')]"
     __kb_article_toggle_syntax_highlighting = "//a[contains(text(), 'Toggle syntax highlight')]"
     __kb_article_expiry_date = "//input[@id='id_expires']"
-    __kb_article_preview_content_button = ("//div[contains(@class, 'submit')]/button[contains("
-                                           "@class, 'btn-preview')]")
+    __kb_article_preview_content_button = (
+        "//div[contains(@class, 'submit')]/button[contains(" "@class, 'btn-preview')]"
+    )
     __kb_article_preview_image = "//div[@id='doc-content']//img"
-    __kb_article_submit_for_preview_button = ("//div[contains(@class, 'submit')]/button[contains("
-                                              "@class,  'submit')]")
+    __kb_article_submit_for_preview_button = (
+        "//div[contains(@class, 'submit')]/button[contains(" "@class,  'submit')]"
+    )
     __kb_article_preview_content = "//div[@id='doc-content']"
     __kb_article_showfor_panel = "//section[@id='showfor-panel']"
     __kb_submit_changes_input_field = "//input[@id='id_comment']"
@@ -124,21 +126,25 @@ class SubmitKBArticlePage(BasePage):
         return super()._get_element_locator(self.__kb_article_preview_content)
 
     def _click_on_a_relevant_to_option_checkbox(self, option_to_click: str):
-        super()._click(f"//div[@id='id_products']//"
-                       f"label[normalize-space(text())='{option_to_click}']")
+        super()._click(
+            f"//div[@id='id_products']//" f"label[normalize-space(text())='{option_to_click}']"
+        )
 
     def _get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:
-        return super()._get_text_of_element(f"//div[@id='id_products']//"
-                                            f"input[@id='id_products_{option_to_click}']/..")
+        return super()._get_text_of_element(
+            f"//div[@id='id_products']//" f"input[@id='id_products_{option_to_click}']/.."
+        )
 
     def _click_on_a_particular_parent_topic(self, parent_topic: str):
-        super()._click(f"//section[@id='accordion']//button[text()='{parent_topic}']")
+        super()._click(f"//section[@id='relevant-topics']//button[text()='{parent_topic}']")
 
     def _click_on_a_particular_child_topic_checkbox(
         self, parent_topic: str, child_topic_checkbox: str
     ):
-        super()._click(f"//section[@id='accordion']//button[text()='{parent_topic}']/parent::h3/"
-                       f"following-sibling::ul[1]//label[text()='{child_topic_checkbox}']")
+        super()._click(
+            f"//section[@id='relevant-topics']//button[text()='{parent_topic}']/parent::h3/"
+            f"following-sibling::ul[1]//label[text()='{child_topic_checkbox}']"
+        )
 
     def _click_on_insert_media_textarea_option(self):
         super()._click(self.__kb_article_insert_media)

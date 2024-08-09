@@ -52,6 +52,9 @@ legend {
 //
 // Style guide: forms.field
 label {
+  &[for='id_topics'], &[for='id_products'] {
+    display: inline;
+  }
   display: block;
   margin-bottom: p.$spacing-sm;
   @include c.text-body-md;
@@ -382,9 +385,6 @@ textarea {
   margin: 0 0 p.$spacing-xl 0;
   padding: 0;
   list-style: none;
-  columns: 2;
-  column-width: 200px;
-  column-gap: 60px;
 
   label {
     padding-top: 4px; // prevents focus state from bleeding
@@ -396,8 +396,21 @@ textarea {
     @include p.bidi(((margin-left, 32px, 0),
         (margin-right, 0, 32px),
       ));
-
   }
+}
+
+.columns-list {
+  columns: 2;
+  column-width: 200px;
+  column-gap: 60px;
+}
+
+.checkbox-list {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: masonry;
+  gap: p.$spacing-sm p.$spacing-sm;
 }
 
 .products.mzp-c-details .is-summary button {
@@ -429,4 +442,26 @@ label.required::after {
   font-weight: 400;
   line-height: 1.5;
   margin-bottom: 0;
+}
+
+.field > label.disabled {
+  color: #d0d0d7;
+}
+
+#edit-document {
+  #relevant-topics, #relevant-products {
+    label {
+      font-weight: normal;
+    }
+    margin-top: p.$spacing-sm;
+  }
+}
+
+#relevant-topics-disabled-message,
+#relevant-products-disabled-message,
+#relevant-topics-selected-checkmark,
+#relevant-products-selected-checkmark,
+#relevant-topics-clear-selected,
+#relevant-products-clear-selected {
+  margin-left: p.$spacing-lg;
 }

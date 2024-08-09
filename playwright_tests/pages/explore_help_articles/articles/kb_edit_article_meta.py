@@ -7,8 +7,9 @@ class KBArticleEditMetadata(BasePage):
     __edit_article_metadata_error = "//ul[@class='errorlist']"
     __edit_article_metadata_page_header = "//h1[@class='sumo-page-heading']"
     __restrict_visibility_input_field = "//input[@id='id_restrict_to_groups-selectized']"
-    __restricted_visibility_chosen_groups = ("//input[@id='id_restrict_to_groups-selectized"
-                                             "']/../div[@class='item']")
+    __restricted_visibility_chosen_groups = (
+        "//input[@id='id_restrict_to_groups-selectized" "']/../div[@class='item']"
+    )
     __clear_all_selected_groups_button = "//a[@class='clear']"
     __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-selectized']"
     __kb_article_restrict_visibility_delete_all_groups = "//a[@title='Clear']"
@@ -32,8 +33,10 @@ class KBArticleEditMetadata(BasePage):
         return super()._get_element_text_content(self.__edit_article_metadata_page_header)
 
     def _delete_a_chosen_restricted_visibility_group(self, chosen_group: str):
-        super()._click(f"//input[@id='id_restrict_to_groups-selectized']/../"
-                       f"div[text()='{chosen_group}']/a")
+        super()._click(
+            f"//input[@id='id_restrict_to_groups-selectized']/../"
+            f"div[text()='{chosen_group}']/a"
+        )
 
     def _clear_all_restricted_visibility_group_selections(self):
         super()._click(self.__clear_all_selected_groups_button)
@@ -45,8 +48,8 @@ class KBArticleEditMetadata(BasePage):
         super()._fill(self.__kb_article_restrict_visibility_field, group_name)
         super()._click(f"//div[@class='option active']/span[text()='{group_name}']")
 
-    def _delete_a_restricted_visibility_group_metadata(self, group_name=''):
-        if group_name != '':
+    def _delete_a_restricted_visibility_group_metadata(self, group_name=""):
+        if group_name != "":
             super()._click(f"//div[@class='item' and text()='{group_name}']/a")
         else:
             super()._click(self.__kb_article_restrict_visibility_delete_all_groups)
@@ -69,23 +72,28 @@ class KBArticleEditMetadata(BasePage):
         super()._select_option_by_label(self.__category_select_field, option)
 
     def _is_relevant_checkbox_checked(self, option: str) -> bool:
-        return super()._is_checkbox_checked(f"//div[@id='id_products']//"
-                                            f"label[text()='\n {option}']/input")
+        return super()._is_checkbox_checked(
+            f"//div[@id='id_products']//" f"label[text()='\n {option}']/input"
+        )
 
     def _check_a_particular_relevancy_option(self, option: str):
         super()._click(f"//div[@id='id_products']//label[normalize-space(text())='{option}']")
 
     def _click_on_a_particular_topics_foldout_section(self, option: str):
-        super()._click(f"//section[@id='accordion']//button[text()='{option}']")
+        super()._click(f"//section[@id='relevant-topics']//button[text()='{option}']")
 
     def _is_a_particular_topic_checkbox_checked(self, option: str) -> bool:
-        return super()._is_checkbox_checked(f"//ul[@id='expand-mzpcdetailsh-0' and"
-                                            f" @aria-hidden='false']//"
-                                            f"label[text()='{option}']/../input")
+        return super()._is_checkbox_checked(
+            f"//ul[@id='expand-mzpcdetailsh-0' and"
+            f" @aria-hidden='false']//"
+            f"label[text()='{option}']/../input"
+        )
 
     def _check_a_particular_topic_checkbox(self, option: str):
-        super()._click(f"//ul[@id='expand-mzpcdetailsh-0' and @aria-hidden='false']//"
-                       f"label[text()='{option}']")
+        super()._click(
+            f"//ul[@id='expand-mzpcdetailsh-0' and @aria-hidden='false']//"
+            f"label[text()='{option}']"
+        )
 
     def _is_obsolete_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__obsolete_checkbox)
