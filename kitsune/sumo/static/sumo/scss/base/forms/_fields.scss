@@ -382,9 +382,6 @@ textarea {
   margin: 0 0 p.$spacing-xl 0;
   padding: 0;
   list-style: none;
-  columns: 2;
-  column-width: 200px;
-  column-gap: 60px;
 
   label {
     padding-top: 4px; // prevents focus state from bleeding
@@ -396,8 +393,20 @@ textarea {
     @include p.bidi(((margin-left, 32px, 0),
         (margin-right, 0, 32px),
       ));
-
   }
+}
+
+.columns-list {
+  columns: 2;
+  column-width: 200px;
+  column-gap: 60px;
+}
+
+.checkbox-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: p.$spacing-xs;
+  grid-template-rows: masonry;
 }
 
 .products.mzp-c-details .is-summary button {

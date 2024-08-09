@@ -1,11 +1,21 @@
 <section id="accordion" class="mzp-c-details products">
   {% for product, topics in topics_by_product.items() %}
-  <h3 class="sumo-card-heading">{{ product.title }}</h3>
-  <ul class="checkbox-list">
+  <h3 class="sumo-card-heading{% if product.num_topics_checked %} selected{% endif %}" id="id_{{ product.id }}" data-product-id="{{ product.id }}">
+    <img class="product-heading-checkmark" src="{{ webpack_static('sumo/img/green-checkmark.svg') }}" alt="checkmark"/>
+    {{ product.title }}
+    <span class="product-heading-topic-details">
+      {{ ngettext('{0} topic selected', '{0} topics selected', product.num_topics_checked)|f(product.num_topics_checked) }}
+    </span>
+  </h3>
+  <ul class="checkbox-list" id="id_checkbox_list_{{ product.id }}">
     {% for topic in topics %}
     <li>
     <div class="field checkbox is-condensed">
-      <input type="checkbox" name="{{ name }}" id="id_{{ product.id }}_{{ topic.id }}" value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
+      <input type="checkbox" class="level-1-topic" name="{{ name }}"
+        id="id_{{ product.id }}_{{ topic.id }}"
+        data-topic-id="{{ topic.id }}"
+        data-product-id="{{ product.id }}"
+        value="{{ product.id }},{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
       <label for="id_{{ product.id }}_{{ topic.id }}">{{ topic.title }}</label>
     </div>
       {% if topic.my_subtopics %}
@@ -13,8 +23,13 @@
           {% for subtopic in topic.my_subtopics %}
             <li>
               <div class="field checkbox is-condensed">
-                <input type="checkbox" name="{{ name }}" id="id_sub_{{ product.id }}_{{ subtopic.id }}" value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
-                <label for="id_sub_{{ product.id }}_{{ subtopic.id }}">{{ subtopic.title }}</label>
+                <input type="checkbox" class="level-2-topic" name="{{ name }}"
+                  id="id_{{ product.id }}_{{ subtopic.id }}"
+                  data-topic-id="{{ subtopic.id }}"
+                  data-product-id="{{ product.id }}"
+                  data-parent-topic-id="{{ topic.id }}"
+                  value="{{ product.id }},{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
+                <label for="id_{{ product.id }}_{{ subtopic.id }}">{{ subtopic.title }}</label>
               </div>
             </li>
           {% endfor %}

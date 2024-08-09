@@ -71,40 +71,6 @@ TOPIC_REQUIRED = _lazy("Please select at least one topic.")
 class DocumentForm(forms.ModelForm):
     """Form to create/edit a document."""
 
-    def __init__(self, *args, **kwargs):
-        # Quasi-kwargs:
-        can_archive = kwargs.pop("can_archive", False)
-        can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
-        initial_title = kwargs.pop("initial_title", "")
-
-        super(DocumentForm, self).__init__(*args, **kwargs)
-
-        title_field = self.fields["title"]
-        title_field.initial = initial_title
-
-        slug_field = self.fields["slug"]
-        slug_field.initial = slugify(initial_title)
-
-        topics_field = self.fields["topics"]
-        topics_field.choices = Topic.active.values_list("id", "title")
-
-        products_field = self.fields["products"]
-        products_field.choices = Product.active.values_list("id", "title")
-
-        related_documents_field = self.fields["related_documents"]
-        related_documents_field.choices = Document.objects.values_list("id", "title")
-
-        # If user hasn't permission to frob is_archived, remove the field. This
-        # causes save() to skip it as well.
-        if not can_archive:
-            del self.fields["is_archived"]
-
-        # If user hasn't permission to mess with needs_change*, remove the
-        # fields. This causes save() to skip it as well.
-        if not can_edit_needs_change:
-            del self.fields["needs_change"]
-            del self.fields["needs_change_comment"]
-
     title = forms.CharField(
         min_length=5,
         max_length=255,
@@ -134,10 +100,6 @@ class DocumentForm(forms.ModelForm):
         },
     )
 
-    products = forms.MultipleChoiceField(
-        label=_lazy("Relevant to:"), required=False, widget=forms.CheckboxSelectMultiple()
-    )
-
     is_localizable = forms.BooleanField(
         initial=True, label=_lazy("Allow translations:"), required=False
     )
@@ -164,8 +126,10 @@ class DocumentForm(forms.ModelForm):
         help_text=_lazy("Type of article"),
     )
 
-    topics = forms.MultipleChoiceField(
-        label=_lazy("Topics:"), required=False, widget=ProductTopicsAndSubtopicsWidget()
+    products_and_topics = forms.MultipleChoiceField(
+        label=_lazy("Select at least one topic for each relevant product."),
+        required=False,
+        widget=ProductTopicsAndSubtopicsWidget(),
     )
 
     related_documents = forms.MultipleChoiceField(
@@ -186,6 +150,17 @@ class DocumentForm(forms.ModelForm):
         if not re.compile(r"^[^/^\+^\?%]+$").match(slug):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
+
+    def clean_products_and_topics(self):
+        products_and_topics = self.cleaned_data["products_and_topics"]
+        topics, products = set(), set()
+        for pair in products_and_topics:
+            product, topic = pair.split(",")
+            topics.add(topic)
+            products.add(product)
+        self.cleaned_data["topics"] = list(topics)
+        self.cleaned_data["products"] = list(products)
+        return products_and_topics
 
     def clean(self):
         c = super(DocumentForm, self).clean()
@@ -210,8 +185,7 @@ class DocumentForm(forms.ModelForm):
             "slug",
             "category",
             "is_localizable",
-            "products",
-            "topics",
+            "products_and_topics",
             "locale",
             "is_archived",
             "allow_discussion",
@@ -220,6 +194,61 @@ class DocumentForm(forms.ModelForm):
             "related_documents",
             "restrict_to_groups",
         )
+
+    def __init__(self, *args, **kwargs):
+        # Quasi-kwargs:
+        can_archive = kwargs.pop("can_archive", False)
+        can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
+        initial_title = kwargs.pop("initial_title", "")
+
+        super(DocumentForm, self).__init__(*args, **kwargs)
+
+        initial = kwargs.get("initial")
+
+        title_field = self.fields["title"]
+        title_field.initial = initial_title
+
+        slug_field = self.fields["slug"]
+        slug_field.initial = slugify(initial_title)
+
+        products_and_topics_choices = []
+        for product in Product.active.filter(m2m_topics__isnull=False):
+            for topic in Topic.active.filter(products=product):
+                products_and_topics_choices.append(
+                    (f"{product.id},{topic.id}", f"{product.title}-{topic.title}")
+                )
+        products_and_topics_field = self.fields["products_and_topics"]
+        products_and_topics_field.choices = products_and_topics_choices
+
+        initial_products_and_topics = []
+
+        if (
+            initial
+            and (initial_topic_ids := initial.get("topics"))
+            and (initial_product_ids := set(initial.get("products", [])))
+        ):
+            for topic in Topic.active.filter(id__in=initial_topic_ids).prefetch_related(
+                "products"
+            ):
+                topic_products = set(topic.products.values_list("id", flat=True))
+                for product_id in topic_products & initial_product_ids:
+                    initial_products_and_topics.append(f"{product_id},{topic.id}")
+
+        products_and_topics_field.initial = initial_products_and_topics
+
+        related_documents_field = self.fields["related_documents"]
+        related_documents_field.choices = Document.objects.values_list("id", "title")
+
+        # If user hasn't permission to frob is_archived, remove the field. This
+        # causes save() to skip it as well.
+        if not can_archive:
+            del self.fields["is_archived"]
+
+        # If user hasn't permission to mess with needs_change*, remove the
+        # fields. This causes save() to skip it as well.
+        if not can_edit_needs_change:
+            del self.fields["needs_change"]
+            del self.fields["needs_change_comment"]
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
@@ -244,6 +273,9 @@ class DocumentForm(forms.ModelForm):
             doc.products.remove(*[p for p in doc.products.all()])
             # A child always inherits parent topics.
             doc.topics.add(*[t for t in parent_doc.topics.all()])
+        else:
+            doc.topics.add(*(topic_id for topic_id in self.cleaned_data["topics"]))
+            doc.products.add(*(product_id for product_id in self.cleaned_data["products"]))
 
         return doc
 

@@ -11,21 +11,26 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics organized by product and with subtopics."""
 
     def render(self, name, value, attrs=None, renderer=None):
+        def initialize_checkbox(product, topic):
+            topic.checked = f"{product.id},{topic.id}" in value
+            if topic.checked:
+                product.num_topics_checked += 1
+
         topics_by_product = {}
         for product in Product.active.filter(m2m_topics__isnull=False):
+            product.num_topics_checked = 0
             # Get all of the topics and subtopics that apply to this product.
             topics_and_subtopics = Topic.active.filter(products=product)
             # Get the topics only.
             topics = [t for t in topics_and_subtopics if t.parent_id is None]
 
             for topic in topics:
-                self.process_topic(value, topic)
-
+                initialize_checkbox(product, topic)
                 # Get all of the subtopics for this topic.
                 topic.my_subtopics = [t for t in topics_and_subtopics if t.parent_id == topic.id]
 
                 for subtopic in topic.my_subtopics:
-                    self.process_topic(value, subtopic)
+                    initialize_checkbox(product, subtopic)
 
             topics_by_product[product] = topics
 
@@ -36,14 +41,6 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
                 "name": name,
             },
         )
-
-    def process_topic(self, value, topic):
-        if isinstance(value, int) and topic.id == value:
-            topic.checked = True
-        elif not isinstance(value, str) and isinstance(value, Iterable) and topic.id in value:
-            topic.checked = True
-        else:
-            topic.checked = False
 
 
 class RelatedDocumentsWidget(forms.widgets.SelectMultiple):

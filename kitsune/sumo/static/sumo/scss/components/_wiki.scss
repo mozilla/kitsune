@@ -1272,3 +1272,31 @@ article {
     transform: rotate(0);
   }
 }
+
+#accordion {
+  h3.sumo-card-heading {
+    font-size: 1rem;
+    align-content: center;
+    &.selected {
+      background-color: #D5EDE5;
+      img.product-heading-checkmark {
+        display: unset;
+      }
+      span.product-heading-topic-details {
+        display: unset;
+      }
+    }
+    img.product-heading-checkmark {
+      margin: 0 p.$spacing-sm 0 p.$spacing-sm;
+      width: 12px;
+      height: 12px;
+      display: none;
+    }
+    span.product-heading-topic-details {
+      margin-left: p.$spacing-md;
+      font-weight: normal;
+      font-size: 0.5rem !important;
+      display: none;
+    }
+  }
+}
