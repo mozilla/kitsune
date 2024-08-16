@@ -991,21 +991,19 @@ AXES_COOLOFF_TIME = config("AXES_COOLOFF_TIME", default=1, cast=int)  # hour
 AXES_BEHIND_REVERSE_PROXY = config("AXES_BEHIND_REVERSE_PROXY", default=not DEBUG, cast=bool)
 AXES_REVERSE_PROXY_HEADER = config("AXES_REVERSE_PROXY_HEADER", default="HTTP_X_CLUSTER_CLIENT_IP")
 
-USE_DEBUG_TOOLBAR = config("USE_DEBUG_TOOLBAR", default=False, cast=bool)
+USE_DJANGO_SILK = config("USE_DJANGO_SILK", default=False, cast=bool)
 
 
-def show_toolbar_callback(*args):
-    return DEBUG and USE_DEBUG_TOOLBAR
+def show_debug_callback(*args):
+    return DEBUG and USE_DJANGO_SILK
 
 
-SHOW_DEBUG_TOOLBAR = show_toolbar_callback()
+SHOW_DEBUG_INFO = show_debug_callback()
 
-if SHOW_DEBUG_TOOLBAR:
-    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": "kitsune.settings.show_toolbar_callback"}
+if SHOW_DEBUG_INFO:
+    INSTALLED_APPS = INSTALLED_APPS + ("silk",)
 
-    INSTALLED_APPS = INSTALLED_APPS + ("debug_toolbar",)
-
-    MIDDLEWARE = ("debug_toolbar.middleware.DebugToolbarMiddleware",) + MIDDLEWARE
+    MIDDLEWARE = ("silk.middleware.SilkyMiddleware",) + MIDDLEWARE
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
 ATOMIC_REQUESTS = config("ATOMIC_REQUESTS", default=True, cast=bool)
