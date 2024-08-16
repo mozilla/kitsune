@@ -115,12 +115,8 @@ if settings.DEBUG:
         ),
     ]
 
-if settings.SHOW_DEBUG_TOOLBAR:
-    import debug_toolbar
-
-    urlpatterns += [
-        re_path("__debug__/", include(debug_toolbar.urls)),
-    ]
+if settings.SHOW_DEBUG_INFO:
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
 
 
 if settings.ENABLE_ADMIN:
