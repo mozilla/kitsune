@@ -75,7 +75,11 @@ class QuestionManager(Manager):
 
 class AAQConfigManager(Manager):
     def locales_list(self):
-        return self.get_queryset().values_list("enabled_locales__locale", flat=True).distinct()
+        return (
+            self.filter(enabled_locales__locale__isnull=False)
+            .values_list("enabled_locales__locale", flat=True)
+            .distinct()
+        )
 
 
 class AnswerManager(Manager):
