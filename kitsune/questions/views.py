@@ -533,7 +533,9 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
     # Return 404 if the products does not have an AAQ form or if it is archived
     product = None
-    products_with_aaqs = Product.active.with_question_forums(request)
+    products_with_aaqs = Product.active.with_question_forums(
+        request, include_products_with_ticketing_support=True
+    )
     if product_slug:
         try:
             product = Product.active.get(slug=product_slug)
