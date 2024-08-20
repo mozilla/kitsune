@@ -9,7 +9,7 @@
       <div class="scroll-wrap">
         {% for product in products %}
           <div class="card card--product zoom-on-hover">
-          <img src="{{ image_for_product(product) }}"
+          <img src="{{ product.image_alternate_url }}"
               alt="{{ pgettext('DB: products.Product.title', product.title) }}"
               class="card--icon">
 
@@ -136,7 +136,7 @@
 {%- endmacro %}
 
 {% macro explore_solutions(product, search_box, featured, topics, request, has_ticketing_support=True) -%}
-{% set search_params = {'product': product.product} %}
+{% set search_params = {'product': product.slug} %}
 <section class="sumo-page-section question-masthead shade-bg">
   <div class="mzp-l-content">
 
@@ -148,9 +148,9 @@
 
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main home-search-section--content">
-        <img class="page-heading--logo" src="{{ image_for_product(product.product) }}" alt="{{ product.name }} logo">
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="{{ product.title }} logo">
         <h1 class="sumo-page-heading ">
-          <span class="product-title-text">{{ product.name }} {{ _('Solutions') }}</span>
+          <span class="product-title-text">{{ product.title }} {{ _('Solutions') }}</span>
         </h1>
         {{ search_box(settings, id='question-search-masthead', params=search_params) }}
 

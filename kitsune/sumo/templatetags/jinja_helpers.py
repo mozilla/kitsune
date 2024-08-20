@@ -24,7 +24,6 @@ from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
 
-from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import in_staff_group, is_trusted_user, webpack_static
@@ -517,23 +516,6 @@ def fe(format_string, *args, **kwargs):
         format_string = str(format_string)
 
     return Markup(format_string.format(*args, **kwargs))
-
-
-@library.global_function
-def image_for_product(product_slug):
-    """
-    Return square/alternate image for product slug
-    """
-    default_image = webpack_static("products/img/product_placeholder_alternate.png")
-
-    if not product_slug:
-        return default_image
-
-    try:
-        obj = Product.objects.get(slug=product_slug)
-    except Product.DoesNotExist:
-        return default_image
-    return obj.image_alternate_url
 
 
 @jinja2.pass_context
