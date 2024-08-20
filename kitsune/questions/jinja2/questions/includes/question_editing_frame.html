@@ -27,7 +27,7 @@ behaviors like editing them can be provided by overriding blocks.
     {% endif %}
 
     {% block formwrap %}
-    <img class="page-heading--logo" src="{{ image_for_product(current_product) }}" alt="{{ current_product.title }} logo" />
+    <img class="page-heading--logo" src="{{ current_product.image_alternate_url }}" alt="{{ current_product.title }} logo" />
 
     {# TODO: hook this up to the backend when subproducts are in.
     <div class="mzp-c-menu-list subheading-dropdown">
@@ -38,7 +38,7 @@ behaviors like editing them can be provided by overriding blocks.
       </ul>
     </div> #}
     <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
-      {{ current_product.name }}
+      {{ current_product.title }}
     </h3>
 
 
