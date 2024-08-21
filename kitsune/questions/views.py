@@ -150,7 +150,7 @@ def question_list(request, product_slug=None, topic_slug=None):
     product_slugs = product_slug.split(",") if product_slug else []
     products = []
 
-    if filter_by_product := (product_slugs and product_slugs[0] != "all"):
+    if product_slugs and ("all" not in product_slugs):
         for slug in product_slugs:
             products.append(get_object_or_404(Product, slug=slug))
     else:
@@ -309,8 +309,8 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # List of topics to fill the selector.
     topic_list = Topic.active.filter(in_aaq=True, visible=True)
-    if filter_by_product:
-        topic_list = topic_list.filter(products=products[0])[:10]
+    if product_slugs:
+        topic_list = topic_list.filter(products__in=products)
     else:
         topic_list = topic_list.filter(in_nav=True)
 
