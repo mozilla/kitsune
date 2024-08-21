@@ -315,7 +315,11 @@
               All Topics
             </option>
             {% for topic in topic_list %}
-              <option value="{{ url('questions.list_by_topic', topic_slug=topic.slug) }}" 
+              {% if topic_navigation %}
+              <option value="{{ url('questions.list_by_topic', topic_slug=topic.slug) }}"
+              {% else %}
+              <option value="{{ questions_url(topic=topic.slug) }}"
+              {% endif %}
                 {% if selected_topic_slug == topic.slug %}selected{% endif %}>
                 {{ pgettext('DB: products.Topic.title', topic.title) }}
               </option>

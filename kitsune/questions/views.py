@@ -162,6 +162,8 @@ def question_list(request, product_slug=None, topic_slug=None):
             return HttpResponseRedirect("/")
         products = Product.active.with_question_forums(request)
 
+    multiple = (len(products) > 1) or ("all" in product_slugs)
+
     # Get all topics
     topics = []
 
@@ -251,14 +253,8 @@ def question_list(request, product_slug=None, topic_slug=None):
             question_qs = Question.objects.none()
 
     # Filter by products.
-    multiple = False
     if products:
-        # This filter will match if any of the products on a question have the
-        # correct id.
         question_qs = question_qs.filter(product__in=products)
-        multiple = len(products) > 1
-        if not multiple:
-            product_slug = products[0].slug
 
     # Filter by topic.
     if topics:
@@ -338,7 +334,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "product_slug": product_slug,
         "topic_slug": topic_slug,
         "multiple_products": multiple,
-        "all_products": product_slug == "all" or topics,
+        "all_products": product_slug == "all" or topic_navigation,
         "topic_list": topic_list,
         "topics": topics,
         "selected_topic_slug": topics[0].slug if topics else None,
