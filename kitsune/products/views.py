@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -121,7 +122,15 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
         topic_list = Topic.active.filter(in_nav=True)
         relevant_products = Product.active.filter(m2m_topics=topic).filter(
-            Exists(Document.objects.visible(topics=topic, products=OuterRef("pk")))
+            Exists(
+                Document.objects.visible(
+                    is_archived=False,
+                    topics=topic,
+                    products=OuterRef("pk"),
+                    locale=request.LANGUAGE_CODE,
+                    category__in=settings.IA_DEFAULT_CATEGORIES,
+                )
+            )
         )
     else:
         topic = get_object_or_404(
