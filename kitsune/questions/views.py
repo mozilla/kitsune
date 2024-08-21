@@ -308,7 +308,7 @@ def question_list(request, product_slug=None, topic_slug=None):
     product_list = Product.active.filter(visible=True)
 
     # List of topics to fill the selector.
-    topic_list = Topic.active.filter(visible=True)
+    topic_list = Topic.active.filter(in_aaq=True, visible=True)
     if filter_by_product:
         topic_list = topic_list.filter(products=products[0])[:10]
     else:
