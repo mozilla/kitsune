@@ -11,8 +11,7 @@ from playwright_tests.messages.ask_a_question_messages.contact_support_messages 
     ContactSupportMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
 
-troubleshooting_topic_url = ("https://support.allizom.org/en-US/topics/customize-settings-and"
-                             "-preferences")
+troubleshooting_topic_url = "https://support.allizom.org/en-US/topics/browse"
 
 
 #  C2663958, C2663959
@@ -20,11 +19,11 @@ troubleshooting_topic_url = ("https://support.allizom.org/en-US/topics/customize
 def test_explore_by_topic_product_filter(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-    with allure.step("Navigating to the /topics/  Customize settings and preferences  page"):
+    with allure.step("Navigating to the /topics/  Browse  page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
     for topic in sumo_pages.explore_by_topic_page._get_all_topics_side_navbar_options():
         topic = topic.strip()
-        if topic != "Customize settings and preferences":
+        if topic != "Browse":
             sumo_pages.explore_by_topic_page._click_on_a_topic_filter(topic)
         with allure.step("Verifying that the correct page header is displayed"):
             assert topic == (sumo_pages.explore_by_topic_page
@@ -37,10 +36,8 @@ def test_explore_by_topic_product_filter(page: Page):
                 sumo_pages.explore_by_topic_page._select_a_filter_by_product_option(
                     product.strip())
                 time.sleep(2)
-                # This currently fails due to https://github.com/mozilla/sumo/issues/1901.
-                # Uncommenting after the issue is fixed.
-                # if not sumo_pages.explore_by_topic_page._get_metadata_of_all_listed_articles():
-                #     pytest.fail(f"There is no sublist for {product}")
+                if not sumo_pages.explore_by_topic_page._get_metadata_of_all_listed_articles():
+                    pytest.fail(f"There is no sublist for {product}")
 
                 for sublist in (sumo_pages.explore_by_topic_page
                                 ._get_metadata_of_all_listed_articles()):
@@ -58,11 +55,11 @@ def test_explore_by_topic_aaq_widget_text(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-    with allure.step("Navigating to the /topics/  Customize settings and preferences  page"):
+    with allure.step("Navigating to the /topics/  Browse  page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
     for topic in sumo_pages.explore_by_topic_page._get_all_topics_side_navbar_options():
         topic = topic.strip()
-        if topic != "Customize settings and preferences":
+        if topic != "Browse":
             sumo_pages.explore_by_topic_page._click_on_a_topic_filter(topic)
         for product in sumo_pages.explore_by_topic_page._get_all_filter_by_product_options():
             product = product.strip()
@@ -96,12 +93,12 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-    with allure.step("Navigating to the /topics/  Customize settings and preferences  page"):
+    with allure.step("Navigating to the /topics/  Browse  page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
 
     for topic in sumo_pages.explore_by_topic_page._get_all_topics_side_navbar_options():
         topic = topic.strip()
-        if topic != "Customize settings and preferences":
+        if topic != "Browse":
             sumo_pages.explore_by_topic_page._click_on_a_topic_filter(topic)
         for product in sumo_pages.explore_by_topic_page._get_all_filter_by_product_options():
             product = product.strip()

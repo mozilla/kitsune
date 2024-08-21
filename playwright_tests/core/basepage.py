@@ -1,7 +1,7 @@
 import random
 from typing import Union
-
-from playwright.sync_api import Page, ElementHandle, Locator, TimeoutError
+from playwright.sync_api import Page, ElementHandle, Locator
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class BasePage:
@@ -14,14 +14,14 @@ class BasePage:
         This helper function returns the element locator from a given xpath.
         """
         if with_wait:
-            self.page.wait_for_selector(xpath)
+            self.__wait_for_dom_load_to_finish()
         return self.page.locator(xpath)
 
     def _get_elements_locators(self, xpath: str) -> list[Locator]:
         """
         This helper function returns a list of element locators from a given xpath.
         """
-        self._wait_for_selector(xpath)
+        self.__wait_for_dom_load_to_finish()
         return self.page.locator(xpath).all()
 
     def _get_current_page_url(self) -> str:
@@ -48,14 +48,11 @@ class BasePage:
         """
         return self._get_element_locator(xpath).all_inner_texts()
 
-    def _get_text_of_element(self, xpath: str, with_wait: bool) -> str:
+    def _get_text_of_element(self, xpath: str) -> str:
         """
         This helper function returns the inner text of a given xpath.
         """
-        if with_wait:
-            self._get_element_locator(xpath, with_wait=with_wait).inner_text()
-        else:
-            return self._get_element_locator(xpath).inner_text()
+        return self._get_element_locator(xpath).inner_text()
 
     def _get_text_of_locator(self, locator: Locator) -> str:
         """
@@ -83,7 +80,7 @@ class BasePage:
         if isinstance(element, str):
             return self._get_element_locator(element).get_attribute(attribute)
         elif isinstance(element, list):
-            self.__wait_for_dom_load_to_finnish()
+            self.__wait_for_dom_load_to_finish()
             values = []
             for element in element:
                 values.append(element.get_attribute(attribute))
@@ -223,7 +220,7 @@ class BasePage:
         """
         return self._get_element_locator(xpath).is_checked()
 
-    def __wait_for_dom_load_to_finnish(self):
+    def __wait_for_dom_load_to_finish(self):
         """
         This helper function performs two waits:
         1. Waits for the dom load to finish.
@@ -239,5 +236,5 @@ class BasePage:
         """
         try:
             self.page.wait_for_selector(xpath, timeout=timeout)
-        except TimeoutError:
+        except PlaywrightTimeoutError:
             print(f"{xpath} is not displayed")

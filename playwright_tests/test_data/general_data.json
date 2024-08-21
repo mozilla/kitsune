@@ -25,15 +25,15 @@
     "Canned Responses"
   ],
   "product_topics": {
-    "Firefox": "https://support.allizom.org/en-US/products/firefox/troubleshooting",
-    "Firefox for Android": "https://support.allizom.org/en-US/products/mobile/troubleshooting",
-    "Firefox for iOS": "https://support.allizom.org/en-US/products/ios/install-and-update",
-    "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise/install-and-update",
+    "Firefox": "https://support.allizom.org/en-US/products/firefox/browse",
+    "Firefox for Android": "https://support.allizom.org/en-US/products/mobile/browse",
+    "Firefox for iOS": "https://support.allizom.org/en-US/products/ios/browse",
+    "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise/installation-and-updates",
     "MDN Plus": "https://support.allizom.org/en-US/products/mdn-plus/getting-started",
     "Mozilla VPN": "https://support.allizom.org/en-US/products/firefox-private-network-vpn/accounts",
     "Firefox Relay": "https://support.allizom.org/en-US/products/relay/technical",
     "Pocket": "https://support.allizom.org/en-US/products/pocket/pocket-for-ios",
-    "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird/protect-your-privacy",
+    "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird/settings",
     "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/Focus-ios",
     "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
   },
@@ -51,7 +51,7 @@
     "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird"
   },
   "product_solutions": {
-    "Firefox": "https://support.allizom.org/en-US/questions/new/desktop",
+    "Firefox": "https://support.allizom.org/en-US/questions/new/firefox",
     "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile",
     "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios",
     "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise",
@@ -61,7 +61,7 @@
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket",
     "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird",
-    "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus",
+    "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus-firefox",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
   },
   "dashboard_links": {
