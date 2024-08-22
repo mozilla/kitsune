@@ -310,7 +310,7 @@ def question_list(request, product_slug=None, topic_slug=None):
     # List of topics to fill the selector.
     topic_list = Topic.active.filter(in_aaq=True, visible=True)
     if product_slugs:
-        topic_list = topic_list.filter(products__in=products)
+        topic_list = topic_list.filter(products__in=products).distinct()
     else:
         topic_list = topic_list.filter(in_nav=True)
 
