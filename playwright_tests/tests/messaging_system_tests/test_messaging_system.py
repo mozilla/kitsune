@@ -54,7 +54,7 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
 def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = "Test1"
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     user_two = utilities.username_extraction_from_email(
         utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
     )
@@ -138,7 +138,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
 def test_private_message_can_be_sent_via_new_message_page(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = "Test2"
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     test_user = utilities.username_extraction_from_email(
         utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
     )
@@ -380,7 +380,7 @@ def test_new_message_field_validation(page: Page):
 def test_new_message_cancel_button(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = "Test3"
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     user_two = utilities.username_extraction_from_email(
         utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
     )
@@ -526,7 +526,7 @@ def test_new_message_preview(page: Page):
 def test_messages_can_be_selected_and_deleted(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = "Test4"
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     test_user = utilities.username_extraction_from_email(
         utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
     )
@@ -671,7 +671,7 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
 def test_staff_users_can_send_group_messages(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = 'Test5'
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     with allure.step("Signing in with an admin account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
@@ -729,7 +729,7 @@ def test_staff_users_can_send_group_messages(page: Page):
 def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = "Test6"
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     with allure.step("Signing in with an admin account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
@@ -779,7 +779,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account"):
-        message_body = "Test7"
+        message_body = "Test " + utilities.generate_random_number(1, 1000)
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
@@ -831,7 +831,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
 def test_removed_group_users_do_not_receive_group_messages(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    message_body = "Test8"
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
     with allure.step("Signing in with a staff account and removing a user from the targeted "
                      "group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -920,7 +920,7 @@ def test_clear_inbox_and_outbox(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts[user]
         ))
-
+        sumo_pages.top_navbar._click_on_inbox_option()
         inbox_and_outbox_deletion(page)
 
     utilities.delete_cookies()
@@ -933,7 +933,6 @@ def test_clear_inbox_and_outbox(page: Page):
 
 def inbox_and_outbox_deletion(page: Page):
     sumo_pages = SumoPages(page)
-    sumo_pages.top_navbar._click_on_inbox_option()
     if sumo_pages.inbox_page._are_inbox_messages_displayed():
         sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button()
 

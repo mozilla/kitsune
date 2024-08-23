@@ -472,6 +472,7 @@ def test_premium_products_aaq(page: Page):
                 utilities.aaq_question_test_data['products_aaq_url'][premium_product]
             )
             utilities.wait_for_dom_to_load()
+            premium_form_link = utilities.get_page_url()
             if premium_product == 'Mozilla VPN':
                 sumo_pages.aaq_flow.submit_an_aaq_question(
                     subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
@@ -484,6 +485,8 @@ def test_premium_products_aaq(page: Page):
                     body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
                     is_premium=True
                 )
+                if utilities.get_page_url() == premium_form_link:
+                    sumo_pages.aaq_form_page._click_aaq_form_submit_button()
 
         with allure.step("Verifying that the correct success message is displayed"):
             assert sumo_pages.aaq_form_page._get_premium_card_submission_message(

@@ -151,7 +151,6 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
         utilities.delete_cookies()
         sumo_pages.top_navbar._click_on_signin_signup_button()
         sumo_pages.auth_flow_page.login_with_existing_session()
-        sumo_pages.top_navbar._click_on_view_profile_option()
         sumo_pages.user_navbar._click_on_my_questions_option()
         assert (
             sumo_pages.my_questions_page._get_text_of_no_question_message()

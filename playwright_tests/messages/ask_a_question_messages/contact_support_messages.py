@@ -9,12 +9,14 @@ class ContactSupportMessages:
         "Firefox for Android": "Web browser for Android smartphones and tablets",
         "Firefox for iOS": "Firefox for iPhone, iPad and iPod touch devices",
         "Firefox for Enterprise": "Firefox Quantum for businesses",
-        "MDN Plus": "MDN Plus provides a custom experience for MDN supporters.",
-        "Mozilla VPN": "VPN for Windows 10, Android and iOS devices",
-        "Firefox Relay": "Service that lets you create aliases to hide your real email",
-        "Mozilla Monitor": "Stay informed and take back control of your exposed data",
-        "Pocket": "The web’s most intriguing articles",
+        "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters.",
+        "Mozilla VPN": "VPN for Windows 10, Mac, Linux, Android, and iOS devices",
+        "Firefox Relay": "Service that lets you create email masks to hide your real email "
+                         "address",
+        "Mozilla Monitor": "Find out if your private information has been exposed in a known "
+                           "data breach.",
+        "Pocket": "Discover and save stories for later.",
         "Thunderbird": "Email software for Windows, Mac and Linux",
         "Firefox Focus": "Automatic privacy browser and content blocker",
-        "Mozilla Account": "Mozilla account is the account system for Mozilla",
+        "Mozilla Account": "Privacy-first products for desktop and mobile"
     }

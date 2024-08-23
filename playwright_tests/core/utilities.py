@@ -159,8 +159,9 @@ class Utilities:
         response = navigation_info.value
         self.wait_for_dom_to_load()
 
-        if response.status >= 400:
-            self.refresh_page()
+        if response.status is not None:
+            if response.status >= 400:
+                self.refresh_page()
 
     def set_extra_http_headers(self, headers):
         """
