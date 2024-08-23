@@ -116,33 +116,31 @@ $(function () {
   function initImageModal() {
     $('article').on('click', '.attachments-list a.image', function (ev) {
       ev.preventDefault();
-      var imgUrl = $(this).attr('href'),
-        image = new Image(),
-        currentPosX = window.scrollX,
-        currentPosY = window.scrollY,
-        html = '<img class="loading image-attachment" />',
-        kbox = new KBox(html, {
-          modal: true,
-          title: gettext('Image Attachment'),
-          id: 'image-attachment-kbox',
-          destroy: true,
-          position: 'none', // Disable automatic positioning
-          closeOnOutClick: true,
-          closeOnEsc: true,
-          preClose: function () {
-            window.scroll(currentPosX, currentPosY);
-            return true;
-          }
-        });
+      // There may be more than one article element when bubbling up.
+      ev.stopPropagation();
+      let originalPosX, originalPosY;
+      let imgUrl = $(this).attr('href');
+      let html = `<img class="loading image-attachment" src=${imgUrl}/>`;
+      let kbox = new KBox(html, {
+        modal: true,
+        title: gettext('Image Attachment'),
+        id: 'image-attachment-kbox',
+        destroy: true,
+        position: 'none', // Disable automatic positioning
+        closeOnOutClick: true,
+        closeOnEsc: true,
+        preOpen: function () {
+          originalPosX = window.scrollX;
+          originalPosY = window.scrollY;
+          window.scroll({top: 0});
+          return true;
+        },
+        preClose: function () {
+          window.scroll(originalPosX, originalPosY);
+          return true;
+        }
+      });
       kbox.open();
-
-      let $img = $('#image-attachment-kbox img');
-      function loadImage() {
-        $img.removeClass('loading').attr('src', imgUrl);
-        window.scroll({top: 0});
-      }
-      image.onload = loadImage;
-      image.src = imgUrl;
     });
   }
   initImageModal();
