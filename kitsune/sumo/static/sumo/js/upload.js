@@ -120,7 +120,7 @@ $(function () {
       ev.stopPropagation();
       let originalPosX, originalPosY;
       let imgUrl = $(this).attr('href');
-      let html = `<img class="loading image-attachment" src=${imgUrl}/>`;
+      let html = `<img class="image-attachment" src=${imgUrl}/>`;
       let kbox = new KBox(html, {
         modal: true,
         title: gettext('Image Attachment'),
