@@ -20,11 +20,11 @@
       <div class="sumo-l-two-col--sidebar">
         <nav id="doc-tools">
           <ul class="sidebar-nav sidebar-folding">
-            {{ for_contributors_sidebar(user, 
-                                        settings.WIKI_DEFAULT_LANGUAGE, 
-                                        active='gallery.home', 
-                                        menu="contributor-tools", 
-                                        is_collapsible=True, 
+            {{ for_contributors_sidebar(user,
+                                        settings.WIKI_DEFAULT_LANGUAGE,
+                                        active='gallery.home',
+                                        menu="contributor-tools",
+                                        is_collapsible=True,
                                         locale=locale) }}
           </ul>
         </nav>
@@ -77,7 +77,7 @@
             </noscript>
           </div>
           {% if user.is_authenticated %}
-            <a id="btn-upload" class="media-search sumo-button primary-button" href="#">{{ _('Upload a New Media File') }}</a>
+            <a id="btn-upload" class="media-search sumo-button primary-button" href="#">{{ _('Upload') }}</a>
           {% endif %}
         </div>
       </div>
