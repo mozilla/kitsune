@@ -40,7 +40,6 @@ export default function detailsInit() {
     if (sidebarList && mq.matches) {
       window.Mzp.Details.init('.details-heading');
       swapMobileSubnavText();
-
     } else {
       window.Mzp.Details.destroy('.details-heading');
     }
