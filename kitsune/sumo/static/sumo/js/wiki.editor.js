@@ -11,6 +11,18 @@ import "@selectize/selectize";
   });
 })(jQuery);
 
+function intersection(setA, setB) {
+  // Use this function instead of the Set.intersection method,
+  // which has been available only since June 2024, so that we
+  // support older browser versions. We can switch to the
+  // Set.intersection method at some time in the future.
+  // Ensure the smaller set is iterated to improve efficiency
+  if (setA.size > setB.size) {
+    [setA, setB] = [setB, setA];
+  }
+  return new Set([...setA].filter(item => setB.has(item)));
+}
+
 function handleTopicRelationships(topic) {
   // If we've checked a subtopic, automatically check its topic.
   if (topic.classList.contains("level-2-topic") && topic.checked) {
@@ -36,7 +48,7 @@ function getAllowedTopicIdsFromSelectedProducts() {
     if (allowedTopicIds === "all") {
       allowedTopicIds = topicIds;
     } else {
-      allowedTopicIds = allowedTopicIds.intersection(topicIds);
+      allowedTopicIds = intersection(allowedTopicIds, topicIds);
     }
   });
   return allowedTopicIds;
@@ -52,7 +64,7 @@ function getAllowedProductIdsFromSelectedTopics() {
     if (allowedProductIds === "all") {
       allowedProductIds = productIds;
     } else {
-      allowedProductIds = allowedProductIds.intersection(productIds);
+      allowedProductIds = intersection(allowedProductIds, productIds);
     }
   });
   return allowedProductIds;
@@ -99,7 +111,7 @@ function updateTopics(allowedTopicIds, allowedProductIds) {
     let productIds = new Set(JSON.parse(topic.dataset.productIds));
     if (
       ((allowedTopicIds === "all") || allowedTopicIds.has(topic.dataset.topicId)) &&
-      ((allowedProductIds === "all") || (productIds.intersection(allowedProductIds).size > 0))
+      ((allowedProductIds === "all") || (intersection(productIds, allowedProductIds).size > 0))
     ) {
       topic.disabled = false;
       topicLabel.classList.remove("disabled");
@@ -125,7 +137,7 @@ function updateProducts(allowedTopicIds, allowedProductIds) {
     let topicIds = new Set(JSON.parse(product.dataset.topicIds));
     if (
       ((allowedProductIds === "all") || allowedProductIds.has(product.dataset.productId)) &&
-      ((allowedTopicIds === "all") || (topicIds.intersection(allowedTopicIds).size > 0))
+      ((allowedTopicIds === "all") || (intersection(topicIds, allowedTopicIds).size > 0))
     ) {
       product.disabled = false;
       productLabel.classList.remove("disabled");
