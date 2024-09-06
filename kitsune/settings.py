@@ -1361,4 +1361,12 @@ WAGTAILADMIN_PERMITTED_LANGUAGES = [
 WAGTAIL_SITE_NAME = config("WAGTAIL_SITE_NAME", default="Mozilla Support CMS")
 WAGTAILADMIN_BASE_URL = config("WAGTAILADMIN_BASE_URL", default="")
 WAGTAILIMAGES_MAX_UPLOAD_SIZE = IMAGE_MAX_FILESIZE
+WAGTAILADMIN_RICH_TEXT_EDITORS = {
+    "default": {
+        "WIDGET": "wagtail.admin.rich_text.DraftailRichTextArea",
+        "OPTIONS": {
+            "features": ["h2", "bold", "italic", "link", "document-link", "image", "embed", "code"]
+        },
+    },
+}
 WAGTAILDOCS_DOCUMENT_MODEL = "sumo.WagtailDocument"
