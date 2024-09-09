@@ -11,7 +11,7 @@ from playwright_tests.messages.my_profile_pages_messages.my_profile_page_message
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# C2206070
+# T5697937
 @pytest.mark.userContributionTests
 def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     utilities = Utilities(page)

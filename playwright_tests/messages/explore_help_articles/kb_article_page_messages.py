@@ -22,7 +22,7 @@ class KBArticlePageMessages:
     KB_ARTICLE_NOT_APPROVED_CONTENT = "This article doesn't have approved content yet."
     KB_ARTICLE_SUBMISSION_TITLE_ERRORS = ["Document with this Title and Locale already exists.",
                                           "Document with this Slug and Locale already exists."]
-    KB_ARTICLE_RELEVANCY_ERROR = "Please select at least one product."
+    KB_ARTICLE_PRODUCT_ERROR = "Please select at least one product."
     KB_ARTICLE_TOPIC_ERROR = "Please select at least one topic."
     KB_ARTICLE_RESTRICTED_BANNER = "This document is restricted."
     KB_ARTICLE_NOT_READY_FOR_TRANSLATION_BANNER = ("Traduci un document în engleză care nu este "

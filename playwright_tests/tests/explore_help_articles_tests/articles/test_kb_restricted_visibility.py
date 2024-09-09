@@ -488,7 +488,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
     sumo_pages.kb_article_page._click_on_article_option()
     with allure.step("Clicking on the article child topic"):
         sumo_pages.kb_article_page._click_on_a_particular_breadcrumb(
-            article_details['article_topic'][1]
+            article_details['article_topic'][0]
         )
 
     with check, allure.step("Verifying that the article is listed inside the article topic "
@@ -529,7 +529,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
     sumo_pages.kb_article_page._click_on_article_option()
     with allure.step("Clicking on the article child topic"):
         sumo_pages.kb_article_page._click_on_a_particular_breadcrumb(
-            article_details['article_topic'][1]
+            article_details['article_topic'][0]
         )
 
     with allure.step("Verifying that the article is displayed for the second whitelisted "

@@ -42,7 +42,7 @@ def test_popular_topics_navbar(page: Page):
                     assert sumo_pages.product_topics_page._get_selected_navbar_option() == option
 
 
-#  C2428991
+#  T5696796
 @pytest.mark.productTopicsPage
 def test_learn_more_redirect(page: Page):
     utilities = Utilities(page)
@@ -61,7 +61,7 @@ def test_learn_more_redirect(page: Page):
                 expect(page).to_have_url(ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL)
 
 
-# C2188690
+# T5696738
 @pytest.mark.productTopicsPage
 def test_aaq_redirect(page: Page):
     utilities = Utilities(page)

@@ -40,6 +40,7 @@ def test_contact_support_page_content(page: Page):
 
 
 # C890368, C890387, C890388
+# T5696578, T5696592
 @pytest.mark.contactSupportPage
 def test_contact_support_page_cards_redirect(page: Page):
     sumo_pages = SumoPages(page)
@@ -63,6 +64,7 @@ def test_contact_support_page_cards_redirect(page: Page):
             sumo_pages.product_solutions_page._click_on_the_completed_milestone()
 
 
+# T5696795
 @pytest.mark.contactSupportPage
 def test_browse_all_product_forums_button_redirect(page: Page):
     sumo_pages = SumoPages(page)

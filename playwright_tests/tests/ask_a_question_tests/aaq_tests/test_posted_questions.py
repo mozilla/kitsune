@@ -1,4 +1,5 @@
 import os
+import time
 
 import allure
 import pytest
@@ -18,6 +19,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C2191086, C2191094, C2191263,  C2191263, C2191087, C2191088
+# T5696747, T5696755, T5696748, T5696751, T5696749
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_5', ''])
 def test_posted_question_details(page: Page, username):
@@ -62,7 +64,7 @@ def test_posted_question_details(page: Page, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191092,  C2191263
+# T5696750, T5696753
 @pytest.mark.postedQuestions
 def test_edit_this_question_functionality_not_signed_in(page: Page):
     utilities = Utilities(page)
@@ -196,7 +198,7 @@ def test_edit_other_user_question_non_admin(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191262, C2436105, C2191263
+# T5696778, T5696752, T5696797
 # To add image tests
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_6', 'TEST_ACCOUNT_MODERATOR'])
@@ -265,7 +267,7 @@ def test_edit_this_question_functionality(page: Page, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191263
+# T5696750, T5696779, T5696752
 @pytest.mark.postedQuestions
 def test_delete_question_cancel_button(page: Page):
     utilities = Utilities(page)
@@ -324,7 +326,7 @@ def test_delete_question_cancel_button(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191264, C2191265
+# T5696750, T5696780, T5696781, T5696752
 # To add coverage for images as well
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("status", ['locked', 'archived'])
@@ -499,7 +501,7 @@ def test_lock_and_archive_this_question(page: Page, status):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191267, C2191116, C2134136, C2191091
+# T5696750, T5696783, T5696752, T5696764
 @pytest.mark.postedQuestions
 def test_subscribe_to_feed_option(page: Page, is_firefox):
     utilities = Utilities(page)
@@ -642,7 +644,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox):
 
 
 # To work on adding a check inside the moderate forum content page
-# C2191491
+# T5696784, T5696750, T5696787,  T5696752
 @pytest.mark.postedQuestions
 def test_mark_as_spam_functionality(page: Page):
     utilities = Utilities(page)
@@ -719,7 +721,7 @@ def test_mark_as_spam_functionality(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191096, C2191098, C2191100
+# T5696756, T5696758, T5696760
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['', 'TEST_ACCOUNT_13'])
 def test_question_topics(page: Page, username):
@@ -782,6 +784,7 @@ def test_question_topics(page: Page, username):
         for question in sumo_pages.question_page._get_question_tag_options():
             with check, allure.step(f"Clicking on the {question} tag and verifying tha the "
                                     f"filter is applied to the clicked tag"):
+                time.sleep(1)
                 sumo_pages.question_page._click_on_a_certain_tag(question)
                 assert (question == sumo_pages.product_support_forum.
                         _get_text_of_selected_tag_filter_option())
@@ -836,7 +839,7 @@ def test_question_topics(page: Page, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191091
+# T5696750, T5696752
 @pytest.mark.postedQuestions
 def test_email_updates_option_visibility(page: Page):
     utilities = Utilities(page)
@@ -868,7 +871,7 @@ def test_email_updates_option_visibility(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191268
+# T5696771
 @pytest.mark.postedQuestions
 def test_mark_reply_as_spam(page: Page):
     utilities = Utilities(page)
@@ -982,6 +985,7 @@ def test_mark_reply_as_spam(page: Page):
 
 # Need to expand this to contain additional text format.
 # C2191270, C2191259
+# T5696785
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_13', 'TEST_ACCOUNT_MODERATOR'])
 def test_edit_reply(page: Page, username):
@@ -1103,7 +1107,7 @@ def test_edit_reply(page: Page, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191272
+# T5696786
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_13', 'TEST_ACCOUNT_MODERATOR'])
 def test_delete_reply(page: Page, username):
@@ -1182,7 +1186,7 @@ def test_delete_reply(page: Page, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2192383, C2191224
+# T5696788, T5696767
 # Need to re-verify this for signed out case before submitting this
 @pytest.mark.postedQuestions
 def test_i_have_this_problem_too(page: Page):
@@ -1240,7 +1244,7 @@ def test_i_have_this_problem_too(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2192384
+# T5696789
 @pytest.mark.postedQuestions
 def test_solves_this_problem(page: Page):
     utilities = Utilities(page)
@@ -1331,7 +1335,7 @@ def test_solves_this_problem(page: Page):
 
 
 # Need to add test for preview as well.
-# C2260447, C2260448, C2191244, C2191242
+# T5696791, T5696772, T5696774, T5696776, T5696792
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("quote_on", ['reply', 'question'])
 def test_quote_reply_functionality(page: Page, quote_on):
@@ -1479,7 +1483,7 @@ def test_quote_reply_functionality(page: Page, quote_on):
 
 
 # To add tests for "I have this problem, too" option
-# C2191117, C2191223, C2191226
+# T5696766, T5696765, T5696769
 @pytest.mark.postedQuestions
 def test_quote_reply_functionality_signed_out(page: Page):
     utilities = Utilities(page)
@@ -1573,7 +1577,7 @@ def test_quote_reply_functionality_signed_out(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191227
+# T5696770
 # Currently fails due to https://github.com/mozilla/sumo/issues/1216
 @pytest.mark.skip
 def test_question_reply_votes(page: Page):
@@ -1704,6 +1708,7 @@ def test_question_reply_votes(page: Page):
 
 
 # C2260449, C2260450, C2191243, C2191245
+# T5696793, T5696773, T5696775
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("flagged_content, username",
                          [('question_content', 'TEST_ACCOUNT_13'),
@@ -1811,7 +1816,7 @@ def test_report_abuse(page: Page, flagged_content, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C2191261
+# T5696777
 @pytest.mark.postedQuestions
 def test_common_responses(page: Page):
     utilities = Utilities(page)

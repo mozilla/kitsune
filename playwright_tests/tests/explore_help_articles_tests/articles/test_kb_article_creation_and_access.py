@@ -617,9 +617,8 @@ def test_kb_article_title_and_slug_validations(page: Page):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
-# C2091665
 @pytest.mark.kbArticleCreationAndAccess
-def test_kb_article_relevancy_validations(page: Page):
+def test_kb_article_product_validations(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
@@ -628,12 +627,12 @@ def test_kb_article_relevancy_validations(page: Page):
         ))
 
     with allure.step("Create a new simple article and verifying that we are on the same page"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(selected_relevancy=False)
+        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(selected_product=False)
         expect(page).to_have_url(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
     with check, allure.step("Verifying that the correct error message is displayed"):
         assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
-        )[0] == KBArticlePageMessages.KB_ARTICLE_RELEVANCY_ERROR
+        )[0] == KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR
 
 
 # C2091665, C2243453
@@ -1116,7 +1115,7 @@ def test_edit_article_metadata_category(page: Page):
 
 # C2243452, C2243453
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_article_metadata_relevancy_and_topic(page: Page):
+def test_edit_article_metadata_product_and_topic(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an Admin account"):
@@ -1129,30 +1128,30 @@ def test_edit_article_metadata_relevancy_and_topic(page: Page):
             approve_first_revision=True
         )
 
-    with check, allure.step("Editing the article metadata by deselecting the relevancy and "
+    with check, allure.step("Editing the article metadata by deselecting the product and "
                             "verifying that the correct error message is displayed"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            relevancy=article_details['article_relevancy']
+            product=article_details['article_product']
         )
         check.equal(
             sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
-            KBArticlePageMessages.KB_ARTICLE_RELEVANCY_ERROR
+            KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR
         )
 
-    with check, allure.step("Selecting a different relevancy group, deselecting the topics "
+    with check, allure.step("Selecting a different product, deselecting the topics "
                             "option and verifying that the correct error message is "
                             "displayed"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            relevancy="Pocket", topics=article_details['article_topic']
+            product="Firefox for Android", topics=article_details['article_topic'][0]
         )
         check.equal(
             sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
             KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR
         )
 
-    with allure.step("Selecting a different topic relevant to the relevancy group"):
+    with allure.step("Selecting a different topic relevant to the product group"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            topics=["Pocket", "Getting Started"]
+            topics=["Browse", "Bookmarks"]
         )
 
     with check, allure.step("Verifying that the correct breadcrumb is displayed"):

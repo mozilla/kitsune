@@ -32,7 +32,7 @@ def create_delete_article(request, page: Page):
             'article_keyword': None,
             'allow_discussion': True,
             'allow_translations': True,
-            'selected_relevancy': True,
+            'selected_product': True,
             'selected_topics': True,
             'search_summary': None,
             'article_content': None,

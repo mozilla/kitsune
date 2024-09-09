@@ -29,7 +29,7 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
                                  article_keyword=None,
                                  allow_discussion=True,
                                  allow_translations=True,
-                                 selected_relevancy=True,
+                                 selected_product=True,
                                  selected_topics=True,
                                  search_summary=None,
                                  article_content=None,
@@ -86,10 +86,10 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
         if not allow_translations:
             super()._check_allow_translations_checkbox()
 
-        relevancy = kb_article_test_data["relevant_to_option"]
-        if selected_relevancy is True:
-            super()._click_on_a_relevant_to_option_checkbox(
-                relevancy
+        product = kb_article_test_data["relevant_to_product"]
+        if selected_product is True:
+            super()._click_on_a_particular_product(
+                product
             )
 
         article_topic = [
@@ -99,7 +99,7 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
 
         # Adding Article topic
         if selected_topics is True:
-            super()._click_on_a_particular_parent_topic(
+            super()._click_on_a_particular_parent_topic_checkbox(
                 article_topic[0]
             )
             super()._click_on_a_particular_child_topic_checkbox(
@@ -190,7 +190,7 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
                 "article_slug": slug,
                 "article_child_topic": kb_article_test_data["selected_child_topic"],
                 "article_category": article_category,
-                "article_relevancy": relevancy,
+                "article_product": product,
                 "article_topic": article_topic,
                 "article_review_description": kb_article_test_data["changes_description"],
                 "keyword": keyword,
