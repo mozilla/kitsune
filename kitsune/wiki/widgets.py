@@ -11,24 +11,33 @@ from kitsune.wiki.models import Document
 class TopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics and their subtopics as checkboxes."""
 
+    def set_topic_attributes(self, topic, selected_topics, topic_subtopics, product_ids):
+        topic.checked = topic.id in selected_topics
+        topic.products_as_json = json.dumps(product_ids.get(topic.id, []))
+        topic.my_subtopics = topic_subtopics.get(topic.id, [])
+        for subtopic in topic.my_subtopics:
+            self.set_topic_attributes(subtopic, selected_topics, topic_subtopics, product_ids)
+
     def render(self, name, value, attrs=None, renderer=None):
-        selected_topics = set(value) if value else set()
-        # Get all of the topics and their subtopics.
-        topics_and_subtopics = list(Topic.active.prefetch_related("products"))
-        # Get the topics only.
-        topics = [t for t in topics_and_subtopics if t.parent_id is None]
+        selected_topics = set(value or [])
+        topics_and_subtopics = Topic.active.prefetch_related("products").select_related("parent")
+
+        # Create a dictionary of topic_id: [subtopics]
+        topic_subtopics = {}
+        # Create a dictionary of topic_id: [product_ids]
+        product_ids = {}
+        topics = []
+
+        for topic in topics_and_subtopics:
+            if topic.parent_id is None:
+                topics.append(topic)
+            else:
+                topic_subtopics.setdefault(topic.parent_id, []).append(topic)
+
+            product_ids[topic.id] = [str(id) for id in topic.products.values_list("id", flat=True)]
+
         for topic in topics:
-            topic.checked = topic.id in selected_topics
-            topic.products_as_json = json.dumps(
-                [str(id) for id in topic.products.values_list("id", flat=True)]
-            )
-            # Get all of the subtopics for this topic.
-            topic.my_subtopics = [t for t in topics_and_subtopics if t.parent_id == topic.id]
-            for subtopic in topic.my_subtopics:
-                subtopic.checked = subtopic.id in selected_topics
-                subtopic.products_as_json = json.dumps(
-                    [str(id) for id in subtopic.products.values_list("id", flat=True)]
-                )
+            self.set_topic_attributes(topic, selected_topics, topic_subtopics, product_ids)
 
         return render_to_string(
             "wiki/includes/topics_widget.html",
@@ -43,13 +52,13 @@ class ProductsWidget(forms.widgets.SelectMultiple):
     """A widget to render the products as checkboxes."""
 
     def render(self, name, value, attrs=None, renderer=None):
-        selected_products = set(value) if value else set()
-        # Get all of the topics and their subtopics.
-        products = list(Product.active.prefetch_related("m2m_topics"))
+        selected_products = set(value or [])
+        products = Product.active.prefetch_related("m2m_topics")
+
         for product in products:
             product.checked = product.id in selected_products
             product.topics_as_json = json.dumps(
-                [str(id) for id in product.m2m_topics.values_list("id", flat=True)]
+                list(map(str, product.m2m_topics.values_list("id", flat=True)))
             )
 
         return render_to_string(
