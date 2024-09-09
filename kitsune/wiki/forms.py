@@ -16,7 +16,7 @@ from kitsune.wiki.models import (
     Revision,
 )
 from kitsune.wiki.tasks import add_short_links
-from kitsune.wiki.widgets import ProductTopicsAndSubtopicsWidget, RelatedDocumentsWidget
+from kitsune.wiki.widgets import ProductsWidget, TopicsWidget, RelatedDocumentsWidget
 
 TITLE_REQUIRED = _lazy("Please provide a title.")
 TITLE_SHORT = _lazy(
@@ -71,40 +71,6 @@ TOPIC_REQUIRED = _lazy("Please select at least one topic.")
 class DocumentForm(forms.ModelForm):
     """Form to create/edit a document."""
 
-    def __init__(self, *args, **kwargs):
-        # Quasi-kwargs:
-        can_archive = kwargs.pop("can_archive", False)
-        can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
-        initial_title = kwargs.pop("initial_title", "")
-
-        super(DocumentForm, self).__init__(*args, **kwargs)
-
-        title_field = self.fields["title"]
-        title_field.initial = initial_title
-
-        slug_field = self.fields["slug"]
-        slug_field.initial = slugify(initial_title)
-
-        topics_field = self.fields["topics"]
-        topics_field.choices = Topic.active.values_list("id", "title")
-
-        products_field = self.fields["products"]
-        products_field.choices = Product.active.values_list("id", "title")
-
-        related_documents_field = self.fields["related_documents"]
-        related_documents_field.choices = Document.objects.values_list("id", "title")
-
-        # If user hasn't permission to frob is_archived, remove the field. This
-        # causes save() to skip it as well.
-        if not can_archive:
-            del self.fields["is_archived"]
-
-        # If user hasn't permission to mess with needs_change*, remove the
-        # fields. This causes save() to skip it as well.
-        if not can_edit_needs_change:
-            del self.fields["needs_change"]
-            del self.fields["needs_change_comment"]
-
     title = forms.CharField(
         min_length=5,
         max_length=255,
@@ -134,10 +100,6 @@ class DocumentForm(forms.ModelForm):
         },
     )
 
-    products = forms.MultipleChoiceField(
-        label=_lazy("Relevant to:"), required=False, widget=forms.CheckboxSelectMultiple()
-    )
-
     is_localizable = forms.BooleanField(
         initial=True, label=_lazy("Allow translations:"), required=False
     )
@@ -165,7 +127,15 @@ class DocumentForm(forms.ModelForm):
     )
 
     topics = forms.MultipleChoiceField(
-        label=_lazy("Topics:"), required=False, widget=ProductTopicsAndSubtopicsWidget()
+        label=_lazy("Select topic(s)"),
+        required=False,
+        widget=TopicsWidget(),
+    )
+
+    products = forms.MultipleChoiceField(
+        label=_lazy("Select product(s)"),
+        required=False,
+        widget=ProductsWidget(),
     )
 
     related_documents = forms.MultipleChoiceField(
@@ -220,6 +190,40 @@ class DocumentForm(forms.ModelForm):
             "related_documents",
             "restrict_to_groups",
         )
+
+    def __init__(self, *args, **kwargs):
+        # Quasi-kwargs:
+        can_archive = kwargs.pop("can_archive", False)
+        can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
+        initial_title = kwargs.pop("initial_title", "")
+
+        super(DocumentForm, self).__init__(*args, **kwargs)
+
+        title_field = self.fields["title"]
+        title_field.initial = initial_title
+
+        slug_field = self.fields["slug"]
+        slug_field.initial = slugify(initial_title)
+
+        topics_field = self.fields["topics"]
+        topics_field.choices = Topic.active.values_list("id", "title")
+
+        products_field = self.fields["products"]
+        products_field.choices = Product.active.values_list("id", "title")
+
+        related_documents_field = self.fields["related_documents"]
+        related_documents_field.choices = Document.objects.values_list("id", "title")
+
+        # If user hasn't permission to frob is_archived, remove the field. This
+        # causes save() to skip it as well.
+        if not can_archive:
+            del self.fields["is_archived"]
+
+        # If user hasn't permission to mess with needs_change*, remove the
+        # fields. This causes save() to skip it as well.
+        if not can_edit_needs_change:
+            del self.fields["needs_change"]
+            del self.fields["needs_change_comment"]
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""

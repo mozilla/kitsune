@@ -1,0 +1,16 @@
+<section id="relevant-products">
+  <ul class="checkbox-list">
+    {% for product in products %}
+    <li>
+      <div class="field checkbox is-condensed">
+        <input type="checkbox" name="{{ name }}"
+          id="id_product_{{ product.id }}"
+          data-product-id="{{ product.id }}"
+          data-topic-ids='{{ product.topics_as_json }}'
+          value="{{ product.id }}"{% if product.checked %} checked{% endif %}/>
+        <label for="id_product_{{ product.id }}">{{ product.title }}</label>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

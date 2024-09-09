@@ -1,0 +1,33 @@
+<section id="relevant-topics">
+  <ul class="checkbox-list">
+    {% for topic in topics %}
+    <li>
+    <div class="field checkbox is-condensed">
+      <input type="checkbox" class="level-1-topic" name="{{ name }}"
+        id="id_topic_{{ topic.id }}"
+        data-topic-id="{{ topic.id }}"
+        data-product-ids='{{ topic.products_as_json }}'
+        value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
+      <label for="id_topic_{{ topic.id }}">{{ topic.title }}</label>
+    </div>
+      {% if topic.my_subtopics %}
+        <ul class="checkbox-list--sublist">
+          {% for subtopic in topic.my_subtopics %}
+            <li>
+              <div class="field checkbox is-condensed">
+                <input type="checkbox" class="level-2-topic" name="{{ name }}"
+                  id="id_topic_{{ subtopic.id }}"
+                  data-topic-id="{{ subtopic.id }}"
+                  data-parent-topic-id="{{ topic.id }}"
+                  data-product-ids='{{ subtopic.products_as_json }}'
+                  value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
+                <label for="id_topic_{{ subtopic.id }}">{{ subtopic.title }}</label>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
