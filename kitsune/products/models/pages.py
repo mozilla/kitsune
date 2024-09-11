@@ -32,7 +32,7 @@ class SumoPlaceholderPage(Page):
     is_placeholder = True
 
     def serve(self, request):
-        return Http404
+        raise Http404
 
 
 # Define Blocks for Stream Fields
@@ -88,24 +88,13 @@ class FeaturedArticlesBlock(blocks.StructBlock):
 
     def get_context(self, value, parent_context=None):
         context = super().get_context(value, parent_context=parent_context)
-        context["featured"] = get_featured_articles(product=context["product"], locale="en-US")
+        context["featured"] = get_featured_articles(product=context["product"])
         return context
 
     class Meta:
         template = "products/blocks/featured_articles_block.html"
         icon = "doc-full-inverse"
         label = "Featured Articles"
-
-
-class FeaturedArticleBlock(blocks.StructBlock):
-    """Block for picking a single featured article"""
-
-    article = SnippetChooserBlock(target_model="wiki.Document", required=True)
-
-    class Meta:
-        template = "products/blocks/featured_article_block.html"
-        icon = "doc-full-inverse"
-        label = "Featured Article"
 
 
 class FrequentTopicsBlock(blocks.StructBlock):
@@ -137,15 +126,11 @@ class SingleProductIndexPage(Page):
             ("search", SearchBlock()),
             ("cta", CTABlock()),
             ("featured_articles", FeaturedArticlesBlock()),
-            ("featured_article", FeaturedArticleBlock()),
+            ("product_snippet", ProductSnippetBlock()),
             ("frequent_topics", FrequentTopicsBlock()),
-            ("text", blocks.RichTextBlock(search_index=True, editor="default")),
+            ("text", blocks.RichTextBlock()),
         ]
     )
-
-    def get_context(self, request, *args, **kwargs):
-        context = super().get_context(request, *args, **kwargs)
-        return context
 
     content_panels = Page.content_panels + [FieldPanel("product"), FieldPanel("body")]
 
