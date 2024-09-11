@@ -1,5 +1,12 @@
-  {% if value.type=='Community' %}
-  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
-    {% include "landings/includes/join-our-community-callout.html" %}
-  </section>
-  {% endif %}
+{% if value.type=='Community' %}
+<div class="card card--callout is-full-width has-moz-headings">
+  <div class="card--callout-wrap-narrow">
+    <img class="card--feature-img" src="{{ webpack_static('sumo/img/join-our-community.png') }}" alt="Illustration of community" />
+    <div class="card--details">
+      <h3 class="card--title">{{ value.headline }}</h3>
+      <p class="card--desc">{{ value.details }}</p>
+      <p class="card--desc"><strong><a href="{{ value.link }}">{{ _('Learn More') }}</a></strong></p>
+    </div>
+  </div>
+</div>
+{% endif %}
