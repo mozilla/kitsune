@@ -64,8 +64,6 @@ class SearchBlock(blocks.StructBlock):
 class CTABlock(blocks.StructBlock):
     """Block for the call to action"""
 
-    # Doesn't do much at the moment...#todo
-
     headline = blocks.CharBlock(required=True, max_length=255)
     details = blocks.RichTextBlock(required=True)
     link = blocks.URLBlock(required=True)
