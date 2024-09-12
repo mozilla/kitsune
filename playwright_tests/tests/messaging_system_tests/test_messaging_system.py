@@ -48,7 +48,7 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
         ) == SentMessagesPageMessages.NO_MESSAGES_IN_SENT_MESSAGES_TEXT
 
 
-# C2094292
+# T5697913
 # This test needs to be updated to fetch the username from a different place
 @pytest.mark.messagingSystem
 def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):

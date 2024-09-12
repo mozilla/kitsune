@@ -71,29 +71,9 @@ class KBArticleEditMetadata(BasePage):
     def _select_category(self, option: str):
         super()._select_option_by_label(self.__category_select_field, option)
 
-    def _is_relevant_checkbox_checked(self, option: str) -> bool:
-        return super()._is_checkbox_checked(
-            f"//div[@id='id_products']//" f"label[text()='\n {option}']/input"
-        )
-
-    def _check_a_particular_relevancy_option(self, option: str):
-        super()._click(f"//div[@id='id_products']//label[normalize-space(text())='{option}']")
-
-    def _click_on_a_particular_topics_foldout_section(self, option: str):
-        super()._click(f"//section[@id='relevant-topics']//button[text()='{option}']")
-
-    def _is_a_particular_topic_checkbox_checked(self, option: str) -> bool:
-        return super()._is_checkbox_checked(
-            f"//ul[@id='expand-mzpcdetailsh-0' and"
-            f" @aria-hidden='false']//"
-            f"label[text()='{option}']/../input"
-        )
-
-    def _check_a_particular_topic_checkbox(self, option: str):
-        super()._click(
-            f"//ul[@id='expand-mzpcdetailsh-0' and @aria-hidden='false']//"
-            f"label[text()='{option}']"
-        )
+    def _check_product_checkbox(self, product_name: str):
+        super()._click(f"//section[@id='relevant-products']//label[normalize-space(text())"
+                       f"='{product_name}']")
 
     def _is_obsolete_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__obsolete_checkbox)

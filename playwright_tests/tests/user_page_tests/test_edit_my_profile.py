@@ -368,7 +368,7 @@ def test_biography_field_accepts_html_tags(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-#  C2107899, C2107899
+#  T5697917
 @pytest.mark.editUserProfileTests
 def test_make_my_email_address_visible_checkbox_checked(page: Page):
     utilities = Utilities(page)
@@ -450,7 +450,7 @@ def test_make_my_email_address_visible_checkbox_unchecked(page: Page):
         expect(sumo_pages.my_profile_page._publicly_displayed_email_element()).to_be_hidden()
 
 
-# C2107900, C2107900
+# T5697918
 @pytest.mark.editUserProfileTests
 def test_website_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -507,7 +507,7 @@ def test_website_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107901, C2107901
+# T5697919
 @pytest.mark.editUserProfileTests
 def test_twitter_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -574,7 +574,7 @@ def test_twitter_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107903, C2107903
+# T5697921
 @pytest.mark.editUserProfileTests
 def test_community_portal_username_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -640,7 +640,7 @@ def test_community_portal_username_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107902,C2107902
+# T5697920
 @pytest.mark.editUserProfileTests
 def test_people_directory_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -693,7 +693,7 @@ def test_people_directory_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107933, C2107933
+# T5697922
 @pytest.mark.editUserProfileTests
 def test_matrix_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -743,7 +743,7 @@ def test_matrix_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107934, C2107934
+# T5697923
 @pytest.mark.editUserProfileTests
 def test_country_location_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -798,7 +798,7 @@ def test_country_location_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107935, C2107935
+# T5697924
 @pytest.mark.editUserProfileTests
 def test_city_location_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -848,7 +848,7 @@ def test_city_location_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2107938, C2107938
+# T5697925
 @pytest.mark.editUserProfileTests
 def test_involved_since_information_is_displayed(page: Page):
     utilities = Utilities(page)
@@ -908,7 +908,7 @@ def test_involved_since_information_is_displayed(page: Page):
         sumo_pages.edit_my_profile_page._click_update_my_profile_button()
 
 
-# C2087552, C2108840
+# T5697906, T5697929
 @pytest.mark.editUserProfileTests
 def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Page):
     utilities = Utilities(page)
@@ -960,7 +960,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
         expect(sumo_pages.edit_my_profile_page._is_my_profile_edit_form_displayed()).to_be_hidden()
 
 
-# C2108839
+# T5697928
 @pytest.mark.editUserProfileTests
 def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: Page):
     utilities = Utilities(page)
@@ -1002,7 +1002,7 @@ def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: 
         expect(sumo_pages.my_profile_page._is_report_user_option_displayed()).to_be_hidden()
 
 
-# C2108841
+# T5697930
 @pytest.mark.editUserProfileTests
 def test_private_message_button_redirects_non_signed_in_users_to_the_fxa_login_flow(page: Page):
     utilities = Utilities(page)

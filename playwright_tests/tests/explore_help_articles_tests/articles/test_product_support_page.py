@@ -145,6 +145,7 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
                     utilities.navigate_back()
 
 
+#  T5696580
 @pytest.mark.skip
 def test_product_support_page_featured_articles_redirect(page: Page):
     utilities = Utilities(page)

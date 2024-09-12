@@ -82,7 +82,7 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
         assert number_of_questions == sumo_pages.my_questions_page._get_number_of_questions()
 
 
-# C890821
+# T5697863
 @pytest.mark.userQuestions
 def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Page):
     utilities = Utilities(page)
@@ -158,7 +158,7 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
         )
 
 
-#  C890823, C890831
+# T5697862, T5697864, T5697865
 @pytest.mark.userQuestions
 def test_my_question_page_reflects_posted_questions_and_redirects_to_the_correct_question(
     page: Page

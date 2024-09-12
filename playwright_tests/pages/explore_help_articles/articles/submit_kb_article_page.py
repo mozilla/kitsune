@@ -125,26 +125,25 @@ class SubmitKBArticlePage(BasePage):
     def _is_preview_content_section_displayed(self) -> Locator:
         return super()._get_element_locator(self.__kb_article_preview_content)
 
-    def _click_on_a_relevant_to_option_checkbox(self, option_to_click: str):
-        super()._click(
-            f"//div[@id='id_products']//" f"label[normalize-space(text())='{option_to_click}']"
-        )
-
     def _get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:
         return super()._get_text_of_element(
             f"//div[@id='id_products']//" f"input[@id='id_products_{option_to_click}']/.."
         )
 
-    def _click_on_a_particular_parent_topic(self, parent_topic: str):
-        super()._click(f"//section[@id='relevant-topics']//button[text()='{parent_topic}']")
+    def _click_on_a_particular_product(self, product_name: str):
+        super()._click(f"//section[@id='relevant-products']//label[normalize-space(text())"
+                       f"='{product_name}']")
+
+    def _click_on_a_particular_parent_topic_checkbox(self, parent_topic_name: str):
+        super()._click(f"//section[@id='relevant-topics']//label[normalize-space(text())"
+                       f"='{parent_topic_name}']")
 
     def _click_on_a_particular_child_topic_checkbox(
         self, parent_topic: str, child_topic_checkbox: str
     ):
-        super()._click(
-            f"//section[@id='relevant-topics']//button[text()='{parent_topic}']/parent::h3/"
-            f"following-sibling::ul[1]//label[text()='{child_topic_checkbox}']"
-        )
+        super()._click(f"//section[@id='relevant-topics']//label[normalize-space(text())='"
+                       f"{parent_topic}']/../../..//label[normalize-space(text())='"
+                       f"{child_topic_checkbox}']")
 
     def _click_on_insert_media_textarea_option(self):
         super()._click(self.__kb_article_insert_media)

@@ -9,7 +9,7 @@ from playwright_tests.messages.my_profile_pages_messages.edit_settings_page_mess
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# C891396,  C2108836
+# T5697867, T5697927
 @pytest.mark.userSettings
 def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     utilities = Utilities(page)

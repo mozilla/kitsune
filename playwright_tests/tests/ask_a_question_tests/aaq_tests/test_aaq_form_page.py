@@ -15,7 +15,7 @@ from playwright_tests.messages.contribute_messages.con_pages.con_page_messages i
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# C2188694, C2188695
+# T5696741, T5696742
 @pytest.mark.aaqPage
 def test_community_card_and_helpful_tip_are_displayed_for_freemium_product(page: Page):
     utilities = Utilities(page)
@@ -133,7 +133,7 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, username):
                     ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
 
-# C890537
+# T5696596
 @pytest.mark.aaqPage
 def test_corresponding_aaq_product_name_and_image_are_displayed(page: Page):
     utilities = Utilities(page)
@@ -161,7 +161,7 @@ def test_corresponding_aaq_product_name_and_image_are_displayed(page: Page):
                 assert sumo_pages.aaq_form_page._get_aaq_form_page_heading() == product
 
 
-# C890535, C890536
+# T5696594, T5696595
 @pytest.mark.aaqPage
 def test_progress_milestone_redirect(page: Page):
     utilities = Utilities(page)
@@ -198,7 +198,7 @@ def test_progress_milestone_redirect(page: Page):
                 expect(page).to_have_url(ContactSupportMessages.PAGE_URL_CHANGE_PRODUCT_REDIRECT)
 
 
-# C890612
+# T5696600
 @pytest.mark.aaqPage
 def test_aaq_form_cancel_button_freemium_products(page: Page):
     utilities = Utilities(page)
@@ -246,7 +246,7 @@ def test_aaq_form_cancel_button_freemium_products(page: Page):
                 assert new_number == original_number_of_questions
 
 
-# C890614, C890613, C890538
+# T5696597, T5696601, T5696602
 @pytest.mark.aaqPage
 def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
     utilities = Utilities(page)
@@ -316,6 +316,7 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                         utilities.aaq_question_test_data["products_aaq_url"][product])
 
 
+# T5696633
 @pytest.mark.aaqPage
 def test_share_firefox_data_functionality(page: Page):
     utilities = Utilities(page)
@@ -455,7 +456,7 @@ def test_system_details_information(page: Page):
                     sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# C1512592
+# T5696704
 @pytest.mark.aaqPage
 def test_premium_products_aaq(page: Page):
     utilities = Utilities(page)

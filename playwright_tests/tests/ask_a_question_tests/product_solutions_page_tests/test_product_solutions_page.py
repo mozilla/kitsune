@@ -48,7 +48,7 @@ def test_featured_articles_redirect(page: Page):
             utilities.navigate_back()
 
 
-#  C890375, C890379
+#  T5696585, T5696587
 @pytest.mark.productSolutionsPage
 def test_popular_topics_redirect(page: Page):
     utilities = Utilities(page)
@@ -92,7 +92,7 @@ def test_popular_topics_redirect(page: Page):
         utilities.navigate_back()
 
 
-# C890382
+# T5696588
 @pytest.mark.productSolutionsPage
 def test_ask_now_widget_redirect(page: Page):
     utilities = Utilities(page)
