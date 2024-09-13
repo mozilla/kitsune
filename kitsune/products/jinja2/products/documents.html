@@ -2,7 +2,7 @@
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'products/includes/product_macros.html' import product_dropdown %}
 {% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
-{% from 'wiki/includes/document_macros.html' import document_metadata %}
+{% from 'wiki/includes/document_macros.html' import document_metadata with context %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% if product %}
@@ -72,7 +72,7 @@
                 </a>
               </h2>
               <p>{{ document['document_summary'] }}</p>
-             {{ document_metadata(document['created'], document['is_past_thirty_days'], document['is_first_revision'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
+             {{ document_metadata(document['created'], document['is_first_revision'], document['product_titles'], helpful_votes=None, metadata_type="list") }}
             </div>
           </article>
         {% endfor %}

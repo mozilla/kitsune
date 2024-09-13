@@ -8,16 +8,17 @@ from zoneinfo import ZoneInfo
 import bleach
 import jinja2
 import wikimarkup.parser
-from babel import localedata
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
 from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone, is_aware, is_naive
+from django.utils.timezone import now as django_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext
@@ -231,15 +232,12 @@ def _babel_locale(locale):
 def _contextual_locale(context):
     """Return locale from the context, falling back to a default if invalid."""
     request = context.get("request")
-    locale = request.LANGUAGE_CODE
-    if not localedata.exists(locale):
-        locale = settings.LANGUAGE_CODE
-    return locale
+    return request.LANGUAGE_CODE if request else settings.LANGUAGE_CODE
 
 
 @jinja2.pass_context
 @library.global_function
-def datetimeformat(context, value, format="shortdatetime"):
+def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False):
     """
     Returns a formatted date/time using Babel's locale settings. Uses the
     timezone from settings.py, if the user has not been authenticated.
@@ -274,18 +272,21 @@ def datetimeformat(context, value, format="shortdatetime"):
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
 
-    # If within a day, 24 * 60 * 60 = 86400s
-    if format == "shortdatetime":
+    if use_naturaltime and (django_now().astimezone(convert_tzinfo) - convert_value).days < 30:
+        return naturaltime(convert_value)
+
+    if format == "shortdatetime" or format == "shortdate":
         # Check if the date is today
         today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
+        kwargs = {"format": "short", "tzinfo": convert_tzinfo, "locale": locale}
         if convert_value.toordinal() == today:
-            formatted = _lazy("Today at %s") % format_time(
-                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
-            )
+            formatted = _lazy("Today at %s") % format_time(convert_value, **kwargs)
         else:
-            formatted = format_datetime(
-                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
-            )
+            if format == "shortdatetime":
+                formatted = format_datetime(convert_value, **kwargs)
+            else:
+                del kwargs["tzinfo"]
+                formatted = format_date(convert_value, **kwargs)
     elif format == "longdatetime":
         formatted = format_datetime(
             convert_value, format="long", tzinfo=convert_tzinfo, locale=locale

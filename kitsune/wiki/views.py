@@ -3,7 +3,6 @@ import logging
 import time
 from datetime import datetime
 from datetime import time as datetime_time
-from datetime import timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -15,7 +14,12 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.cache import patch_vary_headers
@@ -294,15 +298,10 @@ def document(request, document_slug, document=None):
         else 0
     )
 
-    is_past_thirty_days = False
-    if doc.current_revision:
-        is_past_thirty_days = doc.current_revision.created < (datetime.now() - timedelta(days=30))
-
     is_first_revision = doc.revisions.filter(is_approved=True).count() == 1
 
     data = {
         "document": doc,
-        "is_past_thirty_days": is_past_thirty_days,
         "is_first_revision": is_first_revision,
         "redirected_from": redirected_from,
         "contributors": contributors,
