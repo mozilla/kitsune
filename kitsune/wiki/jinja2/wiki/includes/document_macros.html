@@ -12,7 +12,7 @@
   <h1 class="sumo-page-heading">{{ document.title }}</h1>
 {%- endmacro %}
 
-{% macro document_metadata(created_date, is_past_thirty_days, is_first_revision, product_titles, helpful_votes, metadata_type) -%}
+{% macro document_metadata(created_date, is_first_revision, product_titles, helpful_votes, metadata_type) -%}
   {% set truncate_length = 25 if helpful_votes else 50 %}
   <div id="document_metadata" class="{% if metadata_type=="list" %}has-border-top{% else %}has-border-bottom{% endif %}">
     <span class="product tooltip-container">
@@ -20,14 +20,18 @@
       <span class="tooltip">{{ product_titles }}</span>
     </span>
     {% if created_date %}
-    <span class="last-updated">
-      <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong> <span class="time">{% if is_past_thirty_days %}{{ created_date.strftime('%m/%d/%Y') }}{% else %}{{ created_date|naturaltime }}{% endif %}</span>
-    </span>
+      <span class="last-updated">
+       <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> 
+       <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong> 
+        <span class="time">
+          {{ datetimeformat(created_date, format="shortdate", use_naturaltime=True) }}
+        </span>
+      </span>
     {% endif %}
     {% if helpful_votes %}
-    <span class="helpful-info">
-	    <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/>{# L10n: {0} is 'helpful-count', {1} is the actual percentage and {2} is the percent sign. #}{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
-    </span>
+      <span class="helpful-info">
+        <img class="thumbsup" src="{{ webpack_static('sumo/img/thumbs-up.svg') }}"/>{# L10n: {0} is 'helpful-count', {1} is the actual percentage and {2} is the percent sign. #}{{ _('<span class="{0}">{1}{2}</span> of users voted this helpful')|fe("helpful-count", helpful_votes, "%") }}
+      </span>
     {% endif %}
   </div>
 {%- endmacro %}

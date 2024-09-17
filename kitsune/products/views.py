@@ -1,5 +1,4 @@
 import json
-from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
@@ -152,9 +151,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
     documents, fallback_documents = documents_for(request.user, **doc_kw)
 
-    thirty_days_ago = datetime.now() - timedelta(days=30)
     for document in documents:
-        document["is_past_thirty_days"] = document["created"] < thirty_days_ago
         document["is_first_revision"] = (
             Revision.objects.filter(document=document["id"], is_approved=True).count() == 1
         )

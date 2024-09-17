@@ -1,7 +1,14 @@
 {% extends "wiki/base.html" %}
 
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
-{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_metadata, document_content, inpage_contact_cta, topic_list, related_documents  %}
+{% from "wiki/includes/document_macros.html" import contributor_list, 
+                                                    document_title, 
+                                                    document_messages, 
+                                                    document_content, 
+                                                    inpage_contact_cta, 
+                                                    topic_list, 
+                                                    related_documents,
+                                                    document_metadata with context %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% from "includes/common_macros.html" import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
@@ -87,7 +94,7 @@
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
       {% if not document.is_archived %}
-        {{ document_metadata(document.current_revision.created, is_past_thirty_days, is_first_revision, product_titles, helpful_votes, metadata_type="document") }}
+        {{ document_metadata(document.current_revision.created, is_first_revision, product_titles, helpful_votes, metadata_type="document") }}
       {% endif %}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
