@@ -1317,6 +1317,7 @@ MOZILLA_LOCATION_SERVICE = config(
 )
 
 # Wagtail settings
+WAGTAIL_ENABLE = config("WAGTAIL_ENABLE", default=False, cast=bool)
 WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=False, cast=bool)
 WAGTAIL_I18N_ENABLED = True
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
