@@ -19,14 +19,14 @@ class UserNavbar(BasePage):
         super().__init__(page)
 
     # My profile navbar actions.
-    def _click_on_my_profile_option(self):
-        super()._click(self.__my_profile_option)
+    def click_on_my_profile_option(self):
+        self._click(self.__my_profile_option)
 
-    def _click_on_edit_my_profile_option(self):
-        super()._click(self.__edit_my_profile_option)
+    def click_on_edit_my_profile_option(self):
+        self._click(self.__edit_my_profile_option)
 
-    def _click_on_edit_contribution_areas_option(self):
-        super()._click(self.__edit_my_profile_contribution_areas_option)
+    def click_on_edit_contribution_areas_option(self):
+        self._click(self.__edit_my_profile_contribution_areas_option)
 
-    def _click_on_my_questions_option(self):
-        super()._click(self.__edit_my_profile_my_questions_option)
+    def click_on_my_questions_option(self):
+        self._click(self.__edit_my_profile_my_questions_option)

@@ -20,7 +20,7 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
 
     with allure.step("Accessing the 'My profile' page and extracting the original number of "
                      "posted questions"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_questions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
@@ -41,7 +41,7 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
 
     with allure.step("Navigating back to the profile page and verifying that the number of "
                      "questions has incremented"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         new_number = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
@@ -70,7 +70,7 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
 
     with allure.step("Accessing the 'My profile' and extracting the number of questions "
                      "listed inside the my profile page"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         number_of_questions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
@@ -88,18 +88,18 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a user which has no posted questions"):
-        sumo_pages.top_navbar._click_on_signin_signup_button()
+        sumo_pages.top_navbar.click_on_signin_signup_button()
         sumo_pages.auth_flow_page.sign_in_flow(
             username=utilities.user_special_chars,
             account_password=utilities.user_secrets_pass
         )
 
-    original_user = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_user = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'My questions' page and verifying that the correct "
                      "message is displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
-        sumo_pages.user_navbar._click_on_my_questions_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
+        sumo_pages.user_navbar.click_on_my_questions_option()
         assert (
             sumo_pages.my_questions_page._get_text_of_no_question_message()
             == MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE
@@ -123,12 +123,12 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 
     with allure.step("Accessing the my questions page and verifying that the no question "
                      "message is no longer displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
-        sumo_pages.user_navbar._click_on_my_questions_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
+        sumo_pages.user_navbar.click_on_my_questions_option()
         expect(sumo_pages.my_questions_page._is_no_question_message_displayed()).to_be_hidden()
 
     with allure.step("Signing in with an admin account and deleting the posted question"):
-        sumo_pages.top_navbar._click_on_sign_out_button()
+        sumo_pages.top_navbar.click_on_sign_out_button()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -149,9 +149,9 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
     with allure.step("Signing in with the original user and verifying that the correct "
                      "message and the question list is no longer displayed"):
         utilities.delete_cookies()
-        sumo_pages.top_navbar._click_on_signin_signup_button()
+        sumo_pages.top_navbar.click_on_signin_signup_button()
         sumo_pages.auth_flow_page.login_with_existing_session()
-        sumo_pages.user_navbar._click_on_my_questions_option()
+        sumo_pages.user_navbar.click_on_my_questions_option()
         assert (
             sumo_pages.my_questions_page._get_text_of_no_question_message()
             == MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE
@@ -184,7 +184,7 @@ def test_my_question_page_reflects_posted_questions_and_redirects_to_the_correct
 
     with allure.step("Navigating to my questions profile page and verifying that the first "
                      "element from the My Questions page is the recently posted question"):
-        sumo_pages.top_navbar._click_on_my_questions_profile_option()
+        sumo_pages.top_navbar.click_on_my_questions_profile_option()
         assert sumo_pages.my_questions_page._get_text_of_first_listed_question().replace(
             " ", "") == question_info["aaq_subject"].replace(" ", "")
 

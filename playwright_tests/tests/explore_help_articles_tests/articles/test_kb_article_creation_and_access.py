@@ -696,7 +696,7 @@ def test_kb_article_keywords_and_summary(page: Page, username):
         )
 
     with allure.step("Clicking on the top navbar sumo nav logo"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.wait_for_given_timeout(65000)
 
     if username == 'simple_user':
@@ -846,7 +846,7 @@ def test_kb_article_keyword_and_summary_update(page: Page):
         )
 
     with allure.step("Clicking on the top navbar sumo nav logo"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
 
     with allure.step("Wait for ~1 minute until the kb article is available in search"):
         utilities.wait_for_given_timeout(60000)

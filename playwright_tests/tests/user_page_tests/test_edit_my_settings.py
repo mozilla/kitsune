@@ -22,18 +22,18 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with check, allure.step("Checking all user settings and verifying that the correct "
                             "notification banner is displayed and all checkboxes are checked"):
         sumo_pages.edit_profile_flow.check_all_user_settings()
-        assert sumo_pages.edit_my_profile_settings_page._settings_saved_notif_banner_txt(
+        assert sumo_pages.edit_my_profile_settings_page.settings_saved_notif_banner_txt(
         ) == EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE
         assert (
-            sumo_pages.edit_my_profile_settings_page._are_all_checkbox_checked()
+            sumo_pages.edit_my_profile_settings_page.are_all_checkbox_checked()
         ), "Not all checkboxes are checked!"
 
     with check, allure.step("Unchecking all the checkboxes and verifying that the correct "
                             "notification banner is displayed and all checkboxes are "
                             "unchecked"):
         sumo_pages.edit_profile_flow.check_all_user_settings()
-        assert sumo_pages.edit_my_profile_settings_page._settings_saved_notif_banner_txt(
+        assert sumo_pages.edit_my_profile_settings_page.settings_saved_notif_banner_txt(
         ) == EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE
         assert not (
-            sumo_pages.edit_my_profile_settings_page._are_all_checkbox_checked()
+            sumo_pages.edit_my_profile_settings_page.are_all_checkbox_checked()
         ), "Not all checkboxes are unchecked!"

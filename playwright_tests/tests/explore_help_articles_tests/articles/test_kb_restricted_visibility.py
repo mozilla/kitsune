@@ -178,7 +178,7 @@ def test_restricted_visibility_in_search_results(page: Page, create_delete_artic
         utilities.wait_for_given_timeout(60000)
 
     with allure.step("Clicking on the top-navbar sumo logo"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
 
     with check, allure.step("Verifying that the article is not displayed inside the search "
                             "results"):
@@ -234,7 +234,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
 
     with check, allure.step("Navigating to the recent revisions page and verifying that the "
                             "article is displayed"):
-        sumo_pages.top_navbar._click_on_recent_revisions_option()
+        sumo_pages.top_navbar.click_on_recent_revisions_option()
         expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
             article_details['article_title'])).to_be_visible()
 
@@ -270,7 +270,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
-        sumo_pages.top_navbar._click_on_recent_revisions_option()
+        sumo_pages.top_navbar.click_on_recent_revisions_option()
 
     with allure.step("Verifying that the article is displayed"):
         expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
@@ -303,7 +303,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     })[0]
 
     with allure.step("Navigating to the 'Media Gallery' page"):
-        sumo_pages.top_navbar._click_on_media_gallery_option()
+        sumo_pages.top_navbar.click_on_media_gallery_option()
 
     with check, allure.step("Searching for the added image and verifying that the article is "
                             "displayed for admin users inside the 'Articles' image list"):
@@ -355,7 +355,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
         )
 
     with allure.step("Navigating to the 'Media Gallery' page"):
-        sumo_pages.top_navbar._click_on_media_gallery_option()
+        sumo_pages.top_navbar.click_on_media_gallery_option()
 
     with check, allure.step("Searching for the added image and verifying that the article is "
                             "displayed for admin users inside the 'Articles' image list"):
@@ -380,7 +380,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
 
     with allure.step("Navigating to the media gallery image page and verifying that the "
                      "article is displayed for signed out users"):
-        sumo_pages.top_navbar._click_on_media_gallery_option()
+        sumo_pages.top_navbar.click_on_media_gallery_option()
         utilities.delete_cookies()
         sumo_pages.media_gallery._fill_search_media_gallery_searchbox_input_field(
             utilities.kb_article_test_data['article_image']
@@ -411,7 +411,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_del
     thread = _create_discussion_thread(page)
 
     with allure.step("Navigating to the Article Discussions page"):
-        sumo_pages.top_navbar._click_on_article_discussions_option()
+        sumo_pages.top_navbar.click_on_article_discussions_option()
 
     with check, allure.step("Verifying that the the kb article is displayed for admin users"):
         expect(sumo_pages.article_discussions_page
@@ -556,7 +556,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
     })[0]
 
     with allure.step("Navigating to the user profile page"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
 
     with allure.step("Clicking on the documents link"):
         sumo_pages.my_profile_page._click_on_my_profile_document_link()
@@ -595,7 +595,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
         )
 
     with allure.step("Navigating to the user profile page"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
 
     with allure.step("Clicking on the documents link"):
         sumo_pages.my_profile_page._click_on_my_profile_document_link()
@@ -613,7 +613,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
         remove_all_article_restrictions(page)
 
     with allure.step("Navigating to the user profile page"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
 
     with allure.step("Clicking on the documents link"):
         sumo_pages.my_profile_page._click_on_my_profile_document_link()
@@ -703,7 +703,7 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_
 
     with check, allure.step("Verifying that the article is displayed for users belonging to "
                             "the whitelisted group"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
@@ -714,7 +714,7 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_
 
     with allure.step("Verifying that the article is not displayed for users belonging to "
                      "non-whitelisted groups"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))

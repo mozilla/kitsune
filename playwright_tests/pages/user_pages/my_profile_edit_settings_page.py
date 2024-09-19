@@ -31,77 +31,77 @@ class MyProfileEditSettingsPage(BasePage):
         super().__init__(page)
 
     # My profile edit settings page actions.
-    def _get_edit_settings_page_header(self) -> str:
-        return super()._get_text_of_element(self.__edit_settings_page_header)
+    def get_edit_settings_page_header(self) -> str:
+        return self._get_text_of_element(self.__edit_settings_page_header)
 
-    def _get_text_of_checkbox_options(self) -> list[str]:
-        return super()._get_text_of_elements(self.__edit_settings_checkbox_options_label)
+    def get_text_of_checkbox_options(self) -> list[str]:
+        return self._get_text_of_elements(self.__edit_settings_checkbox_options_label)
 
-    def _settings_saved_notif_banner_txt(self) -> str:
-        return super()._get_text_of_element(
+    def settings_saved_notif_banner_txt(self) -> str:
+        return self._get_text_of_element(
             self.__your_settings_have_been_saved_notification_banner_text)
 
-    def _click_settings_saved_notification_banner(self):
-        super()._click(self.__your_settings_have_been_saved_notification_banner_close_button)
+    def click_settings_saved_notification_banner(self):
+        self._click(self.__your_settings_have_been_saved_notification_banner_close_button)
 
-    def _click_on_all_settings_checkboxes(self):
-        for checkbox in super()._get_element_handles(self.__edit_settings_checkbox_options_label):
+    def click_on_all_settings_checkboxes(self):
+        for checkbox in self._get_element_handles(self.__edit_settings_checkbox_options_label):
             checkbox.click()
 
-    def _click_on_watch_forum_threads_i_start_checkbox(self):
-        super()._click(self.__watch_forum_threads_I_start_checkbox)
+    def click_on_watch_forum_threads_i_start_checkbox(self):
+        self._click(self.__watch_forum_threads_I_start_checkbox)
 
-    def _click_on_watch_forum_threads_i_comment_in_checkbox(self):
-        super()._click(self.__watch_forum_threads_I_comment_in_checkbox)
+    def click_on_watch_forum_threads_i_comment_in_checkbox(self):
+        self._click(self.__watch_forum_threads_I_comment_in_checkbox)
 
-    def _click_on_watch_kb_discussions_threads_i_start_checkbox(self):
-        super()._click(self.__watch_kb_discussions_threads_I_start_checkbox)
+    def click_on_watch_kb_discussions_threads_i_start_checkbox(self):
+        self._click(self.__watch_kb_discussions_threads_I_start_checkbox)
 
-    def _click_on_watch_kb_discussions_threads_i_comment_checkbox(self):
-        super()._click(self.__watch_kb_discussion_threads_I_comment_in_checkbox)
+    def click_on_watch_kb_discussions_threads_i_comment_checkbox(self):
+        self._click(self.__watch_kb_discussion_threads_I_comment_in_checkbox)
 
-    def _click_on_watch_question_threads_i_comment(self):
-        super()._click(self.__watch_question_threads_I_comment_in_checkbox)
+    def click_on_watch_question_threads_i_comment(self):
+        self._click(self.__watch_question_threads_I_comment_in_checkbox)
 
-    def _click_on_send_emails_for_private_messages(self):
-        super()._click(self.__send_emails_for_private_messages_checkbox)
+    def click_on_send_emails_for_private_messages(self):
+        self._click(self.__send_emails_for_private_messages_checkbox)
 
-    def _click_on_update_button(self):
-        super()._click(self.__edit_settings_update_button)
+    def click_on_update_button(self):
+        self._click(self.__edit_settings_update_button)
 
-    def _is_watch_forum_threads_i_start_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__watch_forum_threads_I_start_checkbox)
+    def is_watch_forum_threads_i_start_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__watch_forum_threads_I_start_checkbox)
 
-    def _is_watch_forum_threads_i_comment_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__watch_forum_threads_I_comment_in_checkbox)
+    def is_watch_forum_threads_i_comment_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__watch_forum_threads_I_comment_in_checkbox)
 
-    def _is_watch_kb_discussion_threads_i_start_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__watch_kb_discussions_threads_I_start_checkbox)
+    def is_watch_kb_discussion_threads_i_start_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__watch_kb_discussions_threads_I_start_checkbox)
 
-    def _is_watch_kb_discussion_threads_i_comment_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(
+    def is_watch_kb_discussion_threads_i_comment_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(
             self.__watch_kb_discussion_threads_I_comment_in_checkbox)
 
-    def _is_watch_question_threads_i_comment_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__watch_question_threads_I_comment_in_checkbox)
+    def is_watch_question_threads_i_comment_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__watch_question_threads_I_comment_in_checkbox)
 
-    def _is_send_emails_for_private_messages_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__send_emails_for_private_messages_checkbox)
+    def is_send_emails_for_private_messages_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__send_emails_for_private_messages_checkbox)
 
-    def _notification_banner_element(self) -> Locator:
-        return super()._get_element_locator(
+    def notification_banner_element(self) -> Locator:
+        return self._get_element_locator(
             self.__your_settings_have_been_saved_notification_banner)
 
-    def _are_all_checkbox_checked(self) -> bool:
+    def are_all_checkbox_checked(self) -> bool:
         is_checked = [
-            self._is_watch_forum_threads_i_start_checkbox_checked(),
-            self._is_watch_forum_threads_i_comment_checkbox_checked(),
-            self._is_watch_kb_discussion_threads_i_start_checkbox_checked(),
-            self._is_watch_kb_discussion_threads_i_comment_checkbox_checked(),
-            self._is_watch_question_threads_i_comment_checkbox_checked(),
-            self._is_watch_question_threads_i_comment_checkbox_checked(),
-            self._is_watch_question_threads_i_comment_checkbox_checked(),
-            self._is_send_emails_for_private_messages_checkbox_checked(),
+            self.is_watch_forum_threads_i_start_checkbox_checked(),
+            self.is_watch_forum_threads_i_comment_checkbox_checked(),
+            self.is_watch_kb_discussion_threads_i_start_checkbox_checked(),
+            self.is_watch_kb_discussion_threads_i_comment_checkbox_checked(),
+            self.is_watch_question_threads_i_comment_checkbox_checked(),
+            self.is_watch_question_threads_i_comment_checkbox_checked(),
+            self.is_watch_question_threads_i_comment_checkbox_checked(),
+            self.is_send_emails_for_private_messages_checkbox_checked(),
         ]
 
         if False in is_checked:

@@ -1786,7 +1786,7 @@ def test_report_abuse(page: Page, flagged_content, username):
 
     with allure.step("Navigating to 'Moderate forum content page' and verifying that the "
                      "question exists inside the moderate forum content page"):
-        sumo_pages.top_navbar._click_on_moderate_forum_content_option()
+        sumo_pages.top_navbar.click_on_moderate_forum_content_option()
         expect(
             sumo_pages.moderate_forum_content_page._get_flagged_question_locator(
                 posted_question['question_details']['aaq_subject']

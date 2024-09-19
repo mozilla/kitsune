@@ -26,7 +26,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 def test_contribute_page_text(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the Contribute top-navbar option"):
-        sumo_pages.top_navbar._click_on_contribute_top_navbar_option()
+        sumo_pages.top_navbar.click_on_contribute_top_navbar_option()
 
     with check, allure.step("Verifying that the correct page hero header text is displayed"):
         assert sumo_pages.contribute_page._get_page_hero_main_header_text(
@@ -76,7 +76,7 @@ def test_contribute_page_text(page: Page):
 def test_contribute_page_images_are_not_broken(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the 'Contribute' top-navbar option"):
-        sumo_pages.top_navbar._click_on_contribute_top_navbar_option()
+        sumo_pages.top_navbar.click_on_contribute_top_navbar_option()
 
     for link in sumo_pages.contribute_page._get_all_page_links():
         image_link = link.get_attribute("src")
@@ -91,7 +91,7 @@ def test_contribute_page_breadcrumbs(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the Contribute top-navbar option"):
-        sumo_pages.top_navbar._click_on_contribute_top_navbar_option()
+        sumo_pages.top_navbar.click_on_contribute_top_navbar_option()
 
     breadcrumbs = [
         ContributePageMessages.FIRST_BREADCRUMB,
@@ -112,7 +112,7 @@ def test_way_to_contribute_redirects_to_correct_page(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the Contribute top-navbar option"):
-        sumo_pages.top_navbar._click_on_contribute_top_navbar_option()
+        sumo_pages.top_navbar.click_on_contribute_top_navbar_option()
 
     ways_to_contribute_links = [
         ContributeForumMessages.STAGE_CONTRIBUTE_FORUM_PAGE_URL,

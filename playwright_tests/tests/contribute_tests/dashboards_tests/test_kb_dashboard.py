@@ -26,7 +26,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
 
     with allure.step("Navigating to the kb dashboards and clicking on the 'Complete "
                      "overview' option"):
-        sumo_pages.top_navbar._click_on_dashboards_option()
+        sumo_pages.top_navbar.click_on_dashboards_option()
         sumo_pages.kb_dashboard_page._click_on_the_complete_overview_link()
 
     with allure.step("Verifying that we are redirected to the correct page"):
@@ -50,7 +50,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
 
     with allure.step("Navigating to the homepage and performing the sign in step since the "
                      "kb overview takes quite a bit to refresh/load"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -65,7 +65,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         ).to_be_hidden()
 
     with allure.step("Signing in with an admin account"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -96,7 +96,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         ).to_be_visible()
 
     with allure.step("Signing in with a non-admin user"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -112,7 +112,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         ).to_be_visible()
 
     with allure.step("Signing back with an admin account and deleting the article"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))

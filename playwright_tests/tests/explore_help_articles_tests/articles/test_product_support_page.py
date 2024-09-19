@@ -20,7 +20,7 @@ def test_product_support_page(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
-        sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.products_page._get_all_product_support_titles():
@@ -109,7 +109,7 @@ def test_product_support_page(page: Page):
                     expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
                 with allure.step("Navigating to products page via top-navbar"):
-                    sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+                    sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
 
 # C890929
@@ -118,7 +118,7 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
-        sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
 
@@ -151,7 +151,7 @@ def test_product_support_page_featured_articles_redirect(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
-        sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.products_page._get_all_product_support_titles():
@@ -196,7 +196,7 @@ def test_still_need_help_button_redirect(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):
-        sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.products_page._get_all_product_support_titles():
@@ -219,4 +219,4 @@ def test_still_need_help_button_redirect(page: Page):
                     ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
 
                 with allure.step("Navigating to products page via top-navbar"):
-                    sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+                    sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()

@@ -22,14 +22,14 @@ from playwright_tests.pages.sumo_pages import SumoPages
 def test_number_of_options_not_signed_in(page: Page):
     sumo_pages = SumoPages(page)
     with check, allure.step("Verifying that the SUMO logo is successfully displayed"):
-        image = sumo_pages.top_navbar._get_sumo_nav_logo()
+        image = sumo_pages.top_navbar.get_sumo_nav_logo()
         image_link = image.get_attribute("src")
         response = requests.get(image_link, stream=True)
         assert response.status_code < 400
 
     with allure.step("Verifying that the top-navbar for signed in users contains: Explore "
                      "Help Articles, Community Forums, Ask a Question and Contribute"):
-        top_navbar_items = sumo_pages.top_navbar._get_available_menu_titles()
+        top_navbar_items = sumo_pages.top_navbar.get_available_menu_titles()
         assert top_navbar_items == TopNavbarMessages.TOP_NAVBAR_OPTIONS, (
             "Incorrect elements displayed in top-navbar for signed out state"
         )
@@ -46,14 +46,14 @@ def test_number_of_options_signed_in(page: Page):
         ))
 
     with check, allure.step("Verifying that the SUMO logo is successfully displayed"):
-        image = sumo_pages.top_navbar._get_sumo_nav_logo()
+        image = sumo_pages.top_navbar.get_sumo_nav_logo()
         image_link = image.get_attribute("src")
         response = requests.get(image_link, stream=True)
         assert response.status_code < 400
 
     with allure.step("Verifying that the top-navbar contains: Explore Help Articles, "
                      "Community Forums, Ask a Question, Contribute"):
-        top_navbar_items = sumo_pages.top_navbar._get_available_menu_titles()
+        top_navbar_items = sumo_pages.top_navbar.get_available_menu_titles()
         assert top_navbar_items == TopNavbarMessages.TOP_NAVBAR_OPTIONS, (
             "Incorrect elements displayed in top-navbar for " "signed-in state"
         )
@@ -67,15 +67,15 @@ def test_explore_by_product_redirects(page: Page):
     with allure.step("Clicking on all options from the 'Explore Help Articles' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar
-                                       ._get_all_explore_by_product_options_locators()):
+                                       .get_all_explore_by_product_options_locators()):
             if index > 0:
-                sumo_pages.top_navbar._hover_over_explore_by_product_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
             current_option = re.sub(
                 r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
             if sumo_pages.top_navbar._is_locator_visible(option):
                 sumo_pages.top_navbar._click(option)
             else:
-                sumo_pages.top_navbar._hover_over_explore_by_product_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
                 sumo_pages.top_navbar._click(option)
 
             if current_option == "Firefox desktop":
@@ -95,15 +95,15 @@ def test_explore_by_topic_redirects(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on all options from the 'Explore by topic' and verifying the "
                      "redirect"):
-        for index, option in enumerate(sumo_pages.top_navbar._get_all_explore_by_topic_locators()):
+        for index, option in enumerate(sumo_pages.top_navbar.get_all_explore_by_topic_locators()):
             if index > 0:
-                sumo_pages.top_navbar._hover_over_explore_by_product_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
             current_option = re.sub(
                 r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
             if sumo_pages.top_navbar._is_locator_visible(option):
                 sumo_pages.top_navbar._click(option)
             else:
-                sumo_pages.top_navbar._hover_over_explore_by_product_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
                 sumo_pages.top_navbar._click(option)
 
             assert (current_option == sumo_pages.explore_by_topic_page
@@ -131,15 +131,15 @@ def test_browse_by_product_community_forum_redirect(page: Page):
     with allure.step("Clicking on all options from the 'Browse by product' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar
-                                       ._get_all_browse_by_product_options_locators()):
+                                       .get_all_browse_by_product_options_locators()):
             if index > 0:
-                sumo_pages.top_navbar._hover_over_community_forums_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
             current_option = re.sub(
                 r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
             if sumo_pages.top_navbar._is_locator_visible(option):
                 sumo_pages.top_navbar._click(option)
             else:
-                sumo_pages.top_navbar._hover_over_community_forums_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
                 sumo_pages.top_navbar._click(option)
 
             if current_option == "Firefox desktop":
@@ -164,15 +164,15 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page):
     with allure.step("Clicking on all options from the 'Browse all forum threads by topic' and "
                      "verifying the redirect"):
         for index, option in enumerate(sumo_pages.top_navbar
-                                       ._get_all_browse_all_forum_threads_by_topic_locators()):
+                                       .get_all_browse_all_forum_threads_by_topic_locators()):
             if index > 0:
-                sumo_pages.top_navbar._hover_over_community_forums_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
             current_option = re.sub(
                 r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
             if sumo_pages.top_navbar._is_locator_visible(option):
                 sumo_pages.top_navbar._click(option)
             else:
-                sumo_pages.top_navbar._hover_over_community_forums_top_navbar_option()
+                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
                 sumo_pages.top_navbar._click(option)
 
             assert (sumo_pages.product_support_page._get_product_support_title_text()
@@ -190,15 +190,15 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
     utilities = Utilities(page)
     with allure.step("Clicking on all options from the 'Ask a Question' and verifying the "
                      "redirect"):
-        for index, option in enumerate(sumo_pages.top_navbar._get_all_ask_a_question_locators()):
+        for index, option in enumerate(sumo_pages.top_navbar.get_all_ask_a_question_locators()):
             if index > 0:
-                sumo_pages.top_navbar._hover_over_ask_a_question_top_navbar()
+                sumo_pages.top_navbar.hover_over_ask_a_question_top_navbar()
             current_option = re.sub(
                 r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
             if sumo_pages.top_navbar._is_locator_visible(option):
                 sumo_pages.top_navbar._click(option)
             else:
-                sumo_pages.top_navbar._hover_over_ask_a_question_top_navbar()
+                sumo_pages.top_navbar.hover_over_ask_a_question_top_navbar()
                 sumo_pages.top_navbar._click(option)
 
             if current_option == "Firefox desktop":
@@ -225,22 +225,22 @@ def test_contribute_top_navbar_redirects(page: Page):
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar option and verifying "
                      "the redirect"):
-        sumo_pages.top_navbar._click_on_community_discussions_top_navbar_option()
+        sumo_pages.top_navbar.click_on_community_discussions_top_navbar_option()
         assert (sumo_pages.contributor_discussions_page._get_contributor_discussions_page_title()
                 == "Contributor Discussions")
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar options and verifying "
                      "the redirects"):
         for index, option in enumerate(sumo_pages.top_navbar
-                                       ._get_all_contributor_discussions_locators()):
+                                       .get_all_contributor_discussions_locators()):
             if index > 0:
-                sumo_pages.top_navbar._hover_over_contribute_top_navbar()
+                sumo_pages.top_navbar.hover_over_contribute_top_navbar()
             current_option = re.sub(
                 r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
             if sumo_pages.top_navbar._is_locator_visible(option):
                 sumo_pages.top_navbar._click(option)
             else:
-                sumo_pages.top_navbar._hover_over_contribute_top_navbar()
+                sumo_pages.top_navbar.hover_over_contribute_top_navbar()
                 sumo_pages.top_navbar._click(option)
 
             if current_option == "Article discussions":

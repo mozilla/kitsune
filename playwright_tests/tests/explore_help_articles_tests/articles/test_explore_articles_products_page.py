@@ -18,7 +18,7 @@ def test_products_page_content(page: Page):
                             "the correct page header is displayed"):
         sumo_pages = SumoPages(page)
         utilities = Utilities(page)
-        sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
         assert sumo_pages.products_page._get_page_header(
         ) == ProductsPageMessages.PRODUCTS_PAGE_HEADER
 
@@ -43,7 +43,7 @@ def test_products_page_card_redirect(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     with allure.step("Navigating to products page via top-navbar"):
-        sumo_pages.top_navbar._click_on_explore_our_help_articles_view_all_option()
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
     for card in sumo_pages.products_page._get_all_product_support_titles():
         if card in utilities.general_test_data['product_support']:

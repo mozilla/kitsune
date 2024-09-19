@@ -250,7 +250,7 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-    username_two = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_two = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new revision for the document and verifying that the 'Edit "
                      "Contributors' option is not displayed for users which don't have the "
@@ -430,7 +430,7 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-        username_two = sumo_pages.top_navbar._get_text_of_logged_in_username()
+        username_two = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
         second_revision_info = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 

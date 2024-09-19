@@ -20,26 +20,26 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
-    original_user = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_user = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Checking all contributor checkboxes"):
         sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=False)
 
     with check, allure.step("Verifying that the correct notification banner text is displayed"):
-        assert sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(
+        assert sumo_pages.edit_my_profile_con_areas_page.edit_con_areas_pref_banner_txt(
         ) == EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT
 
     with allure.step("Verifying that all the checkboxes are checked"):
         assert (
-            sumo_pages.edit_my_profile_con_areas_page._are_all_cont_pref_checked()
+            sumo_pages.edit_my_profile_con_areas_page.are_all_cont_pref_checked()
         ), "Not all checkbox options are checked!"
 
     contribution_options = (sumo_pages.edit_my_profile_con_areas_page
-                            ._get_contrib_areas_checkbox_labels())
+                            .get_contrib_areas_checkbox_labels())
 
     with allure.step("Accessing the my profile page and verifying that the displayed groups are "
                      "the correct ones"):
-        sumo_pages.user_navbar._click_on_my_profile_option()
+        sumo_pages.user_navbar.click_on_my_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_groups_items_text(
         ) == contribution_options
 
@@ -65,12 +65,12 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
 
     with check, allure.step("Clicking on the update button and verifying that the correct "
                             "notification banner is displayed"):
-        assert sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(
+        assert sumo_pages.edit_my_profile_con_areas_page.edit_con_areas_pref_banner_txt(
         ) == EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT
 
     with allure.step("Verifying that the profile groups section is no longer displayed inside the "
                      "profile section"):
-        sumo_pages.user_navbar._click_on_my_profile_option()
+        sumo_pages.user_navbar.click_on_my_profile_option()
         expect(sumo_pages.my_profile_page._groups_section_element()).to_be_hidden()
 
     with allure.step("Logging in with a different user and accessing the original user profile"):

@@ -26,7 +26,7 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
         ))
 
     with allure.step("Navigating to the inbox page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
 
     if sumo_pages.inbox_page._are_inbox_messages_displayed():
         with allure.step("Clearing the inbox since there are some existing messages"):
@@ -64,7 +64,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
         ))
 
-    sumo_pages.top_navbar._get_text_of_logged_in_username()
+    sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Navigating to the profile page for user two"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username=user_two))
@@ -115,7 +115,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
         ))
 
     with allure.step("Accessing the Inbox section"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
 
     with allure.step("Verifying that the inbox contains the previously sent messages"):
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_visible()
@@ -148,10 +148,10 @@ def test_private_message_can_be_sent_via_new_message_page(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_3"]
         ))
 
-    sumo_pages.top_navbar._get_text_of_logged_in_username()
+    sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the New Message page and sending a message to another user"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
@@ -177,7 +177,7 @@ def test_private_message_can_be_sent_via_new_message_page(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                ).to_be_visible()
 
@@ -199,7 +199,7 @@ def test_navbar_options_redirect_to_the_correct_page_and_options_are_correctly_h
         ))
 
     with allure.step("Accessing the inbox section via the top-navbar"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
 
     with allure.step("Verifying that we are on the correct page and the 'Inbox' navbar "
                      "option is highlighted"):
@@ -258,7 +258,7 @@ def test_new_message_field_validation(page: Page):
         ))
 
     with allure.step("Accessing the New Message page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Trying to submit the form without any data and verifying that we are "
@@ -390,10 +390,10 @@ def test_new_message_cancel_button(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-    sumo_pages.top_navbar._get_text_of_logged_in_username()
+    sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'New Message' section"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Filling the new message form with data"):
@@ -424,7 +424,7 @@ def test_new_message_cancel_button(page: Page):
 
     with allure.step("Navigating to the receiver inbox and verifying that no message was "
                      "received"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_hidden()
 
 
@@ -442,10 +442,10 @@ def test_new_message_preview(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-    username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the inbox section and navigating to the new message page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Adding text inside the message content section"):
@@ -508,7 +508,7 @@ def test_new_message_preview(page: Page):
 
     with allure.step("Verifying that the message was no sent by checking the "
                      "'Sent Messages page'"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
         expect(sumo_pages.sent_message_page._sent_messages(username=test_user)).to_be_hidden()
 
@@ -517,7 +517,7 @@ def test_new_message_preview(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         expect(sumo_pages.inbox_page._inbox_message(username=username)).to_be_hidden()
 
 
@@ -536,11 +536,11 @@ def test_messages_can_be_selected_and_deleted(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
 
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'New Message' page and sending a message to a different "
                      "user"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
@@ -606,7 +606,7 @@ def test_messages_can_be_selected_and_deleted(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
 
     with allure.step("Verifying that the messages are displayed inside the inbox section"):
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_visible()
@@ -633,7 +633,7 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
         ))
 
     with allure.step("Navigating to the new message page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Typing in a group name inside the To field"):
@@ -679,7 +679,7 @@ def test_staff_users_can_send_group_messages(page: Page):
     targeted_test_group = utilities.user_message_test_data['test_groups'][0]
 
     with allure.step("Navigating to the new messages page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Sending out a message to a test group"):
@@ -706,7 +706,7 @@ def test_staff_users_can_send_group_messages(page: Page):
                 utilities.user_secrets_accounts[user]
             ))
 
-            sumo_pages.top_navbar._click_on_inbox_option()
+            sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_visible()
             sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
@@ -719,7 +719,7 @@ def test_staff_users_can_send_group_messages(page: Page):
                 utilities.user_secrets_accounts[user]
             ))
 
-            sumo_pages.top_navbar._click_on_inbox_option()
+            sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_hidden()
 
@@ -737,7 +737,7 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
     targeted_test_group = utilities.user_message_test_data['test_groups']
 
     with allure.step("Navigating to the new messages page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Sending out a message to a test group"):
@@ -766,7 +766,7 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
                 utilities.user_secrets_accounts[user]
             ))
 
-            sumo_pages.top_navbar._click_on_inbox_option()
+            sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_visible()
             sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
@@ -790,7 +790,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
             utilities.user_secrets_accounts['TEST_ACCOUNT_12'])]
 
     with allure.step("Navigating to the new messages page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Sending out a message to a test group + user"):
@@ -819,7 +819,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
                 utilities.user_secrets_accounts[user]
             ))
 
-            sumo_pages.top_navbar._click_on_inbox_option()
+            sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_visible()
             sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
@@ -850,7 +850,7 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
         sumo_pages.user_group_flow.remove_a_user_from_group(targeted_user)
 
     with allure.step("Navigating to the new message page and sending a message to the group"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=targeted_test_group,
@@ -868,7 +868,7 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
                 utilities.username_extraction_from_email(
                     utilities.user_secrets_accounts[user]
                 ))
-            sumo_pages.top_navbar._click_on_inbox_option()
+            sumo_pages.top_navbar.click_on_inbox_option()
 
             if logged_user == targeted_user:
                 with allure.step("Verifying that the removed user has not received the group "
@@ -901,7 +901,7 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page):
         ))
 
     with allure.step("Navigating to the new message page"):
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
 
     with allure.step("Typing in a profiless group name inside the To field"):
@@ -920,7 +920,7 @@ def test_clear_inbox_and_outbox(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts[user]
         ))
-        sumo_pages.top_navbar._click_on_inbox_option()
+        sumo_pages.top_navbar.click_on_inbox_option()
         inbox_and_outbox_deletion(page)
 
     utilities.delete_cookies()

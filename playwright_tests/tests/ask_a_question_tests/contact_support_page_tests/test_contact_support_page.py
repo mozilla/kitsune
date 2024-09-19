@@ -18,7 +18,7 @@ def test_contact_support_page_content(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar via Ask a "
                      "Question > View All"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     with check, allure.step("Verifying that the current milestone is the correct one"):
         assert sumo_pages.contact_support_page._get_text_of_current_milestone(
@@ -46,7 +46,7 @@ def test_contact_support_page_cards_redirect(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Ask a Question > "
                      "View All"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     for card in sumo_pages.contact_support_page._get_all_product_card_titles():
         with allure.step(f"Clicking on {card}"):
@@ -70,7 +70,7 @@ def test_browse_all_product_forums_button_redirect(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Ask a Question > "
                      "View All option"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     with allure.step("Clicking on browse all product forums button and verifying that we are "
                      "redirected to the correct page"):
