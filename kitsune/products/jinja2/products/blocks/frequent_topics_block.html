@@ -1,55 +1,55 @@
-<div class="mzp-l-content sumo-page-section--inner">
-    <div class="sumo-page-subheader">
-        <div class="sumo-page-subheader--text">
-        <div class="text-center-to-left-on-large">
-            <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
-            <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
-        </div>
-        </div>
-        {% if product.slug == 'firefox' %}
-        {{ download_firefox() }}
-        {% endif %}
-        {% if product.slug == 'thunderbird' %}
-        <div class="download-buttons">
-        <div class="download-thunderbird">
-            <a href="https://www.thunderbird.net/" class="download-button sumo-button primary-button button-lg">
-            <span class="download-content">
-                <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
-            </span>
-            </a>
-            <ul class="download-info text-body-xs">
-            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
-            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
-            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
-            </ul>
-        </div>
-        </div>
-        {% endif %}
-    </div>
-    <div class="sumo-card-grid">
-        <div class="scroll-wrap">
-            {% for topic in topics %}
-            {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
-            <div class="card card--topic">
-                <img
-                class="card--icon"
-                src="{{ topic.image_url }}"
-                alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
-                />
-                <div class="card--details">
-                    <h3 class="card--title">
-                        <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
-                        data-event-name="link_click"
-                        data-event-parameters='{
-                            "link_name": "product-and-topic-home",
-                            "link_detail": "{{ (product_slug or product.slug) + '/' + topic.slug }}"
-                        }'>
-                        {{ pgettext('DB: products.Topic.title', topic.title) }}
-                        </a>
-                    </h3>
-                </div>
-            </div>
-        {% endfor %}
-        </div>
-    </div>
-</div>
+  <div class="mzp-l-content sumo-page-section--inner">
+      <div class="sumo-page-subheader">
+          <div class="sumo-page-subheader--text">
+          <div class="text-center-to-left-on-large">
+              <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
+              <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
+          </div>
+          </div>
+          {% if product.slug == 'firefox' %}
+          {{ download_firefox() }}
+          {% endif %}
+          {% if product.slug == 'thunderbird' %}
+          <div class="download-buttons">
+          <div class="download-thunderbird">
+              <a href="https://www.thunderbird.net/" class="download-button sumo-button primary-button button-lg">
+              <span class="download-content">
+                  <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+              </span>
+              </a>
+              <ul class="download-info text-body-xs">
+              <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+              <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+              <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+              </ul>
+          </div>
+          </div>
+          {% endif %}
+      </div>
+      <div class="sumo-card-grid">
+          <div class="scroll-wrap">
+              {% for topic in topics %}
+              {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
+              <div class="card card--topic">
+                  <img
+                  class="card--icon"
+                  src="{{ topic.image_url }}"
+                  alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
+                  />
+                  <div class="card--details">
+                      <h3 class="card--title">
+                          <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
+                          data-event-name="link_click"
+                          data-event-parameters='{
+                              "link_name": "product-and-topic-home",
+                              "link_detail": "{{ (product_slug or product.slug) + '/' + topic.slug }}"
+                          }'>
+                          {{ pgettext('DB: products.Topic.title', topic.title) }}
+                          </a>
+                      </h3>
+                  </div>
+              </div>
+          {% endfor %}
+          </div>
+      </div>
+  </div>
