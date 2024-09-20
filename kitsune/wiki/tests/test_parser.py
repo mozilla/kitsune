@@ -501,7 +501,7 @@ class TestWikiVideo(TestCase):
         """Video does not exist."""
         p = WikiParser()
         doc = pq(p.parse("[[V:404]]", locale="fr"))
-        self.assertEqual("La vidéo « 404 » n’existe pas.", doc.text())
+        self.assertEqual("La vidéo « 404 » n’existe pas.", doc.text().replace("\xa0", " "))
 
     def test_video_modal(self):
         """Video modal defaults for plcaeholder and text."""
