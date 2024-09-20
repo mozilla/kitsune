@@ -6,6 +6,7 @@ from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.decorators import waffle_flag
 from waffle.views import wafflejs
+from wagtail import urls as wagtail_urls
 from wagtail.admin.urls import urlpatterns as wagtail_admin_urlpatterns
 from wagtail.urls import serve_pattern
 from wagtail.utils.urlpatterns import decorate_urlpatterns
@@ -70,6 +71,9 @@ if settings.WAGTAIL_ENABLE_ADMIN:
             ),
         )
     )
+
+if settings.WAGTAIL_ENABLE:
+    urlpatterns += i18n_patterns(path("", include(wagtail_urls)))
 
 urlpatterns += [
     path("1/", include("kitsune.inproduct.urls")),
