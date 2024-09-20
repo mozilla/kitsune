@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase
@@ -12,7 +12,7 @@ from kitsune.sumo.models import ModelBase
 class FlaggedObjectManager(models.Manager):
     def pending(self):
         """Get all flagged objects that are pending moderation."""
-        return self.filter(status=0)
+        return self.filter(status=FlaggedObject.FLAG_PENDING)
 
 
 class FlaggedObject(ModelBase):

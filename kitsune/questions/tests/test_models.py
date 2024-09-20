@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from unittest import mock
 
 from actstream.models import Action, Follow
+from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.db.models import Q
 from taggit.models import Tag
@@ -66,10 +67,10 @@ class TestAnswer(TestCase):
         FlaggedObject.objects.create(
             status=0, content_object=q, reason="language", creator_id=u.id
         )
-        self.assertEqual(1, FlaggedObject.objects.count())
+        self.assertEqual(1, FlaggedObject.objects.filter(reason="language").count())
 
         q.delete()
-        self.assertEqual(0, FlaggedObject.objects.count())
+        self.assertEqual(0, FlaggedObject.objects.filter(reason="language").count())
 
     def test_delete_answer_removes_flag(self):
         """Deleting an answer also removes the flags on that answer."""
@@ -81,10 +82,11 @@ class TestAnswer(TestCase):
         FlaggedObject.objects.create(
             status=0, content_object=a, reason="language", creator_id=u.id
         )
-        self.assertEqual(1, FlaggedObject.objects.count())
+        content_type = ContentType.objects.get_for_model(Answer)
+        self.assertEqual(1, FlaggedObject.objects.filter(content_type=content_type).count())
 
         a.delete()
-        self.assertEqual(0, FlaggedObject.objects.count())
+        self.assertEqual(0, FlaggedObject.objects.filter(content_type=content_type).count())
 
     def test_delete_last_answer_of_question(self):
         """Deleting the last_answer of a Question should update the question."""
@@ -652,3 +654,8 @@ class TestActions(TestCase):
         self.assertEqual(act.actor, ans.question.creator)
         self.assertEqual(act.verb, "marked as a solution")
         self.assertEqual(act.target, ans.question)
+
+    def test_create_question_creates_flag(self):
+        """Creating a question also creates a flag."""
+        QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
+        self.assertEqual(1, FlaggedObject.objects.filter(reason="bug_support").count())

@@ -1,27 +1,57 @@
 {% from 'flagit/includes/macros.html' import date_by_user with context %}
-<h3 class="sumo-page-intro">{{ _('Title:') }}</h3>
-<p class="sumo-page-subheading title">{{ object.content_object.title }}</p>
-<h3 class="sumo-page-intro">{{ _('Content:') }}</h3>
-<div class="content">{{ object.content_object.content_parsed }}</div>
-<h3 class="sumo-page-intro">{{ _('Created:') }}</h3>
-<p class="created">
-  {{ date_by_user(object.content_object.created, object.content_object.creator) }}
-</p>
-{% if object.content_object.updated_by %}
-  <h3 class="sumo-page-intro">{{ _('Updated:') }}</h3>
-  <p class="updated">
-    {{ date_by_user(object.content_object.updated, object.content_object.updated_by) }}
-  </p>
-{% endif %}
-<h3 class="sumo-page-intro">{{ _('Flagged:') }}</h3>
-<p class="flagged">
-  {{ date_by_user(object.created, object.creator) }}
-</p>
-<h3 class="sumo-page-intro">{{ _('Take Action:') }}</h3>
-<div class="actions sumo-button-wrap">
-  <a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">{{ _('View') }}</a>
-  <a class="sumo-button button-sm edit" href="{{ url('questions.edit_question', object.content_object.id) }}">{{ _('Edit') }}</a>
-  {% if user.has_perm('questions.delete_question') %}
-    <a class="sumo-button button-sm delete" href="{{ url('questions.delete', object.content_object.id) }}">{{ _('Delete') }}</a>
+<div class="flagged-content">
+  {% if object.content_object.title %}
+    <h3 class="flagged-content__heading">{{ _('Title:') }}</h3>
+    <p class="flagged-content__title">{{ object.content_object.title }}</p>
+  {% endif %}
+
+  <h3 class="flagged-content__subheading">{{ _('Content:') }}</h3>
+  <div class="flagged-content__text">{{ object.content_object.content_parsed }}</div>
+
+  <h3 class="flagged-content__subheading">{{ _('Created:') }}</h3>
+  <p>{{ date_by_user(object.content_object.created, object.content_object.creator) }}</p>
+
+  {% if object.content_object.updated_by %}
+    <h3 class="flagged-content__subheading">{{ _('Updated:') }}</h3>
+    <p>{{ date_by_user(object.content_object.updated, object.content_object.updated_by) }}</p>
+  {% endif %}
+
+  <h3 class="flagged-content__subheading">{{ _('Flagged:') }}</h3>
+  <p>{{ date_by_user(object.created, object.creator) }}</p>
+
+  {% if object.reason == 'bug_support' and user.has_perm('questions.change_question')  %}
+    <h3 class="flagged-content__subheading">{{ _('Take Action:') }}</h3>
+    <div class="flagged-content__topic-update">
+     <label> {{ _('Current topic:') }} </label> 
+     <div>
+       <p id="current-topic">{{ object.content_object.topic }}</p>
+    </div>
+
+    <form id="topic-update-form" method="POST">
+      {% csrf_token %}
+      <label for="topic">{{ _('Change Topic:') }}</label>
+      <select id="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
+        {% for topic in object.available_topics %}
+          <option value="{{ topic.id }}" {% if topic.id == object.content_object.topic.id %}selected{% endif %}>{{ topic.title }}</option>
+        {% endfor %}
+      </select>
+      </form>
+    </div>
   {% endif %}
 </div>
+
+<a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">{{ _('View') }}</a>
+{% if object.content_type.model == 'question' %}
+  <a class="sumo-button button-sm button-edit" href="{{ url('questions.edit_question', object.content_object.id) }}">{{ _('Edit') }}</a>
+  {% set delete_url = url('questions.delete', object.content_object.id) %}
+{% elif object.content_type.model == 'answer' %}
+  {% set delete_url = url('questions.delete_answer', object.content_object.question.id, object.content_object.id) %}
+  {% if user.has_perm('questions.change_answer') %}
+    <a class="sumo-button button-sm edit" href="{{ url('questions.edit_answer', object.content_object.question.id, object.content_object.id) }}">{{ _('Edit') }}</a>
+  {% endif %}
+{% endif %}
+{% if user.has_perm('questions.delete_question') %}
+  <a class="sumo-button button-sm button-delete" href="{{ delete_url }}">{{ _('Delete') }}</a>
+{% endif %}
+
+

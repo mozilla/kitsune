@@ -29,7 +29,6 @@ urlpatterns = i18n_patterns(
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
     path("questions/", include("kitsune.questions.urls")),
-    path("flagged/", include("kitsune.flagit.urls")),
     path("upload/", include("kitsune.upload.urls")),
     path("gallery/", include("kitsune.gallery.urls")),
     path("chat", RedirectView.as_view(url="questions/new")),
@@ -40,12 +39,13 @@ urlpatterns = i18n_patterns(
     path("community/", include("kitsune.community.urls")),
     path("badges/", include("kitsune.kbadge.urls")),
     path("documents/", include("wagtail.documents.urls")),
+    path("locales", sumo_views.locales, name="sumo.locales"),
     path("", include("kitsune.products.urls")),
     path("", include("kitsune.dashboards.urls")),
     path("", include("kitsune.landings.urls")),
     path("", include("kitsune.tidings.urls")),
     path("", include("kitsune.users.urls")),
-    path("locales", sumo_views.locales, name="sumo.locales"),
+    path("", include("kitsune.flagit.urls")),
 )
 
 if settings.OIDC_ENABLE:

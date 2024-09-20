@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
@@ -33,12 +34,15 @@ class FlaggedQueueTestCase(TestCaseBase):
             f.save()
 
         # Verify number of flagged objects
-        response = get(self.client, "flagit.queue")
+        response = get(self.client, "flagit.flagged_queue")
         doc = pq(response.content)
-        self.assertEqual(num_answers, len(doc("#flagged-queue li")))
+        self.assertEqual(num_answers, len(doc("#flagged-queue li.answer")))
 
         # Reject one flag
-        flag = FlaggedObject.objects.all()[0]
-        response = post(self.client, "flagit.update", {"status": 2}, args=[flag.id])
+        content_type = ContentType.objects.get_for_model(Answer)
+        flag = FlaggedObject.objects.filter(content_type=content_type).first()
+        response = post(
+            self.client, "flagit.update", {"status": FlaggedObject.FLAG_REJECTED}, args=[flag.id]
+        )
         doc = pq(response.content)
-        self.assertEqual(num_answers - 1, len(doc("#flagged-queue li")))
+        self.assertEqual(num_answers - 1, len(doc("#flagged-queue li.answer")))

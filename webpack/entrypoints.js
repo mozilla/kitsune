@@ -107,6 +107,9 @@ const entrypoints = {
   ],
   contribute: [
     "./svelte/contribute",
+  ],
+  flagit: [
+    "sumo/js/flagit.js",
   ]
 }
 
