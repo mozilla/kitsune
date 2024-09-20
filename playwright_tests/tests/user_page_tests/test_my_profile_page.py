@@ -21,11 +21,11 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
-    original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'My profile' page and verifying that we are redirected "
                      "to the correct profile"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(
             username=original_username))
 
@@ -44,7 +44,7 @@ def test_my_profile_sign_out_button_functionality(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        sumo_pages.top_navbar._click_on_signin_signup_button()
+        sumo_pages.top_navbar.click_on_signin_signup_button()
 
         sumo_pages.auth_flow_page.sign_in_flow(
             username=utilities.user_special_chars,
@@ -53,12 +53,12 @@ def test_my_profile_sign_out_button_functionality(page: Page):
 
     with allure.step("Accessing the my profile page, clicking on the sign out button and "
                      "verifying that the user is redirected to the homepage"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         sumo_pages.my_profile_page._click_my_profile_page_sign_out_button()
         expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
     with allure.step("Verify that the 'Sign in/Up' button from the page header is displayed"):
-        expect(sumo_pages.top_navbar._sign_in_up_button_displayed_element()).to_be_visible()
+        expect(sumo_pages.top_navbar.sign_in_up_button_displayed_element()).to_be_visible()
 
 
 # C2108828
@@ -70,7 +70,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-    repliant_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    repliant_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question for "
                      "the Firefox product"):
@@ -87,7 +87,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
 
     with allure.step("Navigating to the user profile page and extracting the original number "
                      "of posted question solutions"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_solutions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_solutions_text()
         )
@@ -108,7 +108,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
     with allure.step("Accessing the 'My profile' page of the account which provided the "
                      "solution and verifying that the original number of solutions has "
                      "incremented"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_solutions_text()
         )
@@ -133,11 +133,11 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-    repliant_user = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    repliant_user = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'My profile' page and extracting the number of posted "
                      "answers"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_answers = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_answers_text()
         )
@@ -202,7 +202,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
         ))
 
     with allure.step("Accessing the profile page and extracting the number of documents"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_documents = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_documents_text()
         )
@@ -212,7 +212,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
 
     with allure.step("Accessing the profile page and verifying that the number of posted "
                      "documents has incremented"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert (
             utilities.number_extraction_from_string(
                 sumo_pages.my_profile_page._get_my_profile_documents_text()
@@ -241,7 +241,7 @@ def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: 
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an account that contains SUMO-supported and "
                      "unsupported characters"):
-        sumo_pages.top_navbar._click_on_signin_signup_button()
+        sumo_pages.top_navbar.click_on_signin_signup_button()
 
         username = utilities.username_extraction_from_email(
             utilities.remove_character_from_string(
@@ -254,14 +254,14 @@ def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: 
 
     with allure.step("Verifying that the username contains the supported characters and "
                      "doesn't contain the unsupported ones in top navbar"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == username
 
     with allure.step("Verifying that the username contains the supported characters and "
                      "doesn't contain the unsupported ones in My Profile page"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_display_name_header_text() == username
 
     with allure.step("Verifying that the username contains the supported characters and "
                      "doesn't contain the unsupported ones in Edit my Profile page"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        assert sumo_pages.edit_my_profile_page._get_username_input_field_value() == username
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        assert sumo_pages.edit_my_profile_page.get_username_input_field_value() == username

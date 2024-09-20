@@ -19,7 +19,7 @@ def test_featured_articles_redirect(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.contact_support_page._get_all_product_card_titles():
@@ -55,7 +55,7 @@ def test_popular_topics_redirect(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     for card in sumo_pages.contact_support_page._get_all_product_card_titles():
         sumo_pages.contact_support_page._click_on_a_particular_card(card)
@@ -99,7 +99,7 @@ def test_ask_now_widget_redirect(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
     count = 0
     for freemium_product in utilities.general_test_data["freemium_products"]:
         with allure.step(f"Clicking on the {freemium_product} card "):
@@ -132,8 +132,8 @@ def test_ask_now_widget_redirect(page: Page):
 
         with allure.step("Signing out and accessing the contact support page via the top "
                          "navbar Get Help > Browse All products"):
-            sumo_pages.top_navbar._click_on_sign_out_button()
-            sumo_pages.top_navbar._click_on_browse_all_products_option()
+            sumo_pages.top_navbar.click_on_sign_out_button()
+            sumo_pages.top_navbar.click_on_browse_all_products_option()
 
 
 # C890382
@@ -143,7 +143,7 @@ def test_contact_support_widget_redirect(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
-        sumo_pages.top_navbar._click_on_browse_all_products_option()
+        sumo_pages.top_navbar.click_on_browse_all_products_option()
     count = 0
     for premium_product in utilities.general_test_data["premium_products"]:
         with allure.step(f"Clicking on the {premium_product} card"):
@@ -178,5 +178,5 @@ def test_contact_support_widget_redirect(page: Page):
 
         with allure.step("Signing out and access the contact support page via the top navbar "
                          "Get Help > Browse All products"):
-            sumo_pages.top_navbar._click_on_sign_out_button()
-            sumo_pages.top_navbar._click_on_browse_all_products_option()
+            sumo_pages.top_navbar.click_on_sign_out_button()
+            sumo_pages.top_navbar.click_on_browse_all_products_option()

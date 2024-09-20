@@ -20,7 +20,7 @@ def test_recent_revisions_revision_availability(page: Page):
             utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-    username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new kb article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
@@ -126,7 +126,7 @@ def test_second_revisions_availability(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
-    username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new revision for the article"):
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
@@ -243,7 +243,7 @@ def test_recent_revisions_dashboard_links(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-    first_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    first_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new kb article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -255,7 +255,7 @@ def test_recent_revisions_dashboard_links(page: Page):
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "'Show Diff' option is not available for first revisions"):
-        sumo_pages.top_navbar._click_on_recent_revisions_option()
+        sumo_pages.top_navbar.click_on_recent_revisions_option()
         utilities.wait_for_given_timeout(3000)
         expect(
             sumo_pages.recent_revisions_page._get_show_diff_article_locator(
@@ -269,13 +269,13 @@ def test_recent_revisions_dashboard_links(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+        username = sumo_pages.top_navbar.get_text_of_logged_in_username()
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with allure.step("Navigating to the recent revisions dashboard, signing out and clicking "
                      "on the revision date link and verifying that the user is redirected to"
                      "the correct page"):
-        sumo_pages.top_navbar._click_on_recent_revisions_option()
+        sumo_pages.top_navbar.click_on_recent_revisions_option()
         utilities.wait_for_given_timeout(3000)
         utilities.delete_cookies()
         sumo_pages.recent_revisions_page._click_on_revision_date_for_article(
@@ -346,7 +346,7 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-    first_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    first_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new kb article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -363,14 +363,14 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         )
 
     with allure.step("Editing the username"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         new_username = utilities.profile_edit_test_data['valid_user_edit']['username']
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(new_username)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "correct new username and article title arte displayed"):
-        sumo_pages.top_navbar._click_on_recent_revisions_option()
+        sumo_pages.top_navbar.click_on_recent_revisions_option()
         utilities.wait_for_given_timeout(3000)
         expect(
             sumo_pages.recent_revisions_page._get_revision_and_username_locator(
@@ -381,9 +381,9 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         ).to_be_visible()
 
     with allure.step("Changing the username back"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(first_username)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(first_username)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step("Deleting the article"):
         utilities.navigate_to_link(article_url)

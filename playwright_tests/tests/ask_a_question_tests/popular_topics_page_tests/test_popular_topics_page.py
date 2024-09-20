@@ -100,4 +100,4 @@ def test_aaq_redirect(page: Page):
                     timeout=30000)
 
             with allure.step("Signing out from SUMO"):
-                sumo_pages.top_navbar._click_on_sign_out_button()
+                sumo_pages.top_navbar.click_on_sign_out_button()

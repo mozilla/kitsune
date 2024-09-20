@@ -21,12 +21,12 @@ def test_username_field_is_automatically_populated(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
 
     with allure.step("Verifying that username field is automatically populated with the correct "
                      "data"):
-        top_navbar_displayed_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
-        assert (sumo_pages.edit_my_profile_page._get_username_input_field_value(
+        top_navbar_displayed_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
+        assert (sumo_pages.edit_my_profile_page.get_username_input_field_value(
         ) == top_navbar_displayed_username)
 
 
@@ -43,13 +43,13 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
         ))
 
     with allure.step("Navigating to the profile edit page"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
 
-    original_username = sumo_pages.edit_my_profile_page._get_username_input_field_value()
+    original_username = sumo_pages.edit_my_profile_page.get_username_input_field_value()
 
     with allure.step("Clearing the username, display name fields and inserting the new one"):
-        sumo_pages.edit_my_profile_page._clear_username_field()
-        sumo_pages.edit_my_profile_page._clear_display_name_field()
+        sumo_pages.edit_my_profile_page.clear_username_field()
+        sumo_pages.edit_my_profile_page.clear_display_name_field()
         profile_edit_data = utilities.profile_edit_test_data
 
         if not is_firefox:
@@ -60,10 +60,10 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
             new_username = profile_edit_data["valid_user_edit_with_symbols"][
                 "username_with_valid_symbols_firefox"
             ]
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(new_username)
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
 
     with allure.step("Clicking on the 'Update My Profile' button"):
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verify that the newly set username is successfully applied to the my "
                             "profile section"):
@@ -72,7 +72,7 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
 
     with check, allure.step("Verify that the newly set username is displayed inside the top "
                             "navbar"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == new_username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_username
 
     with check, allure.step("Access a previously posted question and verify that the display name "
                             "has changed"):
@@ -82,10 +82,10 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
 
     with allure.step("Going back to the my profile page and reverting the username back to the "
                      "original one"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_username_field()
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(original_username)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_username_field()
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(original_username)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verifying that the username was updated back to the original one"):
         assert sumo_pages.my_profile_page._get_my_profile_display_name_header_text(
@@ -93,7 +93,7 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
 
     with check, allure.step("Verify that the newly set username is displayed inside the top "
                             "navbar"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == original_username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == original_username
 
     with check, allure.step("Access a previously posted question and verify that the display name "
                             "has changed"):
@@ -113,27 +113,27 @@ def test_username_with_invalid_symbols(page: Page):
         ))
 
     with allure.step("Accessing the edit profile page"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
 
-    original_username = sumo_pages.edit_my_profile_page._get_username_input_field_value()
+    original_username = sumo_pages.edit_my_profile_page.get_username_input_field_value()
 
     with allure.step("Clearing the username input field and adding an invalid user"):
-        sumo_pages.edit_my_profile_page._clear_username_field()
+        sumo_pages.edit_my_profile_page.clear_username_field()
         profile_edit_data = utilities.profile_edit_test_data
         new_username = profile_edit_data["invalid_username_with_symbols"][
             "username_with_invalid_symbols"
         ]
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(new_username)
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
 
     with check, allure.step("Clicking on the 'Update My Profile' button and verifying that "
                             "the correct error message is displayed"):
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
-        assert sumo_pages.edit_my_profile_page._get_username_error_message_text(
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        assert sumo_pages.edit_my_profile_page.get_username_error_message_text(
         ) == EditMyProfilePageMessages.USERNAME_INPUT_ERROR_MESSAGE
 
     with allure.step("Accessing the Edit Profile page and verifying that the username was not "
                      "changed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_display_name_header_text(
         ) == original_username
 
@@ -149,17 +149,17 @@ def test_cancel_profile_edit(page: Page):
         ))
 
     with allure.step("Accessing the Edit My Profile page"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
 
-    original_values = sumo_pages.edit_my_profile_page._get_value_of_all_fields()
+    original_values = sumo_pages.edit_my_profile_page.get_value_of_all_fields()
 
     with allure.step("Populating edit profile fields with data"):
         sumo_pages.edit_profile_flow.edit_profile_with_test_data()
 
     with allure.step("Clicking on the 'Cancel' button and verifying that we are on the same "
                      "page and all input field values were reverted back to original"):
-        sumo_pages.edit_my_profile_page._click_cancel_button()
-        assert sumo_pages.edit_my_profile_page._get_value_of_all_fields() == original_values
+        sumo_pages.edit_my_profile_page.click_cancel_button()
+        assert sumo_pages.edit_my_profile_page.get_value_of_all_fields() == original_values
 
 
 #  C946232
@@ -174,8 +174,8 @@ def test_manage_firefox_account_redirects_to_firefox_account_settings_page(page:
 
     with allure.step("Accessing the 'Edit my profile' page and clicking on the 'Manage "
                      "account' button"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._click_manage_firefox_account_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.click_manage_firefox_account_button()
 
     with allure.step("Verifying that the user was redirected to the Mozilla account settings "
                      "page in a new tab"):
@@ -194,33 +194,33 @@ def test_duplicate_usernames_are_not_allowed(page: Page):
             utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-    original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Clicking on the 'edit profile' option"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
 
     with allure.step("Clearing the username input field and adding an existing username "
                      "to it"):
-        sumo_pages.edit_my_profile_page._clear_username_field()
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(
+        sumo_pages.edit_my_profile_page.clear_username_field()
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(
             utilities.username_extraction_from_email(
                 utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
             )
         )
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verify that the error message is displayed under the username "
                             "input field and is the correct one"):
-        assert sumo_pages.edit_my_profile_page._get_username_error_message_text(
+        assert sumo_pages.edit_my_profile_page.get_username_error_message_text(
         ) == EditMyProfilePageMessages.DUPLICATE_USERNAME_ERROR_MESSAGE
 
     with check, allure.step("Verifying that the username displayed inside the top navbar is "
                             "the correct one"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == original_username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == original_username
 
     with allure.step("Accessing the my profile page and verifying that the username "
                      "displayed inside the page is the correct one"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_display_name_header_text(
         ) == original_username
 
@@ -235,24 +235,24 @@ def test_profile_username_field_cannot_be_left_empty(page: Page):
             utilities.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-    original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the Edit My Profile page and clearing the username input "
                      "field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_username_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_username_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verifying that we are still on the edit profile page"):
         assert utilities.get_page_url() == EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL
 
     with allure.step("Verifying that the displayed username inside the top navbar is the "
                      "original one"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == original_username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == original_username
 
     with allure.step("Accessing the my profile page and verifying that the username is the "
                      "original one"):
-        sumo_pages.user_navbar._click_on_my_profile_option()
+        sumo_pages.user_navbar.click_on_my_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_display_name_header_text(
         ) == original_username
 
@@ -268,21 +268,21 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
             utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']
         ))
 
-    original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
     new_username = utilities.profile_edit_test_data["uppercase_lowercase_valid_username"][
         "uppercase_lowercase_username"
     ]
 
     with allure.step("Accessing the edit my profile page and updating the username field to "
                      "contain uppercase and lowercase characters"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_username_field()
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(new_username)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_username_field()
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step("Verifying that the username displayed inside the top-navbar updates "
                      "successfully"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == new_username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_username
 
     with allure.step("Verifying that the username displayed inside the my profile section is "
                      "the correct one"):
@@ -290,10 +290,10 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
         ) == new_username
 
     with allure.step("Reverting the username back to the original one"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_username_field()
-        sumo_pages.edit_my_profile_page._send_text_to_username_field(original_username)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_username_field()
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(original_username)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 #  C1491463, C1491464
@@ -306,7 +306,7 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
             utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_1']
         ))
 
-    original_username = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    original_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     if not is_firefox:
         new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
@@ -318,13 +318,13 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
         ]
 
     with allure.step("Accessing the edit profile page and adding a new display name"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_display_name_field()
-        sumo_pages.edit_my_profile_page._send_text_to_display_name_field(new_display_name)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_display_name_field()
+        sumo_pages.edit_my_profile_page.send_text_to_display_name_field(new_display_name)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step("Verifying that the top navbar username updates with the display name"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == new_display_name
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_display_name
 
     with allure.step(f"Verifying that the 'My profile' display name contains "
                      f"{new_display_name}"):
@@ -332,13 +332,13 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
         ) == f"{new_display_name} ({original_username})"
 
     with allure.step("Reverting back and deleting the display name"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_display_name_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_display_name_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step(f"Verifying that the displayed name inside the top navbar is reverted "
                      f"back to {original_username}"):
-        assert sumo_pages.top_navbar._get_text_of_logged_in_username() == original_username
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == original_username
 
     with allure.step("Verifying that the displayed name inside the main profile page is "
                      "reverted back to the username"):
@@ -359,13 +359,13 @@ def test_biography_field_accepts_html_tags(page: Page):
 
     with allure.step("Accessing the edit profile page via top-navbar and adding data inside "
                      "the biography field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_biography_textarea_field()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_biography_textarea_field()
         html_test_data = utilities.profile_edit_test_data
-        sumo_pages.edit_my_profile_page._send_text_to_biography_field(
+        sumo_pages.edit_my_profile_page.send_text_to_biography_field(
             html_test_data["biography_field_with_html_data"]["biography_html_data"]
         )
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 #  T5697917
@@ -379,18 +379,18 @@ def test_make_my_email_address_visible_checkbox_checked(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page and checking the 'make email visible "
                      "checkbox'"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        if not sumo_pages.edit_my_profile_page._is_make_email_visible_checkbox_selected():
-            sumo_pages.edit_my_profile_page._click_make_email_visible_checkbox()
-            sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        if not sumo_pages.edit_my_profile_page.is_make_email_visible_checkbox_selected():
+            sumo_pages.edit_my_profile_page.click_make_email_visible_checkbox()
+            sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Returning to My Profile page and verifying that the email is "
                             "displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_text_of_publicly_displayed_username(
         ) == logged_in_email
 
@@ -424,18 +424,18 @@ def test_make_my_email_address_visible_checkbox_unchecked(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page and unchecking the make email "
                      "visible checkbox"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        if sumo_pages.edit_my_profile_page._is_make_email_visible_checkbox_selected():
-            sumo_pages.edit_my_profile_page._click_make_email_visible_checkbox()
-            sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        if sumo_pages.edit_my_profile_page.is_make_email_visible_checkbox_selected():
+            sumo_pages.edit_my_profile_page.click_make_email_visible_checkbox()
+            sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step("Returning to My Profile page and verifying that the email is not "
                      "displayed"):
-        sumo_pages.user_navbar._click_on_my_profile_option()
+        sumo_pages.user_navbar.click_on_my_profile_option()
         expect(sumo_pages.my_profile_page._publicly_displayed_email_element()).to_be_hidden()
 
     with allure.step("Signing in with a different non-admin user"):
@@ -459,14 +459,14 @@ def test_website_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page and updating the website field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         website_field_test_data = utilities.profile_edit_test_data["valid_user_edit"]["website"]
-        sumo_pages.edit_my_profile_page._clear_website_field()
-        sumo_pages.edit_my_profile_page._send_text_to_website_field(website_field_test_data)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.clear_website_field()
+        sumo_pages.edit_my_profile_page.send_text_to_website_field(website_field_test_data)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verify that the correct website is displayed"):
         assert sumo_pages.my_profile_page._get_my_profile_website_text() == website_field_test_data
@@ -502,9 +502,9 @@ def test_website_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_website_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_website_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697919
@@ -516,22 +516,22 @@ def test_twitter_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the Edit My Profile' page, clearing and adding data inside the "
                      "twitter input field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         twitter_field_test_data = utilities.profile_edit_test_data["valid_user_edit"][
             "twitter_username"
         ]
-        sumo_pages.edit_my_profile_page._clear_twitter_field()
-        sumo_pages.edit_my_profile_page._send_text_to_twitter_username_field(
+        sumo_pages.edit_my_profile_page.clear_twitter_field()
+        sumo_pages.edit_my_profile_page.send_text_to_twitter_username_field(
             twitter_field_test_data)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Navigating back to the My Profile page and verify that the correct "
                             "twitter is displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_twitter_text() == twitter_field_test_data
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
@@ -569,9 +569,9 @@ def test_twitter_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_twitter_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_twitter_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697921
@@ -583,21 +583,21 @@ def test_community_portal_username_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside the "
                      "'Community Portal' input field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         community_portal_field_test_data = (
             utilities.profile_edit_test_data["valid_user_edit"]["community_portal_username"])
-        sumo_pages.edit_my_profile_page._clear_community_portal_field()
-        sumo_pages.edit_my_profile_page._send_text_to_community_portal_field(
+        sumo_pages.edit_my_profile_page.clear_community_portal_field()
+        sumo_pages.edit_my_profile_page.send_text_to_community_portal_field(
             community_portal_field_test_data)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Navigating back to the My Profile page and verify that the correct "
                             "Community portal information is displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_community_portal_text(
         ) == community_portal_field_test_data
 
@@ -635,9 +635,9 @@ def test_community_portal_username_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_community_portal_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_community_portal_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697920
@@ -649,22 +649,22 @@ def test_people_directory_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside the "
                      "'People Directory' input field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         people_directory_field_test_data = (
             utilities.profile_edit_test_data["valid_user_edit"]["people_directory_username"])
-        sumo_pages.edit_my_profile_page._clear_people_directory_field()
-        sumo_pages.edit_my_profile_page._send_text_to_people_directory_username(
+        sumo_pages.edit_my_profile_page.clear_people_directory_field()
+        sumo_pages.edit_my_profile_page.send_text_to_people_directory_username(
             people_directory_field_test_data
         )
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Navigating back to the My Profile page and verify that the correct "
                             "People Directory information is displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert sumo_pages.my_profile_page._get_my_profile_people_directory_text(
         ) == people_directory_field_test_data
 
@@ -688,9 +688,9 @@ def test_people_directory_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_people_directory_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_people_directory_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697922
@@ -702,21 +702,21 @@ def test_matrix_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside the "
                      "Matrix input field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         matrix_field_test_data = utilities.profile_edit_test_data["valid_user_edit"][
             "matrix_nickname"
         ]
-        sumo_pages.edit_my_profile_page._clear_matrix_field()
-        sumo_pages.edit_my_profile_page._send_text_to_matrix_nickname(matrix_field_test_data)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.clear_matrix_field()
+        sumo_pages.edit_my_profile_page.send_text_to_matrix_nickname(matrix_field_test_data)
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Navigating back to the My Profile page and verify that the correct "
                             "Matrix information is displayed"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         assert matrix_field_test_data in sumo_pages.my_profile_page._get_my_profile_matrix_text()
 
     with check, allure.step("Signing in with a different user and verifying that the correct "
@@ -738,9 +738,9 @@ def test_matrix_information_is_displayed(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_matrix_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_matrix_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697923
@@ -752,21 +752,21 @@ def test_country_location_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside the "
                      "country input field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         country_field_test_data_code = utilities.profile_edit_test_data["valid_user_edit"][
             "country_code"
         ]
         country_field_test_data_value = utilities.profile_edit_test_data["valid_user_edit"][
             "country_value"
         ]
-        sumo_pages.edit_my_profile_page._clear_country_dropdown_field()
-        sumo_pages.edit_my_profile_page._select_country_dropdown_option_by_value(
+        sumo_pages.edit_my_profile_page.clear_country_dropdown_field()
+        sumo_pages.edit_my_profile_page.select_country_dropdown_option_by_value(
             country_field_test_data_code)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verify that the correct Country information is displayed"):
         assert (country_field_test_data_value in sumo_pages.my_profile_page.
@@ -793,9 +793,9 @@ def test_country_location_information_is_displayed(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_country_dropdown_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_country_dropdown_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697924
@@ -807,17 +807,17 @@ def test_city_location_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit' My profile page, clearing and adding data inside "
                      "the City input field"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         city_field_test_data_value = (
             utilities.profile_edit_test_data["valid_user_edit"]["city"])
-        sumo_pages.edit_my_profile_page._clear_city_field()
-        sumo_pages.edit_my_profile_page._sent_text_to_city_field(
+        sumo_pages.edit_my_profile_page.clear_city_field()
+        sumo_pages.edit_my_profile_page.sent_text_to_city_field(
             city_field_test_data_value)
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verify that the correct City information is displayed"):
         assert (city_field_test_data_value in sumo_pages.my_profile_page
@@ -843,9 +843,9 @@ def test_city_location_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_city_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_city_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697925
@@ -857,26 +857,26 @@ def test_involved_since_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-    username_one = sumo_pages.top_navbar._get_text_of_logged_in_username()
+    username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Accessing the 'Edit My Profile' page, clearing and adding data inside "
                      "the involved since input fields"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         involved_since_month_number_test_data = (
             utilities.profile_edit_test_data["valid_user_edit"]["involved_from_month_number"])
         involved_since_month_test_data_value = (
             utilities.profile_edit_test_data["valid_user_edit"]["involved_from_month_value"])
         involved_since_year_test_data_value = (
             utilities.profile_edit_test_data["valid_user_edit"]["involved_from_year"])
-        sumo_pages.edit_my_profile_page._clear_involved_from_month_select_field()
-        sumo_pages.edit_my_profile_page._clear_involved_from_year_select_field()
-        sumo_pages.edit_my_profile_page._select_involved_from_month_option_by_value(
+        sumo_pages.edit_my_profile_page.clear_involved_from_month_select_field()
+        sumo_pages.edit_my_profile_page.clear_involved_from_year_select_field()
+        sumo_pages.edit_my_profile_page.select_involved_from_month_option_by_value(
             involved_since_month_number_test_data
         )
-        sumo_pages.edit_my_profile_page._select_involved_from_year_option_by_value(
+        sumo_pages.edit_my_profile_page.select_involved_from_year_option_by_value(
             involved_since_year_test_data_value
         )
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verify that the correct involved from information is displayed"):
         assert (involved_since_month_test_data_value and involved_since_year_test_data_value in
@@ -902,10 +902,10 @@ def test_involved_since_information_is_displayed(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._clear_involved_from_month_select_field()
-        sumo_pages.edit_my_profile_page._clear_involved_from_year_select_field()
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_involved_from_month_select_field()
+        sumo_pages.edit_my_profile_page.clear_involved_from_year_select_field()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
 
 # T5697906, T5697929
@@ -934,11 +934,11 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
         assert (
             sumo_pages.auth_page._is_continue_with_firefox_button_displayed()
         ), "The auth page is not displayed! It should be!"
-        expect(sumo_pages.edit_my_profile_page._is_my_profile_edit_form_displayed()).to_be_hidden()
+        expect(sumo_pages.edit_my_profile_page.is_my_profile_edit_form_displayed()).to_be_hidden()
 
     with allure.step("Signing in with another non-admin account and accessing another user "
                      "account"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
@@ -953,11 +953,11 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
         utilities.navigate_to_link(
             EditMyProfilePageMessages.get_url_of_other_profile_edit_page(target_username)
         )
-        assert sumo_pages.edit_my_profile_page._get_access_denied_header_text(
+        assert sumo_pages.edit_my_profile_page.get_access_denied_header_text(
         ) == EditMyProfilePageMessages.PROFILE_ACCESS_DENIED_HEADING
-        assert sumo_pages.edit_my_profile_page._get_access_denied_subheading_text(
+        assert sumo_pages.edit_my_profile_page.get_access_denied_subheading_text(
         ) == EditMyProfilePageMessages.PROFILE_ACCESS_DENIED_SUBHEADING
-        expect(sumo_pages.edit_my_profile_page._is_my_profile_edit_form_displayed()).to_be_hidden()
+        expect(sumo_pages.edit_my_profile_page.is_my_profile_edit_form_displayed()).to_be_hidden()
 
 
 # T5697928
@@ -1047,7 +1047,7 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
                ).to_be_hidden()
 
     with allure.step("Signing in with a non-admin account"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
@@ -1063,7 +1063,7 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
                ).to_be_hidden()
 
     with allure.step("Signing in with an admin account"):
-        sumo_pages.top_navbar._click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.delete_cookies()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]

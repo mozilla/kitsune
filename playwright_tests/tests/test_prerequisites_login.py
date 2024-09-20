@@ -1,7 +1,6 @@
 import pytest
 from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import expect, Page
-from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -9,19 +8,18 @@ from playwright_tests.pages.sumo_pages import SumoPages
 def test_create_user_sessions_for_test_accounts(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    auth_flow = AuthFlowPage(page)
 
     i = 0
     keys = list(utilities.user_secrets_accounts.keys())
     tried_once = False
     while i < len(keys):
-        sumo_pages.top_navbar._click_on_signin_signup_button()
+        sumo_pages.top_navbar.click_on_signin_signup_button()
 
         # Also acts as a wait. Introduced in order to avoid flakiness which occurred on some
         # GH runs.
         expect(sumo_pages.auth_page._get_continue_with_firefox_button_locator()).to_be_visible()
 
-        auth_flow.sign_in_flow(
+        sumo_pages.auth_flow_page.sign_in_flow(
             username=utilities.user_secrets_accounts[keys[i]],
             account_password=utilities.user_secrets_pass
         )
@@ -38,9 +36,9 @@ def test_create_user_sessions_for_test_accounts(page: Page):
             username
         )
 
-        if sumo_pages.top_navbar._get_text_of_logged_in_username() != username and not tried_once:
+        if sumo_pages.top_navbar.get_text_of_logged_in_username() != username and not tried_once:
             tried_once = True
-        elif sumo_pages.top_navbar._get_text_of_logged_in_username() != username and tried_once:
+        elif sumo_pages.top_navbar.get_text_of_logged_in_username() != username and tried_once:
             pytest.fail(f"Unable to sign in with {username}")
         else:
             i += 1

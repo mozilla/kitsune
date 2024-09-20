@@ -210,7 +210,7 @@ def test_aaq_form_cancel_button_freemium_products(page: Page):
 
     with allure.step("Accessing the 'My profile' page via the top-navbar menu and extracting "
                      "the original number of posted questions"):
-        sumo_pages.top_navbar._click_on_view_profile_option()
+        sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_questions = utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_questions_text()
         )
@@ -239,7 +239,7 @@ def test_aaq_form_cancel_button_freemium_products(page: Page):
             with check, allure.step("Navigating back to the My Profile page and verifying "
                                     "that the correct number of posted questions is "
                                     "displayed"):
-                sumo_pages.top_navbar._click_on_view_profile_option()
+                sumo_pages.top_navbar.click_on_view_profile_option()
                 new_number = utilities.number_extraction_from_string(
                     sumo_pages.my_profile_page._get_my_profile_questions_text()
                 )
@@ -306,7 +306,7 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
 
                 with allure.step("Verifying that the question is no longer displayed inside "
                                  "My Questions page"):
-                    sumo_pages.top_navbar._click_on_my_questions_profile_option()
+                    sumo_pages.top_navbar.click_on_my_questions_profile_option()
                     expect(
                         sumo_pages.my_questions_page._get_listed_question(
                             question_info['aaq_subject'])).to_be_hidden()
@@ -506,7 +506,7 @@ def test_loginless_mozilla_account_aaq(page: Page):
                      "blocked after 3 submissions"):
         i = 1
         while i <= 4:
-            sumo_pages.top_navbar._click_on_signin_signup_button()
+            sumo_pages.top_navbar.click_on_signin_signup_button()
             sumo_pages.auth_page._click_on_cant_sign_in_to_my_mozilla_account_link()
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],

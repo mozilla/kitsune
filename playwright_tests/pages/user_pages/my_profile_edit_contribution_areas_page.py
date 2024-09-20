@@ -24,16 +24,16 @@ class MyProfileEditContributionAreasPage(BasePage):
         super().__init__(page)
 
     # My profile contribution areas page actions.
-    def _edit_con_areas_pref_banner_txt(self) -> str:
-        return super()._get_text_of_element(
+    def edit_con_areas_pref_banner_txt(self) -> str:
+        return self._get_text_of_element(
             self.__edit_contribution_areas_preferences_saved_banner_text)
 
-    def _get_edit_contribution_areas_page_header(self) -> str:
-        return super()._get_text_of_element(self.__edit_contribution_areas_page_header)
+    def get_edit_contribution_areas_page_header(self) -> str:
+        return self._get_text_of_element(self.__edit_contribution_areas_page_header)
 
-    def _get_contrib_areas_checkbox_labels(self) -> set[str]:
+    def get_contrib_areas_checkbox_labels(self) -> set[str]:
         initial_list = set(
-            super()._get_text_of_elements(self.__edit_contribution_areas_checkbox_labels)
+            self._get_text_of_elements(self.__edit_contribution_areas_checkbox_labels)
         )
         normalized_list = set(
             [
@@ -48,50 +48,50 @@ class MyProfileEditContributionAreasPage(BasePage):
         )
         return normalized_list
 
-    def _click_on_update_contribution_areas_button(self):
-        super()._click(self.__edit_contribution_areas_update_button)
+    def click_on_update_contribution_areas_button(self):
+        self._click(self.__edit_contribution_areas_update_button)
 
-    def _click_on_unchecked_cont_areas_checkboxes(self):
-        for checkbox in super()._get_element_handles(self.__edit_contribution_areas_checkboxes):
+    def click_on_unchecked_cont_areas_checkboxes(self):
+        for checkbox in self._get_element_handles(self.__edit_contribution_areas_checkboxes):
             if not checkbox.is_checked():
                 checkbox.click()
 
-    def _click_on_all_checked_cont_areas_checkboxes(self):
-        for checkbox in super()._get_element_handles(self.__edit_contribution_areas_checkboxes):
+    def click_on_all_checked_cont_areas_checkboxes(self):
+        for checkbox in self._get_element_handles(self.__edit_contribution_areas_checkboxes):
             if checkbox.is_checked():
                 checkbox.click()
 
-    def _click_on_edit_cont_pref_banner_close_button(self):
-        super()._click(self.__edit_contribution_areas_preferences_saved_banner_close_button)
+    def click_on_edit_cont_pref_banner_close_button(self):
+        self._click(self.__edit_contribution_areas_preferences_saved_banner_close_button)
 
-    def _is_edit_cont_pref_banner_displayed(self) -> Locator:
-        return super()._get_element_locator(
+    def is_edit_cont_pref_banner_displayed(self) -> Locator:
+        return self._get_element_locator(
             self.__edit_contribution_areas_preferences_saved_banner)
 
-    def _is_kb_contributors_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__edit_contribution_areas_kb_contributors)
+    def is_kb_contributors_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__edit_contribution_areas_kb_contributors)
 
-    def _is_l10n_contributors_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__edit_contribution_areas_l10n_contributors)
+    def is_l10n_contributors_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__edit_contribution_areas_l10n_contributors)
 
-    def _is_forum_contributors_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__edit_contribution_areas_forum_contributors)
+    def is_forum_contributors_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__edit_contribution_areas_forum_contributors)
 
-    def _is_social_media_contributors_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(
+    def is_social_media_contributors_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(
             self.__edit_contribution_areas_social_media_contributors)
 
-    def _is_mobile_support_contributors_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(
+    def is_mobile_support_contributors_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(
             self.__edit_contribution_areas_mobile_support_contributors)
 
-    def _are_all_cont_pref_checked(self) -> bool:
+    def are_all_cont_pref_checked(self) -> bool:
         is_checked = [
-            self._is_kb_contributors_checkbox_checked(),
-            self._is_l10n_contributors_checkbox_checked(),
-            self._is_forum_contributors_checkbox_checked(),
-            self._is_social_media_contributors_checkbox_checked(),
-            self._is_mobile_support_contributors_checkbox_checked(),
+            self.is_kb_contributors_checkbox_checked(),
+            self.is_l10n_contributors_checkbox_checked(),
+            self.is_forum_contributors_checkbox_checked(),
+            self.is_social_media_contributors_checkbox_checked(),
+            self.is_mobile_support_contributors_checkbox_checked(),
         ]
 
         if False in is_checked:
