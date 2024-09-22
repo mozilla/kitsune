@@ -97,7 +97,7 @@ jobs:
         with:
             token_format: access_token
             service_account:  artifact-writer@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-            workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_PROJECT_NUMBER }}
+            workload_identity_provider: ${{ env.GCPV2_WORKLOAD_IDENTITY_POOL_PROJECT_NUMBER }}
 
       - id: docker_login
         name: Log in to the container registry
@@ -138,7 +138,7 @@ jobs:
         with:
           token_format: access_token
           service_account: deploy-${{ needs.build.outputs.deployment_env }}@moz-fx-sumo-${{ needs.build.outputs.deployment_realm }}.iam.gserviceaccount.com
-          workload_identity_provider: projects/324168772199/locations/global/workloadIdentityPools/github-actions/providers/github-actions
+          workload_identity_provider: ${{ env.GCPV2_WORKLOAD_IDENTITY_POOL_PROJECT_NUMBER }}
 
       - id: docker_login
         name: docker login
