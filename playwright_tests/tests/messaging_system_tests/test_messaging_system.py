@@ -646,16 +646,16 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
 
     with allure.step("Navigating to the groups page"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
-        sumo_pages.user_groups._click_on_a_particular_group(
+        sumo_pages.user_groups.click_on_a_particular_group(
             utilities.user_message_test_data['test_groups'][0])
 
     with allure.step("Verifying that the pm group members button is not displayed"):
-        expect(sumo_pages.user_groups._get_pm_group_members_button()).to_be_hidden()
+        expect(sumo_pages.user_groups.get_pm_group_members_button()).to_be_hidden()
 
     with allure.step("Deleting the user session and verifying that the pm group members "
                      "button is not displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.user_groups._get_pm_group_members_button()).to_be_hidden()
+        expect(sumo_pages.user_groups.get_pm_group_members_button()).to_be_hidden()
 
     # The PM group members button was removed for staff members as well.
     with allure.step("Signing in with a staff account and verifying that the pm group "
@@ -663,7 +663,7 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
-        expect(sumo_pages.user_groups._get_pm_group_members_button()).to_be_hidden()
+        expect(sumo_pages.user_groups.get_pm_group_members_button()).to_be_hidden()
 
 
 # C2566115, C2566116, C2566119
@@ -846,7 +846,7 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
         )
 
         utilities.navigate_to_link(utilities.general_test_data['groups'])
-        sumo_pages.user_groups._click_on_a_particular_group(targeted_test_group)
+        sumo_pages.user_groups.click_on_a_particular_group(targeted_test_group)
         sumo_pages.user_group_flow.remove_a_user_from_group(targeted_user)
 
     with allure.step("Navigating to the new message page and sending a message to the group"):
@@ -886,7 +886,7 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
             utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
         utilities.navigate_to_link(utilities.general_test_data['groups'])
-        sumo_pages.user_groups._click_on_a_particular_group(targeted_test_group)
+        sumo_pages.user_groups.click_on_a_particular_group(targeted_test_group)
         sumo_pages.user_group_flow.add_a_user_to_group(targeted_user)
 
 

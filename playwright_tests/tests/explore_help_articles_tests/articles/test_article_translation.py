@@ -298,15 +298,16 @@ def test_unsupported_locales_fallback(page: Page):
                     page
                 ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
 
-    # C2625000
-    @pytest.mark.kbArticleTranslation
-    def test_fallback_languages(self):
-        with allure.step("Verifying the language fallback"):
-            for key, value in FALLBACK_LANGUAGES.items():
-                self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
-                expect(
-                    self.page
-                ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
+
+# C2625000
+@pytest.mark.kbArticleTranslation
+def test_fallback_languages(self):
+    with allure.step("Verifying the language fallback"):
+        for key, value in FALLBACK_LANGUAGES.items():
+            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
+            expect(
+                self.page
+            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
 
 
 # C2316347
@@ -339,9 +340,9 @@ def test_sumo_locale_priority(page: Page):
         ))
 
     with allure.step("Accessing the edit profile page and changing the language to ro"):
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._select_preferred_language_dropdown_option_by_value("ro")
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.select_preferred_language_dropdown_option_by_value("ro")
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with allure.step("Navigating to the SUMO homepage without specifying the path in the "
                      "locale and verifying that the preferred locale is set"):
@@ -368,10 +369,10 @@ def test_sumo_locale_priority(page: Page):
 
     with allure.step("Changing the preferred language back to english and signing out"):
         utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + '/en-US/')
-        sumo_pages.top_navbar._click_on_edit_profile_option()
-        sumo_pages.edit_my_profile_page._select_preferred_language_dropdown_option_by_value(
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.select_preferred_language_dropdown_option_by_value(
             "en-US")
-        sumo_pages.edit_my_profile_page._click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
         utilities.delete_cookies()
 
     with allure.step("Sending the request with the modified 'Accept-Language' header set to "
