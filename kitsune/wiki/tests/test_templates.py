@@ -9,7 +9,8 @@ from django.core.cache import cache
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import SumoPyQuery as pq, TestCase, attrs_eq, get, post
+from kitsune.sumo.tests import SumoPyQuery as pq
+from kitsune.sumo.tests import TestCase, attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
@@ -974,6 +975,8 @@ class NewRevisionTests(TestCase):
         self.d.topics.add(*topics)
         self.assertEqual(self.d.topics.count(), len(topics))
         new_topics = [topics[0], TopicFactory()]
+        self.d.topics.clear()
+        self.d.topics.add(*new_topics)
         data = new_document_data(t.id for t in new_topics)
         data["form"] = "doc"
         self.client.post(reverse("wiki.edit_document_metadata", args=[self.d.slug]), data)

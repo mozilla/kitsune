@@ -9,14 +9,9 @@ from django.utils.translation import gettext_lazy as _lazy
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField
 from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
-from kitsune.wiki.models import (
-    MAX_REVISION_COMMENT_LENGTH,
-    Document,
-    DraftRevision,
-    Revision,
-)
+from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
 from kitsune.wiki.tasks import add_short_links
-from kitsune.wiki.widgets import ProductsWidget, TopicsWidget, RelatedDocumentsWidget
+from kitsune.wiki.widgets import ProductsWidget, RelatedDocumentsWidget, TopicsWidget
 
 TITLE_REQUIRED = _lazy("Please provide a title.")
 TITLE_SHORT = _lazy(
@@ -158,20 +153,33 @@ class DocumentForm(forms.ModelForm):
         return slug
 
     def clean(self):
-        c = super(DocumentForm, self).clean()
-        locale = c.get("locale")
+        cdata = super(DocumentForm, self).clean()
+        locale = cdata.get("locale")
 
         # Products are required for en-US
-        products = c.get("products")
-        if locale == settings.WIKI_DEFAULT_LANGUAGE and (not products or len(products) < 1):
+        product_ids = cdata.get("products", [])
+        products = Product.active.filter(
+            id__in=[int(product_id) for product_id in product_ids if product_id]
+        )
+        if locale == settings.WIKI_DEFAULT_LANGUAGE and (not product_ids or len(product_ids) < 1):
             raise forms.ValidationError(PRODUCT_REQUIRED)
 
         # Topics are required for en-US
-        topics = c.get("topics")
-        if locale == settings.WIKI_DEFAULT_LANGUAGE and (not topics or len(topics) < 1):
+        topic_ids = cdata.get("topics", [])
+        topics = Topic.active.filter(id__in=[int(topic_id) for topic_id in topic_ids if topic_id])
+        if locale == settings.WIKI_DEFAULT_LANGUAGE and (not topic_ids or len(topic_ids) < 1):
             raise forms.ValidationError(TOPIC_REQUIRED)
 
-        return c
+        associated_topics = Topic.active.filter(products__in=products).distinct()
+        invalid_topics = topics.difference(associated_topics)
+
+        if invalid_topics:
+            topic_titles = ", ".join([topic.title for topic in invalid_topics])
+            raise forms.ValidationError(
+                _lazy(f"Topics {topic_titles} are not associated with the selected products.")
+            )
+
+        return cdata
 
     class Meta:
         model = Document
