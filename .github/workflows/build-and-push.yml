@@ -123,6 +123,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - id: print_them_out
+        run: |
+           echo $GITHUB_OUTPUT
+
   upload-static-assets:
     name: upload static assets
     environment: ${{ needs.build.outputs.deployment_env }}
