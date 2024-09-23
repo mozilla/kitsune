@@ -41,7 +41,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
       - name: Create version.json
         run: |
           # create a version.json per
@@ -67,7 +66,7 @@ jobs:
 
           echo TAG ="dev-$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
 
-          # Updates to the main branch are deployed to stage.
+          # Updates to the main branch are deployed to stage.git
           echo DEPLOYMENT_ENV=dev >> "$GITHUB_ENV"
           echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
@@ -91,6 +90,8 @@ jobs:
           # Version tags are deployed to prod.
           echo DEPLOYMENT_ENV=prod >> "$GITHUB_ENV"
           echo DEPLOYMENT_REALM=prod >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
 
       - id: gcp_auth
         name: GCP authentication
