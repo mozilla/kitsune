@@ -30,53 +30,53 @@ class WaysToContributePages(BasePage):
         super().__init__(page)
 
     # Breadcrumbs
-    def _get_text_of_all_breadcrumbs(self) -> list[str]:
-        return super()._get_text_of_elements(self.__all_breadcrumbs)
+    def get_text_of_all_breadcrumbs(self) -> list[str]:
+        return self._get_text_of_elements(self.__all_breadcrumbs)
 
-    def _get_interactable_breadcrumbs(self) -> list[ElementHandle]:
-        return super()._get_element_handles(self.__interactable_breadcrumbs)
+    def get_interactable_breadcrumbs(self) -> list[ElementHandle]:
+        return self._get_element_handles(self.__interactable_breadcrumbs)
 
-    def _click_on_breadcrumb(self, element: ElementHandle):
+    def click_on_breadcrumb(self, element: ElementHandle):
         element.click()
 
     # Page content
-    def _get_hero_main_header_text(self) -> str:
-        return super()._get_text_of_element(self.__hero_main_header)
+    def get_hero_main_header_text(self) -> str:
+        return self._get_text_of_element(self.__hero_main_header)
 
-    def _get_hero_second_header(self) -> str:
-        return super()._get_text_of_element(self.__hero_second_header)
+    def get_hero_second_header(self) -> str:
+        return self._get_text_of_element(self.__hero_second_header)
 
-    def _get_hero_text(self) -> str:
-        return super()._get_text_of_element(self.__hero_text)
+    def get_hero_text(self) -> str:
+        return self._get_text_of_element(self.__hero_text)
 
-    def _get_all_page_image_links(self) -> list[ElementHandle]:
-        return super()._get_element_handles(self.__all_page_images)
+    def get_all_page_image_links(self) -> list[ElementHandle]:
+        return self._get_element_handles(self.__all_page_images)
 
     # How to contribute_messages section
-    def _get_how_to_contribute_header_text(self) -> str:
-        return super()._get_text_of_element(self.__how_to_contribute_header)
+    def get_how_to_contribute_header_text(self) -> str:
+        return self._get_text_of_element(self.__how_to_contribute_header)
 
-    def _get_how_to_contribute_link_options(self) -> list[str]:
-        return super()._get_text_of_elements(self.__all_how_to_contribute_option_links)
+    def get_how_to_contribute_link_options(self) -> list[str]:
+        return self._get_text_of_elements(self.__all_how_to_contribute_option_links)
 
-    def _get_how_to_contribute_option_four(self) -> str:
-        return super()._get_text_of_element(self.__start_answering_how_to_contribute_option_text)
+    def get_how_to_contribute_option_four(self) -> str:
+        return self._get_text_of_element(self.__start_answering_how_to_contribute_option_text)
 
-    def _get_first_fact_text(self) -> str:
-        return super()._get_text_of_element(self.__first_fact_text)
+    def get_first_fact_text(self) -> str:
+        return self._get_text_of_element(self.__first_fact_text)
 
-    def _get_second_fact_text(self) -> str:
-        return super()._get_text_of_element(self.__second_fact_text)
+    def get_second_fact_text(self) -> str:
+        return self._get_text_of_element(self.__second_fact_text)
 
     # Other ways to contribute_messages section
-    def _get_other_ways_to_contribute_header(self) -> str:
-        return super()._get_text_of_element(self.__other_ways_to_contribute_header)
+    def get_other_ways_to_contribute_header(self) -> str:
+        return self._get_text_of_element(self.__other_ways_to_contribute_header)
 
-    def _get_other_ways_to_contribute_cards(self) -> list[str]:
-        return super()._get_text_of_elements(self.__other_ways_to_contribute_card_titles)
+    def get_other_ways_to_contribute_cards(self) -> list[str]:
+        return self._get_text_of_elements(self.__other_ways_to_contribute_card_titles)
 
-    def _get_other_ways_to_contribute_card_list(self) -> list[ElementHandle]:
-        return super()._get_element_handles(self.__other_ways_to_contribute_card_list)
+    def get_other_ways_to_contribute_card_list(self) -> list[ElementHandle]:
+        return self._get_element_handles(self.__other_ways_to_contribute_card_list)
 
-    def _click_on_other_way_to_contribute_card(self, card_item: ElementHandle):
+    def click_on_other_way_to_contribute_card(self, card_item: ElementHandle):
         card_item.click()

@@ -33,13 +33,13 @@ def test_contribute_mobile_page_text(page: Page):
 
     with check, allure.step("Verifying that the Contribute Mobile Store page contains the "
                             "correct strings"):
-        assert sumo_pages.ways_to_contribute_pages._get_hero_main_header_text(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_main_header_text(
         ) == ContributeMobileSupportMessages.HERO_PAGE_TITLE
-        assert sumo_pages.ways_to_contribute_pages._get_hero_second_header(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_second_header(
         ) == ContributeMobileSupportMessages.HERO_SECOND_TITLE
-        assert sumo_pages.ways_to_contribute_pages._get_hero_text(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_text(
         ) == ContributeMobileSupportMessages.HERO_TEXT
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_header_text(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_header_text(
         ) == ContributeMobileSupportMessages.HOW_TO_CONTRIBUTE_HEADER
 
         # Need to add a check for the logged in state as well.
@@ -51,15 +51,15 @@ def test_contribute_mobile_page_text(page: Page):
             ContributeMobileSupportMessages.HOW_TO_CONTRIBUTE_OPTION_THREE,
             ContributeMobileSupportMessages.HOW_TO_CONTRIBUTE_OPTION_FIVE,
         ]
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_link_options(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_link_options(
         ) == card_titles
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_option_four(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_option_four(
         ) == ContributeMobileSupportMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR
-        assert sumo_pages.ways_to_contribute_pages._get_first_fact_text(
+        assert sumo_pages.ways_to_contribute_pages.get_first_fact_text(
         ) == ContributeMobileSupportMessages.FACT_FIRST_LINE
-        assert sumo_pages.ways_to_contribute_pages._get_second_fact_text(
+        assert sumo_pages.ways_to_contribute_pages.get_second_fact_text(
         ) == ContributeMobileSupportMessages.FACT_SECOND_LINE
-        assert sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_header(
+        assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_header(
         ) == ContributeMobileSupportMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER
 
         other_ways_to_contribute_card_titles = [
@@ -68,7 +68,7 @@ def test_contribute_mobile_page_text(page: Page):
             ContributeMobileSupportMessages.LOCALIZE_CONTENT_CARD_TITLE,
             ContributeMobileSupportMessages.PROVIDE_SUPPORT_ON_SOCIAL_CHANNELS_CARD_TITLE,
         ]
-        assert sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_cards(
+        assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_cards(
         ) == other_ways_to_contribute_card_titles
 
 
@@ -82,7 +82,7 @@ def test_contribute_mobile_page_images_are_not_broken(page: Page):
             ContributeMobileSupportMessages.STAGE_CONTRIBUTE_MOBILE_SUPPORT_PAGE_URL
         )
 
-    for link in sumo_pages.ways_to_contribute_pages._get_all_page_image_links():
+    for link in sumo_pages.ways_to_contribute_pages.get_all_page_image_links():
         image_link = link.get_attribute("src")
         response = requests.get(image_link, stream=True)
         with check, allure.step(f"Verifying that the {image_link} image is not broken"):
@@ -106,15 +106,15 @@ def test_contribute_mobile_page_breadcrumbs(page: Page):
     ]
 
     with check, allure.step("Verifying that the correct breadcrumbs are displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_text_of_all_breadcrumbs(
+        assert sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs(
         ) == breadcrumbs
 
     counter = 1
-    for breadcrumb in sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs():
+    for breadcrumb in sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs():
         breadcrumb_to_click = (
-            sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs()[counter]
+            sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[counter]
         )
-        sumo_pages.ways_to_contribute_pages._click_on_breadcrumb(breadcrumb_to_click)
+        sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(breadcrumb_to_click)
 
         if counter == 1:
             with check, allure.step("Verifying that the Contribute breadcrumb redirects to "
@@ -149,11 +149,11 @@ def test_contribute_mobile_other_ways_to_contribute_redirect_to_the_correct_page
     ]
 
     counter = 0
-    for element in sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list():
+    for element in sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list():
         card = (
-            sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list()[counter]
+            sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list()[counter]
         )
-        sumo_pages.ways_to_contribute_pages._click_on_other_way_to_contribute_card(card)
+        sumo_pages.ways_to_contribute_pages.click_on_other_way_to_contribute_card(card)
         with check, allure.step("Verifying that the 'other ways to contribute_messages' "
                                 "cards are redirecting to the correct SUMO page"):
             assert ways_to_contribute_links[counter] == utilities.get_page_url()

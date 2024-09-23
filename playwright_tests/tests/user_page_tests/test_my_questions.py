@@ -49,8 +49,8 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
 
     with allure.step("Deleting the posted question"):
         utilities.navigate_to_link(question_info["question_page_url"])
-        sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        sumo_pages.question_page._click_delete_this_question_button()
+        sumo_pages.question_page.click_delete_this_question_question_tools_option()
+        sumo_pages.question_page.click_delete_this_question_button()
 
     with allure.step("Verifying that we are on the product support forum page after deletion"):
         expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
@@ -133,8 +133,8 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         utilities.navigate_to_link(question_info["question_page_url"])
-        sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        sumo_pages.question_page._click_delete_this_question_button()
+        sumo_pages.question_page.click_delete_this_question_question_tools_option()
+        sumo_pages.question_page.click_delete_this_question_button()
 
     with allure.step("Accessing the original user and verifying that the correct message is "
                      "displayed"):
