@@ -28,23 +28,23 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
     with allure.step("Navigating to the inbox page"):
         sumo_pages.top_navbar.click_on_inbox_option()
 
-    if sumo_pages.inbox_page._are_inbox_messages_displayed():
+    if sumo_pages.inbox_page.are_inbox_messages_displayed():
         with allure.step("Clearing the inbox since there are some existing messages"):
-            sumo_pages.inbox_page._delete_all_inbox_messages()
+            sumo_pages.inbox_page.delete_all_inbox_messages()
 
     with check, allure.step("Verifying that the correct message is displayed"):
-        assert sumo_pages.inbox_page._get_text_of_inbox_no_message_header(
+        assert sumo_pages.inbox_page.get_text_of_inbox_no_message_header(
         ) == InboxPageMessages.NO_MESSAGES_IN_INBOX_TEXT
 
     with allure.step("Navigating to the 'Sent Messages' page"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
 
-    if sumo_pages.sent_message_page._are_sent_messages_displayed():
+    if sumo_pages.sent_message_page.are_sent_messages_displayed():
         with allure.step("Clearing sent messages list since there are some existing messages"):
-            sumo_pages.sent_message_page._delete_all_displayed_sent_messages()
+            sumo_pages.sent_message_page.delete_all_displayed_sent_messages()
 
     with check, allure.step("Verifying that the correct page message is displayed"):
-        assert sumo_pages.sent_message_page._get_sent_messages_no_message_text(
+        assert sumo_pages.sent_message_page.get_sent_messages_no_message_text(
         ) == SentMessagesPageMessages.NO_MESSAGES_IN_SENT_MESSAGES_TEXT
 
 
@@ -76,9 +76,9 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
                      "field"):
         # Firefox GH runner fails here. We are running this assertion only in Chrome for now
         if not is_firefox:
-            assert sumo_pages.new_message_page._get_user_to_text() == user_two, (
+            assert sumo_pages.new_message_page.get_user_to_text() == user_two, (
                 f"Incorrect 'To' receiver. Expected: {user_two}. "
-                f"Received: {sumo_pages.new_message_page._get_user_to_text()}"
+                f"Received: {sumo_pages.new_message_page.get_user_to_text()}"
             )
 
     with allure.step("Sending a message to the user"):
@@ -86,15 +86,15 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
             message_body=message_body)
 
     with check, allure.step("Verifying that the correct message sent banner is displayed"):
-        assert sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
+        assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
         ) == InboxPageMessages.MESSAGE_SENT_BANNER_TEXT
 
     with allure.step("Clicking on the 'Sent Messages option"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
 
     with allure.step("Verifying that the sent message is displayed"):
         expect(
-            sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
+            sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
         ).to_be_visible()
 
     with allure.step("Deleting the message from the sent messages page"):
@@ -102,11 +102,11 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
             excerpt=message_body, from_sent_list=True)
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(
+        assert sumo_pages.sent_message_page.get_sent_messages_page_deleted_banner_text(
         ) == SentMessagesPageMessages.DELETE_MESSAGE_BANNER_TEXT
 
     with allure.step("Verifying that messages from user two are not displayed"):
-        expect(sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
+        expect(sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
                ).to_be_hidden()
 
     with allure.step("Signing in with the user which received the message"):
@@ -129,7 +129,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
                ).to_be_hidden()
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(
+        assert sumo_pages.sent_message_page.get_sent_messages_page_deleted_banner_text(
         ) == SentMessagesPageMessages.DELETE_MESSAGE_BANNER_TEXT
 
 
@@ -152,20 +152,20 @@ def test_private_message_can_be_sent_via_new_message_page(page: Page):
 
     with allure.step("Accessing the New Message page and sending a message to another user"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
             message_body=message_body,
         )
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
+        assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
         ) == InboxPageMessages.MESSAGE_SENT_BANNER_TEXT
 
     with allure.step("Verifying that the sent message is displayed inside the sent messages "
                      "page"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-        expect(sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        expect(sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
                ).to_be_visible()
 
     with allure.step("Clearing the sent messages list"):
@@ -205,11 +205,11 @@ def test_navbar_options_redirect_to_the_correct_page_and_options_are_correctly_h
                      "option is highlighted"):
         expect(page).to_have_url(InboxPageMessages.INBOX_PAGE_STAGE_URL)
         expect(
-            sumo_pages.mess_system_user_navbar._get_inbox_navbar_element()
+            sumo_pages.mess_system_user_navbar.get_inbox_navbar_element()
         ).to_have_css("background-color", InboxPageMessages.NAVBAR_INBOX_SELECTED_BG_COLOR)
 
     with allure.step("Clicking on the sent messages navbar option"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
 
     with allure.step("Verifying that we are on the correct page and the 'Sent Messages' "
                      "navbar option is highlighted"):
@@ -217,29 +217,29 @@ def test_navbar_options_redirect_to_the_correct_page_and_options_are_correctly_h
             page
         ).to_have_url(SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL)
         expect(
-            sumo_pages.mess_system_user_navbar._get_sent_messages_navbar_element()
+            sumo_pages.mess_system_user_navbar.get_sent_messages_navbar_element()
         ).to_have_css("background-color",
                       SentMessagesPageMessages.NAVBAR_SENT_MESSAGES_SELECTED_BG_COLOR)
 
     with allure.step("Clicking on the 'New message' navbar option"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Verifying that we are on the correct page and the 'New Message' navbar "
                      "option is successfully highlighted"):
         expect(page).to_have_url(NewMessagePageMessages.NEW_MESSAGE_PAGE_STAGE_URL)
         expect(
-            sumo_pages.mess_system_user_navbar._get_new_message_navbar_element()
+            sumo_pages.mess_system_user_navbar.get_new_message_navbar_element()
         ).to_have_css("background-color",
                       NewMessagePageMessages.NAVBAR_NEW_MESSAGE_SELECTED_BG_COLOR)
 
     with allure.step("Clicking on the navbar inbox messaging system navbar option"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_inbox()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_navbar_inbox()
 
     with allure.step("Verifying that we are on the correct page and the 'Inbox' navbar "
                      "option is highlighted"):
         expect(page).to_have_url(InboxPageMessages.INBOX_PAGE_STAGE_URL)
         expect(
-            sumo_pages.mess_system_user_navbar._get_inbox_navbar_element()
+            sumo_pages.mess_system_user_navbar.get_inbox_navbar_element()
         ).to_have_css("background-color", InboxPageMessages.NAVBAR_INBOX_SELECTED_BG_COLOR)
 
 
@@ -259,7 +259,7 @@ def test_new_message_field_validation(page: Page):
 
     with allure.step("Accessing the New Message page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Trying to submit the form without any data and verifying that we are "
                      "still on the 'New Message' page"):
@@ -274,39 +274,27 @@ def test_new_message_field_validation(page: Page):
 
     with check, allure.step("Verifying that the default remaining characters is the correct "
                             "one"):
-        assert (sumo_pages.new_message_page._get_characters_remaining_text(
+        assert (sumo_pages.new_message_page.get_characters_remaining_text(
         ) in NewMessagePageMessages.NEW_MESSAGE_DEFAULT_REMAINING_CHARACTERS)
 
     with allure.step("Verifying that the characters remaining color is the expected one"):
         expect(
-            sumo_pages.new_message_page._get_characters_remaining_text_element()
+            sumo_pages.new_message_page.get_characters_remaining_text_element()
         ).to_have_css("color", NewMessagePageMessages.ENOUGH_CHARACTERS_REMAINING_COLOR)
 
-    # To check if firefox container crashes. If not remove this part and uncomment the if
-    # clause
-
-    # if self.browser == "chrome":
-    #     self.logger.info("Adding 9990 characters inside the input field")
-    #
-    #     self.pages.new_message_page.type_into_new_message_body_textarea(
-    #         text=super().user_message_test_data["valid_user_message"][
-    #             "9990_characters_long_message"
-    #         ]
-    #     )
-
     with allure.step("Adding 9990 characters inside the input field"):
-        sumo_pages.new_message_page._fill_into_new_message_body_textarea(
+        sumo_pages.new_message_page.fill_into_new_message_body_textarea(
             text=utilities.user_message_test_data["valid_user_message"][
                 "9990_characters_long_message"
             ])
 
     with check, allure.step("Verifying that the correct remaining characters left message is "
                             "displayed"):
-        assert sumo_pages.new_message_page._get_characters_remaining_text(
+        assert sumo_pages.new_message_page.get_characters_remaining_text(
         ) in NewMessagePageMessages.TEN_CHARACTERS_REMAINING_MESSAGE
 
     with allure.step("Verifying that the characters remaining color is the expected one"):
-        expect(sumo_pages.new_message_page._get_characters_remaining_text_element()
+        expect(sumo_pages.new_message_page.get_characters_remaining_text_element()
                ).to_have_css("color", NewMessagePageMessages.ENOUGH_CHARACTERS_REMAINING_COLOR)
 
     # elif self.browser == "firefox":
@@ -319,17 +307,17 @@ def test_new_message_field_validation(page: Page):
     #     )
 
     with allure.step("Adding one character inside the textarea field"):
-        sumo_pages.new_message_page._type_into_new_message_body_textarea(
+        sumo_pages.new_message_page.type_into_new_message_body_textarea(
             text=utilities.user_message_test_data["valid_user_message"]
             ["one_character_message"]
         )
 
     with check, allure.step("Verifying that the char remaining string is updated accordingly"):
-        assert sumo_pages.new_message_page._get_characters_remaining_text(
+        assert sumo_pages.new_message_page.get_characters_remaining_text(
         ) in NewMessagePageMessages.NINE_CHARACTERS_REMAINING_MESSAGE
 
     with allure.step("Verifying that the characters remaining color is the expected one"):
-        expect(sumo_pages.new_message_page._get_characters_remaining_text_element()
+        expect(sumo_pages.new_message_page.get_characters_remaining_text_element()
                ).to_have_css("color", NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR)
 
     # elif self.browser == "firefox":
@@ -342,15 +330,16 @@ def test_new_message_field_validation(page: Page):
     #     )
 
     with allure.step("Adding 9 characters inside the textarea field"):
-        sumo_pages.new_message_page._type_into_new_message_body_textarea(
+        sumo_pages.new_message_page.type_into_new_message_body_textarea(
             text=utilities.user_message_test_data["valid_user_message"]
             ["9_characters_message"]
         )
 
     with allure.step("Verifying that the char remaining string is updated accordingly"):
         expect(
-            sumo_pages.new_message_page._get_characters_remaining_text_element()
+            sumo_pages.new_message_page.get_characters_remaining_text_element()
         ).to_have_css("color", NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR)
+
     # elif self.browser == "firefox":
     #     check.equal(
     #         self.pages.new_message_page.get_characters_remaining_text_color(),
@@ -362,7 +351,7 @@ def test_new_message_field_validation(page: Page):
 
     with allure.step("Verifying that the characters remaining color is the expected one"):
         expect(
-            sumo_pages.new_message_page._get_characters_remaining_text_element()
+            sumo_pages.new_message_page.get_characters_remaining_text_element()
         ).to_have_css("color", NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR)
 
     # elif self.browser == "firefox":
@@ -394,7 +383,7 @@ def test_new_message_cancel_button(page: Page):
 
     with allure.step("Accessing the 'New Message' section"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Filling the new message form with data"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
@@ -405,16 +394,16 @@ def test_new_message_cancel_button(page: Page):
 
     with allure.step("Clicking on the 'Cancel' button and verifying that the user is "
                      "redirected back to the inbox page"):
-        sumo_pages.new_message_page._click_on_new_message_cancel_button()
+        sumo_pages.new_message_page.click_on_new_message_cancel_button()
         expect(
-            sumo_pages.mess_system_user_navbar._get_inbox_navbar_element()
+            sumo_pages.mess_system_user_navbar.get_inbox_navbar_element()
         ).to_have_css("background-color", InboxPageMessages.NAVBAR_INBOX_SELECTED_BG_COLOR)
         expect(page).to_have_url(InboxPageMessages.INBOX_PAGE_STAGE_URL)
 
     with allure.step("Navigating to the 'Sent Messages' page and verifying that the message "
                      "was not sent"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-        expect(sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        expect(sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
                ).to_be_hidden()
 
     with allure.step("Signing out and signing in with the receiver account"):
@@ -446,7 +435,7 @@ def test_new_message_preview(page: Page):
 
     with allure.step("Accessing the inbox section and navigating to the new message page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Adding text inside the message content section"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
@@ -457,17 +446,17 @@ def test_new_message_preview(page: Page):
 
     with allure.step("Clicking on the 'Preview' button and verifying that the preview "
                      "section is successfully displayed"):
-        sumo_pages.new_message_page._click_on_new_message_preview_button()
-        expect(sumo_pages.new_message_page._message_preview_section_element()).to_be_visible()
+        sumo_pages.new_message_page.click_on_new_message_preview_button()
+        expect(sumo_pages.new_message_page.message_preview_section_element()).to_be_visible()
 
     with check, allure.step("Verifying that all the preview items are displayed"):
-        assert sumo_pages.new_message_page._get_text_of_test_data_first_paragraph_text(
+        assert sumo_pages.new_message_page.get_text_of_test_data_first_paragraph_text(
         ) in NewMessagePageMessages.PREVIEW_MESSAGE_CONTENT_FIRST_PARAGRAPH_TEXT
 
-        assert sumo_pages.new_message_page._get_text_of_test_data_first_p_strong_text(
+        assert sumo_pages.new_message_page.get_text_of_test_data_first_p_strong_text(
         ) in NewMessagePageMessages.PREVIEW_MESSAGE_CONTENT_FIRST_PARAGRAPH_STRONG_TEXT
 
-        assert sumo_pages.new_message_page._get_text_of_test_data_first_p_italic_text(
+        assert sumo_pages.new_message_page.get_text_of_test_data_first_p_italic_text(
         ) in NewMessagePageMessages.PREVIEW_MESSAGE_CONTENT_FIRST_PARAGRAPH_ITALIC_TEXT
 
         numbered_list_items = [
@@ -482,21 +471,21 @@ def test_new_message_preview(page: Page):
             NewMessagePageMessages.PREVIEW_MESSAGE_UL_LI_NUMBER_THREE,
         ]
 
-        assert sumo_pages.new_message_page._get_text_of_numbered_list_items(
+        assert sumo_pages.new_message_page.get_text_of_numbered_list_items(
         ) == numbered_list_items
 
-        assert sumo_pages.new_message_page._get_text_of_bulleted_list_items(
+        assert sumo_pages.new_message_page.get_text_of_bulleted_list_items(
         ) == bulleted_list_items
 
-        expect(sumo_pages.new_message_page._new_message_preview_external_link_test_data_element()
+        expect(sumo_pages.new_message_page.new_message_preview_external_link_test_data_element()
                ).to_be_visible()
 
-        expect(sumo_pages.new_message_page._new_message_preview_internal_link_test_data_element()
+        expect(sumo_pages.new_message_page.new_message_preview_internal_link_test_data_element()
                ).to_be_visible()
 
     with allure.step("Clicking on the internal link and verifying that the user is "
                      "redirected to the correct article"):
-        sumo_pages.new_message_page._click_on_preview_internal_link()
+        sumo_pages.new_message_page.click_on_preview_internal_link()
         assert (
             sumo_pages.kb_article_page._get_text_of_article_title()
             == NewMessagePageMessages.PREVIEW_MESSAGE_INTERNAL_LINK_TITLE
@@ -509,8 +498,8 @@ def test_new_message_preview(page: Page):
     with allure.step("Verifying that the message was no sent by checking the "
                      "'Sent Messages page'"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-        expect(sumo_pages.sent_message_page._sent_messages(username=test_user)).to_be_hidden()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        expect(sumo_pages.sent_message_page.sent_messages(username=test_user)).to_be_hidden()
 
     with allure.step("Signing in with the potential message receiver and verifying that no "
                      "message were received"):
@@ -518,7 +507,7 @@ def test_new_message_preview(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         sumo_pages.top_navbar.click_on_inbox_option()
-        expect(sumo_pages.inbox_page._inbox_message(username=username)).to_be_hidden()
+        expect(sumo_pages.inbox_page.inbox_message(username=username)).to_be_hidden()
 
 
 # C891421, C891424
@@ -541,31 +530,31 @@ def test_messages_can_be_selected_and_deleted(page: Page):
     with allure.step("Accessing the 'New Message' page and sending a message to a different "
                      "user"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
             message_body=message_body,
         )
 
     with allure.step("Navigating to the sent messages page"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
 
     with allure.step("Clicking on the 'Delete Selected' button"):
-        sumo_pages.sent_message_page._click_on_delete_selected_button()
+        sumo_pages.sent_message_page.click_on_delete_selected_button()
 
     with check, allure.step("Verifying that the correct message is displayed"):
-        assert sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(
+        assert sumo_pages.sent_message_page.get_sent_messages_page_deleted_banner_text(
         ) in SentMessagesPageMessages.NO_MESSAGES_SELECTED_BANNER_TEXT
 
     with allure.step("Verifying that the message is still listed inside the sent messages "
                      "section"):
         expect(
-            sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
+            sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
         ).to_be_visible()
 
     with allure.step("Sending another message to self twice"):
         for i in range(2):
-            sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+            sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
             sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
                 recipient_username=username_one,
                 message_body=message_body,
@@ -573,33 +562,33 @@ def test_messages_can_be_selected_and_deleted(page: Page):
 
     with check, allure.step("Clicking on the 'delete selected' button while no messages is "
                             "selected and verifying that the correct banner is displayed"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_inbox()
-        sumo_pages.inbox_page._click_on_inbox_delete_selected_button()
-        assert sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_navbar_inbox()
+        sumo_pages.inbox_page.click_on_inbox_delete_selected_button()
+        assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
         ) in InboxPageMessages.NO_MESSAGES_SELECTED_BANNER_TEXT
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body).first
                ).to_be_visible()
 
     with allure.step("Selecting the messages and deleting it via the delete selected button"):
-        sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(message_body)
+        sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(message_body)
 
     with check, allure.step("Verifying that the messages are no longer displayed"):
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_hidden()
-        assert sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
+        assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
         ) in InboxPageMessages.MULTIPLE_MESSAGES_DELETION_BANNER_TEXT
 
     with allure.step("Navigating to the sent messages section and clearing all messages via "
                      "the 'delete selected button'"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-        sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Verifying that the messages are no longer displayed"):
-        expect(sumo_pages.sent_message_page._sent_messages_by_excerpt_locator(message_body)
+        expect(sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
                ).to_be_hidden()
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(
+        assert sumo_pages.sent_message_page.get_sent_messages_page_deleted_banner_text(
         ) in SentMessagesPageMessages.MULTIPLE_MESSAGES_DELETION_BANNER_TEXT
 
     with allure.step("Signing in with the receiver account and navigating to the inbox"):
@@ -613,12 +602,12 @@ def test_messages_can_be_selected_and_deleted(page: Page):
 
     with allure.step("Deleting all messages from the inbox page via the delete selected "
                      "button'"):
-        sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(message_body)
+        sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(message_body)
 
     with check, allure.step("Verifying that the messages are no longer displayed inside the "
                             "inbox section and the correct banner is displayed"):
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_hidden()
-        assert sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(
+        assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
         ) in InboxPageMessages.MESSAGE_DELETED_BANNER_TEXT
 
 
@@ -634,15 +623,15 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
 
     with allure.step("Navigating to the new message page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Typing in a group name inside the To field"):
-        sumo_pages.new_message_page._type_into_new_message_to_input_field(
+        sumo_pages.new_message_page.type_into_new_message_to_input_field(
             utilities.user_message_test_data['test_groups'][0]
         )
 
     with allure.step("Verifying that no users are returned"):
-        expect(sumo_pages.new_message_page._get_no_user_to_locator()).to_be_visible(timeout=10000)
+        expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=10000)
 
     with allure.step("Navigating to the groups page"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
@@ -680,7 +669,7 @@ def test_staff_users_can_send_group_messages(page: Page):
 
     with allure.step("Navigating to the new messages page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Sending out a message to a test group"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
@@ -690,13 +679,13 @@ def test_staff_users_can_send_group_messages(page: Page):
 
     with allure.step("Navigating to the 'Sent Messages page' and verifying that the message "
                      "was sent"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
         expect(
-            sumo_pages.sent_message_page._sent_messages_to_group(targeted_test_group, message_body)
+            sumo_pages.sent_message_page.sent_messages_to_group(targeted_test_group, message_body)
         ).to_be_visible()
 
     with allure.step("Deleting the outbox"):
-        sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
@@ -709,7 +698,7 @@ def test_staff_users_can_send_group_messages(page: Page):
             sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_visible()
-            sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+            sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(
                 message_body)
 
     with allure.step("Signing in with users from second test group and verifying that the "
@@ -738,7 +727,7 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
 
     with allure.step("Navigating to the new messages page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Sending out a message to a test group"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
@@ -748,14 +737,14 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
 
     with check, allure.step("Navigating to the 'Sent Messages page' and verifying that the "
                             "message was sent"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-        sumo_pages.sent_message_page._click_on_sent_message_subject(message_body)
-        check.equal(sumo_pages.sent_message_page._get_text_of_all_sent_groups(),
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        sumo_pages.sent_message_page.click_on_sent_message_subject(message_body)
+        check.equal(sumo_pages.sent_message_page.get_text_of_all_sent_groups(),
                     targeted_test_group)
 
     with allure.step("Deleting the outbox"):
         utilities.navigate_back()
-        sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
@@ -769,7 +758,7 @@ def test_staff_users_can_send_messages_to_multiple_groups(page: Page):
             sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_visible()
-            sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+            sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(
                 message_body)
 
 
@@ -791,7 +780,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
 
     with allure.step("Navigating to the new messages page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Sending out a message to a test group + user"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
@@ -801,15 +790,15 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
 
     with check, allure.step("Navigating to the 'Sent Messages page' and verifying that the "
                             "message was sent"):
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-        sumo_pages.sent_message_page._click_on_sent_message_subject(message_body)
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        sumo_pages.sent_message_page.click_on_sent_message_subject(message_body)
         check.is_in(targeted_test_group,
-                    sumo_pages.sent_message_page._get_text_of_all_sent_groups())
-        check.equal(targeted_user, sumo_pages.sent_message_page._get_text_of_all_recipients())
+                    sumo_pages.sent_message_page.get_text_of_all_sent_groups())
+        check.equal(targeted_user, sumo_pages.sent_message_page.get_text_of_all_recipients())
 
     with allure.step("Deleting the outbox"):
         utilities.navigate_back()
-        sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
@@ -822,7 +811,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
             sumo_pages.top_navbar.click_on_inbox_option()
             expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                    ).to_be_visible()
-            sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+            sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(
                 message_body)
 
 
@@ -851,14 +840,14 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
 
     with allure.step("Navigating to the new message page and sending a message to the group"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=targeted_test_group,
             message_body=message_body,
         )
 
     with allure.step("Deleting the outbox"):
-        sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button(
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button(
             message_body)
 
     with allure.step("Signing in with all targeted group members, verifying that the message "
@@ -878,7 +867,7 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page):
             else:
                 expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)
                        ).to_be_visible()
-                sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button(
+                sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(
                     message_body)
 
     with allure.step("Signing in with an staff account and adding the user back to the group"):
@@ -902,13 +891,13 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page):
 
     with allure.step("Navigating to the new message page"):
         sumo_pages.top_navbar.click_on_inbox_option()
-        sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_new_message()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
 
     with allure.step("Typing in a profiless group name inside the To field"):
-        sumo_pages.new_message_page._type_into_new_message_to_input_field("kb-contributors")
+        sumo_pages.new_message_page.type_into_new_message_to_input_field("kb-contributors")
 
     with allure.step("Verifying that no users are returned"):
-        expect(sumo_pages.new_message_page._get_no_user_to_locator()).to_be_visible(timeout=10000)
+        expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=10000)
 
 
 @pytest.mark.messagingSystemCleanup
@@ -933,9 +922,9 @@ def test_clear_inbox_and_outbox(page: Page):
 
 def inbox_and_outbox_deletion(page: Page):
     sumo_pages = SumoPages(page)
-    if sumo_pages.inbox_page._are_inbox_messages_displayed():
-        sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button()
+    if sumo_pages.inbox_page.are_inbox_messages_displayed():
+        sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button()
 
-    sumo_pages.mess_system_user_navbar._click_on_messaging_system_nav_sent_messages()
-    if sumo_pages.sent_message_page._are_sent_messages_displayed():
-        sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button()
+    sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+    if sumo_pages.sent_message_page.are_sent_messages_displayed():
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button()
