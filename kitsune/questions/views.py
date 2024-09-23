@@ -726,8 +726,10 @@ def edit_question(request, question_id):
         except Topic.DoesNotExist:
             return JsonResponse({"error": "Topic not found"}, status=404)
 
-        question.topic = new_topic
-        question.save(update=True)
+        if new_topic != question.topic:
+            question.topic = new_topic
+            question.update_topic_counter += 1
+            question.save(update=True)
 
         return JsonResponse({"updated_topic": str(new_topic)})
 

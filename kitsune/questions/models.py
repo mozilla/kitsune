@@ -147,6 +147,8 @@ class Question(AAQBase):
     images_cache_key = "question:images:%s"
     contributors_cache_key = "question:contributors:%s"
 
+    update_topic_counter = models.IntegerField(default=0)
+
     objects = QuestionManager()
 
     class Meta:
