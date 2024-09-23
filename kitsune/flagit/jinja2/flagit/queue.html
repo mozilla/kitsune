@@ -29,8 +29,22 @@
               {% csrf_token %}
               <select name="status">
                 <option value="">{{ _('Please select...') }}</option>
-                <option value="1">{{ _('The flag is valid and I fixed the issue.') }}</option>
-                <option value="2">{{ _('The flag is invalid.') }}</option>
+                {% if object.reason == "spam" %}
+                  <option value="1">{{ _('Removed spam content.') }}</option>
+                  <option value="2">{{ _('No spam found.') }}</option>
+                {% elif object.reason == "abuse" %}
+                  <option value="1">{{ _('Addressed abusive content.') }}</option>
+                  <option value="2">{{ _('No abuse detected.') }}</option>
+                {% elif object.reason == "bug_support" %}
+                  <option value="1">{{ _('Redirected support request.') }}</option>
+                  <option value="2">{{ _('Content is appropriately placed.') }}</option>
+                {% elif object.reason == "language" %}
+                  <option value="1">{{ _('Corrected language.') }}</option>
+                  <option value="2">{{ _('Language is appropriate.') }}</option>
+                {% else %}
+                  <option value="1">{{ _('Issue resolved.') }}</option>
+                  <option value="2">{{ _('No issues found.') }}</option>
+                {% endif %}
               </select>
               <input id="update-status-button" type="submit" 
                      class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
