@@ -97,7 +97,7 @@ jobs:
         with:
             token_format: access_token
             service_account:  artifact-writer@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-            workload_identity_provider: ${{ env.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
+            workload_identity_provider: ${{ vars.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
 
 
       - id: docker_login
@@ -139,7 +139,7 @@ jobs:
         with:
           token_format: access_token
           service_account: deploy-${{ needs.build.outputs.deployment_env }}@moz-fx-sumo-${{ needs.build.outputs.deployment_realm }}.iam.gserviceaccount.com
-          workload_identity_provider: ${{ env.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
+          workload_identity_provider: ${{ vars.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
 
 
       - id: docker_login
