@@ -32,20 +32,20 @@ def test_contribute_social_page_text(page: Page):
         )
 
     with check, allure.step("Verifying that the correct hero main header is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_hero_main_header_text(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_main_header_text(
         ) == ContributeSocialSupportMessages.HERO_PAGE_TITLE
 
     with check, allure.step("Verifying that the correct hero second header is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_hero_second_header(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_second_header(
         ) == ContributeSocialSupportMessages.HERO_SECOND_TITLE
 
     with check, allure.step("Verifying that the correct get hero text is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_hero_text(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_text(
         ) == ContributeSocialSupportMessages.HERO_TEXT
 
     with check, allure.step("Verifying that the correct how to contribute_messages header "
                             "text is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_header_text(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_header_text(
         ) == ContributeSocialSupportMessages.HOW_TO_CONTRIBUTE_HEADER
 
     # Need to add a check for the logged in state as well.
@@ -60,24 +60,24 @@ def test_contribute_social_page_text(page: Page):
 
     with check, allure.step("Verifying that the correct how to contribute_messages link "
                             "option are displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_link_options(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_link_options(
         ) == card_titles
 
     with check, allure.step("Verifying that the correct option four text is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_option_four(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_option_four(
         ) == ContributeSocialSupportMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR
 
     with check, allure.step("Verifying that the correct page first fact text is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_first_fact_text(
+        assert sumo_pages.ways_to_contribute_pages.get_first_fact_text(
         ) == ContributeSocialSupportMessages.FACT_FIRST_LINE
 
     with check, allure.step("Verifying that the correct second fact text is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_second_fact_text(
+        assert sumo_pages.ways_to_contribute_pages.get_second_fact_text(
         ) == ContributeSocialSupportMessages.FACT_SECOND_LINE
 
     with check, allure.step("Verifying that the correct get other ways to "
                             "contribute_messages header is displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_header(
+        assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_header(
         ) == ContributeSocialSupportMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER
 
     other_ways_to_contribute_card_titles = [
@@ -89,7 +89,7 @@ def test_contribute_social_page_text(page: Page):
 
     with check, allure.step("Verifying that the other ways to contribute_messages card "
                             "titles are the correct ones"):
-        assert sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_cards(
+        assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_cards(
         ) == other_ways_to_contribute_card_titles
 
 
@@ -103,7 +103,7 @@ def test_contribute_social_page_images_are_not_broken(page: Page):
             ContributeSocialSupportMessages.STAGE_CONTRIBUTE_SOCIAL_SUPPORT_PAGE_URL
         )
 
-    for link in sumo_pages.ways_to_contribute_pages._get_all_page_image_links():
+    for link in sumo_pages.ways_to_contribute_pages.get_all_page_image_links():
         image_link = link.get_attribute("src")
         response = requests.get(image_link, stream=True)
         with check, allure.step(f"Verifying that the {image_link} image is not broken"):
@@ -127,14 +127,14 @@ def test_contribute_social_page_breadcrumbs(page: Page):
     ]
 
     with check, allure.step("Verifying that the correct breadcrumbs are displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_text_of_all_breadcrumbs() == breadcrumbs
+        assert sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs() == breadcrumbs
 
     counter = 1
-    for breadcrumb in sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs():
+    for breadcrumb in sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs():
         breadcrumb_to_click = (
-            sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs()[counter]
+            sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[counter]
         )
-        sumo_pages.ways_to_contribute_pages._click_on_breadcrumb(breadcrumb_to_click)
+        sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(breadcrumb_to_click)
 
         if counter == 1:
             with check, allure.step("Verifying that the Contribute breadcrumb redirects to "
@@ -168,11 +168,11 @@ def test_contribute_social_other_ways_to_contribute_redirect_to_the_correct_page
     ]
 
     counter = 0
-    for element in sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list():
+    for element in sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list():
         card = (
-            sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list()[counter]
+            sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list()[counter]
         )
-        sumo_pages.ways_to_contribute_pages._click_on_other_way_to_contribute_card(card)
+        sumo_pages.ways_to_contribute_pages.click_on_other_way_to_contribute_card(card)
         with check, allure.step("Verifying that the 'other ways to contribute_messages'n "
                                 "cards are redirecting to the correct SUMO page"):
             assert ways_to_contribute_links[counter] == utilities.get_page_url()

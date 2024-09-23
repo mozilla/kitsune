@@ -95,15 +95,15 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
     with allure.step("Navigating to the previously posted question and posting a reply to it"):
         utilities.navigate_to_link(question_info["question_page_url"])
         question_test_data = utilities.question_test_data
-        sumo_pages.question_page._add_text_to_post_a_reply_textarea(
+        sumo_pages.question_page.add_text_to_post_a_reply_textarea(
             question_test_data["question_reply_solution"]
         )
-        answer_id = sumo_pages.question_page._click_on_post_reply_button(
+        answer_id = sumo_pages.question_page.click_on_post_reply_button(
             repliant_username=repliant_username
         )
 
     with allure.step("Marking the reply as the question solution"):
-        sumo_pages.question_page._click_on_solves_the_problem_button(target_reply_id=answer_id)
+        sumo_pages.question_page.click_on_solves_the_problem_button(target_reply_id=answer_id)
 
     with allure.step("Accessing the 'My profile' page of the account which provided the "
                      "solution and verifying that the original number of solutions has "
@@ -119,8 +119,8 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
     with allure.step("Deleting the posted question and verifying that we are redirected to "
                      "the product support forum page after deletion"):
         utilities.navigate_to_link(question_info["question_page_url"])
-        sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        sumo_pages.question_page._click_delete_this_question_button()
+        sumo_pages.question_page.click_delete_this_question_question_tools_option()
+        sumo_pages.question_page.click_delete_this_question_button()
         expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
 
 
@@ -159,14 +159,14 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
     with allure.step("Posting a reply for the question"):
         question_test_data = utilities.question_test_data
         reply_text = question_test_data["non_solution_reply"]
-        sumo_pages.question_page._add_text_to_post_a_reply_textarea(reply_text)
-        answer_id = sumo_pages.question_page._click_on_post_reply_button(
+        sumo_pages.question_page.add_text_to_post_a_reply_textarea(reply_text)
+        answer_id = sumo_pages.question_page.click_on_post_reply_button(
             repliant_username=repliant_user
         )
 
     with allure.step("Accessing the 'My profile' page and verifying that the number of "
                      "answers has incremented successfully"):
-        sumo_pages.question_page._click_on_the_reply_author(answer_id)
+        sumo_pages.question_page.click_on_the_reply_author(answer_id)
         utilities.number_extraction_from_string(
             sumo_pages.my_profile_page._get_my_profile_answers_text()
         )
@@ -186,8 +186,8 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
     with allure.step("Deleting the posted question and verifying that the user is redirected "
                      "to the product support forum page"):
         utilities.navigate_to_link(question_info["question_page_url"])
-        sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        sumo_pages.question_page._click_delete_this_question_button()
+        sumo_pages.question_page.click_delete_this_question_question_tools_option()
+        sumo_pages.question_page.click_delete_this_question_button()
         expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
 
 

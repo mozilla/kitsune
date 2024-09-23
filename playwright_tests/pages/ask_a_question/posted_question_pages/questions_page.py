@@ -141,438 +141,437 @@ class QuestionPage(BasePage):
         super().__init__(page)
 
     # Report abuse actions.
-    def _click_abuse_modal_close_button(self):
-        super()._click(self.__report_abuse_modal_close_button)
+    def click_abuse_modal_close_button(self):
+        self._click(self.__report_abuse_modal_close_button)
 
-    def _get_successful_flagged_this_content_text(self) -> str:
-        return super()._get_text_of_element(self.__report_abuse_flagged_this_content_message)
+    def get_successful_flagged_this_content_text(self) -> str:
+        return self._get_text_of_element(self.__report_abuse_flagged_this_content_message)
 
-    def _add_text_to_report_abuse_textarea(self, text: str):
-        super()._fill(self.__report_abuse_textarea, text)
+    def add_text_to_report_abuse_textarea(self, text: str):
+        self._fill(self.__report_abuse_textarea, text)
 
-    def _click_on_report_abuse_submit_button(self):
-        super()._click(self.__report_abuse_submit_button)
+    def click_on_report_abuse_submit_button(self):
+        self._click(self.__report_abuse_submit_button)
 
     # Breadcrumbs actions.
-    def _get_current_breadcrumb_locator(self, question_title: str) -> Locator:
-        return super()._get_element_locator(f"//ol[@id='breadcrumbs']/li[text()='{question_title}'"
-                                            f"]")
+    def get_current_breadcrumb_locator(self, question_title: str) -> Locator:
+        return self._get_element_locator(f"//ol[@id='breadcrumbs']/li[text()='{question_title}'"
+                                         f"]")
 
-    def _click_on_breadcrumb(self, breadcrumb_xpath: str):
-        super()._click(breadcrumb_xpath)
+    def click_on_breadcrumb(self, breadcrumb_xpath: str):
+        self._click(breadcrumb_xpath)
 
     # Get email updates actions.
-    def _get_email_updates_option(self) -> Locator:
-        return super()._get_element_locator(self.__stop_email_updates_option)
+    def get_email_updates_option(self) -> Locator:
+        return self._get_element_locator(self.__stop_email_updates_option)
 
     # Problem solved actions.
-    def _get_problem_solved_section_header_text(self) -> str:
-        return super()._get_text_of_element(self.__problem_solved_reply_section_header)
+    def get_problem_solved_section_header_text(self) -> str:
+        return self._get_text_of_element(self.__problem_solved_reply_section_header)
 
-    def _click_on_undo_button(self):
-        super()._click(self.__undo_solves_problem)
+    def click_on_undo_button(self):
+        self._click(self.__undo_solves_problem)
 
-    def _get_undo_button_locator(self) -> Locator:
-        return super()._get_element_locator(self.__undo_solves_problem)
+    def get_undo_button_locator(self) -> Locator:
+        return self._get_element_locator(self.__undo_solves_problem)
 
-    def _click_read_this_answer_in_context_link(self):
-        super()._click(self.__problem_solved_reply_reply_link)
+    def click_read_this_answer_in_context_link(self):
+        self._click(self.__problem_solved_reply_reply_link)
 
-    def _get_chosen_solution_text(self) -> str:
-        return super()._get_text_of_element(self.__problem_solved_reply_text)
+    def get_chosen_solution_text(self) -> str:
+        return self._get_text_of_element(self.__problem_solved_reply_text)
 
-    def _get_chosen_solution_section_locator(self) -> Locator:
-        return super()._get_element_locator(self.__problem_solved_reply_section)
+    def get_chosen_solution_section_locator(self) -> Locator:
+        return self._get_element_locator(self.__problem_solved_reply_section)
 
-    def _get_solved_problem_banner_text(self) -> str:
-        return super()._get_text_of_element(self.__problem_solved_banner_text)
+    def get_solved_problem_banner_text(self) -> str:
+        return self._get_text_of_element(self.__problem_solved_banner_text)
 
-    def _get_solved_the_problem_button_locator(self, target_reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{target_reply_id}']/"
-                                            f"following-sibling::aside//input[@type='submit']")
+    def get_solved_the_problem_button_locator(self, target_reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{target_reply_id}']/"
+                                         f"following-sibling::aside//input[@type='submit']")
 
-    def _get_chosen_solution_reply_message(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//h3[@class='is-solution']")
+    def get_chosen_solution_reply_message(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//h3[@class='is-solution']")
 
-    def _get_chosen_solution_reply_message_locator(self, reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{reply_id}']//h3[@class='is-solution']")
+    def get_chosen_solution_reply_message_locator(self, reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{reply_id}']//h3[@class='is-solution']")
 
     # I have this problem too actions.
-    def _get_i_have_this_problem_too_locator(self) -> Locator:
-        return super()._get_element_locator(self.__i_have_this_problem_too_button)
+    def get_i_have_this_problem_too_locator(self) -> Locator:
+        return self._get_element_locator(self.__i_have_this_problem_too_button)
 
-    def _click_i_have_this_problem_too_button(self):
-        super()._click(self.__i_have_this_problem_too_button)
+    def click_i_have_this_problem_too_button(self):
+        self._click(self.__i_have_this_problem_too_button)
 
-    def _get_i_have_this_problem_too_counter(self) -> int:
-        return int(super()._get_text_of_element(self.__i_have_this_problem_too_counter))
+    def get_i_have_this_problem_too_counter(self) -> int:
+        return int(self._get_text_of_element(self.__i_have_this_problem_too_counter))
 
-    def _get_last_reply_by_text(self) -> str:
-        return super()._get_text_of_element(self.__last_reply_by)
+    def get_last_reply_by_text(self) -> str:
+        return self._get_text_of_element(self.__last_reply_by)
 
     # Page content actions.
-    def _get_question_header(self) -> str:
-        return super()._get_text_of_element(self.__questions_header)
+    def get_question_header(self) -> str:
+        return self._get_text_of_element(self.__questions_header)
 
-    def _click_last_reply_by(self):
-        super()._click(self.__last_reply_by)
+    def click_last_reply_by(self):
+        self._click(self.__last_reply_by)
 
-    def _get_question_body(self) -> str:
-        return super()._get_text_of_element(self.__question_body)
+    def get_question_body(self) -> str:
+        return self._get_text_of_element(self.__question_body)
 
-    def _get_question_author_name(self) -> str:
-        return super()._get_text_of_element(self.__question_author)
+    def get_question_author_name(self) -> str:
+        return self._get_text_of_element(self.__question_author)
 
-    def _get_question_id(self) -> str:
-        return super()._get_element_attribute_value(self.__question_section, 'id')
+    def get_question_id(self) -> str:
+        return self._get_element_attribute_value(self.__question_section, 'id')
 
-    def _get_modified_question_locator(self) -> Locator:
-        return super()._get_element_locator(self.__modified_question_section)
+    def get_modified_question_locator(self) -> Locator:
+        return self._get_element_locator(self.__modified_question_section)
 
-    def _get_modified_by_text(self) -> str:
-        return super()._get_text_of_element(self.__modified_question_section)
+    def get_modified_by_text(self) -> str:
+        return self._get_text_of_element(self.__modified_question_section)
 
-    def _get_add_image_section_locator(self) -> Locator:
-        return super()._get_element_locator(self.__add_image_button)
+    def get_add_image_section_locator(self) -> Locator:
+        return self._get_element_locator(self.__add_image_button)
 
-    def _click_on_my_questions_banner_option(self):
-        super()._click(self.__posted_questions_success_banner_my_questions_link)
+    def click_on_my_questions_banner_option(self):
+        self._click(self.__posted_questions_success_banner_my_questions_link)
 
-    def _click_on_solves_the_problem_button(self, target_reply_id: str):
-        super()._click(f"//div[@id='{target_reply_id}']/following-sibling::aside//"
-                       f"input[@type='submit']")
+    def click_on_solves_the_problem_button(self, target_reply_id: str):
+        self._click(f"//div[@id='{target_reply_id}']/following-sibling::aside//"
+                    f"input[@type='submit']")
 
-    def _is_post_reply_button_visible(self) -> ElementHandle:
-        super()._wait_for_selector(self.__post_reply_button)
-        return super()._get_element_handle(self.__post_reply_button)
+    def is_post_reply_button_visible(self) -> ElementHandle:
+        self._wait_for_selector(self.__post_reply_button)
+        return self._get_element_handle(self.__post_reply_button)
 
-    def _click_on_the_reply_author(self, reply_id: str):
-        super()._click(f"//div[@id='{reply_id}']//a[@class='author-name']")
+    def click_on_the_reply_author(self, reply_id: str):
+        self._click(f"//div[@id='{reply_id}']//a[@class='author-name']")
 
-    def _get_text_content_of_reply(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']")
+    def get_text_content_of_reply(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']")
 
-    def _get_display_name_of_question_reply_author(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//a[@class='author-name']/"
-                                            f"span[@class='display-name']")
+    def get_display_name_of_question_reply_author(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//a[@class='author-name']/"
+                                         f"span[@class='display-name']")
 
-    def _get_displayed_user_title_of_question_reply_locator(self, reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{reply_id}']//a[@class='author-name']/"
-                                            f"span[@class='user-title']")
+    def get_displayed_user_title_of_question_reply_locator(self, reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{reply_id}']//a[@class='author-name']/"
+                                         f"span[@class='user-title']")
 
-    def _get_displayed_user_title_of_question_reply(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//a[@class='author-name']/"
-                                            f"span[@class='user-title']")
+    def get_displayed_user_title_of_question_reply(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//a[@class='author-name']/"
+                                         f"span[@class='user-title']")
 
     # Question tag actions.
-    def _get_question_tag_options(self) -> list[str]:
-        return super()._get_text_of_elements(self.__question_tags_options)
+    def get_question_tag_options(self) -> list[str]:
+        return self._get_text_of_elements(self.__question_tags_options)
 
-    def _get_remove_tag_button_locator(self, tag_name: str) -> Locator:
-        return super()._get_element_locator(f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/"
-                                            f"following-sibling::button[@class='remover']")
+    def get_remove_tag_button_locator(self, tag_name: str) -> Locator:
+        return self._get_element_locator(f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/"
+                                         f"following-sibling::button[@class='remover']")
 
-    def _add_text_to_add_a_tag_input_field(self, text: str):
-        super()._fill(self.__add_a_tag_input_field, text)
-        super()._click(f"//li[@class='ui-menu-item']/div[text()='{text}']")
+    def add_text_to_add_a_tag_input_field(self, text: str):
+        self._fill(self.__add_a_tag_input_field, text)
+        self._click(f"//li[@class='ui-menu-item']/div[text()='{text}']")
 
-    def _get_add_a_tag_input_field(self) -> Locator:
-        return super()._get_element_locator(self.__add_a_tag_input_field)
+    def get_add_a_tag_input_field(self) -> Locator:
+        return self._get_element_locator(self.__add_a_tag_input_field)
 
-    def _get_add_a_tag_button(self) -> Locator:
-        return super()._get_element_locator(self.__add_a_tab_button)
+    def get_add_a_tag_button(self) -> Locator:
+        return self._get_element_locator(self.__add_a_tab_button)
 
-    def _click_on_add_a_tag_button(self):
-        super()._click(self.__add_a_tab_button)
+    def click_on_add_a_tag_button(self):
+        self._click(self.__add_a_tab_button)
 
-    def _click_on_a_certain_tag(self, tag_name: str):
-        super()._click(f"//li[@class='tag']//a[text()='{tag_name}']")
+    def click_on_a_certain_tag(self, tag_name: str):
+        self._click(f"//li[@class='tag']//a[text()='{tag_name}']")
 
-    def _get_a_certain_tag(self, tag_name: str) -> Locator:
-        return super()._get_element_locator(f"//li[@class='tag']//a[text()='{tag_name}']")
+    def get_a_certain_tag(self, tag_name: str) -> Locator:
+        return self._get_element_locator(f"//li[@class='tag']//a[text()='{tag_name}']")
 
-    def _click_on_tag_remove_button(self, tag_name: str):
-        super()._click(f"//li[@class='tag']//a[text()='{tag_name}']/"
-                       f"following-sibling::button[@class='remover']")
+    def click_on_tag_remove_button(self, tag_name: str):
+        self._click(f"//li[@class='tag']//a[text()='{tag_name}']/"
+                    f"following-sibling::button[@class='remover']")
 
     # Attached image actions.
-    def _get_attached_image(self) -> Locator:
-        return super()._get_element_locator(self.__attached_image)
+    def get_attached_image(self) -> Locator:
+        return self._get_element_locator(self.__attached_image)
 
     # Question more information actions.
-    def _get_more_information_with_text_locator(self, text: str) -> Locator:
-        return super()._get_element_locator(f"//div[@class='about-support']/p[text()='{text}']")
+    def get_more_information_with_text_locator(self, text: str) -> Locator:
+        return self._get_element_locator(f"//div[@class='about-support']/p[text()='{text}']")
 
-    def _get_question_details_button_locator(self) -> Locator:
-        return super()._get_element_locator(self.__question_details_button)
+    def get_question_details_button_locator(self) -> Locator:
+        return self._get_element_locator(self.__question_details_button)
 
-    def _get_more_information_locator(self) -> Locator:
-        return super()._get_element_locator(self.__more_information_panel_header)
+    def get_more_information_locator(self) -> Locator:
+        return self._get_element_locator(self.__more_information_panel_header)
 
-    def _get_user_agent_information(self) -> str:
-        super()._wait_for_selector(self.__more_system_details_modal)
-        return super()._get_text_of_element(self.__user_agent_information)
+    def get_user_agent_information(self) -> str:
+        self._wait_for_selector(self.__more_system_details_modal)
+        return self._get_text_of_element(self.__user_agent_information)
 
-    def _get_system_details_information(self) -> list[str]:
-        return super()._get_text_of_elements(self.__system_details_options)
+    def get_system_details_information(self) -> list[str]:
+        return self._get_text_of_elements(self.__system_details_options)
 
-    def _click_on_question_details_button(self):
-        super()._click(self.__question_details_button)
+    def click_on_question_details_button(self):
+        self._click(self.__question_details_button)
 
-    def _click_on_more_system_details_option(self):
-        super()._click(self.__more_system_details_option)
+    def click_on_more_system_details_option(self):
+        self._click(self.__more_system_details_option)
 
-    def _click_on_the_additional_system_panel_close(self):
-        super()._click(self.__close_additional_system_details_button)
+    def click_on_the_additional_system_panel_close(self):
+        self._click(self.__close_additional_system_details_button)
 
-    def _get_reply_section_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']")
+    def get_reply_section_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']")
 
-    def _click_on_reply_more_options_button(self, answer_id: str):
-        super()._click(f"//div[@id='{answer_id}']//button[text()='more options']")
+    def click_on_reply_more_options_button(self, answer_id: str):
+        self._click(f"//div[@id='{answer_id}']//button[text()='more options']")
 
-    def _click_on_report_abuse_for_a_certain_reply(self, answer_id: str):
-        super()._click(f"//div[@id='{answer_id}']//a[text()='Report Abuse']")
+    def click_on_report_abuse_for_a_certain_reply(self, answer_id: str):
+        self._click(f"//div[@id='{answer_id}']//a[text()='Report Abuse']")
 
-    def _get_click_on_report_abuse_reply_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']//a[text()='Report Abuse']")
+    def get_click_on_report_abuse_reply_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']//a[text()='Report Abuse']")
 
-    def _click_on_quote_for_a_certain_reply(self, answer_id: str):
-        super()._click(f"//div[@id='{answer_id}']//a[text()='Quote']")
+    def click_on_quote_for_a_certain_reply(self, answer_id: str):
+        self._click(f"//div[@id='{answer_id}']//a[text()='Quote']")
 
-    def _get_quote_reply_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']//a[text()='Quote']")
+    def get_quote_reply_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']//a[text()='Quote']")
 
-    def _click_on_mark_as_spam_for_a_certain_reply(self, answer_id: str):
-        super()._click(f"//div[@id='{answer_id}']//form[@class='spam-form cf']/a")
+    def click_on_mark_as_spam_for_a_certain_reply(self, answer_id: str):
+        self._click(f"//div[@id='{answer_id}']//form[@class='spam-form cf']/a")
 
-    def _get_mark_as_spam_reply_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']//"
-                                            f"form[@class='spam-form cf']/a")
+    def get_mark_as_spam_reply_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']//"
+                                         f"form[@class='spam-form cf']/a")
 
-    def _get_marked_as_spam_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']//h3[@class='is-spam']")
+    def get_marked_as_spam_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']//h3[@class='is-spam']")
 
-    def _get_marked_as_spam_text(self, answer_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{answer_id}']//h3[@class='is-spam']")
+    def get_marked_as_spam_text(self, answer_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{answer_id}']//h3[@class='is-spam']")
 
-    def _click_on_edit_this_post_for_a_certain_reply(self, answer_id: str):
-        super()._click(f"//div[@id='{answer_id}']//a[text()='Edit this post']")
+    def click_on_edit_this_post_for_a_certain_reply(self, answer_id: str):
+        self._click(f"//div[@id='{answer_id}']//a[text()='Edit this post']")
 
-    def _get_edit_this_post_reply_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']//"
-                                            f"a[text()='Edit this post']")
+    def get_edit_this_post_reply_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']//"
+                                         f"a[text()='Edit this post']")
 
-    def _click_on_delete_this_post_for_a_certain_reply(self, answer_id: str):
-        super()._click(f"//div[@id='{answer_id}']//a[text()='Delete this post']")
+    def click_on_delete_this_post_for_a_certain_reply(self, answer_id: str):
+        self._click(f"//div[@id='{answer_id}']//a[text()='Delete this post']")
 
-    def _get_delete_this_post_reply_locator(self, answer_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{answer_id}']//"
-                                            f"a[text()='Delete this post']")
+    def get_delete_this_post_reply_locator(self, answer_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{answer_id}']//"
+                                         f"a[text()='Delete this post']")
 
-    def _click_on_cancel_delete_button(self):
-        super()._click(self.__delete_question_cancel_button)
+    def click_on_cancel_delete_button(self):
+        self._click(self.__delete_question_cancel_button)
 
     # Post a reply actions.
-    def _add_text_to_post_a_reply_textarea(self, text: str):
-        super()._fill(self.__post_a_reply_textarea, text)
+    def add_text_to_post_a_reply_textarea(self, text: str):
+        self._fill(self.__post_a_reply_textarea, text)
 
-    def _type_inside_the_post_a_reply_textarea(self, text: str):
-        super()._type(self.__post_a_reply_textarea, text, 100)
+    def type_inside_the_post_a_reply_textarea(self, text: str):
+        self._type(self.__post_a_reply_textarea, text, 100)
 
-    def _get_post_a_reply_textarea_locator(self) -> Locator:
-        return super()._get_element_locator(self.__post_a_reply_textarea)
+    def get_post_a_reply_textarea_locator(self) -> Locator:
+        return self._get_element_locator(self.__post_a_reply_textarea)
 
-    def _get_post_a_reply_textarea_text(self) -> str:
-        return super()._get_text_of_element(self.__post_a_reply_textarea)
+    def get_post_a_reply_textarea_text(self) -> str:
+        return self._get_text_of_element(self.__post_a_reply_textarea)
 
-    def _get_post_a_reply_textarea_value(self) -> str:
-        return super()._get_element_input_value(self.__post_a_reply_textarea)
+    def get_post_a_reply_textarea_value(self) -> str:
+        return self._get_element_input_value(self.__post_a_reply_textarea)
 
-    def _get_posted_reply_locator(self, question_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{question_id}']")
+    def get_posted_reply_locator(self, question_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{question_id}']")
 
-    def _get_posted_reply_text(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']/p")
+    def get_posted_reply_text(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']/p")
 
-    def _get_posted_quote_reply_username_text(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']/em/p")
+    def get_posted_quote_reply_username_text(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']/em/p")
 
-    def _click_posted_reply_said_link(self, reply_id: str):
-        super()._click(f"//div[@id='{reply_id}']//div[@class='content']//a")
+    def click_posted_reply_said_link(self, reply_id: str):
+        self._click(f"//div[@id='{reply_id}']//div[@class='content']//a")
 
-    def _get_blockquote_reply_text(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']//"
-                                            f"blockquote")
+    def get_blockquote_reply_text(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//div[@class='content']//"
+                                         f"blockquote")
 
-    def _get_posted_reply_modified_by_text(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
-                                            f"p[@class='edited text-body-sm']/em")
+    def get_posted_reply_modified_by_text(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                         f"p[@class='edited text-body-sm']/em")
 
-    def _get_posted_reply_modified_by_locator(self, reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{reply_id}']//"
-                                            f"p[@class='edited text-body-sm']/em")
+    def get_posted_reply_modified_by_locator(self, reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{reply_id}']//"
+                                         f"p[@class='edited text-body-sm']/em")
 
-    def _click_on_post_reply_button(self, repliant_username) -> str:
-        super()._click(self.__post_reply_button)
-        super()._wait_for_selector(f"//span[@class='display-name' and contains"
-                                   f"(text(), '{repliant_username}')]")
-        return super()._get_element_attribute_value(f"//span[@class='display-name' and "
-                                                    f"contains(text(), '{repliant_username}')]/"
-                                                    f"ancestor::div[@class='answer ']",
-                                                    "id")
+    def click_on_post_reply_button(self, repliant_username) -> str:
+        self._click(self.__post_reply_button)
+        self._wait_for_selector(f"//span[@class='display-name' and contains"
+                                f"(text(), '{repliant_username}')]")
+        return self._get_element_attribute_value(f"//span[@class='display-name' and "
+                                                 f"contains(text(), '{repliant_username}')]/"
+                                                 f"ancestor::div[@class='answer ']",
+                                                 "id")
 
     # Question Tools actions.
-    def _get_edit_this_question_option_locator(self) -> Locator:
-        return super()._get_element_locator(self.__edit_this_question_option)
+    def get_edit_this_question_option_locator(self) -> Locator:
+        return self._get_element_locator(self.__edit_this_question_option)
 
-    def _get_delete_this_question_locator(self) -> Locator:
-        return super()._get_element_locator(self.__delete_this_question_option)
+    def get_delete_this_question_locator(self) -> Locator:
+        return self._get_element_locator(self.__delete_this_question_option)
 
-    def _get_lock_this_question_locator(self) -> Locator:
-        return super()._get_element_locator(self.__lock_this_question_option)
+    def get_lock_this_question_locator(self) -> Locator:
+        return self._get_element_locator(self.__lock_this_question_option)
 
     # Stands for archived banner as well
-    def _get_thread_locked_text(self) -> str:
-        return super()._get_text_of_element(self.__lock_this_thread_banner)
+    def get_thread_locked_text(self) -> str:
+        return self._get_text_of_element(self.__lock_this_thread_banner)
 
-    def _get_thread_locked_locator(self) -> Locator:
-        return super()._get_element_locator(self.__lock_this_thread_banner)
+    def get_thread_locked_locator(self) -> Locator:
+        return self._get_element_locator(self.__lock_this_thread_banner)
 
-    def _get_archive_this_question_locator(self) -> Locator:
-        return super()._get_element_locator(self.__archive_this_question_option)
+    def get_archive_this_question_locator(self) -> Locator:
+        return self._get_element_locator(self.__archive_this_question_option)
 
-    def _get_needs_more_information_checkbox_locator(self) -> Locator:
-        return super()._get_element_locator(self.__needs_more_information_from_the_user_checkbox)
+    def get_needs_more_information_checkbox_locator(self) -> Locator:
+        return self._get_element_locator(self.__needs_more_information_from_the_user_checkbox)
 
-    def _get_mark_as_spam_locator(self) -> Locator:
-        return super()._get_element_locator(self.__mark_as_spam_option)
+    def get_mark_as_spam_locator(self) -> Locator:
+        return self._get_element_locator(self.__mark_as_spam_option)
 
-    def _get_marked_as_spam_banner_locator(self) -> Locator:
-        return super()._get_element_locator(self.__marked_as_spam_banner)
+    def get_marked_as_spam_banner_locator(self) -> Locator:
+        return self._get_element_locator(self.__marked_as_spam_banner)
 
-    def _get_marked_as_spam_banner_text(self) -> str:
-        return super()._get_text_of_element(self.__marked_as_spam_banner)
+    def get_marked_as_spam_banner_text(self) -> str:
+        return self._get_text_of_element(self.__marked_as_spam_banner)
 
-    def _click_on_thread_locked_link(self):
-        super()._click(self.__lock_this_thread_banner_link)
+    def click_on_thread_locked_link(self):
+        self._click(self.__lock_this_thread_banner_link)
 
-    def _click_on_lock_this_question_locator(self):
-        super()._click(self.__lock_this_question_option)
+    def click_on_lock_this_question_locator(self):
+        self._click(self.__lock_this_question_option)
 
-    def _click_on_subscribe_to_feed_option(self):
-        super()._click(self.__subscribe_to_feed_option)
+    def click_on_subscribe_to_feed_option(self):
+        self._click(self.__subscribe_to_feed_option)
 
-    def _click_on_mark_as_spam_option(self):
-        super()._click(self.__mark_as_spam_option)
+    def click_on_mark_as_spam_option(self):
+        self._click(self.__mark_as_spam_option)
 
-    def _click_on_edit_this_question_question_tools_option(self):
-        super()._click(self.__edit_this_question_option)
+    def click_on_edit_this_question_question_tools_option(self):
+        self._click(self.__edit_this_question_option)
 
-    def _click_delete_this_question_question_tools_option(self):
-        super()._click(self.__delete_this_question_option)
+    def click_delete_this_question_question_tools_option(self):
+        self._click(self.__delete_this_question_option)
 
-    def _click_on_archive_this_question_option(self):
-        super()._click(self.__archive_this_question_option)
+    def click_on_archive_this_question_option(self):
+        self._click(self.__archive_this_question_option)
 
-    def _click_delete_this_question_button(self):
-        super()._click(self.__delete_question_delete_button)
+    def click_delete_this_question_button(self):
+        self._click(self.__delete_question_delete_button)
 
     # Votes reply section
-    def _get_reply_votes_section_locator(self, reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{reply_id}']//"
-                                            f"form[@class='document-vote--form helpful']")
+    def get_reply_votes_section_locator(self, reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{reply_id}']//"
+                                         f"form[@class='document-vote--form helpful']")
 
-    def _get_reply_vote_heading(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
-                                            f"h4[@class='document-vote--heading']")
+    def get_reply_vote_heading(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                         f"h4[@class='document-vote--heading']")
 
-    def _click_reply_vote_thumbs_up_button(self, reply_id: str):
-        return super()._click(f"//div[@id='{reply_id}']//button[@name='helpful']")
+    def click_reply_vote_thumbs_up_button(self, reply_id: str):
+        return self._click(f"//div[@id='{reply_id}']//button[@name='helpful']")
 
-    def _get_thumbs_up_vote_message(self, reply_id: str) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
-                                            f"p[@class='msg document-vote--heading']")
+    def get_thumbs_up_vote_message(self, reply_id: str) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                         f"p[@class='msg document-vote--heading']")
 
-    def _get_thumbs_up_button_locator(self, reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{reply_id}']//button[@name='helpful']")
+    def get_thumbs_up_button_locator(self, reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{reply_id}']//button[@name='helpful']")
 
-    def _get_thumbs_down_button_locator(self, reply_id: str) -> Locator:
-        return super()._get_element_locator(f"//div[@id='{reply_id}']//"
-                                            f"button[@name='not-helpful']")
+    def get_thumbs_down_button_locator(self, reply_id: str) -> Locator:
+        return self._get_element_locator(f"//div[@id='{reply_id}']//"
+                                         f"button[@name='not-helpful']")
 
-    def _click_reply_vote_thumbs_down_button(self, reply_id):
-        super()._click(f"//div[@id='{reply_id}']//button[@name='not-helpful']")
+    def click_reply_vote_thumbs_down_button(self, reply_id):
+        self._click(f"//div[@id='{reply_id}']//button[@name='not-helpful']")
 
-    def _get_helpful_count(self, reply_id) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
-                                            f"button[@name='helpful']//"
-                                            f"strong[@class='helpful-count']")
+    def get_helpful_count(self, reply_id) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                         f"button[@name='helpful']//"
+                                         f"strong[@class='helpful-count']")
 
-    def _get_not_helpful_count(self, reply_id) -> str:
-        return super()._get_text_of_element(f"//div[@id='{reply_id}']//"
-                                            f"button[@name='not-helpful']//"
-                                            f"strong[@class='helpful-count']")
+    def get_not_helpful_count(self, reply_id) -> str:
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//"
+                                         f"button[@name='not-helpful']//"
+                                         f"strong[@class='helpful-count']")
 
     # Signed out card actions.
-    def _click_on_log_in_to_your_account_signed_out_card_link(self):
-        super()._click(self.__log_in_to_your_account_signed_out_card_option)
+    def click_on_log_in_to_your_account_signed_out_card_link(self):
+        self._click(self.__log_in_to_your_account_signed_out_card_option)
 
-    def _click_on_start_a_new_question_signed_out_card_link(self):
-        super()._click(self.__start_a_new_question_signed_out_card_option)
+    def click_on_start_a_new_question_signed_out_card_link(self):
+        self._click(self.__start_a_new_question_signed_out_card_option)
 
-    def _click_on_ask_a_question_signed_out_card_option(self):
-        super()._click(self.__ask_a_question_signed_out_card_option)
+    def click_on_ask_a_question_signed_out_card_option(self):
+        self._click(self.__ask_a_question_signed_out_card_option)
 
-    def _ask_a_question_signed_out_card_option_locator(self) -> Locator:
-        return super()._get_element_locator(self.__ask_a_question_signed_out_card_option)
+    def ask_a_question_signed_out_card_option_locator(self) -> Locator:
+        return self._get_element_locator(self.__ask_a_question_signed_out_card_option)
 
-    def _click_on_i_have_this_problem_too_signed_out_card_option(self):
-        super()._click(self.__i_have_this_problem_too_signed_out_card_option)
+    def click_on_i_have_this_problem_too_signed_out_card_option(self):
+        self._click(self.__i_have_this_problem_too_signed_out_card_option)
 
-    def _get_i_have_this_problem_too_signed_out_card_locator(self) -> Locator:
-        return super()._get_element_locator(self.__i_have_this_problem_too_signed_out_card_option)
+    def get_i_have_this_problem_too_signed_out_card_locator(self) -> Locator:
+        return self._get_element_locator(self.__i_have_this_problem_too_signed_out_card_option)
 
     # Common responses actions.
 
-    def _click_on_common_responses_option(self):
-        super()._click(self.__common_responses_option)
+    def click_on_common_responses_option(self):
+        self._click(self.__common_responses_option)
 
-    def _type_into_common_responses_search_field(self, text: str):
-        super()._type(self.__common_responses_search_field, text, 100)
+    def type_into_common_responses_search_field(self, text: str):
+        self._type(self.__common_responses_search_field, text, 100)
 
-    def _get_text_of_no_cat_responses(self) -> str:
-        return super()._get_text_of_element(self.__common_responses_no_cat_selected)
+    def get_text_of_no_cat_responses(self) -> str:
+        return self._get_text_of_element(self.__common_responses_no_cat_selected)
 
-    def _get_list_of_categories(self) -> list[str]:
-        return super()._get_text_of_elements(self.__common_responses_categories_options)
+    def get_list_of_categories(self) -> list[str]:
+        return self._get_text_of_elements(self.__common_responses_categories_options)
 
-    def _get_list_of_responses(self) -> list[str]:
-        return super()._get_text_of_elements(self.__common_responses_responses_options)
+    def get_list_of_responses(self) -> list[str]:
+        return self._get_text_of_elements(self.__common_responses_responses_options)
 
-    def _click_on_a_particular_category_option(self, option: str):
-        super()._click(f"//ul[@class='category-list']/li[text()='{option}']",
-                       with_wait=True)
+    def click_on_a_particular_category_option(self, option: str):
+        self._click(f"//ul[@class='category-list']/li[text()='{option}']", with_wait=True)
 
-    def _click_on_a_particular_response_option(self, option: str):
-        super()._click(f"//ul[@class='sidebar-nav']/li[text()='{option}']")
+    def click_on_a_particular_response_option(self, option: str):
+        self._click(f"//ul[@class='sidebar-nav']/li[text()='{option}']")
 
     # Removing both newline characters and link syntax format.
-    def _get_text_of_response_editor_textarea_field(self) -> str:
-        return (super()._get_element_input_value(self.__common_responses_textarea_field)
+    def get_text_of_response_editor_textarea_field(self) -> str:
+        return (self._get_element_input_value(self.__common_responses_textarea_field)
                 .replace("\n", "")
                 .replace("[", "")
                 .replace("]", "")
                 )
 
-    def _get_text_of_response_preview(self) -> str:
-        return super()._get_text_of_element(self.__common_responses_response_preview)
+    def get_text_of_response_preview(self) -> str:
+        return self._get_text_of_element(self.__common_responses_response_preview)
 
-    def _click_on_switch_to_mode(self):
-        super()._click(self.__common_responses_switch_to_mode, with_wait=True)
+    def click_on_switch_to_mode(self):
+        self._click(self.__common_responses_switch_to_mode, with_wait=True)
 
-    def _click_on_common_responses_cancel_button(self):
-        super()._click(self.__common_responses_cancel_button, with_wait=True)
+    def click_on_common_responses_cancel_button(self):
+        self._click(self.__common_responses_cancel_button, with_wait=True)
 
-    def _click_on_common_responses_insert_response_button(self):
-        super()._click(self.__common_responses_insert_response_button)
+    def click_on_common_responses_insert_response_button(self):
+        self._click(self.__common_responses_insert_response_button)

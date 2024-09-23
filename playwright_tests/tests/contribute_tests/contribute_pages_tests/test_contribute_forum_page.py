@@ -30,13 +30,13 @@ def test_contribute_forum_page_text(page: Page):
         utilities.navigate_to_link(ContributeForumMessages.STAGE_CONTRIBUTE_FORUM_PAGE_URL)
     with check, allure.step("Verifying that the Contribute Forum page contains the correct "
                             "strings"):
-        assert sumo_pages.ways_to_contribute_pages._get_hero_main_header_text(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_main_header_text(
         ) == ContributeForumMessages.HERO_PAGE_TITLE
-        assert sumo_pages.ways_to_contribute_pages._get_hero_second_header(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_second_header(
         ) == ContributeForumMessages.HERO_SECOND_TITLE
-        assert sumo_pages.ways_to_contribute_pages._get_hero_text(
+        assert sumo_pages.ways_to_contribute_pages.get_hero_text(
         ) == ContributeForumMessages.HERO_TEXT
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_header_text(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_header_text(
         ) == ContributeForumMessages.HOW_TO_CONTRIBUTE_HEADER
 
         # Need to add a check for the logged in state as well.
@@ -49,18 +49,18 @@ def test_contribute_forum_page_text(page: Page):
             ContributeForumMessages.HOW_TO_CONTRIBUTE_OPTION_FIVE,
         ]
 
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_link_options(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_link_options(
         ) == card_titles
 
         # We need to add here the check for when the user is signed in with a contributor
         # account
-        assert sumo_pages.ways_to_contribute_pages._get_how_to_contribute_option_four(
+        assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_option_four(
         ) == ContributeForumMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR
-        assert sumo_pages.ways_to_contribute_pages._get_first_fact_text(
+        assert sumo_pages.ways_to_contribute_pages.get_first_fact_text(
         ) == ContributeForumMessages.FACT_FIRST_LINE
-        assert sumo_pages.ways_to_contribute_pages._get_second_fact_text(
+        assert sumo_pages.ways_to_contribute_pages.get_second_fact_text(
         ) == ContributeForumMessages.FACT_SECOND_LINE
-        assert sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_header(
+        assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_header(
         ) == ContributeForumMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER
 
         other_ways_to_contribute_card_titles = [
@@ -69,7 +69,7 @@ def test_contribute_forum_page_text(page: Page):
             ContributeForumMessages.PROVIDE_SUPPORT_ON_SOCIAL_CHANNELS_CARD_TITLE,
             ContributeForumMessages.RESPOND_TO_MOBILE_STORE_REVIEWS_CARD_TITLE,
         ]
-        assert sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_cards(
+        assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_cards(
         ) == other_ways_to_contribute_card_titles
 
 
@@ -81,7 +81,7 @@ def test_contribute_forum_page_images_are_not_broken(page: Page):
     with allure.step("Accessing the Contribute Forum page"):
         utilities.navigate_to_link(ContributeForumMessages.STAGE_CONTRIBUTE_FORUM_PAGE_URL)
 
-    for link in sumo_pages.ways_to_contribute_pages._get_all_page_image_links():
+    for link in sumo_pages.ways_to_contribute_pages.get_all_page_image_links():
         image_link = link.get_attribute("src")
         response = requests.get(image_link, stream=True)
         with check, allure.step(f"Verifying that the {image_link} link is not broken"):
@@ -103,14 +103,14 @@ def test_contribute_forum_page_breadcrumbs(page: Page):
     ]
 
     with check, allure.step("Verifying that the correct breadcrumbs are displayed"):
-        assert sumo_pages.ways_to_contribute_pages._get_text_of_all_breadcrumbs() == breadcrumbs
+        assert sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs() == breadcrumbs
 
     counter = 1
-    for breadcrumb in sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs():
+    for breadcrumb in sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs():
         breadcrumb_to_click = (
-            sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs()[counter]
+            sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[counter]
         )
-        sumo_pages.ways_to_contribute_pages._click_on_breadcrumb(breadcrumb_to_click)
+        sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(breadcrumb_to_click)
 
         if counter == 1:
             with check, allure.step("Verifying that the Contribute breadcrumb redirects to "
@@ -142,11 +142,11 @@ def test_contribute_forum_other_ways_to_contribute_redirect_to_the_correct_page(
     ]
 
     counter = 0
-    for element in sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list():
+    for element in sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list():
         card = (
-            sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list()[counter]
+            sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list()[counter]
         )
-        sumo_pages.ways_to_contribute_pages._click_on_other_way_to_contribute_card(card)
+        sumo_pages.ways_to_contribute_pages.click_on_other_way_to_contribute_card(card)
         with check, allure.step("Verifying that the 'other ways to contribute_messages' "
                                 "cards are redirecting to the correct SUMO page"):
             assert ways_to_contribute_links[counter] == utilities.get_page_url()

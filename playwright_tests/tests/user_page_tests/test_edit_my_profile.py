@@ -78,7 +78,7 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
                             "has changed"):
         sumo_pages.my_profile_page._click_on_my_profile_questions_link()
         sumo_pages.my_questions_page._click_on_a_question_by_index(1)
-        assert sumo_pages.question_page._get_question_author_name() == new_username
+        assert sumo_pages.question_page.get_question_author_name() == new_username
 
     with allure.step("Going back to the my profile page and reverting the username back to the "
                      "original one"):
@@ -99,7 +99,7 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
                             "has changed"):
         sumo_pages.my_profile_page._click_on_my_profile_questions_link()
         sumo_pages.my_questions_page._click_on_a_question_by_index(1)
-        assert sumo_pages.question_page._get_question_author_name() == original_username
+        assert sumo_pages.question_page.get_question_author_name() == original_username
 
 
 # C1491017
