@@ -8,7 +8,7 @@ from django.contrib.sites.models import Site
 from django.test import Client
 from pyquery import PyQuery as pq
 
-from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
@@ -1656,11 +1656,13 @@ class DocumentEditingTests(TestCase):
         d = r.document
         prod_desktop = ProductFactory(title="desktop")
         prod_mobile = ProductFactory(title="mobile")
+        topic = TopicFactory(products=[prod_desktop, prod_mobile])
 
         data = new_document_data()
         data.update(
             {
                 "products": [prod_desktop.id, prod_mobile.id],
+                "topics": [topic.id],
                 "title": d.title,
                 "slug": d.slug,
                 "form": "doc",
