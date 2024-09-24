@@ -17,7 +17,7 @@ def test_create_user_sessions_for_test_accounts(page: Page):
 
         # Also acts as a wait. Introduced in order to avoid flakiness which occurred on some
         # GH runs.
-        expect(sumo_pages.auth_page._get_continue_with_firefox_button_locator()).to_be_visible()
+        expect(sumo_pages.auth_page.get_continue_with_firefox_button_locator()).to_be_visible()
 
         sumo_pages.auth_flow_page.sign_in_flow(
             username=utilities.user_secrets_accounts[keys[i]],
