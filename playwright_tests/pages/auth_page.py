@@ -35,53 +35,53 @@ class AuthPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-    def _click_on_cant_sign_in_to_my_mozilla_account_link(self):
-        super()._click(self.__cant_sign_in_to_my_Mozilla_account_link)
+    def click_on_cant_sign_in_to_my_mozilla_account_link(self):
+        self._click(self.__cant_sign_in_to_my_Mozilla_account_link)
 
-    def _click_on_continue_with_firefox_accounts_button(self):
-        super()._click(self.__continue_with_firefox_accounts_button)
+    def click_on_continue_with_firefox_accounts_button(self):
+        self._click(self.__continue_with_firefox_accounts_button)
 
-    def _click_on_use_a_different_account_button(self):
-        super()._click(self.__use_a_different_account_button)
+    def click_on_use_a_different_account_button(self):
+        self._click(self.__use_a_different_account_button)
 
-    def _click_on_user_logged_in_sign_in_button(self):
-        super()._click(self.__user_logged_in_sign_in_button)
+    def click_on_user_logged_in_sign_in_button(self):
+        self._click(self.__user_logged_in_sign_in_button)
 
-    def _click_on_enter_your_email_submit_button(self):
-        super()._click(self.__enter_your_email_submit_button)
+    def click_on_enter_your_email_submit_button(self):
+        self._click(self.__enter_your_email_submit_button)
 
-    def _click_on_enter_your_password_submit_button(self):
-        super()._click(self.__enter_your_password_submit_button)
+    def click_on_enter_your_password_submit_button(self):
+        self._click(self.__enter_your_password_submit_button)
 
-    def _click_on_otp_code_confirm_button(self):
-        super()._click(self.__enter_otp_code_confirm_button)
+    def click_on_otp_code_confirm_button(self):
+        self._click(self.__enter_otp_code_confirm_button)
 
-    def _add_data_to_email_input_field(self, text: str):
-        super()._fill(self.__enter_your_email_input_field, text)
+    def add_data_to_email_input_field(self, text: str):
+        self._fill(self.__enter_your_email_input_field, text)
 
-    def _add_data_to_password_input_field(self, text: str):
-        super()._fill(self.__enter_your_password_input_field, text)
+    def add_data_to_password_input_field(self, text: str):
+        self._fill(self.__enter_your_password_input_field, text)
 
-    def _add_data_to_otp_code_input_field(self, text: str):
-        super()._fill(self.__enter_otp_code_input_field, text)
+    def add_data_to_otp_code_input_field(self, text: str):
+        self._fill(self.__enter_otp_code_input_field, text)
 
-    def _clear_email_input_field(self):
-        super()._clear_field(self.__enter_your_email_input_field)
+    def clear_email_input_field(self):
+        self._clear_field(self.__enter_your_email_input_field)
 
-    def _is_use_a_different_account_button_displayed(self) -> bool:
-        super()._wait_for_selector(self.__use_a_different_account_button)
-        return super()._is_element_visible(self.__use_a_different_account_button)
+    def is_use_a_different_account_button_displayed(self) -> bool:
+        self._wait_for_selector(self.__use_a_different_account_button)
+        return self._is_element_visible(self.__use_a_different_account_button)
 
-    def _is_logged_in_sign_in_button_displayed(self) -> bool:
-        return super()._is_element_visible(self.__user_logged_in_sign_in_button)
+    def is_logged_in_sign_in_button_displayed(self) -> bool:
+        return self._is_element_visible(self.__user_logged_in_sign_in_button)
 
-    def _is_enter_otp_code_input_field_displayed(self) -> bool:
-        super()._wait_for_selector(self.__continue_with_firefox_accounts_button)
-        return super()._is_element_visible(self.__enter_otp_code_input_field)
+    def is_enter_otp_code_input_field_displayed(self) -> bool:
+        self._wait_for_selector(self.__continue_with_firefox_accounts_button)
+        return self._is_element_visible(self.__enter_otp_code_input_field)
 
-    def _is_continue_with_firefox_button_displayed(self) -> bool:
-        super()._wait_for_selector(self.__continue_with_firefox_accounts_button)
-        return super()._is_element_visible(self.__continue_with_firefox_accounts_button)
+    def is_continue_with_firefox_button_displayed(self) -> bool:
+        self._wait_for_selector(self.__continue_with_firefox_accounts_button)
+        return self._is_element_visible(self.__continue_with_firefox_accounts_button)
 
-    def _get_continue_with_firefox_button_locator(self) -> Locator:
-        return super()._get_element_locator(self.__continue_with_firefox_accounts_button)
+    def get_continue_with_firefox_button_locator(self) -> Locator:
+        return self._get_element_locator(self.__continue_with_firefox_accounts_button)

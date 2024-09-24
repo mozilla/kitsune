@@ -507,7 +507,7 @@ def test_loginless_mozilla_account_aaq(page: Page):
         i = 1
         while i <= 4:
             sumo_pages.top_navbar.click_on_signin_signup_button()
-            sumo_pages.auth_page._click_on_cant_sign_in_to_my_mozilla_account_link()
+            sumo_pages.auth_page.click_on_cant_sign_in_to_my_mozilla_account_link()
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
                 body=utilities.aaq_question_test_data['premium_aaq_question']['body'],

@@ -932,7 +932,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
             EditMyProfilePageMessages.get_url_of_other_profile_edit_page(target_username)
         )
         assert (
-            sumo_pages.auth_page._is_continue_with_firefox_button_displayed()
+            sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
         ), "The auth page is not displayed! It should be!"
         expect(sumo_pages.edit_my_profile_page.is_my_profile_edit_form_displayed()).to_be_hidden()
 
@@ -1021,7 +1021,7 @@ def test_private_message_button_redirects_non_signed_in_users_to_the_fxa_login_f
                      "in user is redirected to the fxa page"):
         sumo_pages.my_profile_page._click_on_private_message_button()
         assert (
-            sumo_pages.auth_page._is_continue_with_firefox_button_displayed()
+            sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
         ), "The auth page is not displayed! It should be!"
 
 
