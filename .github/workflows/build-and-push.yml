@@ -165,7 +165,7 @@ jobs:
           TMP_DIR=static-upload
           TMP_DIR_HASHED=static-upload-hashed
 
-          docker create --name tmp $GAR_LOCATION-docker.pkg.dev/$GCP_PROJECT_ID/$GAR_REPOSITORY/$IMAGE:${{ needs.build.outputs.image_tag }}
+          docker create --name tmp $GAR_LOCATION-docker.pkg.dev/$GCP_PROJECT_ID/$GAR_REPOSITORY/$IMAGE_NAME:${{ needs.build.outputs.image_tag }}
 
           mkdir -p ./$TMP_DIR ./$TMP_DIR_HASHED
 
