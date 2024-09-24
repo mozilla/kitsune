@@ -487,12 +487,12 @@ def test_new_message_preview(page: Page):
                      "redirected to the correct article"):
         sumo_pages.new_message_page.click_on_preview_internal_link()
         assert (
-            sumo_pages.kb_article_page._get_text_of_article_title()
+            sumo_pages.kb_article_page.get_text_of_article_title()
             == NewMessagePageMessages.PREVIEW_MESSAGE_INTERNAL_LINK_TITLE
         ), (
             f"Incorrect article title displayed! "
             f"Expected: {NewMessagePageMessages.PREVIEW_MESSAGE_INTERNAL_LINK_TITLE} "
-            f"Received: {sumo_pages.kb_article_page._get_text_of_article_title()}"
+            f"Received: {sumo_pages.kb_article_page.get_text_of_article_title()}"
         )
 
     with allure.step("Verifying that the message was no sent by checking the "

@@ -59,10 +59,10 @@ def test_homepage_feature_articles_are_available_and_interactable(page: Page):
             articles_names = sumo_pages.homepage._get_featured_articles_titles()
             sumo_pages.homepage._click_on_a_featured_card(counter)
             assert (
-                sumo_pages.kb_article_page._get_text_of_article_title().strip()
+                sumo_pages.kb_article_page.get_text_of_article_title().strip()
                 == articles_names[counter].strip()
             ), (f"Incorrect featured article displayed. Expected: {featured_article} "
-                f"Received: {sumo_pages.kb_article_page._get_text_of_article_title()}")
+                f"Received: {sumo_pages.kb_article_page.get_text_of_article_title()}")
 
             with allure.step("Navigating back to the previous page"):
                 utilities.navigate_back()

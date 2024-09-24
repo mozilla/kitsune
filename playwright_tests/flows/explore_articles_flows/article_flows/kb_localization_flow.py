@@ -73,7 +73,7 @@ class KbArticleTranslationFlow(TranslateArticlePage, Utilities, SubmitKBArticleP
             )
             super()._click_on_description_submit_button()
 
-        first_revision_id = super()._get_last_revision_id()
+        first_revision_id = super().get_last_revision_id()
         if approve_translation_revision:
             self.approve_kb_translation(first_revision_id)
 
@@ -87,8 +87,8 @@ class KbArticleTranslationFlow(TranslateArticlePage, Utilities, SubmitKBArticleP
         }
 
     def approve_kb_translation(self, revision_id: str):
-        super()._click_on_review_revision(
+        super().click_on_review_revision(
             revision_id
         )
-        super()._click_on_approve_revision_button()
-        super()._click_accept_revision_accept_button()
+        super().click_on_approve_revision_button()
+        super().click_accept_revision_accept_button()

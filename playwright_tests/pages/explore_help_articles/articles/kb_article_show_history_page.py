@@ -37,136 +37,136 @@ class KBArticleShowHistoryPage(BasePage):
         super().__init__(page)
 
     # Page actions.
-    def _get_l10n_modal_locator(self) -> Locator:
-        return super()._get_element_locator(self.__l10n_modal)
+    def get_l10n_modal_locator(self) -> Locator:
+        return self._get_element_locator(self.__l10n_modal)
 
-    def _get_show_history_page_banner(self) -> str:
-        return super()._get_text_of_element(self.__show_history_page_banner)
+    def get_show_history_page_banner(self) -> str:
+        return self._get_text_of_element(self.__show_history_page_banner)
 
-    def _get_show_history_page_title(self) -> str:
-        return super()._get_text_of_element(self.__show_history_page_header)
+    def get_show_history_page_title(self) -> str:
+        return self._get_text_of_element(self.__show_history_page_header)
 
-    def _get_show_history_category_text(self) -> str:
-        return super()._get_text_of_element(self.__show_history_category_link)
+    def get_show_history_category_text(self) -> str:
+        return self._get_text_of_element(self.__show_history_category_link)
 
-    def _click_on_show_history_category(self):
-        super()._click(self.__show_history_category_link)
+    def click_on_show_history_category(self):
+        self._click(self.__show_history_category_link)
 
-    def _get_show_history_revision_for_locale_text(self) -> str:
-        return super()._get_text_of_element(self.__show_history_revision_history_for)
+    def get_show_history_revision_for_locale_text(self) -> str:
+        return self._get_text_of_element(self.__show_history_revision_history_for)
 
-    def _click_on_a_particular_revision_editor(self, revision_id: str, username: str):
-        super()._click(f"//tr[@id='{revision_id}']//a[contains(text(),'{username}')]")
+    def click_on_a_particular_revision_editor(self, revision_id: str, username: str):
+        self._click(f"//tr[@id='{revision_id}']//a[contains(text(),'{username}')]")
 
-    def _click_on_ready_for_l10n_option(self, revision_id: str):
-        super()._click(f"//tr[@id='{revision_id}']/td[@class='l10n']/a")
+    def click_on_ready_for_l10n_option(self, revision_id: str):
+        self._click(f"//tr[@id='{revision_id}']/td[@class='l10n']/a")
 
-    def _get_ready_for_localization_status(self, revision_id: str) -> Locator:
-        return super()._get_element_locator(f"//tr[@id='{revision_id}']/td[@class='l10n']/"
-                                            f"a[@class='yes']")
+    def get_ready_for_localization_status(self, revision_id: str) -> Locator:
+        return self._get_element_locator(f"//tr[@id='{revision_id}']/td[@class='l10n']/"
+                                         f"a[@class='yes']")
 
-    def _click_on_submit_l10n_readiness_button(self):
-        super()._click(self.__ready_for_l10_modal_submit_button)
+    def click_on_submit_l10n_readiness_button(self):
+        self._click(self.__ready_for_l10_modal_submit_button)
 
     # Delete document actions.
-    def _click_on_delete_this_document_button(self):
-        super()._click(self.__delete_this_document_button)
+    def click_on_delete_this_document_button(self):
+        self._click(self.__delete_this_document_button)
 
-    def _get_delete_this_document_button_locator(self) -> Locator:
-        return super()._get_element_locator(self.__delete_this_document_button)
+    def get_delete_this_document_button_locator(self) -> Locator:
+        return self._get_element_locator(self.__delete_this_document_button)
 
-    def _is_delete_button_displayed(self) -> bool:
-        return super()._is_element_visible(self.__delete_this_document_button)
+    def is_delete_button_displayed(self) -> bool:
+        return self._is_element_visible(self.__delete_this_document_button)
 
-    def _click_on_confirmation_delete_button(self):
-        super()._click(self.__delete_this_document_confirmation_delete_button)
+    def click_on_confirmation_delete_button(self):
+        self._click(self.__delete_this_document_confirmation_delete_button)
 
-    def _click_on_confirmation_cancel_button(self):
-        super()._click(self.__delete_this_document_confirmation_cancel_button)
+    def click_on_confirmation_cancel_button(self):
+        self._click(self.__delete_this_document_confirmation_cancel_button)
 
-    def _is_article_deleted_confirmation_messages_displayed(self) -> Locator:
-        super()._wait_for_selector(self.__article_deleted_confirmation_message)
-        return super()._get_element_locator(self.__article_deleted_confirmation_message)
+    def is_article_deleted_confirmation_messages_displayed(self) -> Locator:
+        self._wait_for_selector(self.__article_deleted_confirmation_message)
+        return self._get_element_locator(self.__article_deleted_confirmation_message)
 
-    def _get_last_revision_id(self) -> str:
-        revisions = super()._get_elements_locators(self.__article_revision_list_items)
-        return super()._get_element_attribute_value(
+    def get_last_revision_id(self) -> str:
+        revisions = self._get_elements_locators(self.__article_revision_list_items)
+        return self._get_element_attribute_value(
             revisions[0], "id"
         )
 
     # For unreviewed revisions but user session doesn't permit review.
-    def _click_on_a_revision_date(self, revision_id):
-        super()._click(f"//tr[@id='{revision_id}']/td[@class='date']/a")
+    def click_on_a_revision_date(self, revision_id):
+        self._click(f"//tr[@id='{revision_id}']/td[@class='date']/a")
 
-    def _get_revision_time(self, revision_id) -> str:
-        return super()._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='date']/a/time")
+    def get_revision_time(self, revision_id) -> str:
+        return self._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='date']/a/time")
 
-    def _get_revision_status(self, revision_id) -> str:
-        return super()._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='status']/span")
+    def get_revision_status(self, revision_id) -> str:
+        return self._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='status']/span")
 
-    def _get_a_particular_revision_locator(self, revision_id) -> Locator:
-        return super()._get_element_locator(f"//tr[@id='{revision_id}']")
+    def get_a_particular_revision_locator(self, revision_id) -> Locator:
+        return self._get_element_locator(f"//tr[@id='{revision_id}']")
 
     # For unreviewed revisions but user session permits review.
-    def _get_status_of_reviewable_revision(self, revision_id):
-        return super()._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='status']/a")
+    def get_status_of_reviewable_revision(self, revision_id):
+        return self._get_text_of_element(f"//tr[@id='{revision_id}']/td[@class='status']/a")
 
-    def _click_on_review_revision(self, revision_id):
-        super()._click(f"//tr[@id='{revision_id}']/td[@class='status']/a")
+    def click_on_review_revision(self, revision_id):
+        self._click(f"//tr[@id='{revision_id}']/td[@class='status']/a")
 
-    def _get_delete_revision_button_locator(self, revision_id) -> Locator:
-        return super()._get_element_locator(f"//tr[@id='{revision_id}']/td[@class='delete']/a")
+    def get_delete_revision_button_locator(self, revision_id) -> Locator:
+        return self._get_element_locator(f"//tr[@id='{revision_id}']/td[@class='delete']/a")
 
-    def _click_on_delete_revision_button(self, revision_id):
-        return super()._click(f"//tr[@id='{revision_id}']/td[@class='delete']/a")
+    def click_on_delete_revision_button(self, revision_id):
+        return self._click(f"//tr[@id='{revision_id}']/td[@class='delete']/a")
 
-    def _get_unable_to_delete_revision_header(self) -> str:
-        return super()._get_text_of_element(self.__unable_to_delete_revision_page_header)
+    def get_unable_to_delete_revision_header(self) -> str:
+        return self._get_text_of_element(self.__unable_to_delete_revision_page_header)
 
-    def _get_unable_to_delete_revision_subheader(self) -> str:
-        return super()._get_text_of_element(self.__unable_to_delete_revision_page_subheader)
+    def get_unable_to_delete_revision_subheader(self) -> str:
+        return self._get_text_of_element(self.__unable_to_delete_revision_page_subheader)
 
-    def _click_go_back_to_document_history_option(self):
-        super()._click(self.__unable_to_delete_revision_page_go_back_to_document_history)
+    def click_go_back_to_document_history_option(self):
+        self._click(self.__unable_to_delete_revision_page_go_back_to_document_history)
 
     # Article contribution actions.
-    def _click_on_edit_contributors_option(self):
-        super()._click(self.__edit_contributors_option)
+    def click_on_edit_contributors_option(self):
+        self._click(self.__edit_contributors_option)
 
-    def _get_edit_contributors_option_locator(self) -> Locator:
-        return super()._get_element_locator(self.__edit_contributors_option)
+    def get_edit_contributors_option_locator(self) -> Locator:
+        return self._get_element_locator(self.__edit_contributors_option)
 
-    def _add_a_new_contributor_inside_the_contributor_field(self, text: str):
+    def add_a_new_contributor_inside_the_contributor_field(self, text: str):
         # Adding contributor username inside the contributor field.
-        super()._type(self.__add_contributor_input_field, text, 100)
+        self._type(self.__add_contributor_input_field, text, 100)
 
-    def _click_on_new_contributor_search_result(self, username: str):
-        super()._click(f"//div[@class='name_search']/b[contains(text(), '{username}')]")
+    def click_on_new_contributor_search_result(self, username: str):
+        self._click(f"//div[@class='name_search']/b[contains(text(), '{username}')]")
 
-    def _click_on_add_contributor_button(self):
-        super()._click(self.__add_contributor_button)
+    def click_on_add_contributor_button(self):
+        self._click(self.__add_contributor_button)
 
-    def _click_on_a_particular_contributor(self, username: str):
-        super()._click(f"//span[text()='{username}']/..")
+    def click_on_a_particular_contributor(self, username: str):
+        self._click(f"//span[text()='{username}']/..")
 
-    def _click_on_delete_button_for_a_particular_contributor(self, username: str):
-        super()._click(f"//span[text()='{username}']/../..//a[@class='remove-button']")
+    def click_on_delete_button_for_a_particular_contributor(self, username: str):
+        self._click(f"//span[text()='{username}']/../..//a[@class='remove-button']")
 
-    def _get_list_of_all_contributors(self) -> list[str]:
-        return super()._get_text_of_elements(self.__all_contributors_usernames)
+    def get_list_of_all_contributors(self) -> list[str]:
+        return self._get_text_of_elements(self.__all_contributors_usernames)
 
-    def _get_delete_contributor_confirmation_page_header(self) -> str:
-        return super()._get_text_of_element(self.__delete_contributor_confirmation_page_header)
+    def get_delete_contributor_confirmation_page_header(self) -> str:
+        return self._get_text_of_element(self.__delete_contributor_confirmation_page_header)
 
-    def _click_on_delete_contributor_confirmation_page_cancel_button(self):
-        super()._click(self.__delete_contributor_confirmation_page_cancel_button)
+    def click_on_delete_contributor_confirmation_page_cancel_button(self):
+        self._click(self.__delete_contributor_confirmation_page_cancel_button)
 
-    def _click_on_delete_contributor_confirmation_page_confirm_button(self):
-        super()._click(self.__delete_contributor_confirmation_page_submit_button)
+    def click_on_delete_contributor_confirmation_page_confirm_button(self):
+        self._click(self.__delete_contributor_confirmation_page_submit_button)
 
-    def _get_all_contributors_locator(self) -> Locator:
-        return super()._get_element_locator(self.__all_contributors_list_items)
+    def get_all_contributors_locator(self) -> Locator:
+        return self._get_element_locator(self.__all_contributors_list_items)
 
-    def _get_revision_significance(self, revision_id: str) -> str:
-        return super()._get_text_of_element(f"//tr[@id='{revision_id}']"
-                                            f"/td[@class='significance']").strip()
+    def get_revision_significance(self, revision_id: str) -> str:
+        return self._get_text_of_element(f"//tr[@id='{revision_id}']"
+                                         f"/td[@class='significance']").strip()

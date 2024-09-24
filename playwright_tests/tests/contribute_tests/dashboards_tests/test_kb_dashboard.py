@@ -21,7 +21,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
         article_url = utilities.get_page_url()
 
     with allure.step("Navigating to the kb dashboards and clicking on the 'Complete "
@@ -155,10 +155,10 @@ def test_kb_dashboard_articles_status(page: Page):
 
     with allure.step("Navigating back to the article history and deleting the revision"):
         utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_show_history_page._click_on_delete_revision_button(
+        sumo_pages.kb_article_show_history_page.click_on_delete_revision_button(
             second_revision['revision_id']
         )
-        sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        sumo_pages.kb_article_show_history_page.click_on_confirmation_delete_button()
 
     with check, allure.step("Navigating back to the kb dashboard and verifying that the live "
                             "status is displayed"):
@@ -203,11 +203,11 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
 
     with allure.step("Navigating back to the article history page and deferring the revision"):
         utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_show_history_page._click_on_review_revision(
+        sumo_pages.kb_article_show_history_page.click_on_review_revision(
             second_revision['revision_id']
         )
-        sumo_pages.kb_article_review_revision_page._click_on_defer_revision_button()
-        sumo_pages.kb_article_review_revision_page._click_on_defer_confirm_button()
+        sumo_pages.kb_article_review_revision_page.click_on_defer_revision_button()
+        sumo_pages.kb_article_review_revision_page.click_on_defer_confirm_button()
 
     with check, allure.step("Navigating back to the kb overview page and verifying that the "
                             "correct status is displayed"):
@@ -332,7 +332,7 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
 
     article_url = utilities.get_page_url()
 
-    revision_id = sumo_pages.kb_article_show_history_page._get_last_revision_id()
+    revision_id = sumo_pages.kb_article_show_history_page.get_last_revision_id()
 
     with allure.step("Approving the first revision and marking it as ready for l10n"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -378,10 +378,10 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
     with allure.step("Navigating back to the article page and marking the revision as ready "
                      "for l10n"):
         utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_show_history_page._click_on_ready_for_l10n_option(
+        sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
-        sumo_pages.kb_article_show_history_page._click_on_submit_l10n_readiness_button()
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
 
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):

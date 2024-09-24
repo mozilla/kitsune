@@ -250,7 +250,7 @@ def test_recent_revisions_dashboard_links(page: Page):
             approve_first_revision=True
         )
 
-    sumo_pages.kb_article_page._click_on_article_option()
+    sumo_pages.kb_article_page.click_on_article_option()
     article_url = utilities.get_page_url()
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
@@ -353,7 +353,7 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
             approve_first_revision=True
         )
 
-    sumo_pages.kb_article_page._click_on_article_option()
+    sumo_pages.kb_article_page.click_on_article_option()
     article_url = utilities.get_page_url()
 
     with allure.step("Changing the article title via the 'Edit Article Metadata' page"):

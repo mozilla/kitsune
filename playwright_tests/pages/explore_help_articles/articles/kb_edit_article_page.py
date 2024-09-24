@@ -26,60 +26,60 @@ class EditKBArticlePage(BasePage):
         super().__init__(page)
 
     # Edit kb article page actions.
-    def _get_edit_article_page_header(self) -> str:
-        return super()._get_text_of_element(self.__edit_article_page_header)
+    def get_edit_article_page_header(self) -> str:
+        return self._get_text_of_element(self.__edit_article_page_header)
 
-    def _get_warning_banner_locator(self) -> Locator:
-        return super()._get_element_locator(self.__edit_by_another_user_warning_banner)
+    def get_warning_banner_locator(self) -> Locator:
+        return self._get_element_locator(self.__edit_by_another_user_warning_banner)
 
-    def _get_edit_article_warning_message(self) -> str:
-        paragraphs = super()._get_text_of_elements(self.__edit_by_another_user_warning_message)
+    def get_edit_article_warning_message(self) -> str:
+        paragraphs = self._get_text_of_elements(self.__edit_by_another_user_warning_message)
         return ' '.join(paragraphs)
 
-    def _click_on_edit_anyway_option(self):
-        super()._click(self.__edit_by_another_user_edit_anyway_option)
+    def click_on_edit_anyway_option(self):
+        self._click(self.__edit_by_another_user_edit_anyway_option)
 
     # Edit kb article page field actions.
-    def _get_edit_article_keywords_field_value(self) -> str:
-        return super()._get_element_input_value(self.__edit_article_keywords_field)
+    def get_edit_article_keywords_field_value(self) -> str:
+        return self._get_element_input_value(self.__edit_article_keywords_field)
 
-    def _fill_edit_article_keywords_field(self, text: str):
-        super()._clear_field(self.__edit_article_keywords_field)
-        super()._fill(self.__edit_article_keywords_field, text)
+    def fill_edit_article_keywords_field(self, text: str):
+        self._clear_field(self.__edit_article_keywords_field)
+        self._fill(self.__edit_article_keywords_field, text)
 
-    def _get_edit_keywords_field_locator(self) -> Locator:
-        return super()._get_element_locator(self.__edit_article_keywords_field)
+    def get_edit_keywords_field_locator(self) -> Locator:
+        return self._get_element_locator(self.__edit_article_keywords_field)
 
-    def _get_edit_article_search_result_summary_text(self) -> str:
-        return super()._get_text_of_element(self.__edit_article_search_result_summary_field)
+    def get_edit_article_search_result_summary_text(self) -> str:
+        return self._get_text_of_element(self.__edit_article_search_result_summary_field)
 
-    def _fill_edit_article_search_result_summary_field(self, text: str):
-        super()._clear_field(self.__edit_article_search_result_summary_field)
-        super()._fill(self.__edit_article_search_result_summary_field, text)
+    def fill_edit_article_search_result_summary_field(self, text: str):
+        self._clear_field(self.__edit_article_search_result_summary_field)
+        self._fill(self.__edit_article_search_result_summary_field, text)
 
-    def _get_edit_article_content_field_text(self) -> str:
-        return super()._get_text_of_element(self.__edit_article_content_textarea_field)
+    def get_edit_article_content_field_text(self) -> str:
+        return self._get_text_of_element(self.__edit_article_content_textarea_field)
 
-    def _fill_edit_article_content_field(self, text: str):
+    def fill_edit_article_content_field(self, text: str):
         # We need to toggle the content field from syntax highlighting to make interaction easier.
-        super()._click(self.__edit_article_toggle_syntax_highlight)
-        super()._clear_field(self.__edit_article_content_textarea_field)
-        super()._fill(self.__edit_article_content_textarea_field, text)
+        self._click(self.__edit_article_toggle_syntax_highlight)
+        self._clear_field(self.__edit_article_content_textarea_field)
+        self._fill(self.__edit_article_content_textarea_field, text)
 
-    def _get_edit_article_expiry_date_value(self) -> str:
-        return super()._get_element_attribute_value(self.__edit_article_expiry_date_field,
-                                                    "value")
+    def get_edit_article_expiry_date_value(self) -> str:
+        return self._get_element_attribute_value(self.__edit_article_expiry_date_field,
+                                                 "value")
 
-    def _fill_edit_article_expiry_date(self, text: str):
-        super()._type(self.__edit_article_expiry_date_field, text, 0)
+    def fill_edit_article_expiry_date(self, text: str):
+        self._type(self.__edit_article_expiry_date_field, text, 0)
 
     # Edit kb button actions.
-    def _click_submit_for_review_button(self):
-        super()._click_on_first_item(self.__edit_article_submit_for_review_button)
+    def click_submit_for_review_button(self):
+        self._click_on_first_item(self.__edit_article_submit_for_review_button)
 
     # Submit you changes panel actions.
-    def _fill_edit_article_changes_panel_comment(self, text: str):
-        super()._fill(self.__edit_article_submit_changes_panel_comment_field, text)
+    def fill_edit_article_changes_panel_comment(self, text: str):
+        self._fill(self.__edit_article_submit_changes_panel_comment_field, text)
 
-    def _click_edit_article_changes_panel_submit_button(self):
-        super()._click(self.__edit_article_submit_changes_panel_submit_button)
+    def click_edit_article_changes_panel_submit_button(self):
+        self._click(self.__edit_article_submit_changes_panel_submit_button)

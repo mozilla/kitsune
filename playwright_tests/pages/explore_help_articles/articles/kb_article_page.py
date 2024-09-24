@@ -25,82 +25,82 @@ class KBArticlePage(BasePage):
         super().__init__(page)
 
     # KB Article page content actions.
-    def _click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
-        super()._click(f"//ol[@id='breadcrumbs']//a[text()='{breadcrumb_name}']")
+    def click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
+        self._click(f"//ol[@id='breadcrumbs']//a[text()='{breadcrumb_name}']")
 
-    def _get_text_of_all_breadcrumbs(self) -> list[str]:
-        return super()._get_text_of_elements(self.__kb_article_breadcrumbs_list)
+    def get_text_of_all_article_breadcrumbs(self) -> list[str]:
+        return self._get_text_of_elements(self.__kb_article_breadcrumbs_list)
 
-    def _get_text_of_article_title(self) -> str:
-        return super()._get_text_of_element(self.__kb_article_heading)
+    def get_text_of_article_title(self) -> str:
+        return self._get_text_of_element(self.__kb_article_heading)
 
-    def _get_restricted_visibility_banner_text(self) -> str:
-        return super()._get_text_of_element(self.__kb_article_restricted_banner)
+    def get_restricted_visibility_banner_text(self) -> str:
+        return self._get_text_of_element(self.__kb_article_restricted_banner)
 
-    def _is_restricted_visibility_banner_text_displayed(self) -> bool:
-        return super()._is_element_visible(self.__kb_article_restricted_banner)
+    def is_restricted_visibility_banner_text_displayed(self) -> bool:
+        return self._is_element_visible(self.__kb_article_restricted_banner)
 
-    def _get_list_of_kb_article_contributors(self) -> list[str]:
-        return super()._get_text_of_elements(self.__kb_article_contributors)
+    def get_list_of_kb_article_contributors(self) -> list[str]:
+        return self._get_text_of_elements(self.__kb_article_contributors)
 
-    def _click_on_a_particular_article_contributor(self, username: str):
-        super()._click(f"//div[@class='document--contributors-list text-body-xs']/"
-                       f"a[text()='{username}']")
+    def click_on_a_particular_article_contributor(self, username: str):
+        self._click(f"//div[@class='document--contributors-list text-body-xs']/"
+                    f"a[text()='{username}']")
 
-    def _get_text_of_kb_article_content_approved(self) -> str:
-        return super()._get_text_of_element(self.__kb_article_content_approved_content)
+    def get_text_of_kb_article_content_approved(self) -> str:
+        return self._get_text_of_element(self.__kb_article_content_approved_content)
 
-    def _get_text_of_kb_article_content(self) -> str:
-        return super()._get_text_of_element(self.__kb_article_content)
+    def get_text_of_kb_article_content(self) -> str:
+        return self._get_text_of_element(self.__kb_article_content)
 
-    def _click_on_what_links_here_option(self):
-        super()._click(self.__editing_tools_what_links_here)
+    def click_on_what_links_here_option(self):
+        self._click(self.__editing_tools_what_links_here)
 
-    def _get_what_links_here_locator(self):
-        return super()._get_element_locator(self.__editing_tools_what_links_here)
+    def get_what_links_here_locator(self):
+        return self._get_element_locator(self.__editing_tools_what_links_here)
 
     # KB Article editing tools section actions.
-    def _click_on_show_history_option(self):
-        super()._click(self.__editing_tools_show_history_option)
+    def click_on_show_history_option(self):
+        self._click(self.__editing_tools_show_history_option)
 
-    def _get_show_history_option_locator(self):
-        return super()._get_element_locator(self.__editing_tools_show_history_option)
+    def get_show_history_option_locator(self):
+        return self._get_element_locator(self.__editing_tools_show_history_option)
 
-    def _click_on_edit_article_option(self):
-        super()._click(self.__editing_tools_edit_article_option)
+    def click_on_edit_article_option(self):
+        self._click(self.__editing_tools_edit_article_option)
 
-    def _get_edit_article_option_locator(self):
-        return super()._get_element_locator(self.__editing_tools_edit_article_option)
+    def get_edit_article_option_locator(self):
+        return self._get_element_locator(self.__editing_tools_edit_article_option)
 
-    def _click_on_edit_article_metadata(self):
-        super()._click(self.__editing_tools_edit_article_metadata_option)
+    def click_on_edit_article_metadata(self):
+        self._click(self.__editing_tools_edit_article_metadata_option)
 
-    def _get_edit_article_metadata_locator(self):
-        return super()._get_element_locator(self.__editing_tools_edit_article_metadata_option)
+    def get_edit_article_metadata_locator(self):
+        return self._get_element_locator(self.__editing_tools_edit_article_metadata_option)
 
-    def _click_on_translate_article_option(self):
-        super()._click(self.__editing_tools_translate_article)
+    def click_on_translate_article_option(self):
+        self._click(self.__editing_tools_translate_article)
 
-    def _get_translate_article_option_locator(self):
-        return super()._get_element_locator(self.__editing_tools_translate_article)
+    def get_translate_article_option_locator(self):
+        return self._get_element_locator(self.__editing_tools_translate_article)
 
-    def _get_show_translations_option_locator(self):
-        return super()._get_element_locator(self.__editing_tools_show_translations)
+    def get_show_translations_option_locator(self):
+        return self._get_element_locator(self.__editing_tools_show_translations)
 
-    def _click_on_article_option(self):
-        super()._click(self.__editing_tools_article_option)
+    def click_on_article_option(self):
+        self._click(self.__editing_tools_article_option)
 
-    def _get_article_option_locator(self) -> Locator:
-        return super()._get_element_locator(self.__editing_tools_article_option)
+    def get_article_option_locator(self) -> Locator:
+        return self._get_element_locator(self.__editing_tools_article_option)
 
-    def _editing_tools_discussion_locator(self) -> Locator:
-        return super()._get_element_locator(self.__editing_tools_discussion_option)
+    def editing_tools_discussion_locator(self) -> Locator:
+        return self._get_element_locator(self.__editing_tools_discussion_option)
 
-    def _click_on_editing_tools_discussion_option(self):
-        super()._click(self.__editing_tools_discussion_option)
+    def click_on_editing_tools_discussion_option(self):
+        self._click(self.__editing_tools_discussion_option)
 
-    def _click_on_volunteer_learn_more_option(self):
-        super()._click(self.__learn_more_kb_article_option)
+    def click_on_volunteer_learn_more_option(self):
+        self._click(self.__learn_more_kb_article_option)
 
-    def _get_url(self) -> str:
-        return super()._get_current_page_url()
+    def get_url(self) -> str:
+        return self._get_current_page_url()
