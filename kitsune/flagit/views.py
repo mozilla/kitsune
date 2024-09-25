@@ -69,16 +69,17 @@ def flagged_queue(request):
     """The flagged queue."""
     reason = request.GET.get("reason")
     objects = FlaggedObject.objects.pending()
+    question_content_type = ContentType.objects.get_for_model(Question)
     available_topics = []
 
-    question_content_type = ContentType.objects.get_for_model(Question)
+    if reason:
+        objects = objects.filter(reason=reason)
+
     for object in objects:
         if object.content_type == question_content_type:
             question = object.content_object
             available_topics = Topic.active.filter(products=question.product, in_aaq=True)
         object.available_topics = available_topics
-    if reason:
-        objects = objects.filter(reason=reason)
 
     return render(
         request,
