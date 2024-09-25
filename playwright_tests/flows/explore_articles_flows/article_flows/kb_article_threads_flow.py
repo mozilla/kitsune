@@ -21,8 +21,8 @@ class KbThreads(Utilities, KBArticleDiscussionPage, KBArticlePage):
             super()._click_on_delete_this_thread_reply_confirmation_button()
 
     def add_new_kb_discussion_thread(self, title='') -> [dict[str, Any]]:
-        super()._click_on_editing_tools_discussion_option()
-        article_discussion_url = super()._get_url()
+        super().click_on_editing_tools_discussion_option()
+        article_discussion_url = super().get_url()
         super()._click_on_post_a_new_thread_option()
         if title == '':
             thread_title = (super().kb_new_thread_test_data['new_thread_title'] + super()
@@ -71,7 +71,7 @@ class KbThreads(Utilities, KBArticleDiscussionPage, KBArticlePage):
             super()._click_on_thread_post_reply_button()
 
         return {
-            "reply_id": super()._get_thread_reply_id(super()._get_url())
+            "reply_id": super()._get_thread_reply_id(super().get_url())
         }
 
     def delete_reply_to_thread(self, reply_id: str, submit_deletion=True):

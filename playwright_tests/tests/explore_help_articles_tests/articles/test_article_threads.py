@@ -21,7 +21,7 @@ def test_article_thread_field_validation(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_page._click_on_editing_tools_discussion_option()
+        sumo_pages.kb_article_page.click_on_editing_tools_discussion_option()
 
     with allure.step("Clicking on the 'Post a new thread button' and clicking on the 'Post "
                      "Thread' button without adding any data in the form fields"):
@@ -907,7 +907,7 @@ def test_posting_a_new_kb_test_article(page: Page):
     ))
 
     sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
-    sumo_pages.kb_article_page._click_on_article_option()
+    sumo_pages.kb_article_page.click_on_article_option()
     with open("test_data/test_article", 'w') as file:
         file.write(utilities.get_page_url())
 

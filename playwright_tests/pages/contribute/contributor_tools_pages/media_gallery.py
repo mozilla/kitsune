@@ -29,73 +29,73 @@ class MediaGallery(BasePage):
         super().__init__(page)
 
     # Media Gallery page actions.
-    def _click_on_upload_a_new_media_file_button(self):
-        super()._click(self.__upload_a_new_media_file_button)
+    def click_on_upload_a_new_media_file_button(self):
+        self._click(self.__upload_a_new_media_file_button)
 
     # Media Gallery image preview actions.
-    def _get_image_heading(self) -> str:
-        return super()._get_text_of_element(self.__image_heading)
+    def get_image_heading(self) -> str:
+        return self._get_text_of_element(self.__image_heading)
 
-    def _get_image_creator_text(self) -> str:
-        return super()._get_text_of_element(self.__image_creator)
+    def get_image_creator_text(self) -> str:
+        return self._get_text_of_element(self.__image_creator)
 
-    def _click_on_image_creator_link(self):
-        super()._click(self.__image_creator)
+    def click_on_image_creator_link(self):
+        self._click(self.__image_creator)
 
-    def _get_image_description(self) -> str:
-        return super()._get_text_of_element(self.__image_description)
+    def get_image_description(self) -> str:
+        return self._get_text_of_element(self.__image_description)
 
-    def _get_image_in_documents_text(self) -> str:
-        return super()._get_text_of_element(self.__image_in_documents_text)
+    def get_image_in_documents_text(self) -> str:
+        return self._get_text_of_element(self.__image_in_documents_text)
 
-    def _get_image_in_documents_list_items_text(self) -> list[str]:
-        return super()._get_text_of_elements(self.__image_in_documents_list)
+    def get_image_in_documents_list_items_text(self) -> list[str]:
+        return self._get_text_of_elements(self.__image_in_documents_list)
 
-    def _click_on_a_linked_in_document(self, document_name: str):
-        super()._click(f"//div[@class='documents']//li/a[text()='{document_name}']")
+    def click_on_a_linked_in_document(self, document_name: str):
+        self._click(f"//div[@class='documents']//li/a[text()='{document_name}']")
 
-    def _click_on_delete_this_image_button(self):
-        super()._click(self.__delete_this_image_button)
+    def click_on_delete_this_image_button(self):
+        self._click(self.__delete_this_image_button)
 
-    def _click_on_edit_this_image_button(self):
-        super()._click(self.__edit_this_image_button)
+    def click_on_edit_this_image_button(self):
+        self._click(self.__edit_this_image_button)
 
     # Media Gallery search
-    def _fill_search_media_gallery_searchbox_input_field(self, text: str):
-        super()._fill(self.__search_gallery_searchbox, text)
+    def fill_search_media_gallery_searchbox_input_field(self, text: str):
+        self._fill(self.__search_gallery_searchbox, text)
 
-    def _click_on_media_gallery_searchbox_search_button(self):
-        super()._click(self.__search_gallery_search_button)
+    def click_on_media_gallery_searchbox_search_button(self):
+        self._click(self.__search_gallery_search_button)
 
     # Modal search.
-    def _fill_search_modal_gallery_searchbox_input_field(self, text: str):
-        super()._fill(self.__search_gallery_searchbox_modal, text)
+    def fill_search_modal_gallery_searchbox_input_field(self, text: str):
+        self._fill(self.__search_gallery_searchbox_modal, text)
 
-    def _click_on_search_modal_gallery_search_button(self):
-        super()._click(self.__search_gallery_search_button_modal)
+    def click_on_search_modal_gallery_search_button(self):
+        self._click(self.__search_gallery_search_button_modal)
 
     # Insert Media... kb panel actions.
-    def _click_on_images_filter(self):
-        super()._click(self.__show_images_filter)
+    def click_on_images_filter(self):
+        self._click(self.__show_images_filter)
 
-    def _click_on_videos_filter(self):
-        super()._click(self.__show_videos_filter)
+    def click_on_videos_filter(self):
+        self._click(self.__show_videos_filter)
 
-    def _click_on_cancel_media_insert(self):
-        super()._click(self.__insert_media_button)
+    def click_on_cancel_media_insert(self):
+        self._click(self.__insert_media_button)
 
-    def _click_on_upload_media_button(self):
-        super()._click(self.__upload_media_button)
+    def click_on_upload_media_button(self):
+        self._click(self.__upload_media_button)
 
-    def _select_media_file_from_list(self, media_file_name: str, is_modal=False):
+    def select_media_file_from_list(self, media_file_name: str, is_modal=False):
         if is_modal:
-            self._click_on_search_modal_gallery_search_button()
+            self.click_on_search_modal_gallery_search_button()
         else:
-            self._click_on_media_gallery_searchbox_search_button()
+            self.click_on_media_gallery_searchbox_search_button()
         xpath = f"//ol[@id='media-list']/li/a[@title='{media_file_name}']"
         # We need to wait a bit so that the list finishes to update in case of search.
-        super()._wait_for_given_timeout(1000)
-        super()._click(xpath)
+        self._wait_for_given_timeout(1000)
+        self._click(xpath)
 
-    def _click_on_insert_media_button(self):
-        super()._click(self.__insert_media_button)
+    def click_on_insert_media_button(self):
+        self._click(self.__insert_media_button)

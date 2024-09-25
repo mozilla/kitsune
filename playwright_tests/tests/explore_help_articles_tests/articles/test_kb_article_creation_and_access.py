@@ -27,69 +27,69 @@ def test_kb_editing_tools_visibility(page: Page, username):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
 
     with allure.step("Navigating to the Article page"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
 
     if username == 'TEST_ACCOUNT_13':
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         with allure.step("Verifying that only some editing tools options are displayed"):
-            expect(sumo_pages.kb_article_page._get_article_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_edit_article_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_edit_article_metadata_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_translate_article_option_locator()
+            expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
                    ).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_show_translations_option_locator()
+            expect(sumo_pages.kb_article_page.get_show_translations_option_locator()
                    ).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_what_links_here_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_what_links_here_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_show_history_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_visible()
     elif username == '':
         utilities.delete_cookies()
         with allure.step("Verifying that all the editing tools options are not displayed"):
-            expect(sumo_pages.kb_article_page._get_article_option_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_edit_article_option_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_edit_article_metadata_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_translate_article_option_locator()
+            expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
                    ).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_show_translations_option_locator()
+            expect(sumo_pages.kb_article_page.get_show_translations_option_locator()
                    ).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_what_links_here_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_what_links_here_locator()).to_be_hidden()
 
-            expect(sumo_pages.kb_article_page._get_show_history_option_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_hidden()
     else:
         with (allure.step("Verifying that all the editing tools options are displayed")):
-            expect(sumo_pages.kb_article_page._get_article_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_edit_article_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_edit_article_metadata_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_translate_article_option_locator()
+            expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
                    ).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_show_translations_option_locator()
+            expect(sumo_pages.kb_article_page.get_show_translations_option_locator()
                    ).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_what_links_here_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_what_links_here_locator()).to_be_visible()
 
-            expect(sumo_pages.kb_article_page._get_show_history_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_visible()
 
     if username != 'TEST_ACCOUNT_MODERATOR':
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -122,15 +122,15 @@ def test_non_admin_users_kb_article_submission(page: Page):
             ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT)
 
     with check, allure.step("Verifying that the revision contains the correct status"):
-        status = sumo_pages.kb_article_show_history_page._get_revision_status(
+        status = sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         )
         assert KBArticlePageMessages.UNREVIEWED_REVISION_STATUS == status
 
     with check, allure.step("Clicking on the 'Article' navbar menu and verifying that the "
                             "doc content contains the correct string"):
-        sumo_pages.kb_article_page._click_on_article_option()
-        assert sumo_pages.kb_article_page._get_text_of_kb_article_content(
+        sumo_pages.kb_article_page.click_on_article_option()
+        assert sumo_pages.kb_article_page.get_text_of_kb_article_content(
         ) == KBArticlePageMessages.KB_ARTICLE_NOT_APPROVED_CONTENT
 
     with check, allure.step("Deleting user session and verifying that the 404 page is "
@@ -147,9 +147,9 @@ def test_non_admin_users_kb_article_submission(page: Page):
 
     with check, allure.step("Clicking on the 'Show History' option and verifying that the "
                             "revision contains the correct status"):
-        sumo_pages.kb_article_page._click_on_show_history_option()
+        sumo_pages.kb_article_page.click_on_show_history_option()
         status = (
-            sumo_pages.kb_article_show_history_page._get_status_of_reviewable_revision(
+            sumo_pages.kb_article_show_history_page.get_status_of_reviewable_revision(
                 article_details['first_revision_id']))
         assert KBArticlePageMessages.REVIEW_REVISION_STATUS == status
 
@@ -179,14 +179,14 @@ def test_articles_revision_page_and_revision_approval(page: Page):
 
     with check, allure.step("Clicking on the first review and verifying that the correct "
                             "revision header is displayed"):
-        sumo_pages.kb_article_show_history_page._click_on_review_revision(
+        sumo_pages.kb_article_show_history_page.click_on_review_revision(
             article_details['first_revision_id']
         )
-        assert sumo_pages.kb_article_review_revision_page._get_revision_header(
+        assert sumo_pages.kb_article_review_revision_page.get_revision_header(
         ) == KBArticleRevision.KB_ARTICLE_REVISION_HEADER + article_details['article_title']
 
     with check, allure.step("Verifying that the correct subtext is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page._get_reviewing_revision_text()
+        assert (sumo_pages.kb_article_review_revision_page.get_reviewing_revision_text()
                 .replace("\n", "").strip() == kb_revision.get_kb_article_revision_details(
             revision_id=re.findall(r'\d+', article_details['first_revision_id'])[0],
             username=username,
@@ -195,7 +195,7 @@ def test_articles_revision_page_and_revision_approval(page: Page):
 
     with allure.step("Click on the 'Back to History' option and verifying that the user is "
                      "redirected to the article history page"):
-        sumo_pages.kb_article_review_revision_page._click_on_back_to_history_option()
+        sumo_pages.kb_article_review_revision_page.click_on_back_to_history_option()
         expect(
             page
         ).to_have_url(
@@ -206,55 +206,55 @@ def test_articles_revision_page_and_revision_approval(page: Page):
     with check, allure.step("Navigate back and verifying that the 'Keywords:' header is "
                             "displayed"):
         utilities.navigate_back()
-        assert sumo_pages.kb_article_review_revision_page._is_keywords_header_visible()
+        assert sumo_pages.kb_article_review_revision_page.is_keywords_header_visible()
 
     with check, allure.step("Verifying that the correct keyword is displayed"):
-        assert sumo_pages.kb_article_review_revision_page._get_keywords_content(
+        assert sumo_pages.kb_article_review_revision_page.get_keywords_content(
         ) == article_details['keyword']
 
     with check, allure.step("Verifying that the correct header is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page._is_search_results_summary_visible())
+        assert (sumo_pages.kb_article_review_revision_page.is_search_results_summary_visible())
 
     with check, allure.step("Verifying that the correct search result summary is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page._get_search_results_summary_content(
+        assert (sumo_pages.kb_article_review_revision_page.get_search_results_summary_content(
         ) == article_details['search_results_summary'])
 
     with check, allure.step("Verifying that the 'Revision source:' header is displayed"):
-        assert sumo_pages.kb_article_review_revision_page._is_revision_source_visible()
+        assert sumo_pages.kb_article_review_revision_page.is_revision_source_visible()
 
     with check, allure.step("Verifying that the correct revision source content is displayed"):
-        assert sumo_pages.kb_article_review_revision_page._revision_source_content(
+        assert sumo_pages.kb_article_review_revision_page.revision_source_content(
         ) == article_details['article_content']
 
     with check, allure.step("Verifying that the correct header is displayed"):
         assert (sumo_pages.kb_article_review_revision_page
-                ._is_revision_rendered_html_header_visible())
+                .is_revision_rendered_html_header_visible())
 
     with check, allure.step("Verifying that the correct 'Revision rendered html:' content is "
                             "displayed"):
-        assert (sumo_pages.kb_article_review_revision_page._get_revision_rendered_html_content(
+        assert (sumo_pages.kb_article_review_revision_page.get_revision_rendered_html_content(
         ) == article_details['article_content_html'])
 
     with allure.step("Approving the revision"):
-        sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-        sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        sumo_pages.kb_article_review_revision_page.click_on_approve_revision_button()
+        sumo_pages.kb_article_review_revision_page.click_accept_revision_accept_button()
 
     with check, allure.step("Verifying that the review status updates to 'Current'"):
-        assert sumo_pages.kb_article_show_history_page._get_revision_status(
+        assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
 
     with allure.step("Clicking on the 'Article' editing tools option"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the correct html article content is displayed"):
-        assert sumo_pages.kb_article_page._get_text_of_kb_article_content_approved(
+        assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
         ) == article_details['article_content_html']
 
     with check, allure.step("Signing out and verifying that the correct article content is "
                             "displayed"):
         utilities.delete_cookies()
-        assert sumo_pages.kb_article_page._get_text_of_kb_article_content_approved(
+        assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
         ) == article_details['article_content_html']
 
     with check, allure.step("Signing in with a non admin account and verifying if the "
@@ -262,7 +262,7 @@ def test_articles_revision_page_and_revision_approval(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
-        assert sumo_pages.kb_article_page._get_text_of_kb_article_content_approved(
+        assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
         ) == article_details['article_content_html']
 
     with allure.step("Signing in with an admin account and creating a new revision"):
@@ -273,7 +273,7 @@ def test_articles_revision_page_and_revision_approval(page: Page):
 
     with check, allure.step("Verifying that the first approved revision is marked as the "
                             "current"):
-        assert sumo_pages.kb_article_show_history_page._get_revision_status(
+        assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
 
@@ -282,11 +282,11 @@ def test_articles_revision_page_and_revision_approval(page: Page):
 
     with check, allure.step("Verifying that the first revision status is 'Approved', and the"
                             "second is 'Current'"):
-        assert sumo_pages.kb_article_show_history_page._get_revision_status(
+        assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.PREVIOUS_APPROVED_REVISION_STATUS
 
-        assert sumo_pages.kb_article_show_history_page._get_revision_status(
+        assert sumo_pages.kb_article_show_history_page.get_revision_status(
             second_revision['revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
 
@@ -308,9 +308,9 @@ def test_articles_discussions_allowed(page: Page):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
     with allure.step("Clicking on the article option and posting a new article thread"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
         article_url = utilities.get_page_url()
-        sumo_pages.kb_article_page._click_on_editing_tools_discussion_option()
+        sumo_pages.kb_article_page.click_on_editing_tools_discussion_option()
         sumo_pages.kb_article_discussion_page._click_on_post_a_new_thread_option()
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
@@ -345,7 +345,7 @@ def test_articles_discussions_allowed(page: Page):
     with allure.step("Deleting user session and verifying that the discussion editing tools "
                      "option is not available"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with allure.step("Manually navigating to the discuss endpoint and verifying that the "
                      "posted thread is successfully displayed"):
@@ -412,10 +412,10 @@ def test_articles_discussions_not_allowed(page: Page):
 
     with allure.step("Clicking on the article option and verifying that the 'Discussion' "
                      "option is not displayed"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
         article_url = utilities.get_page_url()
         expect(
-            sumo_pages.kb_article_page._editing_tools_discussion_locator()
+            sumo_pages.kb_article_page.editing_tools_discussion_locator()
         ).to_be_hidden()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
@@ -440,7 +440,7 @@ def test_articles_discussions_not_allowed(page: Page):
     with allure.step("Navigating back to the article page and verifying that the "
                      "'Discussion' option is not displayed"):
         utilities.navigate_to_link(article_url)
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
                             "that the 404 page is returned"):
@@ -457,7 +457,7 @@ def test_articles_discussions_not_allowed(page: Page):
         utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Discussion' option is not displayed"):
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
                             "that the 404 page is displayed"):
@@ -543,11 +543,11 @@ def test_kb_article_title_and_slug_validations(page: Page):
 
     with check, allure.step("Submitting the form and verifying that both title and slug "
                             "errors are displayed"):
-        sumo_pages.kb_submit_kb_article_form_page._click_on_submit_for_review_button()
-        sumo_pages.kb_submit_kb_article_form_page._add_text_to_changes_description_field(
+        sumo_pages.kb_submit_kb_article_form_page.click_on_submit_for_review_button()
+        sumo_pages.kb_submit_kb_article_form_page.add_text_to_changes_description_field(
             utilities.kb_article_test_data["changes_description"]
         )
-        sumo_pages.kb_submit_kb_article_form_page._click_on_changes_submit_button()
+        sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
         for error in sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors():
             assert error in KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS
 
@@ -573,11 +573,11 @@ def test_kb_article_title_and_slug_validations(page: Page):
 
     with check, allure.step("Submitting the form and verifying that the correct error is "
                             "displayed"):
-        sumo_pages.kb_submit_kb_article_form_page._click_on_submit_for_review_button()
-        sumo_pages.kb_submit_kb_article_form_page._add_text_to_changes_description_field(
+        sumo_pages.kb_submit_kb_article_form_page.click_on_submit_for_review_button()
+        sumo_pages.kb_submit_kb_article_form_page.add_text_to_changes_description_field(
             utilities.kb_article_test_data["changes_description"]
         )
-        sumo_pages.kb_submit_kb_article_form_page._click_on_changes_submit_button()
+        sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
         assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
         )[0] == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[0]
 
@@ -602,11 +602,11 @@ def test_kb_article_title_and_slug_validations(page: Page):
 
     with check, allure.step("Submitting the form and verifying that the correct error "
                             "message is displayed"):
-        sumo_pages.kb_submit_kb_article_form_page._click_on_submit_for_review_button()
-        sumo_pages.kb_submit_kb_article_form_page._add_text_to_changes_description_field(
+        sumo_pages.kb_submit_kb_article_form_page.click_on_submit_for_review_button()
+        sumo_pages.kb_submit_kb_article_form_page.add_text_to_changes_description_field(
             utilities.kb_article_test_data["changes_description"]
         )
-        sumo_pages.kb_submit_kb_article_form_page._click_on_changes_submit_button()
+        sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
         assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
         )[0] == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
 
@@ -742,7 +742,7 @@ def test_kb_article_keywords_and_summary(page: Page, username):
     with check, allure.step("Clicking on the article and verifying that the user is "
                             "redirected to the kb article"):
         sumo_pages.search_page._click_on_a_particular_article(article_details['article_title'])
-        assert sumo_pages.kb_article_page._get_text_of_article_title(
+        assert sumo_pages.kb_article_page.get_text_of_article_title(
         ) == article_details['article_title']
 
     with allure.step("Deleting the created article"):
@@ -771,12 +771,12 @@ def test_edit_non_approved_articles(page: Page):
 
     with allure.step("Verifying that both the first and second revisions are displayed"):
         expect(
-            sumo_pages.kb_article_show_history_page._get_a_particular_revision_locator(
+            sumo_pages.kb_article_show_history_page.get_a_particular_revision_locator(
                 article_details['first_revision_id']
             )
         ).to_be_visible()
         expect(
-            sumo_pages.kb_article_show_history_page._get_a_particular_revision_locator(
+            sumo_pages.kb_article_show_history_page.get_a_particular_revision_locator(
                 second_revision['revision_id']
             )
         ).to_be_visible()
@@ -811,11 +811,11 @@ def test_kb_article_keyword_and_summary_update(page: Page):
 
     with check, allure.step("Navigating to the 'Edit Article' form and verifying that the "
                             "edit keyword field is not displayed"):
-        sumo_pages.kb_article_page._click_on_edit_article_option()
-        expect(sumo_pages.kb_edit_article_page._get_edit_keywords_field_locator()).to_be_hidden()
+        sumo_pages.kb_article_page.click_on_edit_article_option()
+        expect(sumo_pages.kb_edit_article_page.get_edit_keywords_field_locator()).to_be_hidden()
 
     with allure.step("Navigating back to the article"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step("Signing in with an Admin account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -825,16 +825,16 @@ def test_kb_article_keyword_and_summary_update(page: Page):
     with check, allure.step("Clicking on the 'Edit Article' option and verifying that the "
                             "correct notification banner is displayed stating that another "
                             "user is also working on an edit"):
-        sumo_pages.kb_article_page._click_on_edit_article_option()
+        sumo_pages.kb_article_page.click_on_edit_article_option()
         check.equal(
-            sumo_pages.kb_edit_article_page._get_edit_article_warning_message(),
+            sumo_pages.kb_edit_article_page.get_edit_article_warning_message(),
             kb_revision.get_article_warning_message(
                 utilities.username_extraction_from_email(
                     utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
                 )
             )
         )
-        sumo_pages.kb_edit_article_page._click_on_edit_anyway_option()
+        sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
 
     with allure.step("Creating a new revision for the kb article and approving it"):
         sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
@@ -903,7 +903,7 @@ def test_kb_article_keyword_and_summary_update(page: Page):
                             "redirected to the kb article"):
         sumo_pages.search_page._click_on_a_particular_article(article_details['article_title'])
         check.equal(
-            sumo_pages.kb_article_page._get_text_of_article_title(),
+            sumo_pages.kb_article_page.get_text_of_article_title(),
             article_details['article_title']
         )
 
@@ -935,12 +935,12 @@ def test_edit_article_metadata_title(page: Page):
         ))
 
     with allure.step("Clicking on the Article option"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
         article_url = utilities.get_page_url()
 
     with check, allure.step("Verifying that the 'Edit Article Metadata option is not "
                             "displayed'"):
-        expect(sumo_pages.kb_article_page._get_edit_article_metadata_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
 
     with check, allure.step("Navigating to the /metadata endpoint and verifying that the "
                             "Access Denied page is returned"):
@@ -963,7 +963,7 @@ def test_edit_article_metadata_title(page: Page):
 
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
                             "that the updated title and original slug is displayed"):
-        sumo_pages.kb_article_page._click_on_edit_article_metadata()
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
         check.equal(
             (sumo_pages.kb_article_edit_article_metadata_page._get_text_of_title_input_field()),
             utilities.kb_article_test_data['updated_kb_article_title'] + article_details
@@ -1016,7 +1016,7 @@ def test_edit_article_metadata_slug(page: Page):
 
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
                             "that the slug was updated"):
-        sumo_pages.kb_article_page._click_on_edit_article_metadata()
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
         check.equal(
             sumo_pages.kb_article_edit_article_metadata_page._get_slug_input_field(),
@@ -1157,11 +1157,11 @@ def test_edit_article_metadata_product_and_topic(page: Page):
     with check, allure.step("Verifying that the correct breadcrumb is displayed"):
         check.is_in(
             "Pocket",
-            sumo_pages.kb_article_page._get_text_of_all_breadcrumbs()
+            sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
         )
         check.is_in(
             "Getting Started",
-            sumo_pages.kb_article_page._get_text_of_all_breadcrumbs()
+            sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
         )
 
     with allure.step("Deleting the article"):
@@ -1184,7 +1184,7 @@ def test_edit_metadata_article_discussions(page: Page):
         )
 
     with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with allure.step("Signing in with a non-admin user and verifying that the discussion "
                      "options is visible"):
@@ -1193,7 +1193,7 @@ def test_edit_metadata_article_discussions(page: Page):
         ))
 
     with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with allure.step("Signing in with an admin account and disabling article discussions via "
                      "edit article metadata form"):
@@ -1203,7 +1203,7 @@ def test_edit_metadata_article_discussions(page: Page):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=False)
 
     with check, allure.step("Verifying that 'Discussion' is not displayed for admin users"):
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
                             "returned"):
@@ -1220,7 +1220,7 @@ def test_edit_metadata_article_discussions(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
                             "returned"):
@@ -1240,13 +1240,13 @@ def test_edit_metadata_article_discussions(page: Page):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=True)
 
     with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
-        expect(sumo_pages.kb_article_page._editing_tools_discussion_locator()).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with allure.step("Deleting the article"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -1270,21 +1270,21 @@ def test_edit_metadata_article_multiple_users(page: Page):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
 
     with allure.step("Clicking on the 'Edit Article Metadata' option"):
-        sumo_pages.kb_article_page._click_on_edit_article_metadata()
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
     with allure.step("Navigating back to the article page and signing in with a non-admin "
                      "user account"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
     with allure.step("Clicking on the 'Edit Article Metadata' option"):
-        sumo_pages.kb_article_page._click_on_edit_article_metadata()
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
     with check, allure.step("Verifying that the correct error message is displayed"):
         check.equal(
-            sumo_pages.kb_edit_article_page._get_edit_article_warning_message(),
+            sumo_pages.kb_edit_article_page.get_edit_article_warning_message(),
             kb_revision.get_article_warning_message(
                 utilities.username_extraction_from_email(
                     utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -1294,11 +1294,11 @@ def test_edit_metadata_article_multiple_users(page: Page):
 
     with allure.step("Clicking on the 'Edit Anyway' option and verifying that the warning "
                      "banner is no longer displayed"):
-        sumo_pages.kb_edit_article_page._click_on_edit_anyway_option()
-        expect(sumo_pages.kb_edit_article_page._get_warning_banner_locator()).to_be_hidden()
+        sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
+        expect(sumo_pages.kb_edit_article_page.get_warning_banner_locator()).to_be_hidden()
 
     with allure.step("Deleting the article"):
-        sumo_pages.kb_article_page._click_on_article_option()
+        sumo_pages.kb_article_page.click_on_article_option()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -1329,12 +1329,12 @@ def test_archived_kb_article_edit(page: Page):
         ))
 
     with allure.step("Verifying that the 'Edit Article' navbar option is not displayed"):
-        expect(sumo_pages.kb_article_page._get_edit_article_option_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_hidden()
 
     with allure.step("Navigating to the 'Show History' page and clicking on the existing "
                      "revision"):
-        sumo_pages.kb_article_page._click_on_show_history_option()
-        sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
+        sumo_pages.kb_article_page.click_on_show_history_option()
+        sumo_pages.kb_article_show_history_page.click_on_a_revision_date(
             article_details['first_revision_id']
         )
 
@@ -1343,20 +1343,20 @@ def test_archived_kb_article_edit(page: Page):
         (sumo_pages.kb_article_preview_revision_page
          ._click_on_edit_article_based_on_this_revision_link())
 
-        sumo_pages.kb_edit_article_page._fill_edit_article_content_field(
+        sumo_pages.kb_edit_article_page.fill_edit_article_content_field(
             utilities.kb_article_test_data['updated_article_content']
         )
         # Submitting for preview steps
-        sumo_pages.kb_edit_article_page._click_submit_for_review_button()
+        sumo_pages.kb_edit_article_page.click_submit_for_review_button()
 
-        (sumo_pages.kb_edit_article_page._fill_edit_article_changes_panel_comment(
+        (sumo_pages.kb_edit_article_page.fill_edit_article_changes_panel_comment(
             utilities.kb_article_test_data['changes_description']
         ))
 
-        sumo_pages.kb_edit_article_page._click_edit_article_changes_panel_submit_button()
+        sumo_pages.kb_edit_article_page.click_edit_article_changes_panel_submit_button()
 
     with allure.step("Verifying that the revision was successfully submitted"):
-        second_revision = sumo_pages.kb_article_show_history_page._get_last_revision_id()
+        second_revision = sumo_pages.kb_article_show_history_page.get_last_revision_id()
         assert (article_details['first_revision_id'] != second_revision)
 
     with allure.step("Deleting the article"):
@@ -1383,7 +1383,7 @@ def test_revision_significance(page: Page):
 
     with check, allure.step("Verifying that the significance is the correct one"):
         check.equal(
-            sumo_pages.kb_article_show_history_page._get_revision_significance(
+            sumo_pages.kb_article_show_history_page.get_revision_significance(
                 article_details['first_revision_id']
             ),
             KBArticlePageMessages.MAJOR_SIGNIFICANCE
@@ -1397,7 +1397,7 @@ def test_revision_significance(page: Page):
             significance_type='minor'
         )
         check.equal(
-            sumo_pages.kb_article_show_history_page._get_revision_significance(
+            sumo_pages.kb_article_show_history_page.get_revision_significance(
                 second_revision['revision_id']
             ),
             KBArticlePageMessages.MINOR_SIGNIFICANCE
@@ -1410,7 +1410,7 @@ def test_revision_significance(page: Page):
             approve_revision=True
         )
         check.equal(
-            sumo_pages.kb_article_show_history_page._get_revision_significance(
+            sumo_pages.kb_article_show_history_page.get_revision_significance(
                 third_revision['revision_id']
             ),
             KBArticlePageMessages.NORMAL_SIGNIFICANCE
@@ -1424,7 +1424,7 @@ def test_revision_significance(page: Page):
             significance_type='major'
         )
         check.equal(
-            sumo_pages.kb_article_show_history_page._get_revision_significance(
+            sumo_pages.kb_article_show_history_page.get_revision_significance(
                 forth_revision['revision_id']
             ),
             KBArticlePageMessages.MAJOR_SIGNIFICANCE

@@ -29,7 +29,7 @@ class EditArticleMetaFlow(Utilities, KBArticleEditMetadata, SubmitKBArticlePage,
                               single_group=""):
 
         if KBArticleRevision.KB_EDIT_METADATA not in self._get_current_page_url():
-            self._click_on_edit_article_metadata()
+            self.click_on_edit_article_metadata()
 
         if restricted_to_groups:
             for group in restricted_to_groups:
@@ -51,12 +51,12 @@ class EditArticleMetaFlow(Utilities, KBArticleEditMetadata, SubmitKBArticlePage,
 
         if topics:
             if isinstance(topics, list):
-                self._click_on_a_particular_child_topic_checkbox(
+                self.click_on_a_particular_child_topic_checkbox(
                     topics[0],
                     topics[1],
                 )
             else:
-                self._click_on_a_particular_parent_topic_checkbox(
+                self.click_on_a_particular_parent_topic_checkbox(
                     topics
                 )
 
@@ -92,7 +92,7 @@ class EditArticleMetaFlow(Utilities, KBArticleEditMetadata, SubmitKBArticlePage,
 
     def _remove_a_restricted_visibility_group(self, group_name=''):
         if KBArticleRevision.KB_EDIT_METADATA not in self._get_current_page_url():
-            self._click_on_edit_article_metadata()
+            self.click_on_edit_article_metadata()
 
         self._delete_a_restricted_visibility_group_metadata(group_name)
         self._click_on_save_changes_button()

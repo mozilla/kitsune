@@ -22,7 +22,7 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
         "is_template": is_template
     })[0]
 
-    sumo_pages.kb_article_page._click_on_article_option()
+    sumo_pages.kb_article_page.click_on_article_option()
     article_url = utilities.get_page_url()
     with check, allure.step("Navigating to the article and verifying that 404 is not returned"):
         with page.expect_navigation() as navigation_info:
@@ -32,7 +32,7 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
 
     with check, allure.step("Verifying that the correct restricted banner is displayed"):
         assert (KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER in sumo_pages.kb_article_page
-                ._get_restricted_visibility_banner_text())
+                .get_restricted_visibility_banner_text())
 
     with allure.step("Signing out from SUMO"):
         utilities.delete_cookies()
@@ -68,7 +68,7 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
 
     with allure.step("Verifying that the correct restricted banner is displayed"):
         assert (KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER in sumo_pages.kb_article_page
-                ._get_restricted_visibility_banner_text())
+                .get_restricted_visibility_banner_text())
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -90,7 +90,7 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
 
     with check, allure.step("Verifying that the correct restricted banner is displayed"):
         assert (KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER in sumo_pages.kb_article_page
-                ._get_restricted_visibility_banner_text())
+                .get_restricted_visibility_banner_text())
 
     with allure.step("Signing in with a user which is part of the whitelisted groups"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -105,7 +105,7 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
 
     with check, allure.step("Verifying that the correct restricted banner is displayed"):
         assert (KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER in sumo_pages.kb_article_page
-                ._get_restricted_visibility_banner_text())
+                .get_restricted_visibility_banner_text())
 
     with allure.step("Signing in with a user which is not part of the whitelisted groups"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -163,7 +163,7 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
         assert response.status != 404
 
     with allure.step("Verifying that the restricted banner is no longer displayed"):
-        assert not sumo_pages.kb_article_page._is_restricted_visibility_banner_text_displayed()
+        assert not sumo_pages.kb_article_page.is_restricted_visibility_banner_text_displayed()
 
 
 # C2466516
@@ -307,15 +307,15 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
 
     with check, allure.step("Searching for the added image and verifying that the article is "
                             "displayed for admin users inside the 'Articles' image list"):
-        sumo_pages.media_gallery._fill_search_media_gallery_searchbox_input_field(
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
             utilities.kb_article_test_data['article_image']
         )
-        sumo_pages.media_gallery._click_on_media_gallery_searchbox_search_button()
-        sumo_pages.media_gallery._select_media_file_from_list(
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        sumo_pages.media_gallery.select_media_file_from_list(
             utilities.kb_article_test_data['article_image']
         )
         assert article_details['article_title'] in (sumo_pages.media_gallery
-                                                    ._get_image_in_documents_list_items_text())
+                                                    .get_image_in_documents_list_items_text())
 
     with allure.step("Signing out from SUMO"):
         utilities.delete_cookies()
@@ -323,7 +323,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     with check, allure.step("Verifying that the article is not displayed for signed out "
                             "users inside the 'Articles image list'"):
         assert article_details['article_title'] not in (sumo_pages.media_gallery
-                                                        ._get_image_in_documents_list_items_text())
+                                                        .get_image_in_documents_list_items_text())
 
     with allure.step("Signing in with an account that is not part of a whitelisted group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -333,7 +333,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     with check, allure.step("Verifying that the article is not displayed for users belonging "
                             "to a non-whitelisted group inside the 'Articles image list'"):
         assert article_details['article_title'] not in (sumo_pages.media_gallery
-                                                        ._get_image_in_documents_list_items_text())
+                                                        .get_image_in_documents_list_items_text())
 
     with allure.step("Signing in with an account that is part of the whitelisted group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -343,7 +343,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     with allure.step("Verifying that the article is displayed for users belonging to a "
                      "whitelisted inside the 'Articles image list'"):
         assert article_details['article_title'] in (sumo_pages.media_gallery
-                                                    ._get_image_in_documents_list_items_text())
+                                                    .get_image_in_documents_list_items_text())
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -359,11 +359,11 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
 
     with check, allure.step("Searching for the added image and verifying that the article is "
                             "displayed for admin users inside the 'Articles' image list"):
-        sumo_pages.media_gallery._fill_search_media_gallery_searchbox_input_field(
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
             utilities.kb_article_test_data['article_image']
         )
-        sumo_pages.media_gallery._click_on_media_gallery_searchbox_search_button()
-        sumo_pages.media_gallery._select_media_file_from_list(
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        sumo_pages.media_gallery.select_media_file_from_list(
             utilities.kb_article_test_data['article_image']
         )
 
@@ -373,7 +373,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
         assert article_details['article_title'] in (sumo_pages.media_gallery
-                                                    ._get_image_in_documents_list_items_text())
+                                                    .get_image_in_documents_list_items_text())
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
         remove_all_article_restrictions(page)
@@ -382,16 +382,16 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
                      "article is displayed for signed out users"):
         sumo_pages.top_navbar.click_on_media_gallery_option()
         utilities.delete_cookies()
-        sumo_pages.media_gallery._fill_search_media_gallery_searchbox_input_field(
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
             utilities.kb_article_test_data['article_image']
         )
-        sumo_pages.media_gallery._click_on_media_gallery_searchbox_search_button()
-        sumo_pages.media_gallery._select_media_file_from_list(
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        sumo_pages.media_gallery.select_media_file_from_list(
             utilities.kb_article_test_data['article_image']
         )
         utilities.delete_cookies()
         assert article_details['article_title'] in (sumo_pages.media_gallery
-                                                    ._get_image_in_documents_list_items_text())
+                                                    .get_image_in_documents_list_items_text())
 
 
 # C2466531
@@ -485,9 +485,9 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
         ['restricted_visibility_groups'][0]
     })[0]
 
-    sumo_pages.kb_article_page._click_on_article_option()
+    sumo_pages.kb_article_page.click_on_article_option()
     with allure.step("Clicking on the article child topic"):
-        sumo_pages.kb_article_page._click_on_a_particular_breadcrumb(
+        sumo_pages.kb_article_page.click_on_a_particular_breadcrumb(
             article_details['article_topic'][0]
         )
 
@@ -526,9 +526,9 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
             single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
         )
 
-    sumo_pages.kb_article_page._click_on_article_option()
+    sumo_pages.kb_article_page.click_on_article_option()
     with allure.step("Clicking on the article child topic"):
-        sumo_pages.kb_article_page._click_on_a_particular_breadcrumb(
+        sumo_pages.kb_article_page.click_on_a_particular_breadcrumb(
             article_details['article_topic'][0]
         )
 
@@ -757,7 +757,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
 
     with check, allure.step("Navigating to the 'What Links Here' page and verifying that the "
                             "restricted article is displayed for admin accounts"):
-        sumo_pages.kb_article_page._click_on_what_links_here_option()
+        sumo_pages.kb_article_page.click_on_what_links_here_option()
         expect(
             sumo_pages.kb_what_links_here_page._get_a_particular_what_links_here_article_locator(
                 article_details['article_title'])).to_be_visible()
@@ -804,7 +804,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
 
     with allure.step("Navigating to the 'What Links Here' page and verifying that the linked "
                      "article is displayed to the newly added group members"):
-        sumo_pages.kb_article_page._click_on_what_links_here_option()
+        sumo_pages.kb_article_page.click_on_what_links_here_option()
         expect(sumo_pages.kb_what_links_here_page
                ._get_a_particular_what_links_here_article_locator(article_details['article_title'])
                ).to_be_visible()
@@ -818,7 +818,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
 
     with allure.step("Navigating to the 'What Links Here' page and verifying that the "
                      "article is displayed for signed out users"):
-        sumo_pages.kb_article_page._click_on_what_links_here_option()
+        sumo_pages.kb_article_page.click_on_what_links_here_option()
         utilities.delete_cookies()
         expect(sumo_pages.kb_what_links_here_page
                ._get_a_particular_what_links_here_article_locator(article_details['article_title'])
@@ -842,8 +842,8 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
     with check, allure.step("Navigating to the article category field and verifying that the "
                             "restricted kb article is displayed for admin accounts"):
         utilities.navigate_to_link(article_details['article_url'])
-        sumo_pages.kb_article_page._click_on_show_history_option()
-        sumo_pages.kb_article_show_history_page._click_on_show_history_category()
+        sumo_pages.kb_article_page.click_on_show_history_option()
+        sumo_pages.kb_article_show_history_page.click_on_show_history_category()
 
         expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_visible()
@@ -885,8 +885,8 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
         utilities.navigate_to_link(article_details['article_url'])
-        sumo_pages.kb_article_page._click_on_show_history_option()
-        sumo_pages.kb_article_show_history_page._click_on_show_history_category()
+        sumo_pages.kb_article_page.click_on_show_history_option()
+        sumo_pages.kb_article_show_history_page.click_on_show_history_category()
         expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_visible()
 
@@ -895,8 +895,8 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
         remove_all_article_restrictions(page)
 
     utilities.navigate_to_link(article_details['article_url'])
-    sumo_pages.kb_article_page._click_on_show_history_option()
-    sumo_pages.kb_article_show_history_page._click_on_show_history_category()
+    sumo_pages.kb_article_page.click_on_show_history_option()
+    sumo_pages.kb_article_show_history_page.click_on_show_history_category()
 
     with allure.step("Navigating to the article discussion page and verifying that the "
                      "article is displayed for signed out users"):

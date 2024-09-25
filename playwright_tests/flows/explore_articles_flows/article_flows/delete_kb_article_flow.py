@@ -15,7 +15,7 @@ class DeleteKbArticleFlow(Utilities, KBArticleShowHistoryPage, KBArticlePage, To
     def delete_kb_article(self):
         # If the delete button is not displayed we presume that we are not on the show history page
         # Clicking on the 'Show History' page.
-        if not super()._is_delete_button_displayed():
-            super()._click_on_show_history_option()
-        super()._click_on_delete_this_document_button()
-        super()._click_on_confirmation_delete_button()
+        if not super().is_delete_button_displayed():
+            super().click_on_show_history_option()
+        super().click_on_delete_this_document_button()
+        super().click_on_confirmation_delete_button()

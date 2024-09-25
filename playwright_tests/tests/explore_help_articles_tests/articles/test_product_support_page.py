@@ -180,7 +180,7 @@ def test_product_support_page_featured_articles_redirect(page: Page):
                         with check, allure.step("Verifying the accessed article title is the "
                                                 "correct one"):
                             assert featured_article_names[count - 1] == (
-                                sumo_pages.kb_article_page._get_text_of_article_title())
+                                sumo_pages.kb_article_page.get_text_of_article_title())
                         count += 1
                         utilities.navigate_back()
                 else:

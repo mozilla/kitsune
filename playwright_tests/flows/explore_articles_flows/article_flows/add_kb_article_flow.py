@@ -16,11 +16,17 @@ from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_pag
     SubmitKBArticlePage)
 
 
-class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticlePage,
-                       KBArticleShowHistoryPage, KBArticleReviewRevisionPage, EditKBArticlePage):
+class AddKbArticleFlow:
 
     def __init__(self, page: Page):
-        super().__init__(page)
+        self.page = page
+        self.utilities = Utilities(page)
+        self.submit_kb_article_page = SubmitKBArticlePage(page)
+        self.add_media_flow = AddKbMediaFlow(page)
+        self.kb_article_page = KBArticlePage(page)
+        self.kb_article_show_history_page = KBArticleShowHistoryPage(page)
+        self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
+        self.edit_kb_article_page = EditKBArticlePage(page)
 
     def submit_simple_kb_article(self,
                                  article_title=None,
@@ -44,53 +50,51 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
                                  ) -> dict[str, Any]:
         self.page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
-        kb_article_test_data = super().kb_article_test_data
+        kb_article_test_data = self.utilities.kb_article_test_data
 
         if restricted_to_groups is not None:
             for group in restricted_to_groups:
-                super()._add_and_select_restrict_visibility_group(group)
+                self.submit_kb_article_page.add_and_select_restrict_visibility_group(group)
         if single_group != "":
-            super()._add_and_select_restrict_visibility_group(single_group)
+            self.submit_kb_article_page.add_and_select_restrict_visibility_group(single_group)
 
         if article_title is None:
             if is_template:
-                kb_article_title = (kb_article_test_data["kb_template_title"] + self.
+                kb_article_title = (kb_article_test_data["kb_template_title"] + self.utilities.
                                     generate_random_number(0, 5000))
             else:
-                kb_article_title = (kb_article_test_data["kb_article_title"] + self.
+                kb_article_title = (kb_article_test_data["kb_article_title"] + self.utilities.
                                     generate_random_number(0, 5000))
         else:
             kb_article_title = article_title
 
         if kb_article_title != "":
-            super()._add_text_to_article_form_title_field(
+            self.submit_kb_article_page.add_text_to_article_form_title_field(
                 kb_article_title
             )
 
         if (article_slug is not None) and (article_slug != ""):
             kb_article_slug = article_slug
-            super()._add_text_to_article_slug_field(kb_article_slug)
+            self.submit_kb_article_page.add_text_to_article_slug_field(kb_article_slug)
 
         if article_category is None:
             if is_template:
                 article_category = kb_article_test_data["kb_template_category"]
-                super()._select_category_option_by_text(
+                self.submit_kb_article_page.select_category_option_by_text(
                     article_category
                 )
             else:
                 article_category = kb_article_test_data["category_options"]
-                super()._select_category_option_by_text(article_category)
+                self.submit_kb_article_page.select_category_option_by_text(article_category)
         else:
-            super()._select_category_option_by_text(article_category)
+            self.submit_kb_article_page.select_category_option_by_text(article_category)
 
         if not allow_translations:
-            super()._check_allow_translations_checkbox()
+            self.submit_kb_article_page.check_allow_translations_checkbox()
 
         product = kb_article_test_data["relevant_to_product"]
         if selected_product is True:
-            super()._click_on_a_particular_product(
-                product
-            )
+            self.submit_kb_article_page.click_on_a_particular_product(product)
 
         article_topic = [
             kb_article_test_data["selected_parent_topic"],
@@ -99,59 +103,64 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
 
         # Adding Article topic
         if selected_topics is True:
-            super()._click_on_a_particular_parent_topic_checkbox(
+            self.submit_kb_article_page.click_on_a_particular_parent_topic_checkbox(
                 article_topic[0]
             )
-            super()._click_on_a_particular_child_topic_checkbox(
+            self.submit_kb_article_page.click_on_a_particular_child_topic_checkbox(
                 article_topic[0],
                 article_topic[1],
             )
 
         # Interacting with Allow Discussion checkbox
-        if (allow_discussion is True) and (super(
-        )._is_allow_discussion_on_article_checkbox_checked() is False):
-            super()._check_allow_discussion_on_article_checkbox()
-        elif (allow_discussion is False) and (super(
-        )._is_allow_discussion_on_article_checkbox_checked() is True):
-            super()._check_allow_discussion_on_article_checkbox()
+        if (allow_discussion is True) and (
+            self.submit_kb_article_page
+                .is_allow_discussion_on_article_checkbox_checked() is False):
+            self.submit_kb_article_page.check_allow_discussion_on_article_checkbox()
+        elif (allow_discussion is False) and (
+            self.submit_kb_article_page
+                .is_allow_discussion_on_article_checkbox_checked() is True):
+            self.submit_kb_article_page.check_allow_discussion_on_article_checkbox()
 
-        super()._add_text_to_related_documents_field(kb_article_test_data["related_documents"])
+        self.submit_kb_article_page.add_text_to_related_documents_field(
+            kb_article_test_data["related_documents"])
 
         keyword = None
         if article_keyword is None:
-            super()._add_text_to_keywords_field(kb_article_test_data["keywords"])
+            self.submit_kb_article_page.add_text_to_keywords_field(
+                kb_article_test_data["keywords"])
             keyword = kb_article_test_data["keywords"]
         else:
-            super()._add_text_to_keywords_field(article_keyword)
+            self.submit_kb_article_page.add_text_to_keywords_field(article_keyword)
             keyword = article_keyword
 
         summary = None
         if search_summary is None:
-            super()._add_text_to_search_result_summary_field(
+            self.submit_kb_article_page.add_text_to_search_result_summary_field(
                 kb_article_test_data["search_result_summary"]
             )
             summary = kb_article_test_data["search_result_summary"]
         else:
-            super()._add_text_to_search_result_summary_field(
+            self.submit_kb_article_page.add_text_to_search_result_summary_field(
                 search_summary
             )
             summary = search_summary
 
-        if not super()._is_content_textarea_displayed():
-            super()._click_on_toggle_syntax_highlight_option()
+        if not self.submit_kb_article_page.is_content_textarea_displayed():
+            self.submit_kb_article_page.click_on_toggle_syntax_highlight_option()
 
         if article_content is None:
-            super()._add_text_to_content_textarea(kb_article_test_data["article_content"])
+            self.submit_kb_article_page.add_text_to_content_textarea(
+                kb_article_test_data["article_content"])
 
         if article_content_image != '':
-            super()._click_on_insert_media_button()
-            super().add_media_to_kb_article(
+            self.submit_kb_article_page.click_on_insert_media_button()
+            self.add_media_flow.add_media_to_kb_article(
                 file_type="Image",
                 file_name=article_content_image
             )
 
         if expiry_date is not None:
-            super()._add_text_to_expiry_date_field(expiry_date)
+            self.submit_kb_article_page.add_text_to_expiry_date_field(expiry_date)
 
         # We need to evaluate in order to fetch the slug field value
         slug = self.page.evaluate(
@@ -163,22 +172,22 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
             # If title and slug are empty we are not reaching the description field.
             if ((article_title != '') and (article_slug != '') and (
                     search_summary != "") and (article_content != "")):
-                super()._click_on_submit_for_review_button()
-                super()._add_text_to_changes_description_field(
+                self.submit_kb_article_page.click_on_submit_for_review_button()
+                self.submit_kb_article_page.add_text_to_changes_description_field(
                     kb_article_test_data["changes_description"]
                 )
-                super()._click_on_changes_submit_button()
+                self.submit_kb_article_page.click_on_changes_submit_button()
                 try:
-                    first_revision_id = super()._get_last_revision_id()
+                    first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
                 except IndexError:
                     print("Chances are that the form was not submitted successfully")
             else:
-                super()._click_on_submit_for_review_button()
+                self.submit_kb_article_page.click_on_submit_for_review_button()
 
-        article_url = super()._get_article_page_url()
+        article_url = self.submit_kb_article_page.get_article_page_url()
 
         if approve_first_revision:
-            super()._click_on_show_history_option()
+            self.kb_article_page.click_on_show_history_option()
             if ready_for_localization:
                 self.approve_kb_revision(first_revision_id, ready_for_l10n=True)
             else:
@@ -205,33 +214,33 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
                             ready_for_l10n=False,
                             significance_type=''):
         if (KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT not in
-                super()._get_current_page_url()):
-            super()._click_on_show_history_option()
+                self.utilities.get_page_url()):
+            self.kb_article_page.click_on_show_history_option()
 
-        super()._click_on_review_revision(
+        self.kb_article_show_history_page.click_on_review_revision(
             revision_id
         )
-        super()._click_on_approve_revision_button()
+        self.kb_article_review_revision_page.click_on_approve_revision_button()
 
         if revision_needs_change:
-            if not super()._is_needs_change_checkbox_checked():
-                super()._click_on_needs_change_checkbox()
-            super()._add_text_to_needs_change_comment(
-                super().kb_revision_test_data['needs_change_message']
+            if not self.kb_article_review_revision_page.is_needs_change_checkbox_checked():
+                self.kb_article_review_revision_page.click_on_needs_change_checkbox()
+            self.kb_article_review_revision_page.add_text_to_needs_change_comment(
+                self.utilities.kb_revision_test_data['needs_change_message']
             )
 
         if ready_for_l10n:
-            super()._check_ready_for_localization_checkbox()
+            self.kb_article_review_revision_page.check_ready_for_localization_checkbox()
 
         if significance_type != '':
             if significance_type == 'minor':
-                super()._click_on_minor_significance_option()
+                self.kb_article_review_revision_page.click_on_minor_significance_option()
             if significance_type == 'normal':
-                super()._click_on_normal_significance_option()
+                self.kb_article_review_revision_page.click_on_normal_significance_option()
             if significance_type == 'major':
-                super()._click_on_major_significance_option()
+                self.kb_article_review_revision_page.click_on_major_significance_option()
 
-        super()._click_accept_revision_accept_button()
+        self.kb_article_review_revision_page.click_accept_revision_accept_button()
 
     def submit_new_kb_revision(self,
                                keywords=None,
@@ -243,62 +252,63 @@ class AddKbArticleFlow(Utilities, SubmitKBArticlePage, AddKbMediaFlow, KBArticle
                                approve_revision=False
                                ) -> dict[str, Any]:
 
-        super()._click_on_edit_article_option()
+        self.kb_article_page.click_on_edit_article_option()
 
         # Only admin accounts can update article keywords.
         if is_admin:
             # Keywords step.
             if keywords is None:
-                super()._fill_edit_article_keywords_field(
-                    self.kb_article_test_data['updated_keywords']
+                self.edit_kb_article_page.fill_edit_article_keywords_field(
+                    self.utilities.kb_article_test_data['updated_keywords']
                 )
             else:
-                super()._fill_edit_article_keywords_field(keywords)
+                self.edit_kb_article_page.fill_edit_article_keywords_field(keywords)
 
         # Search Result Summary step.
         if search_result_summary is None:
-            super()._fill_edit_article_search_result_summary_field(
-                self.kb_article_test_data['updated_search_result_summary']
+            self.edit_kb_article_page.fill_edit_article_search_result_summary_field(
+                self.utilities.kb_article_test_data['updated_search_result_summary']
             )
         else:
-            super()._fill_edit_article_search_result_summary_field(search_result_summary)
+            self.edit_kb_article_page.fill_edit_article_search_result_summary_field(
+                search_result_summary)
 
         # Content step.
         if content is None:
-            super()._fill_edit_article_content_field(
-                self.kb_article_test_data['updated_article_content']
+            self.edit_kb_article_page.fill_edit_article_content_field(
+                self.utilities.kb_article_test_data['updated_article_content']
             )
         else:
-            super()._fill_edit_article_content_field(content)
+            self.edit_kb_article_page.fill_edit_article_content_field(content)
 
         # Expiry date step.
         if expiry_date is None:
-            super()._fill_edit_article_expiry_date(
-                self.kb_article_test_data['updated_expiry_date']
+            self.edit_kb_article_page.fill_edit_article_expiry_date(
+                self.utilities.kb_article_test_data['updated_expiry_date']
             )
         else:
-            super()._fill_edit_article_expiry_date(expiry_date)
+            self.edit_kb_article_page.fill_edit_article_expiry_date(expiry_date)
 
         # Submitting for preview steps
-        super()._click_submit_for_review_button()
+        self.edit_kb_article_page.click_submit_for_review_button()
 
         if changes_description is None:
-            super()._fill_edit_article_changes_panel_comment(
-                self.kb_article_test_data['changes_description']
+            self.edit_kb_article_page.fill_edit_article_changes_panel_comment(
+                self.utilities.kb_article_test_data['changes_description']
             )
         else:
-            super()._fill_edit_article_changes_panel_comment(changes_description)
+            self.edit_kb_article_page.fill_edit_article_changes_panel_comment(changes_description)
 
-        super()._click_edit_article_changes_panel_submit_button()
+        self.edit_kb_article_page.click_edit_article_changes_panel_submit_button()
 
-        revision_id = super()._get_last_revision_id()
+        revision_id = self.kb_article_show_history_page.get_last_revision_id()
 
         if approve_revision:
             self.approve_kb_revision(revision_id)
 
-        revision_time = super()._get_revision_time(revision_id)
+        revision_time = self.kb_article_show_history_page.get_revision_time(revision_id)
 
         return {"revision_id": revision_id,
                 "revision_time": revision_time,
-                "changes_description": self.kb_article_test_data['changes_description']
+                "changes_description": self.utilities.kb_article_test_data['changes_description']
                 }

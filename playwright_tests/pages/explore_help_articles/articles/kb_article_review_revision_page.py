@@ -51,89 +51,89 @@ class KBArticleReviewRevisionPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-    def _get_revision_header(self) -> str:
-        return super()._get_text_of_element(self.__revision_header)
+    def get_revision_header(self) -> str:
+        return self._get_text_of_element(self.__revision_header)
 
-    def _get_reviewing_revision_text(self) -> str:
-        return super()._get_text_of_element(self.__reviewing_revision_text)
+    def get_reviewing_revision_text(self) -> str:
+        return self._get_text_of_element(self.__reviewing_revision_text)
 
-    def _click_on_back_to_history_option(self):
-        super()._click(self.__back_to_history_link)
+    def click_on_back_to_history_option(self):
+        self._click(self.__back_to_history_link)
 
     # For single revision on the same kb article
-    def _get_no_current_revision_header(self) -> str:
-        return super()._get_text_of_element(self.__no_current_rev_header)
+    def get_no_current_revision_header(self) -> str:
+        return self._get_text_of_element(self.__no_current_rev_header)
 
     # For multiple revisions on the same kb article
-    def _get_unreviewed_revision_text(self) -> str:
-        return super()._get_text_of_element(self.__unreviewed_revision_header)
+    def get_unreviewed_revision_text(self) -> str:
+        return self._get_text_of_element(self.__unreviewed_revision_header)
 
-    def _get_unreviewed_revision_section_text(self) -> str:
-        return super()._get_text_of_element(self.__unreviewed_revision_section)
+    def get_unreviewed_revision_section_text(self) -> str:
+        return self._get_text_of_element(self.__unreviewed_revision_section)
 
-    def _click_on_review_revision_option(self):
-        super()._click(self.__review_revision_link)
+    def click_on_review_revision_option(self):
+        self._click(self.__review_revision_link)
 
-    def _is_keywords_header_visible(self) -> bool:
-        return super()._is_element_visible(self.__keywords_header)
+    def is_keywords_header_visible(self) -> bool:
+        return self._is_element_visible(self.__keywords_header)
 
-    def _get_keywords_content(self) -> str:
-        return super()._get_text_of_element(self.__keywords_content)
+    def get_keywords_content(self) -> str:
+        return self._get_text_of_element(self.__keywords_content)
 
-    def _is_search_results_summary_visible(self) -> bool:
-        return super()._is_element_visible(self.__search_results_summary_header)
+    def is_search_results_summary_visible(self) -> bool:
+        return self._is_element_visible(self.__search_results_summary_header)
 
-    def _get_search_results_summary_content(self) -> str:
-        return super()._get_text_of_element(self.__search_results_summary_content)
+    def get_search_results_summary_content(self) -> str:
+        return self._get_text_of_element(self.__search_results_summary_content)
 
-    def _is_revision_source_visible(self) -> bool:
-        return super()._is_element_visible(self.__revision_source_header)
+    def is_revision_source_visible(self) -> bool:
+        return self._is_element_visible(self.__revision_source_header)
 
-    def _revision_source_content(self) -> str:
-        return super()._get_text_of_element(self.__revision_source_content)
+    def revision_source_content(self) -> str:
+        return self._get_text_of_element(self.__revision_source_content)
 
-    def _is_revision_rendered_html_header_visible(self) -> bool:
-        return super()._is_element_visible(self.__revision_rendered_html_header)
+    def is_revision_rendered_html_header_visible(self) -> bool:
+        return self._is_element_visible(self.__revision_rendered_html_header)
 
-    def _get_revision_rendered_html_content(self) -> str:
-        return super()._get_text_of_element(self.__revision_rendered_html_content)
+    def get_revision_rendered_html_content(self) -> str:
+        return self._get_text_of_element(self.__revision_rendered_html_content)
 
-    def _click_on_defer_revision_button(self):
-        super()._click(self.__defer_revision_button)
+    def click_on_defer_revision_button(self):
+        self._click(self.__defer_revision_button)
 
-    def _click_on_defer_confirm_button(self):
-        super()._click(self.__defer_button)
+    def click_on_defer_confirm_button(self):
+        self._click(self.__defer_button)
 
-    def _click_on_cancel_defer_button(self):
-        super()._click(self.__cancel_defer)
+    def click_on_cancel_defer_button(self):
+        self._click(self.__cancel_defer)
 
-    def _click_on_approve_revision_button(self):
-        super()._click(self.__approve_revision_button)
+    def click_on_approve_revision_button(self):
+        self._click(self.__approve_revision_button)
 
     # Modal actions
-    def _get_accept_revision_modal_header(self) -> str:
-        return super()._get_text_of_element(self.__accept_revision_modal_header)
+    def get_accept_revision_modal_header(self) -> str:
+        return self._get_text_of_element(self.__accept_revision_modal_header)
 
-    def _click_accept_revision_accept_button(self):
-        super()._click(self.__modal_accept_button)
+    def click_accept_revision_accept_button(self):
+        self._click(self.__modal_accept_button)
 
-    def _check_ready_for_localization_checkbox(self):
-        super()._click(self.__ready_for_localization_modal_checkbox)
+    def check_ready_for_localization_checkbox(self):
+        self._click(self.__ready_for_localization_modal_checkbox)
 
-    def _is_needs_change_checkbox_checked(self) -> bool:
-        return super()._is_checkbox_checked(self.__needs_change_modal_checkbox)
+    def is_needs_change_checkbox_checked(self) -> bool:
+        return self._is_checkbox_checked(self.__needs_change_modal_checkbox)
 
-    def _click_on_needs_change_checkbox(self):
-        super()._click(self.__needs_change_modal_checkbox)
+    def click_on_needs_change_checkbox(self):
+        self._click(self.__needs_change_modal_checkbox)
 
-    def _add_text_to_needs_change_comment(self, text: str):
-        super()._fill(self.__needs_change_comment_textarea, text)
+    def add_text_to_needs_change_comment(self, text: str):
+        self._fill(self.__needs_change_comment_textarea, text)
 
-    def _click_on_minor_significance_option(self):
-        super()._click(self.__minor_significance)
+    def click_on_minor_significance_option(self):
+        self._click(self.__minor_significance)
 
-    def _click_on_normal_significance_option(self):
-        super()._click(self.__normal_significance)
+    def click_on_normal_significance_option(self):
+        self._click(self.__normal_significance)
 
-    def _click_on_major_significance_option(self):
-        super()._click(self.__major_significance)
+    def click_on_major_significance_option(self):
+        self._click(self.__major_significance)

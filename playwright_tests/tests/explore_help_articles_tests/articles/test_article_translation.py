@@ -33,7 +33,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
 
     with allure.step("Clicking on the Translate Article Editing Tools option and selecting "
                      "the ro locale"):
-        sumo_pages.kb_article_page._click_on_translate_article_option()
+        sumo_pages.kb_article_page.click_on_translate_article_option()
         sumo_pages.translate_article_page._click_on_romanian_locale_from_list()
         translation_url = utilities.get_page_url()
 
@@ -110,10 +110,10 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
 
     with allure.step("Navigating to the parent article and marking it as ready for l10n"):
         utilities.navigate_to_link(parent_article_url)
-        sumo_pages.kb_article_show_history_page._click_on_ready_for_l10n_option(
+        sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
-        sumo_pages.kb_article_show_history_page._click_on_submit_l10n_readiness_button()
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
 
     with check, allure.step("Navigating to the localization dashboard and verifying that the "
                             "article is displayed with the correct status"):
@@ -245,14 +245,14 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
 
     with allure.step("Clicking on the ready for l10n button and verifying that it has no "
                      "effect"):
-        sumo_pages.kb_article_show_history_page._click_on_ready_for_l10n_option(
+        sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.kb_article_show_history_page._get_l10n_modal_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.get_l10n_modal_locator()).to_be_hidden()
 
         expect(
-            sumo_pages.kb_article_show_history_page._get_ready_for_localization_status(
+            sumo_pages.kb_article_show_history_page.get_ready_for_localization_status(
                 article_details['first_revision_id']
             )
         ).to_be_hidden()
