@@ -35,7 +35,7 @@
               </a>
            </div>
           {% endif %}
-          {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
+          {{ flag_form(url('users.flag', object_id=profile.pk), profile.id, False) }}
         {% endif %}
         <h2 class="sumo-callout-heading user">{{ display_name(profile.user) }}
           {% if profile.name %}

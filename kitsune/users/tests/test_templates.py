@@ -222,7 +222,7 @@ class FlagProfileTests(TestCase):
         u = UserFactory()
         add_permission(u, FlaggedObject, "can_moderate")
         self.client.login(username=u.username, password="testpass")
-        response = get(self.client, "flagit.queue")
+        response = get(self.client, "flagit.flagged_queue")
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         self.assertEqual(1, len(doc("#flagged-queue form.update")))

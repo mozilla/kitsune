@@ -371,7 +371,7 @@ class FlaggedPostTests(TestCase):
         u2 = UserFactory()
         add_permission(u2, FlaggedObject, "can_moderate")
         self.client.login(username=u2.username, password="testpass")
-        response = get(self.client, "flagit.queue")
+        response = get(self.client, "flagit.flagged_queue")
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         self.assertEqual(1, len(doc("#flagged-queue li")))

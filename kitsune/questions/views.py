@@ -718,37 +718,50 @@ def edit_question(request, question_id):
     ct = ContentType.objects.get_for_model(question)
     images = ImageAttachment.objects.filter(content_type=ct, object_id=question.pk)
 
-    if request.method == "GET":
-        initial = question.metadata.copy()
-        initial.update(title=question.title, content=question.content)
-        form = EditQuestionForm(
-            product=question.product,
-            initial=initial,
-        )
-    else:
-        form = EditQuestionForm(
-            data=request.POST,
-            product=question.product,
-        )
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" and request.method == "POST":
+        data = json.loads(request.body)
+        new_topic_id = data.get("topic")
+        try:
+            new_topic = Topic.objects.get(id=new_topic_id)
+        except Topic.DoesNotExist:
+            return JsonResponse({"error": "Topic not found"}, status=404)
 
-        if form.is_valid():
-            question.title = form.cleaned_data["title"]
-            question.content = form.cleaned_data["content"]
-            question.updated_by = user
-
+        if new_topic != question.topic:
+            question.topic = new_topic
+            question.update_topic_counter += 1
             question.save(update=True)
 
-            if form.cleaned_data.get("is_spam"):
-                _add_to_moderation_queue(request, question)
+        return JsonResponse({"updated_topic": str(new_topic)})
 
-            # TODO: Factor all this stuff up from here and new_question into
-            # the form, which should probably become a ModelForm.
-            question.clear_mutable_metadata()
-            question.add_metadata(**form.cleaned_metadata)
+    initial_data = {
+        "title": question.title,
+        "content": question.content,
+        **question.metadata,
+    }
 
-            return HttpResponseRedirect(
-                reverse("questions.details", kwargs={"question_id": question.id})
-            )
+    form = EditQuestionForm(
+        data=request.POST or None,
+        product=question.product,
+        initial=initial_data,
+    )
+
+    if form.is_valid():
+        question.title = form.cleaned_data["title"]
+        question.content = form.cleaned_data["content"]
+        question.updated_by = user
+        question.save(update=True)
+
+        if form.cleaned_data.get("is_spam"):
+            _add_to_moderation_queue(request, question)
+
+        # TODO: Factor all this stuff up from here and new_question into
+        # the form, which should probably become a ModelForm.
+        question.clear_mutable_metadata()
+        question.add_metadata(**form.cleaned_metadata)
+
+        return HttpResponseRedirect(
+            reverse("questions.details", kwargs={"question_id": question.id})
+        )
 
     context = {
         "question": question,

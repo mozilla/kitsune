@@ -1,7 +1,7 @@
-{% macro flag_form(post_target, bug_support=True) %}
-<a href="javascript:;" data-sumo-modal="report-abuse">{{ _('Report Abuse') }}</a>
-<section id="report-abuse" class="mzp-u-modal-content">
-  <h2 class="sumo-page-subheading">{{ _('Report this') }}</h2>
+{% macro flag_form(post_target, identifier, bug_support=True) %}
+  <a href="javascript:;" data-sumo-modal="report-abuse-{{ identifier }}">{{ _('Report Abuse') }}</a>
+  <section id="report-abuse-{{ identifier }}" class="mzp-u-modal-content">
+    <h2 class="sumo-page-subheading">{{ _('Report this') }}</h2>
     <form action="{{ post_target }}" method="post">
       {% csrf_token %}
       <div class="field radio is-condensed">
@@ -36,6 +36,5 @@
     </form>
 
     <span class="message"></span>
-</section>
-
+  </section>
 {% endmacro %}

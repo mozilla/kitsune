@@ -2,30 +2,33 @@
 * Report abuse UI.
 */
 
-(function($) {
+(function ($) {
   'use strict';
 
-  $(function() {
-    $('#report-abuse [type="submit"]').on('click', function(ev) {
-      ev.preventDefault();
-      var $this = $(this);
-      var $form = $this.closest('form');
+  $(function () {
+    $('[data-sumo-modal]').each(function () {
+      var identifier = $(this).data('sumo-modal');
+      $('#' + identifier + ' [type="submit"]').on('click', function (ev) {
+        ev.preventDefault();
+        var $this = $(this);
+        var $form = $this.closest('form');
 
-      $.ajax({
-        url: $form.attr('action'),
-        type: 'POST',
-        data: $form.serialize(),
-        dataType: 'json',
+        $.ajax({
+          url: $form.attr('action'),
+          type: 'POST',
+          data: $form.serialize(),
+          dataType: 'json',
 
-        success: function(data) {
-          $form.siblings('.message').text(data.message);
-          $form.slideUp();
-        },
-        error: function(error) {
-          $form.siblings('.message')
-          .text(gettext('There was an error. Please try again in a moment.'));
-          $form.slideUp();
-        }
+          success: function (data) {
+            $form.siblings('.message').text(data.message);
+            $form.slideUp();
+          },
+          error: function (error) {
+            $form.siblings('.message')
+              .text(gettext('There was an error. Please try again in a moment.'));
+            $form.slideUp();
+          }
+        });
       });
     });
   });

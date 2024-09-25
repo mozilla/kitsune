@@ -807,7 +807,7 @@
 {% macro _tools_nav_links(user, default_language, active=None, context="main-menu", locale=None, is_collapsible=False) -%}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
-    <a href="{{ url('flagit.queue') }}"  {% if active == "flagit.queue" %} class="selected" {% endif %}
+    <a href="{{ url('flagit.flagged_queue') }}"  {% if active == "flagit.flagged_queue" %} class="selected" {% endif %}
       data-event-name="link_click"
       data-event-parameters='{"link_name": "{{ context + '.moderate-forum-content' }}"}'>
       {{ _('Moderate forum content') }}

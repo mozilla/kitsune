@@ -147,6 +147,8 @@ class Question(AAQBase):
     images_cache_key = "question:images:%s"
     contributors_cache_key = "question:contributors:%s"
 
+    update_topic_counter = models.IntegerField(default=0)
+
     objects = QuestionManager()
 
     class Meta:
@@ -198,6 +200,16 @@ class Question(AAQBase):
             # actstream
             # Authors should automatically follow their own questions.
             actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
+            # Add the question to the moderation queue to validate the topic
+            content_type = ContentType.objects.get_for_model(self)
+            FlaggedObject.objects.create(
+                content_type=content_type,
+                object_id=self.id,
+                creator=self.creator,
+                status=FlaggedObject.FLAG_PENDING,
+                reason="bug_support",
+                notes="New question, review topic",
+            )
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.

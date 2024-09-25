@@ -2,43 +2,60 @@
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% set title = _('Flagged Content Pending Moderation') %}
 {% set classes = 'flagged' %}
+{% set scripts = ('flagit', ) %}
 
 {% block content %}
   <div id="flagged-queue" class="sumo-page-section">
-    <h1 class="sumo-page-heading">{{ _('Flagged Content Pending Moderation') }}</h1>
-    <ul>
+    <h1 class="sumo-page-heading">{{ _('Content Pending Moderation') }}</h1>
+    
+    <ul class="flagged-items">
     {% for object in objects %}
-      {% if loop.first %}<ul>{% endif %}
       <li class="{{ object.content_type }}">
-        <hr>
-        <hgroup>
-          <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
-          {% if object.notes %}
-            <p class="notes">{{ _('Other reason:') }} {{ object.notes }}</p>
-          {% endif %}
-        </hgroup>
-        <div class="wrap">
-          {% if object.content_object %}
-            {% include 'flagit/includes/flagged_%s.html' % object.content_type.model %}
-          {% else %}
-            <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
-          {% endif %}
-          <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
-          <form class="update inline-form" action="{{ url('flagit.update', object.id) }}" method="post">
-            {% csrf_token %}
-            <select name="status">
-              <option value="">{{ _('Please select...') }}</option>
-              <option value="1">{{ _('The flag is valid and I fixed the issue.') }}</option>
-              <option value="2">{{ _('The flag is invalid.') }}</option>
-            </select>
-            <input type="submit" class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
-          </form>
+        <div class="flagged-item-content">
+          <hgroup>
+            <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
+            {% if object.notes %}
+              <p class="notes">{{ _('Other reason:') }} {{ object.notes }}</p>
+            {% endif %}
+          </hgroup>
+          <div class="wrap">
+            {% if object.content_object %}
+              {% include 'flagit/includes/flagged_%s.html' % object.content_type.model %}
+            {% else %}
+              <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
+            {% endif %}
+            <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
+            <form class="update inline-form" action="{{ url('flagit.update', object.id) }}" method="post">
+              {% csrf_token %}
+              <select name="status">
+                <option value="">{{ _('Please select...') }}</option>
+                {% if object.reason == "spam" %}
+                  <option value="1">{{ _('Removed spam content.') }}</option>
+                  <option value="2">{{ _('No spam found.') }}</option>
+                {% elif object.reason == "abuse" %}
+                  <option value="1">{{ _('Addressed abusive content.') }}</option>
+                  <option value="2">{{ _('No abuse detected.') }}</option>
+                {% elif object.reason == "bug_support" %}
+                  <option value="1">{{ _('Redirected support request.') }}</option>
+                  <option value="2">{{ _('Content is appropriately placed.') }}</option>
+                {% elif object.reason == "language" %}
+                  <option value="1">{{ _('Corrected language.') }}</option>
+                  <option value="2">{{ _('Language is appropriate.') }}</option>
+                {% else %}
+                  <option value="1">{{ _('Issue resolved.') }}</option>
+                  <option value="2">{{ _('No issues found.') }}</option>
+                {% endif %}
+              </select>
+              <input id="update-status-button" type="submit" 
+                     class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
+            </form>
+          </div>
         </div>
       </li>
-      {% if loop.last %}</ul>{% endif %}
     {% else %}
-     <p>{{ _('There is no flagged content pending moderation.') }}</p>
+     <p>{{ _('There is no content pending moderation.') }}</p>
     {% endfor %}
+    </ul>
 
     <div class="sumo-button-wrap">
       <a class="sumo-button primary-button" rel="nofollow" href="{{ url('users.deactivation_log') }}">{{ _('View all deactivated users') }}</a>
@@ -49,7 +66,19 @@
 {% block side_top %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="flagit.queue", menu="contributor-tools", locale=locale) }}
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="flagit.flagged_queue", menu="contributor-tools", locale=locale) }}
     </ul>
+    <!-- Dropdown filter for reasons -->
+    <div class="filter-reasons">
+      <form id="reason-filter-form" method="get" action="">
+        <label for="reason">{{ _('Filter by reason:') }}</label>
+        <select name="reason" id="flagit-reason-filter">
+          <option value="">{{ _('All reasons') }}</option>
+          {% for value, display in reasons %}
+            <option value="{{ value }}" {% if selected_reason == value %}selected{% endif %}>{{ display }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
   </nav>
 {% endblock %}

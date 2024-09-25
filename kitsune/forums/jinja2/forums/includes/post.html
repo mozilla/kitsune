@@ -49,7 +49,7 @@
           {% endif %}
 
           <li class="mzp-c-menu-list-item post-action">
-            {{ flag_form(url('forums.flag_post', post.thread.forum.slug, post.thread.id, post.id)) }}
+            {{ flag_form(url('forums.flag_post', post.thread.forum.slug, post.thread.id, post.id), post.id) }}
           </li>
         {% endif %}
       {% endif %}

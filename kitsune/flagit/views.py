@@ -9,8 +9,9 @@ from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.flagit.models import FlaggedObject
+from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.models import Answer
+from kitsune.questions.models import Answer, Question
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -34,6 +35,12 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     object_id = int(object_id)
     content_object = get_object_or_404(content_type.model_class(), pk=object_id)
 
+    FlaggedObject.objects.filter(
+        content_type=content_type,
+        object_id=object_id,
+        reason="bug_support",
+        status=FlaggedObject.FLAG_PENDING,
+    ).delete()
     # Check that this user hasn't already flagged the object
     try:
         FlaggedObject.objects.get(
@@ -58,12 +65,25 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
 
 @login_required
 @permission_required("flagit.can_moderate")
-def queue(request, content_type=None):
-    """The moderation queue."""
+def flagged_queue(request):
+    """The flagged queue."""
+    reason = request.GET.get("reason")
+    objects = FlaggedObject.objects.pending()
+    available_topics = []
+
+    question_content_type = ContentType.objects.get_for_model(Question)
+    for object in objects:
+        if object.content_type == question_content_type:
+            question = object.content_object
+            available_topics = Topic.active.filter(products=question.product, in_aaq=True)
+        object.available_topics = available_topics
+    if reason:
+        objects = objects.filter(reason=reason)
+
     return render(
         request,
         "flagit/queue.html",
-        {"objects": FlaggedObject.objects.pending(), "locale": request.LANGUAGE_CODE},
+        {"objects": objects, "locale": request.LANGUAGE_CODE, "reasons": FlaggedObject.REASONS},
     )
 
 
@@ -85,4 +105,4 @@ def update(request, flagged_object_id):
         flagged.status = new_status
         flagged.save()
 
-    return HttpResponseRedirect(reverse("flagit.queue"))
+    return HttpResponseRedirect(reverse("flagit.flagged_queue"))

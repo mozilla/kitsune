@@ -12,7 +12,7 @@ class FlagitTestPermissions(TestCaseBase):
         self.user = UserFactory()
 
     def test_permission_required(self):
-        url = reverse("flagit.queue")
+        url = reverse("flagit.flagged_queue")
         resp = self.client.get(url)
         self.assertEqual(302, resp.status_code)
 

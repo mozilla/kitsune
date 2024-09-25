@@ -1,0 +1,64 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.flagged-items {
+    list-style: none;
+    padding: 0;
+
+    li {
+        margin-bottom: p.$spacing-lg;
+        border-radius: p.$border-radius-md;
+        overflow: hidden;
+        background-color: p.$color-light-gray-20;
+    }
+}
+
+/* Flagged Item Content */
+.flagged-item-content {
+    padding: p.$spacing-md;
+}
+
+.flagged-content {
+    padding: p.$spacing-md p.$spacing-lg;
+    background-color: p.$color-light-gray-10;
+    border-radius: 5px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: p.$spacing-md;
+
+    &__heading,
+    &__subheading {
+        font-weight: bold;
+        font-size: 1.25rem;
+        color: p.$color-dark-gray-80;
+    }
+
+
+    &__title,
+    &__text {
+        font-size: 1.1rem;
+        color: p.$color-dark-gray-80;
+    }
+
+    &__topic-update {
+        margin: p.$spacing-md 0;
+
+        /* Topic Text */
+        #current-topic {
+            display: inline-block;
+            color: p.$color-dark-gray-80;
+            transition: color 0.3s ease-in-out;
+
+            &.updated {
+                color: p.$color-green-80;
+
+                &::after {
+                    content: ' ✔';
+                    font-weight: bold;
+                    margin-left: p.$spacing-xs;
+                    display: inline-block;
+                }
+            }
+        }
+    }
+
+}
