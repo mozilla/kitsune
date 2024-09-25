@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ngettext_lazy as _nlazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField
@@ -158,7 +159,7 @@ class DocumentForm(forms.ModelForm):
 
         # Products are required for en-US
         product_ids = cdata.get("products", [])
-        products = Product.active.filter(
+        selected_products = Product.active.filter(
             id__in=[int(product_id) for product_id in product_ids if product_id]
         )
         if locale == settings.WIKI_DEFAULT_LANGUAGE and (not product_ids or len(product_ids) < 1):
@@ -166,20 +167,40 @@ class DocumentForm(forms.ModelForm):
 
         # Topics are required for en-US
         topic_ids = cdata.get("topics", [])
-        topics = Topic.active.filter(id__in=[int(topic_id) for topic_id in topic_ids if topic_id])
+        selected_topics = Topic.active.filter(
+            id__in=[int(topic_id) for topic_id in topic_ids if topic_id]
+        )
         if locale == settings.WIKI_DEFAULT_LANGUAGE and (not topic_ids or len(topic_ids) < 1):
             raise forms.ValidationError(TOPIC_REQUIRED)
 
-        associated_topics = Topic.active.filter(products__in=products).distinct()
-        invalid_topics = topics.difference(associated_topics)
+        self.validate_relationship(
+            selected_items=selected_topics,
+            related_items=Topic.objects.filter(products__in=selected_products).distinct(),
+            item_type="topic",
+            related_type="product",
+        )
 
-        if invalid_topics:
-            topic_titles = ", ".join([topic.title for topic in invalid_topics])
-            raise forms.ValidationError(
-                _lazy(f"Topics {topic_titles} are not associated with the selected products.")
-            )
+        self.validate_relationship(
+            selected_items=selected_products,
+            related_items=Product.objects.filter(m2m_topics__in=selected_topics).distinct(),
+            item_type="product",
+            related_type="topic",
+        )
 
         return cdata
+
+    def validate_relationship(self, selected_items, related_items, item_type, related_type):
+        invalid_items = selected_items.difference(related_items)
+
+        if invalid_items:
+            item_titles = ", ".join([item.title for item in invalid_items])
+            message = _nlazy(
+                f"The following {item_type} is not associated with the selected {related_type}s: %(items)s",  # noqa
+                f"The following {item_type}s are not associated with the selected {related_type}s: %(items)s",  # noqa
+                len(invalid_items),
+            ) % {"items": item_titles}
+
+            raise forms.ValidationError(message)
 
     class Meta:
         model = Document
