@@ -42,8 +42,7 @@
     &__topic-update {
         margin: p.$spacing-md 0;
 
-        /* Topic Text */
-        #current-topic {
+        .current-topic {
             display: inline-block;
             color: p.$color-dark-gray-80;
             transition: color 0.3s ease-in-out;

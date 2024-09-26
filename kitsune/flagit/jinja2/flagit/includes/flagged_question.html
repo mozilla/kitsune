@@ -26,13 +26,13 @@
     <div class="flagged-content__topic-update">
      <label> {{ _('Current topic:') }} </label> 
      <div>
-       <p id="current-topic">{{ object.content_object.topic }}</p>
+       <p id="current-topic-{{ object.content_object.id }}" class="current-topic">{{ object.content_object.topic }}</p>
     </div>
 
-    <form id="topic-update-form" method="POST">
+    <form id="topic-update-form-{{ object.content_object.id }}" method="POST">
       {% csrf_token %}
       <label for="topic">{{ _('Change Topic:') }}</label>
-      <select id="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
+      <select id="topic-dropdown-{{ object.content_object.id }}" class="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
         {% for topic in object.available_topics %}
           <option value="{{ topic.id }}" {% if topic.id == object.content_object.topic.id %}selected{% endif %}>{{ topic.title }}</option>
         {% endfor %}
