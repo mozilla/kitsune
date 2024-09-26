@@ -965,13 +965,13 @@ def test_edit_article_metadata_title(page: Page):
                             "that the updated title and original slug is displayed"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
         check.equal(
-            (sumo_pages.kb_article_edit_article_metadata_page._get_text_of_title_input_field()),
+            (sumo_pages.kb_article_edit_article_metadata_page.get_text_of_title_input_field()),
             utilities.kb_article_test_data['updated_kb_article_title'] + article_details
             ['article_title']
         )
 
         check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page._get_slug_input_field(),
+            sumo_pages.kb_article_edit_article_metadata_page.get_slug_input_field(),
             article_details['article_slug']
         )
 
@@ -999,7 +999,7 @@ def test_edit_article_metadata_slug(page: Page):
 
     with check, allure.step("Verifying that the correct error message is displayed"):
         check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
             KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
         )
 
@@ -1019,7 +1019,7 @@ def test_edit_article_metadata_slug(page: Page):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
         check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page._get_slug_input_field(),
+            sumo_pages.kb_article_edit_article_metadata_page.get_slug_input_field(),
             article_details['article_slug'] + "1"
         )
 
@@ -1050,7 +1050,7 @@ def test_edit_article_metadata_category(page: Page):
 
     with check, allure.step("Verifying that the correct error message is displayed"):
         check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
             kb_article_messages.get_template_error(article_details['article_title'])
         )
 
@@ -1134,7 +1134,7 @@ def test_edit_article_metadata_product_and_topic(page: Page):
             product=article_details['article_product']
         )
         check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
             KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR
         )
 
@@ -1145,7 +1145,7 @@ def test_edit_article_metadata_product_and_topic(page: Page):
             product="Firefox for Android", topics=article_details['article_topic'][0]
         )
         check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page._get_error_message(),
+            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
             KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR
         )
 
