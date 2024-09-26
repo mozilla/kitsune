@@ -9,41 +9,45 @@ from playwright.sync_api import Page
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 
 
-class KbThreads(Utilities, KBArticleDiscussionPage, KBArticlePage):
+class KbThreads:
     def __init__(self, page: Page):
-        super().__init__(page)
+        self.page = page
+        self.utilities = Utilities(page)
+        self.kb_article_discussion_page = KBArticleDiscussionPage(page)
+        self.kb_article_page = KBArticlePage(page)
 
     def delete_article_thread(self, thread_id: str, confirm_deletion=True):
-        super()._click_on_a_particular_thread(thread_id)
-        super()._click_on_delete_this_thread_option()
+        self.kb_article_discussion_page.click_on_a_particular_thread(thread_id)
+        self.kb_article_discussion_page.click_on_delete_this_thread_option()
 
         if confirm_deletion:
-            super()._click_on_delete_this_thread_reply_confirmation_button()
+            self.kb_article_discussion_page.click_on_delete_this_thread_reply_confirmation_button(
+            )
 
     def add_new_kb_discussion_thread(self, title='') -> [dict[str, Any]]:
-        super().click_on_editing_tools_discussion_option()
-        article_discussion_url = super().get_url()
-        super()._click_on_post_a_new_thread_option()
+        self.kb_article_page.click_on_editing_tools_discussion_option()
+        article_discussion_url = self.utilities.get_page_url()
+        self.kb_article_discussion_page.click_on_post_a_new_thread_option()
         if title == '':
-            thread_title = (super().kb_new_thread_test_data['new_thread_title'] + super()
-                            .generate_random_number(0, 5000))
+            thread_title = (self.utilities.kb_new_thread_test_data['new_thread_title'] + self
+                            .utilities.generate_random_number(0, 5000))
         else:
-            thread_title = (title + super()
+            thread_title = (title + self.utilities
                             .generate_random_number(0, 5000))
-        thread_body = super().kb_new_thread_test_data['new_thread_body']
+        thread_body = self.utilities.kb_new_thread_test_data['new_thread_body']
 
         # Adding text to the title field.
-        super()._add_text_to_new_thread_title_field(thread_title)
+        self.kb_article_discussion_page.add_text_to_new_thread_title_field(thread_title)
 
         # Adding text to the body field.
-        super()._add_text_to_new_thread_body_input_field(thread_body)
+        self.kb_article_discussion_page.add_text_to_new_thread_body_input_field(thread_body)
 
         # Clicking on the post a new thread option.
-        super()._click_on_submit_new_thread_button()
+        self.kb_article_discussion_page.click_on_submit_new_thread_button()
 
         # Fetching the article url & the thread id from the url.
         thread_url = self.page.url
-        thread_id = str(super().number_extraction_from_string_endpoint(
+        thread_id = str(self.utilities.number_extraction_from_string_endpoint(
             KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT, thread_url)
         )
 
@@ -56,27 +60,29 @@ class KbThreads(Utilities, KBArticleDiscussionPage, KBArticlePage):
         }
 
     def _edit_article_thread(self, thread_title="", submit_edit=True):
-        super()._click_on_edit_this_thread_option()
-        super()._add_text_to_edit_article_thread_title_field(thread_title)
+        self.kb_article_discussion_page.click_on_edit_this_thread_option()
+        self.kb_article_discussion_page.add_text_to_edit_article_thread_title_field(thread_title)
 
         if submit_edit:
-            super()._click_on_edit_article_thread_update_button()
+            self.kb_article_discussion_page.click_on_edit_article_thread_update_button()
         else:
-            super()._click_on_edit_article_thread_cancel_button()
+            self.kb_article_discussion_page.click_on_edit_article_thread_cancel_button()
 
     def post_reply_to_thread(self, text: str, post_reply=True) -> dict[str, Any]:
-        super()._fill_the_thread_post_a_reply_textarea(text)
+        self.kb_article_discussion_page.fill_the_thread_post_a_reply_textarea(text)
 
         if post_reply:
-            super()._click_on_thread_post_reply_button()
+            self.kb_article_discussion_page.click_on_thread_post_reply_button()
 
         return {
-            "reply_id": super()._get_thread_reply_id(super().get_url())
+            "reply_id": self.kb_article_discussion_page.get_thread_reply_id
+            (self.utilities.get_page_url())
         }
 
     def delete_reply_to_thread(self, reply_id: str, submit_deletion=True):
-        super()._click_on_dotted_menu_for_a_certain_reply(reply_id)
-        super()._click_on_delete_this_thread_reply(reply_id)
+        self.kb_article_discussion_page.click_on_dotted_menu_for_a_certain_reply(reply_id)
+        self.kb_article_discussion_page.click_on_delete_this_thread_reply(reply_id)
 
         if submit_deletion:
-            super()._click_on_delete_this_thread_reply_confirmation_button()
+            self.kb_article_discussion_page.click_on_delete_this_thread_reply_confirmation_button(
+            )

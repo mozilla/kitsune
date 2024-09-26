@@ -311,7 +311,7 @@ def test_articles_discussions_allowed(page: Page):
         sumo_pages.kb_article_page.click_on_article_option()
         article_url = utilities.get_page_url()
         sumo_pages.kb_article_page.click_on_editing_tools_discussion_option()
-        sumo_pages.kb_article_discussion_page._click_on_post_a_new_thread_option()
+        sumo_pages.kb_article_discussion_page.click_on_post_a_new_thread_option()
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Manually navigating to the discuss endpoint"):
@@ -321,7 +321,7 @@ def test_articles_discussions_allowed(page: Page):
 
     with allure.step("Verifying that the posted thread is successfully displayed"):
         expect(
-            sumo_pages.kb_article_discussion_page._get_posted_thread_locator(
+            sumo_pages.kb_article_discussion_page.get_posted_thread_locator(
                 thread_info['thread_id']
             )
         ).to_be_visible()
@@ -353,7 +353,7 @@ def test_articles_discussions_allowed(page: Page):
             article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
         expect(
-            sumo_pages.kb_article_discussion_page._get_posted_thread_locator(
+            sumo_pages.kb_article_discussion_page.get_posted_thread_locator(
                 thread_info['thread_id']
             )
         ).to_be_visible()
@@ -365,7 +365,7 @@ def test_articles_discussions_allowed(page: Page):
 
     with allure.step("Clicking on the 'Post a new thread' option and verifying that the user "
                      "is redirected to the auth page"):
-        sumo_pages.kb_article_discussion_page._click_on_post_a_new_thread_option()
+        sumo_pages.kb_article_discussion_page.click_on_post_a_new_thread_option()
         assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
     with allure.step("Signing in with a different account and posting a new kb article "
@@ -382,7 +382,7 @@ def test_articles_discussions_allowed(page: Page):
             article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
         expect(
-            sumo_pages.kb_article_discussion_page._get_posted_thread_locator(
+            sumo_pages.kb_article_discussion_page.get_posted_thread_locator(
                 thread_info['thread_id']
             )
         ).to_be_visible()
