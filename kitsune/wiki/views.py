@@ -591,11 +591,6 @@ def edit_document_metadata(request, document_slug, revision_id=None):
         post_data = request.POST.copy()
         post_data.update({"locale": request.LANGUAGE_CODE})
 
-        topics = []
-        for t in post_data.getlist("topics"):
-            topics.append(int(t))
-        post_data.setlist("topics", topics)
-
         doc_form = DocumentForm(
             post_data,
             instance=doc,

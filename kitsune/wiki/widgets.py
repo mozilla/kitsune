@@ -12,7 +12,7 @@ class TopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics and their subtopics as checkboxes."""
 
     def set_topic_attributes(self, topic, selected_topics, topic_subtopics, product_ids):
-        topic.checked = topic.id in selected_topics
+        topic.checked = str(topic.id) in selected_topics
         topic.products_as_json = json.dumps(product_ids.get(topic.id, []))
         topic.my_subtopics = topic_subtopics.get(topic.id, [])
         for subtopic in topic.my_subtopics:
@@ -22,9 +22,7 @@ class TopicsWidget(forms.widgets.SelectMultiple):
         selected_topics = set(value or [])
         topics_and_subtopics = Topic.active.prefetch_related("products").select_related("parent")
 
-        # Create a dictionary of topic_id: [subtopics]
         topic_subtopics = {}
-        # Create a dictionary of topic_id: [product_ids]
         product_ids = {}
         topics = []
 
@@ -56,7 +54,7 @@ class ProductsWidget(forms.widgets.SelectMultiple):
         products = Product.active.prefetch_related("m2m_topics")
 
         for product in products:
-            product.checked = product.id in selected_products
+            product.checked = str(product.id) in selected_products
             product.topics_as_json = json.dumps(
                 list(map(str, product.m2m_topics.values_list("id", flat=True)))
             )
