@@ -175,14 +175,13 @@ class DocumentForm(forms.ModelForm):
 
         self.validate_relationship(
             selected_items=selected_topics,
-            related_items=Topic.objects.filter(products__in=selected_products).distinct(),
+            related_items=Topic.active.filter(products__in=selected_products).distinct(),
             item_type="topic",
             related_type="product",
         )
-
         self.validate_relationship(
             selected_items=selected_products,
-            related_items=Product.objects.filter(m2m_topics__in=selected_topics).distinct(),
+            related_items=Product.active.filter(m2m_topics__in=selected_topics).distinct(),
             item_type="product",
             related_type="topic",
         )
