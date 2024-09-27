@@ -19,7 +19,7 @@ class TopicsWidget(forms.widgets.SelectMultiple):
             self.set_topic_attributes(subtopic, selected_topics, topic_subtopics, product_ids)
 
     def render(self, name, value, attrs=None, renderer=None):
-        selected_topics = set(value or [])
+        selected_topics = set(map(str, value or []))
         topics_and_subtopics = Topic.active.prefetch_related("products").select_related("parent")
 
         topic_subtopics = {}
@@ -50,7 +50,7 @@ class ProductsWidget(forms.widgets.SelectMultiple):
     """A widget to render the products as checkboxes."""
 
     def render(self, name, value, attrs=None, renderer=None):
-        selected_products = set(value or [])
+        selected_products = set(map(str, value or []))
         products = Product.active.prefetch_related("m2m_topics")
 
         for product in products:
