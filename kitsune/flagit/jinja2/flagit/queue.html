@@ -25,7 +25,7 @@
               <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
             {% endif %}
             <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
-            <form class="update inline-form" action="{{ url('flagit.update', object.id) }}" method="post">
+            <form class="update inline-form" action="{{ object.form_action }}" method="post">
               {% csrf_token %}
               <select name="status">
                 <option value="">{{ _('Please select...') }}</option>
