@@ -487,7 +487,7 @@ def test_premium_products_aaq(page: Page):
                     is_premium=True
                 )
                 if utilities.get_page_url() == premium_form_link:
-                    sumo_pages.aaq_form_page.click_aaq_form_submit_button()
+                    sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True)
 
         with allure.step("Verifying that the correct success message is displayed"):
             assert sumo_pages.aaq_form_page.get_premium_card_submission_message(

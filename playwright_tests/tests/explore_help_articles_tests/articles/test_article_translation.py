@@ -301,13 +301,12 @@ def test_unsupported_locales_fallback(page: Page):
 
 # C2625000
 @pytest.mark.kbArticleTranslation
-def test_fallback_languages(self):
+def test_fallback_languages(page: Page):
+    utilities = Utilities(page)
     with allure.step("Verifying the language fallback"):
         for key, value in FALLBACK_LANGUAGES.items():
-            self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
-            expect(
-                self.page
-            ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
+            utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{value}/")
+            expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + f"/{key}/")
 
 
 # C2316347

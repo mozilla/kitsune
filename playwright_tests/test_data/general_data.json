@@ -5,6 +5,7 @@
     "Firefox for iOS",
     "Firefox for Enterprise",
     "Thunderbird",
+    "Thunderbird for Android",
     "Firefox Focus"
   ],
   "premium_products": [
@@ -34,6 +35,7 @@
     "Firefox Relay": "https://support.allizom.org/en-US/products/relay/technical",
     "Pocket": "https://support.allizom.org/en-US/products/pocket/pocket-for-ios",
     "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird/settings",
+    "Thunderbird for Android": "https://support.allizom.org/en-US/products/thunderbird-android/settings",
     "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/Focus-ios",
     "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
   },
@@ -48,7 +50,8 @@
     "MDN Plus": "https://support.allizom.org/en-US/products/mdn-plus",
     "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox",
     "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise",
-    "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird"
+    "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird",
+    "Thunderbird for Android": "https://support.allizom.org/en-US/products/thunderbird-android"
   },
   "product_solutions": {
     "Firefox": "https://support.allizom.org/en-US/questions/new/firefox",
@@ -61,6 +64,7 @@
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket",
     "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird",
+    "Thunderbird for Android": "https://support.allizom.org/en-US/questions/new/thunderbird-android",
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus-firefox",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
   },
