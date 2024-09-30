@@ -12,6 +12,7 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -79,7 +80,10 @@ def flagged_queue(request):
         if object.content_type == question_content_type:
             question = object.content_object
             available_topics = Topic.active.filter(products=question.product, in_aaq=True)
+        base_url = reverse("flagit.update", args=[object.id])
+        form_action = urlparams(base_url, query_dict=None, reason=reason)
         object.available_topics = available_topics
+        object.form_action = form_action
 
     return render(
         request,
@@ -95,6 +99,8 @@ def update(request, flagged_object_id):
     """Update the status of a flagged object."""
     flagged = get_object_or_404(FlaggedObject, pk=flagged_object_id)
     new_status = request.POST.get("status")
+    reason = request.GET.get("reason")
+
     if new_status:
         ct = flagged.content_type
         # If the object is an Answer let's fire a notification
@@ -106,4 +112,4 @@ def update(request, flagged_object_id):
         flagged.status = new_status
         flagged.save()
 
-    return HttpResponseRedirect(reverse("flagit.flagged_queue"))
+    return HttpResponseRedirect(urlparams(reverse("flagit.flagged_queue"), reason=reason))
