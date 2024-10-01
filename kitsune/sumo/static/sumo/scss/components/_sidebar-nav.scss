@@ -228,11 +228,11 @@
   }
 
   &.force-top-margin {
-    margin-top: 72px;
+    margin-top: p.$spacing-xl;
   }
 
   &.is-accordion-heading {
-    margin-top: 72px;
+    margin-top: p.$spacing-xl;
 
     button {
       padding-left: 0;
@@ -249,10 +249,10 @@
   }
 
   @media #{p.$mq-lg} {
-    margin: 72px 0 p.$spacing-lg;
+    margin: p.$spacing-xl 0 p.$spacing-lg;
 
     &.is-accordion-heading {
-      margin-top: 72px;
+      margin-top: p.$spacing-xl;
     }
   }
 }
