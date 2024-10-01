@@ -1,12 +1,13 @@
+import re
 from os.path import basename
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.translation import gettext_lazy as _lazy, gettext as _
-
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from sentry_sdk import capture_exception
-from wikimarkup.parser import Parser, ALLOWED_TAGS
+from wikimarkup.parser import ALLOWED_TAGS, Parser
 
 from kitsune.gallery.models import Image, Video
 from kitsune.sumo import email_utils
@@ -332,6 +333,7 @@ class WikiParser(Parser):
         # Split on pipe -- [[href|name]]
         if "|" in name:
             title, text = title.split("|", 1)
+            title = re.sub(r"\s+", " ", title).strip()
 
         hash = ""
         if "#" in title:

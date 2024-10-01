@@ -6,7 +6,8 @@ import bleach
 from bleach.css_sanitizer import CSSSanitizer
 from django.conf import settings
 from django.utils import translation
-from django.utils.translation import gettext as _, gettext_lazy as _lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from html5lib import HTMLParser
 from html5lib.filters.alphabeticalattributes import Filter as sortAttributes
 from html5lib.serializer import HTMLSerializer
@@ -496,13 +497,15 @@ class WhatLinksHereParser(WikiParser):
     def _hook_internal_link(self, parser, space, name):
         """Records links between documents, and then calls super()."""
 
-        title = name.split("|")[0]
+        title, *rest = map(str.strip, name.split("|"))
+        title = re.sub(r"\s+", " ", title)
         locale = self.current_doc.locale
+        link_text = rest[0] if rest else ""
+        name = f"{title}|{link_text}" if link_text else title
 
         linked_doc = get_object_fallback(Document, title, locale)
         if linked_doc is not None:
             self.current_doc.add_link_to(linked_doc, "link")
-
         return super(WhatLinksHereParser, self)._hook_internal_link(parser, space, name)
 
     def _hook_template(self, parser, space, name):
