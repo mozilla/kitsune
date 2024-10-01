@@ -158,48 +158,52 @@ class DocumentForm(forms.ModelForm):
         locale = cdata.get("locale")
 
         # Products are required for en-US
-        product_ids = cdata.get("products", [])
-        selected_products = Product.active.filter(
-            id__in=[int(product_id) for product_id in product_ids if product_id]
-        )
+        product_ids = set(map(int, cdata.get("products", [])))
         if locale == settings.WIKI_DEFAULT_LANGUAGE and (not product_ids or len(product_ids) < 1):
             raise forms.ValidationError(PRODUCT_REQUIRED)
 
         # Topics are required for en-US
-        topic_ids = cdata.get("topics", [])
-        selected_topics = Topic.active.filter(
-            id__in=[int(topic_id) for topic_id in topic_ids if topic_id]
-        )
+        topic_ids = set(map(int, cdata.get("topics", [])))
         if locale == settings.WIKI_DEFAULT_LANGUAGE and (not topic_ids or len(topic_ids) < 1):
             raise forms.ValidationError(TOPIC_REQUIRED)
 
-        self.validate_relationship(
-            selected_items=selected_topics,
-            related_items=Topic.active.filter(products__in=selected_products).distinct(),
-            item_type="topic",
-            related_type="product",
-        )
-        self.validate_relationship(
-            selected_items=selected_products,
-            related_items=Product.active.filter(m2m_topics__in=selected_topics).distinct(),
-            item_type="product",
-            related_type="topic",
-        )
+        invalid_topics = []
+        for topic in Topic.active.filter(id__in=topic_ids):
+            topic_product_ids = set(topic.products.values_list("id", flat=True))
+            if not product_ids.issubset(topic_product_ids):
+                invalid_topics.append(topic)
+
+        invalid_products = []
+        for product in Product.active.filter(id__in=product_ids):
+            product_topic_ids = set(product.m2m_topics.values_list("id", flat=True))
+            if not topic_ids.issubset(product_topic_ids):
+                invalid_products.append(product)
+
+        error_message = ""
+        if invalid_topics or invalid_products:
+            invalid_items = (
+                invalid_products if len(invalid_topics) > len(invalid_products) else invalid_topics
+            )
+            invalid_item_names = ", ".join([item.title for item in invalid_items])
+
+            error_message = _nlazy(
+                (
+                    f"The following {'product' if invalid_items is invalid_products else 'topic'} "
+                    f"is not associated with all selected "
+                    f"{'topics' if invalid_items is invalid_products else 'products'}: %(items)s"
+                ),
+                (
+                    f"The following {'products' if invalid_items is invalid_products else 'topics'} "  # noqa
+                    f"are not associated with all selected "
+                    f"{'topics' if invalid_items is invalid_products else 'products'}: %(items)s"
+                ),
+                len(invalid_items),
+            ) % {"items": invalid_item_names}
+
+            if error_message:
+                raise forms.ValidationError(error_message)
 
         return cdata
-
-    def validate_relationship(self, selected_items, related_items, item_type, related_type):
-        invalid_items = selected_items.difference(related_items)
-
-        if invalid_items:
-            item_titles = ", ".join([item.title for item in invalid_items])
-            message = _nlazy(
-                f"The following {item_type} is not associated with the selected {related_type}s: %(items)s",  # noqa
-                f"The following {item_type}s are not associated with the selected {related_type}s: %(items)s",  # noqa
-                len(invalid_items),
-            ) % {"items": item_titles}
-
-            raise forms.ValidationError(message)
 
     class Meta:
         model = Document
