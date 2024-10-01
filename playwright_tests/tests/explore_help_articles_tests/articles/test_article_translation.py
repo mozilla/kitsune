@@ -34,12 +34,12 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
     with allure.step("Clicking on the Translate Article Editing Tools option and selecting "
                      "the ro locale"):
         sumo_pages.kb_article_page.click_on_translate_article_option()
-        sumo_pages.translate_article_page._click_on_romanian_locale_from_list()
+        sumo_pages.translate_article_page.click_on_romanian_locale_from_list()
         translation_url = utilities.get_page_url()
 
     with check, allure.step("Verifying that the correct banner is displayed"):
         check.equal(
-            sumo_pages.translate_article_page._get_text_of_article_unready_for_translation_banner(
+            sumo_pages.translate_article_page.get_text_of_article_unready_for_translation_banner(
             ), KBArticlePageMessages.KB_ARTICLE_NOT_READY_FOR_TRANSLATION_BANNER
         )
 
@@ -171,7 +171,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
         sumo_pages.most_visited_translations_page._click_on_a_particular_article_status(
             article_details['article_title'])
         translation_url = utilities.get_page_url()
-        expect(sumo_pages.translate_article_page._get_unready_for_translation_banner()
+        expect(sumo_pages.translate_article_page.get_unready_for_translation_banner()
                ).to_be_hidden()
 
     with allure.step("Performing an article translation"):
