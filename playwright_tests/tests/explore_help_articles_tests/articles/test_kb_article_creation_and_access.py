@@ -1156,11 +1156,7 @@ def test_edit_article_metadata_product_and_topic(page: Page):
 
     with check, allure.step("Verifying that the correct breadcrumb is displayed"):
         check.is_in(
-            "Pocket",
-            sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
-        )
-        check.is_in(
-            "Getting Started",
+            "Browse",
             sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
         )
 

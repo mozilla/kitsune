@@ -17,6 +17,7 @@ class ContactSupportMessages:
                            "data breach.",
         "Pocket": "Discover and save stories for later.",
         "Thunderbird": "Email software for Windows, Mac and Linux",
+        "Thunderbird for Android": "Email app for Android smartphones and tablets",
         "Firefox Focus": "Automatic privacy browser and content blocker",
         "Mozilla Account": "Privacy-first products for desktop and mobile"
     }

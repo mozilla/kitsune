@@ -33,6 +33,7 @@
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay/form",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket/form",
     "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird/form",
+    "Thunderbird for Android": "https://support.allizom.org/en-US/questions/new/thunderbird-android/form",
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus-firefox/form",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account/form"
   },
@@ -98,6 +99,13 @@
       "Search, tag, and share": "search-tag-and-share",
       "Settings": "settings",
       "default_slug": "none"
+    },
+    "Thunderbird for Android": {
+      "Email and messaging": "email-and-messaging",
+      "Installation and updates": "installation-and-updates",
+      "Privacy and security": "privacy-and-security",
+      "Settings": "settings",
+      "default_slug": "thunderbird-android"
     },
     "Firefox Focus": {
       "Installation and updates": "installation-and-updates",

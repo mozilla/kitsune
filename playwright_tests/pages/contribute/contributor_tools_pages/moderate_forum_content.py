@@ -3,7 +3,6 @@ from playwright_tests.core.basepage import BasePage
 
 
 class ModerateForumContent(BasePage):
-
     # View all deactivated users button
     __view_all_deactivated_users_button = "//div[@class='sumo-button-wrap']/a"
 
@@ -47,11 +46,11 @@ class ModerateForumContent(BasePage):
         super()._click(f"//p[text()='{question_title}']/following-sibling::div/a[text()='Delete']")
 
     def _select_update_status_option(self, question_title: str, select_value: str):
-        super()._select_option_by_label(f"//p[text()='{question_title}']/"
+        super()._select_option_by_value(f"//p[text()='{question_title}']/../"
                                         f"following-sibling::form/select", select_value)
 
     def _click_on_the_update_button(self, questions_title: str):
-        super()._click(f"//p[text()='{questions_title}']/following-sibling::form/"
+        super()._click(f"//p[text()='{questions_title}']/../following-sibling::form/"
                        f"input[@value='Update']")
 
     def _click_view_all_deactivated_users_button(self):

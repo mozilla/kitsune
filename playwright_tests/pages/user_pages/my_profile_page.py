@@ -17,7 +17,7 @@ class MyProfilePage(BasePage):
     __private_message_button = "//p[@class='pm']/a"
 
     # Report Abuse
-    __report_abuse_panel = "//section[@id='report-abuse']"
+    __report_abuse_panel = "//section[@id='report-abuse-']"
     __spam_or_other_unrelated_content_option = ("//label[contains(text(),'Spam or other unrelated "
                                                 "content')]")
     __inappropriate_language_or_dialog_option = ("//label[contains(text(),'Inappropriate "
@@ -25,7 +25,7 @@ class MyProfilePage(BasePage):
     __other_please_specify_option = "//label[contains(text(),'Other (please specify)')]"
     __have_more_to_say_textarea = "//textarea[@name='other']"
     __report_abuse_close_panel_button = "//div[@class='mzp-c-modal-close']/button"
-    __report_abuse_submit_button = "//section[@id='report-abuse']//button[@type='submit']"
+    __report_abuse_submit_button = "//section[@id='report-abuse-']//button[@type='submit']"
     __reported_user_confirmation_message = "//span[@class='message']"
 
     # Contributions section

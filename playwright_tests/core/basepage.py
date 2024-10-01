@@ -118,16 +118,16 @@ class BasePage:
         """
         return locator.all_text_contents()
 
-    def _click(self, element: Union[str, Locator], with_wait=True):
+    def _click(self, element: Union[str, Locator], with_wait=True, with_force=False):
         """
         This helper function clicks on a given element locator.
         """
         if isinstance(element, str):
             if with_wait:
                 self._wait_for_selector(element)
-            self._get_element_locator(element).click()
+            self._get_element_locator(element).click(force=with_force)
         elif isinstance(element, Locator):
-            element.click()
+            element.click(force=with_force)
 
     def _click_on_an_element_by_index(self, xpath: str, index: int):
         """
