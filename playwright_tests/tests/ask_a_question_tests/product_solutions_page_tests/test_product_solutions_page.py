@@ -22,17 +22,17 @@ def test_featured_articles_redirect(page: Page):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     with allure.step("Clicking on all product cards"):
-        for card in sumo_pages.contact_support_page._get_all_product_card_titles():
+        for card in sumo_pages.contact_support_page.get_all_product_card_titles():
             with check, allure.step(f"Clicking on the {card} and verifying that the correct "
                                     f"product solutions page header is displayed"):
-                sumo_pages.contact_support_page._click_on_a_particular_card(card)
-                assert sumo_pages.product_solutions_page._get_product_solutions_heading(
+                sumo_pages.contact_support_page.click_on_a_particular_card(card)
+                assert sumo_pages.product_solutions_page.get_product_solutions_heading(
                 ) == card + ProductSolutionsMessages.PAGE_HEADER
 
-            if sumo_pages.product_solutions_page._is_featured_article_section_displayed():
+            if sumo_pages.product_solutions_page.is_featured_article_section_displayed():
                 for featured_article_card in (sumo_pages.product_solutions_page
-                                              ._get_all_featured_articles_titles()):
-                    sumo_pages.product_solutions_page._click_on_a_featured_article_card(
+                                              .get_all_featured_articles_titles()):
+                    sumo_pages.product_solutions_page.click_on_a_featured_article_card(
                         featured_article_card)
                     with check, allure.step(f"Clicking on the {featured_article_card} and "
                                             f"verifying that the correct article page title "
@@ -57,16 +57,16 @@ def test_popular_topics_redirect(page: Page):
                      "Browse All products"):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
 
-    for card in sumo_pages.contact_support_page._get_all_product_card_titles():
-        sumo_pages.contact_support_page._click_on_a_particular_card(card)
+    for card in sumo_pages.contact_support_page.get_all_product_card_titles():
+        sumo_pages.contact_support_page.click_on_a_particular_card(card)
         with check, allure.step(f"Clicking on the {card} card and verifying that the correct "
                                 f"product solutions page is displayed"):
-            assert sumo_pages.product_solutions_page._get_product_solutions_heading(
+            assert sumo_pages.product_solutions_page.get_product_solutions_heading(
             ) == card + ProductSolutionsMessages.PAGE_HEADER
 
-        if sumo_pages.product_solutions_page._is_popular_topics_section_displayed:
-            for topic in sumo_pages.product_solutions_page._get_popular_topics():
-                sumo_pages.product_solutions_page._click_on_a_popular_topic_card(topic)
+        if sumo_pages.product_solutions_page.is_popular_topics_section_displayed:
+            for topic in sumo_pages.product_solutions_page.get_popular_topics():
+                sumo_pages.product_solutions_page.click_on_a_popular_topic_card(topic)
                 with check, allure.step(f"Clicking on the {topic} topic and verifying if "
                                         f"correct topic page title is displayed"):
                     try:
@@ -75,7 +75,7 @@ def test_popular_topics_redirect(page: Page):
                             print(f"Tab open for topic: {topic}")
                     except TimeoutError:
                         print("Trying to click on the popular topic again")
-                        sumo_pages.product_solutions_page._click_on_a_popular_topic_card(
+                        sumo_pages.product_solutions_page.click_on_a_popular_topic_card(
                             topic)
                         with page.context.expect_page() as tab:
                             feature_article_page = tab.value
@@ -103,19 +103,19 @@ def test_ask_now_widget_redirect(page: Page):
     count = 0
     for freemium_product in utilities.general_test_data["freemium_products"]:
         with allure.step(f"Clicking on the {freemium_product} card "):
-            sumo_pages.contact_support_page._click_on_a_particular_card(freemium_product)
+            sumo_pages.contact_support_page.click_on_a_particular_card(freemium_product)
         with check, allure.step("verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
-            assert sumo_pages.product_solutions_page._get_aaq_subheading_text(
+            assert sumo_pages.product_solutions_page.get_aaq_product_solutions_subheading_text(
             ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-            assert sumo_pages.product_solutions_page._get_aaq_widget_button_name(
+            assert sumo_pages.product_solutions_page.get_aaq_widget_button_name(
             ) == AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
 
         with allure.step("Clicking on the AAQ button and verifying that the auth page is "
                          "displayed"):
-            sumo_pages.product_solutions_page._click_ask_now_button()
+            sumo_pages.product_solutions_page.click_ask_now_button()
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(
                     username=utilities.user_special_chars,
@@ -147,20 +147,20 @@ def test_contact_support_widget_redirect(page: Page):
     count = 0
     for premium_product in utilities.general_test_data["premium_products"]:
         with allure.step(f"Clicking on the {premium_product} card"):
-            sumo_pages.contact_support_page._click_on_a_particular_card(premium_product)
+            sumo_pages.contact_support_page.click_on_a_particular_card(premium_product)
 
         with check, allure.step("Verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
-            assert sumo_pages.product_solutions_page._get_aaq_subheading_text(
+            assert sumo_pages.product_solutions_page.get_aaq_product_solutions_subheading_text(
             ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-            assert sumo_pages.product_solutions_page._get_aaq_widget_button_name(
+            assert sumo_pages.product_solutions_page.get_aaq_widget_button_name(
             ) == AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
 
         with allure.step("Clicking on the AAQ button, verifying that the auth page is "
                          "displayed and signing in to SUMO"):
-            sumo_pages.product_solutions_page._click_ask_now_button()
+            sumo_pages.product_solutions_page.click_ask_now_button()
 
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(

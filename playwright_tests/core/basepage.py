@@ -118,16 +118,27 @@ class BasePage:
         """
         return locator.all_text_contents()
 
-    def _click(self, element: Union[str, Locator], with_wait=True, with_force=False):
+    def _click(self, element: Union[str, Locator], with_wait=True, with_force=False,
+               retries=3, delay=2000):
         """
         This helper function clicks on a given element locator.
         """
-        if isinstance(element, str):
-            if with_wait:
-                self._wait_for_selector(element)
-            self._get_element_locator(element).click(force=with_force)
-        elif isinstance(element, Locator):
-            element.click(force=with_force)
+        for attempt in range(retries):
+            try:
+                if isinstance(element, str):
+                    if with_wait:
+                        self._wait_for_selector(element)
+                    self._get_element_locator(element).click(force=with_force)
+                elif isinstance(element, Locator):
+                    element.click(force=with_force)
+                print(f"Click succeeded on attempt {attempt + 1}")
+                break
+            except PlaywrightTimeoutError as timeout_error:
+                print(f"Click failed on attempt {attempt + 1}. Error: {timeout_error}")
+                if attempt < retries - 1:
+                    self.page.wait_for_timeout(delay)
+                else:
+                    raise Exception("Max retries exceeded. Could not perform the click")
 
     def _click_on_an_element_by_index(self, xpath: str, index: int):
         """

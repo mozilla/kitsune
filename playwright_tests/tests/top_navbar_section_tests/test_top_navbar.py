@@ -209,7 +209,7 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
 
             if current_option != "View all":
                 assert (f"{current_option} Solutions" == sumo_pages.product_solutions_page
-                        ._get_product_solutions_heading())
+                        .get_product_solutions_heading())
             else:
                 assert utilities.get_page_url() == ContactSupportMessages.PAGE_URL
 

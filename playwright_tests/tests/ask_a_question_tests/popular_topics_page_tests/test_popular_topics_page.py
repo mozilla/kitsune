@@ -24,22 +24,22 @@ def test_popular_topics_navbar(page: Page):
             utilities.navigate_to_link(topic_url)
             utilities.wait_for_url_to_be(topic_url)
 
-            for option in sumo_pages.product_topics_page._get_navbar_links_text():
+            for option in sumo_pages.product_topics_page.get_navbar_links_text():
                 with allure.step(f"Clicking on {option} navbar option"):
                     option_url = (HomepageMessages.STAGE_HOMEPAGE_URL + sumo_pages.
-                                  product_topics_page._get_navbar_option_link(option))
-                    sumo_pages.product_topics_page._click_on_a_navbar_option(option)
+                                  product_topics_page.get_navbar_option_link(option))
+                    sumo_pages.product_topics_page.click_on_a_navbar_option(option)
                     try:
                         utilities.wait_for_url_to_be(option_url)
                     except (TimeoutError, Error):
-                        sumo_pages.product_topics_page._click_on_a_navbar_option(option)
+                        sumo_pages.product_topics_page.click_on_a_navbar_option(option)
                         utilities.wait_for_url_to_be(option_url)
 
                 with check, allure.step("Verifying that the correct option is displayed"):
-                    assert sumo_pages.product_topics_page._get_page_title() == option
+                    assert sumo_pages.product_topics_page.get_page_title() == option
 
                 with check, allure.step("Verifying that the correct nav option is selected"):
-                    assert sumo_pages.product_topics_page._get_selected_navbar_option() == option
+                    assert sumo_pages.product_topics_page.get_selected_navbar_option() == option
 
 
 #  T5696796
@@ -54,7 +54,7 @@ def test_learn_more_redirect(page: Page):
             utilities.wait_for_url_to_be(topic_url)
 
             with allure.step("Clicking on the 'Learn More' button"):
-                sumo_pages.product_topics_page._click_on_learn_more_button()
+                sumo_pages.product_topics_page.click_on_learn_more_button()
 
             with allure.step("Verifying that the user is redirected to the contribute messages "
                              "page"):
@@ -76,14 +76,14 @@ def test_aaq_redirect(page: Page):
             with check, allure.step(f"Verifying that the correct subheading page for "
                                     f"{product_topic} is displayed"):
                 if product_topic in utilities.general_test_data["premium_products"]:
-                    assert sumo_pages.product_topics_page._get_aaq_subheading_text(
+                    assert sumo_pages.product_topics_page._get_aaq_widget_subheading_text(
                     ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
                 else:
-                    assert sumo_pages.product_topics_page._get_aaq_subheading_text(
+                    assert sumo_pages.product_topics_page._get_aaq_widget_subheading_text(
                     ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
             with allure.step("Clicking on the AAQ button"):
-                sumo_pages.product_topics_page._click_on_aaq_button()
+                sumo_pages.product_topics_page.click_on_aaq_button()
 
             with allure.step("Signing in to SUMO and verifying that we are on the correct AAQ "
                              "form page"):

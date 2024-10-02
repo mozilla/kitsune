@@ -22,35 +22,35 @@ class ProductTopicPage(BasePage):
         super().__init__(page)
 
     # Page content actions.
-    def _get_page_title(self) -> str:
-        return super()._get_text_of_element(self.__page_title)
+    def get_page_title(self) -> str:
+        return self._get_text_of_element(self.__page_title)
 
-    def _get_a_particular_article_locator(self, article_title: str):
-        return super()._get_element_locator(f"//h2[@class='sumo-card-heading']/a[normalize-space"
-                                            f"(text())='{article_title}']")
+    def get_a_particular_article_locator(self, article_title: str):
+        return self._get_element_locator(f"//h2[@class='sumo-card-heading']/a[normalize-space"
+                                         f"(text())='{article_title}']")
 
     # Navbar actions.
-    def _get_selected_navbar_option(self) -> str:
-        return super()._get_text_of_element(self.__selected_nav_link)
+    def get_selected_navbar_option(self) -> str:
+        return self._get_text_of_element(self.__selected_nav_link)
 
-    def _click_on_a_navbar_option(self, option_name: str):
-        super()._click(f"//ul[@class='sidebar-nav--list']/li/a[contains(text(),'{option_name}')]")
+    def click_on_a_navbar_option(self, option_name: str):
+        self._click(f"//ul[@class='sidebar-nav--list']/li/a[contains(text(),'{option_name}')]")
 
-    def _get_navbar_links_text(self) -> list[str]:
-        return super()._get_text_of_elements(self.__navbar_links)
+    def get_navbar_links_text(self) -> list[str]:
+        return self._get_text_of_elements(self.__navbar_links)
 
-    def _get_navbar_option_link(self, option_name: str) -> str:
-        return super()._get_element_attribute_value(f"//ul[@class='sidebar-nav--list']/li/"
-                                                    f"a[contains(text(),'{option_name}')]",
-                                                    "href")
+    def get_navbar_option_link(self, option_name: str) -> str:
+        return self._get_element_attribute_value(f"//ul[@class='sidebar-nav--list']/li/"
+                                                 f"a[contains(text(),'{option_name}')]",
+                                                 "href")
 
     # AAQ section actions.
-    def _get_aaq_subheading_text(self) -> str:
-        return super()._get_text_of_element(self.__still_need_help_subheading)
+    def _get_aaq_widget_subheading_text(self) -> str:
+        return self._get_text_of_element(self.__still_need_help_subheading)
 
-    def _click_on_aaq_button(self):
-        super()._click(self.__aaq_button)
+    def click_on_aaq_button(self):
+        self._click(self.__aaq_button)
 
     # Learn more section actions.
-    def _click_on_learn_more_button(self):
-        super()._click(self.__learn_more_button)
+    def click_on_learn_more_button(self):
+        self._click(self.__learn_more_button)

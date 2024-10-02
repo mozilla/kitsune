@@ -493,12 +493,12 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
 
     with check, allure.step("Verifying that the article is listed inside the article topic "
                             "page for admin users"):
-        expect(sumo_pages.product_topics_page._get_a_particular_article_locator(
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
             article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the article is not listed for signed out users"):
         utilities.delete_cookies()
-        expect(sumo_pages.product_topics_page._get_a_particular_article_locator(
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
             article_details['article_title'])).to_be_hidden()
 
     with check, allure.step("Verifying that the article is listed for users belonging to a "
@@ -506,7 +506,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
-        expect(sumo_pages.product_topics_page._get_a_particular_article_locator(
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Verifying that the article is not listed for users belonging to a "
@@ -514,7 +514,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
-        expect(sumo_pages.product_topics_page._get_a_particular_article_locator(
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
@@ -537,7 +537,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_delete_artic
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
-        expect(sumo_pages.product_topics_page._get_a_particular_article_locator(
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
             article_details['article_title'])).to_be_visible()
 
 

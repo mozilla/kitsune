@@ -18,26 +18,26 @@ class ContactSupportPage(BasePage):
         super().__init__(page)
 
     # Breadcrumb related actions.
-    def _get_text_of_current_milestone(self) -> str:
-        return super()._get_text_of_element(self.__current_milestone)
+    def get_text_of_current_milestone(self) -> str:
+        return self._get_text_of_element(self.__current_milestone)
 
     # Page actions.
-    def _get_contact_support_main_heading(self) -> str:
-        return super()._get_text_of_element(self.__page_main_heading)
+    def get_contact_support_main_heading(self) -> str:
+        return self._get_text_of_element(self.__page_main_heading)
 
-    def _get_contact_support_subheading_text(self) -> str:
-        return super()._get_text_of_element(self.__page_subheading)
+    def get_contact_support_subheading_text(self) -> str:
+        return self._get_text_of_element(self.__page_subheading)
 
-    def _click_on_browse_all_product_forums_button(self):
-        super()._click(self.__browse_all_product_forums_button)
+    def click_on_browse_all_product_forums_button(self):
+        self._click(self.__browse_all_product_forums_button)
 
     # Product card actions.
-    def _get_all_product_card_titles(self) -> list[str]:
-        return super()._get_text_of_elements(self.__product_cards_titles)
+    def get_all_product_card_titles(self) -> list[str]:
+        return self._get_text_of_elements(self.__product_cards_titles)
 
-    def _get_product_card_subtitle(self, card_name: str) -> str:
-        return super()._get_text_of_element(f"//a[normalize-space(text()) = '{card_name}']/..//"
-                                            f"following-sibling::p[@class='card--desc']")
+    def get_product_card_subtitle(self, card_name: str) -> str:
+        return self._get_text_of_element(f"//a[normalize-space(text()) = '{card_name}']/..//"
+                                         f"following-sibling::p[@class='card--desc']")
 
-    def _click_on_a_particular_card(self, card_name: str):
-        super()._click(f"//h3[@class='card--title']/a[normalize-space(text())='{card_name}']")
+    def click_on_a_particular_card(self, card_name: str):
+        self._click(f"//h3[@class='card--title']/a[normalize-space(text())='{card_name}']")
