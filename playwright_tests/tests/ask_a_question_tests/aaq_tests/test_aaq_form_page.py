@@ -86,16 +86,16 @@ def test_scam_banner_premium_products_not_displayed(page: Page, username):
 
             with allure.step(f"Verifying that the sam banner is not displayed for "
                              f"{premium_product} card"):
-                expect(sumo_pages.product_solutions_page._get_scam_banner_locator()).to_be_hidden()
+                expect(sumo_pages.product_solutions_page.get_scam_banner_locator()).to_be_hidden()
 
             if username != '':
                 with allure.step("Clicking on the Ask Now button and verifying that the scam "
                                  "banner is not displayed"):
-                    sumo_pages.product_solutions_page._click_ask_now_button()
+                    sumo_pages.product_solutions_page.click_ask_now_button()
                     utilities.wait_for_url_to_be(
                         utilities.aaq_question_test_data["products_aaq_url"][premium_product]
                     )
-                    expect(sumo_pages.product_solutions_page._get_scam_banner_locator()
+                    expect(sumo_pages.product_solutions_page.get_scam_banner_locator()
                            ).to_be_hidden()
 
 
@@ -119,17 +119,17 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, username):
 
             with check, allure.step("Verifying that the 'Learn More' button contains the "
                                     "correct link"):
-                assert sumo_pages.product_solutions_page._get_scam_alert_banner_link(
+                assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
                 ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
             if username != '':
                 with check, allure.step("Clicking on the Ask Now button and verifying that "
                                         "the 'Learn More' button contains the correct link"):
-                    sumo_pages.product_solutions_page._click_ask_now_button()
+                    sumo_pages.product_solutions_page.click_ask_now_button()
                     utilities.wait_for_url_to_be(
                         utilities.aaq_question_test_data["products_aaq_url"][freemium_product]
                     )
-                    assert sumo_pages.product_solutions_page._get_scam_alert_banner_link(
+                    assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
                     ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
 
@@ -420,7 +420,7 @@ def test_system_details_information(page: Page):
     with allure.step("Navigating to each product aaq form and and adding data without "
                      "submitting the form"):
         for product in utilities.general_test_data["freemium_products"]:
-            if product == "Thunderbird":
+            if product == "Thunderbird" or product == "Thunderbird for Android":
                 continue
             else:
                 utilities.navigate_to_link(

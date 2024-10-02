@@ -137,7 +137,7 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
                         with check, allure.step("Clicking on a particular frequent topic "
                                                 "card and verifying that the correct topic "
                                                 "page title is displayed"):
-                            assert sumo_pages.product_topics_page._get_page_title() == topic
+                            assert sumo_pages.product_topics_page.get_page_title() == topic
                         utilities.navigate_back()
                 else:
                     print(f"{card} has no frequent topics displayed!!!")
@@ -215,7 +215,7 @@ def test_still_need_help_button_redirect(page: Page):
                     )
 
                 with check, allure.step("Verifying that we are on the correct milestone"):
-                    assert sumo_pages.product_solutions_page._get_current_milestone_text(
+                    assert sumo_pages.product_solutions_page.get_current_milestone_text(
                     ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
 
                 with allure.step("Navigating to products page via top-navbar"):

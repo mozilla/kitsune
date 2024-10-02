@@ -39,13 +39,13 @@ def test_posted_question_details(page: Page, username):
         page.reload()
 
     with allure.step("Verifying that the scam banner is displayed"):
-        expect(sumo_pages.product_solutions_page._get_scam_banner_locator()).to_be_visible()
+        expect(sumo_pages.product_solutions_page.get_scam_banner_locator()).to_be_visible()
 
     with allure.step("Verifying that the still need help banner is displayed"):
-        expect(sumo_pages.product_solutions_page._get_still_need_help_locator()).to_be_visible()
+        expect(sumo_pages.product_solutions_page.get_still_need_help_locator()).to_be_visible()
 
     with check, allure.step("Verifying that the Learn More button contains the correct link"):
-        assert sumo_pages.product_solutions_page._get_scam_alert_banner_link(
+        assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
         ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
     with allure.step("Signing in with an admin account and verifying that the scam banner is "
@@ -53,11 +53,11 @@ def test_posted_question_details(page: Page, username):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        expect(sumo_pages.product_solutions_page._get_scam_banner_locator()).to_be_visible()
-        expect(sumo_pages.product_solutions_page._get_still_need_help_locator()).to_be_visible()
+        expect(sumo_pages.product_solutions_page.get_scam_banner_locator()).to_be_visible()
+        expect(sumo_pages.product_solutions_page.get_still_need_help_locator()).to_be_visible()
 
     with check, allure.step("Verifying that the Learn More button contains the correct link"):
-        assert sumo_pages.product_solutions_page._get_scam_alert_banner_link(
+        assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
         ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
     with allure.step("Deleting the posted question"):
