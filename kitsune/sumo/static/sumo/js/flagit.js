@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const form = this.closest('form');
                 const questionId = this.getAttribute('data-question-id');
                 const updateButton = document.getElementById(`update-status-button-${questionId}`) || form.querySelector('input[type="submit"]');
+
+                if (!this.value || this.value === "") {
+                    updateButton.disabled = true;
+                    return;
+                }
                 updateButton.disabled = false;
 
                 if (this.classList.contains('topic-dropdown')) {
