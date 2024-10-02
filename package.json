@@ -54,7 +54,7 @@
     "@types/underscore": "^1.11.4",
     "autoprefixer": "^10.4.13",
     "babel-loader": "^9.1.2",
-    "browser-sync": "^3.0.2",
+    "browser-sync": "^3.0.3",
     "chai": "^4.3.7",
     "chai-lint": "0.1.1",
     "color-string": "^1.9.1",
