@@ -182,9 +182,9 @@ def test_restricted_visibility_in_search_results(page: Page, create_delete_artic
 
     with check, allure.step("Verifying that the article is not displayed inside the search "
                             "results"):
-        sumo_pages.search_page._type_into_searchbar(article_details['article_title'])
+        sumo_pages.search_page.fill_into_searchbar(article_details['article_title'])
         expect(
-            sumo_pages.search_page._get_locator_of_a_particular_article(
+            sumo_pages.search_page.get_locator_of_a_particular_article(
                 article_details['article_title'])
         ).to_be_hidden()
 
@@ -195,8 +195,8 @@ def test_restricted_visibility_in_search_results(page: Page, create_delete_artic
 
     with check, allure.step("Verifying that the article is not inside the search "
                             "results"):
-        sumo_pages.search_page._type_into_searchbar(article_details['article_title'])
-        expect(sumo_pages.search_page._get_locator_of_a_particular_article(
+        sumo_pages.search_page.fill_into_searchbar(article_details['article_title'])
+        expect(sumo_pages.search_page.get_locator_of_a_particular_article(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Signing in with an account that is not part of that whitelisted group"):
@@ -206,16 +206,16 @@ def test_restricted_visibility_in_search_results(page: Page, create_delete_artic
 
     with check, allure.step("Verifying that the article is not displayed inside the search "
                             "results"):
-        sumo_pages.search_page._type_into_searchbar(article_details['article_title'])
-        expect(sumo_pages.search_page._get_locator_of_a_particular_article(
+        sumo_pages.search_page.fill_into_searchbar(article_details['article_title'])
+        expect(sumo_pages.search_page.get_locator_of_a_particular_article(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Deleting the user session"):
         utilities.delete_cookies()
 
     with allure.step("Verifying that the article is not displayed inside the search results"):
-        sumo_pages.search_page._type_into_searchbar(article_details['article_title'])
-        expect(sumo_pages.search_page._get_locator_of_a_particular_article(
+        sumo_pages.search_page.fill_into_searchbar(article_details['article_title'])
+        expect(sumo_pages.search_page.get_locator_of_a_particular_article(
             article_details['article_title'])).to_be_hidden()
 
 
