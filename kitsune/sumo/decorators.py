@@ -10,6 +10,7 @@ from django.http import Http404
 
 from kitsune.sumo.utils import is_ratelimited
 
+from wagtail.models.i18n import Locale
 from wagtail.views import serve as wagtail_serve
 
 
@@ -162,21 +163,35 @@ def csp_allow_inline_scripts_and_styles(fn):
 
 def remove_locale(url):
     # Define the regex pattern for locale (e.g., /en-US/ or /en-us/)
-    locale_pattern = r"^/([a-z]{2}(-[a-zA-Z]{2})?)/"
-    # Remove the locale part
-    return re.sub(locale_pattern, "/", url)
+    locale_pattern = r"^/([a-z]{2}(?:-[a-zA-Z]{2})?)/"
+    match = re.match(locale_pattern, url)
+    if match:
+        locale_code = match.group(1)
+        # Remove the locale part from the URL
+        path = "/" + url[match.end() :]  # Ensure the path starts with '/'
+    else:
+        locale_code = None  # Default locale or handle as needed
+        path = url
+    return path, locale_code
 
 
 def prefer_cms(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        path = remove_locale(request.path_info)
+        path, locale_code = remove_locale(request.path_info)
+
         try:
+            # Retrieve the Locale instance and attach it to the request
+            # Wagtail uses this to determine the language of the page
+            locale = Locale.objects.get(language_code=locale_code.lower())
+            request.locale = locale
+
             wagtail_response = wagtail_serve(request, path)
             if wagtail_response.status_code == 200:
                 return wagtail_response
-        except Http404:
+        except (Http404, Locale.DoesNotExist):
             pass  # Continue to the original view if no Wagtail page is found
+
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
