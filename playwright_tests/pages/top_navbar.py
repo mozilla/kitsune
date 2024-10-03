@@ -113,6 +113,9 @@ class TopNavbar(BasePage):
     __signed_in_settings_option = "//h4[contains(text(), 'Settings')]/parent::a"
     __signed_in_inbox_option = "//h4[contains(text(), 'Inbox')]/parent::a"
     __sign_out_button = "//a[contains(text(), 'Sign Out')]"
+    __unread_message_profile_notification = ("//div[@id='profile-navigation']//"
+                                             "div[@class='avatar-container-message-alert']")
+    __unread_message_count = "//span[@class='message-count-alert']"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -257,6 +260,18 @@ class TopNavbar(BasePage):
 
     def get_text_of_logged_in_username(self) -> str:
         return self._get_text_of_element(self.__signed_in_username)
+
+    def is_unread_message_notification_displayed(self) -> bool:
+        return self._is_element_visible(self.__unread_message_profile_notification)
+
+    def get_unread_message_notification_counter_value(self) -> int:
+        return int(self._get_text_of_element(self.__unread_message_count))
+
+    def is_unread_message_notification_counter_visible(self) -> bool:
+        return self._is_element_visible(self.__unread_message_count)
+
+    def mouse_over_profile_avatar(self):
+        self._hover_over_element(self.__signed_in_username)
 
     """
         General actions against the top-navbar section.

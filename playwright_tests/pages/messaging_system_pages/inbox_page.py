@@ -28,6 +28,9 @@ class InboxPage(BasePage):
     __inbox_messages_section = "//ol[@class='inbox-table']"
     __inbox_messages_delete_button = "//div[@class='email-cell delete']//a[@class='delete']"
     __inbox_delete_checkbox = "//div[@class='email-cell check']/input"
+    __all_unread_messages = "//li[@class='email-row unread']"
+    __all_read_messages_excerpt = ("//ol[@class='inbox-table']//li[not(contains(@class,'unread'))]"
+                                   "/div[@class='email-cell excerpt']/a")
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -125,6 +128,9 @@ class InboxPage(BasePage):
     def are_inbox_messages_displayed(self) -> bool:
         return self._is_element_visible(self.__inbox_messages_section)
 
+    def get_all_read_messages_excerpt(self) -> list[str]:
+        return self._get_text_of_elements(self.__all_read_messages_excerpt)
+
     def delete_all_inbox_messages(self):
         inbox_messages_count = self._get_element_handles(self.__inbox_messages)
         for i in range(len(inbox_messages_count)):
@@ -134,6 +140,10 @@ class InboxPage(BasePage):
 
             delete_button.click()
             self.click_on_delete_page_delete_button()
+
+    def check_a_particular_message(self, excerpt=''):
+        inbox_checkbox = self.inbox_message_select_checkbox_element(excerpt)
+        inbox_checkbox[0].click()
 
     def delete_all_inbox_messages_via_delete_selected_button(self, excerpt=''):
         if excerpt != '':
@@ -152,3 +162,6 @@ class InboxPage(BasePage):
 
         self.click_on_inbox_delete_selected_button()
         self.click_on_delete_page_delete_button()
+
+    def get_all_unread_messages(self) -> list[Locator]:
+        return self._get_elements_locators(self.__all_unread_messages)
