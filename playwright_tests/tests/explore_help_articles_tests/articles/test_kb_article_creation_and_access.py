@@ -710,38 +710,38 @@ def test_kb_article_keywords_and_summary(page: Page, username):
 
     with allure.step("Typing the article keyword inside the search field and verifying that "
                      "the article is displayed inside the search results"):
-        sumo_pages.search_page._type_into_searchbar(article_details['keyword'])
+        sumo_pages.search_page.fill_into_searchbar(article_details['keyword'])
         expect(
-            sumo_pages.search_page._get_locator_of_a_particular_article(
+            sumo_pages.search_page.get_locator_of_a_particular_article(
                 article_details['article_title']
             )
         ).to_be_visible()
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        assert (sumo_pages.search_page._get_search_result_summary_text_of_a_particular_article(
+        assert (sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
             article_details['article_title']
         )) == article_details['search_results_summary']
 
     with allure.step("Clearing the searchbar, typing the article summary inside the search "
                      "field and verifying that the article is displayed inside the search "
                      "results"):
-        sumo_pages.search_page._clear_the_searchbar()
-        sumo_pages.search_page._type_into_searchbar(article_details['search_results_summary'])
+        sumo_pages.search_page.clear_the_searchbar()
+        sumo_pages.search_page.fill_into_searchbar(article_details['search_results_summary'])
         expect(
-            sumo_pages.search_page._get_locator_of_a_particular_article(
+            sumo_pages.search_page.get_locator_of_a_particular_article(
                 article_details['article_title']
             )
         ).to_be_visible()
 
     with allure.step("Verifying that the correct kb summary is displayed inside the search "
                      "results"):
-        assert (sumo_pages.search_page._get_search_result_summary_text_of_a_particular_article(
+        assert (sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
             article_details['article_title'])) == article_details['search_results_summary']
 
     with check, allure.step("Clicking on the article and verifying that the user is "
                             "redirected to the kb article"):
-        sumo_pages.search_page._click_on_a_particular_article(article_details['article_title'])
+        sumo_pages.search_page.click_on_a_particular_article(article_details['article_title'])
         assert sumo_pages.kb_article_page.get_text_of_article_title(
         ) == article_details['article_title']
 
@@ -855,13 +855,13 @@ def test_kb_article_keyword_and_summary_update(page: Page):
         utilities.delete_cookies()
 
     with allure.step("Typing the article keyword inside the search field"):
-        sumo_pages.search_page._type_into_searchbar(
+        sumo_pages.search_page.fill_into_searchbar(
             utilities.kb_article_test_data['updated_keywords']
         )
 
     with allure.step("Verifying that the article is displayed inside the search results"):
         expect(
-            sumo_pages.search_page._get_locator_of_a_particular_article(
+            sumo_pages.search_page.get_locator_of_a_particular_article(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -869,23 +869,23 @@ def test_kb_article_keyword_and_summary_update(page: Page):
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
         check.equal(
-            sumo_pages.search_page._get_search_result_summary_text_of_a_particular_article(
+            sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
                 article_details['article_title']
             ),
             utilities.kb_article_test_data['updated_search_result_summary']
         )
 
     with allure.step("Clearing the searchbar"):
-        sumo_pages.search_page._clear_the_searchbar()
+        sumo_pages.search_page.clear_the_searchbar()
 
     with allure.step("Typing the article summary inside the search field"):
-        sumo_pages.search_page._type_into_searchbar(
+        sumo_pages.search_page.fill_into_searchbar(
             utilities.kb_article_test_data['updated_search_result_summary']
         )
 
     with allure.step("Verifying that the article is displayed inside the search results"):
         expect(
-            sumo_pages.search_page._get_locator_of_a_particular_article(
+            sumo_pages.search_page.get_locator_of_a_particular_article(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -893,7 +893,7 @@ def test_kb_article_keyword_and_summary_update(page: Page):
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
         check.equal(
-            sumo_pages.search_page._get_search_result_summary_text_of_a_particular_article(
+            sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
                 article_details['article_title']
             ),
             utilities.kb_article_test_data['updated_search_result_summary']
@@ -901,7 +901,7 @@ def test_kb_article_keyword_and_summary_update(page: Page):
 
     with check, allure.step("Clicking on the article and verifying that the user is "
                             "redirected to the kb article"):
-        sumo_pages.search_page._click_on_a_particular_article(article_details['article_title'])
+        sumo_pages.search_page.click_on_a_particular_article(article_details['article_title'])
         check.equal(
             sumo_pages.kb_article_page.get_text_of_article_title(),
             article_details['article_title']

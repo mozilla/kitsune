@@ -1,3 +1,5 @@
+from typing import Any, Union
+
 import requests
 import time
 import re
@@ -5,11 +7,13 @@ import json
 import random
 import os
 from datetime import datetime
+
+from nltk import SnowballStemmer
 from playwright.sync_api import Page
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
-
 from playwright_tests.pages.top_navbar import TopNavbar
+from playwright_tests.test_data.search_synonym import SearchSynonyms
 
 
 class Utilities:
@@ -302,3 +306,116 @@ class Utilities:
         """
         date = datetime.strptime(date_str, "%b %d, %Y")
         return int(date.strftime("%m%d%Y"))
+
+    def tokenize_string(self, text: str) -> list[str]:
+        """
+        This helper function tokenizes the text into individual words and removes any non
+        alphanumeric characters.
+        """
+        return re.findall(r'\b\w+\b', text.lower())
+
+    def stem_tokens(self, tokens: list[str], search_term_locale: str):
+        """
+        This helper function stems each token and returns the list of stemmed tokens.
+        """
+        stemmer = SnowballStemmer(search_term_locale)
+        return [stemmer.stem(token) for token in tokens]
+
+    def search_result_check(self, search_result, search_term, search_term_locale: str,
+                            exact_phrase: bool):
+        """
+        Checks if the search result contains:
+        1. Any variation of the provided keyword.
+        2. The search term or any of its synonyms.
+        3. The exact phrase or any component of the phrase.
+        4. Variations of the search term by stemming.
+        5. Variations of the search term by stemming for non-US words.
+        """
+
+        search_term_split = search_term.lower().split()
+        search_results_lower = search_result.lower()
+
+        # Check if searching for exact phrase.
+        if exact_phrase:
+            return self._exact_phrase_check(search_result, search_term)
+
+        # Check if keyword variations
+        if self._contains_keyword_variation(search_results_lower, search_term_split):
+            print(f"The {search_term} was found in search result variation.")
+            return True
+
+        # Check synonyms of split terms and the whole term
+        match_found, matching_synonym = self._contains_synonym(search_results_lower, search_term,
+                                                               search_term_split)
+        if match_found:
+            print(f"Search result for {search_term} found in synonym: {matching_synonym}")
+            return True
+
+        # Check if exact phrase match
+        if ' '.join(search_term_split) in search_results_lower:
+            print(f"Search results for {search_term} found in exact match")
+            return True
+
+        # Check each term component
+        if any(term in search_results_lower for term in search_term_split):
+            print(f"Search result for {search_term} found in a component of the search result")
+            return True
+
+        # Check stemming in search results.
+        stemmed_tokens = self.stem_tokens(self.tokenize_string(search_result), search_term_locale)
+        stemmed_search_term = self.stem_tokens(self.tokenize_string(search_term),
+                                               search_term_locale)
+
+        if any(term in stemmed_tokens for term in stemmed_search_term):
+            print(f"Search result for {search_term} found in stemmed word")
+            return True
+
+        if self._contains_synonym(search_results_lower, stemmed_search_term, search_term_split)[0]:
+            print(f"Search result for {search_term} found in stemmed word synonym")
+            return True
+
+        print("Search result not found!")
+        return False
+
+    def _contains_synonym(self, search_result_lower, search_term: Union[str, list[str]],
+                          search_term_split) -> [bool, Any]:
+        """
+        This helper function checks if any synonyms of a given search term or its components
+        (split term) are present in the search result.
+        """
+        synonyms = None
+
+        if isinstance(search_term, list):
+            for term in search_term:
+                synonyms = SearchSynonyms.synonym_dict.get(term.lower(), [])
+        else:
+            synonyms = SearchSynonyms.synonym_dict.get(search_term.lower(), [])
+
+        for term in search_term_split:
+            synonyms.extend(SearchSynonyms.synonym_dict.get(term, []))
+
+        for synonym in synonyms:
+            if synonym.lower() in search_result_lower:
+                return True, synonym.lower()
+        return False, None
+
+    def _contains_keyword_variation(self, search_result_lower, search_term_split):
+        """
+        This helper function checks if any variation of the keyword (components of the search term)
+        are present in the search results. This includes different cases (lowercase or uppercase)
+        and simple stemmed forms (by removing the last character).
+        """
+        keyword_variations = [
+            variation
+            for term in search_term_split
+            for variation in [term, term.capitalize(), term.upper(), term[:-1],
+                              term[:-1].capitalize()]
+        ]
+        return any(variation in search_result_lower for variation in keyword_variations)
+
+    def _exact_phrase_check(self, search_result: str, search_term: str) -> bool:
+        search_term = search_term.replace('"', '').lower()
+        print(f"Search term is: {search_term}")
+        search_result = search_result.lower()
+        print(f"Search result is: {search_result}")
+        return search_term in search_result
