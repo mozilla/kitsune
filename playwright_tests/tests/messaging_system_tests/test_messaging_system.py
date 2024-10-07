@@ -48,7 +48,7 @@ def test_there_are_no_messages_here_text_is_displayed_when_no_messages_are_avail
         ) == SentMessagesPageMessages.NO_MESSAGES_IN_SENT_MESSAGES_TEXT
 
 
-# T5697913
+# T5697913, C2706735
 # This test needs to be updated to fetch the username from a different place
 @pytest.mark.messagingSystem
 def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
@@ -114,11 +114,22 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
         ))
 
+    with allure.step("Verifying that the recipient user is visually notified about having a new "
+                     "unread message"):
+        assert sumo_pages.top_navbar.is_unread_message_notification_displayed()
+
     with allure.step("Accessing the Inbox section"):
         sumo_pages.top_navbar.click_on_inbox_option()
 
     with allure.step("Verifying that the inbox contains the previously sent messages"):
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_visible()
+
+    with allure.step("Fetching the unread messages count and verifying that the counter displays "
+                     "the correct data"):
+        unread_messages = len(sumo_pages.inbox_page.get_all_unread_messages())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        assert (unread_messages == sumo_pages.top_navbar.
+                get_unread_message_notification_counter_value())
 
     with allure.step("Deleting the messages from the inbox section"):
         sumo_pages.messaging_system_flow.delete_message_flow(
@@ -131,6 +142,12 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
     with check, allure.step("Verifying that the correct banner is displayed"):
         assert sumo_pages.sent_message_page.get_sent_messages_page_deleted_banner_text(
         ) == SentMessagesPageMessages.DELETE_MESSAGE_BANNER_TEXT
+
+    with allure.step("Verifying that the notification and the unread messages counter is no "
+                     "longer displayed near the user avatar"):
+        assert not sumo_pages.top_navbar.is_unread_message_notification_displayed()
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        assert not sumo_pages.top_navbar.is_unread_message_notification_counter_visible()
 
 
 # C891419
@@ -417,6 +434,117 @@ def test_new_message_cancel_button(page: Page):
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_hidden()
 
 
+# C2706741, C2706736, C2706740, C2706739, C2706735
+@pytest.mark.messagingSystem
+def test_messaging_system_unread_notification_after_message_deletion(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    content_first_message = "Test Test " + utilities.generate_random_number(1,100)
+    content_second_message = "Test Test " + utilities.generate_random_number(1, 100)
+
+    test_user = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+    )
+
+    with allure.step("Signing in with a non-admin user account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+    with allure.step("Accessing the inbox section and navigating to the new message page"):
+        sumo_pages.top_navbar.click_on_inbox_option()
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
+
+    with allure.step("Sending the first message"):
+        sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+            recipient_username=test_user,
+            message_body=content_first_message,
+        )
+
+    sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_new_message()
+    with allure.step("Sending the second message"):
+        sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+            recipient_username=test_user,
+            message_body=content_second_message,
+        )
+
+    with allure.step("Deleting sent messages"):
+        sumo_pages.sent_message_page.delete_all_sent_messages_via_delete_selected_button()
+
+    with allure.step("Signing in with the recipient"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        ))
+
+    with allure.step("Navigating to the inbox section"):
+        sumo_pages.top_navbar.click_on_inbox_option()
+
+    with allure.step("Verifying that the avatar notification and the new message counter is "
+                     "correct"):
+        inbox_messages_count = len(sumo_pages.inbox_page.get_all_unread_messages())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        assert (sumo_pages.top_navbar
+                .get_unread_message_notification_counter_value() == inbox_messages_count)
+        assert sumo_pages.top_navbar.is_unread_message_notification_displayed()
+
+    with allure.step("Marking the first received message as read"):
+        sumo_pages.inbox_page.check_a_particular_message(content_first_message)
+        sumo_pages.inbox_page.click_on_inbox_mark_selected_as_read_button()
+
+    with allure.step("Verifying that the message is successfully marked as read"):
+        assert content_first_message in sumo_pages.inbox_page.get_all_read_messages_excerpt()
+
+    with allure.step("Verifying that the new message notification counter resembles the unread "
+                     "inbox message count"):
+        inbox_messages_count = len(sumo_pages.inbox_page.get_all_unread_messages())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        assert (sumo_pages.top_navbar
+                .get_unread_message_notification_counter_value() == inbox_messages_count)
+        assert sumo_pages.top_navbar.is_unread_message_notification_displayed()
+
+    with allure.step("Deleting the first message"):
+        sumo_pages.messaging_system_flow.delete_message_flow(
+            excerpt=content_first_message, from_inbox_list=True)
+
+    with allure.step("Verifying that the new message notification counter resembles the unread "
+                     "inbox message count"):
+        inbox_messages_count = len(sumo_pages.inbox_page.get_all_unread_messages())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        assert (sumo_pages.top_navbar
+                .get_unread_message_notification_counter_value() == inbox_messages_count)
+        assert sumo_pages.top_navbar.is_unread_message_notification_displayed()
+
+    with allure.step("Marking the second received message as read"):
+        sumo_pages.inbox_page.check_a_particular_message(content_second_message)
+        sumo_pages.inbox_page.click_on_inbox_mark_selected_as_read_button()
+
+    with allure.step("Verifying that the new message notification counter resembles the unread "
+                     "inbox message count"):
+        inbox_messages_count = len(sumo_pages.inbox_page.get_all_unread_messages())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        if inbox_messages_count == 0:
+            assert not sumo_pages.top_navbar.is_unread_message_notification_counter_visible()
+            assert not sumo_pages.top_navbar.is_unread_message_notification_displayed()
+        else:
+            assert (sumo_pages.top_navbar
+                    .get_unread_message_notification_counter_value() == inbox_messages_count)
+            assert sumo_pages.top_navbar.is_unread_message_notification_displayed()
+
+    with allure.step("Deleting the second received message"):
+        sumo_pages.messaging_system_flow.delete_message_flow(
+            excerpt=content_second_message, from_inbox_list=True)
+
+    with allure.step("Verifying that the new message notification counter resembles the unread "
+                     "inbox message count"):
+        inbox_messages_count = len(sumo_pages.inbox_page.get_all_unread_messages())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        if inbox_messages_count == 0:
+            assert not sumo_pages.top_navbar.is_unread_message_notification_counter_visible()
+        else:
+            assert (sumo_pages.top_navbar
+                    .get_unread_message_notification_counter_value() == inbox_messages_count)
+
+
 # C891418
 @pytest.mark.messagingSystem
 def test_new_message_preview(page: Page):
@@ -428,7 +556,7 @@ def test_new_message_preview(page: Page):
 
     with allure.step("Signing in with a non-admin user account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
 
     username = sumo_pages.top_navbar.get_text_of_logged_in_username()
@@ -507,7 +635,8 @@ def test_new_message_preview(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         sumo_pages.top_navbar.click_on_inbox_option()
-        expect(sumo_pages.inbox_page.inbox_message(username=username)).to_be_hidden()
+        expect(sumo_pages.inbox_page.inbox_message(username=username)
+               ).to_be_hidden()
 
 
 # C891421, C891424
