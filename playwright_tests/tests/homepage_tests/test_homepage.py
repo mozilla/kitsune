@@ -17,7 +17,7 @@ def test_join_our_community_card_learn_more_redirects_to_contribute_page(page: P
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     with allure.step("Clicking on the 'Learn More' option"):
-        sumo_pages.homepage._click_learn_more_option()
+        sumo_pages.homepage.click_learn_more_option()
 
     with allure.step("Verifying that we are redirected to the 'Contribute' page successfully"):
         assert (
@@ -34,9 +34,9 @@ def test_join_our_community_card_has_the_correct_content(page: Page):
         "Verifying that the 'Join Our Community' card has the correct strings applied"
     ):
         assert (
-            sumo_pages.homepage._get_community_card_title()
+            sumo_pages.homepage.get_community_card_title()
             == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_TITLE
-            and sumo_pages.homepage._get_community_card_description()
+            and sumo_pages.homepage.get_community_card_description()
             == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_DESCRIPTION
         ), "Incorrect strings are displayed"
 
@@ -49,15 +49,15 @@ def test_homepage_feature_articles_are_available_and_interactable(page: Page):
     with check, allure.step(
         "Verifying if the correct number of featured articles are present on the homepage"
     ):
-        assert sumo_pages.homepage._get_number_of_featured_articles(
+        assert sumo_pages.homepage.get_number_of_featured_articles(
         ) is HomepageMessages.EXPECTED_FEATURED_ARTICLES_COUNT
 
     with allure.step("Clicking on each featured article card and verifying that the user is"
                      "redirected to the correct article page."):
         counter = 0
-        for featured_article in sumo_pages.homepage._get_featured_articles_titles():
-            articles_names = sumo_pages.homepage._get_featured_articles_titles()
-            sumo_pages.homepage._click_on_a_featured_card(counter)
+        for featured_article in sumo_pages.homepage.get_featured_articles_titles():
+            articles_names = sumo_pages.homepage.get_featured_articles_titles()
+            sumo_pages.homepage.click_on_a_featured_card(counter)
             assert (
                 sumo_pages.kb_article_page.get_text_of_article_title().strip()
                 == articles_names[counter].strip()
@@ -75,11 +75,11 @@ def test_product_cards_are_functional_and_redirect_to_the_proper_support_page(pa
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     with allure.step("Verifying that the product cards redirect to the correct support page"):
-        card_titles = sumo_pages.homepage._get_text_of_product_card_titles()
+        card_titles = sumo_pages.homepage.get_text_of_product_card_titles()
         counter = 0
         for product_card in card_titles:
             expected_product_title = card_titles[counter] + SupportPageMessages.TITLE_CONTAINS
-            sumo_pages.homepage._click_on_product_card(counter)
+            sumo_pages.homepage.click_on_product_card(counter)
             assert (
                 expected_product_title
                 == sumo_pages.product_support_page._get_product_support_title_text()

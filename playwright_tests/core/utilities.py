@@ -1,14 +1,12 @@
-from typing import Any, Union
-
+import os
 import requests
 import time
 import re
 import json
 import random
-import os
+from typing import Any, Union
 from datetime import datetime
-
-from nltk import SnowballStemmer
+from nltk import SnowballStemmer, WordNetLemmatizer
 from playwright.sync_api import Page
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
@@ -384,15 +382,19 @@ class Utilities:
         (split term) are present in the search result.
         """
         synonyms = None
+        lemmenizer = WordNetLemmatizer()
 
         if isinstance(search_term, list):
             for term in search_term:
-                synonyms = SearchSynonyms.synonym_dict.get(term.lower(), [])
+                synonyms = SearchSynonyms.synonym_dict.get(lemmenizer.lemmatize(term.lower(),
+                                                                                pos='n'), [])
         else:
-            synonyms = SearchSynonyms.synonym_dict.get(search_term.lower(), [])
+            synonyms = SearchSynonyms.synonym_dict.get(lemmenizer.lemmatize(search_term.lower(),
+                                                                            pos='n'), [])
 
         for term in search_term_split:
-            synonyms.extend(SearchSynonyms.synonym_dict.get(term, []))
+            synonyms.extend(SearchSynonyms.synonym_dict.get(lemmenizer.lemmatize(term, pos='n'),
+                                                            []))
 
         for synonym in synonyms:
             if synonym.lower() in search_result_lower:

@@ -13,12 +13,12 @@ class FooterSection(BasePage):
         super().__init__(page)
 
     # Footer section actions.
-    def _get_all_footer_links(self) -> list[ElementHandle]:
-        return super()._get_element_handles(self.__all_footer_links)
+    def get_all_footer_links(self) -> list[ElementHandle]:
+        return self._get_element_handles(self.__all_footer_links)
 
-    def _get_all_footer_locales(self) -> list[str]:
-        return super()._get_element_attribute_value(super()._get_elements_locators(
+    def get_all_footer_locales(self) -> list[str]:
+        return self._get_element_attribute_value(self._get_elements_locators(
             self.__language_selector_options), "value")
 
-    def _switch_to_a_locale(self, locale: str):
-        super()._select_option_by_value(self.__language_selector, locale)
+    def switch_to_a_locale(self, locale: str):
+        self._select_option_by_value(self.__language_selector, locale)
