@@ -1,18 +1,31 @@
-import re
 from os.path import basename
 from urllib.parse import parse_qs, urlparse
 
+import mwparserfromhell
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from sentry_sdk import capture_exception
-from wikimarkup.parser import ALLOWED_TAGS, Parser
 
 from kitsune.gallery.models import Image, Video
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 
+ALLOWED_TAGS = [
+    "a",
+    "div",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "li",
+    "span",
+    "img",
+    "video",
+    "source",
+]
 ALLOWED_ATTRIBUTES = {
     "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
     "div": ["id", "class", "style", "data-for", "title", "data-target", "data-modal"],
@@ -54,11 +67,7 @@ def wiki_to_html(
     """Wiki Markup -> HTML"""
     return WikiParser().parse(
         wiki_markup,
-        show_toc=False,
         locale=locale,
-        nofollow=nofollow,
-        tags=tags,
-        attributes=attributes,
     )
 
 
@@ -197,41 +206,20 @@ def build_hook_params(string, locale, allowed_params=[], allowed_param_values={}
     return (title, params)
 
 
-class WikiParser(Parser):
-    """Wrapper for wikimarkup which adds Kitsune-specific callbacks
-    and setup.
-    """
+class WikiParser:
+    """Wrapper for mwparserfromhell which adds Kitsune-specific parsing and setup."""
 
     image_template = "wikiparser/hook_image.html"
 
     def __init__(self, base_url=None):
-        super(WikiParser, self).__init__(base_url)
-
-        # Register default hooks
-        self.registerInternalLinkHook(None, self._hook_internal_link)
-        self.registerInternalLinkHook("Image", self._hook_image_tag)
-        self.registerInternalLinkHook("Video", self._hook_video)
-        self.registerInternalLinkHook("V", self._hook_video)
-        self.registerInternalLinkHook("Button", self._hook_button)
-        self.registerInternalLinkHook("UI", self._hook_ui_component)
-
-        # Register the abbr and acronym tags
-        self.registerTagHook("abbr", self._abbr_tag_hook)
-
+        self.locale = settings.WIKI_DEFAULT_LANGUAGE
         self.youtube_videos = set()
         self.ui_components = set()
 
     def parse(
         self,
         text,
-        show_toc=None,
-        tags=None,
-        attributes=None,
-        styles=None,
         locale=settings.WIKI_DEFAULT_LANGUAGE,
-        nofollow=False,
-        youtube_embeds=True,
-        ui_component_embeds=True,
         **kwargs,
     ):
         """Given wiki markup, return HTML.
@@ -265,14 +253,8 @@ class WikiParser(Parser):
         @email_utils.safe_translation
         def _parse(locale):
             try:
-                return super(WikiParser, self).parse(
+                return mwparserfromhell.parse(
                     text,
-                    show_toc=show_toc,
-                    tags=tags or ALLOWED_TAGS,
-                    attributes=attributes or ALLOWED_ATTRIBUTES,
-                    styles=styles or ALLOWED_STYLES,
-                    nofollow=nofollow,
-                    strip_comments=True,
                     **kwargs,
                 )
             except TypeError as e:
@@ -281,13 +263,10 @@ class WikiParser(Parser):
                 capture_exception(e)
                 return "&#xFFFD; There was an error parsing this content. &#xFFFD;"
 
-        html = _parse(locale)
+        html = str(_parse(locale))
 
-        if youtube_embeds:
-            html = self.add_youtube_embeds(html)
-
-        if ui_component_embeds:
-            html = self.add_ui_component_embeds(html)
+        html = self.add_youtube_embeds(html)
+        html = self.add_ui_component_embeds(html)
 
         return html
 
@@ -325,58 +304,40 @@ class WikiParser(Parser):
 
         return html
 
-    def _hook_internal_link(self, parser, space, name):
+    def _hook_internal_link(self, wikicode):
         """Parses text and returns internal link."""
-        text = False
-        title = name
+        for link in wikicode.filter_wikilinks():
+            title = str(link.title)
+            if "|" in title:
+                title, text = title.split("|", 1)
+            else:
+                text = title
 
-        # Split on pipe -- [[href|name]]
-        if "|" in name:
-            title, text = title.split("|", 1)
-            title = re.sub(r"\s+", " ", title).strip()
+            # Get the correct link info
+            link_info = _get_wiki_link(title, self.locale)
+            link_html = f'<a href="{link_info["url"]}">{text}</a>'
+            wikicode.replace(link, link_html)
 
-        hash = ""
-        if "#" in title:
-            title, hash = title.split("#", 1)
+        return str(wikicode)
 
-        # Sections use _, page names use +
-        if hash != "":
-            hash = "#" + hash.replace(" ", "_")
-
-        # Links to this page can just contain href="#hash"
-        if title == "" and hash != "":
-            if not text:
-                text = hash.replace("_", " ")
-            return '<a href="%s">%s</a>' % (hash, text)
-
-        link = _get_wiki_link(title, self.locale)
-        extra_a_attr = ""
-        if not link["found"]:
-            extra_a_attr += ' class="new" title="{tooltip}"'.format(
-                tooltip=_("Page does not exist.")
+    def _hook_image_tag(self, wikicode):
+        for template in wikicode.filter_templates(matches="Image"):
+            title, params = build_hook_params(
+                template.get("title"), self.locale, IMAGE_PARAMS, IMAGE_PARAM_VALUES
             )
-        if not text:
-            text = link["text"]
-        return '<a href="{url}{hash}"{extra}>{text}</a>'.format(
-            url=link["url"], hash=hash, extra=extra_a_attr, text=text
-        )
+            image = get_object_fallback(
+                Image, title, self.locale, _lazy('The image "%s" does not exist.') % title
+            )
 
-    def _hook_image_tag(self, parser, space, name):
-        """Adds syntax for inserting images."""
-        title, params = build_hook_params(name, self.locale, IMAGE_PARAMS, IMAGE_PARAM_VALUES)
+            if isinstance(image, str):
+                wikicode.replace(template, image)
+            else:
+                image_html = render_to_string(
+                    self.image_template, {"image": image, "params": params}
+                )
+                wikicode.replace(template, image_html)
 
-        message = _lazy('The image "%s" does not exist.') % title
-        image = get_object_fallback(Image, title, self.locale, message)
-        if isinstance(image, str):
-            return image
-
-        return render_to_string(
-            self.image_template,
-            {
-                "image": image,
-                "params": params,
-            },
-        )
+        return str(wikicode)
 
     # Videos are objects that can have one or more files attached to them
     #

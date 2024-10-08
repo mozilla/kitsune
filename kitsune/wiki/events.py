@@ -5,11 +5,11 @@ from bleach import clean
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import reverse as django_reverse
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
-from wikimarkup.parser import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo import email_utils
+from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
 from kitsune.sumo.templatetags.jinja_helpers import add_utm
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.events import Event, EventUnion, InstanceEvent

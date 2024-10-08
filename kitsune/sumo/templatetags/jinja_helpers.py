@@ -7,7 +7,6 @@ from zoneinfo import ZoneInfo
 
 import bleach
 import jinja2
-import wikimarkup.parser
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
@@ -137,8 +136,6 @@ def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofoll
         wiki_markup,
         locale=locale,
         nofollow=nofollow,
-        tags=wikimarkup.parser.ALLOWED_TAGS + ["abbr"],
-        attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES | {"abbr": ["title"]},
     )
     return Markup(
         bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)

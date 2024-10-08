@@ -14,11 +14,15 @@ from html5lib.serializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
-from wikimarkup.parser import ALLOWED_TAGS
 
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
-from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, ALLOWED_STYLES, get_object_fallback
+from kitsune.sumo.parser import (
+    ALLOWED_ATTRIBUTES,
+    ALLOWED_STYLES,
+    ALLOWED_TAGS,
+    get_object_fallback,
+)
 from kitsune.wiki.models import Document
 
 # block elements wikimarkup knows about (and thus preserves)

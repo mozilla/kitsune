@@ -2782,6 +2782,41 @@ josepy = "*"
 requests = "*"
 
 [[package]]
+name = "mwparserfromhell"
+version = "0.6.6"
+description = "MWParserFromHell is a parser for MediaWiki wikicode."
+optional = false
+python-versions = ">= 3.8"
+files = [
+    {file = "mwparserfromhell-0.6.6-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:d6995b9cfe6ec79556db0232a39210ac11aa69ee304cfc95b29c51be381e202b"},
+    {file = "mwparserfromhell-0.6.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ebc70f8a24aa60e54728be740f1c12a4acb1b12d1cc947d87b067cc1c83339fd"},
+    {file = "mwparserfromhell-0.6.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9136696d6b29838adcf8f428e3f7028b2c6e788fc05fe1beeb4b135429c356df"},
+    {file = "mwparserfromhell-0.6.6-cp310-cp310-win32.whl", hash = "sha256:6b11dea3bcdebe4554933169eade815e9d6b898175faa5a20a744524fd99210f"},
+    {file = "mwparserfromhell-0.6.6-cp310-cp310-win_amd64.whl", hash = "sha256:6a89edf53f15877223d923e122e9a97f3f7b85f56dc56d91a3d77b89c9dd4126"},
+    {file = "mwparserfromhell-0.6.6-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:fff66e97f7c02aa0fd57ff8f702977a9c5a1d72ef55b64ee9b146291e4c41057"},
+    {file = "mwparserfromhell-0.6.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:59633d3cc09993af75ced8dfbd6800e1e38e64620851a095575621548448875c"},
+    {file = "mwparserfromhell-0.6.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:007d0859e5467241b73c6e974df039a074609ce4e2b9df8c2263a8920554d032"},
+    {file = "mwparserfromhell-0.6.6-cp311-cp311-win32.whl", hash = "sha256:dbe5976b1b524e26aa2eb71b6219960f2578f56b536c68e0a79deb63e3b7f710"},
+    {file = "mwparserfromhell-0.6.6-cp311-cp311-win_amd64.whl", hash = "sha256:063c1e79befd1f55d77c358e0f5006f5ecf88ddf218ff6af55188d686139330e"},
+    {file = "mwparserfromhell-0.6.6-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:910d36bc70e8bea758380e75c12fd47626b295abec9f73a6099d8f937a649e77"},
+    {file = "mwparserfromhell-0.6.6-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d2febd92a55a3f19b461833267726cb81429c3d6cb0006ad1691dfa849789e5d"},
+    {file = "mwparserfromhell-0.6.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2b75fae6d01c8fda19dbf127175122d7aa2964ef6454690e6868bbc3d80a7bc1"},
+    {file = "mwparserfromhell-0.6.6-cp312-cp312-win32.whl", hash = "sha256:19e9a4bcd85707c83172405eb2a9a046eff9d38dd7f1a56a5e5ecbbfef4a640a"},
+    {file = "mwparserfromhell-0.6.6-cp312-cp312-win_amd64.whl", hash = "sha256:cdc46c115b2495d4025920b7b30a6885a96d2b797ccc4009bf3cc02940ae55d3"},
+    {file = "mwparserfromhell-0.6.6-cp38-cp38-macosx_11_0_x86_64.whl", hash = "sha256:fd05481adc0806f4b8f8f8cb309ec56924b17ce386cb1c2f73919d8a012e6b16"},
+    {file = "mwparserfromhell-0.6.6-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:03e03b8bec729af850457d045b04d0c9d3e296ff8bf66b455f754cccb29c3bea"},
+    {file = "mwparserfromhell-0.6.6-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1d2422659abb29191a0fa096cf8bead837ac3ecd343065569b2acc7a84ecf866"},
+    {file = "mwparserfromhell-0.6.6-cp38-cp38-win32.whl", hash = "sha256:a58251a5d5c77abdfd061624dc05667c2774e93e8178a2fbd1a3b45f8673f1a9"},
+    {file = "mwparserfromhell-0.6.6-cp38-cp38-win_amd64.whl", hash = "sha256:e28ffa9a7e0748ec64002a84234201ef69c2d4a710508baf9cc25f4ee274c6bd"},
+    {file = "mwparserfromhell-0.6.6-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:746bad799179684994ecee72a26352e0bbe2b697f6a7e35dc5ad151606bcb8ab"},
+    {file = "mwparserfromhell-0.6.6-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:50c482e703d2d51401f7e36a71ae9493901f170225940196292f97398713dde5"},
+    {file = "mwparserfromhell-0.6.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1915fe4f5e5ae34f16242d4cd98da2adc81a810ab94105ec2af3dc95d7ce74aa"},
+    {file = "mwparserfromhell-0.6.6-cp39-cp39-win32.whl", hash = "sha256:54e2dd30edc1a358408d14343b30dcca0b4613227781e4bbee968bd4395d94ff"},
+    {file = "mwparserfromhell-0.6.6-cp39-cp39-win_amd64.whl", hash = "sha256:1960bcc5115ea57427df130150edf1dbfc2fb03465e548e630bb6eb37976d793"},
+    {file = "mwparserfromhell-0.6.6.tar.gz", hash = "sha256:71afec1e9784ba576e95d6f34845582d3c733a3a52ba770dd8a9c3a40e5b649f"},
+]
+
+[[package]]
 name = "mypy-extensions"
 version = "1.0.0"
 description = "Type system extensions for programs checked with the mypy type checker."
@@ -3336,21 +3371,6 @@ files = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
 ]
-
-[[package]]
-name = "py-wikimarkup"
-version = "2.3.0"
-description = "A basic MediaWiki markup parser."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "py-wikimarkup-2.3.0.tar.gz", hash = "sha256:7081ab990afb95bf9d55b762a3db6f779838844a8de0bf8d2589443a6e378e1c"},
-    {file = "py_wikimarkup-2.3.0-py3-none-any.whl", hash = "sha256:90060fbdfda0e2c611d04fe963be4a9e894f12cb28a21d2d515fe504925fc55b"},
-]
-
-[package.dependencies]
-bleach = {version = "==6.*", extras = ["css"]}
-unidecode = "==1.*"
 
 [[package]]
 name = "pyasn1"
@@ -4863,17 +4883,6 @@ files = [
 ]
 
 [[package]]
-name = "unidecode"
-version = "1.3.8"
-description = "ASCII transliterations of Unicode text"
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "Unidecode-1.3.8-py3-none-any.whl", hash = "sha256:d130a61ce6696f8148a3bd8fe779c99adeb4b870584eeb9526584e9aa091fd39"},
-    {file = "Unidecode-1.3.8.tar.gz", hash = "sha256:cfdb349d46ed3873ece4586b96aa75258726e2fa8ec21d6f00a591d98806c2f4"},
-]
-
-[[package]]
 name = "urllib3"
 version = "1.26.19"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -5306,4 +5315,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fea53028c4e4ddabf04699afcfa6c7a578b206abbe24032297429a3129e5c3d8"
+content-hash = "621b3c71d3b90787816ff98aa32a1b51293f6b8e9bc9ca767584f8408b38d8f6"
