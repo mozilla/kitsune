@@ -88,7 +88,12 @@ def flagged_queue(request):
     return render(
         request,
         "flagit/queue.html",
-        {"objects": objects, "locale": request.LANGUAGE_CODE, "reasons": FlaggedObject.REASONS},
+        {
+            "objects": objects,
+            "locale": request.LANGUAGE_CODE,
+            "reasons": FlaggedObject.REASONS,
+            "selected_reason": reason,
+        },
     )
 
 
