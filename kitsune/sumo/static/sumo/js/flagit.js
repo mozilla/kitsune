@@ -1,15 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const { reasonFilter, flaggedQueue, topicDropdown, updateStatusButton } = {
+
+    const { reasonFilter, flaggedQueue } = {
         reasonFilter: document.getElementById('flagit-reason-filter'),
         flaggedQueue: document.getElementById('flagged-queue'),
     };
-
 
     function disableUpdateStatusButtons() {
         const updateStatusButtons = document.querySelectorAll('form.update.inline-form input[type="submit"]');
         updateStatusButtons.forEach(button => {
             button.disabled = true;
-        })
+        });
     }
     disableUpdateStatusButtons();
 
@@ -24,9 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 url.searchParams.delete(param);
                 window.history.replaceState({}, '', url.pathname);
             }
-        }
-        else if (action === 'get') {
+        } else if (action === 'get') {
             return url.searchParams.get(param);
+        }
+    }
+
+    async function fetchAndUpdateContent(url) {
+        const response = await fetchData(url);
+        if (response) {
+            const data = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data, 'text/html');
+            flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
+            disableUpdateStatusButtons();
+            handleDropdownChange();
         }
     }
 
@@ -50,25 +61,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const reason = updateUrlParameter('get', 'reason');
-    if (reason) {
+    let reason = updateUrlParameter('get', 'reason');
+
+    if (!reason) {
+        reason = 'spam';
+        updateUrlParameter('set', 'reason', reason);
+        reasonFilter.value = 'spam';
+        fetchAndUpdateContent(new URL(window.location.href));
+    } else {
         reasonFilter.value = reason;
     }
+
     reasonFilter.addEventListener('change', async () => {
         const selectedReason = reasonFilter.value;
+
         updateUrlParameter('set', 'reason', selectedReason);
-
-        const url = new URL(window.location.href);
-        const response = await fetchData(url);
-
-        if (response) {
-            const data = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data, 'text/html');
-            flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
-            disableUpdateStatusButtons();
-            handleDropdownChange();
-        }
+        fetchAndUpdateContent(new URL(window.location.href));
     });
 
     function handleDropdownChange() {
@@ -103,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const data = await response.json();
                         currentTopic.textContent = data.updated_topic;
                         currentTopic.classList.add('updated');
+
                         const updateStatusSelect = updateButton.previousElementSibling;
                         if (updateStatusSelect && updateStatusSelect.tagName === 'SELECT') {
                             updateStatusSelect.value = '1';
@@ -110,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-        })
+        });
     }
+
     handleDropdownChange();
 });
