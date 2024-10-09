@@ -7,6 +7,7 @@ from django.test.utils import override_settings
 from rest_framework import fields, serializers
 
 from kitsune.sumo import api_utils
+from kitsune.sumo.i18n import normalize_language
 from kitsune.sumo.tests import TestCase
 
 
@@ -22,7 +23,7 @@ class TestLanguageNegotiation(TestCase):
         negotiater = api_utils.LocaleNegotiationMixin()
         request = factory.get("/", HTTP_ACCEPT_LANGUAGE="es,en-US")
         negotiater.request = request
-        self.assertEqual(negotiater.get_locale(), "es")
+        self.assertEqual(normalize_language(negotiater.get_locale()), "es")
 
 
 class TestInequalityFilterBackend(TestCase):
