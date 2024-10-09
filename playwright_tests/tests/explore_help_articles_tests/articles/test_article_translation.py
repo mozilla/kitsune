@@ -34,7 +34,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
     with allure.step("Clicking on the Translate Article Editing Tools option and selecting "
                      "the ro locale"):
         sumo_pages.kb_article_page.click_on_translate_article_option()
-        sumo_pages.translate_article_page.click_on_romanian_locale_from_list()
+        sumo_pages.translate_article_page.click_on_locale_from_list("ro")
         translation_url = utilities.get_page_url()
 
     with check, allure.step("Verifying that the correct banner is displayed"):

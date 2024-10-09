@@ -3,6 +3,7 @@ from typing import Any
 from playwright.sync_api import Page
 
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
     KBArticleReviewRevisionPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import \
@@ -14,13 +15,18 @@ from playwright_tests.pages.explore_help_articles.articles.kb_translate_article_
 class KbArticleTranslationFlow:
     def __init__(self, page: Page):
         self.utilities = Utilities(page)
+        self.kb_article_page = KBArticlePage(page)
         self.translate_article_page = TranslateArticlePage(page)
         self.kb_article_show_history_page = KBArticleShowHistoryPage(page)
         self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
 
     def _add_article_translation(self, approve_translation_revision: bool, title='', slug='',
                                  allow_discussions=True, keyword='', summary='', body='',
-                                 save_as_draft=False, submit=True) -> dict[str, Any]:
+                                 save_as_draft=False, submit=True, locale=None) -> dict[str, Any]:
+
+        if locale:
+            self.kb_article_page.click_on_translate_article_option()
+            self.translate_article_page.click_on_locale_from_list(locale)
 
         if title != '':
             translation_title = title
