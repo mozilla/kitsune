@@ -1,18 +1,18 @@
 from zoneinfo import ZoneInfo
 
 from django import forms
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.http import HttpResponse
 from django.utils import translation
 from django.utils.translation import pgettext
-
 from rest_framework import fields, filters, permissions, serializers
-from rest_framework.authentication import SessionAuthentication, CSRFCheck
+from rest_framework.authentication import CSRFCheck, SessionAuthentication
 from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.renderers import JSONRenderer as DRFJSONRenderer
 
+from kitsune.sumo.i18n import normalize_language
 from kitsune.users.models import Profile
 
 
@@ -44,7 +44,7 @@ class LocaleNegotiationMixin(object):
 
     def get_serializer_context(self):
         context = super(LocaleNegotiationMixin, self).get_serializer_context()
-        context["locale"] = self.get_locale()
+        context["locale"] = normalize_language(self.get_locale())
         return context
 
 

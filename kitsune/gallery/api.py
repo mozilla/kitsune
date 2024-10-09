@@ -1,15 +1,15 @@
-from django.db.models import Q
 from django.contrib.auth.models import User
-
+from django.db.models import Q
 from rest_framework import generics, serializers
 
 from kitsune.gallery.models import Image
 from kitsune.sumo.api_utils import (
-    LocaleNegotiationMixin,
-    InequalityFilterBackend,
     DateTimeUTCField,
     ImageUrlField,
+    InequalityFilterBackend,
+    LocaleNegotiationMixin,
 )
+from kitsune.sumo.i18n import normalize_language
 
 
 class ImageShortSerializer(serializers.ModelSerializer):
@@ -50,7 +50,7 @@ class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
 
         # locale may come from the Accept-language header, but it can be
         # overridden via the query string.
-        locale = self.get_locale()
+        locale = normalize_language(self.get_locale())
         locale = self.request.query_params.get("locale", locale)
         if locale is not None:
             queryset = queryset.filter(locale=locale)
