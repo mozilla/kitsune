@@ -17,7 +17,7 @@ class DocumentVisitsTests(TestCase):
         d2 = ApprovedRevisionFactory(document__slug="doc2-slug").document
         d3 = ApprovedRevisionFactory(document__slug="doc3-slüg").document
 
-        pageviews_by_document.return_value = (
+        pageviews_by_document.return_value = dict(
             row
             for row in (
                 (("en-US", d1.slug), 1000),
