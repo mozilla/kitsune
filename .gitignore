@@ -72,3 +72,4 @@ geckodriver.log
 chromedriver.log
 .node_repl_history
 .cursor-server
+.gk/
