@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from unittest import mock
 
+import waffle
 from actstream.models import Action, Follow
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
@@ -655,7 +655,9 @@ class TestActions(TestCase):
         self.assertEqual(act.verb, "marked as a solution")
         self.assertEqual(act.target, ans.question)
 
-    def test_create_question_creates_flag(self):
+    @mock.patch.object(waffle, "switch_is_active")
+    def test_create_question_creates_flag(self, switch_is_active):
         """Creating a question also creates a flag."""
+        switch_is_active.return_value = True
         QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
         self.assertEqual(1, FlaggedObject.objects.filter(reason="bug_support").count())
