@@ -113,8 +113,6 @@ def test_synonyms(page: Page):
 
                 assert _verify_search_results(page, search_term, 'english', title, content)
 
-            sumo_pages.search_page.clear_the_searchbar()
-
 
 # C1329223
 @pytest.mark.searchTests
@@ -133,7 +131,6 @@ def test_brand_synonyms(page: Page):
                     title)
 
                 assert _verify_search_results(page, search_term, 'english', title, content)
-            sumo_pages.search_page.clear_the_searchbar()
 
 
 #  C1329234
@@ -196,7 +193,6 @@ def test_searchbar_search_update(page: Page):
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title)
                 assert _verify_search_results(page, search_term, 'english', title, content)
-            sumo_pages.search_page.clear_the_searchbar()
 
 
 # C1329243
@@ -212,7 +208,6 @@ def test_search_from_products_page(page: Page):
             with check, allure.step("Verifying that the search results are filtered by the "
                                     "correct product and the search term is present"):
                 sumo_pages.homepage.click_on_product_card_by_title(product_card)
-                sumo_pages.search_page.clear_the_searchbar()
                 sumo_pages.search_page.fill_into_searchbar(search_term)
                 utilities.wait_for_given_timeout(2000)
                 assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == product_card
@@ -244,6 +239,373 @@ def test_filter_switching(page: Page):
             sumo_pages.search_page.click_on_a_particular_side_nav_item('Firefox Relay')
             time.sleep(2)
             assert not sumo_pages.search_page.is_search_content_section_displayed()
+
+
+# C1349875, C1349876
+@pytest.mark.searchTests
+def test_advanced_search_syntax(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    search_terms = ["crash sync", "crash + sync", "crash - sync", "crash +- sync"]
+
+    with check, allure.step("Adding a search term inside the search bar and validating search "
+                            "results"):
+        for search_term in search_terms:
+            sumo_pages.search_page.fill_into_searchbar(search_term)
+            utilities.wait_for_given_timeout(2000)
+            for title in sumo_pages.search_page.get_all_search_results_article_titles():
+                content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
+                    title)
+                assert _verify_search_results(page, search_term, 'english', title, content)
+
+
+# C1350860, C1349859, C1352396, C1352398
+@pytest.mark.searchTests
+def test_conjunctions_and_disjunction_operators(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    search_terms = ["add-ons AND cache", "clear AND add-ons AND cache"]
+
+    with (check, allure.step("Adding a search term inside the search bar and validating search "
+                             "results")):
+        for search_term in search_terms:
+            sumo_pages.search_page.fill_into_searchbar(search_term)
+            utilities.wait_for_given_timeout(2000)
+            for title in sumo_pages.search_page.get_all_search_results_article_titles():
+                content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
+                    title)
+                assert _verify_search_results(page, search_term.replace("AND", ""), 'english',
+                                              title, content), (f"{search_term} not found in "
+                                                                f"search result with title: "
+                                                                f"{title} and bolded content: "
+                                                                f"{content}")
+
+
+# C1350861, C1349864, C1352398
+@pytest.mark.searchTests
+@pytest.mark.parametrize("locale", ['en-US', 'ro'])
+def test_or_operator(page: Page, locale):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    search_term = "crash OR Mozilla"
+
+    if locale != 'en-US':
+        utilities.navigate_to_link(f"https://support.allizom.org/{locale}")
+
+    with check, allure.step("Adding a search term which contains the 'OR' inside the search term"):
+        sumo_pages.search_page.fill_into_searchbar(search_term)
+        utilities.wait_for_given_timeout(2000)
+
+        for title in sumo_pages.search_page.get_all_search_results_article_titles():
+            content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
+            assert _verify_search_results(page, search_term.replace("OR", ""), 'english',
+                                          title, content), (f"{search_term} not found in "
+                                                            f"search result with title: "
+                                                            f"{title} and bolded content: "
+                                                            f"{content}")
+
+
+# C1350862, C1349865, # C1350993
+@pytest.mark.searchTests
+def test_not_operator(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    search_term = "crash NOT Mozilla"
+
+    with (check, allure.step("Adding a search term which contains the 'NOT' inside the search "
+                             "term")):
+        sumo_pages.search_page.fill_into_searchbar(search_term)
+        utilities.wait_for_given_timeout(2000)
+        split_search_term = search_term.split("NOT")
+
+        for title in sumo_pages.search_page.get_all_search_results_article_titles():
+            content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
+            with allure.step("Verifying that the term used before the 'NOT' keyword is returned"):
+                assert _verify_search_results(page, split_search_term[0].strip(), 'english',
+                                              title, content), (f"{split_search_term[0]} not found"
+                                                                f" in search result with title: "
+                                                                f"{title} and bolded content: "
+                                                                f"{content}")
+            with allure.step("Verifying that the term used after the 'NOT' keyword is not "
+                             "returned"):
+                assert not _verify_search_results(page, split_search_term[1].strip(),
+                                                  'english', title, content
+                                                  ), (f"{split_search_term[1]} is found "
+                                                      f"in search result with title: "
+                                                      f"{title} and bolded content: "
+                                                      f"{content}")
+
+
+# C1350991, C1352392, C1352394
+@pytest.mark.searchTests
+def test_exact_phrase_searching(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    search_term = '"Firefox desktop"'
+    second_search_term = '"Firefox desktop'
+    no_results_search_term = '"test test bla blatest test"'
+
+    with (check, allure.step("Adding a search term which contains the quotes inside the search "
+                             "term")):
+        sumo_pages.search_page.fill_into_searchbar(search_term)
+        utilities.wait_for_given_timeout(2000)
+
+        for title in sumo_pages.search_page.get_all_search_results_article_titles():
+            content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
+            with allure.step("Verifying that all search results contain the full search term"):
+                assert _verify_search_results(page, search_term, 'english',
+                                              title, content, exact_phrase=True), (f"{search_term}"
+                                                                                   f" not found "
+                                                                                   f"in search "
+                                                                                   f"result with "
+                                                                                   f"title: "
+                                                                                   f"{title} and "
+                                                                                   f"bolded "
+                                                                                   f"content: "
+                                                                                   f"{content}")
+
+        with check, allure.step("Adding a search term with invalid exact phrase searching syntax"):
+            sumo_pages.search_page.fill_into_searchbar(second_search_term)
+            utilities.wait_for_given_timeout(2000)
+            not_exact_match = False
+            for title in sumo_pages.search_page.get_all_search_results_article_titles():
+                content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
+                    title)
+                if not _verify_search_results(page, search_term, 'english', title, content,
+                                              exact_phrase=True):
+                    not_exact_match = True
+                    break
+
+            with allure.step("Verifying that not all search results contain the exact phrase"):
+                assert not_exact_match
+
+        with allure.step("Adding an exact search phrase which should return 0 results"):
+            sumo_pages.search_page.fill_into_searchbar(no_results_search_term)
+            utilities.wait_for_given_timeout(2000)
+
+        with allure.step("Verifying that no results are returned for the given exact search "
+                         "phrase"):
+            assert not sumo_pages.search_page.is_search_content_section_displayed()
+
+
+# C1352395, C1352397, C1352400
+@pytest.mark.searchTests
+def test_keywords_field_and_content_operator(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
+    search_term_keyword = "field:keywords.en-US:playwright search test"
+    second_search_term_keyword = "field:keywords.en-US:(playwright search NOT test)"
+    third_search_term_keyword = "field:keywords.en-US:(playwright search test NOT music)"
+    search_term_content = "field:content.en-US:playwright search test the content"
+    article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+        approve_first_revision=True,
+        article_keyword=search_term_keyword.replace("field:keywords.en-US:", ""),
+        article_content=search_term_content.replace("field:content.en-US:", "")
+    )
+    utilities.wait_for_given_timeout(65000)
+    sumo_pages.top_navbar.click_on_sumo_nav_logo()
+    with allure.step("Searching for an article using the keywords field operator"):
+        sumo_pages.search_page.fill_into_searchbar(search_term_keyword)
+        utilities.wait_for_given_timeout(2000)
+
+        with check, allure.step("Verifying that the article is successfully returned after "
+                                "searching for its keyword"):
+            assert sumo_pages.search_page.is_a_particular_article_visible(
+                article_details['article_title'])
+
+    with allure.step("Searching for an article using the keywords field operator and the NOT "
+                     "operator"):
+        sumo_pages.search_page.fill_into_searchbar(second_search_term_keyword)
+        utilities.wait_for_given_timeout(2000)
+
+        with check, allure.step("Verifying that the test article is not returned when a keyword "
+                                "is placed after the 'NOT' operator"):
+            assert not sumo_pages.search_page.is_a_particular_article_visible(
+                article_details['article_title'])
+
+        sumo_pages.search_page.fill_into_searchbar(third_search_term_keyword)
+        utilities.wait_for_given_timeout(2000)
+
+        with check, allure.step("Verifying that the test article is returned when a non-keyword "
+                                "term is used after the NOT operator"):
+            assert sumo_pages.search_page.is_a_particular_article_visible(
+                article_details['article_title'])
+
+    with allure.step("Searching for an article using the content field operator"):
+        sumo_pages.search_page.fill_into_searchbar(search_term_content)
+        utilities.wait_for_given_timeout(2000)
+        with check, allure.step("Verifying that the test article is successfully displayed"):
+            assert sumo_pages.search_page.is_a_particular_article_visible(
+                article_details['article_title']
+            )
+        with check, allure.step("Verifying that the search term is successfully highlighted in "
+                                "search results"):
+            for title in sumo_pages.search_page.get_all_search_results_article_titles():
+                content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
+                    title
+                )
+                assert _verify_search_results(page, search_term_content, 'english', title,
+                                              content)
+
+    utilities.navigate_to_link(article_details['article_url'])
+    sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C1352401
+@pytest.mark.searchTests
+def test_search_firefox_internal_pages(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    search_term = "field:content.en-US:about:config"
+
+    with (allure.step("Searching for an internal firefox about page inside the content field")):
+        sumo_pages.search_page.fill_into_searchbar(search_term)
+        utilities.wait_for_given_timeout(2000)
+
+        for title in sumo_pages.search_page.get_all_search_results_article_titles():
+            content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
+            with check, allure.step("Verifying that the internal firefox page is returned in"
+                                    " search results content"):
+                assert _verify_search_results(page, search_term, 'english', title,
+                                              content), (f"{search_term} is found in search result"
+                                                         f" with title: {title} and bolded "
+                                                         f"content: {content}")
+
+
+# C1358442, C1358445, C1358443, C1358444, C1358446
+@pytest.mark.searchTests
+def test_field_operators_for_non_us_locales(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
+    article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+        approve_first_revision=True
+    )
+
+    ro_article_info = sumo_pages.submit_kb_translation_flow._add_article_translation(
+        approve_translation_revision=True,
+        title=(article_details['article_title'] + "Articol de test " + utilities.
+               generate_random_number(1, 100)),
+        keyword="Keyword pentru articolul de test " + utilities.generate_random_number(1, 100),
+        body="Continutul articolului de test " + utilities.generate_random_number(1, 100),
+        summary="Sumarul articolului de test " + utilities.generate_random_number(1, 100),
+        locale='ro'
+    )
+
+    utilities.navigate_to_link(article_details['article_url'])
+    ja_article_info = sumo_pages.submit_kb_translation_flow._add_article_translation(
+        approve_translation_revision=True,
+        title=(article_details['article_title'] + " アカウント " + utilities.
+               generate_random_number(1, 100)),
+        keyword="アカウ " + utilities.generate_random_number(1, 100),
+        body="アンカンウ " + utilities.generate_random_number(1, 100),
+        summary="ンンンン " + utilities.generate_random_number(1, 100),
+        locale='ja'
+    )
+
+    utilities.wait_for_given_timeout(65000)
+    sumo_pages.top_navbar.click_on_sumo_nav_logo()
+
+    with allure.step("Switching the locale to ro"):
+        sumo_pages.footer_section.switch_to_a_locale('ro')
+        utilities.wait_for_given_timeout(2000)
+
+    with allure.step("Searching for the ro article using the title field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            "field:title.ro:" + ro_article_info['translation_title'])
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ro article is successfully returned"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ro_article_info['translation_title']
+        )
+
+    with allure.step("Searching for the ro article using the content field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            "field:content.ro:" + ro_article_info['translation_body'])
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ro article is successfully displayed"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ro_article_info['translation_title']
+        )
+
+    with allure.step("Searching for the ro article using the summary field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            "field:summary.ro:" + ro_article_info['translation_summary']
+        )
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ro article is successfully displayed"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ro_article_info['translation_title']
+        )
+
+    with allure.step("Searching for the ro article using the slug field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            " field:slug.ro:" + ro_article_info['translation_slug']
+        )
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ro article is successfully displayed"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ro_article_info['translation_title']
+        )
+
+    with allure.step("Switching the locale to ja"):
+        sumo_pages.footer_section.switch_to_a_locale('ja')
+        utilities.wait_for_given_timeout(2000)
+
+    with allure.step("Searching for the ja article using the title field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            "field:title.ja:" + ja_article_info['translation_title'])
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ja article is successfully returned"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ja_article_info['translation_title']
+        )
+
+    with allure.step("Searching for the ro article using the content field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            "field:content.ja:" + ja_article_info['translation_body'])
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ro article is successfully displayed"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ja_article_info['translation_title']
+        )
+
+    with allure.step("Searching for the ja article using the summary field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            "field:summary.ja:" + ja_article_info['translation_summary']
+        )
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ja article is successfully displayed"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ja_article_info['translation_title']
+        )
+
+    with allure.step("Searching for the ro article using the slug field operator"):
+        sumo_pages.search_page.fill_into_searchbar(
+            " field:slug.ja:" + ja_article_info['translation_slug']
+        )
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the ro article is successfully displayed"):
+        assert sumo_pages.search_page.is_a_particular_article_visible(
+            ja_article_info['translation_title']
+        )
+
+    with allure.step("Deleting both articles"):
+        utilities.navigate_to_link(article_details['article_url'])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 def _verify_search_results(page: Page, search_term: str, locale: str, search_result_title: str,

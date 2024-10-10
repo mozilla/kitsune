@@ -103,6 +103,7 @@ class SearchPage(BasePage):
         return self._get_element_input_value(self.__searchbar)
 
     def fill_into_searchbar(self, text: str):
+        self.clear_the_searchbar()
         self._fill(self.__searchbar, text)
 
     def clear_the_searchbar(self):

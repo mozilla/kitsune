@@ -151,6 +151,8 @@ class AddKbArticleFlow:
         if article_content is None:
             self.submit_kb_article_page.add_text_to_content_textarea(
                 kb_article_test_data["article_content"])
+        else:
+            self.submit_kb_article_page.add_text_to_content_textarea(article_content)
 
         if article_content_image != '':
             self.submit_kb_article_page.click_on_insert_media_button()
