@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
+from wagtail.models import PreviewableMixin
 
 from kitsune.products.managers import NonArchivedManager, ProductManager
 from kitsune.sumo.fields import ImagePlusField
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
-
-from wagtail.models import PreviewableMixin
 
 HOT_TOPIC_SLUG = "hot"
 
@@ -152,6 +151,23 @@ class Topic(BaseProductTopic):
         }
         query.update(kwargs)
         return Document.objects.visible(**query)
+
+    @staticmethod
+    def non_migrated_topics():
+        """Return topics that are not migrated to the new Taxonomy but have active documents."""
+        migrated_topic_slugs = [
+            item
+            for topics in TopicSlugHistory.objects.all().values_list("slug", "topic__slug")
+            for item in topics
+        ]
+
+        return (
+            Topic.active.exclude(slug__in=migrated_topic_slugs)
+            .annotate(
+                doc_count=models.Count("document", filter=models.Q(document__is_archived=False))
+            )
+            .filter(doc_count__gt=0)
+        )
 
     def get_absolute_url(self, product_slug=None):
         kwargs = {"topic_slug": self.slug}
