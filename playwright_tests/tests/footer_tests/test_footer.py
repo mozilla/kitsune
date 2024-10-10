@@ -12,7 +12,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.footerSectionTests
 def test_all_footer_links_are_working(page: Page):
     sumo_pages = SumoPages(page)
-    for link in sumo_pages.footer_section._get_all_footer_links():
+    for link in sumo_pages.footer_section.get_all_footer_links():
         relative_url = link.get_attribute("href")
 
         # Verify if URL is absolute, and construct the full URL if it's not
@@ -48,8 +48,8 @@ def test_locale_selector(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Verifying that all footer select options are redirecting the user to the "
                      "correct page locale"):
-        for locale in sumo_pages.footer_section._get_all_footer_locales():
-            sumo_pages.footer_section._switch_to_a_locale(locale)
+        for locale in sumo_pages.footer_section.get_all_footer_locales():
+            sumo_pages.footer_section.switch_to_a_locale(locale)
             expect(
                 page
             ).to_have_url(re.compile(f".*{locale}"))

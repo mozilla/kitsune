@@ -23,28 +23,31 @@ class Homepage(BasePage):
         super().__init__(page)
 
     # Product Cards
-    def _get_text_of_product_card_titles(self) -> list[str]:
-        return super()._get_text_of_elements(self.__product_card_titles)
+    def get_text_of_product_card_titles(self) -> list[str]:
+        return self._get_text_of_elements(self.__product_card_titles)
 
-    def _click_on_product_card(self, element_number):
-        super()._click_on_an_element_by_index(self.__product_list, element_number)
+    def click_on_product_card(self, element_number):
+        self._click_on_an_element_by_index(self.__product_list, element_number)
+
+    def click_on_product_card_by_title(self, card_title: str):
+        self._click(f"//h3[@class='card--title']/a[normalize-space(text())='{card_title}']")
 
     # Featured articles
-    def _get_number_of_featured_articles(self) -> int:
-        return super()._get_elements_count(self.__featured_articles_list)
+    def get_number_of_featured_articles(self) -> int:
+        return self._get_elements_count(self.__featured_articles_list)
 
-    def _get_featured_articles_titles(self) -> list[str]:
-        return super()._get_text_of_elements(self.__featured_articles_card_titles)
+    def get_featured_articles_titles(self) -> list[str]:
+        return self._get_text_of_elements(self.__featured_articles_card_titles)
 
-    def _click_on_a_featured_card(self, element_number: int):
-        super()._click_on_an_element_by_index(self.__featured_articles_card_items, element_number)
+    def click_on_a_featured_card(self, element_number: int):
+        self._click_on_an_element_by_index(self.__featured_articles_card_items, element_number)
 
     # Learn More
-    def _click_learn_more_option(self):
-        super()._click(self.__learn_more_option)
+    def click_learn_more_option(self):
+        self._click(self.__learn_more_option)
 
-    def _get_community_card_title(self) -> str:
-        return super()._get_text_of_element(self.__join_our_community_card_title)
+    def get_community_card_title(self) -> str:
+        return self._get_text_of_element(self.__join_our_community_card_title)
 
-    def _get_community_card_description(self) -> str:
-        return super()._get_text_of_element(self.__join_our_community_card_description)
+    def get_community_card_description(self) -> str:
+        return self._get_text_of_element(self.__join_our_community_card_description)
