@@ -41,10 +41,13 @@ class WikiDocumentVisits(ModelBase):
             if verbose:
                 log.info("Gathering pageviews per article from GA4 data API...")
 
-            instance_by_locale_and_slug = {}
-            for (locale, slug), visits in googleanalytics.pageviews_by_document(
+            # At this point, this is a dictionary of integer values (visits).
+            instance_by_locale_and_slug = googleanalytics.pageviews_by_document(
                 period, verbose=verbose
-            ):
+            )
+
+            # Replace the integer values (visits) with WikiDocumentVisits instances.
+            for (locale, slug), visits in instance_by_locale_and_slug.items():
                 instance_by_locale_and_slug[(locale, slug)] = cls(
                     document_id=Subquery(
                         Document.objects.filter(locale=locale, slug=slug).values("id")

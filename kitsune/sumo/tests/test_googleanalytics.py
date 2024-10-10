@@ -87,7 +87,14 @@ class GoogleAnalyticsTests(TestCase):
                     DimensionValue(value="/es/kb/doc2-slug"),
                     DimensionValue(value="en-US"),
                 ],
-                metric_values=[MetricValue(value="2000")],
+                metric_values=[MetricValue(value="1000")],
+            ),
+            Row(
+                dimension_values=[
+                    DimensionValue(value="/en-US/kb/doc2-slug"),
+                    DimensionValue(value="en-US"),
+                ],
+                metric_values=[MetricValue(value="1000")],
             ),
             Row(
                 dimension_values=[
@@ -105,13 +112,13 @@ class GoogleAnalyticsTests(TestCase):
             ),
         )
 
-        result = list(googleanalytics.pageviews_by_document(LAST_7_DAYS))
+        result = googleanalytics.pageviews_by_document(LAST_7_DAYS)
 
         self.assertEqual(4, len(result))
-        self.assertEqual(result[0], (("en-US", "doc1-slug"), 1000))
-        self.assertEqual(result[1], (("en-US", "doc2-slug"), 2000))
-        self.assertEqual(result[2], (("de", "doc3-slug"), 3000))
-        self.assertEqual(result[3], (("es", "doc4-slug"), 4000))
+        self.assertEqual(result[("en-US", "doc1-slug")], 1000)
+        self.assertEqual(result[("en-US", "doc2-slug")], 2000)
+        self.assertEqual(result[("de", "doc3-slug")], 3000)
+        self.assertEqual(result[("es", "doc4-slug")], 4000)
 
     @patch.object(googleanalytics, "run_report")
     def test_pageviews_by_question(self, run_report):
