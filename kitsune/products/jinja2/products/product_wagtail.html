@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set product = page.product %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
+{% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
+{% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
+{% set classes = 'product-landing' %}
+{% set search_params = {'product': product.slug} %}
+{% set extra_body_attrs = {'data-product-slug': product.slug} %}
+{% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
+{% set ga_products = "/" + product.slug + "/" %}
+{% set ga_content_group = "product-home" %}
+
+{% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
+
+{% block base_container_classes %}container_wide{% endblock %}
+
+{% block hidden_search_masthead %}{% endblock %}
+
+{% block masthead %}
+
+{% for block in page.body %}
+  {%if block.block_type == 'search' %}
+    {% include_block block %}
+  {% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block contentwrap %}
+<div id="main-content">
+
+{% for block in page.body %}
+  {% if block.block_type == 'text' %}
+    <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+      {% include_block block %}
+    </section>
+  {% endif %}
+{% endfor %}
+
+{% for block in page.body %}
+  {% if block.block_type == 'frequent_topics' %}
+    {% include_block block %}
+  {% endif %}
+{% endfor %}
+
+{% if page.body.first_block_by_name('featured_articles') %}
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+        <h2 class="sumo-page-subheading text-center-to-left-on-large">{{ _('Featured Articles') }}</h2>   
+          <div class="sumo-card-grid is-four-wide">
+            <div class="scroll-wrap">
+              {% for block in page.body %}
+                {% if block.block_type == 'featured_articles' %}
+                  {% include_block block %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+  </section>
+{% endif %}
+
+{% for block in page.body %}
+  {% if block.block_type == 'cta' %}
+    {% include_block block %}
+  {% endif %}
+{% endfor %}
+
+
+</div>
+
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}
+
+{% block outer_side %}
+{% endblock %}
