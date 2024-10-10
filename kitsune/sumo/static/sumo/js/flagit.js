@@ -63,12 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let reason = updateUrlParameter('get', 'reason');
 
-    if (!reason) {
-        reason = 'spam';
-        updateUrlParameter('set', 'reason', reason);
-        reasonFilter.value = 'spam';
-        fetchAndUpdateContent(new URL(window.location.href));
-    } else {
+    if (reason) {
         reasonFilter.value = reason;
     }
 
