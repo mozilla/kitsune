@@ -1721,13 +1721,14 @@ def test_report_abuse(page: Page, flagged_content, username):
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
         posted_question = post_firefox_product_question_flow(page, 'TEST_ACCOUNT_12')
+        reply_content = (utilities.aaq_question_test_data['valid_firefox_question']
+                         ['question_reply'] + utilities.generate_random_number(1, 1000))
 
     if flagged_content == "question_reply":
         with allure.step("Posting a reply to the question"):
             reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=posted_question['username_one'],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['question_reply']
+                reply=reply_content
             )
 
     with allure.step("Deleting user session"):
@@ -1787,29 +1788,54 @@ def test_report_abuse(page: Page, flagged_content, username):
     with allure.step("Navigating to 'Moderate forum content page' and verifying that the "
                      "question exists inside the moderate forum content page"):
         sumo_pages.top_navbar.click_on_moderate_forum_content_option()
-        expect(
-            sumo_pages.moderate_forum_content_page._get_flagged_question_locator(
-                posted_question['question_details']['aaq_subject']
-            )
-        ).to_be_visible()
+        if flagged_content == "question_content":
+            expect(
+                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                    posted_question['question_details']['aaq_subject']
+                )
+            ).to_be_visible()
+        else:
+            expect(
+                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                    reply_content
+                )
+            ).to_be_visible()
 
     with allure.step("Selecting an option from the update status and clicking on the update "
                      "button"):
-        sumo_pages.moderate_forum_content_page._select_update_status_option(
-            posted_question['question_details']['aaq_subject'],
-            ModerateForumContentPageMessages.UPDATE_STATUS_FIRST_VALUE
-        )
-        sumo_pages.moderate_forum_content_page._click_on_the_update_button(
-            posted_question['question_details']['aaq_subject']
-        )
+        if flagged_content == "question_content":
+            sumo_pages.moderate_forum_content_page.select_update_status_option(
+                posted_question['question_details']['aaq_subject'],
+                ModerateForumContentPageMessages.UPDATE_STATUS_FIRST_VALUE
+            )
+        else:
+            sumo_pages.moderate_forum_content_page.select_update_status_option(
+                reply_content,
+                ModerateForumContentPageMessages.UPDATE_STATUS_FIRST_VALUE
+            )
+        if flagged_content == "question_content":
+            sumo_pages.moderate_forum_content_page.click_on_the_update_button(
+                posted_question['question_details']['aaq_subject']
+            )
+        else:
+            sumo_pages.moderate_forum_content_page.click_on_the_update_button(
+                reply_content
+            )
 
     with allure.step("Verifying that the question no longer exists inside the moderate forum "
                      "content page"):
-        expect(
-            sumo_pages.moderate_forum_content_page._get_flagged_question_locator(
-                posted_question['question_details']['aaq_subject']
-            )
-        ).to_be_hidden()
+        if flagged_content == "question_content":
+            expect(
+                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                    posted_question['question_details']['aaq_subject']
+                )
+            ).to_be_hidden()
+        else:
+            expect(
+                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                    reply_content
+                )
+            ).to_be_hidden()
 
     with allure.step("Navigating back to the posted question and deleting it"):
         utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
