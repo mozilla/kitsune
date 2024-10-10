@@ -183,7 +183,7 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page):
                         == current_option)
 
 
-# T5696576, T5696591
+# T5696576, T5696591, C2663303
 @pytest.mark.topNavbarTests
 def test_ask_a_question_top_navbar_redirect(page: Page):
     sumo_pages = SumoPages(page)

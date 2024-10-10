@@ -11,9 +11,8 @@ from playwright_tests.messages.ask_a_question_messages.product_solutions_message
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# Currently fails due to https://github.com/mozilla/sumo/issues/1608
-#  C890370
-@pytest.mark.skip
+#  C890370, C890374
+@pytest.mark.productSolutionsPage
 def test_featured_articles_redirect(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
