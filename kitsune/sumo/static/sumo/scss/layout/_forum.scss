@@ -126,14 +126,12 @@
     display: flex;
     flex-wrap: wrap;
     @include c.text-body-sm;
-    @include p.bidi((
-      (margin, 0 auto p.$spacing-md 0, 0 0 p.$spacing-md auto),
-    ));
+    @include p.bidi(((margin, 0 auto p.$spacing-md 0, 0 0 p.$spacing-md auto),
+      ));
 
     li {
-      @include p.bidi((
-        (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
-      ));
+      @include p.bidi(((padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
+        ));
       white-space: nowrap;
 
       &:last-child {
@@ -154,9 +152,8 @@
 
     .forum--meta-val,
     .forum--meta-key {
-      @include p.bidi((
-        (padding, 0 p.$spacing-xs 0 0, 0 0 0 p.$spacing-xs),
-      ));
+      @include p.bidi(((padding, 0 p.$spacing-xs 0 0, 0 0 0 p.$spacing-xs),
+        ));
     }
 
     .forum--meta-val {
@@ -169,10 +166,9 @@
       flex-wrap: nowrap;
 
       li:last-child {
-        @include p.bidi((
-          (padding-right, 0, p.$spacing-sm),
-          (padding-left, p.$spacing-sm, 0),
-        ));
+        @include p.bidi(((padding-right, 0, p.$spacing-sm),
+            (padding-left, p.$spacing-sm, 0),
+          ));
       }
     }
   }
@@ -236,9 +232,8 @@
   padding: p.$spacing-xl 0;
 
   &-content {
-    @include p.bidi((
-      (padding, 0 0 0 54px, 0 54px 0 0),
-    ));
+    @include p.bidi(((padding, 0 0 0 54px, 0 54px 0 0),
+      ));
   }
 
   .content-raw {
@@ -247,6 +242,7 @@
 }
 
 #post-preview {
+
   .mzp-c-menu-list,
   .content-raw {
     display: none;
@@ -280,6 +276,10 @@
     &:hover {
       background: var(--color-light-gray-04);
     }
+
+    &.is-spam {
+      background-color: var(--color-warning);
+    }
   }
 
   &.no-hover li:hover {
@@ -308,10 +308,9 @@
   }
 
   &.push-right li:last-child {
-    @include p.bidi((
-      (margin-right, p.$spacing-md, 0),
-      (margin-left, 0, p.$spacing-md),
-    ));
+    @include p.bidi(((margin-right, p.$spacing-md, 0),
+        (margin-left, 0, p.$spacing-md),
+      ));
   }
 }
 
@@ -357,9 +356,8 @@
 
 // flexbox utility
 .push-right {
-  @include p.bidi((
-    (margin, 0 auto 0 0, 0 0 0 auto),
-  ));
+  @include p.bidi(((margin, 0 auto 0 0, 0 0 0 auto),
+    ));
 }
 
 
@@ -370,11 +368,15 @@
   }
 }
 
-.question, .answer, .forum--entry-content, .response-preview-rendered {
+.question,
+.answer,
+.forum--entry-content,
+.response-preview-rendered {
   .content {
     @include c.ulol;
 
-    p, blockquote {
+    p,
+    blockquote {
       white-space: pre-line;
       overflow-wrap: break-word;
     }
@@ -394,9 +396,8 @@
   }
 
   .sumo-button-stack {
-    @include p.bidi((
-      (margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),
-    ));
+    @include p.bidi(((margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),
+      ));
   }
 }
 
@@ -407,9 +408,8 @@
   margin-bottom: p.$spacing-md;
 
   &--details {
-    @include p.bidi((
-      (margin, 0 0 0 12px, 0 12px 0 0),
-    ));
+    @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),
+      ));
     @include c.text-body-sm;
   }
 
@@ -425,6 +425,7 @@
   margin-bottom: p.$spacing-lg;
 
   .avatar {
+
     // margin-right: p.$spacing-md;
     img {
       display: block;
@@ -439,6 +440,7 @@
 }
 
 .question-details {
+
   .sumo-button-wrap,
   select {
     display: none;
@@ -472,6 +474,7 @@
 }
 
 .attachments-upload {
+
   .adding-attachment,
   .empty {
     display: none;
@@ -555,11 +558,10 @@
   .user-title {
     line-height: 1;
     border: 1px solid var(--color-text);
-    @include p.bidi((
-      (padding, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
-      (margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
-      (border-width, 0 0 0 1px, 0 1px 0 0),
-    ));
+    @include p.bidi(((padding, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
+        (margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
+        (border-width, 0 0 0 1px, 0 1px 0 0),
+      ));
   }
 }
 
@@ -596,10 +598,9 @@
 
   &--icon {
     width: 20px;
-    @include p.bidi((
-      (margin-left, p.$spacing-sm, 0),
-      (margin-right, 0, p.$spacing-sm),
-    ));
+    @include p.bidi(((margin-left, p.$spacing-sm, 0),
+        (margin-right, 0, p.$spacing-sm),
+      ));
 
   }
 }
@@ -618,6 +619,7 @@
 .tag-adder {
   padding: p.$spacing-md 0;
 }
+
 .answer {
   padding: p.$spacing-2xl 0;
   border-bottom: 1px solid var(--color-border);
@@ -707,12 +709,13 @@
     .show {
       display: none;
     }
+
     .hide-until-expanded {
       display: inline;
     }
   }
 
-  &.show ~ .details {
+  &.show~.details {
     display: none;
   }
 }
