@@ -16,20 +16,20 @@ class ProductsPage(BasePage):
         super().__init__(page)
 
     # Page breadcrumbs actions.
-    def _click_on_first_breadcrumb(self):
-        super()._click(self.__first_breadcrumb)
+    def click_on_first_breadcrumb(self):
+        self._click(self.__first_breadcrumb)
 
     # Page content actions.
-    def _get_page_header(self) -> str:
-        return super()._get_text_of_element(self.__page_header)
+    def get_page_header(self) -> str:
+        return self._get_text_of_element(self.__page_header)
 
     # Product card actions.
-    def _get_subheading_of_card(self, card_title: str) -> str:
-        return super()._get_text_of_element(f"//a[normalize-space(text())='{card_title}']/../"
-                                            f"following-sibling::p[@class='card--desc']")
+    def get_subheading_of_card(self, card_title: str) -> str:
+        return self._get_text_of_element(f"//a[normalize-space(text())='{card_title}']/../"
+                                         f"following-sibling::p[@class='card--desc']")
 
-    def _click_on_a_particular_product_support_card(self, card_title):
-        super()._click(f"//div[@class='card--details']//a[normalize-space(text())='{card_title}']")
+    def click_on_a_particular_product_support_card(self, card_title):
+        self._click(f"//div[@class='card--details']//a[normalize-space(text())='{card_title}']")
 
-    def _get_all_product_support_titles(self) -> list[str]:
-        return super()._get_text_of_elements(self.__all_product_card_titles)
+    def get_all_product_support_titles(self) -> list[str]:
+        return self._get_text_of_elements(self.__all_product_card_titles)

@@ -121,7 +121,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
         utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page.click_delete_this_question_question_tools_option()
         sumo_pages.question_page.click_delete_this_question_button()
-        expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
+        expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
 
 # C890832,  C2094281
@@ -188,7 +188,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
         utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page.click_delete_this_question_question_tools_option()
         sumo_pages.question_page.click_delete_this_question_button()
-        expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
+        expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
 
 #  C2094285, C2094284, C891309
