@@ -53,7 +53,7 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
         sumo_pages.question_page.click_delete_this_question_button()
 
     with allure.step("Verifying that we are on the product support forum page after deletion"):
-        expect(sumo_pages.product_support_page._product_product_title_element()).to_be_visible()
+        expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
     # write tests to check my questions section as well
 

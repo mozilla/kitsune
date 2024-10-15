@@ -100,6 +100,9 @@ class TopNavbar(BasePage):
         "normalize-space(text())='Media gallery']"
     )
 
+    __guides_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[normalize-space("
+                       "text())='Guides']")
+
     """
         Locators belonging to the username section of the top-navbar.
     """
@@ -218,6 +221,10 @@ class TopNavbar(BasePage):
     def click_on_media_gallery_option(self):
         self.hover_over_contribute_top_navbar()
         self._click(self.__media_gallery_option)
+
+    def click_on_guides_option(self):
+        self.hover_over_contribute_top_navbar()
+        self._click(self.__guides_option)
 
     """
         Actions against the sign-in/sign-up top-navbar section.

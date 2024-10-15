@@ -82,10 +82,10 @@ def test_explore_by_product_redirects(page: Page):
                 current_option = utilities.remove_character_from_string(current_option, 'desktop')
 
             if current_option != "View all products":
-                support_page = sumo_pages.product_support_page._get_product_support_title_text()
+                support_page = sumo_pages.product_support_page.get_product_support_title_text()
                 assert current_option in support_page
             else:
-                assert (sumo_pages.products_page._get_page_header() == ProductsPageMessages.
+                assert (sumo_pages.products_page.get_page_header() == ProductsPageMessages.
                         PRODUCTS_PAGE_HEADER)
 
 
@@ -148,7 +148,7 @@ def test_browse_by_product_community_forum_redirect(page: Page):
 
             if current_option != "View all forums":
                 assert (f"{current_option} Community Forum" == sumo_pages.product_support_page
-                        ._get_product_support_title_text())
+                        .get_product_support_title_text())
             else:
                 assert utilities.get_page_url() == SupportForumsPageMessages.PAGE_URL
 
@@ -175,7 +175,7 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page):
                 sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
                 sumo_pages.top_navbar._click(option)
 
-            assert (sumo_pages.product_support_page._get_product_support_title_text()
+            assert (sumo_pages.product_support_page.get_product_support_title_text()
                     == "All Products Community Forum")
 
             with allure.step("Verifying that the correct default topic filter is selected"):

@@ -82,11 +82,11 @@ def test_product_cards_are_functional_and_redirect_to_the_proper_support_page(pa
             sumo_pages.homepage.click_on_product_card(counter)
             assert (
                 expected_product_title
-                == sumo_pages.product_support_page._get_product_support_title_text()
+                == sumo_pages.product_support_page.get_product_support_title_text()
             ), (f"Incorrect support page displayed. "
                 f"Expected: {expected_product_title} "
                 f"Received: "
-                f"{sumo_pages.product_support_page._get_product_support_title_text()}")
+                f"{sumo_pages.product_support_page.get_product_support_title_text()}")
 
             with allure.step("Navigating back to the previous page"):
                 utilities.navigate_back()
