@@ -388,7 +388,7 @@ def test_exact_phrase_searching(page: Page):
             assert not sumo_pages.search_page.is_search_content_section_displayed()
 
 
-# C1352395, C1352397, C1352400
+# C1352395, C1352397, C1352400, C1493903
 @pytest.mark.searchTests
 def test_keywords_field_and_content_operator(page: Page):
     sumo_pages = SumoPages(page)
@@ -606,6 +606,36 @@ def test_field_operators_for_non_us_locales(page: Page):
     with allure.step("Deleting both articles"):
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C1358447
+@pytest.mark.searchTests
+def test_doc_id_field_operator(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Performing a GET request against the /api/1/kb endpoint and saving the "
+                     "first returned kb article information"):
+        kb_list = utilities.get_api_response(page, f"{HomepageMessages.STAGE_HOMEPAGE_URL}"
+                                                   f"/api/1/kb")
+        first_kb_result = kb_list.json()['results'][0]
+        kb_result_dict = {
+            "kb_title": first_kb_result["title"],
+            "kb_slug": first_kb_result["slug"]
+        }
+
+    with allure.step("Performing a GET request against the /api/1/kb/{first article slug} and "
+                     "fetching the document_id"):
+        document_info = utilities.get_api_response(page, f"{HomepageMessages.STAGE_HOMEPAGE_URL}"
+                                                         f"/api/1/kb/{kb_result_dict['kb_slug']}")
+        document_id = document_info.json()['id']
+
+    with allure.step("Searching for the doc_id field operator inside the main searchbar"):
+        sumo_pages.search_page.fill_into_searchbar(f"field:doc_id.en-US:{document_id}")
+        utilities.wait_for_given_timeout(2000)
+
+    with allure.step("Verifying that the correct article is returned"):
+        sumo_pages.search_page.is_a_particular_article_visible(kb_result_dict['kb_title'])
 
 
 def _verify_search_results(page: Page, search_term: str, locale: str, search_result_title: str,
