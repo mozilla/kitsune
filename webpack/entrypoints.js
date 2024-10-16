@@ -1,6 +1,5 @@
 const entrypoints = {
   screen: ["sumo/scss/screen.scss"],
-  wagtail: ["sumo/scss/wagtail.scss"],
   common: [
     "sumo/js/i18n.js",
     "sumo/js/kbox.js",

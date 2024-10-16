@@ -9,7 +9,6 @@ import re
 import dj_database_url
 import django_cache_url
 from decouple import Csv, config
-from wagtail.admin.localization import WAGTAILADMIN_PROVIDED_LANGUAGES
 
 from kitsune.lib.sumo_locales import LOCALES
 
@@ -447,10 +446,6 @@ TEMPLATES = [
                 "django_jinja.builtins.extensions.StaticFilesExtension",
                 "django_jinja.builtins.extensions.DjangoFiltersExtension",
                 "jinja2.ext.i18n",
-                "wagtail.jinja2tags.core",
-                "wagtail.admin.jinja2tags.userbar",
-                "wagtail.images.jinja2tags.images",
-                "wagtail.contrib.settings.jinja2tags.settings",
             ],
             "policies": {
                 "ext.i18n.trimmed": True,
@@ -515,7 +510,6 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware",
     "csp.middleware.CSPMiddleware",
     "dockerflow.django.middleware.DockerflowMiddleware",
-    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 )
 
 # SecurityMiddleware settings
@@ -554,7 +548,6 @@ if READ_ONLY:
     AUTHENTICATION_BACKENDS = ("kitsune.sumo.readonlyauth.ReadOnlyBackend",)
     OIDC_ENABLE = False
     ENABLE_ADMIN = False
-    WAGTAIL_ENABLE_ADMIN = False
 else:
     OIDC_ENABLE = config("OIDC_ENABLE", default=True, cast=bool)
     ENABLE_ADMIN = config("ENABLE_ADMIN", default=OIDC_ENABLE, cast=bool)
@@ -1315,51 +1308,3 @@ MOZILLA_LOCATION_SERVICE = config(
     "MOZILLA_LOCATION_SERVICE",
     default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",  # noqa
 )
-
-# Wagtail settings
-WAGTAIL_ENABLE = config("WAGTAIL_ENABLE", default=False, cast=bool)
-WAGTAIL_ENABLE_ADMIN = config("WAGTAIL_ENABLE_ADMIN", default=False, cast=bool)
-WAGTAIL_I18N_ENABLED = True
-WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
-WAGTAILADMIN_PERMITTED_LANGUAGES = [
-    # Only include items in this list that SuMO supports and that are included
-    # in wagtail.admin.localization.WAGTAILADMIN_PROVIDED_LANGUAGES. These are
-    # only used by Wagtail for localizing its admin interface.
-    ("ar", "Arabic"),
-    ("ca", "Catalan"),
-    ("cs", "Czech"),
-    ("de", "German"),
-    ("el", "Greek"),
-    ("en", "English"),
-    ("es", "Spanish"),
-    ("et", "Estonian"),
-    ("fi", "Finnish"),
-    ("fr", "French"),
-    ("gl", "Galician"),
-    ("hr", "Croatian"),
-    ("hu", "Hungarian"),
-    ("id-id", "Indonesian"),
-    ("it", "Italian"),
-    ("ja", "Japanese"),
-    ("ko", "Korean"),
-    ("lt", "Lithuanian"),
-    ("nl", "Dutch"),
-    ("fa", "Persian"),
-    ("pl", "Polish"),
-    ("pt-br", "Brazilian Portuguese"),
-    ("pt-pt", "Portuguese"),
-    ("ro", "Romanian"),
-    ("ru", "Russian"),
-    ("sv", "Swedish"),
-    ("sk-sk", "Slovak"),
-    ("sl", "Slovenian"),
-    ("th", "Thai"),
-    ("tr", "Turkish"),
-    ("uk", "Ukrainian"),
-    ("zh-hans", "Chinese (Simplified)"),
-    ("zh-hant", "Chinese (Traditional)"),
-]
-WAGTAIL_SITE_NAME = config("WAGTAIL_SITE_NAME", default="Mozilla Support CMS")
-WAGTAILADMIN_BASE_URL = config("WAGTAILADMIN_BASE_URL", default="")
-WAGTAILIMAGES_MAX_UPLOAD_SIZE = IMAGE_MAX_FILESIZE
-WAGTAILDOCS_DOCUMENT_MODEL = "sumo.WagtailDocument"

@@ -421,3 +421,6 @@ class Utilities:
         search_result = search_result.lower()
         print(f"Search result is: {search_result}")
         return search_term in search_result
+
+    def get_api_response(self, page: Page, api_url: str):
+        return page.request.get(api_url)

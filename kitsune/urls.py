@@ -5,13 +5,9 @@ from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
-from wagtail import urls as wagtail_urls
-from wagtail.admin.urls import urlpatterns as wagtail_admin_urlpatterns
-from wagtail.utils.urlpatterns import decorate_urlpatterns
 
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
-from kitsune.sumo.decorators import csp_allow_inline_scripts_and_styles
 from kitsune.sumo.i18n import i18n_patterns
 
 # Note: This must come before importing admin because it patches the
@@ -38,7 +34,6 @@ urlpatterns = i18n_patterns(
     path("announcements/", include("kitsune.announcements.urls")),
     path("community/", include("kitsune.community.urls")),
     path("badges/", include("kitsune.kbadge.urls")),
-    path("documents/", include("wagtail.documents.urls")),
     path("locales", sumo_views.locales, name="sumo.locales"),
     path("", include("kitsune.products.urls")),
     path("", include("kitsune.dashboards.urls")),
@@ -51,21 +46,6 @@ urlpatterns = i18n_patterns(
 if settings.OIDC_ENABLE:
     urlpatterns.append(path("", include("kitsune.users.urls_oidc")))
 
-if settings.WAGTAIL_ENABLE_ADMIN:
-    urlpatterns.append(path("cms/login/", sumo_views.cms_login, name="wagtailadmin_login"))
-    urlpatterns.append(
-        path(
-            "cms/",
-            include(
-                decorate_urlpatterns(
-                    wagtail_admin_urlpatterns, csp_allow_inline_scripts_and_styles
-                )
-            ),
-        )
-    )
-
-if settings.WAGTAIL_ENABLE:
-    urlpatterns += i18n_patterns(path("", include(wagtail_urls)))
 
 urlpatterns += [
     path("1/", include("kitsune.inproduct.urls")),
