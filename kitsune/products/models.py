@@ -8,8 +8,6 @@ from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
-from wagtail.models import PreviewableMixin
-
 HOT_TOPIC_SLUG = "hot"
 
 
@@ -29,7 +27,7 @@ class BaseProductTopic(ModelBase):
         abstract = True
 
 
-class Product(BaseProductTopic, PreviewableMixin):
+class Product(BaseProductTopic):
     codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
     image = ImagePlusField(

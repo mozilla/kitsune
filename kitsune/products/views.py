@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.sumo.decorators import prefer_cms
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
@@ -23,7 +22,6 @@ def product_list(request):
 
 
 @check_simple_wiki_locale
-@prefer_cms
 def product_landing(request, slug):
     """The product landing page."""
     if slug == "firefox-accounts":

@@ -1,17 +1,11 @@
 import json
-import re
 from functools import wraps
 
-from csp.utils import build_policy
 from django import http
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
 
 from kitsune.sumo.utils import is_ratelimited
-
-from wagtail.views import serve as wagtail_serve
-
 
 # Copy/pasta from from https://gist.github.com/1405096
 # TODO: Log the hell out of the exceptions.
@@ -132,51 +126,3 @@ def skip_if_read_only_mode(fn):
             return fn(*args, **kwargs)
 
     return wrapper
-
-
-def csp_allow_inline_scripts_and_styles(fn):
-    """
-    Add a CSP header to the response of the decorated view that allows inline
-    scripts and styles. The CSP header is created from the CSP values in the
-    settings, and then updated to include the "'unsafe-inline'" source within
-    both the "style-src" and "script-src" directives. The CSP header is inserted
-    in the response so that the normal insertion of the header within the
-    CSPMiddleware is bypassed. That, in turn, prevents the CSPMiddleware from
-    adding the nonce sources, which would override the "'unsafe-inline'" sources
-    and effectively cause them to be ignored.
-    """
-
-    @wraps(fn)
-    def wrapped(*args, **kwargs):
-        response = fn(*args, **kwargs)
-        response["Content-Security-Policy"] = build_policy(
-            update={
-                "style-src": "'unsafe-inline'",
-                "script-src": "'unsafe-inline'",
-            }
-        )
-        return response
-
-    return wrapped
-
-
-def remove_locale(url):
-    # Define the regex pattern for locale (e.g., /en-US/ or /en-us/)
-    locale_pattern = r"^/([a-z]{2}(-[a-zA-Z]{2})?)/"
-    # Remove the locale part
-    return re.sub(locale_pattern, "/", url)
-
-
-def prefer_cms(view_func):
-    @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
-        path = remove_locale(request.path_info)
-        try:
-            wagtail_response = wagtail_serve(request, path)
-            if wagtail_response.status_code == 200:
-                return wagtail_response
-        except Http404:
-            pass  # Continue to the original view if no Wagtail page is found
-        return view_func(request, *args, **kwargs)
-
-    return _wrapped_view
