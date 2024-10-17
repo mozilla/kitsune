@@ -67,6 +67,19 @@ services:
       - postgres
       - redis
 
+  beat:
+    build:
+      context: .
+      target: base
+    command: celery -A kitsune beat -l info
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - postgres
+      - redis
+
   mailcatcher:
     image: schickling/mailcatcher
     ports:
