@@ -2,21 +2,21 @@ default_language_version:
   python: python3.11
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.10.0
     hooks:
       - id: black
         files: "^kitsune/"
         exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
         language_version: python3.11
   - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
       - id: flake8
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -28,7 +28,7 @@ repos:
           - prettier-plugin-svelte@3.1.2
         files: "^svelte/"
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.12.0
     hooks:
       - id: mypy
         # Add to the "additional_dependencies" list below any poetry
