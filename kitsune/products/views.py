@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.questions.models import AAQConfig
+from kitsune.sumo.utils import has_aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
@@ -46,11 +46,6 @@ def product_landing(request, slug):
         else:
             latest_version = 0
 
-    try:
-        has_aaq_config = AAQConfig.objects.filter(product=product, is_active=True).exists()
-    except AAQConfig.DoesNotExist:
-        has_aaq_config = False
-
     return render(
         request,
         "products/product.html",
@@ -61,7 +56,7 @@ def product_landing(request, slug):
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
-            "has_aaq_config": has_aaq_config,
+            "has_aaq_config": has_aaq_config(product),
         },
     )
 
@@ -97,7 +92,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             ...
 
     product = None
-    if product_slug:
+    if product_slug and has_aaq_config(product_slug):
         product = get_object_or_404(Product, slug=product_slug)
         request.session["aaq_context"] = {
             "has_ticketing_support": product.has_ticketing_support,

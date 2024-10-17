@@ -56,6 +56,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     build_paged_url,
     get_next_url,
+    has_aaq_config,
     is_ratelimited,
     paginate,
     simple_paginate,
@@ -164,7 +165,6 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     multiple = (len(products) > 1) or ("all" in product_slugs)
 
-    # Get all topics
     topics = []
 
     if topic_slug:
@@ -331,7 +331,6 @@ def question_list(request, product_slug=None, topic_slug=None):
         "recent_answered_percent": recent_answered_percent,
         "product_list": product_list,
         "products": products,
-        "product_slug": product_slug,
         "topic_slug": topic_slug,
         "multiple_products": multiple,
         "all_products": product_slug == "all" or topic_navigation,
@@ -340,6 +339,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "selected_topic_slug": topics[0].slug if topics else None,
         "product_slug": product_slug,
         "topic_navigation": topic_navigation,
+        "has_aaq_config": has_aaq_config(products[0]) if not multiple else False,
     }
 
     if products:
@@ -550,11 +550,12 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     # If the selected product doesn't exist in DB, render a 404
     if step > 1:
         has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
-        request.session["aaq_context"] = {
-            "product_slug": product_slug,
-            "has_public_forum": has_public_forum,
-            "has_ticketing_support": product.has_ticketing_support,
-        }
+        if has_aaq_config(product_slug):
+            request.session["aaq_context"] = {
+                "product_slug": product_slug,
+                "has_public_forum": has_public_forum,
+                "has_ticketing_support": product.has_ticketing_support,
+            }
         context["has_ticketing_support"] = product.has_ticketing_support
         context["ga_products"] = f"/{product_slug}/"
 
