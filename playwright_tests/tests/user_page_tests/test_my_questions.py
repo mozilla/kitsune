@@ -185,8 +185,8 @@ def test_my_question_page_reflects_posted_questions_and_redirects_to_the_correct
     with allure.step("Navigating to my questions profile page and verifying that the first "
                      "element from the My Questions page is the recently posted question"):
         sumo_pages.top_navbar.click_on_my_questions_profile_option()
-        assert sumo_pages.my_questions_page._get_text_of_first_listed_question().replace(
-            " ", "") == question_info["aaq_subject"].replace(" ", "")
+        assert sumo_pages.my_questions_page._get_text_of_first_listed_question(
+        ).strip() == question_info["aaq_subject"].strip()
 
     with allure.step("Clicking on the first list item and verifying that the user is "
                      "redirected to the correct question"):

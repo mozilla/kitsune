@@ -196,7 +196,7 @@ class MyProfileEdit(BasePage):
         self._click(self.__cancel_button)
 
     def click_update_my_profile_button(self):
-        self._click(self.__update_my_profile_button)
+        self._click(self.__update_my_profile_button, with_force=True)
 
     def click_close_account_option(self):
         self._click(self.__close_account_and_delete_all_profile_information_link)
