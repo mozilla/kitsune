@@ -1,0 +1,6 @@
+from django_jinja import library
+
+from kitsune.l10n.wiki import current_revision_is_unreviewed_machine_translation
+
+
+library.global_function(current_revision_is_unreviewed_machine_translation)

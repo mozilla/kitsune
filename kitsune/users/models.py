@@ -159,29 +159,51 @@ class Profile(ModelBase):
             return str("%d (%r)" % (self.pk, exc))
 
     @classmethod
-    def get_sumo_bot(cls, user_instance=True):
-        """Get or create the system account."""
+    def get_system_account(cls, bio, username, first_name, last_name, user_instance=True):
+        """Get or create a system account."""
         system_user, _ = User.all_users.get_or_create(
-            username=settings.SUMO_BOT_USERNAME,
+            username=username,
             defaults={
                 "email": "no-reply@mozilla.org",
-                "first_name": "SuMo",
-                "last_name": "Bot",
+                "first_name": first_name,
+                "last_name": last_name,
             },
         )
 
         profile, _ = cls.all_profiles.get_or_create(
             user=system_user,
             defaults={
-                "name": "SuMo Bot",
+                "name": f"{first_name} {last_name}",
                 "public_email": False,
                 "account_type": cls.AccountType.SYSTEM,
-                "bio": constants.SUMO_BOT_BIO,
+                "bio": bio,
             },
         )
         if user_instance:
             return system_user
         return profile
+
+    @classmethod
+    def get_sumo_bot(cls, user_instance=True):
+        """Get or create the SuMo Bot."""
+        return cls.get_system_account(
+            constants.SUMO_BOT_BIO,
+            settings.SUMO_BOT_USERNAME,
+            "SuMo",
+            "Bot",
+            user_instance=user_instance,
+        )
+
+    @classmethod
+    def get_l10n_bot(cls, user_instance=True):
+        """Get or create the L10n Bot."""
+        return cls.get_system_account(
+            constants.L10N_BOT_BIO,
+            settings.L10N_BOT_USERNAME,
+            "L10n",
+            "Bot",
+            user_instance=user_instance,
+        )
 
     def get_absolute_url(self):
         return reverse("users.profile", args=[self.user_id])

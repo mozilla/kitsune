@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 
 from kitsune.wiki.models import Revision
 
+
 # Yo ******! These are year-agnostic badge templates which code uses
 # to get-or-create the actual Badge instances. These strings should
 # not be l10n-ized here--the badge title and description strings get

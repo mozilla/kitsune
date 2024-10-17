@@ -11,4 +11,9 @@ SUMO_BOT_BIO = _lazy(
     "messages, or forum thread replies."
 )
 
+L10N_BOT_BIO = _lazy(
+    "L10n Bot is a system account used by the Customer Experience team to provide "
+    "machine-translated content on the Mozilla Support website."
+)
+
 DEACTIVATIONS_PER_PAGE = 50

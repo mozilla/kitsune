@@ -638,6 +638,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_celery_beat",
     "django_jinja",
     "graphene_django",
     "mozilla_django_oidc",
@@ -677,6 +678,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "kitsune.notifications",
     "kitsune.journal",
     "kitsune.tidings",
+    "kitsune.l10n",
     "rest_framework",
     "statici18n",
     "watchman",
@@ -912,6 +914,7 @@ CELERY_TASK_EAGER_PROPAGATES = config(
 CELERY_WORKER_HIJACK_ROOT_LOGGER = config(
     "CELERY_WORKER_HIJACK_ROOT_LOGGER", default=False, cast=bool
 )
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = "sumo:wiki:full-rebuild"
@@ -1332,6 +1335,7 @@ MOZILLA_LOCATION_SERVICE = config(
 )
 
 SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")
+L10N_BOT_USERNAME = config("L10N_BOT_USERNAME", default="L10nBot")
 SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="Staff Content Team")
 
 USER_INACTIVITY_DAYS = config("USER_INACTIVITY_DAYS", default=1095, cast=int)
