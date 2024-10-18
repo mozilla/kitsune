@@ -34,6 +34,16 @@ import { getQueryParamsAsDict } from "sumo/js/main";
       makeAggregatedWikiMetricGraphs();
     }
 
+    if ($('body').is('.contributor-dashboard')) {
+      // Add click events to to the date tabs
+      $('.tabs--link').on('click', function() {
+        // Clear active class from all tabs--link
+        $('.tabs--link').removeClass('is-active');
+        // Add is-active class to the clicked tabs--link
+        $(this).addClass('is-active');
+      });
+    }
+
     if ($('body').is('.localization-dashboard')) {
       // Add's datepicker to the create announcement pop-up
       addDatePicker('#id_show_after');
