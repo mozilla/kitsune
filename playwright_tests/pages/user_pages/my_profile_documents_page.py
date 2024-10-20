@@ -4,17 +4,23 @@ from playwright_tests.core.basepage import BasePage
 
 class MyProfileDocumentsPage(BasePage):
     # My profile documents locators.
-    __documents_link_list = "//main//a"
+    MY_PROFILE_DOCUMENTS_LOCATORS = {
+        "documents_link_list": "//main//a"
+    }
 
     def __init__(self, page: Page):
         super().__init__(page)
 
     # My profile documents actions.
-    def _click_on_a_particular_document(self, document_name: str):
-        super()._click(f"//main//a[contains(text(),'{document_name}')]")
+    def click_on_a_particular_document(self, document_name: str):
+        """Click on a particular document"""
+        self._click(f"//main//a[contains(text(),'{document_name}')]")
 
-    def _get_text_of_document_links(self) -> list[str]:
-        return super()._get_text_of_elements(self.__documents_link_list)
+    def get_text_of_document_links(self) -> list[str]:
+        """Get text of all document links"""
+        return self._get_text_of_elements(self.MY_PROFILE_DOCUMENTS_LOCATORS["documents_link_"
+                                                                             "list"])
 
-    def _get_a_particular_document_locator(self, document_name: str) -> Locator:
-        return super()._get_element_locator(f"//main//a[contains(text(),'{document_name}')]")
+    def get_a_particular_document_locator(self, document_name: str) -> Locator:
+        """Get a particular document locator"""
+        return self._get_element_locator(f"//main//a[contains(text(),'{document_name}')]")

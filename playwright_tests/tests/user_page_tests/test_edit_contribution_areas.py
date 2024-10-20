@@ -40,7 +40,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with allure.step("Accessing the my profile page and verifying that the displayed groups are "
                      "the correct ones"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        assert sumo_pages.my_profile_page._get_my_profile_groups_items_text(
+        assert sumo_pages.my_profile_page.get_my_profile_groups_items_text(
         ) == contribution_options
 
     with allure.step("Signing in with a different account and verifying that the original user "
@@ -52,7 +52,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with allure.step("Navigating to the user page and verifying that the user groups is "
                      "successfully displayed"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
-        assert sumo_pages.my_profile_page._get_my_profile_groups_items_text(
+        assert sumo_pages.my_profile_page.get_my_profile_groups_items_text(
         ) == contribution_options
 
     with allure.step("Signing in back with the original user"):
@@ -71,7 +71,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with allure.step("Verifying that the profile groups section is no longer displayed inside the "
                      "profile section"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        expect(sumo_pages.my_profile_page._groups_section_element()).to_be_hidden()
+        expect(sumo_pages.my_profile_page.groups_section_element()).to_be_hidden()
 
     with allure.step("Logging in with a different user and accessing the original user profile"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -82,5 +82,5 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
                      "no longer displayed for the original user"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
         expect(
-            sumo_pages.my_profile_page._groups_section_element()
+            sumo_pages.my_profile_page.groups_section_element()
         ).to_be_hidden()

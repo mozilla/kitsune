@@ -212,7 +212,7 @@ def test_aaq_form_cancel_button_freemium_products(page: Page):
                      "the original number of posted questions"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_questions = utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_questions_text()
+            sumo_pages.my_profile_page.get_my_profile_questions_text()
         )
 
     with allure.step("Navigating to each product AAQ form"):
@@ -241,7 +241,7 @@ def test_aaq_form_cancel_button_freemium_products(page: Page):
                                     "displayed"):
                 sumo_pages.top_navbar.click_on_view_profile_option()
                 new_number = utilities.number_extraction_from_string(
-                    sumo_pages.my_profile_page._get_my_profile_questions_text()
+                    sumo_pages.my_profile_page.get_my_profile_questions_text()
                 )
                 assert new_number == original_number_of_questions
 
@@ -295,11 +295,11 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                                  "that the posted question is displayed inside the 'My "
                                  "Questions page"):
                     sumo_pages.question_page.click_on_my_questions_banner_option()
-                    expect(sumo_pages.my_questions_page._get_listed_question(
+                    expect(sumo_pages.my_questions_page.get_listed_question(
                         question_info['aaq_subject'])).to_be_visible()
 
                 with allure.step("Clicking on the question and deleting it"):
-                    sumo_pages.my_questions_page._click_on_a_question_by_name(
+                    sumo_pages.my_questions_page.click_on_a_question_by_name(
                         question_info['aaq_subject']
                     )
                     sumo_pages.aaq_flow.deleting_question_flow()
@@ -308,7 +308,7 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                                  "My Questions page"):
                     sumo_pages.top_navbar.click_on_my_questions_profile_option()
                     expect(
-                        sumo_pages.my_questions_page._get_listed_question(
+                        sumo_pages.my_questions_page.get_listed_question(
                             question_info['aaq_subject'])).to_be_hidden()
 
                 with allure.step(f"Navigating back to the {product} product aa form"):
