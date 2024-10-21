@@ -2,14 +2,8 @@ import allure
 import pytest
 from playwright.sync_api import Page
 from slugify import slugify
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
-
-
-def _block_request(route):
-    """
-    This function blocks a certain request
-    """
-    route.abort()
 
 
 @pytest.fixture(autouse=True)
@@ -18,12 +12,12 @@ def navigate_to_homepage(page: Page):
     This fixture is used in all functions. It navigates to the SuMo homepage and returns the page
     object.
     """
-
+    utilities = Utilities(page)
     # Set default navigation timeout to 2 minutes.
     page.set_default_navigation_timeout(120000)
 
     # Block pontoon requests in the current page context.
-    page.route("**/pontoon.mozilla.org/**", _block_request)
+    page.route("**/pontoon.mozilla.org/**", utilities.block_request)
 
     # Navigate to the SUMO stage homepage.
     page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)

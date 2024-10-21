@@ -559,12 +559,12 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
         sumo_pages.top_navbar.click_on_view_profile_option()
 
     with allure.step("Clicking on the documents link"):
-        sumo_pages.my_profile_page._click_on_my_profile_document_link()
+        sumo_pages.my_profile_page.click_on_my_profile_document_link()
         op_document_contributions_link = utilities.get_page_url()
 
     with check, allure.step("Verifying that the article is displayed inside the document "
                             "contribution page for admin users"):
-        expect(sumo_pages.my_documents_page._get_a_particular_document_locator(
+        expect(sumo_pages.my_documents_page.get_a_particular_document_locator(
             article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the article is displayed inside the op document "
@@ -573,7 +573,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
         utilities.navigate_to_link(op_document_contributions_link)
-        expect(sumo_pages.my_documents_page._get_a_particular_document_locator(
+        expect(sumo_pages.my_documents_page.get_a_particular_document_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Verifying that the article is not displayed inside the op document "
@@ -582,7 +582,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
         utilities.navigate_to_link(op_document_contributions_link)
-        expect(sumo_pages.my_documents_page._get_a_particular_document_locator(
+        expect(sumo_pages.my_documents_page.get_a_particular_document_locator(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
@@ -598,14 +598,14 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
         sumo_pages.top_navbar.click_on_view_profile_option()
 
     with allure.step("Clicking on the documents link"):
-        sumo_pages.my_profile_page._click_on_my_profile_document_link()
+        sumo_pages.my_profile_page.click_on_my_profile_document_link()
 
     with allure.step("Verifying that the article is displayed inside the op document "
                      "contributions list for the newly whitelisted users group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
-        expect(sumo_pages.my_documents_page._get_a_particular_document_locator(
+        expect(sumo_pages.my_documents_page.get_a_particular_document_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Removing restrictions"):
@@ -616,12 +616,12 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
         sumo_pages.top_navbar.click_on_view_profile_option()
 
     with allure.step("Clicking on the documents link"):
-        sumo_pages.my_profile_page._click_on_my_profile_document_link()
+        sumo_pages.my_profile_page.click_on_my_profile_document_link()
 
     with allure.step("Verifying that the article is displayed inside the op document list "
                      "for signed out users"):
         utilities.delete_cookies()
-        expect(sumo_pages.my_documents_page._get_a_particular_document_locator(
+        expect(sumo_pages.my_documents_page.get_a_particular_document_locator(
             article_details['article_title'])).to_be_visible()
 
 

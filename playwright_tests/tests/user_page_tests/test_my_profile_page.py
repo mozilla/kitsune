@@ -30,11 +30,11 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
             username=original_username))
 
     with check, allure.step("Verifying that the page header is the expected one"):
-        assert sumo_pages.my_profile_page._get_my_profile_page_header(
+        assert sumo_pages.my_profile_page.get_my_profile_page_header(
         ) == MyProfileMessages.STAGE_MY_PROFILE_PAGE_HEADER
 
     with check, allure.step("Verifying that the 'My profile' navbar option is selected"):
-        assert sumo_pages.my_profile_page._get_text_of_selected_navbar_option(
+        assert sumo_pages.my_profile_page.get_text_of_selected_navbar_option(
         ) == UserProfileNavbarMessages.NAVBAR_OPTIONS[0]
 
 
@@ -54,7 +54,7 @@ def test_my_profile_sign_out_button_functionality(page: Page):
     with allure.step("Accessing the my profile page, clicking on the sign out button and "
                      "verifying that the user is redirected to the homepage"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        sumo_pages.my_profile_page._click_my_profile_page_sign_out_button()
+        sumo_pages.my_profile_page.click_my_profile_page_sign_out_button()
         expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
     with allure.step("Verify that the 'Sign in/Up' button from the page header is displayed"):
@@ -68,7 +68,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin user account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     repliant_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
@@ -88,9 +88,12 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
     with allure.step("Navigating to the user profile page and extracting the original number "
                      "of posted question solutions"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        original_number_of_solutions = utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_solutions_text()
-        )
+        if sumo_pages.my_profile_page.is_solutions_displayed():
+            original_number_of_solutions = utilities.number_extraction_from_string(
+                sumo_pages.my_profile_page.get_my_profile_solutions_text()
+            )
+        else:
+            original_number_of_solutions = 0
 
     with allure.step("Navigating to the previously posted question and posting a reply to it"):
         utilities.navigate_to_link(question_info["question_page_url"])
@@ -110,15 +113,18 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
                      "incremented"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_solutions_text()
+            sumo_pages.my_profile_page.get_my_profile_solutions_text()
         )
         assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_solutions_text(
+            sumo_pages.my_profile_page.get_my_profile_solutions_text(
             )) == original_number_of_solutions + 1)
 
     with allure.step("Deleting the posted question and verifying that we are redirected to "
                      "the product support forum page after deletion"):
         utilities.navigate_to_link(question_info["question_page_url"])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
         sumo_pages.question_page.click_delete_this_question_question_tools_option()
         sumo_pages.question_page.click_delete_this_question_button()
         expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
@@ -139,7 +145,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
                      "answers"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_answers = utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_answers_text()
+            sumo_pages.my_profile_page.get_my_profile_answers_text()
         )
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question"):
@@ -168,18 +174,18 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
                      "answers has incremented successfully"):
         sumo_pages.question_page.click_on_the_reply_author(answer_id)
         utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_answers_text()
+            sumo_pages.my_profile_page.get_my_profile_answers_text()
         )
         assert (
             utilities.number_extraction_from_string(
-                sumo_pages.my_profile_page._get_my_profile_answers_text()
+                sumo_pages.my_profile_page.get_my_profile_answers_text()
             ) == original_number_of_answers + 1
         )
 
     with allure.step("Clicking on the my profile answers and verifying that the posted "
                      "answer is successfully displayed inside the list"):
-        sumo_pages.my_profile_page._click_my_profile_answers_link()
-        assert reply_text == sumo_pages.my_answers_page._get_my_answer_text(
+        sumo_pages.my_profile_page.click_my_profile_answers_link()
+        assert reply_text == sumo_pages.my_answers_page.get_my_answer_text(
             answer_id=answer_id
         ), "My question reply is not displayed inside the my profile answers list"
 
@@ -204,7 +210,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
     with allure.step("Accessing the profile page and extracting the number of documents"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         original_number_of_documents = utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page._get_my_profile_documents_text()
+            sumo_pages.my_profile_page.get_my_profile_documents_text()
         )
 
     with allure.step("Creating a kb article"):
@@ -215,20 +221,20 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
         sumo_pages.top_navbar.click_on_view_profile_option()
         assert (
             utilities.number_extraction_from_string(
-                sumo_pages.my_profile_page._get_my_profile_documents_text()
+                sumo_pages.my_profile_page.get_my_profile_documents_text()
             ) == original_number_of_documents + 1
         )
 
     with allure.step("Clicking on my posted documents link and verifying that the posted "
                      "document is listed"):
-        sumo_pages.my_profile_page._click_on_my_profile_document_link()
+        sumo_pages.my_profile_page.click_on_my_profile_document_link()
         assert (
             article_details['article_title'] in sumo_pages.
-            my_documents_page._get_text_of_document_links()
+            my_documents_page.get_text_of_document_links()
         )
 
     with allure.step("Deleting the article"):
-        sumo_pages.my_documents_page._click_on_a_particular_document(
+        sumo_pages.my_documents_page.click_on_a_particular_document(
             article_details['article_title']
         )
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
@@ -259,7 +265,7 @@ def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: 
     with allure.step("Verifying that the username contains the supported characters and "
                      "doesn't contain the unsupported ones in My Profile page"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert sumo_pages.my_profile_page._get_my_profile_display_name_header_text() == username
+        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text() == username
 
     with allure.step("Verifying that the username contains the supported characters and "
                      "doesn't contain the unsupported ones in Edit my Profile page"):

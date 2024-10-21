@@ -4,23 +4,31 @@ from playwright_tests.core.basepage import BasePage
 
 class MyProfileAnswersPage(BasePage):
     # My Profile Answers.
-    __my_answers_page_header = "//h2[@class='sumo-page-subheading']"
-    __my_answers_question_subject_links = "//article[@id='profile']//li/a"
+    MY_PROFILE_ANSWERS_LOCATORS = {
+        "my_answers_page_header": "//h2[@class='sumo-page-subheading']",
+        "my_answers_question_subject_links": "//article[@id='profile']//li/a"
+    }
 
     def __init__(self, page: Page):
         super().__init__(page)
 
     # My Profile Answers actions.
-    def _get_page_header(self) -> str:
-        return super()._get_text_of_element(self.__my_answers_page_header)
+    def get_page_header(self) -> str:
+        """Get the header of the My Profile Answers page."""
+        return self._get_text_of_element(self.MY_PROFILE_ANSWERS_LOCATORS["my_answers_page_"
+                                                                          "header"])
 
-    def _get_text_of_question_subjects(self) -> list[str]:
-        return super()._get_text_of_elements(self.__my_answers_question_subject_links)
+    def get_text_of_question_subjects(self) -> list[str]:
+        """Get the text of the question subjects."""
+        return self._get_text_of_elements(self.MY_PROFILE_ANSWERS_LOCATORS["my_answers_question_"
+                                                                           "subject_links"])
 
-    def _click_on_specific_answer(self, answer_id: str):
-        super()._click(f"//article[@id='profile']//a[contains(@href, '{answer_id}')]")
+    def click_on_specific_answer(self, answer_id: str):
+        """Click on a specific answer"""
+        self._click(f"//article[@id='profile']//a[contains(@href, '{answer_id}')]")
 
-    def _get_my_answer_text(self, answer_id: str) -> str:
-        return super()._get_text_of_element(f"//article[@id='profile']//"
-                                            f"a[contains(@href, '{answer_id}')]/"
-                                            f"following-sibling::blockquote")
+    def get_my_answer_text(self, answer_id: str) -> str:
+        """Get the text of a specific answer."""
+        return self._get_text_of_element(f"//article[@id='profile']//"
+                                         f"a[contains(@href, '{answer_id}')]/"
+                                         f"following-sibling::blockquote")

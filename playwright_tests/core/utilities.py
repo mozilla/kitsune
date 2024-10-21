@@ -161,7 +161,7 @@ class Utilities:
         response = navigation_info.value
         self.wait_for_dom_to_load()
 
-        if response.status is not None:
+        if response is not None and response.status is not None:
             if response.status >= 400:
                 self.refresh_page()
 
@@ -424,3 +424,9 @@ class Utilities:
 
     def get_api_response(self, page: Page, api_url: str):
         return page.request.get(api_url)
+
+    def block_request(self, route):
+        """
+        This function blocks a certain request
+        """
+        route.abort()

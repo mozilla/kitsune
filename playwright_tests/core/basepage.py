@@ -72,8 +72,8 @@ class BasePage:
         """
         return self._get_element_locator(xpath).count()
 
-    def _get_element_attribute_value(self, element: Union[str, Locator, list[Locator]],
-                                     attribute: str) -> Union[str, list[str]]:
+    def _get_element_attribute_value(self, element: Union[str, Locator, list[Locator],
+                                     ElementHandle], attribute: str) -> Union[str, list[str]]:
         """
         This helper function returns the given attribute of a given locator or web element.
         """
@@ -118,6 +118,15 @@ class BasePage:
         """
         return locator.all_text_contents()
 
+    def _checkbox_interaction(self, xpath: str, check: bool):
+        """
+        This helper function interacts with a checkbox element.
+        """
+        if check:
+            self._get_element_locator(xpath).check()
+        else:
+            self._get_element_locator(xpath).uncheck()
+
     def _click(self, element: Union[str, Locator], with_wait=True, with_force=False,
                retries=3, delay=2000):
         """
@@ -133,8 +142,8 @@ class BasePage:
                     element.click(force=with_force)
                 print(f"Click succeeded on attempt {attempt + 1}")
                 break
-            except PlaywrightTimeoutError as timeout_error:
-                print(f"Click failed on attempt {attempt + 1}. Error: {timeout_error}")
+            except (PlaywrightTimeoutError, Exception) as error:
+                print(f"Click failed on attempt {attempt + 1}. Error: {error}")
                 if attempt < retries - 1:
                     self.page.wait_for_timeout(delay)
                 else:

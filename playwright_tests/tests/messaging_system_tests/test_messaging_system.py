@@ -70,7 +70,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username=user_two))
 
     with allure.step("Clicking on the 'Private Message button'"):
-        sumo_pages.my_profile_page._click_on_private_message_button()
+        sumo_pages.my_profile_page.click_on_private_message_button()
 
     with allure.step("Verifying that the receiver is automatically added inside the 'To' "
                      "field"):
