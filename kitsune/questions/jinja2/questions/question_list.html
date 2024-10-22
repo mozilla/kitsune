@@ -216,14 +216,6 @@
                 <aside class="forum--meta question-meta {% if not question.num_answers %}urgent{% endif %}">
                   {% set tags = question.my_tags %}
                   <ul class="tag-list push-right">
-                  {% if question.topic %}
-                    {% set topic = question.topic %}
-                    <li class="tag">
-                      <a class="tag-name" href="{{ url('questions.list', question.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                        {{ pgettext('DB: products.Product.title', question.product.title) }}
-                      </a>
-                    </li>
-                  {% endif %}
                   {% for tag in tags %}
                     <li class="tag"><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
                   {% endfor %}

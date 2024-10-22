@@ -1201,18 +1201,6 @@ class QuestionsTemplateTestCase(TestCase):
         response = self.client.get(urlparams(reverse("questions.list", args=["all"]), show=""))
         self.assertEqual(200, response.status_code)
 
-    def test_product_shows_without_tags(self):
-        p = ProductFactory()
-        t = TopicFactory()
-        t.products.add(p)
-        q = QuestionFactory(topic=t, product=p)
-
-        response = self.client.get(urlparams(reverse("questions.list", args=["all"]), show=""))
-        doc = pq(response.content)
-        tag = doc("#question-{id} .tag-list li a".format(id=q.id))
-        # Even though there are no tags, the product should be displayed.
-        assert p.title in tag[0].text
-
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     def test_locked_questions_dont_appear(self):
