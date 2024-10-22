@@ -42,6 +42,7 @@ class ProfileAdmin(admin.ModelAdmin):
                     "fxa_uid",
                     "fxa_refresh_token",
                     "zendesk_id",
+                    "fxa_avatar",
                 ],
             },
         ),
