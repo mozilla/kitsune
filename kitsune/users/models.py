@@ -62,13 +62,6 @@ class Profile(ModelBase):
     public_email = models.BooleanField(  # show/hide email
         default=False, verbose_name=_lazy("Make my email address visible to signed in users")
     )
-    avatar = models.ImageField(
-        upload_to=settings.USER_AVATAR_PATH,
-        null=True,
-        blank=True,
-        verbose_name=_lazy("Avatar"),
-        max_length=settings.MAX_FILEPATH_LENGTH,
-    )
     bio = models.TextField(
         null=True,
         blank=True,
@@ -151,7 +144,6 @@ class Profile(ModelBase):
         """Clears out the users profile"""
         self.name = ""
         self.public_email = False
-        self.avatar = None
         self.fxa_avatar = ""
         self.bio = ""
         self.website = ""
