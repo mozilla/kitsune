@@ -93,8 +93,6 @@ def suggest_username(email):
 def deactivate_user(user, moderator):
     user.is_active = False
     user.save()
-    user.profile.fxa_avatar = ""
-    user.profile.save()
     # Clear user settings to remove incoming notifications
     Setting.objects.filter(user=user).delete()
     Watch.objects.filter(user=user).delete()
