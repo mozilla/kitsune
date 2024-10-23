@@ -152,6 +152,7 @@ class Profile(ModelBase):
         self.name = ""
         self.public_email = False
         self.avatar = None
+        self.fxa_avatar = ""
         self.bio = ""
         self.website = ""
         self.twitter = ""
