@@ -35,7 +35,6 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@babel/runtime": "^7.20.13",
-    "@selectize/selectize": "^0.15.2",
     "@urql/svelte": "^3.0.3",
     "codemirror": "^5.65.11",
     "d3": "^3.5.17",
@@ -44,6 +43,7 @@
     "jquery-ui": "1.13.2",
     "nunjucks": "^3.2.4",
     "svelte-navigator": "^3.2.2",
+    "tom-select": "^2.3.1",
     "underscore": "^1.13.6"
   },
   "devDependencies": {

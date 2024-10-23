@@ -1,7 +1,7 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-@import 'selectize/scss/selectize.default';
+@import 'tom-select/dist/scss/tom-select.default';
 
 figure {
   &.linked-in-product {
@@ -23,24 +23,24 @@ figure {
 
 #id_restrict_to_groups {
   // Prevents flickering by hiding the un-selectized select
-  // until selectize uses it to make a new one that's visible.
+  // until tom-select uses it to make a new one that's visible.
   display: none;
 }
 
 // These styles were pulled directly from the less files.
 
 article {
-  &.locked > * {
+  &.locked>* {
     opacity: 0.3;
   }
 
-  > * {
+  >* {
     transition: opacity 1s;
   }
 }
 
 #edit-document label {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .sidebar-nav {
@@ -48,12 +48,13 @@ article {
     background-color: #fff;
     // margin-top: p.$spacing-md;
 
-    > li {
+    >li {
       background-color: #fff;
 
       &.selected {
-        > a,
-        > a:visited {
+
+        >a,
+        >a:visited {
           background: #f3f3f3;
           border: none;
           border-left: p.$spacing-xs solid #000;
@@ -70,123 +71,130 @@ article {
         }
 
         &.has-subtopics {
-          > a {
+          >a {
             background: #fff;
           }
         }
       }
 
-      > a,
-      > a:visited, {
-        color: #000;
+      >a,
+      >a:visited,
+      {
+      color: #000;
+      background: #fff;
+      border: none;
+      border-left: p.$spacing-xs solid #e7e7e7;
+      text-transform: none;
+
+      &:before {
+        content: none;
+      }
+
+      &:hover {
+        color: var(--color-link);
+      }
+    }
+
+    &.subtopic-selected {
+
+      >a,
+      >a:visited {
         background: #fff;
-        border: none;
-        border-left: p.$spacing-xs solid #e7e7e7;
-        text-transform: none;
-
-        &:before {
-          content: none;
-        }
-
-        &:hover {
-          color: var(--color-link);
-        }
+        border-left: p.$spacing-xs solid #000;
       }
+    }
 
-      &.subtopic-selected {
-        > a,
-        > a:visited {
-          background: #fff;
-          border-left: p.$spacing-xs solid #000;
+    >ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      text-transform: none;
+
+      >li {
+
+        >a,
+        >a:visited {
+          background: #f3f3f3;
+          border-left: none;
+          color: #000;
+          display: block;
+          padding: 12px 20px;
+          text-decoration: none;
+
+          &:hover {
+            color: var(--color-link);
+          }
         }
-      }
 
-      > ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        text-transform: none;
+        &.selected {
 
-        > li {
-          > a,
-          > a:visited {
-            background: #f3f3f3;
-            border-left: none;
-            color: #000;
-            display: block;
-            padding: 12px 20px;
-            text-decoration: none;
+          >a,
+          >a:visited {
+            border-left: p.$spacing-xs solid #000;
+            font-weight: bold;
 
             &:hover {
-              color: var(--color-link);
-            }
-          }
-
-          &.selected {
-            > a,
-            > a:visited {
-              border-left: p.$spacing-xs solid #000;
-              font-weight: bold;
-
-              &:hover {
-                color: #000;
-              }
+              color: #000;
             }
           }
         }
       }
     }
+  }
 
-    .html-rtl &.topics > li {
-      &.selected {
-        > a,
-        > a:visited {
-          border-left: none;
-          border-right: p.$spacing-xs solid #000;
-        }
-      }
+  .html-rtl &.topics>li {
+    &.selected {
 
-      > a,
-      > a:visited, {
+      >a,
+      >a:visited {
         border-left: none;
-        border-right: p.$spacing-xs solid #e7e7e7;
+        border-right: p.$spacing-xs solid #000;
       }
+    }
 
-      &.subtopic-selected {
-        > a,
-        > a:visited {
-          border-left: none;
-          border-right: p.$spacing-xs solid #000;
+    >a,
+    >a:visited,
+    {
+    border-left: none;
+    border-right: p.$spacing-xs solid #e7e7e7;
+  }
+
+  &.subtopic-selected {
+
+    >a,
+    >a:visited {
+      border-left: none;
+      border-right: p.$spacing-xs solid #000;
+    }
+  }
+}
+}
+
+&.related-products {
+  >li {
+    >a {
+      >span {
+        box-sizing: border-box;
+        display: block;
+        min-height: p.$spacing-lg;
+        padding-left: 34px;
+        padding-top: 3px;
+        position: relative;
+
+        img {
+          background-repeat: no-repeat;
+          background-size: cover;
+          height: p.$spacing-lg;
+          left: 0;
+          margin-top: -12px;
+          position: absolute;
+          top: 50%;
+          width: p.$spacing-lg;
         }
       }
     }
   }
-
-  &.related-products {
-    > li {
-      > a {
-        > span {
-          box-sizing: border-box;
-          display: block;
-          min-height: p.$spacing-lg;
-          padding-left: 34px;
-          padding-top: 3px;
-          position: relative;
-
-          img {
-            background-repeat: no-repeat;
-            background-size: cover;
-            height: p.$spacing-lg;
-            left: 0;
-            margin-top: -12px;
-            position: absolute;
-            top: 50%;
-            width: p.$spacing-lg;
-          }
-        }
-      }
-    }
-  }
+}
 }
 
 #os_input,
@@ -234,7 +242,9 @@ article {
       padding-top: 10px;
     }
 
-    a.user, a.user:visited, a.user:hover {
+    a.user,
+    a.user:visited,
+    a.user:hover {
       color: #eee;
     }
   }
@@ -250,6 +260,7 @@ article {
 /* Document Translation page */
 #localize-document {
   .buttons-and-preview {
+
     /* Taken from Bootstrap V3 */
     .alert {
       background: #FFE url("../img/warning-stripes.png") repeat-x scroll left top;
@@ -297,7 +308,7 @@ article {
       list-style: none;
       padding: p.$spacing-xs;
 
-      > div {
+      >div {
         display: block;
         margin-bottom: p.$spacing-xs;
       }
@@ -347,7 +358,7 @@ article {
 
   @media #{p.$mq-md} {
 
-    ul li > div {
+    ul li>div {
       display: inline-block;
       margin-bottom: 0;
     }
@@ -396,6 +407,7 @@ article {
       height: p.$spacing-md;
       width: p.$spacing-md;
     }
+
     .close-diff {
       display: none;
     }
@@ -580,7 +592,7 @@ article {
 }
 
 #diff-picker-kbox {
-    width: 770px;
+  width: 770px;
 }
 
 #doc-source {
@@ -622,6 +634,7 @@ article {
       right: 10px;
       top: 10px;
       z-index: 6;
+
       &:hover {
         color: #999;
         cursor: pointer;
@@ -690,13 +703,15 @@ article {
       }
 
       input {
-        width: auto !important; /* temp hack workaround */
+        width: auto !important;
+        /* temp hack workaround */
       }
     }
   }
 }
 
 .html-rtl {
+
   #preview,
   #review-revision {
     .showfor {
@@ -721,6 +736,7 @@ article {
     }
   }
 }
+
 ul.description {
   li {
     list-style: none;
@@ -818,6 +834,7 @@ div.localized {
 }
 
 body.translate {
+
   /* Override the translate page to have fluid width */
   .container_12 {
     margin: 0 25px;
@@ -834,7 +851,7 @@ body.translate {
 /* Review */
 #revision-content,
 #reision-html {
-    margin: 10px 0;
+  margin: 10px 0;
 
   pre {
     white-space: pre-wrap;
@@ -872,7 +889,7 @@ body.review {
     div.help-text {
       background: #fff;
       border-radius: 0 0 10px 10px;
-      box-shadow: 0 10px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25);
+      box-shadow: 0 10px 10px rgba(0, 0, 0, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.125), inset 1px 0 1px rgba(255, 255, 255, 0.25);
       color: #000;
       display: none;
       left: 23px;
@@ -884,7 +901,7 @@ body.review {
 
     &:hover {
       border-radius: 10px 10px 0 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.125), inset 1px 0 1px rgba(255, 255, 255, 0.25);
 
       label {
         position: relative;
@@ -943,13 +960,13 @@ body.review {
 
 /* Style video modal */
 div.video .kbox-container {
-    width: 680px;
-    height: 550px;
-    text-align: left;
+  width: 680px;
+  height: 550px;
+  text-align: left;
 }
 
 .html-rtl div.video .kbox-container {
-    text-align: right;
+  text-align: right;
 }
 
 .document-vote {
@@ -984,7 +1001,7 @@ article {
 
     &:after {
       background: #fff;
-      box-shadow: -2px 2px 2px rgba(0,0,0,0.3);
+      box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.3);
       content: '';
       display: block;
       height: 10px;
@@ -1151,7 +1168,7 @@ article {
 
 .cm-variable,
 .cm-tag {
-  color:  #d98484 !important;
+  color: #d98484 !important;
 }
 
 .cm-other.cm-link {
@@ -1188,13 +1205,13 @@ article {
 .wiki-product-title {
   margin-left: p.$spacing-lg;
 
-  > img {
+  >img {
     float: left;
     padding-top: 2px;
   }
 
-  > a:link,
-    a:visited {
+  >a:link,
+  a:visited {
     color: #000;
     float: left;
     font-size: p.$spacing-md;
@@ -1208,16 +1225,16 @@ article {
     margin-left: 0;
     margin-right: p.$spacing-lg;
 
-    > img {
+    >img {
       float: right;
     }
 
-    > a:link,
-      a:visited {
-        float: right;
-        padding-left: 0;
-        padding-right: 20px;
-      }
+    >a:link,
+    a:visited {
+      float: right;
+      padding-left: 0;
+      padding-right: 20px;
+    }
   }
 }
 
@@ -1235,7 +1252,7 @@ article {
 
 .collapsible {
   .wiki-section {
-    > h1 {
+    >h1 {
       margin-top: p.$spacing-lg;
       margin-bottom: p.$spacing-lg;
       position: relative;
@@ -1245,12 +1262,12 @@ article {
       &:before {
         background: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='%23000' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E") 0 0 no-repeat;
         background-size: auto;
-        background-size: 20px,20px;
+        background-size: 20px, 20px;
         -webkit-transition: transform .1s ease-in-out;
         -webkit-transition: -webkit-transform .1s ease-in-out;
         transition: -webkit-transform .1s ease-in-out;
         transition: transform .1s ease-in-out;
-        transition: transform .1s ease-in-out,-webkit-transform .1s ease-in-out;
+        transition: transform .1s ease-in-out, -webkit-transform .1s ease-in-out;
         content: "";
         height: 20px;
         margin-top: -8px;
@@ -1263,12 +1280,13 @@ article {
     }
   }
 }
+
 .wiki-section.collapsed {
   section {
     display: none;
   }
 
-  > h1:before {
+  >h1:before {
     transform: rotate(0);
   }
 }
