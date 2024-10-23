@@ -74,12 +74,20 @@ class Utilities:
         """
         This helper function sends a delete request to clear the restmail inbox content for a given
         fxa username.
+
+        Args:
+            fxa_username (str): The fxa username
         """
         requests.delete(f"https://restmail.net/mail/{fxa_username}")
 
     def get_fxa_verification_code(self, fxa_username: str, max_attempts=5, poll_interval=5) -> str:
         """
         This helper function pols the restmail inbox for the fxa verification code.
+
+        Args:
+            fxa_username (str): The fxa username
+            max_attempts (int): The maximum number of attempts
+            poll_interval (int): The poll interval
         """
         for attempt in range(max_attempts):
             try:
@@ -106,24 +114,38 @@ class Utilities:
     def username_extraction_from_email(self, string_to_analyze: str) -> str:
         """
         This helper function extracts the username from a given string/e-mail address.
+
+        Args:
+            string_to_analyze (str): The string to analyze
         """
         return re.match(r"(.+)@", string_to_analyze).group(1)
 
     def generate_random_number(self, min_value, max_value) -> str:
         """
         This helper function generates a random number based on a given min and max values.
+
+        Args:
+            min_value: The minimum value
+            max_value: The maximum value
         """
         return str(random.randint(min_value, max_value))
 
     def number_extraction_from_string(self, string_to_analyze: str) -> int:
         """
         This helper function extracts the number from a given string.
+
+        Args:
+            string_to_analyze (str): The string to analyze
         """
         return int(re.findall(r"\d+", string_to_analyze)[0])
 
     def number_extraction_from_string_endpoint(self, endpoint: str, string_to_analyze: str) -> int:
         """
         This helper function extracts the number from a given SUMO endpoint.
+
+        Args:
+            endpoint (str): The endpoint
+            string_to_analyze (str): The string to analyze
         """
         return int(re.findall(fr'{endpoint}(\d+)', string_to_analyze)[0])
 
@@ -155,6 +177,9 @@ class Utilities:
         """
         This helper function navigates to a given link and awaits for the dom load to finish.
         If a response error is encountered we are performing a page refresh.
+
+        Args:
+            link (str): The link to navigate to
         """
         with self.page.expect_navigation() as navigation_info:
             self.page.goto(link)
@@ -168,18 +193,28 @@ class Utilities:
     def set_extra_http_headers(self, headers):
         """
         This helper function sets some extra headers to the request.
+
+        Args:
+            headers: The headers to be set
         """
         self.page.set_extra_http_headers(headers)
 
     def wait_for_given_timeout(self, milliseconds: int):
         """
         This helper function awaits for a given timeout.
+
+        Args:
+            milliseconds (int): The timeout in milliseconds
         """
         self.page.wait_for_timeout(milliseconds)
 
     def wait_for_url_to_be(self, expected_url: str, timeout=4000):
         """
         This helper function awaits for a given url based on a given timeout.
+
+        Args:
+            expected_url (str): The expected url
+            timeout (int): The timeout
         """
         self.page.wait_for_url(expected_url, timeout=timeout)
 
@@ -204,6 +239,9 @@ class Utilities:
     def store_session_cookies(self, session_file_name: str):
         """
         This helper function stores the session state for further usage.
+
+        Args:
+            session_file_name (str): The session file name
         """
         self.page.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
 
@@ -211,6 +249,9 @@ class Utilities:
         """
         This helper function deletes all cookies and performs a page refresh so that the outcome
         is visible immediately.
+
+        Args:
+            tried_once (bool): If the cookies deletion was tried once
         """
         top_navbar = TopNavbar(self.page)
         self.page.context.clear_cookies()
@@ -225,6 +266,10 @@ class Utilities:
         """
         This helper function starts an existing session by applying the session cookies saved in
         the /sessions/ folder.
+
+        Args:
+            session_file_name (str): The session file name
+            tried_once (bool): If the session was tried once
         """
         top_navbar = TopNavbar(self.page)
         if not tried_once:
@@ -258,12 +303,19 @@ class Utilities:
         """
         This helper function replaces the special characters applied to the special chars test
         username.
+
+        Args:
+            account (str): The account to be replaced
         """
         return account.replace(account, "testMozillaSpecialChars")
 
     def remove_character_from_string(self, string: str, character_to_remove: str) -> str:
         """
         This helper function removes a given character from a given target string.
+
+        Args:
+            string (str): The target string
+            character_to_remove (str): The character to remove
         """
         return string.replace(character_to_remove, "")
 
@@ -271,6 +323,9 @@ class Utilities:
         """
         This helper function automatically creates an article title slug based on the given article
         title.
+
+        Args:
+            article_title (str): The article title
         """
         initial_title = article_title.split()
         return '-'.join(initial_title).lower()
@@ -278,6 +333,9 @@ class Utilities:
     def is_descending(self, list_of_items: list[str]):
         """
         This helper function evaluates if a given list of items are displayed in descending order.
+
+        Args:
+            list_of_items (list[str]): The list of items
         """
         if all(list_of_items[i] >= list_of_items[i + 1] for i in range(len(list_of_items) - 1)):
             return True
@@ -287,6 +345,9 @@ class Utilities:
     def extract_month_day_year_from_string(self, timestamp_str: str) -> str:
         """
         This helper function extracts the month/day/year from a given string.
+
+        Args:
+            timestamp_str (str): The timestamp string
         """
         timestamp = datetime.strptime(timestamp_str, "%b %d, %Y, %I:%M:%S %p")
         return timestamp.strftime("%b %d, %Y")
@@ -294,6 +355,9 @@ class Utilities:
     def convert_string_to_datetime(self, timestamp_str: str) -> str:
         """
         This helper function converts a given timestamp string to date-time.
+
+        Args:
+            timestamp_str (str): The timestamp string
         """
         date_object = datetime.strptime(timestamp_str, "%m.%d.%Y")
         return date_object.strftime("%B {:d}, %Y").format(date_object.day)
@@ -301,6 +365,9 @@ class Utilities:
     def extract_date_to_digit_format(self, date_str: str) -> int:
         """
         This helper function extracts the given date to digit format.
+
+        Args:
+            date_str (str): The date string
         """
         date = datetime.strptime(date_str, "%b %d, %Y")
         return int(date.strftime("%m%d%Y"))
@@ -309,12 +376,19 @@ class Utilities:
         """
         This helper function tokenizes the text into individual words and removes any non
         alphanumeric characters.
+
+        Args:
+            text (str): The text to be tokenized
         """
         return re.findall(r'\b\w+\b', text.lower())
 
     def stem_tokens(self, tokens: list[str], search_term_locale: str):
         """
         This helper function stems each token and returns the list of stemmed tokens.
+
+        Args:
+            tokens (list[str]): The list of tokens
+            search_term_locale (str): The locale of the search term
         """
         stemmer = SnowballStemmer(search_term_locale)
         return [stemmer.stem(token) for token in tokens]
@@ -328,6 +402,12 @@ class Utilities:
         3. The exact phrase or any component of the phrase.
         4. Variations of the search term by stemming.
         5. Variations of the search term by stemming for non-US words.
+
+        Args:
+            search_result (str): The search result
+            search_term (str): The search term
+            search_term_locale (str): The locale of the search term
+            exact_phrase (bool): If the search should be for an exact phrase
         """
 
         search_term_split = search_term.lower().split()
@@ -380,6 +460,11 @@ class Utilities:
         """
         This helper function checks if any synonyms of a given search term or its components
         (split term) are present in the search result.
+
+        Args:
+            search_result_lower (str): The search result in lowercase
+            search_term (Union[str, list[str]]): The search term or its components
+            search_term_split (list[str]): The search term split into components
         """
         synonyms = None
         lemmenizer = WordNetLemmatizer()
@@ -406,6 +491,10 @@ class Utilities:
         This helper function checks if any variation of the keyword (components of the search term)
         are present in the search results. This includes different cases (lowercase or uppercase)
         and simple stemmed forms (by removing the last character).
+
+        Args:
+            search_result_lower (str): The search result in lowercase
+            search_term_split (list[str]): The search term split into components
         """
         keyword_variations = [
             variation
@@ -416,6 +505,12 @@ class Utilities:
         return any(variation in search_result_lower for variation in keyword_variations)
 
     def _exact_phrase_check(self, search_result: str, search_term: str) -> bool:
+        """Check if the search result contains the exact phrase
+
+        Args:
+            search_result (str): The search result
+            search_term (str): The search term
+        """
         search_term = search_term.replace('"', '').lower()
         print(f"Search term is: {search_term}")
         search_result = search_result.lower()
@@ -423,6 +518,12 @@ class Utilities:
         return search_term in search_result
 
     def get_api_response(self, page: Page, api_url: str):
+        """Get the API response
+
+        Args:
+            page (Page): The page object
+            api_url (str): The API URL
+        """
         return page.request.get(api_url)
 
     def block_request(self, route):
