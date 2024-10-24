@@ -1,82 +1,73 @@
 ﻿{% extends "groups/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% set title = _('{group} | Groups')|f(group=profile.group.name) %}
+{% set avatar_alt = _('Avatar for {group} group')|f(group=profile.group.name) %}
 
 {% block content %}
   <article id="group-profile" class="main">
     <section id="avatar-area">
-      <img src="{{ group_avatar(profile) }}" alt="" />
+      <img class='group-avatar' src="{{ group_avatar(profile) }}" alt="{{ avatar_alt }}" />
       {% if user_can_edit %}
-        <p><a href="{{ url('groups.edit_avatar', profile.slug) }}" title="{{ _('Change avatar') }}">{{ _('Change') }}</a></p>
+        <p><a class="sumo-button button primary-button button-lg" href="{{ url('groups.edit_avatar', profile.slug) }}" title="{{ _('Change avatar') }}">{{ _('Change Group Avatar') }}</a></p>
         {% if profile.avatar %}
-          <p><a href="{{ url('groups.delete_avatar', profile.slug) }}" title="{{ _('Delete avatar') }}">{{ _('Delete') }}</a></p>
+          <p><a class="sumo-button button primary-button button-lg" href="{{ url('groups.delete_avatar', profile.slug) }}" title="{{ _('Delete avatar') }}">{{ _('Delete Group Avatar') }}</a></p>
         {% endif %}
       {% endif %}
     </section>
     <section id="main-area">
-      {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
-        <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
-      {% endif %}
+      <div id="group-info" class="editable">
       <h1>{{ profile.group.name }}</h1>
+      <section class="mzp-c-emphasis-box">
+        <div id="doc-content">
+        {% if profile.information_html %}
+          <blockquote>{{ profile.information_html|safe }}</blockquote>
+        {% endif %}
+        </div>
         {% if user_can_edit %}
-          <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
+          <a class="sumo-button button primary-button button-lg" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>      
         {% endif %}
-      <div id="doc-content">
-        {{ profile.information_html|safe }}
-      </div>
-
-      <div id="group-leaders" class="editable">
-        {% if user_can_manage_leaders %}
-          <a class="edit" href="#group-leaders">{{ _('Edit group leaders') }}</a>
-        {% endif %}
+      </section>
+      <div id="group-leaders">
         <h2>{{ _('Group Leaders') }}</h2>
         <ul class="users leaders">
           {% for user in leaders %}
             <li>
               {{ user_row(user) }}
-              {% if user_can_manage_leaders %}
-                <div class="remove edit-mode">
-                  <a href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">&#x2716;</a>
-                </div>
-              {% endif %}
             </li>
           {% endfor %}
         </ul>
         {% if user_can_manage_leaders %}
-          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
+          <form id="add-member-form" action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
             {% csrf_token %}
             {{ errorlist(leader_form) }}
-            {{ leader_form.users|safe }}
-            <input type="submit" value="{{ _('Add Leader') }}" />
+            <section class="mzp-c-emphasis-box">
+              <p>{{ _('Search for a user or users below. When you are ready to add them, click the Add Leaders button.') }}</p>
+              {{ leader_form.users|safe }}
+              <input type="submit" class="sumo-button button primary-button button-lg" value="{{ _('Add Leader(s)') }}" />
+            </section>
           </form>
         {% endif %}
       </div>
-
-      <div id="group-members" class="editable">
-        {% if user_can_edit %}
-          <a class="edit" href="#group-members">{{ _('Edit group members') }}</a>
-        {% endif %}
+      <div id="group-members">
         <h2>{{ _('Group Members') }}</h2>
-        {% if user_can_edit %}
-          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
-            {% csrf_token %}
-            {{ errorlist(member_form) }}
-            {{ member_form.users|safe }}
-            <input type="submit" value="{{ _('Add Member') }}" />
-          </form>
-        {% endif %}
         <ul class="users members container_12 cf">
           {% for user in members %}
             <li class="grid_4">
               {{ user_row(user) }}
-              {% if user_can_edit %}
-                <div class="remove edit-mode">
-                  <a href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">&#x2716;</a>
-                </div>
-              {% endif %}
             </li>
           {% endfor %}
         </ul>
+        {% if user_can_edit %}
+          <form id="add-member-form" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
+            {% csrf_token %}
+            {{ errorlist(member_form) }}
+            <section class="mzp-c-emphasis-box">
+              <p>{{ _('Search for a user or users below. When you are ready to add them, click the Add Members button.') }}</p>
+              {{ member_form.users|safe }}
+              <input type="submit" class="sumo-button button primary-button button-lg" value="{{ _('Add Member(s)') }}" />
+            </section>
+          </form>
+        {% endif %}
       </div>
       {% if is_paginated %}
       <div class="pagination">
@@ -106,5 +97,11 @@
   <div class="info">
     <a rel="nofollow" href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
     {{ private_message(user) }}
+    {% if user_can_manage_leaders and user in leaders %}
+        <a class="sumo-button warning-button button-sm" href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">Remove From Leaders</a>
+    {% endif %}
+    {% if user_can_edit %}
+        <a class="sumo-button warning-button button-sm" href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">Remove From Group</a>
+    {% endif %}
   </div>
 {%- endmacro %}
