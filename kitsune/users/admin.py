@@ -36,7 +36,6 @@ class ProfileAdmin(admin.ModelAdmin):
                     "user",
                     "name",
                     "public_email",
-                    ("avatar", "delete_avatar"),
                     "bio",
                     "is_fxa_migrated",
                     "fxa_uid",
