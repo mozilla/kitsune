@@ -15,16 +15,23 @@ class MessagingSystemFlows:
                                              recipient_username='',
                                              message_body='',
                                              submit_message=True):
-        if recipient_username != '' and not isinstance(recipient_username, list):
-            self.new_message_page.type_into_new_message_to_input_field(recipient_username)
-            self.new_message_page.click_on_a_searched_user(recipient_username)
+        """Complete the send message form with data.
 
-        if isinstance(recipient_username, list):
-            for recipient in recipient_username:
-                self.new_message_page.type_into_new_message_to_input_field(recipient)
-                self.new_message_page.click_on_a_searched_user(recipient)
+        Args:
+            recipient_username (str): The username of the recipient.
+            message_body (str): The body of the message.
+            submit_message (bool): Submit the message.
+        """
+        if recipient_username:
+            if isinstance(recipient_username, list):
+                for recipient in recipient_username:
+                    self.new_message_page.type_into_new_message_to_input_field(recipient)
+                    self.new_message_page.click_on_a_searched_user(recipient)
+            else:
+                self.new_message_page.type_into_new_message_to_input_field(recipient_username)
+                self.new_message_page.click_on_a_searched_user(recipient_username)
 
-        if message_body != '':
+        if message_body:
             self.new_message_page.fill_into_new_message_body_textarea(message_body)
 
         if submit_message:
@@ -35,15 +42,26 @@ class MessagingSystemFlows:
                             delete_message=True,
                             from_sent_list=False,
                             from_inbox_list=False):
-        if from_sent_list and username != '':
-            self.sent_message_page.click_on_sent_message_delete_button_by_user(username)
-        elif from_sent_list and excerpt != '':
-            self.sent_message_page.click_on_sent_message_delete_button_by_excerpt(excerpt)
+        """Delete a message flow.
 
-        if from_inbox_list and username != '':
-            self.inbox_page.click_on_inbox_message_delete_button_by_username(username)
-        elif from_inbox_list and excerpt != '':
-            self.inbox_page.click_on_inbox_message_delete_button_by_excerpt(excerpt)
+        Args:
+            username (str): The username of the recipient.
+            excerpt (str): The excerpt of the message.
+            delete_message (bool): Delete the message.
+            from_sent_list (bool): Delete the message from the sent list.
+            from_inbox_list (bool): Delete the message from the inbox list
+        """
+        if from_sent_list:
+            if username:
+                self.sent_message_page.click_on_sent_message_delete_button_by_user(username)
+            elif excerpt:
+                self.sent_message_page.click_on_sent_message_delete_button_by_excerpt(excerpt)
+
+        if from_inbox_list:
+            if username:
+                self.inbox_page.click_on_inbox_message_delete_button_by_username(username)
+            elif excerpt:
+                self.inbox_page.click_on_inbox_message_delete_button_by_excerpt(excerpt)
 
         if delete_message:
             self.sent_message_page.click_on_delete_page_delete_button()
