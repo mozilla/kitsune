@@ -107,17 +107,17 @@ def test_explore_by_topic_redirects(page: Page):
                 sumo_pages.top_navbar._click(option)
 
             assert (current_option == sumo_pages.explore_by_topic_page
-                    ._get_explore_by_topic_page_header())
+                    .get_explore_by_topic_page_header())
 
             with allure.step("Verifying that the correct option is selected inside the 'All "
                              "Topics' side navbar"):
                 assert (current_option == sumo_pages.explore_by_topic_page
-                        ._get_selected_topic_side_navbar_option())
+                        .get_selected_topic_side_navbar_option())
 
             with allure.step("Verifying that the 'All Products' option is displayed inside the "
                              "'Filter by product' dropdown"):
                 assert (sumo_pages.explore_by_topic_page
-                        ._get_current_product_filter_dropdown_option()) == 'All Products'
+                        .get_current_product_filter_dropdown_option()) == 'All Products'
 
 
 # C2462868
