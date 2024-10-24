@@ -186,73 +186,75 @@ def test_still_need_help_button_redirect(page: Page):
             if card in utilities.general_test_data['product_support'] or card == "Guides":
                 if card != "Guides":
                     sumo_pages.products_page.click_on_a_particular_product_support_card(card)
-                else:
-                    continue  # to be removed once https://github.com/mozilla/sumo/issues/2006
-                    # is fixed
-                    # with allure.step("Signing in with an contributor account"):
-                    #     utilities.start_existing_session(utilities.username_extraction_from_email
-                    #     (
-                    #         utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-                    #     ))
-                    #
-                    # with allure.step("Navigating to the 'Contributors Support' product page"):
-                    #     sumo_pages.top_navbar.click_on_guides_option()
-                    #
-                    # with allure.step("Verifying that the still need help CTA is no displayed"):
-                    #     assert not (sumo_pages.product_support_page
-                    #                 .is_still_need_help_widget_displayed())
 
-                with check, allure.step("Verifying that the correct page header is displayed"):
+                    with check, allure.step("Verifying that the correct page header is displayed"):
+                        assert (sumo_pages.product_support_page.get_product_support_title_text()
+                                == card + ProductSupportPageMessages.
+                                PRODUCT_SUPPORT_PAGE_TITLE)
+
+                    with check, allure.step("Verifying that the correct still need help title is "
+                                            "displayed"):
+                        assert (sumo_pages.product_support_page.get_still_need_help_widget_title()
+                                ) == ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE
+                    if card in utilities.general_test_data['premium_products']:
+                        with check, allure.step("Verifying that the correct still need help "
+                                                "content is displayed"):
+                            assert (sumo_pages.product_support_page
+                                    .get_still_need_help_widget_content()
+                                    ) == (ProductSupportPageMessages
+                                          .STILL_NEED_HELP_WIDGET_CONTENT_PREMIUM)
+
+                        with check, allure.step("Verifying that the correct still need help "
+                                                "button text is displayed"):
+                            assert (sumo_pages.product_support_page
+                                    .get_still_need_help_widget_button_text()
+                                    ) == (ProductSupportPageMessages
+                                          .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_PREMIUM)
+                        with allure.step("Clicking on the still need help widget button"):
+                            sumo_pages.product_support_page.click_still_need_help_widget_button()
+                    else:
+                        with check, allure.step("Verifying that the correct still need help "
+                                                "content is displayed"):
+                            assert (sumo_pages.product_support_page
+                                    .get_still_need_help_widget_content()
+                                    ) == (ProductSupportPageMessages
+                                          .STILL_NEED_HELP_WIDGET_CONTENT_FREEMIUM)
+
+                        with check, allure.step("Verifying that the correct still need help "
+                                                "button text is displayed"):
+                            assert (sumo_pages.product_support_page
+                                    .get_still_need_help_widget_button_text()
+                                    ) == (ProductSupportPageMessages
+                                          .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_FREEMIUM)
+
+                        with allure.step("Clicking on the still need help widget button"):
+                            sumo_pages.product_support_page.click_still_need_help_widget_button()
+
+                    with allure.step("Verifying that we are redirected to the correct product "
+                                     "solutions page"):
+                        expect(page).to_have_url(
+                            utilities.general_test_data['product_solutions'][card]
+                        )
+
+                    with check, allure.step("Verifying that we are on the correct milestone"):
+                        assert sumo_pages.product_solutions_page.get_current_milestone_text(
+                        ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
+                else:
+                    with allure.step("Signing in with an contributor account"):
+                        utilities.start_existing_session(utilities.username_extraction_from_email(
+                            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+                        ))
+
+                    with allure.step("Navigating to the 'Contributors Support' product page"):
+                        sumo_pages.top_navbar.click_on_guides_option()
+
                     assert (sumo_pages.product_support_page.get_product_support_title_text()
-                            ) == card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE
+                            == "Contributors" + ProductSupportPageMessages.
+                            PRODUCT_SUPPORT_PAGE_TITLE)
 
-                with check, allure.step("Verifying that the correct still need help title is "
-                                        "displayed"):
-                    assert (sumo_pages.product_support_page.get_still_need_help_widget_title()
-                            ) == ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE
-                if card in utilities.general_test_data['premium_products']:
-                    with check, allure.step("Verifying that the correct still need help "
-                                            "content is displayed"):
-                        assert (sumo_pages.product_support_page
-                                .get_still_need_help_widget_content()
-                                ) == (ProductSupportPageMessages
-                                      .STILL_NEED_HELP_WIDGET_CONTENT_PREMIUM)
-
-                    with check, allure.step("Verifying that the correct still need help "
-                                            "button text is displayed"):
-                        assert (sumo_pages.product_support_page
-                                .get_still_need_help_widget_button_text()
-                                ) == (ProductSupportPageMessages
-                                      .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_PREMIUM)
-                    with allure.step("Clicking on the still need help widget button"):
-                        sumo_pages.product_support_page.click_still_need_help_widget_button()
-                else:
-                    with check, allure.step("Verifying that the correct still need help "
-                                            "content is displayed"):
-                        assert (sumo_pages.product_support_page
-                                .get_still_need_help_widget_content()
-                                ) == (ProductSupportPageMessages
-                                      .STILL_NEED_HELP_WIDGET_CONTENT_FREEMIUM)
-
-                    with check, allure.step("Verifying that the correct still need help "
-                                            "button text is displayed"):
-                        assert (sumo_pages.product_support_page
-                                .get_still_need_help_widget_button_text()
-                                ) == (ProductSupportPageMessages
-                                      .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_FREEMIUM)
-
-                    with allure.step("Clicking on the still need help widget button"):
-                        sumo_pages.product_support_page.click_still_need_help_widget_button()
-
-                with allure.step("Verifying that we are redirected to the correct product "
-                                 "solutions page"):
-                    expect(page).to_have_url(
-                        utilities.general_test_data['product_solutions'][card]
-                    )
-
-                with check, allure.step("Verifying that we are on the correct milestone"):
-                    assert sumo_pages.product_solutions_page.get_current_milestone_text(
-                    ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
+                    with allure.step("Verifying that the still need help CTA is no displayed"):
+                        assert not (sumo_pages.product_support_page
+                                    .is_still_need_help_widget_displayed())
 
                 with allure.step("Navigating to products page via top-navbar"):
                     sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
