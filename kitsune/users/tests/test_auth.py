@@ -186,9 +186,7 @@ class FXAAuthBackendTests(TestCase):
 
         verify_token_mock.return_value = True
 
-        user = UserFactory.create(
-            email="sumo@example.com", profile__avatar="sumo_avatar", profile__name="Kenny Bania"
-        )
+        user = UserFactory.create(email="sumo@example.com", profile__name="Kenny Bania")
         user.profile.is_fxa_migrated = False
         user.profile.save()
         auth_request = RequestFactory().get("/foo", {"code": "foo", "state": "bar"})
@@ -218,7 +216,6 @@ class FXAAuthBackendTests(TestCase):
         assert user.profile.is_fxa_migrated
         self.assertEqual(user.profile.fxa_uid, "my_unique_fxa_id")
         self.assertEqual(user.email, "fxa@example.com")
-        self.assertEqual(user.profile.avatar, "sumo_avatar")
         self.assertEqual(user.profile.name, "Kenny Bania")
         message_mock.info.assert_called_with(auth_request, "fxa_notification_updated")
 
