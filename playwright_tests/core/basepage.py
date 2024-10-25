@@ -14,14 +14,14 @@ class BasePage:
         This helper function returns the element locator from a given xpath.
         """
         if with_wait:
-            self.__wait_for_dom_load_to_finish()
+            self._wait_for_dom_load_to_finish()
         return self.page.locator(xpath)
 
     def _get_elements_locators(self, xpath: str) -> list[Locator]:
         """
         This helper function returns a list of element locators from a given xpath.
         """
-        self.__wait_for_dom_load_to_finish()
+        self._wait_for_dom_load_to_finish()
         return self.page.locator(xpath).all()
 
     def _get_current_page_url(self) -> str:
@@ -80,7 +80,7 @@ class BasePage:
         if isinstance(element, str):
             return self._get_element_locator(element).get_attribute(attribute)
         elif isinstance(element, list):
-            self.__wait_for_dom_load_to_finish()
+            self._wait_for_dom_load_to_finish()
             values = []
             for element in element:
                 values.append(element.get_attribute(attribute))
@@ -240,7 +240,7 @@ class BasePage:
         """
         return self._get_element_locator(xpath).is_checked()
 
-    def __wait_for_dom_load_to_finish(self):
+    def _wait_for_dom_load_to_finish(self):
         """
         This helper function performs two waits:
         1. Waits for the dom load to finish.
