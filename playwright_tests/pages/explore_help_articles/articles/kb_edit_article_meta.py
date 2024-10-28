@@ -98,3 +98,4 @@ class KBArticleEditMetadata(BasePage):
 
     def click_on_save_changes_button(self):
         self._click(self.__save_changes_button)
+        self._wait_for_dom_load_to_finish()

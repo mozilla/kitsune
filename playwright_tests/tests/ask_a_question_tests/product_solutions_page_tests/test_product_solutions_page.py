@@ -82,7 +82,8 @@ def test_popular_topics_redirect(page: Page):
 
                     popular_topic = (feature_article_page
                                      .locator("//h1[@class='topic-title sumo-page-heading']")
-                                     .inner_text())
+                                     .inner_text()
+                                     .strip())
                     assert popular_topic == topic
                     feature_article_page.close()
         else:

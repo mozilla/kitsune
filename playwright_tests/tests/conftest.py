@@ -19,6 +19,19 @@ def navigate_to_homepage(page: Page):
     # Block pontoon requests in the current page context.
     page.route("**/pontoon.mozilla.org/**", utilities.block_request)
 
+    def handle_502_error(response):
+        """
+        This function is used to handle 502 errors. It reloads the page after 5 seconds if a
+        502 error is encountered.
+        """
+        if response.status == 502:
+            page = response.request.frame.page
+            print("502 error encountered. Reloading the page after 5 seconds.")
+            page.wait_for_timeout(5000)
+            page.reload()
+
+    page.context.on("response", handle_502_error)
+
     # Navigate to the SUMO stage homepage.
     page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
 
