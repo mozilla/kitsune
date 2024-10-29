@@ -140,7 +140,7 @@ class Event(object):
         connection.open()
         users_and_watches = self._users_watching(exclude=exclude)
         batch_size = 100
-        for i in range(0, len(users_and_watches), batch_size):
+        for i in range(0, len(list(users_and_watches)), batch_size):
             batch = users_and_watches[i : i + batch_size]
             for m in self._mails(batch):
                 connection.send_messages([m])
