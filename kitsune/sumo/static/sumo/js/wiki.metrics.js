@@ -20,6 +20,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    document.addEventListener("survey-loaded", (event) => {
+      const surveyCloseButton = document.querySelector("#unhelpful-survey .close-button");
+      const surveySubmitButton = document.querySelector('#unhelpful-survey button[type="submit"]');
+
+      function trackCloseEvent(event) {
+        trackEvent("article_unhelpful_survey_close");
+      }
+
+      if (surveySubmitButton) {
+        surveySubmitButton.addEventListener("click", function(event) {
+          trackEvent("article_unhelpful_survey_submit");
+          if (surveyCloseButton) {
+            // After the survey is submitted, we don't want to track the
+            // close of the final message.
+            surveyCloseButton.removeEventListener("click", trackCloseEvent)
+          }
+        });
+      }
+      if (surveyCloseButton) {
+        surveyCloseButton.addEventListener("click", trackCloseEvent);
+      }
+    });
+
     // Track showfor changes in GA.
     if (versionSelect) {
       versionSelect.addEventListener("change", function(event) {

@@ -138,6 +138,10 @@ export default function AjaxVote(form, options) {
       // remove the extra message when the survey opens.
       $container.remove();
 
+      // Dispatch a custom "survey-loaded" event to allow other code to add event
+      // listeners to the survey, now that it has been freshly loaded into the DOM.
+      document.dispatchEvent(new CustomEvent("survey-loaded", { bubbles: true }));
+
       $submit.prop('disabled', true);
 
       function validate() {
