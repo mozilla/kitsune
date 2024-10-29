@@ -14,16 +14,17 @@ from premailer import transform
 log = logging.getLogger("k.email")
 
 
-def send_messages(messages):
-    """Sends a a bunch of EmailMessages."""
+def send_messages(messages, batch_size=100):
+    """Sends a a bunch of EmailMessages in batches."""
     if not messages:
         return
 
     conn = mail.get_connection(fail_silently=True)
     conn.open()
 
-    for msg in messages:
-        conn.send_messages([msg])
+    for i in range(0, len(messages), batch_size):
+        batch = messages[i : i + batch_size]
+        conn.send_messages([batch])
 
 
 def safe_translation(f):

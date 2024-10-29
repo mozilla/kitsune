@@ -138,8 +138,12 @@ class Event(object):
         connection = mail.get_connection(fail_silently=True)
         # Warning: fail_silently swallows errors thrown by the generators, too.
         connection.open()
-        for m in self._mails(self._users_watching(exclude=exclude)):
-            connection.send_messages([m])
+        users_and_watches = self._users_watching(exclude=exclude)
+        batch_size = 100
+        for i in range(0, len(users_and_watches), batch_size):
+            batch = users_and_watches[i : i + batch_size]
+            for m in self._mails(batch):
+                connection.send_messages([m])
 
     def serialize(self):
         """
@@ -324,9 +328,8 @@ class Event(object):
         else:
             return Watch.objects.none()
 
-        # Filter by stuff in the Watch row:
         watches = (
-            getattr(Watch, "uncached", Watch.objects)
+            Watch.objects.select_related("user")
             .filter(
                 user_condition,
                 (
@@ -340,17 +343,13 @@ class Event(object):
             .extra(
                 where=[
                     "(SELECT count(*) FROM tidings_watchfilter WHERE "
-                    "tidings_watchfilter.watch_id="
-                    "tidings_watch.id)=%s"
+                    "tidings_watchfilter.watch_id=tidings_watch.id)=%s"
                 ],
                 params=[len(filters)],
             )
         )
-        # Optimization: If the subselect ends up being slow, store the number
-        # of filters in each Watch row or try a GROUP BY.
 
-        # Apply 1-to-many filters:
-        for k, v in iter(filters.items()):
+        for k, v in filters.items():
             watches = watches.filter(filters__name=k, filters__value=hash_to_unsigned(v))
 
         return watches
