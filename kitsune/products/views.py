@@ -94,11 +94,12 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     product = None
     if product_slug and has_aaq_config(product_slug):
         product = get_object_or_404(Product, slug=product_slug)
-        request.session["aaq_context"] = {
-            "has_ticketing_support": product.has_ticketing_support,
-            "product_slug": product_slug,
-            "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
-        }
+        if has_aaq_config(product):
+            request.session["aaq_context"] = {
+                "has_ticketing_support": product.has_ticketing_support,
+                "product_slug": product_slug,
+                "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
+            }
 
     doc_kw = {
         "locale": request.LANGUAGE_CODE,
