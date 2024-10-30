@@ -92,7 +92,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             ...
 
     product = None
-    if product_slug and has_aaq_config(product_slug):
+    if product_slug:
         product = get_object_or_404(Product, slug=product_slug)
         if has_aaq_config(product):
             request.session["aaq_context"] = {
