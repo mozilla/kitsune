@@ -247,6 +247,14 @@ class MyProfilePage(BasePage):
         """Get the locator for the groups section."""
         return self._get_element_locator(self.PROFILE_DETAILS_LOCATORS["groups_section"])
 
+    def click_on_a_particular_profile_group(self, group_name: str):
+        """Click on a particular profile group.
+
+        Args:
+            group_name (str): The name of the group to click on
+        """
+        self._click(f"//section[@class='groups']//a[text()='{group_name}']")
+
     def edit_user_profile_option_element(self) -> Locator:
         """Get the locator for the edit user profile option."""
         return self._get_element_locator(self.ADMIN_ACTIONS_LOCATORS["edit_user_profile_option"])
