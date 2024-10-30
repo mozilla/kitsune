@@ -95,34 +95,31 @@
 
       {{ _('Ask a Question') }}
     </h2>
+    {% set link_detail = aaq_context.product_slug if aaq_context else topic %}
+    {% set has_support = aaq_context.has_ticketing_support if aaq_context else False %}
+    {% set has_forum = aaq_context.has_public_forum if aaq_context else False %}
+
     {% if aaq_context %}
-      {% set link_detail = aaq_context.product_slug %}
       {% if request.user.is_authenticated %}
-        {% if aaq_context.has_ticketing_support %}
-          <p> {{ _('Still need help? Continue to contact our support team.') }}</p>
-        {% elif aaq_context.has_public_forum %}
+        {% if has_support %}
+          <p>{{ _('Still need help? Continue to contact our support team.') }}</p>
+        {% else %}
           <p>{{ _('Still need help? Continue to ask your question on our forums.') }}</p>
         {% endif %}
-      {% else %}
-        {% if aaq_context.has_ticketing_support %}
+     {% else %}
+        {% if has_support %}
           <p>{{ _('Still need help? Sign in to contact our support team.') }}</p>
-        {% elif aaq_context.has_public_forum %}
+        {% else %}
           <p>{{ _('Still need help? Sign in to ask your question on our forums.') }}</p>
         {% endif %}
       {% endif %}
-
-      {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
-        {% set link_name = "aaq-widget.community-support.kb-article" %}
-        {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
-      {% else %}
-        {% set link_name = "aaq-widget.aaq-step-3" %}
-        {% set next_step = url('questions.aaq_step3', product_slug=aaq_context.product_slug) %}
-      {% endif %}
     {% else %}
       <p>{{ _('Still need help? Continue to ask your question and get help.') }}</p>
-      {% set link_detail = topic %}
-        {% set next_step = url('questions.aaq_step1') %}
     {% endif %}
+
+    {% set link_name = "aaq-widget.community-support.kb-article" if not (has_support or has_forum) else "aaq-widget.aaq-step-3" %}
+    {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) if not (has_support or has_forum or topic) else url('questions.aaq_step3', product_slug=aaq_context.product_slug) if aaq_context else url('questions.aaq_step1') %}
+
     <a class="sumo-button primary-button feature-box"
       href="{{ next_step }}"
       data-event-name="link_click"

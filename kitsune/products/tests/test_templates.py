@@ -65,7 +65,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Create a topic and product.
         p = ProductFactory()
         t1 = TopicFactory(products=[p])
-
+        AAQConfigFactory(product=p)
         # Create 3 documents with the topic and product and one without.
         ApprovedRevisionFactory.create_batch(3, document__products=[p], document__topics=[t1])
         ApprovedRevisionFactory()
@@ -83,6 +83,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Create topic, product and documents.
         p = ProductFactory()
         t = TopicFactory(products=[p])
+        AAQConfigFactory(product=p)
         docs = []
         # FIXME: Can't we do this with create_batch and build the document
         # in the approvedrevisionfactory
@@ -135,6 +136,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Create a topic and product.
         p = ProductFactory()
         t = TopicFactory(products=[p], visible=True)
+        AAQConfigFactory(product=p)
 
         # Create a documents with the topic and product
         doc = DocumentFactory(products=[p], topics=[t])
