@@ -100,9 +100,13 @@ def simple_search(request):
 
     # apply aaq/kb configs
     if cleaned["w"] & constants.WHERE_WIKI:
-        search.add(WikiSearch(query=cleaned["q"], locale=language, product=product))
+        search.add(
+            WikiSearch(query=cleaned["q"], locale=language, product=product, is_archived=False)
+        )
     if cleaned["w"] & constants.WHERE_SUPPORT:
-        search.add(QuestionSearch(query=cleaned["q"], locale=language, product=product))
+        search.add(
+            QuestionSearch(query=cleaned["q"], locale=language, product=product, is_archived=False)
+        )
 
     # execute search
     page = paginate(
