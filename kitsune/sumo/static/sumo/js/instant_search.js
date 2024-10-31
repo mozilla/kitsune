@@ -244,6 +244,9 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
       "search_product_filter": getSearchProductFilter(),
       "search_content_filter": getSearchContentFilter()
     });
+
+    // Scroll to top of the page
+    window.scrollTo(0, 0);
   });
 
   // 'Popular searches' feature
