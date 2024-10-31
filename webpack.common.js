@@ -7,7 +7,7 @@ module.exports = {
   mode: "development",
   resolve: {
     alias: {
-      selectize: "@selectize/selectize/dist",
+      tomselect: "tom-select/dist",
       protocol: "@mozilla-protocol/core/protocol",
       sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),
       community: path.resolve(__dirname, "kitsune/community/static/community"),

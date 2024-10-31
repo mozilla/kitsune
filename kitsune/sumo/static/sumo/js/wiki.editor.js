@@ -1,15 +1,4 @@
-import "@selectize/selectize";
-
-(function($) {
-  // Improve the interface for restricting articles.
-  $(function () {
-    $("select[id='id_restrict_to_groups']").selectize({
-      closeAfterSelect: true,
-      plugins: ["clear_button", "remove_button"],
-      placeholder: "Restrict visibility to selected group(s)   ",
-    });
-  });
-})(jQuery);
+import TomSelect from "tom-select";
 
 function intersection(setA, setB) {
   // Use this function instead of the Set.intersection method,
@@ -27,7 +16,7 @@ function handleTopicRelationships(topic) {
   // If we've checked a subtopic, automatically check its topic.
   if (topic.classList.contains("level-2-topic") && topic.checked) {
     document.getElementById(`id_topic_${topic.dataset.parentTopicId}`).checked = true;
-  // If we've unchecked a topic, automatically uncheck its subtopics.
+    // If we've unchecked a topic, automatically uncheck its subtopics.
   } else if (topic.classList.contains("level-1-topic") && !topic.checked) {
     document.querySelectorAll(
       '#relevant-topics input[type="checkbox"][name="topics"]' +
@@ -173,34 +162,49 @@ function clearSelected(name) {
 // called by the time the following code is run, because it always
 // waits until all deferred scripts have been loaded, and the code
 // in this file is always bundled into a script that is deferred.
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   // Enable/disable products and topics based on initial selections.
   handleUpdate();
   document.querySelectorAll(
     '#relevant-topics input[type="checkbox"][name="topics"]'
-  ).forEach(function(topic) {
-    topic.addEventListener("click", function() {
+  ).forEach(function (topic) {
+    topic.addEventListener("click", function () {
       handleTopicRelationships(topic);
       handleUpdate();
     });
   });
   document.querySelectorAll(
     '#relevant-products input[type="checkbox"][name="products"]'
-  ).forEach(function(product) {
-    product.addEventListener("click", function() {
+  ).forEach(function (product) {
+    product.addEventListener("click", function () {
       handleUpdate();
     });
   });
   document.getElementById(
     "relevant-topics-clear-selected"
-  ).addEventListener("click", function(event) {
+  ).addEventListener("click", function (event) {
     event.preventDefault();
     clearSelected("topics");
   });
   document.getElementById(
     "relevant-products-clear-selected"
-  ).addEventListener("click", function(event) {
+  ).addEventListener("click", function (event) {
     event.preventDefault();
     clearSelected("products");
+  });
+
+  new TomSelect("select[id='id_restrict_to_groups']", {
+    closeAfterSelect: true,
+    plugins: {
+      clear_button: {
+        title: "Clear All",
+      },
+      remove_button: {
+        title: "Remove Item"
+      },
+    },
+    placeholder: "Restrict visibility to selected group(s)",
+    persist: false,
+    create: true,
   });
 });
