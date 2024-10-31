@@ -6,7 +6,7 @@ import _keys from "underscore/modules/keys";
 * Scripts to support tagging.
 */
 
-(function($) {
+(function ($) {
 
   // Initialize tagging features.
   function init() {
@@ -20,7 +20,7 @@ import _keys from "underscore/modules/keys";
   // the .tags block surrounding each set of add and remove forms.
   function initVocab() {
     $('div.tags[data-tag-vocab-json]').each(
-      function() {
+      function () {
         var $tagContainer = $(this);
         var parsedVocab = $tagContainer.data('tag-vocab-json');
         $tagContainer.data('tagVocab', _keys(parsedVocab));
@@ -37,7 +37,6 @@ import _keys from "underscore/modules/keys";
       var $adder = $addForm.find('input.adder'),
         $input = $addForm.find('input.autocomplete-tags'),
         $tagsDiv = $input.closest('div.tags'),
-        canCreateTags = $tagsDiv.data('can-create-tags') !== undefined,
         vocab = $tagsDiv.data('tagVocab'),
         $tagList = inputToTagList($input);
 
@@ -52,7 +51,7 @@ import _keys from "underscore/modules/keys";
           inVocab = inArrayCaseInsensitive(tagName, vocab) !== -1,
           isOnscreen = tagIsOnscreen(tagName, $tagList);
         $adder.attr('disabled', !tagName.length || isOnscreen ||
-        (!canCreateTags && !inVocab));
+          (!inVocab));
       }
 
       return tendAddButton;
@@ -69,10 +68,10 @@ import _keys from "underscore/modules/keys";
       function vocabCallback(request, response) {
         var appliedTags = getAppliedTags($tagList),
           vocabMinusApplied = $.grep(vocab,
-          function(e, i) {
-            return $.inArray(e, appliedTags) === -1;
-          }
-        );
+            function (e, i) {
+              return $.inArray(e, appliedTags) === -1;
+            }
+          );
         response(filter(vocabMinusApplied, request.term));
       }
 
@@ -80,7 +79,7 @@ import _keys from "underscore/modules/keys";
     }
 
     $('input.autocomplete-tags').each(
-      function() {
+      function () {
         var $input = $(this),
           tender = makeButtonTender($input.closest('form'));
 
@@ -103,11 +102,11 @@ import _keys from "underscore/modules/keys";
   function initTagRemoval() {
     // Attach a tag-removal function to each clickable "x":
     $('div.tags').each(
-      function() {
+      function () {
         var $div = $(this),
           async = !$div.hasClass('deferred');
         $div.find('.tag').each(
-          function() {
+          function () {
             attachRemoverHandlerTo($(this), async);
           }
         );
@@ -116,18 +115,18 @@ import _keys from "underscore/modules/keys";
 
     // Prevent the form, if it exists, from submitting so our AJAX handler
     // is always called:
-    $('form.remove-tag-form').on("submit", function() { return false; });
+    $('form.remove-tag-form').on("submit", function () { return false; });
   }
 
   // Attach onclick removal handlers to every .remove element in $tag.
   function attachRemoverHandlerTo($container, async) {
-    $container.find('.remover').on("click", 
-      function() {
+    $container.find('.remover').on("click",
+      function () {
         var $remover = $(this),
           $tag = $remover.closest('.tag'),
           tagName = $tag.find('.tag-name').text(),
           csrf = $remover.closest('form')
-        .find('input[name=csrfmiddlewaretoken]').val();
+            .find('input[name=csrfmiddlewaretoken]').val();
 
         function makeTagDisappear() {
           $tag.remove();
@@ -140,7 +139,7 @@ import _keys from "underscore/modules/keys";
           $.ajax({
             type: 'POST',
             url: $remover.closest('form.remove-tag-form').data('action-async'),
-            data: {name: tagName, csrfmiddlewaretoken: csrf},
+            data: { name: tagName, csrfmiddlewaretoken: csrf },
             success: makeTagDisappear,
             error: function makeTagReappear() {
               $tag.removeClass('in-progress');
@@ -201,7 +200,7 @@ import _keys from "underscore/modules/keys";
       $.ajax({
         type: 'POST',
         url: $container.data('action-async'),
-        data: {'tag-name': tagName, csrfmiddlewaretoken: csrf},
+        data: { 'tag-name': tagName, csrfmiddlewaretoken: csrf },
         success: function solidifyTag(data) {
           // Make an onscreen tag non-ghostly,
           // canonicalize its name,
@@ -210,8 +209,8 @@ import _keys from "underscore/modules/keys";
           var url = data.tagUrl,
             tagNameSpan = $tag.find('.tag-name');
           tagNameSpan.replaceWith($("<a class='tag-name' />")
-          .attr('href', url)
-          .text(tagNameSpan.text()));
+            .attr('href', url)
+            .text(tagNameSpan.text()));
           $tag.removeClass('in-progress');
           attachRemoverHandlerTo($tag, true);
         },
@@ -231,7 +230,7 @@ import _keys from "underscore/modules/keys";
     // Dim all Add buttons. We'll undim them upon valid input.
     $('div.tags input.adder:enabled').attr('disabled', true);
 
-    $('.tag-adder').each(function() {
+    $('.tag-adder').each(function () {
       var $this = $(this),
         async = !$this.hasClass('deferred');
       function handler() {
@@ -256,14 +255,14 @@ import _keys from "underscore/modules/keys";
   // Ripped off from jquery.ui.autocomplete.js. Why can't I get at these
   // via, e.g., $.ui.autocomplete.filter?
 
-  function escapeRegex( value ) {
-    return value.replace( /([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, '\\$1' );
+  function escapeRegex(value) {
+    return value.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, '\\$1');
   }
 
   function filter(array, term) {
-    var matcher = new RegExp( escapeRegex(term), 'i' );
-    return $.grep( array, function(value) {
-      return matcher.test( value.label || value.value || value );
+    var matcher = new RegExp(escapeRegex(term), 'i');
+    return $.grep(array, function (value) {
+      return matcher.test(value.label || value.value || value);
     });
   }
 
@@ -286,7 +285,7 @@ import _keys from "underscore/modules/keys";
   function getAppliedTags($tagList) {
     var tagNames = [];
     $tagList.find('.tag .tag-name').each(
-      function(i, e) {
+      function (i, e) {
         tagNames.push($(e).text());
       }
     );

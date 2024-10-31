@@ -35,9 +35,6 @@ class TagWidget(Widget):
     def make_link(self, slug):
         return "#"
 
-    # Allow adding new tags to the vocab:
-    can_create_tags = False
-
     # TODO: Add async_remove_url and async_add_url kwargs holding URLs to
     # direct async remove and add requests to. The client app is then
     # responsible for routing to those and doing the calls to remove/add
@@ -88,8 +85,6 @@ class TagWidget(Widget):
         if not self.read_only:
             vocab = [t.name for t in Tag.objects.only("name").all()]
             output += ' data-tag-vocab-json="%s"' % escape(json.dumps(vocab))
-        if self.can_create_tags:
-            output += ' data-can-create-tags="1"'
         output += ">"
 
         if not self.read_only:
@@ -155,7 +150,7 @@ class TagField(MultipleChoiceField):
 
     def valid_value(self, value):
         """Check the validity of a single tag."""
-        return self.widget.can_create_tags or Tag.objects.filter(name=value).exists()
+        return Tag.objects.filter(name=value).exists()
 
     def to_python(self, value):
         """Ignore the input field if it's blank; don't make a tag called ''."""
