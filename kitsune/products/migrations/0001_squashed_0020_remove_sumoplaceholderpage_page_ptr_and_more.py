@@ -1543,7 +1543,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ["product", "display_order"],
-                "unique_together": {("slug", "product")},
             },
         ),
         migrations.CreateModel(
