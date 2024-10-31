@@ -116,6 +116,7 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
         )
         .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
         .exclude(document__is_archived=True)
+        .exclude(document__is_template=True)
         .order_by("-visits")
         .select_related("document")
     )
@@ -135,7 +136,10 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
             Prefetch(
                 "document__translations",
                 queryset=Document.objects.visible(
-                    locale=locale, current_revision__is_approved=True, is_archived=False
+                    locale=locale,
+                    current_revision__is_approved=True,
+                    is_archived=False,
+                    is_template=False,
                 ),
             )
         )
