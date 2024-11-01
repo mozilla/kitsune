@@ -44,7 +44,6 @@ class Migration(migrations.Migration):
         ("contenttypes", "0001_initial"),
         ("auth", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("wagtailcore", "0093_uploadedfile"),
     ]
 
     operations = [
