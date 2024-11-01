@@ -79,15 +79,13 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def process_request(self, request):
         """Only allow refresh and enforce OIDC auth on admin URLs"""
         # If the admin or CMS is targeted let's check the backend used, if any.
-        is_cms_request = request.path.startswith("/cms/") and request.path != "/cms/login/"
         is_admin_request = request.path.startswith("/admin/") and request.path != "/admin/login/"
-        if is_cms_request or is_admin_request:
+        if is_admin_request:
             backend = request.session.get(BACKEND_SESSION_KEY)
             if backend and backend.split(".")[-1] != "SumoOIDCAuthBackend":
                 logout(request)
-                console = "CMS" if is_cms_request else "admin"
-                messages.error(request, f"OIDC login required for {console} access")
-                return HttpResponseRedirect(f"/{console.lower()}/login/")
+                messages.error(request, "OIDC login required for admin access")
+                return HttpResponseRedirect("/admin/login/")
 
             return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
 
