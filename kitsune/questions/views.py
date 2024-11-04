@@ -164,6 +164,9 @@ def question_list(request, product_slug=None, topic_slug=None):
         products = Product.active.with_question_forums(request)
 
     multiple = (len(products) > 1) or ("all" in product_slugs)
+    product_with_aaq = False
+    if multiple:
+        product_with_aaq = has_aaq_config(products[0])
 
     topics = []
 
@@ -339,7 +342,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "selected_topic_slug": topics[0].slug if topics else None,
         "product_slug": product_slug,
         "topic_navigation": topic_navigation,
-        "has_aaq_config": has_aaq_config(products[0]) if not multiple else False,
+        "has_aaq_config": product_with_aaq,
     }
 
     if products:
