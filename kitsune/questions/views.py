@@ -165,7 +165,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     multiple = (len(products) > 1) or ("all" in product_slugs)
     product_with_aaq = False
-    if multiple:
+    if products and not multiple:
         product_with_aaq = has_aaq_config(products[0])
 
     topics = []
