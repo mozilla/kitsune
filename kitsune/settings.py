@@ -674,20 +674,6 @@ INSTALLED_APPS: tuple[str, ...] = (
     "kitsune.notifications",
     "kitsune.journal",
     "kitsune.tidings",
-    "wagtail.contrib.forms",
-    "wagtail.contrib.redirects",
-    "wagtail.embeds",
-    "wagtail.sites",
-    "wagtail.users",
-    "wagtail.snippets",
-    "wagtail.documents",
-    "wagtail.images",
-    "wagtail.search",
-    "wagtail.admin",
-    "wagtail",
-    "wagtail_localize",
-    "wagtail_localize.locales",
-    "modelcluster",
     "rest_framework",
     "statici18n",
     "watchman",
@@ -1198,9 +1184,6 @@ CSP_IMG_SRC = (
     "https://*.google-analytics.com",
     "https://profile.accounts.firefox.com",
     "https://firefoxusercontent.com",
-    "http://www.gravatar.com",
-    "https://www.gravatar.com",
-    "https://secure.gravatar.com",
     "https://i1.wp.com",
     "https://mozillausercontent.com",
 )
@@ -1244,7 +1227,6 @@ CSP_CONNECT_SRC = (
     "https://accounts.firefox.com/metrics-flow",
     "https://accounts.stage.mozaws.net/metrics-flow",
     "https://basket.mozilla.org",
-    "https://releases.wagtail.org",
 )
 
 if DEBUG:

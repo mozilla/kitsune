@@ -1397,9 +1397,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ("wagtailcore", "0093_uploadedfile"),
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
