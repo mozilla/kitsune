@@ -19,7 +19,8 @@ class EditProfileDataFlow:
         self.profile_contribution_areas = MyProfileEditContributionAreasPage(page)
 
     # Editing a profile with data flow.
-    def edit_profile_with_test_data(self, info_only=False, submit_change=False) -> dict[str, str]:
+    def edit_profile_with_test_data(self, info_only=False, submit_change=False,
+                                    expected_url=None) -> dict[str, str]:
         edit_test_data = self.utilities.profile_edit_test_data
         valid_user_edit = edit_test_data["valid_user_edit"]
 
@@ -50,7 +51,7 @@ class EditProfileDataFlow:
         ])
 
         if submit_change:
-            self.edit_profile_page.click_update_my_profile_button()
+            self.edit_profile_page.click_update_my_profile_button(expected_url=expected_url)
 
         return {
             "username": valid_user_edit["username"],

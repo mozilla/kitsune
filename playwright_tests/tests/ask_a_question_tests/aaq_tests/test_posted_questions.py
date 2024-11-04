@@ -349,7 +349,8 @@ def test_lock_and_archive_this_question(page: Page, status):
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
-            attach_image=False
+            attach_image=False,
+            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
         )
 
     with allure.step("Navigating to the first posted question"):
@@ -519,7 +520,8 @@ def test_subscribe_to_feed_option(page: Page, is_firefox):
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
-            attach_image=False
+            attach_image=False,
+            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
         )
 
     with allure.step("Signing in with a different non admin user account and posting a "
@@ -534,7 +536,8 @@ def test_subscribe_to_feed_option(page: Page, is_firefox):
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
-            attach_image=False
+            attach_image=False,
+            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
         )
 
     with allure.step("Navigating to the first question, clicking on the 'Subscribe to feed' "
@@ -1944,7 +1947,8 @@ def post_firefox_product_question_flow(page: Page, username: str):
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
-            attach_image=False
+            attach_image=False,
+            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
         )
 
         return {"username_one": username_one, "question_details": question_details}

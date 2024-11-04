@@ -366,7 +366,9 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         new_username = utilities.profile_edit_test_data['valid_user_edit']['username']
         sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(new_username)
+        )
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "correct new username and article title arte displayed"):
@@ -383,7 +385,9 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
     with allure.step("Changing the username back"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.send_text_to_username_field(first_username)
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(first_username)
+        )
 
     with allure.step("Deleting the article"):
         utilities.navigate_to_link(article_url)

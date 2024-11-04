@@ -269,26 +269,41 @@ class TopNavbar(BasePage):
         """Click on the 'View Profile' option"""
         self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_view_profile_option"])
+        # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
+        # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
+        self._move_mouse_to_location(0, 0)
 
     def click_on_edit_profile_option(self):
         """Click on the 'Edit Profile' option"""
         self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_edit_profile_option"])
+        # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
+        # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
+        self._move_mouse_to_location(0, 0)
 
     def click_on_settings_profile_option(self):
         """Click on the 'Settings' option"""
         self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_settings_option"])
+        # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
+        # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
+        self._move_mouse_to_location(0, 0)
 
     def click_on_inbox_option(self):
         """Click on the 'Inbox' option"""
         self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_inbox_option"])
+        # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
+        # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
+        self._move_mouse_to_location(0, 0)
 
     def click_on_my_questions_profile_option(self):
         """Click on the 'My Questions' option"""
         self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_my_questions_option"])
+        # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
+        # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
+        self._move_mouse_to_location(0, 0)
 
     def get_text_of_logged_in_username(self) -> str:
         """Get the text of the logged in username"""

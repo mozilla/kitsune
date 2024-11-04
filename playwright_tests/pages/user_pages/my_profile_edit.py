@@ -266,9 +266,10 @@ class MyProfileEdit(BasePage):
         """Click the cancel button"""
         self._click(self.EDIT_PROFILE_PAGE_LOCATORS["cancel_button"])
 
-    def click_update_my_profile_button(self):
+    def click_update_my_profile_button(self, expected_url=None):
         """Click the update my profile button"""
-        self._click(self.EDIT_PROFILE_PAGE_LOCATORS["update_my_profile_button"], with_force=True)
+        self._click(self.EDIT_PROFILE_PAGE_LOCATORS["update_my_profile_button"],
+                    expected_url=expected_url)
 
     def click_close_account_option(self):
         """Click the close account and delete all profile information link"""
@@ -277,8 +278,7 @@ class MyProfileEdit(BasePage):
 
     def click_manage_firefox_account_button(self):
         """Click the manage firefox account button"""
-        self._click(self.EDIT_PROFILE_PAGE_LOCATORS["manage_firefox_account_button"],
-                    with_wait=False)
+        self._click(self.EDIT_PROFILE_PAGE_LOCATORS["manage_firefox_account_button"])
 
     def click_make_email_visible_checkbox(self, check: bool):
         """Click the make email visible checkbox"""

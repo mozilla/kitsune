@@ -62,7 +62,9 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
         sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
 
     with allure.step("Clicking on the 'Update My Profile' button"):
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(new_username)
+        )
 
     with check, allure.step("Verify that the newly set username is successfully applied to the my "
                             "profile section"):
@@ -84,7 +86,9 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.clear_username_field()
         sumo_pages.edit_my_profile_page.send_text_to_username_field(original_username)
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(original_username)
+        )
 
     with check, allure.step("Verifying that the username was updated back to the original one"):
         assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
@@ -277,7 +281,9 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.clear_username_field()
         sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(new_username)
+        )
 
     with allure.step("Verifying that the username displayed inside the top-navbar updates "
                      "successfully"):
@@ -292,7 +298,9 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.clear_username_field()
         sumo_pages.edit_my_profile_page.send_text_to_username_field(original_username)
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(original_username)
+        )
 
 
 #  C1491463, C1491464
@@ -301,7 +309,7 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
+        username = utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_1']
         ))
 
@@ -320,7 +328,9 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.clear_display_name_field()
         sumo_pages.edit_my_profile_page.send_text_to_display_name_field(new_display_name)
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+        )
 
     with allure.step("Verifying that the top navbar username updates with the display name"):
         assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_display_name
@@ -333,7 +343,9 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
     with allure.step("Reverting back and deleting the display name"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.clear_display_name_field()
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+        )
 
     with allure.step(f"Verifying that the displayed name inside the top navbar is reverted "
                      f"back to {original_username}"):
@@ -352,7 +364,7 @@ def test_biography_field_accepts_html_tags(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
+        username = utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
 
@@ -364,7 +376,9 @@ def test_biography_field_accepts_html_tags(page: Page):
         sumo_pages.edit_my_profile_page.send_text_to_biography_field(
             html_test_data["biography_field_with_html_data"]["biography_html_data"]
         )
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+        )
 
 
 #  T5697917
@@ -375,7 +389,7 @@ def test_make_my_email_address_visible_checkbox_checked(page: Page):
     logged_in_email = utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
 
     with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
+        username = utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
@@ -385,7 +399,9 @@ def test_make_my_email_address_visible_checkbox_checked(page: Page):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         if not sumo_pages.edit_my_profile_page.is_make_email_visible_checkbox_selected():
             sumo_pages.edit_my_profile_page.click_make_email_visible_checkbox(check=True)
-            sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+            sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+                expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+            )
         else:
             sumo_pages.top_navbar.click_on_view_profile_option()
 
@@ -420,7 +436,7 @@ def test_make_my_email_address_visible_checkbox_unchecked(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
+        username = utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
         ))
     username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
@@ -430,7 +446,9 @@ def test_make_my_email_address_visible_checkbox_unchecked(page: Page):
         sumo_pages.top_navbar.click_on_edit_profile_option()
         if sumo_pages.edit_my_profile_page.is_make_email_visible_checkbox_selected():
             sumo_pages.edit_my_profile_page.click_make_email_visible_checkbox(check=False)
-            sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+            sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+                expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+            )
 
     with allure.step("Verifying that the email is not displayed"):
         expect(sumo_pages.my_profile_page.publicly_displayed_email_element()).to_be_hidden()
@@ -453,13 +471,14 @@ def test_profile_information(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
+        username = utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
     username_one = sumo_pages.top_navbar.get_text_of_logged_in_username()
     sumo_pages.top_navbar.click_on_edit_profile_option()
     profile_info = sumo_pages.edit_profile_flow.edit_profile_with_test_data(
-        info_only=True, submit_change=True)
+        info_only=True, submit_change=True,
+        expected_url=MyProfileMessages.get_my_profile_stage_url(username))
 
     profile_info_keys = [
         "website", "twitter", "community_portal", "people_directory", "matrix_nickname",
@@ -592,7 +611,9 @@ def test_private_message_button_redirects_non_signed_in_users_to_the_fxa_login_f
 
     with allure.step("Clicking on the 'Private Message' button and verifying that the non-signed "
                      "in user is redirected to the fxa page"):
-        sumo_pages.my_profile_page.click_on_private_message_button()
+        sumo_pages.my_profile_page.click_on_private_message_button(
+            expected_url=FxAPageMessages.AUTH_PAGE_URL
+        )
         assert (
             sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
         ), "The auth page is not displayed! It should be!"
@@ -667,8 +688,6 @@ def _validate_profile_info(page: Page, target: str, profile_info: str, username:
         "involved_from_year": sumo_pages.my_profile_page.get_my_contributed_from_text,
     }
     link_click_methods = {
-        "website": sumo_pages.my_profile_page.click_on_my_website_link,
-        "twitter": sumo_pages.my_profile_page.click_on_twitter_link,
         "community_portal": sumo_pages.my_profile_page.click_on_community_portal_link,
         "people_directory": sumo_pages.my_profile_page.click_on_people_directory_link,
     }

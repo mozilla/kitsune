@@ -37,7 +37,8 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page):
                 topic_name=utilities
                 .aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"]
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
             )
         )
     with allure.step("Navigating back to the profile page and verifying that the number of "
@@ -116,7 +117,9 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
                 topic_name=utilities
                 .aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"]
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+
             )
         )
 
@@ -178,7 +181,8 @@ def test_my_question_page_reflects_posted_questions_and_redirects_to_the_correct
                 topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"]
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
             )
         )
 

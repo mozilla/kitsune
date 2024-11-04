@@ -210,9 +210,13 @@ class MyProfilePage(BasePage):
         """Click on the given element."""
         element.click()
 
-    def click_my_profile_page_sign_out_button(self):
-        """Click on the profile page sign out button."""
-        self._click(self.PROFILE_DETAILS_LOCATORS["sign_out_button"])
+    def click_my_profile_page_sign_out_button(self, expected_url=None):
+        """Click on the profile page sign out button.
+
+        Args:
+            expected_url (str): The expected URL after clicking the sign out button
+        """
+        self._click(self.PROFILE_DETAILS_LOCATORS["sign_out_button"], expected_url=expected_url)
 
     def click_on_report_abuse_option(self):
         """Click on the report abuse option."""
@@ -222,9 +226,14 @@ class MyProfilePage(BasePage):
         """Click on the report abuse close button."""
         self._click(self.REPORT_ABUSE_LOCATORS["report_abuse_close_panel_button"])
 
-    def click_on_private_message_button(self):
-        """Click on the private message button."""
-        self._click(self.ADMIN_ACTIONS_LOCATORS["private_message_button"])
+    def click_on_private_message_button(self, expected_url=None):
+        """Click on the private message button.
+
+        Args:
+            expected_url (str): The expected URL after clicking the private message button.
+        """
+        self._click(self.ADMIN_ACTIONS_LOCATORS["private_message_button"],
+                    expected_url=expected_url)
 
     def publicly_displayed_email_element(self) -> Locator:
         """Get the locator for the publicly displayed email element."""

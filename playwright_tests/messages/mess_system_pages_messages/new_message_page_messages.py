@@ -22,4 +22,4 @@ class NewMessagePageMessages:
     PREVIEW_MESSAGE_UL_LI_NUMBER_THREE = "Bulleted list item three"
     PREVIEW_MESSAGE_EXTERNAL_LINK = "Test external link"
     PREVIEW_MESSAGE_INTERNAL_LINK = "Test internal Link"
-    PREVIEW_MESSAGE_INTERNAL_LINK_TITLE = "Back up your Firefox data"
+    PREVIEW_MESSAGE_INTERNAL_LINK_TITLE = "DoNotDelete"

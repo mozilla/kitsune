@@ -14,13 +14,15 @@ class MessagingSystemFlows:
     def complete_send_message_form_with_data(self,
                                              recipient_username='',
                                              message_body='',
-                                             submit_message=True):
+                                             submit_message=True,
+                                             expected_url=None):
         """Complete the send message form with data.
 
         Args:
             recipient_username (str): The username of the recipient.
             message_body (str): The body of the message.
             submit_message (bool): Submit the message.
+            expected_url (str): The expected URL after the click event.
         """
         if recipient_username:
             if isinstance(recipient_username, list):
@@ -35,13 +37,16 @@ class MessagingSystemFlows:
             self.new_message_page.fill_into_new_message_body_textarea(message_body)
 
         if submit_message:
-            self.new_message_page.click_on_new_message_send_button()
+            self.new_message_page.click_on_new_message_send_button(
+                expected_url=expected_url)
 
     def delete_message_flow(self, username='',
                             excerpt='',
                             delete_message=True,
                             from_sent_list=False,
-                            from_inbox_list=False):
+                            from_inbox_list=False,
+                            expected_url=None
+                            ):
         """Delete a message flow.
 
         Args:
@@ -50,6 +55,7 @@ class MessagingSystemFlows:
             delete_message (bool): Delete the message.
             from_sent_list (bool): Delete the message from the sent list.
             from_inbox_list (bool): Delete the message from the inbox list
+            expected_url (str): The expected URL after the click event.
         """
         if from_sent_list:
             if username:
@@ -64,4 +70,4 @@ class MessagingSystemFlows:
                 self.inbox_page.click_on_inbox_message_delete_button_by_excerpt(excerpt)
 
         if delete_message:
-            self.sent_message_page.click_on_delete_page_delete_button()
+            self.sent_message_page.click_on_delete_page_delete_button(expected_url=expected_url)

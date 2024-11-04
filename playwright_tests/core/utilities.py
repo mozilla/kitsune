@@ -1,4 +1,5 @@
 import os
+import warnings
 import requests
 import time
 import re
@@ -12,6 +13,7 @@ from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.test_data.search_synonym import SearchSynonyms
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class Utilities:
@@ -245,7 +247,7 @@ class Utilities:
         """
         self.page.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
 
-    def delete_cookies(self, tried_once=False):
+    def delete_cookies(self, tried_once=False, retries=3):
         """
         This helper function deletes all cookies and performs a page refresh so that the outcome
         is visible immediately.
@@ -254,8 +256,17 @@ class Utilities:
             tried_once (bool): If the cookies deletion was tried once
         """
         top_navbar = TopNavbar(self.page)
-        self.page.context.clear_cookies()
-        self.refresh_page()
+        for attempt in range(retries):
+            try:
+                self.page.context.clear_cookies()
+                self.refresh_page()
+                self.page.wait_for_selector(top_navbar.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
+                                            ["signin_signup_button"], timeout=3000)
+                break
+            except PlaywrightTimeoutError:
+                print("Cookies were not successfully deleted. Retrying...")
+                if attempt < retries - 1:
+                    continue
 
         # In order to avoid test flakiness we are trying to delete the cookies again if the sign-in
         # sign-up button is not visible after page refresh.
@@ -291,7 +302,7 @@ class Utilities:
         """
         This helper function performs a page reload.
         """
-        self.page.reload()
+        self.page.reload(wait_until="networkidle")
 
     def get_user_agent(self) -> str:
         """
@@ -531,3 +542,24 @@ class Utilities:
         This function blocks a certain request
         """
         route.abort()
+
+    def re_call_function_on_error(self, func, *args, **kwargs):
+        """This helper function re-calls a function if a 502 error is encountered.
+
+        Args:
+            func: The function to be re-called
+            *args: The function arguments
+            **kwargs: The function keyword arguments
+        """
+
+        for attempt in range(3):
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                func(*args, **kwargs)
+
+                if (any(issubclass(warning.category, UserWarning) and str(
+                        warning.message) == "502 encountered" for warning in w)):
+                    print("502 error encountered while executing the function. Retrying...")
+                    if attempt < 2:
+                        continue
+                break

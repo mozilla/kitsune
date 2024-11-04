@@ -6,13 +6,13 @@ class KBArticleEditMetadata(BasePage):
     # Edit article metadata page locators.
     __edit_article_metadata_error = "//ul[@class='errorlist']"
     __edit_article_metadata_page_header = "//h1[@class='sumo-page-heading']"
-    __restrict_visibility_input_field = "//input[@id='id_restrict_to_groups-selectized']"
+    __restrict_visibility_input_field = "//input[@id='id_restrict_to_groups-ts-control']"
     __restricted_visibility_chosen_groups = (
-        "//input[@id='id_restrict_to_groups-selectized" "']/../div[@class='item']"
+        "//input[@id='id_restrict_to_groups-ts-control']/../div[@class='item']"
     )
-    __clear_all_selected_groups_button = "//a[@class='clear']"
-    __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-selectized']"
-    __kb_article_restrict_visibility_delete_all_groups = "//a[@title='Clear']"
+    __clear_all_selected_groups_button = "//div[@class='clear-button']"
+    __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-ts-control']"
+    __kb_article_restrict_visibility_delete_all_groups = "//a[@title='remove']"
     __title_input_field = "//input[@id='id_title']"
     __slug_input_field = "//input[@id='id_slug']"
     __category_select_field = "//select[@id='id_category']"
@@ -42,6 +42,7 @@ class KBArticleEditMetadata(BasePage):
         self._click(self.__clear_all_selected_groups_button)
 
     def is_clear_all_restricted_visibility_group_selection_visible(self) -> bool:
+        self._hover_over_element(self.__restrict_visibility_input_field)
         return self._is_element_visible(self.__clear_all_selected_groups_button)
 
     def add_and_select_restrict_visibility_group_metadata(self, group_name: str):
@@ -52,7 +53,7 @@ class KBArticleEditMetadata(BasePage):
         if group_name != "":
             self._click(f"//div[@class='item' and text()='{group_name}']/a")
         else:
-            self._click(self.__kb_article_restrict_visibility_delete_all_groups)
+            self._click(self.__clear_all_selected_groups_button)
 
     def get_text_of_title_input_field(self) -> str:
         return self._get_element_input_value(self.__title_input_field)
