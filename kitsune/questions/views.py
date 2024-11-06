@@ -59,6 +59,7 @@ from kitsune.sumo.utils import (
     has_aaq_config,
     is_ratelimited,
     paginate,
+    set_aaq_context,
     simple_paginate,
 )
 from kitsune.tags.utils import add_existing_tag
@@ -552,13 +553,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     }
     # If the selected product doesn't exist in DB, render a 404
     if step > 1:
+        set_aaq_context(request, product)
         has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
-        if has_aaq_config(product_slug):
-            request.session["aaq_context"] = {
-                "product_slug": product_slug,
-                "has_public_forum": has_public_forum,
-                "has_ticketing_support": product.has_ticketing_support,
-            }
         context["has_ticketing_support"] = product.has_ticketing_support
         context["ga_products"] = f"/{product_slug}/"
 

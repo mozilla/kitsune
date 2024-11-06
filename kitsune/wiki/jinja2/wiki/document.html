@@ -56,7 +56,7 @@
     {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
   </div>
 
-  {{ aaq_widget(request, "document") }}
+  {{ aaq_widget(request) }}
 
   {% if fallback_reason == 'no_translation' %}
     {# If there is no translation, there is no document and the (future) parent is document. #}

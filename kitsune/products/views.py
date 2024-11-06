@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.sumo.utils import has_aaq_config
+from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
@@ -84,7 +84,6 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
 
             if product_slug:
                 redirect_params["product_slug"] = product_slug
-
             return redirect(document_listing, **redirect_params)
         except TopicSlugHistory.DoesNotExist:
             ...
@@ -94,12 +93,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
     product = None
     if product_slug:
         product = get_object_or_404(Product, slug=product_slug)
-        if has_aaq_config(product):
-            request.session["aaq_context"] = {
-                "has_ticketing_support": product.has_ticketing_support,
-                "product_slug": product_slug,
-                "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
-            }
+        set_aaq_context(request, product)
 
     doc_kw = {
         "locale": request.LANGUAGE_CODE,
