@@ -14,12 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
-from django.http import (
-    Http404,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseRedirect,
-)
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.cache import patch_vary_headers
@@ -37,7 +32,13 @@ from kitsune.sumo.i18n import normalize_language
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, paginate, smart_int, truncated_json_dumps
+from kitsune.sumo.utils import (
+    get_next_url,
+    paginate,
+    set_aaq_context,
+    smart_int,
+    truncated_json_dumps,
+)
 from kitsune.wiki.config import (
     CATEGORIES,
     COLLAPSIBLE_DOCUMENTS,
@@ -235,6 +236,9 @@ def document(request, document_slug, document=None):
         product = Product.active.filter(visible=True)[0]
     else:
         product = products.first()
+
+    # Set the AAQ context for the widget
+    set_aaq_context(request, product)
 
     product_topics = Topic.active.filter(products=product, visible=True)
 

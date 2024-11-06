@@ -394,3 +394,16 @@ def has_aaq_config(product=None):
         return AAQConfig.objects.filter(product=product, is_active=True).exists()
     except AAQConfig.DoesNotExist:
         return False
+
+
+def set_aaq_context(request, product):
+    """Set the AAQ context for a product."""
+    if not has_aaq_config(product):
+        request.session["aaq_context"] = {}
+        return
+
+    request.session["aaq_context"] = {
+        "has_ticketing_support": product.has_ticketing_support,
+        "product_slug": product.slug,
+        "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
+    }
