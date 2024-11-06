@@ -6,7 +6,6 @@ import actstream.actions
 from actstream.models import Follow
 from rest_framework.exceptions import APIException
 from rest_framework.test import APIClient
-from taggit.models import Tag
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions import api
@@ -471,23 +470,6 @@ class TestQuestionViewSet(TestCase):
         res = self.client.post(reverse("question-unfollow", args=[q.id]))
         self.assertEqual(res.status_code, 204)
         self.assertEqual(Follow.objects.filter(user=u).count(), 0)
-
-    def test_add_tags(self):
-        q = QuestionFactory()
-        self.assertEqual(0, q.tags.count())
-
-        u = UserFactory()
-        add_permission(u, Tag, "add_tag")
-        add_permission(u, Question, "tag_question")
-        self.client.force_authenticate(user=u)
-
-        res = self.client.post(
-            reverse("question-add-tags", args=[q.id]),
-            content_type="application/json",
-            data=json.dumps({"tags": ["test", "more", "tags"]}),
-        )
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(3, q.tags.count())
 
     def test_remove_tags_without_perms(self):
         q = QuestionFactory()

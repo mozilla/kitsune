@@ -390,7 +390,7 @@
           {% set tags = question.my_tags %}
           {% if tags or can_tag %}
             <div class="sidebox tight cf" id="tags">
-              <div class="tags"{% if can_tag %} data-tag-vocab-json="{{ tag_vocab() }}"{% endif %}{% if can_create_tags %} data-can-create-tags="1"{% endif %}>
+              <div class="tags"{% if can_tag %} data-tag-vocab-json="{{ tag_vocab() }}"{% endif %}>
                 {% if can_tag %}
                   <form action="{{ url('questions.remove_tag', question.id) }}"
                         data-action-async="{{ url('questions.remove_tag_async', question.id) }}"
@@ -422,12 +422,12 @@
                         class="tag-adder">
                     {% csrf_token %}
                     <div class="field is-condensed">
-                      <label for="id_tag_input">{{ _('Add a tag') }}:</label>
+                      <label for="id_tag_input">{{ _('Apply a tag') }}:</label>
                       <input id="id_tag_input" type="text" name="tag-name" size="12" maxlength="100"
                         class="searchbox autocomplete-tags {% if tag_adding_error %} invalid{% endif %}"
                         value="{{ tag_adding_value }}" />
                     </div>
-                    <input class="sumo-button button-sm primary-button" type="submit" value="{{ _('Add') }}" />
+                    <input class="sumo-button button-sm primary-button" type="submit" value="{{ _('Apply') }}" />
                   </form>
                 {% endif %}
               </div>

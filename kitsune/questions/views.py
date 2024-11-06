@@ -1432,22 +1432,14 @@ def _add_tag(request, question_id):
 
     Tag name (case-insensitive) must be in request.POST['tag-name'].
 
-    If there is no such tag and the user is not allowed to make new tags, raise
-    Tag.DoesNotExist. If no tag name is provided, return None. Otherwise,
-    return the canonicalized tag name.
+    If no tag name is provided or Tag.DoesNotExist is raised, return None.
+    Otherwise, return the canonicalized tag name.
 
     """
-    tag_name = request.POST.get("tag-name", "").strip()
-    if tag_name:
+    if tag_name := request.POST.get("tag-name", "").strip():
         question = get_object_or_404(Question, pk=question_id)
-        try:
-            canonical_name = add_existing_tag(tag_name, question.tags)
-        except Tag.DoesNotExist:
-            if request.user.has_perm("taggit.add_tag"):
-                question.tags.add(tag_name)  # implicitly creates if needed
-                canonical_name = tag_name
-            else:
-                raise
+        # This raises Tag.DoesNotExist if the tag doesn't exist.
+        canonical_name = add_existing_tag(tag_name, question.tags)
 
         return question, canonical_name
 

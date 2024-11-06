@@ -971,20 +971,14 @@ class TaggingViewTestsAsAdmin(TestCase):
         self.question = QuestionFactory()
         TagFactory(name="red", slug="red")
 
-    def test_add_new_tag(self):
-        """Assert adding a nonexistent tag sychronously creates & adds it."""
-        self.client.post(_add_tag_url(self.question.id), data={"tag-name": "nonexistent tag"})
-        tags_eq(Question.objects.get(id=self.question.id), ["nonexistent tag"])
-
-    def test_add_async_new_tag(self):
-        """Assert adding an nonexistent tag creates & adds it."""
+    def test_add_async_new_tag_permission_error(self):
+        """Assert adding an nonexistent tag returns a permission error."""
         response = self.client.post(
             _add_async_tag_url(self.question.id),
             data={"tag-name": "nonexistent tag"},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-        self.assertEqual(response.status_code, 200)
-        tags_eq(Question.objects.get(id=self.question.id), ["nonexistent tag"])
+        self.assertEqual(response.status_code, 400)
 
     def test_add_new_case_insensitive(self):
         """Adding a tag differing only in case from existing ones shouldn't

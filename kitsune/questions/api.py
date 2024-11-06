@@ -387,12 +387,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
             try:
                 add_existing_tag(tag, question.tags)
             except Tag.DoesNotExist:
-                if request.user.has_perm("taggit.add_tag"):
-                    question.tags.add(tag)
-                else:
-                    raise GenericAPIException(
-                        status.HTTP_403_FORBIDDEN, "You are not authorized to create new tags."
-                    )
+                raise GenericAPIException(
+                    status.HTTP_403_FORBIDDEN, "You are not authorized to create new tags."
+                )
 
         data = [{"name": tag.name, "slug": tag.slug} for tag in question.tags.all()]
         return Response(data)
