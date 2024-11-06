@@ -80,6 +80,7 @@ def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None)
             )
             redirect_params = {
                 "topic_slug": old_topic_slug.topic.slug,
+                "permanent": True,
             }
 
             if product_slug:
