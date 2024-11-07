@@ -58,9 +58,14 @@ class SentMessagePage(BasePage):
                                          f"'{username}')]/../.."
                                          f"/div[@class='email-cell excerpt']/a")
 
-    def click_on_delete_selected_button(self):
-        """Click on the delete selected button on the sent messages page."""
-        self._click(self.SENT_MESSAGE_PAGE_LOCATORS["sent_messages_delete_selected_button"])
+    def click_on_delete_selected_button(self, expected_locator=None):
+        """Click on the delete selected button on the sent messages page.
+
+        Args:
+            expected_locator (str): The expected locator after the click event.
+        """
+        self._click(self.SENT_MESSAGE_PAGE_LOCATORS["sent_messages_delete_selected_button"],
+                    expected_locator=expected_locator)
 
     def click_on_sent_message_delete_button_by_user(self, username: str):
         """Click on the delete button of a sent message by the username of the recipient.
@@ -117,9 +122,14 @@ class SentMessagePage(BasePage):
         self._click(f"//div[@class='email-cell to-groups']/a[text()='{group_name}']/../../"
                     f"div[@class='email-cell excerpt']")
 
-    def click_on_delete_page_delete_button(self):
-        """Click on the delete button on the delete message page."""
-        self._click(self.SENT_MESSAGE_PAGE_LOCATORS["sent_messages_delete_page_delete_button"])
+    def click_on_delete_page_delete_button(self, expected_url=None):
+        """Click on the delete button on the delete message page.
+
+        Args:
+            expected_url (str): The expected URL after the deletion.
+        """
+        self._click(self.SENT_MESSAGE_PAGE_LOCATORS["sent_messages_delete_page_delete_button"],
+                    expected_url=expected_url)
 
     def click_on_delete_page_cancel_button(self):
         """Click on the cancel button on the delete message page."""
@@ -173,21 +183,26 @@ class SentMessagePage(BasePage):
         """Check if the sent messages are displayed."""
         return self._is_element_visible(self.SENT_MESSAGE_PAGE_LOCATORS["sent_messages_section"])
 
-    def delete_all_displayed_sent_messages(self):
-        """Delete all the displayed sent messages."""
+    def delete_all_displayed_sent_messages(self, expected_url=None):
+        """Delete all the displayed sent messages.
+
+        Args:
+            expected_url (str): The expected URL after the deletion.
+        """
         sent_elements_delete_button = self._get_element_handles(
             self.SENT_MESSAGE_PAGE_LOCATORS["sent_messages_delete_button"])
         for i in range(len(sent_elements_delete_button)):
             delete_button = sent_elements_delete_button[i]
 
-            delete_button.click()
-            self.click_on_delete_page_delete_button()
+            self._click(delete_button)
+            self.click_on_delete_page_delete_button(expected_url=expected_url)
 
-    def delete_all_sent_messages_via_delete_selected_button(self, excerpt=''):
+    def delete_all_sent_messages_via_delete_selected_button(self, excerpt='', expected_url=None):
         """Delete all the sent messages via the delete selected button.
 
         Args:
             excerpt (str): The excerpt of the message.
+            expected_url (str): The expected URL after the deletion.
         """
         if excerpt != '':
             sent_messages_count = self.sent_messages_by_excerpt_element_handles(excerpt)
@@ -201,11 +216,11 @@ class SentMessagePage(BasePage):
             else:
                 checkbox = self.sent_message_select_checkbox()
             element = checkbox[counter]
-            element.click()
+            self._checkbox_interaction(element, True)
             counter += 1
 
         self.click_on_delete_selected_button()
-        self.click_on_delete_page_delete_button()
+        self.click_on_delete_page_delete_button(expected_url=expected_url)
 
     # Read Sent Message page
     def get_text_of_all_sent_groups(self) -> list[str]:

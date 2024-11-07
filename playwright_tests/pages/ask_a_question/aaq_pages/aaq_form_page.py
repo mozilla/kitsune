@@ -214,8 +214,8 @@ class AAQFormPage(BasePage):
     def click_aaq_form_cancel_button(self):
         self._click(self.__form_cancel_option)
 
-    def click_aaq_form_submit_button(self, with_force=False):
-        self._click(self.__form_submit_button, with_force)
+    def click_aaq_form_submit_button(self, expected_locator=None):
+        self._click(self.__form_submit_button, expected_locator=expected_locator)
 
     # Edit question form actions.
     def click_aaq_edit_submit_button(self):

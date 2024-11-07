@@ -106,9 +106,14 @@ class InboxPage(BasePage):
         """Click on the mark selected as read button."""
         self._click(self.INBOX_BUTTON_LOCATORS["inbox_mark_selected_as_read_button"])
 
-    def click_on_inbox_delete_selected_button(self):
-        """Click on the delete selected button."""
-        self._click(self.INBOX_BUTTON_LOCATORS["inbox_delete_selected_button"])
+    def click_on_inbox_delete_selected_button(self, expected_locator=None):
+        """Click on the delete selected button.
+
+        Args:
+            expected_locator: The expected locator after the click event.
+        """
+        self._click(self.INBOX_BUTTON_LOCATORS["inbox_delete_selected_button"],
+                    expected_locator=expected_locator)
 
     def click_on_inbox_message_sender_username(self, username: str):
         """Click on the username of the message sender.
@@ -140,9 +145,14 @@ class InboxPage(BasePage):
         self._click((f"//div[@class='email-cell from']//a[contains(text(),'{username}')]/../.."
                      f"//a[@class='read']"))
 
-    def click_on_delete_page_delete_button(self):
-        """Click on the delete button on the delete message page."""
-        self._click(self.INBOX_BUTTON_LOCATORS["inbox_delete_page_delete_button"])
+    def click_on_delete_page_delete_button(self, expected_url=None):
+        """Click on the delete button on the delete message page.
+
+        Args:
+            expected_url: The expected URL after deleting the message.
+        """
+        self._click(self.INBOX_BUTTON_LOCATORS["inbox_delete_page_delete_button"],
+                    expected_url=expected_url)
 
     def click_on_delete_page_cancel_button(self):
         """Click on the cancel button on the delete message page."""
@@ -195,8 +205,12 @@ class InboxPage(BasePage):
         return self._get_text_of_elements(self.INBOX_MESSAGES_LOCATORS
                                           ["all_read_messages_excerpt"])
 
-    def delete_all_inbox_messages(self):
-        """Delete all the inbox messages."""
+    def delete_all_inbox_messages(self, expected_url=None):
+        """Delete all the inbox messages.
+
+        Args:
+            expected_url: The expected URL after deleting all the messages.
+        """
         inbox_messages_count = self._get_element_handles(self.INBOX_MESSAGES_LOCATORS
                                                          ["inbox_messages"])
         for i in range(len(inbox_messages_count)):
@@ -204,8 +218,8 @@ class InboxPage(BasePage):
                 self.INBOX_MESSAGES_LOCATORS["inbox_messages_delete_button"])
             delete_button = inbox_elements_delete_button[i]
 
-            delete_button.click()
-            self.click_on_delete_page_delete_button()
+            self._click(delete_button)
+            self.click_on_delete_page_delete_button(expected_url=expected_url)
 
     def check_a_particular_message(self, excerpt=''):
         """Check a particular message.
@@ -216,11 +230,12 @@ class InboxPage(BasePage):
         inbox_checkbox = self.inbox_message_select_checkbox_element(excerpt)
         inbox_checkbox[0].check()
 
-    def delete_all_inbox_messages_via_delete_selected_button(self, excerpt=''):
+    def delete_all_inbox_messages_via_delete_selected_button(self, excerpt='', expected_url=None):
         """Delete all the inbox messages via the delete selected button.
 
         Args:
             excerpt: The excerpt of the message.
+            expected_url: The expected URL after deleting all the messages.
         """
         if excerpt != '':
             inbox_messages_count = self._inbox_message_element_handles(excerpt)
@@ -234,11 +249,11 @@ class InboxPage(BasePage):
             else:
                 inbox_checkbox = self.inbox_message_select_checkbox_element()
             element = inbox_checkbox[counter]
-            element.click()
+            self._checkbox_interaction(element, True)
             counter += 1
 
         self.click_on_inbox_delete_selected_button()
-        self.click_on_delete_page_delete_button()
+        self.click_on_delete_page_delete_button(expected_url=expected_url)
 
     def get_all_unread_messages(self) -> list[Locator]:
         """Get all the unread messages."""

@@ -25,10 +25,12 @@ class QuestionPage(BasePage):
     __undo_solves_problem = "//input[@value='Undo']"
 
     # Question locators.
-    __question_author = "//div[@class='question']//span[@class='display-name']"
-    __questions_header = "//h2[@class='sumo-callout-heading summary no-product-heading']"
-    __question_body = "//div[@class='main-content']/div/p"
-    __modified_question_section = "//p[@class='edited text-body-sm']"
+    QUESTION_LOCATORS = {
+        "question_author": "//div[@class='question']//span[@class='display-name']",
+        "questions_header": "//h2[@class='sumo-callout-heading summary no-product-heading']",
+        "question_body": "//div[@class='main-content']/div/p",
+        "modified_question_section": "//p[@class='edited text-body-sm']"
+    }
 
     # Progress bar locators.
     __complete_progress_items_label = ("//li[@class='progress--item is-complete']//span["
@@ -212,25 +214,25 @@ class QuestionPage(BasePage):
 
     # Page content actions.
     def get_question_header(self) -> str:
-        return self._get_text_of_element(self.__questions_header)
+        return self._get_text_of_element(self.QUESTION_LOCATORS["questions_header"])
 
     def click_last_reply_by(self):
         self._click(self.__last_reply_by)
 
     def get_question_body(self) -> str:
-        return self._get_text_of_element(self.__question_body)
+        return self._get_text_of_element(self.QUESTION_LOCATORS["question_body"])
 
     def get_question_author_name(self) -> str:
-        return self._get_text_of_element(self.__question_author)
+        return self._get_text_of_element(self.QUESTION_LOCATORS["question_author"])
 
     def get_question_id(self) -> str:
         return self._get_element_attribute_value(self.__question_section, 'id')
 
     def get_modified_question_locator(self) -> Locator:
-        return self._get_element_locator(self.__modified_question_section)
+        return self._get_element_locator(self.QUESTION_LOCATORS["modified_question_section"])
 
     def get_modified_by_text(self) -> str:
-        return self._get_text_of_element(self.__modified_question_section)
+        return self._get_text_of_element(self.QUESTION_LOCATORS["modified_question_section"])
 
     def get_add_image_section_locator(self) -> Locator:
         return self._get_element_locator(self.__add_image_button)
@@ -274,7 +276,7 @@ class QuestionPage(BasePage):
 
     def add_text_to_add_a_tag_input_field(self, text: str):
         self._fill(self.__add_a_tag_input_field, text)
-        self._click(f"//li[@class='ui-menu-item']/div[text()='{text}']")
+        self.page.click(f"//li[@class='ui-menu-item']/div[text()='{text}']")
 
     def get_add_a_tag_input_field(self) -> Locator:
         return self._get_element_locator(self.__add_a_tag_input_field)
@@ -414,9 +416,9 @@ class QuestionPage(BasePage):
                                          f"p[@class='edited text-body-sm']/em")
 
     def click_on_post_reply_button(self, repliant_username) -> str:
-        self._click(self.__post_reply_button)
-        self._wait_for_selector(f"//span[@class='display-name' and contains"
-                                f"(text(), '{repliant_username}')]")
+        self._click(self.__post_reply_button,
+                    expected_locator=f"//span[@class='display-name' and contains(text(), "
+                                     f"'{repliant_username}')]")
         return self._get_element_attribute_value(f"//span[@class='display-name' and "
                                                  f"contains(text(), '{repliant_username}')]/"
                                                  f"ancestor::div[@class='answer ']",
@@ -551,7 +553,7 @@ class QuestionPage(BasePage):
         return self._get_text_of_elements(self.__common_responses_responses_options)
 
     def click_on_a_particular_category_option(self, option: str):
-        self._click(f"//ul[@class='category-list']/li[text()='{option}']", with_wait=True)
+        self._click(f"//ul[@class='category-list']/li[text()='{option}']")
 
     def click_on_a_particular_response_option(self, option: str):
         self._click(f"//ul[@class='sidebar-nav']/li[text()='{option}']")
@@ -568,10 +570,10 @@ class QuestionPage(BasePage):
         return self._get_text_of_element(self.__common_responses_response_preview)
 
     def click_on_switch_to_mode(self):
-        self._click(self.__common_responses_switch_to_mode, with_wait=True)
+        self._click(self.__common_responses_switch_to_mode)
 
     def click_on_common_responses_cancel_button(self):
-        self._click(self.__common_responses_cancel_button, with_wait=True)
+        self._click(self.__common_responses_cancel_button)
 
     def click_on_common_responses_insert_response_button(self):
         self._click(self.__common_responses_insert_response_button)

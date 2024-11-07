@@ -80,7 +80,9 @@ def test_explore_by_topic_aaq_widget_text(page: Page):
                             .get_text_of_aaq_widget() == AAQWidgetMessages
                             .PREMIUM_AAQ_SUBHEADING_TEXT)
                 else:
-                    assert not sumo_pages.explore_by_topic_page.is_aaq_text_visible()
+                    assert (sumo_pages.explore_by_topic_page
+                            .get_text_of_aaq_widget() == AAQWidgetMessages.
+                            NEUTRAL_AAQ_SUBHEADING_TEXT)
 
 
 # C2663960
@@ -114,8 +116,7 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page):
             if product == "All Products":
                 assert ContactSupportMessages.PAGE_URL == utilities.get_page_url()
             elif product not in utilities.aaq_question_test_data['products_aaq_url']:
-                assert (utilities.aaq_question_test_data['product_without_aaq_url'] == utilities.
-                        get_page_url())
+                assert utilities.get_page_url() == ContactSupportMessages.PAGE_URL
             else:
                 assert (utilities.
                         aaq_question_test_data['products_aaq_url'][product] == utilities.

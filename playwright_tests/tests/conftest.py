@@ -1,3 +1,5 @@
+import warnings
+
 import allure
 import pytest
 from playwright.sync_api import Page
@@ -25,6 +27,7 @@ def navigate_to_homepage(page: Page):
         502 error is encountered.
         """
         if response.status == 502:
+            warnings.warn("502 encountered")
             page = response.request.frame.page
             print("502 error encountered. Reloading the page after 5 seconds.")
             page.wait_for_timeout(5000)

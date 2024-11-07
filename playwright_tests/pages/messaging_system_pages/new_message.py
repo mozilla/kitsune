@@ -126,9 +126,15 @@ class NewMessagePage(BasePage):
         """Click on the new message preview button."""
         self._click(self.PREVIEW_SECTION_LOCATORS["new_message_preview_button"])
 
-    def click_on_new_message_send_button(self):
-        """Click on the new message send button."""
-        self._click(self.NEW_MESSAGE_PAGE_LOCATORS["new_message_send_button"])
+    def click_on_new_message_send_button(self, expected_url=None):
+        """Click on the new message send button.
+
+        Args:
+            expected_url (str): The expected URL after the click event.
+        """
+        self._click(self.NEW_MESSAGE_PAGE_LOCATORS["new_message_send_button"],
+                    expected_url=expected_url
+                    )
 
     def click_on_a_search_result(self, username: str):
         """Click on a search result.

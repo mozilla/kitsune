@@ -20,8 +20,8 @@ class AAQFlow:
                                attach_image=False,
                                is_premium=False,
                                email="",
-                               is_loginless=False
-                               ):
+                               is_loginless=False,
+                               expected_locator=None):
         question_subject = ''
         if is_premium:
             self.add_valid_data_to_all_premium_products_aaq_fields(subject, body, is_loginless,
@@ -34,7 +34,7 @@ class AAQFlow:
                 attach_image
             )
         # Submitting the question.
-        self.aaq_form_page.click_aaq_form_submit_button()
+        self.aaq_form_page.click_aaq_form_submit_button(expected_locator=expected_locator)
 
         # If the submission was done for freemium products we are retrieving the Question Subject,
         # Question url & Question Body for further test usage.

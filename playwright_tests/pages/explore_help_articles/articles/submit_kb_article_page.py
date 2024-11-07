@@ -5,8 +5,8 @@ from playwright_tests.core.basepage import BasePage
 class SubmitKBArticlePage(BasePage):
     __kb_article_for_contributors_sidebar = "//nav[@id='for-contributors-sidebar']"
     # New KB article form locators.
-    __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-selectized']"
-    __kb_article_restrict_visibility_delete_all_groups = "//a[@title='Clear']"
+    __kb_article_restrict_visibility_field = "//input[@id='id_restrict_to_groups-ts-control']"
+    __kb_article_restrict_visibility_delete_all_groups = "//div[@class='clear-button']"
     __kb_article_form_title = "//input[@id='id_title']"
     __kb_article_form_slug = "//input[@id='id_slug']"
     __kb_article_category_select = "//select[@id='id_category']"

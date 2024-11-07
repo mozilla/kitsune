@@ -118,47 +118,74 @@ class BasePage:
         """
         return locator.all_text_contents()
 
-    def _checkbox_interaction(self, xpath: str, check: bool):
+    def _checkbox_interaction(self, element: [str, ElementHandle], check: bool, retries=3,
+                              delay=2000):
         """
         This helper function interacts with a checkbox element.
-        """
-        if check:
-            self._get_element_locator(xpath).check()
-        else:
-            self._get_element_locator(xpath).uncheck()
 
-    def _click(self, element: Union[str, Locator], with_wait=True, with_force=False,
-               retries=3, delay=2000):
+        Args:
+        element (Union[str, ElementHandle]): The element locator to interact with.
+        check (bool): Whether to check or uncheck the checkbox.
         """
-        This helper function clicks on a given element locator.
-        """
+        self.page.wait_for_load_state("networkidle")
         for attempt in range(retries):
             try:
-                if isinstance(element, str):
-                    if with_wait:
-                        self._wait_for_selector(element)
-                    self._get_element_locator(element).click(force=with_force)
-                elif isinstance(element, Locator):
-                    element.click(force=with_force)
-                print(f"Click succeeded on attempt {attempt + 1}")
+                locator = self._get_element_locator(element) if isinstance(
+                    element,str) else element
+                if check:
+                    locator.check()
+                else:
+                    locator.uncheck()
                 break
-            except (PlaywrightTimeoutError, Exception) as error:
-                print(f"Click failed on attempt {attempt + 1}. Error: {error}")
+            except (PlaywrightTimeoutError, Exception) as e:
+                print(f"Checkbox interaction failed. Retrying... {e}")
                 if attempt < retries - 1:
                     self.page.wait_for_timeout(delay)
                 else:
-                    raise Exception("Max retries exceeded. Could not perform the click")
+                    raise Exception("Max retries exceeded. Could not interact with the checkbox")
+
+    def _click(self, element: Union[str, Locator, ElementHandle], expected_locator=None,
+               expected_url=None, with_force=False, retries=3, delay=2000):
+        """
+        This helper function clicks on a given element locator.
+
+        Args:
+        element (Union[str, Locator, ElementHandle]): The element locator to click on.
+        expected_locator (str): The expected locator to wait for after the click.
+        expected_url (str): The expected URL to wait for after the click.
+        with_force (bool): Whether to force the click.
+        """
+        self.page.wait_for_load_state("networkidle")
+        for attempt in range(retries):
+            try:
+                element_locator = self._get_element_locator(element) if isinstance(
+                    element, str) else element
+                element_locator.click(force=with_force)
+                if expected_locator:
+                    self.page.wait_for_selector(expected_locator, timeout=3000)
+                if expected_url:
+                    self.page.wait_for_url(expected_url, timeout=3000)
+                break
+            except PlaywrightTimeoutError:
+                if expected_locator:
+                    print(f"Expected locator {expected_locator} not found. Retrying...")
+                if expected_url:
+                    print(f"Expected URL {expected_url} not found. Retrying...")
+                if attempt < retries - 1:
+                    self.page.wait_for_timeout(delay)
 
     def _click_on_an_element_by_index(self, xpath: str, index: int):
         """
         This helper function clicks on a given element locator based on a given index.
         """
+        self.page.wait_for_load_state("networkidle")
         self._get_element_locator(xpath).nth(index).click()
 
     def _click_on_first_item(self, xpath: str):
         """
         This helper function clicks on the first item from a given web element locator list.
         """
+        self.page.wait_for_load_state("networkidle")
         self._get_element_locator(xpath).first.click()
 
     def _fill(self, xpath: str, text: str):
@@ -258,3 +285,13 @@ class BasePage:
             self.page.wait_for_selector(xpath, timeout=timeout)
         except PlaywrightTimeoutError:
             print(f"{xpath} is not displayed")
+
+    def _move_mouse_to_location(self, x: int, y: int):
+        """
+        This helper function moves the mouse to a given location.
+
+        Args:
+        x (int): The x-coordinate.
+        y (int): The y-coordinate.
+        """
+        self.page.mouse.move(x, y)

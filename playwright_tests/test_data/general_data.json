@@ -78,7 +78,7 @@
     "article_discussions": "https://support.allizom.org/en-US/kb/all/discussions"
   },
   "groups": "https://support.allizom.org/en-US/groups/",
-  "testGroup1users": ["TEST_ACCOUNT_MESSAGE_1", "TEST_ACCOUNT_MESSAGE_2", "TEST_ACCOUNT_MESSAGE_3", "TEST_ACCOUNT_MESSAGE_4"],
-  "testGroup2users": ["TEST_ACCOUNT_MESSAGE_4", "TEST_ACCOUNT_MESSAGE_5", "TEST_ACCOUNT_MESSAGE_6"],
+  "testGroup1users": ["TEST_ACCOUNT_MESSAGE_1", "TEST_ACCOUNT_MESSAGE_2", "TEST_ACCOUNT_MESSAGE_3"],
+  "testGroup2users": ["TEST_ACCOUNT_MESSAGE_3", "TEST_ACCOUNT_MESSAGE_4"],
   "test_article_link": "https://support.allizom.org/en-US/kb/donotdelete"
 }

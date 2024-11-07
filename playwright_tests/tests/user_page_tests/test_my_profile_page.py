@@ -54,7 +54,9 @@ def test_my_profile_sign_out_button_functionality(page: Page):
     with allure.step("Accessing the my profile page, clicking on the sign out button and "
                      "verifying that the user is redirected to the homepage"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        sumo_pages.my_profile_page.click_my_profile_page_sign_out_button()
+        sumo_pages.my_profile_page.click_my_profile_page_sign_out_button(
+            expected_url=HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+        )
         expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
     with allure.step("Verify that the 'Sign in/Up' button from the page header is displayed"):
@@ -81,7 +83,8 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
                 topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"]
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
             )
         )
 
@@ -158,7 +161,8 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
                 topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"]
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
             )
         )
 

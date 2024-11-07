@@ -1,5 +1,4 @@
 from typing import Any
-
 import allure
 from pytest_check import check
 import pytest
@@ -122,8 +121,10 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(
-            utilities.kb_article_test_data['restricted_visibility_groups'][0])
+        utilities.re_call_function_on_error(
+            sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group,
+            group_name=utilities.kb_article_test_data['restricted_visibility_groups'][0]
+        )
 
     with allure.step("Signing in with an account belonging to the removed group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -151,7 +152,10 @@ def test_kb_restrict_visibility(page: Page, create_delete_article, is_template):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(group_name='')
+        utilities.re_call_function_on_error(
+            sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group,
+            group_name=''
+        )
 
     with allure.step("Deleting user session"):
         utilities.delete_cookies()
@@ -915,7 +919,10 @@ def remove_all_article_restrictions(page: Page):
         utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
     ))
 
-    sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group(group_name='')
+    utilities.re_call_function_on_error(
+        sumo_pages.edit_article_metadata_flow._remove_a_restricted_visibility_group,
+        group_name=''
+    )
 
 
 def _create_discussion_thread(page: Page) -> dict[str, Any]:
