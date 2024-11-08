@@ -23,6 +23,8 @@
 
   &--text {
     flex: 1 1 100%;
+    max-width: 100%;
+    word-wrap: break-word;
 
     p {
       margin-bottom: 0;
