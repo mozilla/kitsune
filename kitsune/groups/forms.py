@@ -29,18 +29,24 @@ class GroupAvatarForm(forms.ModelForm):
             size=settings.AVATAR_SIZE
         )
 
-    class Meta(object):
+    class Meta:
         model = GroupProfile
         fields = ["avatar"]
 
     def clean_avatar(self):
-        if not ("avatar" in self.cleaned_data and self.cleaned_data["avatar"]):
-            return self.cleaned_data["avatar"]
+        avatar = self.cleaned_data.get("avatar")
+
+        # Ensure an avatar file is attached
+        if not avatar:
+            raise forms.ValidationError(_("An avatar image is required."))
+
+        # Validate file size
         try:
-            check_file_size(self.cleaned_data["avatar"], settings.MAX_AVATAR_FILE_SIZE)
+            check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
         except FileTooLargeError as e:
             raise forms.ValidationError(e.args[0])
-        return self.cleaned_data["avatar"]
+
+        return avatar
 
 
 USERS_PLACEHOLDER = _lazy("username")
