@@ -423,6 +423,7 @@ def question_details(
     """View the answers to a question."""
     ans_ = _answers_data(request, question_id, form, watch_form, answer_preview)
     question = ans_["question"]
+    set_aaq_context(request, question.product)
 
     if question.is_spam and not request.user.has_perm("flagit.can_moderate"):
         raise Http404("No question matches the given query.")
