@@ -142,9 +142,9 @@ jobs:
         working-directory: playwright_tests
         if: success() || failure()
         run: |
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-            brew install allure
+            curl -o allure-2.32.0.tgz -L https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.32.0/allure-commandline-2.32.0.tgz
+            tar -zxvf allure-2.32.0.tgz
+            export PATH=$PATH:$PWD/allure-2.32.0/bin
             allure generate --single-file reports/allure_reports
       - name: Upload the combined test report as artifact
         if: success() || failure()
