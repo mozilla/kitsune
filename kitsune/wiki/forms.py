@@ -425,6 +425,6 @@ class RevisionFilterForm(forms.Form):
     """Form to filter a list of revisions."""
 
     locale = forms.ChoiceField(label=_lazy("Locale:"), choices=languages, required=False)
-    users = MultiUsernameField(label=_lazy("Users:"), required=False)
+    users = forms.CharField(label=_lazy("Users:"), required=False)
     start = forms.DateField(label=_lazy("Start:"), required=False)
     end = forms.DateField(label=_lazy("End:"), required=False)

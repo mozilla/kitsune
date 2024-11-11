@@ -39,6 +39,7 @@ from kitsune.sumo.utils import (
     smart_int,
     truncated_json_dumps,
 )
+from kitsune.users.models import Profile
 from kitsune.wiki.config import (
     CATEGORIES,
     COLLAPSIBLE_DOCUMENTS,
@@ -1656,24 +1657,39 @@ def recent_revisions(request):
     fragment = request.GET.pop("fragment", None)
     form = RevisionFilterForm(request.GET)
 
-    # We are going to ignore validation errors for the most part, but
-    # this is needed to call the functions that generate `cleaned_data`
-    # This helps in particular when bad user names are typed in.
+    # Validate form to populate `cleaned_data`
     form.is_valid()
 
     filters = {}
-    # If something has gone very wrong, `cleaned_data` won't be there.
     if hasattr(form, "cleaned_data"):
         if form.cleaned_data.get("locale"):
             filters.update(document__locale=form.cleaned_data["locale"])
-        if form.cleaned_data.get("users"):
-            filters.update(creator__in=form.cleaned_data["users"])
+
+        users = form.cleaned_data.get("users")
+
+        # If `users` exists, find matching User or Profile instances
+        if users:
+            # Attempt to match `users` to User objects by username
+            user_objects = User.objects.filter(username=users)
+
+            # Attempt to match `users` to User objects by profile display name
+            profile_usernames = Profile.objects.filter(name=users).values_list(
+                "user__username", flat=True
+            )
+            # Combine both lists of usernames
+            combined_usernames = list(user_objects.values_list("username", flat=True)) + list(
+                profile_usernames
+            )
+            # Use the combined list to filter the creator field
+            filters["creator__username__in"] = combined_usernames
+
         start = form.cleaned_data.get("start")
         end = form.cleaned_data.get("end")
         if start or end:
             filters.update(created__range=(start or datetime.min, end or Now()))
 
-    revs = Revision.objects.visible(request.user, **filters).order_by("-created")
+    # Apply the filters using **filters
+    revs = Revision.objects.visible(request.user).filter(**filters).order_by("-created")
 
     revs = paginate(request, revs)
 
