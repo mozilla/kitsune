@@ -1650,24 +1650,22 @@ def _show_revision_warning(document, revision):
 
 
 def recent_revisions(request):
-    # Make writable
     request.GET = request.GET.copy()
-
     fragment = request.GET.pop("fragment", None)
     form = RevisionFilterForm(request.GET)
 
-    # We are going to ignore validation errors for the most part, but
-    # this is needed to call the functions that generate `cleaned_data`
-    # This helps in particular when bad user names are typed in.
+    # Validate the form to populate cleaned_data, even with invalid usernames.
     form.is_valid()
 
     filters = {}
-    # If something has gone very wrong, `cleaned_data` won't be there.
     if hasattr(form, "cleaned_data"):
         if form.cleaned_data.get("locale"):
             filters.update(document__locale=form.cleaned_data["locale"])
+
+        # Only apply user filter if there are valid users
         if form.cleaned_data.get("users"):
             filters.update(creator__in=form.cleaned_data["users"])
+
         start = form.cleaned_data.get("start")
         end = form.cleaned_data.get("end")
         if start or end:
