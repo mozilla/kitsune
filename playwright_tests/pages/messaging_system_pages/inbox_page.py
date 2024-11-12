@@ -228,7 +228,7 @@ class InboxPage(BasePage):
             excerpt: The excerpt of the message.
         """
         inbox_checkbox = self.inbox_message_select_checkbox_element(excerpt)
-        inbox_checkbox[0].check()
+        self._checkbox_interaction(inbox_checkbox[0], True)
 
     def delete_all_inbox_messages_via_delete_selected_button(self, excerpt='', expected_url=None):
         """Delete all the inbox messages via the delete selected button.
@@ -237,6 +237,7 @@ class InboxPage(BasePage):
             excerpt: The excerpt of the message.
             expected_url: The expected URL after deleting all the messages.
         """
+        self._wait_for_dom_load_to_finish()
         if excerpt != '':
             inbox_messages_count = self._inbox_message_element_handles(excerpt)
         else:

@@ -5,10 +5,12 @@ import time
 import re
 import json
 import random
+from PIL import Image
+from PIL import ImageChops
 from typing import Any, Union
 from datetime import datetime
 from nltk import SnowballStemmer, WordNetLemmatizer
-from playwright.sync_api import Page
+from playwright.sync_api import Page, Locator
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
@@ -191,6 +193,42 @@ class Utilities:
         if response is not None and response.status is not None:
             if response.status >= 400:
                 self.refresh_page()
+
+    def upload_file(self, element: str, path_to_file: str):
+        """This helper function uploads the test-image.png file to a given file element chooser.
+
+        Args:
+            element (str): The element file chooser locator's xpath.
+            path_to_file (str): The path to the file to be uploaded.
+        """
+        with self.page.expect_file_chooser() as file_chooser:
+            self.page.locator(element).click()
+        file_chooser_value = file_chooser.value
+        file_chooser_value.set_files(os.path.abspath(path_to_file))
+
+    def screenshot_the_locator(self, locator: Locator, path_to_save: str):
+        """
+        This helper function takes a screenshot of a given locator.
+
+        Args:
+            locator (Locator): The locator of the targeted element.
+            path_to_save (str): The path where to save the screenshot.
+        """
+        locator.screenshot(path=path_to_save)
+
+    def are_images_different(self, image1_path: str, image2_path: str) -> tuple:
+        """
+        This helper function compares two images and returns the bounding box of the difference.
+        If there is no difference this helper function will return None.
+
+        Args:
+            image1_path (str): The path of the first image
+            image2_path (str): The path of the second image
+        """
+        first_image = Image.open(image1_path).convert('RGB')
+        second_image = Image.open(image2_path).convert('RGB')
+
+        return ImageChops.difference(first_image, second_image).getbbox()
 
     def set_extra_http_headers(self, headers):
         """

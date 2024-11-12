@@ -1060,6 +1060,80 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page):
         expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=10000)
 
 
+# C2083482
+@pytest.mark.messagingSystem
+def test_pm_group_member(page: Page, is_firefox):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    message_body = "Test " + utilities.generate_random_number(1, 1000)
+    target_user = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_3']
+    )
+    with allure.step("Navigating to test group and click on the 'Private Message for a certain "
+                     "user'"):
+        utilities.navigate_to_link(utilities.general_test_data['groups'])
+        sumo_pages.user_groups.click_on_a_particular_group(
+            utilities.user_message_test_data['test_groups'][0])
+        group_link = utilities.get_page_url()
+        sumo_pages.user_groups.click_on_pm_for_a_particular_user(target_user)
+
+    with check, allure.step("Verifying that the user is redirected to the auth page"):
+        assert (
+            sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
+        ), "The auth page is not displayed! It should be!"
+
+    with allure.step("Signing in and sending a pm via the group page"):
+        utilities.navigate_to_link(group_link)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
+        ))
+        sumo_pages.user_groups.click_on_pm_for_a_particular_user(target_user)
+
+    with allure.step("Verifying that the receiver is automatically added inside the 'To' "
+                     "field"):
+        # Firefox GH runner fails here. We are running this assertion only in Chrome for now
+        if not is_firefox:
+            assert sumo_pages.new_message_page.get_user_to_text() == target_user, (
+                f"Incorrect 'To' receiver. Expected: {target_user}. "
+                f"Received: {sumo_pages.new_message_page.get_user_to_text()}"
+            )
+
+    with allure.step("Sending a message to the user"):
+        sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+            message_body=message_body)
+
+    with check, allure.step("Verifying that the correct message sent banner is displayed"):
+        assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
+        ) == InboxPageMessages.MESSAGE_SENT_BANNER_TEXT
+
+    with allure.step("Clicking on the 'Sent Messages option"):
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+
+    with allure.step("Verifying that the sent message is displayed"):
+        expect(
+            sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message_body)
+        ).to_be_visible()
+
+    with allure.step("Deleting the message from the sent messages page"):
+        sumo_pages.messaging_system_flow.delete_message_flow(
+            excerpt=message_body, from_sent_list=True)
+
+    with allure.step("Signing in with the user which received the message"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_3"]
+        ))
+
+    with allure.step("Accessing the Inbox section"):
+        sumo_pages.top_navbar.click_on_inbox_option()
+
+    with allure.step("Verifying that the inbox contains the previously sent messages"):
+        expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body)).to_be_visible()
+
+    with allure.step("Deleting the messages from the inbox section"):
+        sumo_pages.messaging_system_flow.delete_message_flow(
+            excerpt=message_body, from_inbox_list=True)
+
+
 @pytest.mark.messagingSystemCleanup
 def test_clear_inbox_and_outbox(page: Page):
     utilities = Utilities(page)
