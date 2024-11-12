@@ -118,27 +118,24 @@ class TopNavbar(BasePage):
         """Hover over the 'Explore by product' top-navbar option"""
         self._hover_over_element(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
                                  ["explore_help_articles_top_navbar_option"])
+        self.page.wait_for_selector(
+            self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS["explore_by_product_top_navbar_header"])
 
     def get_all_explore_by_product_options_locators(self) -> list[Locator]:
         """Get all 'Explore by product' top-navbar options locators"""
         self.hover_over_explore_by_product_top_navbar_option()
-        self.page.wait_for_selector(
-            self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS["explore_by_product_top_navbar_header"])
         return self._get_elements_locators(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
                                            ["explore_by_product_top_navbar_options"])
 
     def get_all_explore_by_topic_locators(self) -> list[Locator]:
         """Get all 'Explore by topic' top-navbar options locators"""
         self.hover_over_explore_by_product_top_navbar_option()
-        self.page.wait_for_selector(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
-                                    ["explore_by_topic_top_navbar_header"])
         return self._get_elements_locators(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
                                            ["explore_by_topic_top_navbar_options"])
 
     def click_on_explore_our_help_articles_view_all_option(self):
         """Click on the 'View all products' option"""
-        self._hover_over_element(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
-                                 ["explore_help_articles_top_navbar_option"])
+        self.hover_over_explore_by_product_top_navbar_option()
         self._click(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
                     ["explore_our_help_articles_view_all_option"])
     """
@@ -148,20 +145,18 @@ class TopNavbar(BasePage):
         """Hover over the 'Community Forums' top-navbar option"""
         self._hover_over_element(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
                                  ["community_forums_top_navbar_option"])
+        self.page.wait_for_selector(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
+                                    ["browse_by_product_top_navbar_header"])
 
     def get_all_browse_by_product_options_locators(self) -> list[Locator]:
         """Get all 'Browse by product' top-navbar options locators"""
         self.hover_over_community_forums_top_navbar_option()
-        self.page.wait_for_selector(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
-                                    ["browse_by_product_top_navbar_header"])
         return self._get_elements_locators(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
                                            ["browse_by_product_top_navbar_options"])
 
     def get_all_browse_all_forum_threads_by_topic_locators(self) -> list[Locator]:
         """Get all 'Browse all forum threads by topic' top-navbar options locators"""
         self.hover_over_community_forums_top_navbar_option()
-        self.page.wait_for_selector(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
-                                    ["browse_all_forum_threads_by_topic_top_navbar_header"])
         return self._get_elements_locators(
             self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
             ["browse_all_forum_threads_by_topics_top_navbar_options"])
@@ -172,17 +167,17 @@ class TopNavbar(BasePage):
     def hover_over_ask_a_question_top_navbar(self):
         """Hover over the 'Ask a Question' top-navbar option"""
         self._hover_over_element(self.TOP_NAVBAR_AAQ_LOCATORS["ask_a_question_top_navbar"])
+        self.page.wait_for_selector(self.TOP_NAVBAR_AAQ_LOCATORS["get_help_with_heading"])
 
     def get_all_ask_a_question_locators(self) -> list[Locator]:
         """Get all 'Ask a Question' top-navbar options locators"""
-        self._hover_over_element(self.TOP_NAVBAR_AAQ_LOCATORS["ask_a_question_top_navbar"])
-        self.page.wait_for_selector(self.TOP_NAVBAR_AAQ_LOCATORS["get_help_with_heading"])
+        self.hover_over_ask_a_question_top_navbar()
         return self._get_elements_locators(self.TOP_NAVBAR_AAQ_LOCATORS
                                            ["ask_a_question_top_navbar_options"])
 
     def click_on_browse_all_products_option(self):
         """Click on the 'Browse all products' option"""
-        self._hover_over_element(self.TOP_NAVBAR_AAQ_LOCATORS["ask_a_question_top_navbar"])
+        self.hover_over_ask_a_question_top_navbar()
         self._click(self.TOP_NAVBAR_AAQ_LOCATORS["browse_all_products_option"])
 
     """
@@ -191,12 +186,12 @@ class TopNavbar(BasePage):
     def hover_over_contribute_top_navbar(self):
         """Hover over the 'Contribute' top-navbar option"""
         self._hover_over_element(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["contribute_option"])
+        self.page.wait_for_selector(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS
+                                    ["contributor_discussions_top_navbar_header"])
 
     def get_all_contributor_discussions_locators(self) -> list[Locator]:
         """Get all 'Contributor discussions' top-navbar options locators"""
         self.hover_over_contribute_top_navbar()
-        self.page.wait_for_selector(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS
-                                    ["contributor_discussions_top_navbar_header"])
         return self._get_elements_locators(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS
                                            ["contributor_discussions_options"])
 
@@ -211,7 +206,7 @@ class TopNavbar(BasePage):
 
     def click_on_article_discussions_option(self):
         """Click on the 'Article discussions' option"""
-        self._hover_over_element(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["contribute_option"])
+        self.hover_over_contribute_top_navbar()
         self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["article_discussions_option"])
 
     # Contributor tools
@@ -247,9 +242,14 @@ class TopNavbar(BasePage):
         """Click on the 'Sign In/Up' button"""
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signin_signup_button"])
 
+    def mouse_over_profile_avatar(self):
+        """Mouse over the profile avatar"""
+        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self._wait_for_selector(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["sign_out_button"])
+
     def click_on_sign_out_button(self):
         """Click on the 'Sign Out' button"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self.mouse_over_profile_avatar()
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["sign_out_button"])
 
     def sign_in_up_button_displayed_element(self) -> Locator:
@@ -267,7 +267,7 @@ class TopNavbar(BasePage):
     """
     def click_on_view_profile_option(self):
         """Click on the 'View Profile' option"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self.mouse_over_profile_avatar()
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_view_profile_option"])
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
@@ -275,7 +275,7 @@ class TopNavbar(BasePage):
 
     def click_on_edit_profile_option(self):
         """Click on the 'Edit Profile' option"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self.mouse_over_profile_avatar()
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_edit_profile_option"])
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
@@ -283,7 +283,7 @@ class TopNavbar(BasePage):
 
     def click_on_settings_profile_option(self):
         """Click on the 'Settings' option"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self.mouse_over_profile_avatar()
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_settings_option"])
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
@@ -291,7 +291,7 @@ class TopNavbar(BasePage):
 
     def click_on_inbox_option(self):
         """Click on the 'Inbox' option"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self.mouse_over_profile_avatar()
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_inbox_option"])
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
@@ -299,7 +299,7 @@ class TopNavbar(BasePage):
 
     def click_on_my_questions_profile_option(self):
         """Click on the 'My Questions' option"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
+        self.mouse_over_profile_avatar()
         self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_my_questions_option"])
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
@@ -324,10 +324,6 @@ class TopNavbar(BasePage):
         """Check if the unread message notification counter is visible"""
         return self._is_element_visible(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
                                         ["unread_message_count"])
-
-    def mouse_over_profile_avatar(self):
-        """Mouse over the profile avatar"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
 
     """
         General actions against the top-navbar section.

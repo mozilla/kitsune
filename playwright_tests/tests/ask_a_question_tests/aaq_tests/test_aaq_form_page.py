@@ -269,7 +269,9 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                         topic_name=topic,
                         body=utilities.aaq_question_test_data["valid_firefox_question"]
                         ["question_body"],
-                        attach_image=False
+                        attach_image=False,
+                        expected_locator=sumo_pages.question_page.QUESTION_LOCATORS
+                        ["questions_header"]
                     )
 
                 with allure.step("Verifying that the correct implicit tags are added to the "
@@ -387,7 +389,8 @@ def test_additional_system_details_user_agent_information(page: Page):
                     topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
                     body=utilities.aaq_question_test_data["valid_firefox_question"]
                     ["question_body"],
-                    attach_image=True
+                    attach_image=True,
+                    expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
                 )
 
             with check, allure.step("Verifying that the correct user-agent information is "
