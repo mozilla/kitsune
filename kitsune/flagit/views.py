@@ -79,7 +79,7 @@ def flagged_queue(request):
     for object in objects:
         if object.content_type == question_content_type:
             question = object.content_object
-            available_topics = Topic.active.filter(products=question.product, in_aaq=True)
+            available_topics = Topic.active.filter(products=question.product)
         base_url = reverse("flagit.update", args=[object.id])
         form_action = urlparams(base_url, query_dict=None, reason=reason)
         object.available_topics = available_topics
