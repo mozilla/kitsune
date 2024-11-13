@@ -660,4 +660,4 @@ class TestActions(TestCase):
         """Creating a question also creates a flag."""
         switch_is_active.return_value = True
         QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
-        self.assertEqual(1, FlaggedObject.objects.filter(reason="bug_support").count())
+        self.assertEqual(1, FlaggedObject.objects.filter(reason="content_moderation").count())

@@ -61,18 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    let reason = updateUrlParameter('get', 'reason');
 
-    if (reason) {
-        reasonFilter.value = reason;
+    if (reasonFilter) {
+        let reason = updateUrlParameter('get', 'reason');
+        if (reason) {
+            reasonFilter.value = reason;
+        }
+
+        reasonFilter.addEventListener('change', async () => {
+            const selectedReason = reasonFilter.value;
+
+            updateUrlParameter('set', 'reason', selectedReason);
+            fetchAndUpdateContent(new URL(window.location.href));
+        });
     }
-
-    reasonFilter.addEventListener('change', async () => {
-        const selectedReason = reasonFilter.value;
-
-        updateUrlParameter('set', 'reason', selectedReason);
-        fetchAndUpdateContent(new URL(window.location.href));
-    });
 
     function handleDropdownChange() {
         const dropdowns = document.querySelectorAll('.topic-dropdown, select[name="status"]');

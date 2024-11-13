@@ -16,44 +16,59 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 
 
+def get_flagged_objects(reason=None, exclude_reason=None, content_model=None):
+    """Retrieve pending flagged objects with optional filtering, eager loading related fields."""
+    queryset = FlaggedObject.objects.pending().select_related("content_type", "creator")
+    if exclude_reason:
+        queryset = queryset.exclude(reason=exclude_reason)
+    if reason:
+        queryset = queryset.filter(reason=reason)
+    if content_model:
+        queryset = queryset.filter(content_type=content_model)
+    return queryset
+
+
+def set_form_action_for_objects(objects, reason=None):
+    """Generate form action URLs for flagged objects."""
+    for obj in objects:
+        base_url = reverse("flagit.update", args=[obj.id])
+        obj.form_action = urlparams(base_url, reason=reason)
+    return objects
+
+
 @require_POST
 @login_required
 def flag(request, content_type=None, model=None, object_id=None, **kwargs):
-    if not content_type:
-        if model:
-            content_type = ContentType.objects.get_for_model(model).id
-        else:
-            content_type = request.POST.get("content_type")
+    if model:
+        content_type = ContentType.objects.get_for_model(model).id
+    content_type = content_type or request.POST.get("content_type")
+    object_id = int(object_id or request.POST.get("object_id"))
 
-    if not object_id:
-        object_id = int(request.POST.get("object_id"))
+    content_type = get_object_or_404(ContentType, id=int(content_type))
+    content_object = get_object_or_404(content_type.model_class(), pk=object_id)
 
     reason = request.POST.get("reason")
     notes = request.POST.get("other", "")
     next = request.POST.get("next")
 
-    content_type = get_object_or_404(ContentType, id=int(content_type))
-    object_id = int(object_id)
-    content_object = get_object_or_404(content_type.model_class(), pk=object_id)
-
     FlaggedObject.objects.filter(
         content_type=content_type,
         object_id=object_id,
-        reason="bug_support",
+        reason=FlaggedObject.REASON_CONTENT_MODERATION,
         status=FlaggedObject.FLAG_PENDING,
     ).delete()
     # Check that this user hasn't already flagged the object
-    try:
-        FlaggedObject.objects.get(
-            content_type=content_type, object_id=object_id, creator=request.user
-        )
-        msg = _("You already flagged this content.")
-    except FlaggedObject.DoesNotExist:
-        flag = FlaggedObject(
-            content_object=content_object, reason=reason, creator=request.user, notes=notes
-        )
-        flag.save()
-        msg = _("You have flagged this content. A moderator will review your submission shortly.")
+    _flagged, created = FlaggedObject.objects.get_or_create(
+        content_type=content_type,
+        object_id=object_id,
+        creator=request.user,
+        defaults={"content_object": content_object, "reason": reason, "notes": notes},
+    )
+    msg = (
+        _("You already flagged this content.")
+        if not created
+        else _("You have flagged this content. A moderator will review your submission shortly.")
+    )
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return HttpResponse(json.dumps({"message": msg}))
@@ -67,23 +82,15 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
 @login_required
 @permission_required("flagit.can_moderate")
 def flagged_queue(request):
-    """The flagged queue."""
+    """Display the flagged queue with optimized queries."""
     reason = request.GET.get("reason")
-    objects = FlaggedObject.objects.pending()
-    question_content_type = ContentType.objects.get_for_model(Question)
-    available_topics = []
 
-    if reason:
-        objects = objects.filter(reason=reason)
-
-    for object in objects:
-        if object.content_type == question_content_type:
-            question = object.content_object
-            available_topics = Topic.active.filter(products=question.product)
-        base_url = reverse("flagit.update", args=[object.id])
-        form_action = urlparams(base_url, query_dict=None, reason=reason)
-        object.available_topics = available_topics
-        object.form_action = form_action
+    objects = (
+        get_flagged_objects(reason=reason, exclude_reason=FlaggedObject.REASON_CONTENT_MODERATION)
+        .select_related("content_type", "creator")
+        .prefetch_related("content_object")
+    )
+    objects = set_form_action_for_objects(objects, reason=reason)
 
     return render(
         request,
@@ -93,6 +100,35 @@ def flagged_queue(request):
             "locale": request.LANGUAGE_CODE,
             "reasons": FlaggedObject.REASONS,
             "selected_reason": reason,
+        },
+    )
+
+
+@login_required
+@permission_required("flagit.can_moderate")
+def moderate_content(request):
+    """Display flagged content that needs moderation."""
+    content_type = ContentType.objects.get_for_model(Question)
+
+    objects = (
+        get_flagged_objects(
+            reason=FlaggedObject.REASON_CONTENT_MODERATION, content_model=content_type
+        )
+        .select_related("content_type", "creator")
+        .prefetch_related("content_object__product")
+    )
+    objects = set_form_action_for_objects(objects, reason=FlaggedObject.REASON_CONTENT_MODERATION)
+
+    for obj in objects:
+        question = obj.content_object
+        obj.available_topics = Topic.active.filter(products=question.product, is_archived=False)
+
+    return render(
+        request,
+        "flagit/content_moderation.html",
+        {
+            "objects": objects,
+            "locale": request.LANGUAGE_CODE,
         },
     )
 
@@ -116,5 +152,6 @@ def update(request, flagged_object_id):
 
         flagged.status = new_status
         flagged.save()
-
+    if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
+        return HttpResponseRedirect(reverse("flagit.moderate_content"))
     return HttpResponseRedirect(urlparams(reverse("flagit.flagged_queue"), reason=reason))

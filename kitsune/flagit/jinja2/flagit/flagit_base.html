@@ -1,0 +1,32 @@
+{% extends "questions/base.html" %} {# TODO: liberate - remove questions dependency #}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
+{% set title = _('Flagged Content Pending Moderation') %}
+{% set classes = 'flagged' %}
+{% set scripts = ('flagit', ) %}
+
+{% block content %}
+  <div id="flagged-queue" class="sumo-page-section">
+  <h1 class="sumo-page-heading">{{ _('Content Pending Moderation') }}</h1>
+    
+    <ul class="flagged-items">
+      {% block flagged_items %}
+      {% endblock %}
+    </ul>
+    {% block deactivation_log %}
+      <div class="sumo-button-wrap"></div>
+        <a class="sumo-button primary-button" rel="nofollow" href="{{ url('users.deactivation_log') }}">{{ _('View all deactivated users') }}</a>
+      </div>
+    {% endblock %}
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="flagit.flagged_queue", menu="contributor-tools", locale=locale) }}
+    </ul>
+
+    {% block side_top_reason %}
+    {% endblock %}
+  </nav>
+{% endblock %}
