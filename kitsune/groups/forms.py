@@ -24,6 +24,7 @@ class GroupAvatarForm(forms.ModelForm):
     avatar = LimitedImageField(required=True, widget=ImageWidget)
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
         super(GroupAvatarForm, self).__init__(*args, **kwargs)
         self.fields["avatar"].help_text = _("Your avatar will be resized to {size}x{size}").format(
             size=settings.AVATAR_SIZE
@@ -34,19 +35,19 @@ class GroupAvatarForm(forms.ModelForm):
         fields = ["avatar"]
 
     def clean_avatar(self):
-        avatar = self.cleaned_data.get("avatar")
-
+        """Validate the avatar file."""
         # Ensure an avatar file is attached
-        if not avatar:
-            raise forms.ValidationError(_("An avatar image is required."))
+        if self.request.method == "POST":
+            avatar = self.request.FILES.get("avatar")
+            if not avatar:
+                raise forms.ValidationError(_("You have not selected an image to upload."))
+            # Validate file size
+            try:
+                check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
+            except FileTooLargeError as e:
+                raise forms.ValidationError(e.args[0])
 
-        # Validate file size
-        try:
-            check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
-        except FileTooLargeError as e:
-            raise forms.ValidationError(e.args[0])
-
-        return avatar
+        return self.cleaned_data["avatar"]
 
 
 USERS_PLACEHOLDER = _lazy("username")
