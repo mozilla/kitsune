@@ -35,7 +35,7 @@ def test_edit_groups_details_visibility(page: Page):
         assert sumo_pages.user_groups.is_add_group_profile_button_visible()
 
 
-# C2083482, C2083483, C2715808, C2715807
+# C2083482, C2083483, C2715808, C2715807, C2799838
 @pytest.mark.userGroupsTests
 def test_group_edit_buttons_visibility(page: Page):
     sumo_pages = SumoPages(page)
@@ -201,6 +201,74 @@ def test_change_group_avatar(page: Page):
         utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
                                          displayed_image)
         assert utilities.are_images_different(displayed_image, second_uploaded_image)
+
+
+# C2799839
+@pytest.mark.userGroupsTests
+def test_add_new_group_leader(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+    )
+
+    test_group = utilities.user_message_test_data['test_groups'][2]
+
+    with allure.step("Signing in with an admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    utilities.navigate_to_link(utilities.general_test_data['groups'])
+    sumo_pages.user_groups.click_on_a_particular_group(test_group)
+
+    with allure.step("Adding a new group leader"):
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user, is_leader=True)
+
+    with allure.step("Verifying that the user was added in both group leaders and group members "
+                     "list"):
+        assert test_user in sumo_pages.user_groups.get_all_leaders_name()
+        assert test_user in sumo_pages.user_groups.get_all_members_name()
+
+    with allure.step("Verifying that the correct banner is displayed"):
+        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
+                get_user_added_success_message(test_user, to_leaders=True))
+
+    with allure.step("Clicking on the added user"):
+        sumo_pages.user_groups.click_on_a_listed_group_leader(test_user)
+
+    with allure.step("Verifying that the group is listed inside the users profile group list"):
+        assert test_group in sumo_pages.my_profile_page.get_my_profile_groups_items_text()
+
+    with allure.step("Clicking on the group link from the profile page"):
+        sumo_pages.my_profile_page.click_on_a_particular_profile_group(test_group)
+
+    with check, allure.step("Clicking on the 'Delete' button for the newly added user and "
+                            "verifying that the correct page header is displayed"):
+        sumo_pages.user_groups.click_on_edit_group_leaders_option()
+        sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user,
+                                                                        from_leaders=True)
+        assert (sumo_pages.user_groups.get_remove_leader_page_header() == UserGroupMessages.
+                get_delete_user_header(test_user, test_group, delete_leader=True))
+
+    with check, allure.step("Clicking on the 'Cancel' button and verifying that the user was not "
+                            "removed from the leaders and members list"):
+        sumo_pages.user_groups.click_on_remove_member_cancel_button()
+        assert test_user in sumo_pages.user_groups.get_all_leaders_name()
+        assert test_user in sumo_pages.user_groups.get_all_members_name()
+
+    with check, allure.step("Deleting the user and verifying that the user was removed from the "
+                            "leaders list but not from the members list"):
+        sumo_pages.user_group_flow.remove_a_user_from_group(test_user, is_leader=True)
+        assert test_user not in sumo_pages.user_groups.get_all_leaders_name()
+        assert test_user in sumo_pages.user_groups.get_all_members_name()
+
+    with check, allure.step("Verifying that the correct banner is displayed"):
+        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
+                get_user_removed_success_message(test_user, from_leaders=True))
+
+    with allure.step("Deleting the user from the members list"):
+        sumo_pages.user_group_flow.remove_a_user_from_group(test_user)
 
 
 # C2083499, C2715807

@@ -7,5 +7,5 @@
     "one_character_message" : "a",
     "9_characters_message": "i3zOlXL9v"
   },
-  "test_groups": ["TestGroup1", "TestGroup2"]
+  "test_groups": ["TestGroup1", "TestGroup2", "TestGroup3"]
 }

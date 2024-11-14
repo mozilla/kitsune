@@ -21,12 +21,14 @@ class GroupsPage(BasePage):
         "edit_group_profile_textarea": "//textarea[@id='id_information']",
         "save_group_profile_edit_button": "//article[@id='group-profile']//input[@value='Save']",
         "edit_group_leaders_button": "//div[@id='group-leaders']/a[text()='Edit group leaders']",
+        "add_group_leader_field": "//div[@id='group-leaders']//input[@id='token-input-id_users']",
+        "add_group_leader_button": "//input[@value='Add Leader']",
         "private_message_group_members_button": "//section[@id='main-area']/p[@class='pm']/a",
         "user_notification": "//ul[@class='user-messages']//p",
         "edit_group_members_option": "//div[@id='group-members']/a",
         "add_group_member_field": "//div[@id='group-members']//input[@id='token-input-id_users']",
         "add_member_button": "//div[@id='group-members']//input[@value='Add Member']",
-        "remove_user_from_group_confirmation_button": "//input[@value='Remove member']",
+        "group_leader_list": "//div[@id='group-leaders']//div[@class='info']/a",
         "group_members_list": "//div[@id='group-members']//div[@class='info']/a"
     }
 
@@ -47,7 +49,9 @@ class GroupsPage(BasePage):
     }
 
     REMOVE_USER_PAGE_LOCATORS = {
+        "remove_leader_page_header": "//article[@id='remove-leader']/h1",
         "remove_user_page_header": "//article[@id='remove-member']/h1",
+        "remove_leader_button": "//input[@value='Remove leader']",
         "remove_member_button": "//input[@value='Remove member']",
         "remove_member_cancel_button": "//div[@class='form-actions']/a[text()='Cancel']"
     }
@@ -70,6 +74,10 @@ class GroupsPage(BasePage):
         self._click(f"//a[text()='{group_name}']")
 
     # Actions against the group page.
+    def get_all_leaders_name(self) -> list[str]:
+        """Get the names of all the leaders in the group"""
+        return self._get_text_of_elements(self.GROUP_PAGE_LOCATORS["group_leader_list"])
+
     def get_all_members_name(self) -> list[str]:
         """Get the names of all the members in the group"""
         return self._get_text_of_elements(self.GROUP_PAGE_LOCATORS["group_members_list"])
@@ -128,6 +136,20 @@ class GroupsPage(BasePage):
     def is_edit_group_members_option_visible(self) -> bool:
         """Check if the edit group members option is visible"""
         return self._is_element_visible(self.GROUP_PAGE_LOCATORS["edit_group_members_option"])
+
+    def click_on_edit_group_leaders_option(self):
+        self._click(self.GROUP_PAGE_LOCATORS["edit_group_leaders_button"])
+
+    def type_into_add_leader_field(self, text: str):
+        """Type into the add leader field
+
+        Args:
+            text (str): The text to type into the add leader field
+        """
+        self._type(self.GROUP_PAGE_LOCATORS["add_group_leader_field"], text, delay=0)
+
+    def click_on_add_group_leader_button(self):
+        self._click(self.GROUP_PAGE_LOCATORS["add_group_leader_button"])
 
     def click_on_pm_group_members_button(self):
         """Click on the PM group members button"""
@@ -220,18 +242,19 @@ class GroupsPage(BasePage):
         self._click(self.DELETE_AVATAR_PAGE_LOCATORS["delete_uploaded_avatar_button"])
 
     # Actions against the removal or user addition
-    def click_on_remove_a_user_from_group_button(self, username: str):
+    def click_on_remove_a_user_from_group_button(self, username: str, from_leaders=False):
         """Click on the remove a user from group button
 
         Args:
             username (str): The username of the user to remove from the group
+            from_leaders (bool, optional): If True, the user will be removed from the leaders.
         """
-        self._click(f"//div[@class='info']/a[text()='{username}']/../..//a[@title="
-                    f"'Remove user from group']")
-
-    def click_on_remove_member_confirmation_button(self):
-        """Click on the remove member confirmation button"""
-        self._click(self.GROUP_PAGE_LOCATORS["remove_user_from_group_confirmation_button"])
+        if from_leaders:
+            self._click(f"//div[@class='info']/a[text()='{username}']/../..//a[@title='Remove "
+                        f"user from leaders']")
+        else:
+            self._click(f"//div[@class='info']/a[text()='{username}']/../..//a[@title="
+                        f"'Remove user from group']")
 
     def type_into_add_member_field(self, text: str):
         """Type into the add member field
@@ -261,9 +284,24 @@ class GroupsPage(BasePage):
         """
         self._click(f"//div[@class='info']/a[text()='{username}']")
 
+    def click_on_a_listed_group_leader(self, username: str):
+        """Click on a listed group leader.
+
+        Args:
+            username (str): The username of the leader to click on
+        """
+        self._click(f"//div[@id='group-leaders']//a[normalize-space(text())='{username}']")
+
+    def get_remove_leader_page_header(self) -> str:
+        return self._get_text_of_element(self.REMOVE_USER_PAGE_LOCATORS
+                                         ["remove_leader_page_header"])
+
     def get_remove_user_page_header(self) -> str:
         """Get the text of the remove user page header"""
         return self._get_text_of_element(self.REMOVE_USER_PAGE_LOCATORS["remove_user_page_header"])
+
+    def click_on_remove_leader_button(self):
+        self._click(self.REMOVE_USER_PAGE_LOCATORS["remove_leader_button"])
 
     def click_on_remove_member_button(self):
         """Click on the remove member button"""
