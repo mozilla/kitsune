@@ -1136,9 +1136,26 @@ ALLOW_LINKS_FROM = [
 ]
 
 # Regexes
-TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")
 REGEX_TIMEOUT = config("REGEX_TIMEOUT", default=5, cast=int)
+TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")
 NANP_REGEX = re.compile(r"[0-9]{3}-?[a-zA-Z2-9][a-zA-Z0-9]{2}-?[a-zA-Z0-9]{4}")
+ANY_PHONE_NUMBER = re.compile(
+    r"""
+    (?<!\w)             # Assert position is not preceded by a word character (prevents partial matches)
+    (?:\+|00|011)?      # Match optional country code prefix (+, 00, or 011)
+    [\s.-]?\(?          # Optional separator (space, dot, dash) and optional opening parenthesis
+    \d{1,4}             # Match 1-4 digits (area code or first part of the number)
+    \)?                 # Optional closing parenthesis
+    [\s.-]?             # Optional separator (space, dot, dash)
+    \d{1,4}             # Match 1-4 digits (first part of the phone number)
+    [\s.-]?             # Optional separator (space, dot, dash)
+    \d{1,4}             # Match 1-4 digits (second part of the phone number)
+    [\s.-]?             # Optional separator (space, dot, dash)
+    \d{1,9}             # Match 1-9 digits (remaining part of the phone number)
+    (?!\w)              # Assert position is not followed by a word character (prevents partial matches)
+    """,
+    re.VERBOSE,  # Allows for the use of comments and whitespace in the pattern for readability
+)
 
 if ES_ENABLE_CONSOLE_LOGGING and DEV:
     es_trace_logger = logging.getLogger("elasticsearch.trace")
