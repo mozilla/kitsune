@@ -7,7 +7,8 @@ from django.utils.encoding import force_str
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
-from taggit.models import Tag
+
+from kitsune.tags.models import SumoTag
 
 
 # TODO: Factor out dependency on taggit so it can be a generic large-vocab
@@ -73,7 +74,7 @@ class TagWidget(Widget):
             output += "</li>"
             return output
 
-        tags = Tag.objects.filter(name__in=tag_names)
+        tags = SumoTag.objects.filter(name__in=tag_names)
         representations = [render_one(t) for t in tags]
         return "\n".join(representations)
 
@@ -83,7 +84,7 @@ class TagWidget(Widget):
             "" if self.read_only or self.async_urls else " deferred"
         )
         if not self.read_only:
-            vocab = [t.name for t in Tag.objects.only("name").all()]
+            vocab = [t.name for t in SumoTag.objects.only("name").all()]
             output += ' data-tag-vocab-json="%s"' % escape(json.dumps(vocab))
         output += ">"
 
@@ -150,7 +151,7 @@ class TagField(MultipleChoiceField):
 
     def valid_value(self, value):
         """Check the validity of a single tag."""
-        return Tag.objects.filter(name=value).exists()
+        return SumoTag.objects.filter(name=value).exists()
 
     def to_python(self, value):
         """Ignore the input field if it's blank; don't make a tag called ''."""

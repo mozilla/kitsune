@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from pyquery import PyQuery as pq
-from taggit.models import Tag
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -19,6 +18,7 @@ from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase, attrs_eq, emailmessage_raise_smtp, get, post
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.models import SumoTag
 from kitsune.tags.tests import TagFactory
 from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
@@ -965,7 +965,7 @@ class TaggingViewTestsAsAdmin(TestCase):
 
         u = UserFactory()
         add_permission(u, Question, "tag_question")
-        add_permission(u, Tag, "add_tag")
+        add_permission(u, SumoTag, "add_tag")
         self.client.login(username=u.username, password="testpass")
 
         self.question = QuestionFactory()

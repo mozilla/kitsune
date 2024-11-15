@@ -6,12 +6,12 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
-from taggit.models import TaggedItem
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.models import SumoTaggedItem
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
     CATEGORIES,
@@ -69,10 +69,10 @@ class DocumentTests(TestCase):
         # This works because Django's delete() sees the `tags` many-to-many
         # field (actually a manager) and follows the reference.
         d = DocumentFactory(tags=["grape"])
-        self.assertEqual(1, TaggedItem.objects.count())
+        self.assertEqual(1, SumoTaggedItem.objects.count())
 
         d.delete()
-        self.assertEqual(0, TaggedItem.objects.count())
+        self.assertEqual(0, SumoTaggedItem.objects.count())
 
     def test_category_inheritance(self):
         """A document's categories must always be those of its parent."""
