@@ -18,12 +18,18 @@ class FlaggedObjectManager(models.Manager):
 class FlaggedObject(ModelBase):
     """A flag raised on an object."""
 
+    REASON_SPAM = "spam"
+    REASON_LANGUAGE = "language"
+    REASON_BUG_SUPPORT = "bug_support"
+    REASON_ABUSE = "abuse"
+    REASON_CONTENT_MODERATION = "content_moderation"
+    REASON_OTHER = "other"
     REASONS = (
-        ("spam", _lazy("Spam or other unrelated content")),
-        ("language", _lazy("Inappropriate language/dialog")),
-        ("bug_support", _lazy("Misplaced bug report or support request")),
-        ("abuse", _lazy("Abusive content")),
-        ("other", _lazy("Other (please specify)")),
+        (REASON_SPAM, _lazy("Spam or other unrelated content")),
+        (REASON_LANGUAGE, _lazy("Inappropriate language/dialog")),
+        (REASON_BUG_SUPPORT, _lazy("Misplaced bug report or support request")),
+        (REASON_ABUSE, _lazy("Abusive content")),
+        (REASON_OTHER, _lazy("Other (please specify)")),
     )
 
     FLAG_PENDING = 0

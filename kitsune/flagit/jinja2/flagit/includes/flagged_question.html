@@ -21,7 +21,7 @@
   <h3 class="flagged-content__subheading">{{ _('Flagged:') }}</h3>
   <p>{{ date_by_user(object.created, object.creator) }}</p>
 
-  {% if object.reason == 'bug_support' and question_model and user.has_perm('questions.change_question')  %}
+  {% if object.reason == 'content_moderation' and question_model and user.has_perm('questions.change_question')  %}
     <h3 class="flagged-content__subheading">{{ _('Take Action:') }}</h3>
     <div class="flagged-content__topic-update">
      <label> {{ _('Current topic:') }} </label> 

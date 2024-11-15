@@ -209,7 +209,7 @@ class Question(AAQBase):
                     object_id=self.id,
                     creator=self.creator,
                     status=FlaggedObject.FLAG_PENDING,
-                    reason="bug_support",
+                    reason=FlaggedObject.REASON_CONTENT_MODERATION,
                     notes="New question, review topic",
                 )
 

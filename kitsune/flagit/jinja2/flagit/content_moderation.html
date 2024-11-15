@@ -1,0 +1,36 @@
+{% extends "flagit/flagit_base.html" %}
+
+{% block flagged_items %}
+  {% for object in objects %}
+    <li class="{{ object.content_type }}">
+      <div class="flagged-item-content">
+        <hgroup>
+          <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
+          {% if object.notes %}
+            <p class="notes">{{ _('Other reason:') }} {{ object.notes }}</p>
+          {% endif %}
+        </hgroup>
+        <div class="wrap">
+          {% if object.content_object %}
+            {% include 'flagit/includes/flagged_%s.html' % object.content_type.model %}
+          {% else %}
+            <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
+          {% endif %}
+          <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
+          <form class="update inline-form" action="{{ object.form_action }}" method="post">
+            {% csrf_token %}
+            <select name="status">
+              <option value="">{{ _('Please select...') }}</option>
+              <option value="1">{{ _('Content categorization is updated.') }}</option>
+              <option value="2">{{ _('Content is appropriately categorized.') }}</option>
+            </select>
+            <input id="update-status-button-{{ object.content_object.id }}" type="submit" 
+                   class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
+          </form>
+        </div>
+      </div>
+    </li>
+  {% else %}
+    <p>{{ _('There is no content pending moderation.') }}</p>
+  {% endfor %}
+{% endblock %}
