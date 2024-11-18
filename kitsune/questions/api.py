@@ -9,7 +9,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import pagination, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from taggit.models import Tag
 
 from kitsune.products.api_utils import TopicField
 from kitsune.products.models import Product, Topic
@@ -30,6 +29,7 @@ from kitsune.sumo.api_utils import (
     SplitSourceField,
 )
 from kitsune.sumo.utils import is_ratelimited
+from kitsune.tags.models import SumoTag
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
 from kitsune.users.models import Profile
@@ -386,7 +386,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         for tag in tags:
             try:
                 add_existing_tag(tag, question.tags)
-            except Tag.DoesNotExist:
+            except SumoTag.DoesNotExist:
                 raise GenericAPIException(
                     status.HTTP_403_FORBIDDEN, "You are not authorized to create new tags."
                 )

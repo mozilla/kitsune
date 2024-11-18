@@ -1,8 +1,7 @@
 from unittest.mock import Mock
 
-from taggit.models import Tag
-
 from kitsune.sumo.tests import TestCase
+from kitsune.tags.models import SumoTag
 from kitsune.tags.templatetags.jinja_helpers import tags_to_text
 
 
@@ -23,6 +22,6 @@ class TestTagsToText(TestCase):
 
 
 def _tag(slug):
-    tag = Mock(spec=Tag)
+    tag = Mock(spec=SumoTag)
     tag.slug = slug
     return tag

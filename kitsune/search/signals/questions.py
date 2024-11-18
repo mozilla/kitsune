@@ -1,13 +1,14 @@
-from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.db.models.signals import m2m_changed, post_delete, post_save
+
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionVote
+from kitsune.search.decorators import search_receiver
 from kitsune.search.es_utils import (
-    index_object,
     delete_object,
+    index_object,
     index_objects_bulk,
     remove_from_field,
 )
-from kitsune.search.decorators import search_receiver
-from kitsune.questions.models import Question, QuestionVote, Answer, AnswerVote
-from taggit.models import Tag
+from kitsune.tags.models import SumoTag
 
 
 @search_receiver(post_save, Question)
@@ -30,7 +31,7 @@ def handle_answer_delete(instance, **kwargs):
     index_object.delay("QuestionDocument", instance.question_id)
 
 
-@search_receiver(post_delete, Tag)
+@search_receiver(post_delete, SumoTag)
 def handle_tag_delete(instance, **kwargs):
     remove_from_field.delay("QuestionDocument", "question_tag_ids", instance.pk)
 

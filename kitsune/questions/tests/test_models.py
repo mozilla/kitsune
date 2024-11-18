@@ -6,7 +6,6 @@ from actstream.models import Action, Follow
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.db.models import Q
-from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
@@ -33,6 +32,7 @@ from kitsune.questions.tests import (
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
+from kitsune.tags.models import SumoTag
 from kitsune.tags.tests import TagFactory
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.tests import UserFactory
@@ -226,9 +226,9 @@ class TestQuestionMetadata(TestCase):
 
     def test_auto_tagging(self):
         """Make sure tags get applied based on metadata on first save."""
-        Tag.objects.create(slug="green", name="green")
-        Tag.objects.create(slug="troubleshooting", name="Troubleshooting")
-        Tag.objects.create(slug="firefox", name="Firefox")
+        SumoTag.objects.get_or_create(name="green", defaults={"slug": "green"})
+        SumoTag.objects.get_or_create(name="Troubleshooting", defaults={"slug": "troubleshooting"})
+        SumoTag.objects.get_or_create(name="Firefox", defaults={"slug": "firefox"})
         q = self.question
         q.product = ProductFactory(slug="firefox")
         q.topic = TopicFactory(slug="troubleshooting")
@@ -520,7 +520,7 @@ class AddExistingTagTests(TestCase):
 
     def test_add_existing_no_such_tag(self):
         """Assert add_existing_tag doesn't work when the tag doesn't exist."""
-        with self.assertRaises(Tag.DoesNotExist):
+        with self.assertRaises(SumoTag.DoesNotExist):
             add_existing_tag("nonexistent tag", self.untagged_question.tags)
 
 

@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from django.utils.html import escape, strip_tags
 from django.utils.translation import gettext as _
-from taggit.models import Tag
 
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -10,6 +9,7 @@ from kitsune.questions.models import Question
 from kitsune.sumo.feeds import Feed
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.models import SumoTag
 
 
 class QuestionsFeed(Feed):
@@ -80,7 +80,7 @@ class QuestionsFeed(Feed):
 
 class TaggedQuestionsFeed(QuestionsFeed):
     def get_object(self, request, tag_slug):
-        return get_object_or_404(Tag, slug=tag_slug)
+        return get_object_or_404(SumoTag, slug=tag_slug)
 
     def title(self, tag):
         return _("Recently updated questions tagged %s" % tag.name)

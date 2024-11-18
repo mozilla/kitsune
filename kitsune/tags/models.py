@@ -1,6 +1,6 @@
+from django.db import models
 from taggit.managers import TaggableManager
-
-from kitsune.tags.forms import TagField
+from taggit.models import GenericTaggedItemBase, TagBase
 
 
 class BigVocabTaggableManager(TaggableManager):
@@ -10,6 +10,26 @@ class BigVocabTaggableManager(TaggableManager):
 
     """
 
-    def formfield(self, form_class=TagField, **kwargs):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("through", SumoTaggedItem)
+        super().__init__(*args, **kwargs)
+
+    def formfield(self, form_class=None, **kwargs):
         """Swap in our custom TagField."""
-        return super(BigVocabTaggableManager, self).formfield(form_class, **kwargs)
+        from kitsune.tags.forms import TagField
+
+        form_class = form_class or TagField
+        return super().formfield(form_class, **kwargs)
+
+
+class SumoTag(TagBase):
+    is_archived = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name", "-updated"]
+
+
+class SumoTaggedItem(GenericTaggedItemBase):
+    tag = models.ForeignKey(SumoTag, related_name="tagged_items", on_delete=models.CASCADE)

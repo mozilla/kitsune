@@ -30,7 +30,6 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
-from taggit.models import Tag
 from zenpy.lib.exception import APIException
 
 from kitsune.access.decorators import login_required, permission_required
@@ -62,6 +61,7 @@ from kitsune.sumo.utils import (
     set_aaq_context,
     simple_paginate,
 )
+from kitsune.tags.models import SumoTag
 from kitsune.tags.utils import add_existing_tag
 from kitsune.tidings.events import ActivationRequestFailed
 from kitsune.tidings.models import Watch
@@ -242,7 +242,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     if tagged:
         tag_slugs = tagged.split(",")
-        tags = Tag.objects.filter(slug__in=tag_slugs)
+        tags = SumoTag.objects.filter(slug__in=tag_slugs)
         if tags:
             for t in tags:
                 question_qs = question_qs.filter(tags__name__in=[t.name])
@@ -1006,7 +1006,7 @@ def add_tag(request, question_id):
 
     try:
         question, canonical_name = _add_tag(request, question_id)
-    except Tag.DoesNotExist:
+    except SumoTag.DoesNotExist:
         template_data = _answers_data(request, question_id)
         template_data["tag_adding_error"] = UNAPPROVED_TAG
         template_data["tag_adding_value"] = request.POST.get("tag-name", "")
@@ -1032,14 +1032,14 @@ def add_tag_async(request, question_id):
     """
     try:
         question, canonical_name = _add_tag(request, question_id)
-    except Tag.DoesNotExist:
+    except SumoTag.DoesNotExist:
         return HttpResponse(
             json.dumps({"error": str(UNAPPROVED_TAG)}), content_type="application/json", status=400
         )
 
     if canonical_name:
         question.clear_cached_tags()
-        tag = Tag.objects.get(name=canonical_name)
+        tag = SumoTag.objects.get(name=canonical_name)
         tag_url = urlparams(
             reverse("questions.list", args=[question.product_slug]), tagged=tag.slug
         )
@@ -1429,13 +1429,13 @@ def _add_tag(request, question_id):
 
     Tag name (case-insensitive) must be in request.POST['tag-name'].
 
-    If no tag name is provided or Tag.DoesNotExist is raised, return None.
+    If no tag name is provided or SumoTag.DoesNotExist is raised, return None.
     Otherwise, return the canonicalized tag name.
 
     """
     if tag_name := request.POST.get("tag-name", "").strip():
         question = get_object_or_404(Question, pk=question_id)
-        # This raises Tag.DoesNotExist if the tag doesn't exist.
+        # This raises SumoTag.DoesNotExist if the tag doesn't exist.
         canonical_name = add_existing_tag(tag_name, question.tags)
 
         return question, canonical_name
