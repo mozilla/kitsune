@@ -22,12 +22,16 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C891309, C2102170,  C2102168, C2489545, C910271
 @pytest.mark.kbArticleShowHistory
-@pytest.mark.create_delete_article(False)
-def test_kb_article_removal(page: Page, create_delete_article):
+def test_kb_article_removal(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
-    article_details = create_delete_article("TEST_ACCOUNT_12")[0]
+
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+    ))
+
+    article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
     revision_id_number = utilities.number_extraction_from_string(
         article_details['first_revision_id']
     )
@@ -52,7 +56,7 @@ def test_kb_article_removal(page: Page, create_delete_article):
 
     with allure.step("Navigating back and verifying that the delete button for the article "
                      "is not displayed"):
-        utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         expect(sumo_pages.kb_article_show_history_page.get_delete_this_document_button_locator(
         )).to_be_hidden()
 
@@ -68,7 +72,7 @@ def test_kb_article_removal(page: Page, create_delete_article):
             assert response.status == 403
 
     with allure.step("Navigating back and deleting the user session"):
-        utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         utilities.delete_cookies()
 
     with check, allure.step("Manually navigating to the delete revision endpoint and "
@@ -80,7 +84,7 @@ def test_kb_article_removal(page: Page, create_delete_article):
 
     with check, allure.step("Navigating back and verifying that manually navigating to the "
                             "delete endpoint returns the auth page"):
-        utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         utilities.navigate_to_link(
             KBArticlePageMessages
             .KB_ARTICLE_PAGE_URL + article_details['article_slug'] + QuestionPageMessages
@@ -90,7 +94,7 @@ def test_kb_article_removal(page: Page, create_delete_article):
 
     with allure.step("Navigating back and verifying that the delete button is not available "
                      "for the only revision"):
-        utilities.navigate_to_link(article_details["article_url"])
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         expect(sumo_pages.kb_article_show_history_page.get_delete_revision_button_locator(
             article_details['first_revision_id'])).to_be_hidden()
 
@@ -165,19 +169,23 @@ def test_kb_article_removal(page: Page, create_delete_article):
 
 # C2490047, C2490048
 @pytest.mark.kbArticleShowHistory
-def test_kb_article_category_link_and_header(page: Page, create_delete_article):
+def test_kb_article_category_link_and_header(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
     for category in utilities.general_test_data["kb_article_categories"]:
         if category != "Templates":
             with allure.step("Creating a new article"):
-                article_info = create_delete_article("TEST_ACCOUNT_MODERATOR",
-                                                     {"article_category": category})[0]
+                article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                    article_category=category
+                )
         else:
             with allure.step("Creating a new template article"):
-                article_info = create_delete_article("TEST_ACCOUNT_MODERATOR",
-                                                     {"article_category": category,
-                                                      "is_template": True})[0]
+                article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+                    article_category=category, is_template=True
+                )
 
         with check, allure.step("Verifying that the correct page header is displayed"):
             assert sumo_pages.kb_article_show_history_page.get_show_history_page_title(
@@ -203,15 +211,21 @@ def test_kb_article_category_link_and_header(page: Page, create_delete_article):
 
         with allure.step("Navigating back and deleting the article"):
             utilities.navigate_back()
+            sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2101637, C2489543, C2102169, C2489542
 @pytest.mark.kbArticleShowHistory
-def test_kb_article_contributor_removal(page: Page, create_delete_article):
+def test_kb_article_contributor_removal(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
-    article_details, username_one = create_delete_article("TEST_ACCOUNT_MODERATOR")
+
+    username_one = utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
+
+    article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
     with allure.step("Verifying that no users are added inside the contributors list"):
         expect(sumo_pages.kb_article_show_history_page.get_all_contributors_locator()
                ).to_be_hidden()
@@ -379,16 +393,22 @@ def test_kb_article_contributor_removal(page: Page, create_delete_article):
         sumo_pages.kb_article_page.click_on_article_option()
         assert username_two in sumo_pages.kb_article_page.get_list_of_kb_article_contributors()
 
+    with allure.step("Deleting the artice"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
 
 # C2101638
 @pytest.mark.kbArticleShowHistory
-def test_contributors_can_be_manually_added(page: Page, create_delete_article):
+def test_contributors_can_be_manually_added(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
     with allure.step("Clicking on the 'Edit Contributors' option, adding and selecting the "
                      "username from the search field"):
-        create_delete_article("TEST_ACCOUNT_MODERATOR")
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
         sumo_pages.kb_article_show_history_page.click_on_edit_contributors_option()
         new_contributor = utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -414,14 +434,22 @@ def test_contributors_can_be_manually_added(page: Page, create_delete_article):
         sumo_pages.kb_article_page.click_on_article_option()
         assert new_contributor in sumo_pages.kb_article_page.get_list_of_kb_article_contributors()
 
+    with allure.step("Deleting the article"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
 
 # C2101634, C2489553, C2102186
 @pytest.mark.kbArticleShowHistory
-def test_kb_article_contributor_profile_access(page: Page, create_delete_article):
+def test_kb_article_contributor_profile_access(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_article_show_history_page = KBArticleShowHistoryPage(page)
-    create_delete_article("TEST_ACCOUNT_MODERATOR", {"approve_first_revision": True})
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
+
+    sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+        page=page, approve_revision=True)
     sumo_pages.kb_article_page.click_on_article_option()
     article_url = utilities.get_page_url()
 
@@ -495,19 +523,21 @@ def test_kb_article_contributor_profile_access(page: Page, create_delete_article
 
     with allure.step("Navigating back and deleting the created article"):
         utilities.navigate_back()
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2499415, C2271120, C2101633
 @pytest.mark.kbArticleShowHistory
-def test_kb_article_revision_date_functionality(page: Page, create_delete_article):
+def test_kb_article_revision_date_functionality(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with an admin account and creating a new article and "
                      "approving it's first revision"):
-        article_details, main_user = create_delete_article("TEST_ACCOUNT_MODERATOR",
-                                                           {"approve_first_revision": True})
-        sumo_pages.kb_article_page.click_on_article_option()
-        article_url = utilities.get_page_url()
+        main_user = utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Signing in with a non-admin account"):
         creator_username = utilities.start_existing_session(
@@ -696,6 +726,10 @@ def test_kb_article_revision_date_functionality(page: Page, create_delete_articl
         (sumo_pages.kb_article_preview_revision_page
          ._click_on_edit_article_based_on_this_revision_link())
         expect(page).to_have_url(
-            article_url + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT + "/" + str(
-                utilities.number_extraction_from_string(second_revision_info['revision_id']))
+            article_details['article_url'] + QuestionPageMessages.
+            EDIT_QUESTION_URL_ENDPOINT + "/" + str(utilities.number_extraction_from_string(
+                second_revision_info['revision_id']))
         )
+
+    with allure.step("Deleting the article"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()

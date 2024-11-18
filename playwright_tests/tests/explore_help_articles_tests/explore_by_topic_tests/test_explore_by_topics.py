@@ -26,6 +26,7 @@ def test_explore_by_topic_product_filter(page: Page):
         topic = topic.strip()
         if topic != "Browse":
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
+            utilities.wait_for_dom_to_load()
         with allure.step("Verifying that the correct page header is displayed"):
             assert topic == (sumo_pages.explore_by_topic_page
                              .get_explore_by_topic_page_header().strip())

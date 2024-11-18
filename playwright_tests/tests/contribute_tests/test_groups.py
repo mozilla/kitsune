@@ -271,7 +271,7 @@ def test_add_new_group_leader(page: Page):
         sumo_pages.user_group_flow.remove_a_user_from_group(test_user)
 
 
-# C2083499, C2715807
+# C2083499, C2715807, C891410
 @pytest.mark.userGroupsTests
 @pytest.mark.parametrize("user", ['TEST_ACCOUNT_MESSAGE_2', 'TEST_ACCOUNT_MODERATOR'])
 def test_add_group_members(page: Page, user):

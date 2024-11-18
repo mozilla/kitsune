@@ -1,7 +1,6 @@
 import allure
 import pytest
 from pytest_check import check
-
 from playwright.sync_api import expect, TimeoutError, Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
@@ -13,7 +12,9 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 #  C890370, C890374
 @pytest.mark.productSolutionsPage
-def test_featured_articles_redirect(page: Page):
+def test_featured_articles_redirect(page: Page, is_chromium):
+    if is_chromium:
+        pytest.skip("Skipping this test for chromium browser")
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Get Help > "

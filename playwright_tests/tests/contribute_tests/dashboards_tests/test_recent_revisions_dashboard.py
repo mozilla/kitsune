@@ -23,9 +23,7 @@ def test_recent_revisions_revision_availability(page: Page):
     username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new kb article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
-
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "posted article is displayed for admin accounts"):
@@ -89,7 +87,7 @@ def test_recent_revisions_revision_availability(page: Page):
         ))
 
     with allure.step("Navigating to the article page and deleting it"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with allure.step("Navigating back to the recent revisions page and verifying that the "
@@ -115,11 +113,8 @@ def test_second_revisions_availability(page: Page):
         ))
 
     with allure.step("Creating a new kb article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Signing in with a non-admin account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -175,7 +170,7 @@ def test_second_revisions_availability(page: Page):
         ).to_be_visible()
 
     with allure.step("Navigating to the article and approving the revision"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision['revision_id'])
         utilities.wait_for_given_timeout(1000)
 
@@ -205,7 +200,7 @@ def test_second_revisions_availability(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with allure.step("Navigating back to the recent revision dashboard, signing out and "
@@ -246,12 +241,8 @@ def test_recent_revisions_dashboard_links(page: Page):
     first_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new kb article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    sumo_pages.kb_article_page.click_on_article_option()
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "'Show Diff' option is not available for first revisions"):
@@ -265,7 +256,7 @@ def test_recent_revisions_dashboard_links(page: Page):
 
     with allure.step("Navigating to the article page, signing in with a non-admin user and "
                      "creating a new revision for the article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -282,7 +273,7 @@ def test_recent_revisions_dashboard_links(page: Page):
             article_title=article_details['article_title'], username=username
         )
         expect(page).to_have_url(
-            article_url + KBArticleRevision.
+            article_details['article_url'] + KBArticleRevision.
             KB_REVISION_PREVIEW + str(utilities.number_extraction_from_string(
                 second_revision['revision_id']
             ))
@@ -298,7 +289,7 @@ def test_recent_revisions_dashboard_links(page: Page):
         sumo_pages.recent_revisions_page._click_on_article_title(
             article_title=article_details['article_title'], creator=username
         )
-        expect(page).to_have_url(article_url)
+        expect(page).to_have_url(article_details['article_url'])
 
     with check, allure.step("Navigating back and verifying that the correct comment is "
                             "displayed"):
@@ -333,7 +324,7 @@ def test_recent_revisions_dashboard_links(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -349,12 +340,8 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
     first_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
 
     with allure.step("Creating a new kb article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    sumo_pages.kb_article_page.click_on_article_option()
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Changing the article title via the 'Edit Article Metadata' page"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
@@ -390,7 +377,7 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         )
 
     with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 

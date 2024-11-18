@@ -906,7 +906,7 @@ def test_posting_a_new_kb_test_article(page: Page):
         utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
     ))
 
-    sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+    sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page, approve_revision=True)
     sumo_pages.kb_article_page.click_on_article_option()
     with open("test_data/test_article", 'w') as file:
         file.write(utilities.get_page_url())

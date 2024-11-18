@@ -38,7 +38,7 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
         ) == UserProfileNavbarMessages.NAVBAR_OPTIONS[0]
 
 
-#  C891411
+#  C891411, C891410
 @pytest.mark.userProfile
 def test_my_profile_sign_out_button_functionality(page: Page):
     utilities = Utilities(page)
@@ -63,7 +63,7 @@ def test_my_profile_sign_out_button_functionality(page: Page):
         expect(sumo_pages.top_navbar.sign_in_up_button_displayed_element()).to_be_visible()
 
 
-# C2108828
+# C2108828, C891410
 @pytest.mark.userProfile
 def test_provided_solutions_number_is_successfully_displayed(page: Page):
     utilities = Utilities(page)
@@ -133,7 +133,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
         expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
 
-# C890832,  C2094281
+# C890832,  C2094281, C891410
 @pytest.mark.userProfile
 def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
     utilities = Utilities(page)
@@ -201,7 +201,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
         expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
 
-#  C2094285, C2094284, C891309
+#  C2094285, C2094284, C891309, C891410
 @pytest.mark.userProfile
 def test_number_of_posted_articles_is_successfully_displayed(page: Page):
     utilities = Utilities(page)

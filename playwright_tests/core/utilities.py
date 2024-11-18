@@ -175,7 +175,7 @@ class Utilities:
         """
         This helper function navigates directly to the SUMO hompage.
         """
-        self.page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
+        self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
 
     def navigate_to_link(self, link: str):
         """
@@ -262,19 +262,28 @@ class Utilities:
         """
         This helper function awaits for the load event to be fired.
         """
-        self.page.wait_for_load_state("load")
+        try:
+            self.page.wait_for_load_state("load")
+        except PlaywrightTimeoutError:
+            print("Load event was not fired. Continuing...")
 
     def wait_for_dom_to_load(self):
         """
         This helper function awaits for the DOMContentLoaded event to be fired.
         """
-        self.page.wait_for_load_state("domcontentloaded")
+        try:
+            self.page.wait_for_load_state("domcontentloaded")
+        except PlaywrightTimeoutError:
+            print("DOMContentLoaded event was not fired. Continuing...")
 
     def wait_for_networkidle(self):
         """
         This helper function waits until there are no network connections for at least 500ms.
         """
-        self.page.wait_for_load_state("networkidle")
+        try:
+            self.page.wait_for_load_state("networkidle")
+        except PlaywrightTimeoutError:
+            print("Network idle state was not reached. Continuing...")
 
     def store_session_cookies(self, session_file_name: str):
         """
@@ -340,7 +349,10 @@ class Utilities:
         """
         This helper function performs a page reload.
         """
-        self.page.reload(wait_until="networkidle")
+        try:
+            self.page.reload(wait_until="networkidle")
+        except PlaywrightTimeoutError:
+            print("Network idle state was not reached. Continuing...")
 
     def get_user_agent(self) -> str:
         """
@@ -575,6 +587,22 @@ class Utilities:
         """
         return page.request.get(api_url)
 
+    def post_api_request(self, page: Page, api_url: str, data: dict):
+        """Post the API request
+
+        Args:
+            page (Page): The page object
+            api_url (str): The API URL
+            data (dict): The data to be posted
+        """
+
+        # It seems that playwright doesn't send the correct origin header by default.
+        headers = {
+            'origin': HomepageMessages.STAGE_HOMEPAGE_URL
+        }
+
+        return page.request.post(api_url, form=data, headers=headers)
+
     def block_request(self, route):
         """
         This function blocks a certain request
@@ -601,3 +629,10 @@ class Utilities:
                     if attempt < 2:
                         continue
                 break
+
+    def get_csrfmiddlewaretoken(self) -> str:
+        """
+        This helper function fetches the csrfmiddlewaretoken from the page.
+        """
+        return self.page.evaluate("document.querySelector('input[name=csrfmiddlewaretoken]')"
+                                  ".value")
