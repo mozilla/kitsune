@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils.translation import gettext as _
 
 
@@ -54,8 +55,9 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
 
 
 class MultiUsernameField(forms.Field):
-    """Form field that takes a comma-separated list of usernames as input,
-    validates that users exist for each one, and returns the list of users."""
+    """Form field that takes a comma-separated list of usernames OR profile
+    names (display names) as input, validates that users exist for each one,
+    and returns the list of users."""
 
     def to_python(self, value):
         if not value:
@@ -67,18 +69,13 @@ class MultiUsernameField(forms.Field):
         users = []
         for username in value.split(","):
             username = username.strip()
-            msg = ""
             if username:
-                try:
-                    user = User.objects.get(username=username)
-                    users.append(user)
-                except User.DoesNotExist:
-                    msg = _("{username} is not a valid username.")
-                else:
-                    if not user.is_active:
-                        msg = _("{username} is not an active user.")
-                if msg:
-                    raise forms.ValidationError(msg.format(username=username))
+                user = User.objects.filter(
+                    Q(username=username) | Q(profile__name=username)
+                ).first()
+                if user:
+                    if user.is_active:
+                        users.append(user)
 
         return users
 
