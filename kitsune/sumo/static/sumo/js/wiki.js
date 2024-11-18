@@ -627,99 +627,79 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
   function initRevisionList() {
     var $form = $('#revision-list form.filter');
+    
     if (!$form.length) {
-      return;
+        return;
     }
 
-    // This function grabs a fragment from the server and replaces
-    // the content of the div with it.
+    // Retrieve and safely parse form data from sessionStorage
+    let formData = {};
+    const savedFormData = sessionStorage.getItem('revision-list-filter');
+    
+    if (savedFormData) {
+        try {
+            formData = JSON.parse(savedFormData); // Try parsing JSON
+        } catch (e) {
+            formData = {}; // Default to an empty object if parsing fails
+            sessionStorage.removeItem('revision-list-filter'); // Clear corrupted data
+        }
+    }
+
+    // Populate form fields with saved data from sessionStorage
+    for (let [name, value] of Object.entries(formData)) {
+        const field = $form.find(`[name="${name}"]`);
+        if (field.length) {
+            field.val(value);
+        }
+    }
+
+    updateRevisionList(); // Initial update
+
+    // Update the revision list when the form changes
     function updateRevisionList(query) {
-      if (query === undefined) {
-        query = $form.serialize();
-      }
-      if (query.charAt(0) !== '?') {
-        query = '?' + query;
-      }
-      var url = $form.attr('action') + query;
+        if (query === undefined) {
+            query = $form.serialize();
+        }
+        if (query.charAt(0) !== '?') {
+            query = '?' + query;
+        }
+        var url = $form.attr('action') + query;
 
-      // scroll to the top.
-      var scrollPos = Math.min($(document).scrollTop(),
-        $('#revision-list').offset().top);
-      $(document).scrollTop(scrollPos);
-      history.replaceState({}, '', url);
-      $('#revisions-fragment').css('opacity', 0);
-
-      $.get(url + '&fragment=1', function (data) {
-        $('.loading').hide();
-        $('#revisions-fragment').html(data).css('opacity', 1);
-      });
+        $('#revisions-fragment').css('opacity', 0);
+        $.get(url + '&fragment=1', function (data) {
+            $('.loading').hide();
+            $('#revisions-fragment').html(data).css('opacity', 1);
+        });
     }
 
-    // When the filter form changes, wait a tick and then update.
+    // Trigger update and save changes to localStorage on input change
     var timeout;
-    $form.on('change keyup', 'input, select', function () {
-      $('.loading').show();
-      clearTimeout(timeout);
-      timeout = setTimeout(updateRevisionList, 200);
+    $form.on('input change', 'input, select', function () {
+        $('.loading').show();
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            updateRevisionList();
+        }, 200);
+
+        // Collect form data and save it as JSON in sessionStorage
+        const currentData = $form.serializeArray().reduce((obj, item) => {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        sessionStorage.setItem('revision-list-filter', JSON.stringify(currentData)); // Save as JSON
     });
 
-    // Catch page changes, replace with fragment loading.
-    $('#revision-list').on('click', '.pagination a', function () {
-      var query = $(this)[0].search;
-      updateRevisionList(query);
-      return false;
-    });
+    // Remove submit button elements if present
+    $form.find('button, [type="submit"]').remove();
 
-    // Treat diff pages as fragments too, and insert them below the current row.
-    $('#revision-list').on('click', '.show-diff', function () {
-      var $this = $(this);
-
-      $this.hide();
-      $this.parent().find('.loading').show();
-
-      var $diffView = $('<div class="diff-view">')
-        .hide()
-        .appendTo($(this).parents('li').first());
-
-      var url = $this.attr('href');
-
-      $.get(url, function (html) {
-        $diffView.html(html);
-        // Change the "Edit this diff" button to a "close diff" button.
-        $diffView.find('.picker')
-          .html('<a href="" class="close-diff">Close diff</a>');
-        // show and hide things.
-        $diffView.slideDown();
-        $this.parent().find('.close-diff').show();
-        $this.parent().find('.loading').hide();
-
-        initDiff();
-      });
-
-      return false;
-    });
-
-    // This could be the close diff icon that replaces the open diff icon, or
-    // the close diff link inserted into the diff fragment.
-    $('#revision-list').on('click', '.close-diff', function () {
-      var $row = $(this).parents('li').first();
-      $row.find('.diff-view').slideUp(400, function () {
-        $row.find('.show-diff').show();
-        $row.find('.close-diff').hide();
-        $row.find('.diff-view').remove();
-      });
-      return false;
-    });
-
-    // Disable standard form submission
-    $form.find('.btn, .button').remove();
+    // Disable form submission via Enter key
     $form.on('keydown', function (e) {
-      // 13 is enter.
-      if (e.which === 13) {
-        return false;
-      }
+        if (e.which === 13) {
+            e.preventDefault();
+        }
     });
-  }
+}
+
 
   init();
 
