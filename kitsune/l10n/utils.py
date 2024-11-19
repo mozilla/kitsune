@@ -79,7 +79,7 @@ def get_l10n_bot():
         username="sumo-l10n-bot", defaults=dict(email="sumodev@mozilla.com")
     )
     if created:
-        Profile.objects.create(user=user, name="SUMO Localization Bot")
+        Profile.objects.create(user=user, name="SUMO Localization Bot", is_bot=True)
     return user
 
 
