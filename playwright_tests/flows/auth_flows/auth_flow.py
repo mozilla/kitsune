@@ -71,5 +71,5 @@ class AuthFlowPage:
             """If the OTP code input field is displayed, provide the OTP code."""
             self.__provide_otp_code(self.utilities.get_fxa_verification_code(
                 fxa_username=username))
-
+        self.utilities.wait_for_dom_to_load()
         return username
