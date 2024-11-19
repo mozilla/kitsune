@@ -7,7 +7,11 @@
         <hgroup>
           <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
           {% if object.notes %}
-            <p class="notes">{{ _('Other reason:') }} {{ object.notes }}</p>
+            {% if object.content_type.model == 'question' %}
+              <p class="notes">{{ _('Additional notes:') }} &nbsp;<a target="_blank" href="{{ object.content_object.get_absolute_url() }}">{{ object.notes }}</a></p>
+            {% else %}
+              <p class="notes">{{ _('Additional notes:') }} {{ object.notes }}</p>
+            {% endif %}
           {% endif %}
         </hgroup>
         <div class="wrap">
@@ -33,4 +37,8 @@
   {% else %}
     <p>{{ _('There is no content pending moderation.') }}</p>
   {% endfor %}
+{% endblock %}
+
+{# Hide the deactivation log on content moderation #}
+{% block deactivation_log %}
 {% endblock %}

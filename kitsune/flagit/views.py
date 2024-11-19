@@ -14,6 +14,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.models import SumoTag
 
 
 def get_flagged_objects(reason=None, exclude_reason=None, content_model=None):
@@ -118,11 +119,13 @@ def moderate_content(request):
         .prefetch_related("content_object__product")
     )
     objects = set_form_action_for_objects(objects, reason=FlaggedObject.REASON_CONTENT_MODERATION)
+    available_tags = SumoTag.objects.segmentation_tags().values("id", "name")
 
     for obj in objects:
         question = obj.content_object
         obj.available_topics = Topic.active.filter(products=question.product, is_archived=False)
-
+        obj.available_tags = available_tags
+        obj.saved_tags = question.tags.values_list("id", flat=True)
     return render(
         request,
         "flagit/content_moderation.html",

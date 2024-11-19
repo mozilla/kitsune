@@ -1,123 +1,150 @@
+import TomSelect from 'tom-select';
+
 document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]')?.value;
 
-    const { reasonFilter, flaggedQueue } = {
-        reasonFilter: document.getElementById('flagit-reason-filter'),
-        flaggedQueue: document.getElementById('flagged-queue'),
-    };
-
+    // Disable all update buttons initially
     function disableUpdateStatusButtons() {
-        const updateStatusButtons = document.querySelectorAll('form.update.inline-form input[type="submit"]');
-        updateStatusButtons.forEach(button => {
+        document.querySelectorAll('form.update.inline-form input[type="submit"]').forEach(button => {
             button.disabled = true;
         });
     }
     disableUpdateStatusButtons();
 
-    function updateUrlParameter(action, param, value) {
-        const url = new URL(window.location.href);
-
-        if (action === 'set') {
-            if (value) {
-                url.searchParams.set(param, value);
-                window.history.pushState({}, '', url);
-            } else {
-                url.searchParams.delete(param);
-                window.history.replaceState({}, '', url.pathname);
-            }
-        } else if (action === 'get') {
-            return url.searchParams.get(param);
-        }
-    }
-
-    async function fetchAndUpdateContent(url) {
-        const response = await fetchData(url);
-        if (response) {
-            const data = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data, 'text/html');
-            flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
-            disableUpdateStatusButtons();
-            handleDropdownChange();
-        }
-    }
-
     async function fetchData(url, options = {}) {
         try {
+            const headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            if (options.method && options.method !== 'GET' && csrfToken) {
+                headers['X-CSRFToken'] = csrfToken;
+            }
+
             const response = await fetch(url, {
                 method: options.method || 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    ...options.headers
-                },
-                body: options.body || null
+                headers,
+                body: options.body ? JSON.stringify(options.body) : null
             });
+
             if (!response.ok) {
                 throw new Error(`Error: ${response.statusText}`);
             }
-            return response;
+
+            const contentType = response.headers.get('Content-Type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+
+            return response;  // Return raw response if not JSON
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error in fetchData:', error);
             return null;
         }
     }
 
-
-    if (reasonFilter) {
-        let reason = updateUrlParameter('get', 'reason');
-        if (reason) {
-            reasonFilter.value = reason;
-        }
-
-        reasonFilter.addEventListener('change', async () => {
-            const selectedReason = reasonFilter.value;
-
-            updateUrlParameter('set', 'reason', selectedReason);
-            fetchAndUpdateContent(new URL(window.location.href));
-        });
+    function findUpdateButton(questionId) {
+        return document.querySelector(`form.update.inline-form input[id="update-status-button-${questionId}"]`);
     }
 
-    function handleDropdownChange() {
-        const dropdowns = document.querySelectorAll('.topic-dropdown, select[name="status"]');
-        dropdowns.forEach(dropdown => {
+    function updateStatusSelect(updateButton) {
+        const statusDropdown = updateButton?.previousElementSibling;
+        if (statusDropdown && statusDropdown.tagName === 'SELECT') {
+            statusDropdown.value = '1';
+        }
+    }
+
+    function enableUpdateButton(updateButton) {
+        if (updateButton) {
+            updateButton.disabled = false;
+        }
+    }
+
+    function initializeDropdownsAndTags() {
+        document.querySelectorAll('.topic-dropdown, .tag-select').forEach(dropdown => {
+            const questionId = dropdown.dataset.questionId;
+
             dropdown.addEventListener('change', async function () {
                 const form = this.closest('form');
-                const questionId = this.getAttribute('data-question-id');
-                const updateButton = document.getElementById(`update-status-button-${questionId}`) || form.querySelector('input[type="submit"]');
+                const updateButton = findUpdateButton(questionId);
 
-                if (!this.value || this.value === "") {
-                    updateButton.disabled = true;
-                    return;
-                }
-                updateButton.disabled = false;
+                enableUpdateButton(updateButton);
 
+                // Update topic
                 if (this.classList.contains('topic-dropdown')) {
-                    const topicId = this.value;
-                    const csrfToken = form.querySelector('input[name=csrfmiddlewaretoken]').value;
-                    const currentTopic = document.getElementById(`current-topic-${questionId}`);
-
-                    const response = await fetchData(`/en-US/questions/${questionId}/edit`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: JSON.stringify({ 'topic': topicId })
-                    });
-
+                    const url = `/en-US/questions/${questionId}/edit`;
+                    const response = await fetchData(url, { method: 'POST', body: { topic: this.value } });
                     if (response) {
-                        const data = await response.json();
-                        currentTopic.textContent = data.updated_topic;
+                        const currentTopic = document.getElementById(`current-topic-${questionId}`);
+                        currentTopic.textContent = response.updated_topic;
                         currentTopic.classList.add('updated');
+                        updateStatusSelect(updateButton);
+                    }
+                }
 
-                        const updateStatusSelect = updateButton.previousElementSibling;
-                        if (updateStatusSelect && updateStatusSelect.tagName === 'SELECT') {
-                            updateStatusSelect.value = '1';
-                        }
+                // Update tags
+                if (this.classList.contains('tag-select')) {
+                    const selectedTags = Array.from(this.selectedOptions).map(option => option.value);
+                    const url = `/en-US/questions/${questionId}/add-tag-async`;
+                    const response = await fetchData(url, { method: 'POST', body: { tags: selectedTags } });
+                    if (response) {
+                        updateStatusSelect(updateButton);
                     }
                 }
             });
+
+            if (dropdown.classList.contains('tag-select')) {
+                new TomSelect(dropdown, {
+                    plugins: ['remove_button'],
+                    maxItems: null,
+                    create: false,
+                    onItemRemove: async (tagId) => {
+                        const url = `/en-US/questions/${questionId}/remove-tag-async`;
+                        const response = await fetchData(url, { method: 'POST', body: { tagId } });
+                        if (response) {
+                            const updateButton = findUpdateButton(questionId);
+                            updateStatusSelect(updateButton);
+                            enableUpdateButton(updateButton);
+                        }
+                    }
+                });
+            }
         });
     }
 
-    handleDropdownChange();
+    async function updateReasonAndFetchContent(reason) {
+        const url = new URL(window.location.href);
+        if (reason) {
+            url.searchParams.set('reason', reason);
+            window.history.pushState({}, '', url);
+        } else {
+            url.searchParams.delete('reason');
+            window.history.replaceState({}, '', url.pathname);
+        }
+
+        const response = await fetchData(url);
+        if (response) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(await response.text(), 'text/html');
+            flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
+            disableUpdateStatusButtons();
+            initializeDropdownsAndTags();
+        }
+    }
+
+    const reasonFilter = document.getElementById('flagit-reason-filter');
+    const flaggedQueue = document.getElementById('flagged-queue');
+
+    if (reasonFilter) {
+        const reason = new URL(window.location.href).searchParams.get('reason');
+        if (reason) reasonFilter.value = reason;
+
+        reasonFilter.addEventListener('change', async () => {
+            const selectedReason = reasonFilter.value;
+            await updateReasonAndFetchContent(selectedReason);
+        });
+    }
+    initializeDropdownsAndTags();
 });

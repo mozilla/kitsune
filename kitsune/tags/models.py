@@ -3,6 +3,12 @@ from taggit.managers import TaggableManager
 from taggit.models import GenericTaggedItemBase, TagBase
 
 
+class SumoTagManager(models.Manager):
+
+    def segmentation_tags(self):
+        return self.filter(is_archived=False, slug__startswith="seg-")
+
+
 class BigVocabTaggableManager(TaggableManager):
     """TaggableManager for choosing among a predetermined set of tags
 
@@ -26,6 +32,8 @@ class SumoTag(TagBase):
     is_archived = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    objects = SumoTagManager()
 
     class Meta:
         ordering = ["name", "-updated"]
