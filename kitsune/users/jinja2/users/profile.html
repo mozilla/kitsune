@@ -27,7 +27,7 @@
         <hr class="section-break"/>
         {% endif %}
 
-        {% if request.user.is_authenticated and request.user != profile.user %}
+        {% if not profile.is_bot and request.user.is_authenticated and (request.user != profile.user) %}
           {% if user.has_perm('users.change_profile') %}
             <div id="admin-actions">
               <a class="edit" rel="nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
@@ -114,7 +114,7 @@
       </section>
 
 
-      {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') %}
+      {% if not profile.is_bot and (user.id != profile.user.id) and user.has_perm('users.deactivate_users') %}
         {% if profile.user.is_active %}
           <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
             {% csrf_token %}
@@ -195,6 +195,7 @@
         </section>
       {% endif %}
 
+      {% if not profile.is_bot %}
       <div class="pm-or-signout sumo-button-wrap extra-pad-top">
         {% if profile.user == user %}
           <form id="sign-out" action="{{ url('users.logout') }}" method="post">
@@ -212,5 +213,6 @@
           {{ private_message(profile.user) }}
         {% endif %}
       </div>
+      {% endif %}
 </article>
 {% endblock %}

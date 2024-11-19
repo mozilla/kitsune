@@ -426,5 +426,6 @@ class RevisionFilterForm(forms.Form):
 
     locale = forms.ChoiceField(label=_lazy("Locale:"), choices=languages, required=False)
     users = MultiUsernameField(label=_lazy("Users:"), required=False)
+    include_bots = forms.BooleanField(label=_lazy("Bots:"), required=False)
     start = forms.DateField(label=_lazy("Start:"), required=False)
     end = forms.DateField(label=_lazy("End:"), required=False)
