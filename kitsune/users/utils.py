@@ -18,7 +18,7 @@ from kitsune.questions.handlers import AAQListener
 from kitsune.sumo import email_utils
 from kitsune.tidings.models import Watch
 from kitsune.users.handlers import UserDeletionPublisher
-from kitsune.users.models import ContributionAreas, Deactivation, Setting
+from kitsune.users.models import ContributionAreas, Deactivation, Profile, Setting
 from kitsune.wiki.handlers import DocumentListener
 
 log = logging.getLogger("k.users")
@@ -167,6 +167,11 @@ def user_is_contributor(user):
         user.is_authenticated
         and user.groups.filter(name__in=ContributionAreas.get_groups()).exists()
     )
+
+
+def user_is_bot(user):
+    """Return whether the user is a bot."""
+    return Profile.objects.filter(user=user, is_bot=True).exists()
 
 
 def delete_user_pipeline(user: User) -> None:

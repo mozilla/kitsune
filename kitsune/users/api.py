@@ -56,6 +56,7 @@ def usernames(request):
 
     users = (
         User.objects.filter(is_active=True)
+        .exclude(profile__is_bot=True)
         .exclude(profile__is_fxa_migrated=False)
         .filter(Q(username__istartswith=pre) | Q(profile__name__istartswith=pre))
         .select_related("profile")
