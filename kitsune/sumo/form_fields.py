@@ -106,8 +106,14 @@ class MultiUsernameOrGroupnameField(forms.Field):
         to_objects = {}
         for key, value in key_value_pairs:
             # check if the value is a valid username in the database
-            if key.lower() == "user" and not User.objects.filter(username=value).exists():
-                raise ValidationError(_("{name} is not a valid username.").format(name=value))
+            if key.lower() == "user":
+                if not User.objects.filter(username=value).exists():
+                    raise ValidationError(_(f"{value} is not a valid username."))
+                if User.objects.filter(username=value, profile__is_bot=True).exists():
+                    raise ValidationError(
+                        _(f"{value} is a bot. You cannot send messages to bots.")
+                    )
+
             to_objects.setdefault(f"{key.lower()}s", []).append(value)
 
         return to_objects
