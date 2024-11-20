@@ -679,7 +679,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         clearTimeout(timeout);
         timeout = setTimeout(function () {
             updateRevisionList();
-        }, 200);
+        }, 500);
 
         // Collect form data and save it as JSON in sessionStorage
         const currentData = $form.serializeArray().reduce((obj, item) => {

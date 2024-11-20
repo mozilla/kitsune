@@ -68,17 +68,13 @@ class MultiUsernameField(forms.Field):
             else:
                 return []
 
-        users = []
-        usernames = [name.strip() for name in value.split(",") if name]
+        usernames = [name.strip() for name in value.split(",") if name.strip()]
         if usernames:
             all_users = User.objects.filter(
-                Q(username__in=usernames) | Q(profile__name__in=usernames)
-            )
-            for user in all_users:
-                if user and user.is_active:
-                    users.append(user)
+                Q(profile__name__in=usernames) | Q(username__in=usernames), is_active=True
+            ).distinct()
 
-        return users
+        return list(all_users)
 
 
 class MultiUsernameOrGroupnameField(forms.Field):
