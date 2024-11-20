@@ -653,8 +653,6 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         }
     }
 
-    updateRevisionList(); // Initial update
-
     // Update the revision list when the form changes
     function updateRevisionList(query) {
         if (query === undefined) {
