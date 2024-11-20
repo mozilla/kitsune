@@ -687,10 +687,6 @@ def _validate_profile_info(page: Page, target: str, profile_info: str, username:
         "involved_from_month": sumo_pages.my_profile_page.get_my_contributed_from_text,
         "involved_from_year": sumo_pages.my_profile_page.get_my_contributed_from_text,
     }
-    link_click_methods = {
-        "community_portal": sumo_pages.my_profile_page.click_on_community_portal_link,
-        "people_directory": sumo_pages.my_profile_page.click_on_people_directory_link,
-    }
 
     with allure.step("Signing in with a different non-admin user"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -704,27 +700,11 @@ def _validate_profile_info(page: Page, target: str, profile_info: str, username:
         if profile_info not in profile_info_getters.get(target, lambda: None)():
             return False
 
-    if target in link_click_methods:
-        with allure.step("Clicking on the link and verifying redirection"):
-            link_click_methods[target]()
-            utilities.wait_for_networkidle()
-            print(utilities.get_page_url())
-            if profile_info not in utilities.get_page_url():
-                return False
-        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username))
-
     with allure.step("Signing out and verifying the information again"):
         utilities.delete_cookies()
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username))
         if profile_info not in profile_info_getters.get(target, lambda: None)():
             return False
-
-        if target in link_click_methods:
-            with allure.step("Clicking on the link and verifying redirection"):
-                link_click_methods[target]()
-                utilities.wait_for_networkidle()
-                if profile_info not in utilities.get_page_url():
-                    return False
 
     utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username))
     return True

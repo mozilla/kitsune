@@ -237,7 +237,7 @@ class InboxPage(BasePage):
             excerpt: The excerpt of the message.
             expected_url: The expected URL after deleting all the messages.
         """
-        self._wait_for_dom_load_to_finish()
+        self.wait_for_dom_to_load()
         if excerpt != '':
             inbox_messages_count = self._inbox_message_element_handles(excerpt)
         else:

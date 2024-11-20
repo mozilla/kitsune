@@ -83,10 +83,12 @@
     },
     "Firefox for Enterprise": {
       "Accounts": "accounts",
+      "Browse": "browse",
       "Installation and updates": "installation-and-updates",
+      "Performance and connectivity": "performance-and-connectivity",
       "Privacy and security": "privacy-and-security",
       "Settings": "settings",
-      "default_slug": "none"
+      "default_slug": "firefox-enterprise"
     },
     "Thunderbird": {
       "Accessibility": "accessibility",
@@ -98,16 +100,22 @@
       "Privacy and security": "privacy-and-security",
       "Search, tag, and share": "search-tag-and-share",
       "Settings": "settings",
-      "default_slug": "none"
+      "default_slug": "thunderbird"
     },
     "Thunderbird for Android": {
+      "Accessibility": "accessibility",
+      "Accounts": "accounts",
       "Email and messaging": "email-and-messaging",
       "Installation and updates": "installation-and-updates",
+      "Passwords and sign in": "passwords-and-sign-in",
+      "Performance and connectivity": "performance-and-connectivity",
       "Privacy and security": "privacy-and-security",
+      "Search, tag, and share": "search-tag-and-share",
       "Settings": "settings",
       "default_slug": "thunderbird-android"
     },
     "Firefox Focus": {
+      "Browse": "browse",
       "Installation and updates": "installation-and-updates",
       "Performance and connectivity": "performance-and-connectivity",
       "Privacy and security": "privacy-and-security",

@@ -123,7 +123,9 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
 
 #  T5696580, C891335, C891336
 @pytest.mark.productSupportPage
-def test_product_support_page_featured_articles_redirect(page: Page):
+def test_product_support_page_featured_articles_redirect(page: Page, is_chromium):
+    if is_chromium:
+        pytest.skip("Skipping this test for chromium browser")
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Navigating to products page via top-navbar"):

@@ -20,9 +20,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         ))
 
     with allure.step("Create a new simple article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
-        sumo_pages.kb_article_page.click_on_article_option()
-        article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page)
 
     with allure.step("Navigating to the kb dashboards and clicking on the 'Complete "
                      "overview' option"):
@@ -75,7 +73,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         sumo_pages.kb_dashboard_page._click_on_article_title(article_details['article_title'])
 
     with allure.step("Verifying that the user is redirected to the correct kb page"):
-        expect(page).to_have_url(article_url)
+        expect(page).to_have_url(article_details['article_url'])
 
     with allure.step("Approving the article revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(article_details['first_revision_id'])
@@ -134,13 +132,10 @@ def test_kb_dashboard_articles_status(page: Page):
         ))
 
     with allure.step("Creating a new simple article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page,approve_revision=True)
 
-    article_url = utilities.get_page_url()
-
-    with allure.step("Creating a anew revision for the document"):
+    with allure.step("Creating a new revision for the document"):
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with check, allure.step("Navigating to the kb overview dashboard and verifying that the "
@@ -154,7 +149,7 @@ def test_kb_dashboard_articles_status(page: Page):
         )
 
     with allure.step("Navigating back to the article history and deleting the revision"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_show_history_page.click_on_delete_revision_button(
             second_revision['revision_id']
         )
@@ -184,11 +179,10 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
         ))
 
     with allure.step("Creating a new simple article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page,approve_revision=True)
 
-    article_url = utilities.get_page_url()
+    article_show_history_url = utilities.get_page_url()
 
     with allure.step("Creating a new revision for the document"):
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
@@ -202,7 +196,7 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
             second_revision['changes_description'])
 
     with allure.step("Navigating back to the article history page and deferring the revision"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_show_history_url)
         sumo_pages.kb_article_show_history_page.click_on_review_revision(
             second_revision['revision_id']
         )
@@ -217,7 +211,7 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
         ) == kb_dashboard_page_messages.KB_LIVE_STATUS
 
     with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_show_history_url)
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -232,11 +226,8 @@ def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page):
         ))
 
     with allure.step("Creating a new simple article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page,approve_revision=True)
 
     with allure.step("Creating an new article revision for the document"):
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
@@ -252,7 +243,7 @@ def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page):
         ).strip() == utilities.kb_revision_test_data['needs_change_message']
 
     with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -268,11 +259,8 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
         ))
 
     with allure.step("Create a new simple article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Clicking on the 'Edit Article Metadata' option and enabling the 'Needs "
                      "change with comment' option"):
@@ -289,7 +277,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
 
     with allure.step("Navigating back to the article's 'Edit Article Metadata' page and "
                      "removing the comment from the needs change textarea"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(needs_change=True)
 
     with allure.step("Navigating to the complete dashboard list and verifying that the "
@@ -301,7 +289,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
 
     with allure.step("Navigating back to the article's 'Edit Article Metadata' page and "
                      "removing the needs change updates"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata()
 
     with check, allure.step("Navigating to the kb overview page and verifying that the "
@@ -312,7 +300,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
         )
 
     with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -328,11 +316,9 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
         ))
 
     with allure.step("Create a new simple article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
 
-    article_url = utilities.get_page_url()
-
-    revision_id = sumo_pages.kb_article_show_history_page.get_last_revision_id()
+    revision_id = article_details['first_revision_id']
 
     with allure.step("Approving the first revision and marking it as ready for l10n"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -346,7 +332,7 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
     with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -362,11 +348,8 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
         ))
 
     with allure.step("Creating a new kb article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct l10n status is displayed"):
@@ -377,7 +360,7 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
 
     with allure.step("Navigating back to the article page and marking the revision as ready "
                      "for l10n"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
@@ -391,7 +374,7 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
     with allure.step("Navigating to the article and deleting it"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -490,11 +473,8 @@ def test_article_title_update(page: Page):
         ))
 
     with allure.step("Creating a new kb article"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True
-        )
-
-    article_url = utilities.get_page_url()
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct title is displayed"):
@@ -507,7 +487,7 @@ def test_article_title_update(page: Page):
 
     with allure.step("Navigating to the article's 'Edit Metadata page' page and changing the "
                      "title"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         new_article_title = "Updated " + article_details['article_title']
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=new_article_title)
 
@@ -519,5 +499,5 @@ def test_article_title_update(page: Page):
         ).to_be_visible()
 
     with allure.step("Deleting the kb article"):
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()

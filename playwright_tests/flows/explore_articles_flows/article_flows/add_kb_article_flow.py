@@ -1,5 +1,8 @@
 from playwright.sync_api import Page
 from typing import Any
+
+from slugify import slugify
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
     AddKbMediaFlow
@@ -48,7 +51,7 @@ class AddKbArticleFlow:
                                  approve_first_revision=False,
                                  ready_for_localization=False
                                  ) -> dict[str, Any]:
-        self.page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
+        self.utilities.navigate_to_link(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
         kb_article_test_data = self.utilities.kb_article_test_data
 
@@ -313,4 +316,57 @@ class AddKbArticleFlow:
         return {"revision_id": revision_id,
                 "revision_time": revision_time,
                 "changes_description": self.utilities.kb_article_test_data['changes_description']
+                }
+
+    def kb_article_creation_via_api(self, page: Page, approve_revision=False,
+                                    is_template=False) -> dict[str, Any]:
+        kb_article_test_data = self.utilities.kb_article_test_data
+        self.utilities.navigate_to_link(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
+        if is_template:
+            kb_title = (kb_article_test_data["kb_template_title"] + self.utilities.
+                        generate_random_number(0, 5000))
+            category = "60"
+        else:
+            kb_title = (kb_article_test_data["kb_article_title"] + self.utilities.
+                        generate_random_number(0, 5000))
+            category = "10"
+
+        slug = slugify(kb_title)
+
+        form_data = {
+            "csrfmiddlewaretoken": self.utilities.get_csrfmiddlewaretoken(),
+            "title": kb_title,
+            "slug": slug,
+            "category": category,
+            "is_localizable": "on",
+            "products": "1",
+            "topics": "383",
+            "allow_discussion": "on",
+            "keywords": kb_article_test_data["keywords"],
+            "summary": kb_article_test_data["search_result_summary"],
+            "content": kb_article_test_data["article_content"],
+            "expires": "",
+            "based_on": "",
+            "comment": kb_article_test_data["changes_description"]
+        }
+
+        response = self.utilities.post_api_request(
+            page, KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL, data=form_data
+        )
+        print(response)
+        self.utilities.navigate_to_link(response.url)
+
+        first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
+        if approve_revision:
+            self.approve_kb_revision(first_revision_id)
+
+        return {"article_title": kb_title,
+                "article_content": kb_article_test_data["article_content"],
+                "article_slug": slug,
+                "keyword": kb_article_test_data["keywords"],
+                "search_results_summary": kb_article_test_data["search_result_summary"],
+                "article_url": response.url.removesuffix("/history"),
+                "article_show_history_url": self.utilities.get_page_url(),
+                "first_revision_id": first_revision_id,
+                "article_review_description": kb_article_test_data["changes_description"]
                 }

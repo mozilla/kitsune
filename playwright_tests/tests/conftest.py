@@ -15,8 +15,8 @@ def navigate_to_homepage(page: Page):
     object.
     """
     utilities = Utilities(page)
-    # Set default navigation timeout to 2 minutes.
-    page.set_default_navigation_timeout(120000)
+    # Set default navigation timeout to 30 seconds.
+    page.set_default_navigation_timeout(30000)
 
     # Block pontoon requests in the current page context.
     page.route("**/pontoon.mozilla.org/**", utilities.block_request)
@@ -36,7 +36,7 @@ def navigate_to_homepage(page: Page):
     page.context.on("response", handle_502_error)
 
     # Navigate to the SUMO stage homepage.
-    page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
+    utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
 
     return page
 

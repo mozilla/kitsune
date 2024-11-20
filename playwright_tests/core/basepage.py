@@ -14,14 +14,14 @@ class BasePage:
         This helper function returns the element locator from a given xpath.
         """
         if with_wait:
-            self._wait_for_dom_load_to_finish()
+            self.wait_for_dom_to_load()
         return self.page.locator(xpath)
 
     def _get_elements_locators(self, xpath: str) -> list[Locator]:
         """
         This helper function returns a list of element locators from a given xpath.
         """
-        self._wait_for_dom_load_to_finish()
+        self.wait_for_dom_to_load()
         return self.page.locator(xpath).all()
 
     def _get_current_page_url(self) -> str:
@@ -80,7 +80,7 @@ class BasePage:
         if isinstance(element, str):
             return self._get_element_locator(element).get_attribute(attribute)
         elif isinstance(element, list):
-            self._wait_for_dom_load_to_finish()
+            self.wait_for_dom_to_load()
             values = []
             for element in element:
                 values.append(element.get_attribute(attribute))
@@ -127,7 +127,7 @@ class BasePage:
         element (Union[str, ElementHandle]): The element locator to interact with.
         check (bool): Whether to check or uncheck the checkbox.
         """
-        self.page.wait_for_load_state("networkidle")
+        self.wait_for_networkidle()
         for attempt in range(retries):
             try:
                 locator = self._get_element_locator(element) if isinstance(
@@ -155,7 +155,7 @@ class BasePage:
         expected_url (str): The expected URL to wait for after the click.
         with_force (bool): Whether to force the click.
         """
-        self.page.wait_for_load_state("networkidle")
+        self.wait_for_networkidle()
         for attempt in range(retries):
             try:
                 element_locator = self._get_element_locator(element) if isinstance(
@@ -178,14 +178,14 @@ class BasePage:
         """
         This helper function clicks on a given element locator based on a given index.
         """
-        self.page.wait_for_load_state("networkidle")
+        self.wait_for_networkidle()
         self._get_element_locator(xpath).nth(index).click()
 
     def _click_on_first_item(self, xpath: str):
         """
         This helper function clicks on the first item from a given web element locator list.
         """
-        self.page.wait_for_load_state("networkidle")
+        self.wait_for_networkidle()
         self._get_element_locator(xpath).first.click()
 
     def _fill(self, xpath: str, text: str):
@@ -267,15 +267,6 @@ class BasePage:
         """
         return self._get_element_locator(xpath).is_checked()
 
-    def _wait_for_dom_load_to_finish(self):
-        """
-        This helper function performs two waits:
-        1. Waits for the dom load to finish.
-        2. Waits for the load event to be fired when the whole page, including resources has loaded
-        """
-        self.page.wait_for_load_state("domcontentloaded")
-        self.page.wait_for_load_state("load")
-
     def _wait_for_selector(self, xpath: str, timeout=3500):
         """
         This helper function waits for a given element locator to be visible based on a given
@@ -295,3 +286,30 @@ class BasePage:
         y (int): The y-coordinate.
         """
         self.page.mouse.move(x, y)
+
+    def wait_for_page_to_load(self):
+        """
+        This helper function awaits for the load event to be fired.
+        """
+        try:
+            self.page.wait_for_load_state("load")
+        except PlaywrightTimeoutError:
+            print("Load event was not fired. Continuing...")
+
+    def wait_for_dom_to_load(self):
+        """
+        This helper function awaits for the DOMContentLoaded event to be fired.
+        """
+        try:
+            self.page.wait_for_load_state("domcontentloaded")
+        except PlaywrightTimeoutError:
+            print("DOMContentLoaded event was not fired. Continuing...")
+
+    def wait_for_networkidle(self):
+        """
+        This helper function waits until there are no network connections for at least 500ms.
+        """
+        try:
+            self.page.wait_for_load_state("networkidle")
+        except PlaywrightTimeoutError:
+            print("Network idle state was not reached. Continuing...")
