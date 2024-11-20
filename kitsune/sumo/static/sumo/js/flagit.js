@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initializeDropdownsAndTags() {
-        document.querySelectorAll('.topic-dropdown, .tag-select').forEach(dropdown => {
+        document.querySelectorAll('.topic-dropdown, .tag-select, select[name="status"]').forEach(dropdown => {
             const questionId = dropdown.dataset.questionId;
 
             dropdown.addEventListener('change', async function () {
@@ -108,6 +108,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             updateStatusSelect(updateButton);
                             enableUpdateButton(updateButton);
                         }
+                    }
+                });
+            }
+
+            if (dropdown.name === 'status') {
+                dropdown.addEventListener('change', function () {
+                    const form = this.closest('form');
+                    const updateButton = form.querySelector('input[type="submit"]');
+                    if (this.value) {
+                        updateButton.disabled = false;
+                    } else {
+                        updateButton.disabled = true;
                     }
                 });
             }
