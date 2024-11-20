@@ -55,9 +55,11 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
 
 
 class MultiUsernameField(forms.Field):
-    """Form field that takes a comma-separated list of usernames OR profile
+    """
+    Form field that takes a comma-separated list of usernames OR profile
     names (display names) as input, validates that users exist for each one,
-    and returns the list of users."""
+    and returns the list of users.
+    """
 
     def to_python(self, value):
         if not value:
@@ -67,15 +69,14 @@ class MultiUsernameField(forms.Field):
                 return []
 
         users = []
-        for username in value.split(","):
-            username = username.strip()
-            if username:
-                user = User.objects.filter(
-                    Q(username=username) | Q(profile__name=username)
-                ).first()
-                if user:
-                    if user.is_active:
-                        users.append(user)
+        usernames = [name.strip() for name in value.split(",") if name]
+        if usernames:
+            all_users = User.objects.filter(
+                Q(username__in=usernames) | Q(profile__name__in=usernames)
+            )
+            for user in all_users:
+                if user and user.is_active:
+                    users.append(user)
 
         return users
 
