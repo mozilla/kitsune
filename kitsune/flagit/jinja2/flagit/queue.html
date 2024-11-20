@@ -7,7 +7,7 @@
         <hgroup>
           <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
           {% if object.notes %}
-            <p class="notes">{{ _('Other reason:') }} {{ object.notes }}</p>
+            <p class="notes">{{ _('Additional notes:') }} {{ object.notes }}</p>
           {% endif %}
         </hgroup>
         <div class="wrap">

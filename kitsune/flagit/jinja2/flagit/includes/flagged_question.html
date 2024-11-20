@@ -24,20 +24,28 @@
   {% if object.reason == 'content_moderation' and question_model and user.has_perm('questions.change_question')  %}
     <h3 class="flagged-content__subheading">{{ _('Take Action:') }}</h3>
     <div class="flagged-content__topic-update">
-     <label> {{ _('Current topic:') }} </label> 
-     <div>
-       <p id="current-topic-{{ object.content_object.id }}" class="current-topic">{{ object.content_object.topic }}</p>
-    </div>
+      <label> {{ _('Current topic:') }} </label>
+      <p id="current-topic-{{ object.content_object.id }}" class="current-topic">{{ object.content_object.topic }}</p>
 
-    <form id="topic-update-form-{{ object.content_object.id }}" method="POST">
-      {% csrf_token %}
-      <label for="topic">{{ _('Change Topic:') }}</label>
-      <select id="topic-dropdown-{{ object.content_object.id }}" class="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
-        {% for topic in object.available_topics %}
-          <option value="{{ topic.id }}" {% if topic.id == object.content_object.topic.id %}selected{% endif %}>{{ topic.title }}</option>
-        {% endfor %}
-      </select>
-    </form>
+      <form id="topic-update-form-{{ object.content_object.id }}" method="POST">
+        {% csrf_token %}
+        <label for="topic">{{ _('Change Topic:') }}</label>
+        <select id="topic-dropdown-{{ object.content_object.id }}" class="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
+          {% for topic in object.available_topics %}
+            <option value="{{ topic.id }}" {% if topic.id == object.content_object.topic.id %}selected{% endif %}>{{ topic.title }}</option>
+          {% endfor %}
+        </select>
+
+        <div class="flagged-content__tag-select">
+          <label for="tag-select-{{ object.content_object.id }}">{{ _('Assign Tags:') }}</label>
+          <select id="tag-select-{{ object.content_object.id }}" name="tags" multiple class="tag-select" data-question-id="{{ object.content_object.id }}">
+            {% for tag in object.available_tags %}
+              <option value="{{ tag.id }}" {% if tag.get('id') in object.saved_tags %}selected{% endif %}>{{ tag.name }}</option>
+            {% endfor %}
+
+          </select>
+        </div>
+      </form>
     </div>
   {% endif %}
 </div>

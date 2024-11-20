@@ -3,6 +3,7 @@ import logging
 import random
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
+from typing import List, Optional, Tuple, Union
 
 import requests
 from django.conf import settings
@@ -16,6 +17,7 @@ from django.db.models import Q
 from django.db.models.functions import Now
 from django.http import (
     Http404,
+    HttpRequest,
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -1030,6 +1032,14 @@ def add_tag_async(request, question_id):
     If the question already has the tag, do nothing.
 
     """
+
+    if request.content_type == "application/json":
+        tag_ids = json.loads(request.body).get("tags", [])
+        question, tags = _add_tag(request, question_id, tag_ids)
+        if not tags:
+            return JsonResponse({"error": "Some tags do not exist or are invalid"}, status=400)
+        return JsonResponse({"message": "Tags updated successfully.", "data": {"tags": tags}})
+
     try:
         question, canonical_name = _add_tag(request, question_id)
     except SumoTag.DoesNotExist:
@@ -1079,13 +1089,26 @@ def remove_tag_async(request, question_id):
     If question doesn't have that tag, do nothing. Return value is JSON.
 
     """
+
+    question = get_object_or_404(Question, pk=question_id)
+    if request.content_type == "application/json":
+        data = json.loads(request.body)
+        tag_id = data.get("tagId")
+
+        try:
+            tag = SumoTag.objects.get(id=tag_id)
+        except SumoTag.DoesNotExist:
+            return JsonResponse({"error": "Tag does not exist."}, status=400)
+
+        question.tags.remove(tag)
+        question.clear_cached_tags()
+        return JsonResponse({"message": f"Tag '{tag.name}' removed successfully."})
+
     name = request.POST.get("name")
     if name:
-        question = get_object_or_404(Question, pk=question_id)
         question.tags.remove(name)
         question.clear_cached_tags()
         return HttpResponse("{}", content_type="application/json")
-
     return HttpResponseBadRequest(
         json.dumps({"error": str(NO_TAG)}), content_type="application/json"
     )
@@ -1424,17 +1447,27 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
     }
 
 
-def _add_tag(request, question_id):
-    """Add a named tag to a question, creating it first if appropriate.
+def _add_tag(
+    request: HttpRequest, question_id: int, tag_ids: Optional[List[int]] = None
+) -> Tuple[Optional[Question], Union[List[str], str, None]]:
+    """Add tags to a question by tag IDs or tag name.
 
-    Tag name (case-insensitive) must be in request.POST['tag-name'].
+    If tag_ids is provided, adds tags with those IDs to the question.
+    Otherwise looks for tag name in request.POST['tag-name'].
 
-    If no tag name is provided or SumoTag.DoesNotExist is raised, return None.
-    Otherwise, return the canonicalized tag name.
-
+    Returns a tuple of (question, tag_names) if successful.
+    Returns (None, None) if no valid tags found or SumoTag.DoesNotExist raised.
     """
+
+    question = get_object_or_404(Question, pk=question_id)
+    if tag_ids:
+        sumo_tags = SumoTag.objects.filter(id__in=tag_ids)
+        if len(tag_ids) != len(sumo_tags):
+            return None, None
+        question.tags.add(*sumo_tags)
+        return question, list(sumo_tags.values_list("name", flat=True))
+
     if tag_name := request.POST.get("tag-name", "").strip():
-        question = get_object_or_404(Question, pk=question_id)
         # This raises SumoTag.DoesNotExist if the tag doesn't exist.
         canonical_name = add_existing_tag(tag_name, question.tags)
 
