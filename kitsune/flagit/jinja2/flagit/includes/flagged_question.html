@@ -29,20 +29,22 @@
 
       <form id="topic-update-form-{{ object.content_object.id }}" method="POST">
         {% csrf_token %}
-        <label for="topic">{{ _('Change Topic:') }}</label>
-        <select id="topic-dropdown-{{ object.content_object.id }}" class="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
-          {% for topic in object.available_topics %}
-            <option value="{{ topic.id }}" {% if topic.id == object.content_object.topic.id %}selected{% endif %}>{{ topic.title }}</option>
-          {% endfor %}
-        </select>
-
+        <div class="dropdown-wrapper">
+          <label for="topic-dropdown-{{ object.content_object.id }}">{{ _('Change Topic:') }}</label>
+          <select id="topic-dropdown-{{ object.content_object.id }}" class="topic-dropdown" name="topic" data-question-id="{{ object.content_object.id }}">
+            {% for topic in object.available_topics %}
+              <option value="{{ topic.id }}" {% if topic.id == object.content_object.topic.id %}selected{% endif %}>
+                {{ topic.title|safe}}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
         <div class="flagged-content__tag-select">
           <label for="tag-select-{{ object.content_object.id }}">{{ _('Assign Tags:') }}</label>
           <select id="tag-select-{{ object.content_object.id }}" name="tags" multiple class="tag-select" data-question-id="{{ object.content_object.id }}">
             {% for tag in object.available_tags %}
               <option value="{{ tag.id }}" {% if tag.get('id') in object.saved_tags %}selected{% endif %}>{{ tag.name }}</option>
             {% endfor %}
-
           </select>
         </div>
       </form>
