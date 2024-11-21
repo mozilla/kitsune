@@ -643,7 +643,10 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             question_vote(request, question.id)
 
             if form.cleaned_data.get("is_spam"):
+                question.mark_as_spam(request.user)
                 _add_to_moderation_queue(request, question)
+                url = reverse("questions.list", args=[product.slug])
+                return HttpResponseRedirect(url)
 
             my_questions_url = reverse("users.questions", args=[request.user.username])
             messages.add_message(
