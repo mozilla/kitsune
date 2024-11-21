@@ -105,6 +105,16 @@ def flagged_queue(request):
     )
 
 
+def get_hierarchical_topics(topics, parent=None, level=0):
+    """Recursively build hierarchical topics."""
+    hierarchical = []
+    for topic in topics.filter(parent=parent).order_by("title"):
+        spaces = "&nbsp;" * (level * 4)
+        hierarchical.append({"id": topic.id, "title": f"{spaces}{topic.title}"})
+        hierarchical.extend(get_hierarchical_topics(topics, parent=topic, level=level + 1))
+    return hierarchical
+
+
 @login_required
 @permission_required("flagit.can_moderate")
 def moderate_content(request):
@@ -123,7 +133,8 @@ def moderate_content(request):
 
     for obj in objects:
         question = obj.content_object
-        obj.available_topics = Topic.active.filter(products=question.product, is_archived=False)
+        all_topics = Topic.active.filter(is_archived=False, products=question.product)
+        obj.available_topics = get_hierarchical_topics(all_topics)
         obj.available_tags = available_tags
         obj.saved_tags = question.tags.values_list("id", flat=True)
     return render(
