@@ -435,7 +435,7 @@
           {% endif %}
         </div>
       </li>
-      {% if is_trusted_user(request.user) %}
+      {% if not question.is_moderated and is_trusted_user(request.user) %}
         <li class="mzp-c-details">
           <h3 class="sidebar-subheading sidebar-nav--heading-item is-accordion-heading">{{ _('Question Details') }}</h3>
           <div id="question-details" class="question-details">

@@ -1,6 +1,7 @@
 import logging
 import re
 from datetime import datetime, timedelta
+from functools import cached_property
 from urllib.parse import urlparse
 
 import actstream
@@ -391,6 +392,14 @@ class Question(AAQBase):
     @property
     def is_offtopic(self):
         return config.OFFTOPIC_TAG_NAME in [t.name for t in self.my_tags]
+
+    @cached_property
+    def is_moderated(self):
+        return (
+            self.flags.filter(reason=FlaggedObject.REASON_CONTENT_MODERATION)
+            .exclude(status=FlaggedObject.FLAG_PENDING)
+            .exists()
+        )
 
     @property
     def my_tags(self):
