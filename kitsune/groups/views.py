@@ -82,7 +82,10 @@ def edit_avatar(request, group_slug):
     if not _user_can_edit(request.user, prof):
         raise PermissionDenied
 
-    form = GroupAvatarForm(request.POST or None, request.FILES, instance=prof, request=request)
+    if request.method == "POST":
+        form = GroupAvatarForm(request.POST, request.FILES, instance=prof, request=request)
+    else:
+        form = GroupAvatarForm(instance=prof, request=request)
 
     old_avatar_path = None
 

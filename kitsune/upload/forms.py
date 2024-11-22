@@ -13,6 +13,7 @@ MSG_IMAGE_LONG = _lazy(
 class LimitedImageField(forms.ImageField):
     ALLOWED_IMAGE_EXTENSIONS = ("jpg", "jpeg", "png", "gif")
     default_validators = [FileExtensionValidator(allowed_extensions=ALLOWED_IMAGE_EXTENSIONS)]
+    error_messages = {"required": MSG_IMAGE_REQUIRED}
 
 
 class ImageAttachmentUploadForm(forms.Form):
