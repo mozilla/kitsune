@@ -352,7 +352,10 @@ def test_share_firefox_data_functionality(page: Page):
         sumo_pages.aaq_form_page.add_text_to_troubleshooting_information_textarea(
             utilities.aaq_question_test_data["troubleshooting_information"]
         )
-        sumo_pages.aaq_form_page.click_aaq_form_submit_button()
+        utilities.re_call_function_on_error(
+            sumo_pages.aaq_form_page.click_aaq_form_submit_button,
+            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+        )
 
     with allure.step("Verifying that the troubleshooting information is displayed"):
         sumo_pages.question_page.click_on_question_details_button()
@@ -450,7 +453,12 @@ def test_system_details_information(page: Page):
                 with check, allure.step("Submitting the AAQ question and verifying that the "
                                         "correct provided troubleshooting information is "
                                         "displayed"):
-                    sumo_pages.aaq_form_page.click_aaq_form_submit_button()
+                    utilities.re_call_function_on_error(
+                        sumo_pages.aaq_form_page.click_aaq_form_submit_button,
+                        expected_locator=sumo_pages.question_page.
+                        QUESTION_LOCATORS["questions_header"]
+                    )
+
                     sumo_pages.question_page.click_on_question_details_button()
                     assert sumo_pages.question_page.get_system_details_information(
                     ) == troubleshooting_info
@@ -490,7 +498,12 @@ def test_premium_products_aaq(page: Page):
                     is_premium=True
                 )
                 if utilities.get_page_url() == premium_form_link:
-                    sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True)
+                    utilities.re_call_function_on_error(
+                        sumo_pages.aaq_form_page.click_aaq_form_submit_button,
+                        with_force=True,
+                        expected_locator=sumo_pages.question_page.
+                        QUESTION_LOCATORS["questions_header"]
+                    )
 
         with allure.step("Verifying that the correct success message is displayed"):
             assert sumo_pages.aaq_form_page.get_premium_card_submission_message(

@@ -278,7 +278,8 @@ def test_articles_revision_page_and_revision_approval(page: Page):
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
 
     with check, allure.step("Approving the second revision"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision['revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=second_revision['revision_id'])
 
     with check, allure.step("Verifying that the first revision status is 'Approved', and the"
                             "second is 'Current'"):
@@ -336,7 +337,8 @@ def test_articles_discussions_allowed(page: Page):
         ))
 
     with allure.step("Approving the article revision"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(article_details['first_revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=article_details['first_revision_id'])
 
     with allure.step("Navigating to the article page"):
         utilities.navigate_to_link(article_url)
@@ -435,7 +437,8 @@ def test_articles_discussions_not_allowed(page: Page):
         ))
 
     with allure.step("Approving the revision"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(article_details['first_revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=article_details['first_revision_id'])
 
     with allure.step("Navigating back to the article page and verifying that the "
                      "'Discussion' option is not displayed"):

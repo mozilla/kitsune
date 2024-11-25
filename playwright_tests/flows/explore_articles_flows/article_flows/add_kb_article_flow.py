@@ -31,26 +31,31 @@ class AddKbArticleFlow:
         self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
         self.edit_kb_article_page = EditKBArticlePage(page)
 
-    def submit_simple_kb_article(self,
-                                 article_title=None,
-                                 article_slug=None,
-                                 article_category=None,
-                                 article_keyword=None,
-                                 allow_discussion=True,
-                                 allow_translations=True,
-                                 selected_product=True,
-                                 selected_topics=True,
-                                 search_summary=None,
-                                 article_content=None,
-                                 article_content_image='',
-                                 submit_article=True,
-                                 is_template=False,
-                                 expiry_date=None,
-                                 restricted_to_groups: list[str] = None,
-                                 single_group="",
-                                 approve_first_revision=False,
-                                 ready_for_localization=False
-                                 ) -> dict[str, Any]:
+    def submit_simple_kb_article(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._submit_simple_kb_article(**kwargs)
+        )
+
+    def _submit_simple_kb_article(self,
+                                  article_title=None,
+                                  article_slug=None,
+                                  article_category=None,
+                                  article_keyword=None,
+                                  allow_discussion=True,
+                                  allow_translations=True,
+                                  selected_product=True,
+                                  selected_topics=True,
+                                  search_summary=None,
+                                  article_content=None,
+                                  article_content_image='',
+                                  submit_article=True,
+                                  is_template=False,
+                                  expiry_date=None,
+                                  restricted_to_groups: list[str] = None,
+                                  single_group="",
+                                  approve_first_revision=False,
+                                  ready_for_localization=False
+                                  ) -> dict[str, Any]:
         self.utilities.navigate_to_link(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
         kb_article_test_data = self.utilities.kb_article_test_data
@@ -194,9 +199,9 @@ class AddKbArticleFlow:
         if approve_first_revision:
             self.kb_article_page.click_on_show_history_option()
             if ready_for_localization:
-                self.approve_kb_revision(first_revision_id, ready_for_l10n=True)
+                self.approve_kb_revision(revision_id=first_revision_id, ready_for_l10n=True)
             else:
-                self.approve_kb_revision(first_revision_id)
+                self.approve_kb_revision(revision_id=first_revision_id)
 
         return {"article_title": kb_article_title,
                 "article_content": kb_article_test_data["article_content"],
@@ -214,10 +219,15 @@ class AddKbArticleFlow:
                 "first_revision_id": first_revision_id
                 }
 
-    def approve_kb_revision(self, revision_id: str,
-                            revision_needs_change=False,
-                            ready_for_l10n=False,
-                            significance_type=''):
+    def approve_kb_revision(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._approve_kb_revision(**kwargs)
+        )
+
+    def _approve_kb_revision(self, revision_id: str,
+                             revision_needs_change=False,
+                             ready_for_l10n=False,
+                             significance_type=''):
         if (KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT not in
                 self.utilities.get_page_url()):
             self.kb_article_page.click_on_show_history_option()
@@ -247,15 +257,20 @@ class AddKbArticleFlow:
 
         self.kb_article_review_revision_page.click_accept_revision_accept_button()
 
-    def submit_new_kb_revision(self,
-                               keywords=None,
-                               search_result_summary=None,
-                               content=None,
-                               expiry_date=None,
-                               changes_description=None,
-                               is_admin=False,
-                               approve_revision=False
-                               ) -> dict[str, Any]:
+    def submit_new_kb_revision(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._submit_new_kb_revision(**kwargs)
+        )
+
+    def _submit_new_kb_revision(self,
+                                keywords=None,
+                                search_result_summary=None,
+                                content=None,
+                                expiry_date=None,
+                                changes_description=None,
+                                is_admin=False,
+                                approve_revision=False
+                                ) -> dict[str, Any]:
 
         self.kb_article_page.click_on_edit_article_option()
 
@@ -309,7 +324,7 @@ class AddKbArticleFlow:
         revision_id = self.kb_article_show_history_page.get_last_revision_id()
 
         if approve_revision:
-            self.approve_kb_revision(revision_id)
+            self.approve_kb_revision(revision_id=revision_id)
 
         revision_time = self.kb_article_show_history_page.get_revision_time(revision_id)
 
@@ -358,7 +373,7 @@ class AddKbArticleFlow:
 
         first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
         if approve_revision:
-            self.approve_kb_revision(first_revision_id)
+            self.approve_kb_revision(revision_id=first_revision_id)
 
         return {"article_title": kb_title,
                 "article_content": kb_article_test_data["article_content"],

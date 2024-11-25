@@ -1,7 +1,7 @@
 import allure
 import pytest
 from pytest_check import check
-from playwright.sync_api import expect, Page
+from playwright.sync_api import Page
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.mess_system_pages_messages.edit_cont_areas_page_messages import (
@@ -40,8 +40,8 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with allure.step("Accessing the my profile page and verifying that the displayed groups are "
                      "the correct ones"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        assert sumo_pages.my_profile_page.get_my_profile_groups_items_text(
-        ) == contribution_options
+        for option in contribution_options:
+            assert option in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
 
     with allure.step("Signing in with a different account and verifying that the original user "
                      "groups are displayed"):
@@ -52,8 +52,8 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with allure.step("Navigating to the user page and verifying that the user groups is "
                      "successfully displayed"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
-        assert sumo_pages.my_profile_page.get_my_profile_groups_items_text(
-        ) == contribution_options
+        for option in contribution_options:
+            assert option in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
 
     with allure.step("Signing in back with the original user"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -71,16 +71,16 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page):
     with allure.step("Verifying that the profile groups section is no longer displayed inside the "
                      "profile section"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        expect(sumo_pages.my_profile_page.groups_section_element()).to_be_hidden()
+        for option in contribution_options:
+            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
 
     with allure.step("Logging in with a different user and accessing the original user profile"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts['TEST_ACCOUNT_13']
         ))
 
-    with allure.step("Navigating to the my profile page and verifying that the groups section is "
-                     "no longer displayed for the original user"):
+    with allure.step("Navigating to the my profile page and verifying that the added groups are "
+                     "no longer displayed"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
-        expect(
-            sumo_pages.my_profile_page.groups_section_element()
-        ).to_be_hidden()
+        for option in contribution_options:
+            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())

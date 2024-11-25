@@ -11,17 +11,22 @@ class AAQFlow:
         self.utilities = Utilities(page)
         self.question_page = QuestionPage(page)
 
+    def submit_an_aaq_question(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._submit_an_aaq_question(**kwargs)
+        )
+
     # Submitting an aaq question for a product flow.
     # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
-    def submit_an_aaq_question(self,
-                               subject: str,
-                               body: str,
-                               topic_name='',
-                               attach_image=False,
-                               is_premium=False,
-                               email="",
-                               is_loginless=False,
-                               expected_locator=None):
+    def _submit_an_aaq_question(self,
+                                subject: str,
+                                body: str,
+                                topic_name='',
+                                attach_image=False,
+                                is_premium=False,
+                                email="",
+                                is_loginless=False,
+                                expected_locator=None):
         question_subject = ''
         if is_premium:
             self.add_valid_data_to_all_premium_products_aaq_fields(subject, body, is_loginless,
@@ -96,10 +101,20 @@ class AAQFlow:
         )
 
     def deleting_question_flow(self):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._deleting_question_flow()
+        )
+
+    def _deleting_question_flow(self):
         self.question_page.click_delete_this_question_question_tools_option()
         self.question_page.click_delete_this_question_button()
 
-    def editing_question_flow(self, subject='', body='', troubleshoot='', submit_edit=True):
+    def editing_question_flow(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._editing_question_flow(**kwargs)
+        )
+
+    def _editing_question_flow(self, subject='', body='', troubleshoot='', submit_edit=True):
         if subject:
             self.aaq_form_page.clear_subject_input_field()
             self.aaq_form_page.add_text_to_aaq_form_subject_field(subject)
@@ -114,7 +129,12 @@ class AAQFlow:
         if submit_edit:
             self.aaq_form_page.click_aaq_edit_submit_button()
 
-    def editing_reply_flow(self, reply_body: str, submit_reply=True):
+    def editing_reply_flow(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._editing_reply_flow(**kwargs)
+        )
+
+    def _editing_reply_flow(self, reply_body: str, submit_reply=True):
         self.aaq_form_page.clear_the_question_body_textarea_field()
         self.aaq_form_page.add_text_to_aaq_textarea_field(reply_body)
 
@@ -123,7 +143,12 @@ class AAQFlow:
         else:
             self.aaq_form_page.click_aaq_form_cancel_button()
 
-    def delete_question_reply(self, answer_id: str, delete_reply: bool):
+    def delete_question_reply(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._delete_question_reply(**kwargs)
+        )
+
+    def _delete_question_reply(self, answer_id: str, delete_reply: bool):
         self.question_page.click_on_reply_more_options_button(answer_id)
         self.question_page.click_on_delete_this_post_for_a_certain_reply(answer_id)
 
@@ -132,12 +157,17 @@ class AAQFlow:
         else:
             self.question_page.click_on_cancel_delete_button()
 
-    def post_question_reply_flow(self,
-                                 repliant_username: str,
-                                 reply='',
-                                 submit_reply=True,
-                                 quoted_reply=False,
-                                 reply_for_id='') -> str:
+    def post_question_reply_flow(self, **kwargs):
+        return self.utilities.re_call_function_on_error(
+            lambda: self._post_question_reply_flow(**kwargs)
+        )
+
+    def _post_question_reply_flow(self,
+                                  repliant_username: str,
+                                  reply='',
+                                  submit_reply=True,
+                                  quoted_reply=False,
+                                  reply_for_id='') -> str:
         if quoted_reply:
             self.question_page.click_on_reply_more_options_button(reply_for_id)
             self.question_page.click_on_quote_for_a_certain_reply(reply_for_id)
