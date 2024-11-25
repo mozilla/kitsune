@@ -629,6 +629,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         form = NewQuestionForm(
             product=product,
             data=request.POST or None,
+            user=request.user or None,
         )
         context["form"] = form
 

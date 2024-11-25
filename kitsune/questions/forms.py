@@ -10,7 +10,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import AAQConfig, Answer, Question
 from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
-from kitsune.sumo.utils import check_for_spam_content
+from kitsune.sumo.utils import check_for_spam_content, is_trusted_user
 from kitsune.upload.models import ImageAttachment
 
 # labels and help text
@@ -180,6 +180,7 @@ class NewQuestionForm(EditQuestionForm):
 
     def __init__(self, product=None, *args, **kwargs):
         """Add fields particular to new questions."""
+        self.user = kwargs.pop("user", None)
         super(NewQuestionForm, self).__init__(product=product, *args, **kwargs)
 
         if product:
@@ -199,8 +200,16 @@ class NewQuestionForm(EditQuestionForm):
         if not cdata:
             return super().clean(*args, **kwargs)
 
-        if check_for_spam_content(cdata):
-            self.cleaned_data.update({"is_spam": True})
+        # Check for spam if user is not trusted/privileged or is anonymous
+        is_privileged = self.user and (
+            is_trusted_user(self.user)
+            or self.user.has_perm("flagit.can_moderate")
+            or self.user.has_perm("sumo.bypass_ratelimit")
+        )
+
+        if not is_privileged:
+            if check_for_spam_content(cdata, check_links=False):
+                self.cleaned_data.update({"is_spam": True})
 
         return self.cleaned_data
 

@@ -314,7 +314,7 @@ def has_blocked_link(data):
     return False
 
 
-def check_for_spam_content(data):
+def check_for_spam_content(data, check_links=True):
     """Check for spam content in a given text.
 
     Currently checks for:
@@ -329,8 +329,10 @@ def check_for_spam_content(data):
     is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
     is_nanp_number = any(settings.NANP_REGEX.findall(data))
     is_phone_number = any(settings.ANY_PHONE_NUMBER.findall(data))
-
-    has_links = has_blocked_link(data)
+    if check_links:
+        has_links = has_blocked_link(data)
+    else:
+        has_links = False
 
     return is_toll_free or is_nanp_number or is_phone_number or has_links
 
