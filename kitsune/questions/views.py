@@ -485,11 +485,16 @@ def edit_details(request, question_id):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
+    existing_tags = SumoTag.objects.filter(
+        Q(name=question.topic.slug) | Q(name=question.product.slug)
+    )
+    question.tags.remove(*existing_tags)
     question.product = product
     question.topic = topic
     question.locale = locale
     question.save()
-
+    question.auto_tag()
+    question.clear_cached_tags()
     return redirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
@@ -730,9 +735,13 @@ def edit_question(request, question_id):
             return JsonResponse({"error": "Topic not found"}, status=404)
 
         if new_topic != question.topic:
+            existing_tags = SumoTag.objects.filter(name=question.topic.slug)
+            question.tags.remove(*existing_tags)
             question.topic = new_topic
             question.update_topic_counter += 1
             question.save(update=True)
+            question.auto_tag()
+            question.clear_cached_tags()
 
         return JsonResponse({"updated_topic": str(new_topic)})
 
