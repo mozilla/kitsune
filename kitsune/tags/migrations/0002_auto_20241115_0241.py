@@ -174,7 +174,7 @@ ZENDESK_TAGS = [
     ("VPN::Unsupported::iOS", "seg-vpn-unsup-ios"),
     ("VPN::Unsupported::Linux", "seg-vpn-unsup-linux"),
     ("VPN::Unsupported::Mac OS", "seg-vpn-unsup-mac"),
-    ("VPN::Unsupported::No OS Named", "Seg-vpn-unsup-none"),
+    ("VPN::Unsupported::No OS Named", "seg-vpn-unsup-none"),
     ("VPN::Unsupported::Hardware", "seg-vpn-unsup-hrdware"),
     ("VPN::Unsupported::Windows", "seg-vpn-unsup-win"),
 ]
