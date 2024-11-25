@@ -419,9 +419,9 @@ class QuestionPage(BasePage):
         self._click(self.__post_reply_button,
                     expected_locator=f"//span[@class='display-name' and contains(text(), "
                                      f"'{repliant_username}')]")
-        return self._get_element_attribute_value(f"//span[@class='display-name' and "
-                                                 f"contains(text(), '{repliant_username}')]/"
-                                                 f"ancestor::div[@class='answer ']",
+        return self._get_element_attribute_value("(//span[@class='display-name' and "
+                                                 f"contains(text(), '{repliant_username}')]"
+                                                 "/ancestor::div[@class='answer '])[last()]",
                                                  "id")
 
     # Question Tools actions.
@@ -577,3 +577,11 @@ class QuestionPage(BasePage):
 
     def click_on_common_responses_insert_response_button(self):
         self._click(self.__common_responses_insert_response_button)
+
+    def get_time_from_reply(self, reply_id: str) -> str:
+        """Returns the time displayed inside the question for when a reply was made.
+
+        Args:
+            reply_id (str): The reply id.
+        """
+        return self._get_text_of_element(f"//div[@id='{reply_id}']//time/time")

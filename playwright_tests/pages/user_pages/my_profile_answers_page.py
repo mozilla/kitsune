@@ -32,3 +32,12 @@ class MyProfileAnswersPage(BasePage):
         return self._get_text_of_element(f"//article[@id='profile']//"
                                          f"a[contains(@href, '{answer_id}')]/"
                                          f"following-sibling::blockquote")
+
+    def get_my_answer_question_title(self, answer_id: str) -> str:
+        """Get the title of the question that the answer belongs to.
+
+        Args:
+        answer_id: str: The id of the answer.
+        """
+        return self._get_text_of_element(f"//article[@id='profile']//a[contains(@href,"
+                                         f" '{answer_id}')]")

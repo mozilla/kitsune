@@ -266,10 +266,10 @@ class MyProfileEdit(BasePage):
         """Click the cancel button"""
         self._click(self.EDIT_PROFILE_PAGE_LOCATORS["cancel_button"])
 
-    def click_update_my_profile_button(self, expected_url=None):
+    def click_update_my_profile_button(self, expected_url=None, expected_locator=None):
         """Click the update my profile button"""
         self._click(self.EDIT_PROFILE_PAGE_LOCATORS["update_my_profile_button"],
-                    expected_url=expected_url)
+                    expected_url=expected_url, expected_locator=expected_locator)
 
     def click_close_account_option(self):
         """Click the close account and delete all profile information link"""

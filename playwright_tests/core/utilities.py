@@ -23,7 +23,7 @@ class Utilities:
         self.page = page
 
     # Fetching test data from json files.
-    with open("test_data/profile_edit.json", "r") as edit_test_data_file:
+    with open("test_data/profile_edit.json", "r", encoding="utf-8") as edit_test_data_file:
         profile_edit_test_data = json.load(edit_test_data_file)
     edit_test_data_file.close()
 

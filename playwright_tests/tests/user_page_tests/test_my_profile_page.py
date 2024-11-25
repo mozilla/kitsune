@@ -133,7 +133,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
         expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
 
-# C890832,  C2094281, C891410
+# C890832,  C2094281, C891410, C2245210, C2245211, C2245212, C2245209
 @pytest.mark.userProfile
 def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
     utilities = Utilities(page)
@@ -192,16 +192,74 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
         assert reply_text == sumo_pages.my_answers_page.get_my_answer_text(
             answer_id=answer_id
         ), "My question reply is not displayed inside the my profile answers list"
+        assert question_info["aaq_subject"] == (sumo_pages.my_answers_page.
+                                                get_my_answer_question_title(answer_id))
 
-    with allure.step("Deleting the posted question and verifying that the user is redirected "
-                     "to the product support forum page"):
+    with allure.step("Updating the question title and question reply"):
+        sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
+        sumo_pages.question_page.click_on_edit_this_question_question_tools_option()
+        updated_title_text = ("Updated Question Title " + utilities.
+                              generate_random_number(1,1000))
+        updated_reply_text = "Updated reply"
+        sumo_pages.aaq_flow.editing_question_flow(
+            subject=updated_title_text,
+            submit_edit=True
+        )
+        sumo_pages.question_page.click_on_reply_more_options_button(answer_id)
+        sumo_pages.question_page.click_on_edit_this_post_for_a_certain_reply(answer_id)
+        sumo_pages.aaq_flow.editing_reply_flow(updated_reply_text, submit_reply=True)
+
+    with allure.step("Navigating back to the answers page from the profile section and verifying "
+                     "that the updates are reflected"):
+        sumo_pages.question_page.click_on_the_reply_author(answer_id)
+        assert (
+            utilities.number_extraction_from_string(
+                sumo_pages.my_profile_page.get_my_profile_answers_text()
+            ) == original_number_of_answers + 1
+        )
+
+        sumo_pages.my_profile_page.click_my_profile_answers_link()
+        assert updated_reply_text == sumo_pages.my_answers_page.get_my_answer_text(
+            answer_id=answer_id
+        ), "My question reply is not displayed inside the my profile answers list"
+
+        assert updated_title_text == sumo_pages.my_answers_page.get_my_answer_question_title(
+            answer_id)
+
+    with allure.step("Navigating back to the posted question and posting a reply to it"):
+        sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
+        reply_text = "A new reply"
+        sumo_pages.question_page.add_text_to_post_a_reply_textarea(reply_text)
+        second_answer_id = sumo_pages.question_page.click_on_post_reply_button(
+            repliant_username=repliant_user
+        )
+
+    with allure.step("Navigating back to the answers page from the profile section and verifying "
+                     "that the updates are reflected"):
+        sumo_pages.question_page.click_on_the_reply_author(second_answer_id)
+        assert (
+            utilities.number_extraction_from_string(
+                sumo_pages.my_profile_page.get_my_profile_answers_text()
+            ) == original_number_of_answers + 2
+        )
+
+        sumo_pages.my_profile_page.click_my_profile_answers_link()
+        assert reply_text == sumo_pages.my_answers_page.get_my_answer_text(
+            answer_id=second_answer_id
+        ), "My question reply is not displayed inside the my profile answers list"
+
+        assert updated_title_text == sumo_pages.my_answers_page.get_my_answer_question_title(
+            second_answer_id)
+
+    with allure.step("Deleting the posted question and verifying that the user is redirected to "
+                     "the product support forum page"):
         utilities.navigate_to_link(question_info["question_page_url"])
         sumo_pages.question_page.click_delete_this_question_question_tools_option()
         sumo_pages.question_page.click_delete_this_question_button()
         expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
 
 
-#  C2094285, C2094284, C891309, C891410
+#  C2094285, C2094284, C891309, C891410, C2245213
 @pytest.mark.userProfile
 def test_number_of_posted_articles_is_successfully_displayed(page: Page):
     utilities = Utilities(page)
@@ -237,9 +295,29 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page):
             my_documents_page.get_text_of_document_links()
         )
 
+    with allure.step("Navigating to the article and changing the title"):
+        new_article_title = "Updated title test v1"
+        sumo_pages.my_documents_page.click_on_a_particular_document(
+            article_details['article_title'])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=new_article_title)
+
+    with allure.step("Accessing the profile page and verifying that the number of posted "
+                     "documents is the same"):
+        sumo_pages.top_navbar.click_on_view_profile_option()
+        assert (
+            utilities.number_extraction_from_string(
+                sumo_pages.my_profile_page.get_my_profile_documents_text()
+            ) == original_number_of_documents + 1
+        )
+
+    with allure.step("Clicking on my posted documents link and verifying that the new document "
+                     "title is listed"):
+        sumo_pages.my_profile_page.click_on_my_profile_document_link()
+        assert (new_article_title in sumo_pages.my_documents_page.get_text_of_document_links())
+
     with allure.step("Deleting the article"):
         sumo_pages.my_documents_page.click_on_a_particular_document(
-            article_details['article_title']
+            new_article_title
         )
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 

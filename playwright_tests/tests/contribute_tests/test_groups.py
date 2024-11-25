@@ -208,9 +208,7 @@ def test_change_group_avatar(page: Page):
 def test_add_new_group_leader(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = utilities.username_extraction_from_email(
-        utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-    )
+    test_user = "manualtest4"
 
     test_group = utilities.user_message_test_data['test_groups'][2]
 

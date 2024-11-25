@@ -78,6 +78,14 @@ class MyProfilePage(BasePage):
         """Get the display name header text."""
         return self._get_text_of_element(self.PROFILE_DETAILS_LOCATORS["display_name_header"])
 
+    def get_expected_header_locator(self, expected_username: str) -> str:
+        """Get the expected header locator.
+
+        Args:
+            expected_username (str): The expected username
+        """
+        return f"//h2[normalize-space(text())='{expected_username}']"
+
     def get_my_profile_display_name_username_text(self) -> str:
         """Get the display name username text."""
         return self._get_text_of_element(self.PROFILE_DETAILS_LOCATORS["username_info"])
@@ -110,9 +118,9 @@ class MyProfilePage(BasePage):
         """Get the contributed from text."""
         return self._get_text_of_element(self.PROFILE_DETAILS_LOCATORS["contributed_from_info"])
 
-    def get_my_profile_bio_text(self) -> str:
+    def get_my_profile_bio_text_paragraphs(self) -> list[str]:
         """Get the bio text."""
-        return self._get_text_of_element(self.PROFILE_DETAILS_LOCATORS["bio_info"])
+        return self._get_text_of_elements(self.PROFILE_DETAILS_LOCATORS["bio_info"])
 
     def get_my_profile_page_header(self) -> str:
         """Get the profile page header."""

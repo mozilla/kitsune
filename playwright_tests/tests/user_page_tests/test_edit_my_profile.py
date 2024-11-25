@@ -1,5 +1,8 @@
+import datetime
+
 import allure
 import pytest
+import pytz
 from pytest_check import check
 from playwright.sync_api import expect, Page
 from playwright_tests.core.utilities import Utilities
@@ -28,62 +31,62 @@ def test_username_field_is_automatically_populated(page: Page):
         ) == sumo_pages.top_navbar.get_text_of_logged_in_username())
 
 
-# C1491017
-# This test is currently covering the: my profile section, top navbar, and posted questions.
-# Might want to extend the coverage
+# C1491017, C1491019
 @pytest.mark.editUserProfileTests
-def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
+def test_edit_profile_field_validation_with_symbols(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
 
     with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_6']
-        ))
+        original_username = utilities.start_existing_session(
+            utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_6']
+            ))
 
+    with allure.step("Posting a freemium question to the Firefox forum"):
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        article_details = sumo_pages.aaq_flow.submit_an_aaq_question(
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=utilities
+            .aaq_question_test_data["valid_firefox_question"]["topic_value"],
+            body=utilities.
+            aaq_question_test_data["valid_firefox_question"]["question_body"],
+        )
+
+    usernames = utilities.profile_edit_test_data["valid_user_edit_with_symbols"]
     with allure.step("Navigating to the profile edit page"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
 
-    original_username = sumo_pages.edit_my_profile_page.get_username_input_field_value()
+    for key in usernames:
+        value = usernames[key]
+        with allure.step("Clearing the username, display name fields and inserting the new one"):
+            sumo_pages.edit_my_profile_page.clear_username_field()
+            sumo_pages.edit_my_profile_page.clear_display_name_field()
 
-    with allure.step("Clearing the username, display name fields and inserting the new one"):
-        sumo_pages.edit_my_profile_page.clear_username_field()
-        sumo_pages.edit_my_profile_page.clear_display_name_field()
-        profile_edit_data = utilities.profile_edit_test_data
+        sumo_pages.edit_my_profile_page.send_text_to_username_field(value)
 
-        if not is_firefox:
-            new_username = profile_edit_data["valid_user_edit_with_symbols"][
-                "username_with_valid_symbols_chrome"
-            ]
-        else:
-            new_username = profile_edit_data["valid_user_edit_with_symbols"][
-                "username_with_valid_symbols_firefox"
-            ]
-        sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
+        with allure.step("Clicking on the 'Update My Profile' button"):
+            sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+                expected_locator=sumo_pages.my_profile_page.get_expected_header_locator(value)
+            )
 
-    with allure.step("Clicking on the 'Update My Profile' button"):
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
-            expected_url=MyProfileMessages.get_my_profile_stage_url(new_username)
-        )
+        with check, allure.step("Verify that the newly set username is successfully applied to"
+                                " the my profile section"):
+            assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
+            ) == value
 
-    with check, allure.step("Verify that the newly set username is successfully applied to the my "
-                            "profile section"):
-        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
-        ) == new_username
+        with check, allure.step("Verify that the newly set username is displayed inside the top "
+                                "navbar"):
+            assert sumo_pages.top_navbar.get_text_of_logged_in_username() == value
 
-    with check, allure.step("Verify that the newly set username is displayed inside the top "
-                            "navbar"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_username
-
-    with check, allure.step("Access a previously posted question and verify that the display name "
-                            "has changed"):
-        sumo_pages.my_profile_page.click_on_my_profile_questions_link()
-        sumo_pages.my_questions_page.click_on_a_question_by_index(1)
-        assert sumo_pages.question_page.get_question_author_name() == new_username
+        with check, allure.step("Access a previously posted question and verify that the display "
+                                "name has changed"):
+            utilities.navigate_to_link(article_details["question_page_url"])
+            assert sumo_pages.question_page.get_question_author_name() == value
+            sumo_pages.top_navbar.click_on_edit_profile_option()
 
     with allure.step("Going back to the my profile page and reverting the username back to the "
                      "original one"):
-        sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_my_profile_page.clear_username_field()
         sumo_pages.edit_my_profile_page.send_text_to_username_field(original_username)
         sumo_pages.edit_my_profile_page.click_update_my_profile_button(
@@ -100,12 +103,18 @@ def test_edit_profile_field_validation_with_symbols(page: Page, is_firefox):
 
     with check, allure.step("Access a previously posted question and verify that the display name "
                             "has changed"):
-        sumo_pages.my_profile_page.click_on_my_profile_questions_link()
-        sumo_pages.my_questions_page.click_on_a_question_by_index(1)
+        utilities.navigate_to_link(article_details["question_page_url"])
         assert sumo_pages.question_page.get_question_author_name() == original_username
 
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
 
-# C1491017
+    with allure.step("Deleting the posted question"):
+        sumo_pages.aaq_flow.deleting_question_flow()
+
+
+# C1491017, C1491019
 @pytest.mark.editUserProfileTests
 def test_username_with_invalid_symbols(page: Page):
     utilities = Utilities(page)
@@ -119,26 +128,30 @@ def test_username_with_invalid_symbols(page: Page):
         sumo_pages.top_navbar.click_on_edit_profile_option()
 
     original_username = sumo_pages.edit_my_profile_page.get_username_input_field_value()
+    usernames = utilities.profile_edit_test_data["invalid_username_with_symbols"]
 
-    with allure.step("Clearing the username input field and adding an invalid user"):
-        sumo_pages.edit_my_profile_page.clear_username_field()
-        profile_edit_data = utilities.profile_edit_test_data
-        new_username = profile_edit_data["invalid_username_with_symbols"][
-            "username_with_invalid_symbols"
-        ]
-        sumo_pages.edit_my_profile_page.send_text_to_username_field(new_username)
+    for key in usernames:
+        value = usernames[key]
 
-    with check, allure.step("Clicking on the 'Update My Profile' button and verifying that "
-                            "the correct error message is displayed"):
-        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
-        assert sumo_pages.edit_my_profile_page.get_username_error_message_text(
-        ) == EditMyProfilePageMessages.USERNAME_INPUT_ERROR_MESSAGE
+        with allure.step("Navigating to the profile edit page"):
+            sumo_pages.top_navbar.click_on_edit_profile_option()
 
-    with allure.step("Accessing the Edit Profile page and verifying that the username was not "
-                     "changed"):
-        sumo_pages.top_navbar.click_on_view_profile_option()
-        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
-        ) == original_username
+        with allure.step("Clearing the username input field and adding an invalid user"):
+            sumo_pages.edit_my_profile_page.clear_username_field()
+            sumo_pages.edit_my_profile_page.clear_display_name_field()
+            sumo_pages.edit_my_profile_page.send_text_to_username_field(value)
+
+        with check, allure.step("Clicking on the 'Update My Profile' button and verifying that "
+                                "the correct error message is displayed"):
+            sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+            assert sumo_pages.edit_my_profile_page.get_username_error_message_text(
+            ) == EditMyProfilePageMessages.USERNAME_INPUT_ERROR_MESSAGE
+
+        with allure.step("Accessing the Edit Profile page and verifying that the username was not "
+                         "changed"):
+            sumo_pages.top_navbar.click_on_view_profile_option()
+            assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
+            ) == original_username
 
 
 #  C891530,  C2107866
@@ -303,9 +316,9 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page):
         )
 
 
-#  C1491463, C1491464
+#  C1491463, C1491464, C2459032
 @pytest.mark.editUserProfileTests
-def test_display_name_replaces_the_username_text(page: Page, is_firefox):
+def test_display_name_replaces_the_username_text(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin account"):
@@ -314,15 +327,7 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
         ))
 
     original_username = sumo_pages.top_navbar.get_text_of_logged_in_username()
-
-    if not is_firefox:
-        new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
-            "display_name_chrome"
-        ]
-    else:
-        new_display_name = utilities.profile_edit_test_data["valid_user_edit"][
-            "display_name_firefox"
-        ]
+    new_display_name = utilities.profile_edit_test_data["valid_user_edit"]["display_name"] + "1"
 
     with allure.step("Accessing the edit profile page and adding a new display name"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
@@ -357,15 +362,14 @@ def test_display_name_replaces_the_username_text(page: Page, is_firefox):
         ) == original_username
 
 
-# This needs update. No longer fails due to:
-# https://github.com/mozilla/sumo/issues/1345
-@pytest.mark.skip
+# C2107866, C2107867, C2107868
+@pytest.mark.editUserProfileTests
 def test_biography_field_accepts_html_tags(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Signing in with a non-admin user account"):
         username = utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_3"]
         ))
 
     with allure.step("Accessing the edit profile page via top-navbar and adding data inside "
@@ -374,8 +378,40 @@ def test_biography_field_accepts_html_tags(page: Page):
         sumo_pages.edit_my_profile_page.clear_biography_textarea_field()
         html_test_data = utilities.profile_edit_test_data
         sumo_pages.edit_my_profile_page.send_text_to_biography_field(
-            html_test_data["biography_field_with_html_data"]["biography_html_data"]
+            html_test_data["valid_user_edit"]["biography"]
         )
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+        )
+
+    # Expected content
+    expected_content = {
+        "//section[@class='bio']//b": "What the",
+        "//section[@class='bio']//blockquote": "Another test",
+        "//section[@class='bio']//code": "host_ip = socket.gethostbyname(socket.gethostname()",
+        "//section[@class='bio']//ul/li[1]": "Test",
+        "//section[@class='bio']//ul/li[2]": "We",
+        "//section[@class='bio']//ol/li/i": "www",
+        "//section[@class='bio']//strong": "Emil",
+        "//section[@class='bio']//abbr[@title='World Health Organization']": "WHO"
+    }
+
+    # Check the content under the HTML tags
+    for selector, text in expected_content.items():
+        expect(page.locator(selector)).to_have_text(text)
+
+    # Ensure the link is parsed and displayed as a link
+    expect(page.locator("//section[@class='bio']//a[@href='https://www.digi24.ro']")
+           ).to_be_visible()
+
+    # Ensure the <a> tag with 'Digi link' is displayed as text
+    assert "<a href='https://www.digi24.ro'>Digi link</a>" in (
+        sumo_pages.my_profile_page.get_my_profile_bio_text_paragraphs()
+    )
+
+    with allure.step("Clearing the bio information"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.clear_biography_textarea_field()
         sumo_pages.edit_my_profile_page.click_update_my_profile_button(
             expected_url=MyProfileMessages.get_my_profile_stage_url(username)
         )
@@ -670,6 +706,108 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
                ).to_be_visible()
         expect(sumo_pages.my_profile_page.deactivate_user_and_mark_content_as_spam_button()
                ).to_be_visible()
+
+
+# C2189013
+@pytest.mark.editUserProfileTests
+def test_timezone_preference_change(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    def normalize_time(timezone: str) -> str:
+        """"
+            Normalize the time format:
+            - Remove the leading 0 from the hour except for "00"
+            - Treat "00:00 PM" as "00:00 AM"
+
+            Args:
+                timezone (str): The timezone to normalize the time for
+        """
+        current_time = datetime.datetime.now(pytz.timezone(timezone)).strftime("%I:%M %p")
+        return "00:00 AM" if current_time in ["00:00 PM", "00:00 AM"] else (
+            f"Today at {current_time.lstrip('0')}")
+
+    with allure.step("Signing in with a non-admin user"):
+        username = utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Posting a freemium question to the Firefox forum"):
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        article_details = sumo_pages.aaq_flow.submit_an_aaq_question(
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=utilities
+            .aaq_question_test_data["valid_firefox_question"]["topic_value"],
+            body=utilities.
+            aaq_question_test_data["valid_firefox_question"]["question_body"],
+        )
+
+    with allure.step("Accessing the 'Edit My Profile' page and changing the timezone to "
+                     "'Europe/Bucharest'"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.select_timezone_dropdown_option_by_value(
+            "Europe/Bucharest")
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username))
+
+    with check, allure.step("Posting a new reply to the question and verifying that the correct "
+                            "time is displayed respecting the chosen timezone"):
+        utilities.navigate_to_link(article_details["question_page_url"])
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(username, "Test test test")
+
+        print("Sumo returned time: ", sumo_pages.question_page.get_time_from_reply(reply_id))
+        print("Actual timezone time: ",normalize_time("Europe/Bucharest"))
+        # Verifying that the time difference is less than 1 minute
+        time_difference = abs(
+            (datetime.datetime.strptime(
+                sumo_pages.question_page.get_time_from_reply(reply_id).replace("\u202f",
+                                                                               " ").replace(
+                    "Today at ", ""),
+                "%I:%M %p") - datetime.datetime.strptime(
+                normalize_time("Europe/Bucharest").replace("Today at ", ""),
+                "%I:%M %p")).total_seconds() / 60
+        )
+        print("Time difference: ", time_difference)
+        assert time_difference <= 1, (f"Time difference is more than 1 minute: {time_difference} "
+                                      f"minutes")
+
+    with allure.step("Accessing the 'Edit My Profile' page and changing the timezone "
+                     "to 'US / Central'"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.select_timezone_dropdown_option_by_value(
+            "US/Central")
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username))
+
+    with check, allure.step("Posting a new reply to the question and verifying that the correct "
+                            "time is displayed respecting the chosen timezone"):
+        utilities.navigate_to_link(article_details["question_page_url"])
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(username, "Test test test")
+        print("Sumo returned time: ", sumo_pages.question_page.get_time_from_reply(reply_id))
+        print("Actual timezone time: ", normalize_time("US/Central"))
+
+        # Verifying that the time difference is less than 1 minute
+        time_difference = abs(
+            (datetime.datetime.strptime(
+                sumo_pages.question_page.get_time_from_reply(reply_id).replace("\u202f",
+                                                                               " ").replace(
+                    "Today at ", ""),
+                "%I:%M %p") - datetime.datetime.strptime(
+                normalize_time("US/Central").replace("Today at ", ""),
+                "%I:%M %p")).total_seconds() / 60
+        )
+        assert time_difference <= 1, (f"Time difference is more than 1 minute: {time_difference} "
+                                      f"minutes")
+
+    with allure.step("Deleting the posted question and reverting the timezone back to the default "
+                     "none"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.select_timezone_dropdown_option_by_value("")
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button(
+            expected_url=MyProfileMessages.get_my_profile_stage_url(username)
+        )
+        utilities.navigate_to_link(article_details["question_page_url"])
+        sumo_pages.aaq_flow.deleting_question_flow()
 
 
 def _validate_profile_info(page: Page, target: str, profile_info: str, username: str) -> bool:
