@@ -10,7 +10,6 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import AAQConfig, Answer, Question
 from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
-from kitsune.sumo.utils import check_for_spam_content
 from kitsune.upload.models import ImageAttachment
 
 # labels and help text
@@ -186,24 +185,6 @@ class NewQuestionForm(EditQuestionForm):
             topics = Topic.active.filter(products=product, in_aaq=True)
             self.fields["category"].queryset = topics
 
-    def clean(self, *args, **kwargs):
-        """
-        Generic clean method used by all forms in the question app.
-        Parse content for suspicious content.
-        - Toll free numbers
-        - NANP numbers
-        - Links - not necessarily spam content
-        """
-
-        cdata = self.cleaned_data.get("content")
-        if not cdata:
-            return super().clean(*args, **kwargs)
-
-        if check_for_spam_content(cdata):
-            self.cleaned_data.update({"is_spam": True})
-
-        return self.cleaned_data
-
     def save(self, user, locale, product, *args, **kwargs):
         self.instance.creator = user
         self.instance.locale = locale
@@ -246,6 +227,15 @@ class AnswerForm(KitsuneBaseForumForm):
     class Meta:
         model = Answer
         fields = ("content",)
+
+    def clean(self, *args, **kwargs):
+        """Override clean method to exempt question owner from spam filtering."""
+        cdata = super(AnswerForm, self).clean(*args, **kwargs)
+        # if there is a reply from the owner, remove the spam flag
+        if self.user and self.question and self.user == self.question.creator:
+            cdata.pop("is_spam", None)
+
+        return cdata
 
 
 class WatchQuestionForm(forms.Form):

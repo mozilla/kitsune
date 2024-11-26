@@ -644,11 +644,11 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 product=product,
             )
 
-            # Submitting the question counts as a vote
-            question_vote(request, question.id)
-
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
+
+            # Submitting the question counts as a vote
+            question_vote(request, question.id)
 
             my_questions_url = reverse("users.questions", args=[request.user.username])
             messages.add_message(
