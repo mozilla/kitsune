@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 new TomSelect(dropdown, {
                     plugins: ['remove_button'],
                     maxItems: null,
+                    dropdownParent: 'body',
                     create: false,
                     onItemRemove: async (tagId) => {
                         const url = `/en-US/questions/${questionId}/remove-tag-async`;
