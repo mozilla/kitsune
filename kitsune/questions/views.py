@@ -1036,6 +1036,7 @@ def add_tag_async(request, question_id):
     if request.content_type == "application/json":
         tag_ids = json.loads(request.body).get("tags", [])
         question, tags = _add_tag(request, question_id, tag_ids)
+        question.clear_cached_tags()
         if not tags:
             return JsonResponse({"error": "Some tags do not exist or are invalid"}, status=400)
         return JsonResponse({"message": "Tags updated successfully.", "data": {"tags": tags}})
