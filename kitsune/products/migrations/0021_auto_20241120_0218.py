@@ -323,13 +323,6 @@ TIER3_TOPICS_DATA = [
         "parent_slug": "sign-in",
     },
     {
-        "title": "Can't print on VPN",
-        "slug": "cant-print-on-vpn",
-        "description": "Troubleshoot can't print on VPN issues.",
-        "products": ["firefox-private-network-vpn"],
-        "parent_slug": "connectivity",
-    },
-    {
         "title": "Can't select server",
         "slug": "cant-select-server",
         "description": "Troubleshoot can't select server issues.",

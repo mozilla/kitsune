@@ -3,6 +3,7 @@
 from django.db import migrations
 
 ZENDESK_TAGS = [
+    ("Churn", "seg-churn"),
     ("Gecko", "seg-gecko"),
     ("Review prompt", "seg-review-prompt"),
     ("Tablet UI", "seg-tablet-ui"),
@@ -48,6 +49,7 @@ ZENDESK_TAGS = [
     ("Not Firefox", "seg-not-firefox"),
     ("cancel_no", "seg-cancel-no"),
     ("cancel_yes", "seg-cancel-yes"),
+    ("Cancel no reason", "seg-cancel-no-reason"),
     ("Didnt want Renewal-Forgot to cancel", "seg-cancel-forgot"),
     ("Doesnt fit customer's needs/Missing Features", "seg-cancel-disappointed"),
     ("Duplicate subscription", "seg-cancel-duplicate"),
@@ -167,6 +169,7 @@ ZENDESK_TAGS = [
     ("VPN::Blocked::Application", "seg-vpn-block-app"),
     ("VPN::Blocked::Service", "seg-vpn-block-svc"),
     ("VPN::Blocked::Website", "seg-vpn-block-site"),
+    ("VPN::Can't print on VPN", "seg-cant-print-on-vpn"),
     ("VPN::Sever Unavailable", "seg-vpn-server-unavail"),
     ("VPN::Background Service Error", "seg-vpn-bckgrd-svc-err"),
     ("VPN::No Signal", "seg-vpn-no-signal"),
