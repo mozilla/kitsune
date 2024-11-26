@@ -321,18 +321,17 @@ def check_for_spam_content(data):
     - Toll free numbers
     - Vanity toll free numbers
     - Links in the text.
-    - Any phone number-ish string of digits
     """
 
-    # keep only digits
+    # keep only the digits in text
     digits = "".join(filter(type(data).isdigit, data))
     is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
+
     is_nanp_number = any(settings.NANP_REGEX.findall(data))
-    is_phone_number = any(settings.ANY_PHONE_NUMBER.findall(data))
 
     has_links = has_blocked_link(data)
 
-    return is_toll_free or is_nanp_number or is_phone_number or has_links
+    return is_toll_free or is_nanp_number or has_links
 
 
 @lru_cache(maxsize=settings.WEBPACK_LRU_CACHE)
