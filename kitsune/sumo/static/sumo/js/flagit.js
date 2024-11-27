@@ -126,37 +126,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function updateReasonAndFetchContent(reason) {
-        const url = new URL(window.location.href);
-        if (reason) {
-            url.searchParams.set('reason', reason);
-            window.history.pushState({}, '', url);
-        } else {
-            url.searchParams.delete('reason');
-            window.history.replaceState({}, '', url.pathname);
-        }
-
-        const response = await fetchData(url);
-        if (response) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(await response.text(), 'text/html');
-            flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
-            disableUpdateStatusButtons();
-            initializeDropdownsAndTags();
-        }
-    }
-
-    const reasonFilter = document.getElementById('flagit-reason-filter');
     const flaggedQueue = document.getElementById('flagged-queue');
+    initializeFilterDropdown('flagit-reason-filter', 'reason');
+    initializeFilterDropdown('flagit-product-filter', 'product');
 
-    if (reasonFilter) {
-        const reason = new URL(window.location.href).searchParams.get('reason');
-        if (reason) reasonFilter.value = reason;
+    function initializeFilterDropdown(filterId, queryParam) {
+        const filterElement = document.getElementById(filterId);
+        if (!filterElement) return;
 
-        reasonFilter.addEventListener('change', async () => {
-            const selectedReason = reasonFilter.value;
-            await updateReasonAndFetchContent(selectedReason);
+        const currentFilter = new URL(window.location.href).searchParams.get(queryParam);
+        if (currentFilter) {
+            filterElement.value = currentFilter;
+        }
+
+        filterElement.addEventListener('change', async () => {
+            const selectedValue = filterElement.value;
+            const url = new URL(window.location.href);
+
+            if (selectedValue) {
+                url.searchParams.set(queryParam, selectedValue);
+            } else {
+                url.searchParams.delete(queryParam);
+            }
+            window.history.pushState({}, '', url);
+
+            const response = await fetchData(url);
+            if (response) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(await response.text(), 'text/html');
+                flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
+                disableUpdateStatusButtons();
+                initializeDropdownsAndTags();
+            }
         });
     }
+
     initializeDropdownsAndTags();
 });

@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.models import Topic
+from kitsune.products.models import Product, Topic
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -17,7 +17,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.models import SumoTag
 
 
-def get_flagged_objects(reason=None, exclude_reason=None, content_model=None):
+def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, product_slug=None):
     """Retrieve pending flagged objects with optional filtering, eager loading related fields."""
     queryset = FlaggedObject.objects.pending().select_related("content_type", "creator")
     if exclude_reason:
@@ -26,6 +26,14 @@ def get_flagged_objects(reason=None, exclude_reason=None, content_model=None):
         queryset = queryset.filter(reason=reason)
     if content_model:
         queryset = queryset.filter(content_type=content_model)
+    if product_slug:
+        matching_product_ids = [
+            obj.id
+            for obj in queryset
+            if hasattr(obj.content_object, "product")
+            and obj.content_object.product.slug == product_slug
+        ]
+        queryset = queryset.filter(id__in=matching_product_ids)
     return queryset
 
 
@@ -119,11 +127,14 @@ def get_hierarchical_topics(topics, parent=None, level=0):
 @permission_required("flagit.can_moderate")
 def moderate_content(request):
     """Display flagged content that needs moderation."""
-    content_type = ContentType.objects.get_for_model(Question)
+    product_slug = request.GET.get("product")
 
+    content_type = ContentType.objects.get_for_model(Question)
     objects = (
         get_flagged_objects(
-            reason=FlaggedObject.REASON_CONTENT_MODERATION, content_model=content_type
+            reason=FlaggedObject.REASON_CONTENT_MODERATION,
+            content_model=content_type,
+            product_slug=product_slug,
         )
         .select_related("content_type", "creator")
         .prefetch_related("content_object__product")
@@ -143,6 +154,8 @@ def moderate_content(request):
         {
             "objects": objects,
             "locale": request.LANGUAGE_CODE,
+            "products": [(p.slug, p.title) for p in Product.active.filter(codename="")],
+            "selected_product": product_slug,
         },
     )
 

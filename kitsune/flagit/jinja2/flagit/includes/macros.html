@@ -3,3 +3,19 @@
     {{date}} by <a rel="nofollow" href="{{url}}">{{user}}</a>
   {% endtrans %}
 {%- endmacro %}
+
+{% macro filter_dropdown(form_id, select_id, label, name, default_option, options, selected_filter) %}
+  <div class="filter-dropdown">
+    <form id="{{ form_id }}" method="get" action="">
+      <label for="{{ name }}">{{ label }}</label>
+      <select name="{{ name }}" id="{{ select_id }}">
+        <option value="">{{ default_option }}</option>
+        {% for value, display in options %}
+          <option value="{{ value }}" {% if selected_filter == value %}selected{% endif %}>
+            {{ display }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+{% endmacro %}

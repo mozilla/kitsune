@@ -1,4 +1,5 @@
 {% extends "flagit/flagit_base.html" %}
+{% from "flagit/includes/macros.html" import filter_dropdown %}
 
 {% block flagged_items %}
   {% for object in objects %}
@@ -49,17 +50,6 @@
   {% endfor %}
 {% endblock %}
 
-{% block side_top_reason %}
-  <!-- Dropdown filter for reasons -->
-  <div class="filter-reasons">
-    <form id="reason-filter-form" method="get" action="">
-      <label for="reason">{{ _('Filter by reason:') }}</label>
-      <select name="reason" id="flagit-reason-filter">
-        <option value="">{{ _('All reasons') }}</option>
-        {% for value, display in reasons %}
-          <option value="{{ value }}" {% if selected_reason == value %}selected{% endif %}>{{ display }}</option>
-        {% endfor %}
-      </select>
-    </form>
-  </div>
+{% block filter_dropdown %}
+  {{ filter_dropdown("reason-filter-form", "flagit-reason-filter", "Filter by reason:", "reason", "All reasons", reasons, selected_reason) }} 
 {% endblock %}
