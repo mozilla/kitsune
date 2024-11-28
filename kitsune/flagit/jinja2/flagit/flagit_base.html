@@ -6,8 +6,8 @@
 
 {% block content %}
   <div id="flagged-queue" class="sumo-page-section">
-  <h1 class="sumo-page-heading">{{ _('Content Pending Moderation') }}</h1>
-    
+    <h1 class="sumo-page-heading">{{ _('Content Pending Moderation') }}</h1>
+      
     <ul class="flagged-items">
       {% block flagged_items %}
       {% endblock %}
@@ -26,7 +26,7 @@
       {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active="flagit.flagged_queue", menu="contributor-tools", locale=locale) }}
     </ul>
 
-    {% block side_top_reason %}
+    {% block filter_dropdown %}
     {% endblock %}
   </nav>
 {% endblock %}

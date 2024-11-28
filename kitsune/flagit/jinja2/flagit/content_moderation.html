@@ -1,4 +1,5 @@
 {% extends "flagit/flagit_base.html" %}
+{% from "flagit/includes/macros.html" import filter_dropdown %}
 
 {% block flagged_items %}
   {% for object in objects %}
@@ -39,6 +40,17 @@
   {% endfor %}
 {% endblock %}
 
+{% block filter_dropdown %}
+  {{ filter_dropdown(
+      form_id='product-filter-form',
+      select_id='flagit-product-filter',
+      label='Filter by product:',
+      name='product',
+      default_option='All products',
+      options=products,
+      selected_filter=selected_product
+  ) }}
+{% endblock %}
 {# Hide the deactivation log on content moderation #}
 {% block deactivation_log %}
 {% endblock %}
