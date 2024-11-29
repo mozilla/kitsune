@@ -391,44 +391,32 @@
           {% if tags or can_tag %}
             <div class="sidebox tight cf" id="tags">
               <div class="tags"{% if can_tag %} data-tag-vocab-json="{{ tag_vocab() }}"{% endif %}>
-                {% if can_tag %}
-                  <form action="{{ url('questions.remove_tag', question.id) }}"
-                        data-action-async="{{ url('questions.remove_tag_async', question.id) }}"
-                        method="POST"
-                        class="remove-tag-form">
-                    {% csrf_token %}
-                {% endif %}
-                <ul class="tag-list cf{% if not can_tag %} immutable{% endif %}">
-                  {% for tag in tags %}
-                    <li class="tag">{# -#}
-                      <a class="tag-name" href="{{ url('questions.list', product.slug if product else 'all')|urlparams(tagged=tag.slug) }}">{{ tag }}</a>
-                      {%- if can_tag -%}
-                        <button type="submit" class="remover" data-type="submit" data-name="remove-tag-{{ tag }}">&#xd7;</button>
-                      {%- endif -%}
-                    </li>
-                  {% endfor %}
-                </ul>
-                {% if can_tag %}
-                  </form>
-                {% endif %}
 
                 {% if can_tag %}
                   {% if tag_adding_error %}
                     <p class="tag-error-message">{{ tag_adding_error }}</p>
-                  {% endif %}
-                  <form action="{{ url('questions.add_tag', question.id) }}"
-                        data-action-async="{{ url('questions.add_tag_async', question.id) }}"
-                        method="POST"
-                        class="tag-adder">
-                    {% csrf_token %}
-                    <div class="field is-condensed">
-                      <label for="id_tag_input">{{ _('Apply a tag') }}:</label>
-                      <input id="id_tag_input" type="text" name="tag-name" size="12" maxlength="100"
-                        class="searchbox autocomplete-tags {% if tag_adding_error %} invalid{% endif %}"
-                        value="{{ tag_adding_value }}" />
+                  {% endif %} 
+                  <form id="tag-adder-form-{{ question.id }}">
+                    <div class="field">
+                      <select id="tag-select-{{ question.id }}" name="tags" multiple class="tag-select"
+                              data-add-url="{{ url('questions.add_tag_async', question.id) }}"
+                              data-remove-url="{{ url('questions.remove_tag_async', question.id) }}">
+                        {% for tag in all_tags %}
+                          <option value="{{ tag.id }}" {% if tag in tags %}selected{% endif %}>
+                            {{ tag.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
                     </div>
-                    <input class="sumo-button button-sm primary-button" type="submit" value="{{ _('Apply') }}" />
                   </form>
+                {% else %}
+                  <ul class="tag-list cf{% if not can_tag %} immutable{% endif %}">
+                    {% for tag in tags %}
+                      <li class="tag">{# -#}
+                        <a class="tag-name" href="{{ url('questions.list', product.slug if product else 'all')|urlparams(tagged=tag.slug) }}">{{ tag }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
                 {% endif %}
               </div>
             </div>

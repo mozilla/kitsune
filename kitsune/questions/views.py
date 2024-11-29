@@ -455,6 +455,7 @@ def question_details(
         {
             "all_products": products,
             "all_topics": topics,
+            "all_tags": SumoTag.objects.active(),
             "related_documents": related_documents,
             "related_questions": related_questions,
             "question_images": question_images,
@@ -1039,7 +1040,6 @@ def add_tag_async(request, question_id):
     """Add a (case-insensitive) tag to question asyncronously. Return empty.
 
     If the question already has the tag, do nothing.
-
     """
 
     if request.content_type == "application/json":

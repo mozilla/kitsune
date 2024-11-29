@@ -41,7 +41,6 @@ const entrypoints = {
   ],
   questions: [
     "sumo/js/questions.js",
-    "sumo/js/tags.filter.js",
     "sumo/js/tags.js",
     "sumo/js/reportabuse.js",
     "sumo/js/questions.metrics.js",

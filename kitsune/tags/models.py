@@ -23,13 +23,6 @@ class BigVocabTaggableManager(TaggableManager):
         kwargs.setdefault("through", SumoTaggedItem)
         super().__init__(*args, **kwargs)
 
-    def formfield(self, form_class=None, **kwargs):
-        """Swap in our custom TagField."""
-        from kitsune.tags.forms import TagField
-
-        form_class = form_class or TagField
-        return super().formfield(form_class, **kwargs)
-
 
 class SumoTag(TagBase):
     is_archived = models.BooleanField(default=False)
