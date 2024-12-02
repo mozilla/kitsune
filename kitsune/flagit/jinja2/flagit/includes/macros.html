@@ -7,7 +7,7 @@
 {% macro filter_dropdown(form_id, select_id, label, name, default_option, options, selected_filter) %}
   <div class="filter-dropdown">
     <form id="{{ form_id }}" method="get" action="">
-      <label for="{{ name }}">{{ label }}</label>
+      <label for="{{ select_id }}">{{ label }}</label>
       <select name="{{ name }}" id="{{ select_id }}">
         <option value="">{{ default_option }}</option>
         {% for value, display in options %}

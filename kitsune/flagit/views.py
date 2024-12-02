@@ -37,11 +37,11 @@ def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, pr
     return queryset
 
 
-def set_form_action_for_objects(objects, reason=None):
+def set_form_action_for_objects(objects, reason=None, product_slug=None):
     """Generate form action URLs for flagged objects."""
     for obj in objects:
         base_url = reverse("flagit.update", args=[obj.id])
-        obj.form_action = urlparams(base_url, reason=reason)
+        obj.form_action = urlparams(base_url, reason=reason, product=product_slug)
     return objects
 
 
@@ -139,7 +139,9 @@ def moderate_content(request):
         .select_related("content_type", "creator")
         .prefetch_related("content_object__product")
     )
-    objects = set_form_action_for_objects(objects, reason=FlaggedObject.REASON_CONTENT_MODERATION)
+    objects = set_form_action_for_objects(
+        objects, reason=FlaggedObject.REASON_CONTENT_MODERATION, product_slug=product_slug
+    )
     available_tags = SumoTag.objects.segmentation_tags().values("id", "name")
 
     for obj in objects:
@@ -171,6 +173,7 @@ def update(request, flagged_object_id):
     flagged = get_object_or_404(FlaggedObject, pk=flagged_object_id)
     new_status = request.POST.get("status")
     reason = request.GET.get("reason")
+    product = request.GET.get("product")
 
     if new_status:
         ct = flagged.content_type
@@ -183,5 +186,5 @@ def update(request, flagged_object_id):
         flagged.status = new_status
         flagged.save()
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
-        return HttpResponseRedirect(reverse("flagit.moderate_content"))
+        return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))
     return HttpResponseRedirect(urlparams(reverse("flagit.flagged_queue"), reason=reason))
