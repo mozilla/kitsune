@@ -244,7 +244,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     if tagged:
         tag_slugs = tagged.split(",")
-        tags = SumoTag.objects.filter(slug__in=tag_slugs)
+        tags = SumoTag.objects.active().filter(slug__in=tag_slugs)
         if tags:
             for t in tags:
                 question_qs = question_qs.filter(tags__name__in=[t.name])
@@ -485,7 +485,7 @@ def edit_details(request, question_id):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
-    existing_tags = SumoTag.objects.filter(
+    existing_tags = SumoTag.objects.active().filter(
         Q(name=question.topic.slug) | Q(name=question.product.slug)
     )
     question.tags.remove(*existing_tags)
@@ -735,7 +735,7 @@ def edit_question(request, question_id):
             return JsonResponse({"error": "Topic not found"}, status=404)
 
         if new_topic != question.topic:
-            existing_tags = SumoTag.objects.filter(name=question.topic.slug)
+            existing_tags = SumoTag.objects.active().filter(name=question.topic.slug)
             question.tags.remove(*existing_tags)
             question.topic = new_topic
             question.update_topic_counter += 1
@@ -1471,7 +1471,7 @@ def _add_tag(
 
     question = get_object_or_404(Question, pk=question_id)
     if tag_ids:
-        sumo_tags = SumoTag.objects.filter(id__in=tag_ids)
+        sumo_tags = SumoTag.objects.active().filter(id__in=tag_ids)
         if len(tag_ids) != len(sumo_tags):
             return None, None
         question.tags.add(*sumo_tags)

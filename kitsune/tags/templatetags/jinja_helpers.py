@@ -14,4 +14,6 @@ def tags_to_text(tags):
 @library.global_function
 def tag_vocab():
     """Returns the tag vocabulary as a JSON object."""
-    return json.dumps(dict((t[0], t[1]) for t in SumoTag.objects.values_list("name", "slug")))
+    return json.dumps(
+        dict((t[0], t[1]) for t in SumoTag.objects.active().values_list("name", "slug"))
+    )
