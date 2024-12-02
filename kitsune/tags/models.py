@@ -8,6 +8,9 @@ class SumoTagManager(models.Manager):
     def segmentation_tags(self):
         return self.filter(is_archived=False, slug__startswith="seg-")
 
+    def active(self):
+        return self.filter(is_archived=False)
+
 
 class BigVocabTaggableManager(TaggableManager):
     """TaggableManager for choosing among a predetermined set of tags

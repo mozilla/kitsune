@@ -74,7 +74,7 @@ class TagWidget(Widget):
             output += "</li>"
             return output
 
-        tags = SumoTag.objects.filter(name__in=tag_names)
+        tags = SumoTag.objects.active().filter(name__in=tag_names)
         representations = [render_one(t) for t in tags]
         return "\n".join(representations)
 
@@ -84,7 +84,7 @@ class TagWidget(Widget):
             "" if self.read_only or self.async_urls else " deferred"
         )
         if not self.read_only:
-            vocab = [t.name for t in SumoTag.objects.only("name").all()]
+            vocab = [t.name for t in SumoTag.objects.active().only("name").all()]
             output += ' data-tag-vocab-json="%s"' % escape(json.dumps(vocab))
         output += ">"
 
@@ -151,7 +151,7 @@ class TagField(MultipleChoiceField):
 
     def valid_value(self, value):
         """Check the validity of a single tag."""
-        return SumoTag.objects.filter(name=value).exists()
+        return SumoTag.objects.active().filter(name=value).exists()
 
     def to_python(self, value):
         """Ignore the input field if it's blank; don't make a tag called ''."""
