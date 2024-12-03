@@ -1,9 +1,8 @@
 from functools import wraps
+from urllib.parse import quote
 
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-
-from urllib.parse import quote
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 
 from kitsune.sumo.urlresolvers import reverse
 
@@ -101,3 +100,28 @@ def permission_required(perm, login_url=None, redirect=REDIRECT_FIELD_NAME, only
         redirect_url_func=lambda: login_url,
         deny_func=deny_func,
     )
+
+
+def group_required(group_name, only_active=True):
+    """Requires that the user is in the given group. Raises 404 if not."""
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise Http404
+
+            if only_active:
+                if not (
+                    request.user.is_active and request.user.groups.filter(name=group_name).exists()
+                ):
+                    raise Http404
+            else:
+                if not request.user.groups.filter(name=group_name).exists():
+                    raise Http404
+
+            return view_func(request, *args, **kwargs)
+
+        return _wrapped_view
+
+    return decorator
