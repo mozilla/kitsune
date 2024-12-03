@@ -753,7 +753,8 @@ def test_timezone_preference_change(page: Page):
     with check, allure.step("Posting a new reply to the question and verifying that the correct "
                             "time is displayed respecting the chosen timezone"):
         utilities.navigate_to_link(article_details["question_page_url"])
-        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(username, "Test test test")
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=username, reply="Test test test")
 
         print("Sumo returned time: ", sumo_pages.question_page.get_time_from_reply(reply_id))
         print("Actual timezone time: ",normalize_time("Europe/Bucharest"))
@@ -782,7 +783,8 @@ def test_timezone_preference_change(page: Page):
     with check, allure.step("Posting a new reply to the question and verifying that the correct "
                             "time is displayed respecting the chosen timezone"):
         utilities.navigate_to_link(article_details["question_page_url"])
-        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(username, "Test test test")
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=username, reply="Test test test")
         print("Sumo returned time: ", sumo_pages.question_page.get_time_from_reply(reply_id))
         print("Actual timezone time: ", normalize_time("US/Central"))
 

@@ -179,7 +179,7 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page):
                     == "All Products Community Forum")
 
             with allure.step("Verifying that the correct default topic filter is selected"):
-                assert (sumo_pages.product_support_forum._get_selected_topic_option()
+                assert (sumo_pages.product_support_forum.get_selected_topic_option()
                         == current_option)
 
 

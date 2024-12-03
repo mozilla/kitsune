@@ -237,7 +237,8 @@ def test_kb_article_contributor_removal(page: Page):
         )
 
     with allure.step("Navigating back to the 'Show History page and approving the revision"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(article_details['first_revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=article_details['first_revision_id'])
 
     with check, allure.step("Verifying that the username which created the revision is added "
                             "inside the 'Contributors' list"):
@@ -312,7 +313,8 @@ def test_kb_article_contributor_removal(page: Page):
 
     with check, allure.step("Approving the revision and verifying that the second username "
                             "is displayed inside the Contributors list"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision_info['revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=second_revision_info['revision_id'])
         assert (username_two in sumo_pages.kb_article_show_history_page
                 .get_list_of_all_contributors())
 
@@ -381,7 +383,8 @@ def test_kb_article_contributor_removal(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(third_revision['revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=third_revision['revision_id'])
 
     with check, allure.step("Verifying that second username is not inside the 'Contributors' "
                             "list"):
@@ -468,7 +471,8 @@ def test_kb_article_contributor_profile_access(page: Page):
         ))
 
     with allure.step("Approving the revision and deleting the user session"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision_info['revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=second_revision_info['revision_id'])
         utilities.delete_cookies()
 
     with allure.step("Clicking on the second contributor and verifying that we are "
@@ -675,7 +679,7 @@ def test_kb_article_revision_date_functionality(page: Page):
 
     with allure.step("Approving the second revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
-            second_revision_info['revision_id'], ready_for_l10n=True)
+            revision_id=second_revision_info['revision_id'], ready_for_l10n=True)
 
     with check, allure.step("Deleting the user session, clicking on the revision time and "
                             "verifying that the correct reviewed status is displayed"):

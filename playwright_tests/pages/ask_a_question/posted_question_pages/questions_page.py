@@ -1,5 +1,7 @@
 from playwright.sync_api import Page, ElementHandle, Locator
 from playwright_tests.core.basepage import BasePage
+from playwright_tests.pages.community_forums.forums_pages.product_support_forum import \
+    ProductSupportForum
 
 
 class QuestionPage(BasePage):
@@ -288,7 +290,8 @@ class QuestionPage(BasePage):
         self._click(self.__add_a_tab_button)
 
     def click_on_a_certain_tag(self, tag_name: str):
-        self._click(f"//li[@class='tag']//a[text()='{tag_name}']")
+        self._click(f"//li[@class='tag']//a[text()='{tag_name}']",
+                    expected_locator=ProductSupportForum.PAGE_LOCATORS["ask_the_community_button"])
 
     def get_a_certain_tag(self, tag_name: str) -> Locator:
         return self._get_element_locator(f"//li[@class='tag']//a[text()='{tag_name}']")

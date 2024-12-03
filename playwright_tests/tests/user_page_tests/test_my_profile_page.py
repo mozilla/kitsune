@@ -207,7 +207,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
         )
         sumo_pages.question_page.click_on_reply_more_options_button(answer_id)
         sumo_pages.question_page.click_on_edit_this_post_for_a_certain_reply(answer_id)
-        sumo_pages.aaq_flow.editing_reply_flow(updated_reply_text, submit_reply=True)
+        sumo_pages.aaq_flow.editing_reply_flow(reply_body=updated_reply_text, submit_reply=True)
 
     with allure.step("Navigating back to the answers page from the profile section and verifying "
                      "that the updates are reflected"):

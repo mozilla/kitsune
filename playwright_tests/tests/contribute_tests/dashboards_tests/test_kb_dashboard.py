@@ -76,7 +76,8 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         expect(page).to_have_url(article_details['article_url'])
 
     with allure.step("Approving the article revision"):
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(article_details['first_revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=article_details['first_revision_id'])
 
     with check, allure.step("Navigating back to the kb overview page and verifying that the "
                             "correct live status is displayed"):
@@ -232,7 +233,7 @@ def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page):
     with allure.step("Creating an new article revision for the document"):
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
-            second_revision['revision_id'], revision_needs_change=True
+            revision_id=second_revision['revision_id'], revision_needs_change=True
         )
 
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "

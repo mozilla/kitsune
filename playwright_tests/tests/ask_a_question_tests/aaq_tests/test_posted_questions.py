@@ -790,14 +790,14 @@ def test_question_topics(page: Page, username):
                 time.sleep(1)
                 sumo_pages.question_page.click_on_a_certain_tag(question)
                 assert (question == sumo_pages.product_support_forum.
-                        _get_text_of_selected_tag_filter_option())
+                        get_text_of_selected_tag_filter_option())
 
             with check, allure.step("Verifying that each listed question inside the product "
                                     "forum contains the filtered tab"):
-                for article_id in sumo_pages.product_support_forum._extract_question_ids(
+                for article_id in sumo_pages.product_support_forum.extract_question_ids(
                 ):
                     assert (question in sumo_pages.product_support_forum.
-                            _get_all_question_list_tags(article_id))
+                            get_all_question_list_tags(article_id))
                 utilities.navigate_back()
 
     with allure.step("Navigate back to the posted question, signing in with an admin account "
@@ -1178,11 +1178,11 @@ def test_delete_reply(page: Page, username):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
-        sumo_pages.aaq_flow.delete_question_reply(reply_id, delete_reply=False)
+        sumo_pages.aaq_flow.delete_question_reply(answer_id=reply_id, delete_reply=False)
         expect(sumo_pages.question_page.get_posted_reply_locator(reply_id)).to_be_visible()
 
     with allure.step("Deleting the reply and verifying that the reply is no longer displayed"):
-        sumo_pages.aaq_flow.delete_question_reply(reply_id, delete_reply=True)
+        sumo_pages.aaq_flow.delete_question_reply(answer_id=reply_id, delete_reply=True)
         expect(sumo_pages.question_page.get_posted_reply_locator(reply_id)).to_be_hidden()
 
     with allure.step("Deleting the posted question"):
@@ -1210,7 +1210,7 @@ def test_i_have_this_problem_too(page: Page):
         utilities.delete_cookies()
         problem_counter += 1
         sumo_pages.question_page.click_i_have_this_problem_too_button()
-        page.reload()
+        utilities.refresh_page()
         assert problem_counter == sumo_pages.question_page.get_i_have_this_problem_too_counter()
 
     with check, allure.step("Signing in with a different non-admin user account, clicking on "
@@ -1220,7 +1220,7 @@ def test_i_have_this_problem_too(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
         sumo_pages.question_page.click_i_have_this_problem_too_button()
-        page.reload()
+        utilities.refresh_page()
         problem_counter += 1
         assert problem_counter == sumo_pages.question_page.get_i_have_this_problem_too_counter()
 
@@ -1236,7 +1236,7 @@ def test_i_have_this_problem_too(page: Page):
         ))
         problem_counter += 1
         sumo_pages.question_page.click_i_have_this_problem_too_button()
-        page.reload()
+        utilities.refresh_page()
         assert problem_counter == sumo_pages.question_page.get_i_have_this_problem_too_counter()
 
     with allure.step("Verifying that the 'I have this problem too' button is no longer "

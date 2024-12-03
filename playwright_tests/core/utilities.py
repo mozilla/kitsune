@@ -621,14 +621,14 @@ class Utilities:
         for attempt in range(3):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
-                func(*args, **kwargs)
+                result = func(*args, **kwargs)
 
                 if (any(issubclass(warning.category, UserWarning) and str(
                         warning.message) == "502 encountered" for warning in w)):
                     print("502 error encountered while executing the function. Retrying...")
                     if attempt < 2:
                         continue
-                break
+                return result
 
     def get_csrfmiddlewaretoken(self) -> str:
         """

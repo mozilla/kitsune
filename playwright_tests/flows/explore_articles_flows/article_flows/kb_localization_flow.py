@@ -81,7 +81,7 @@ class KbArticleTranslationFlow:
 
         first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
         if approve_translation_revision:
-            self.approve_kb_translation(first_revision_id)
+            self.approve_kb_translation(revision_id=first_revision_id)
 
         return {
             "translation_title": translation_title,
