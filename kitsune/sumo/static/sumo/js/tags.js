@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     new TomSelect(dropdown, {
       plugins: ['remove_button'],
+      maxOptions: null,
       maxItems: null,
       create: false,
       onItemAdd: async (tagId) => {
