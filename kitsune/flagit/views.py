@@ -123,8 +123,6 @@ def get_hierarchical_topics(topics, parent=None, level=0):
     return hierarchical
 
 
-@login_required
-@permission_required("flagit.can_moderate")
 @group_required("Content Moderators")
 def moderate_content(request):
     """Display flagged content that needs moderation."""
