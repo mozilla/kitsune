@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-from kitsune.access.decorators import login_required, permission_required
+from kitsune.access.decorators import group_required, login_required, permission_required
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions.events import QuestionReplyEvent
@@ -125,6 +125,7 @@ def get_hierarchical_topics(topics, parent=None, level=0):
 
 @login_required
 @permission_required("flagit.can_moderate")
+@group_required("Content Moderators")
 def moderate_content(request):
     """Display flagged content that needs moderation."""
     product_slug = request.GET.get("product")
