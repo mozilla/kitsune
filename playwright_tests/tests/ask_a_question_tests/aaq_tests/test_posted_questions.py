@@ -734,11 +734,8 @@ def test_question_topics(page: Page, username):
                      "question"):
         posted_question = post_firefox_product_question_flow(page, 'TEST_ACCOUNT_12')
 
-    with allure.step("Verifying that the 'Add a tag' input field is not displayed for OP"):
+    with allure.step("Verifying that Tags cannot be added by OP user"):
         expect(sumo_pages.question_page.get_add_a_tag_input_field()).to_be_hidden()
-
-    with allure.step("Verifying that the 'Add' topic section button is not displayed for OP"):
-        expect(sumo_pages.question_page.get_add_a_tag_button()).to_be_hidden()
 
     with allure.step("Deleting user session"):
         utilities.delete_cookies()
@@ -749,14 +746,12 @@ def test_question_topics(page: Page, username):
                 utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
             ))
 
-    with allure.step("Verifying that the 'Add a tag' input field is not displayed"):
+    with allure.step("Verifying that the 'Add a tag' input field is not displayed for "
+                     "permissionless accounts"):
         expect(sumo_pages.question_page.get_add_a_tag_input_field()).to_be_hidden()
 
-    with allure.step("Verifying that the 'Add' topic section button is not displayed"):
-        expect(sumo_pages.question_page.get_add_a_tag_button()).to_be_hidden()
-
     with allure.step("Verifying that the remove tag button is not displayed"):
-        for tag in sumo_pages.question_page.get_question_tag_options():
+        for tag in sumo_pages.question_page.get_question_tag_options(is_moderator=False):
             expect(sumo_pages.question_page.get_remove_tag_button_locator(tag)).to_be_hidden()
 
     with allure.step("Signing in with a admin user account, adding data inside the 'Add a "
@@ -767,7 +762,6 @@ def test_question_topics(page: Page, username):
         sumo_pages.question_page.add_text_to_add_a_tag_input_field(
             utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
-        sumo_pages.question_page.click_on_add_a_tag_button()
 
     with allure.step("Deleting user session"):
         utilities.delete_cookies()
@@ -779,12 +773,14 @@ def test_question_topics(page: Page, username):
             ))
 
     with check, allure.step("Verifying that the tag is available for all users"):
-        page.reload()
-        assert (utilities.aaq_question_test_data['valid_firefox_question']
-                ['custom_tag'] in sumo_pages.question_page.get_question_tag_options())
+        utilities.refresh_page()
+        assert (
+            utilities.aaq_question_test_data['valid_firefox_question']['custom_tag'] in sumo_pages.
+            question_page.get_question_tag_options(is_moderator=False)
+        )
 
     with allure.step("Verifying that the question tags are acting as filters"):
-        for question in sumo_pages.question_page.get_question_tag_options():
+        for question in sumo_pages.question_page.get_question_tag_options(is_moderator=False):
             with check, allure.step(f"Clicking on the {question} tag and verifying tha the "
                                     f"filter is applied to the clicked tag"):
                 time.sleep(1)

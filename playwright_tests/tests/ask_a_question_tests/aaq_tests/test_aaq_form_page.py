@@ -289,7 +289,9 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                         )
                     assert (
                         all(map(
-                            lambda x: x in sumo_pages.question_page.get_question_tag_options(),
+                            lambda x: x in sumo_pages.question_page.get_question_tag_options(
+                                is_moderator=True
+                            ),
                             slugs))
                     )
 
