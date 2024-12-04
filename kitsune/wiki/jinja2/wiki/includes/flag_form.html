@@ -1,4 +1,4 @@
-{% macro flag_form(post_target, identifier, bug_support=True) %}
+{% macro flag_form(post_target, identifier, content_moderation=False) %}
   <a href="javascript:;" data-sumo-modal="report-abuse-{{ identifier }}">{{ _('Report Abuse') }}</a>
   <section id="report-abuse-{{ identifier }}" class="mzp-u-modal-content">
     <h2 class="sumo-page-subheading">{{ _('Report this') }}</h2>
@@ -12,11 +12,11 @@
         <input type="radio" name="reason" id="id_{{ post_target|slugify}}_language" value="language" />
         <label for="id_{{ post_target|slugify}}_language">{{ _('Inappropriate language/dialog') }}</label>
       </div>
-      {% if bug_support %}
-      <div class="field radio is-condensed">
-        <input type="radio" name="reason" value="bug_support" id="id_{{ post_target|slugify}}_bug_support" />
-        <label for="id_{{ post_target|slugify}}_bug_support">{{ _('Misplaced bug report or support request') }}</label>
-      </div>
+      {% if content_moderation %}
+        <div class="field radio is-condensed">
+          <input type="radio" name="reason" value="content_moderation" id="id_{{ post_target|slugify}}_content_moderation" />
+          <label for="id_{{ post_target|slugify}}_content_moderation">{{ _('Misplaced bug report or support request') }}</label>
+        </div>
       {% endif %}
       <div class="field radio is-condensed">
         <input type="radio" id="id_{{ post_target|slugify}}_abuse" name="reason" value="abuse" />
@@ -34,7 +34,6 @@
         <button class="sumo-button primary-button" type="submit">{{ _('Submit') }}</button>
       </div>
     </form>
-
     <span class="message"></span>
   </section>
 {% endmacro %}
