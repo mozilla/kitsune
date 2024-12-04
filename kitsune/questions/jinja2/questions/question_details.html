@@ -402,7 +402,9 @@
                               data-add-url="{{ url('questions.add_tag_async', question.id) }}"
                               data-remove-url="{{ url('questions.remove_tag_async', question.id) }}">
                         {% for tag in all_tags %}
-                          <option value="{{ tag.id }}" {% if tag in tags %}selected{% endif %}>
+                          <option value="{{ tag.id }}" 
+                                  data-url="{{ url('questions.list', product.slug if product else 'all')|urlparams(tagged=tag.slug) }}"
+                                  {% if tag in question.tags.all() %}selected{% endif %}>
                             {{ tag.name }}
                           </option>
                         {% endfor %}
