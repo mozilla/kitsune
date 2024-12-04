@@ -423,7 +423,7 @@
           {% endif %}
         </div>
       </li>
-      {% if not question.is_moderated and is_trusted_user(request.user) %}
+      {% if is_trusted_user(request.user) %}
         <li class="mzp-c-details">
           <h3 class="sidebar-subheading sidebar-nav--heading-item is-accordion-heading">{{ _('Question Details') }}</h3>
           <div id="question-details" class="question-details">
@@ -435,7 +435,7 @@
                   {% if product %}
                     <span class="detail">{{ pgettext('DB: products.Product.title', product.title) }}</span>
                   {% endif %}
-                  {% if user and user.has_perm('questions.change_question') %}
+                  {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
                     <select id="details-product" name="product">
                       {% for p in all_products %}
                         <option {% if product and p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
@@ -451,7 +451,7 @@
                   {% if topic %}
                     <span class="detail">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
                   {% endif %}
-                  {% if user and user.has_perm('questions.change_question') %}
+                  {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">
                       {% for t in all_topics %}
                         <option {% if topic and t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
@@ -461,7 +461,7 @@
                 </div>
               {% endif %}
 
-              {% if user and user.has_perm('questions.change_question') %}
+              {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
                 <div class="sidebox tight condensed" id="question-locale">
                   <span class="title">{{ _('Locale') }}:</span>
                   <span class="detail">{{ settings.LANGUAGES_DICT[question.locale.lower()] }}</span>
@@ -520,7 +520,7 @@
                 </section>
               </div>
 
-              {% if user and user.has_perm('questions.change_question') %}
+              {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
                 <div class="sidebox tight">
                   <a href="#" id="details-edit">{{ _('Edit details') }}</a>
                 </div>
