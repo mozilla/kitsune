@@ -33,6 +33,7 @@ class FlaggedObject(ModelBase):
     FLAG_PENDING = 0
     FLAG_ACCEPTED = 1
     FLAG_REJECTED = 2
+    FLAG_DUPLICATE = 3
     STATUSES = (
         (FLAG_PENDING, _lazy("Pending")),
         (FLAG_ACCEPTED, _lazy("Accepted and Fixed")),
