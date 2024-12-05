@@ -67,9 +67,9 @@ class QuestionPage(BasePage):
     __mark_as_spam_option = "//ul[@id='related-content']//form[@class='spam-form cf']/a"
 
     # Tags section locators.
-    __question_tags_options = "//li[@class='tag']/a"
-    __add_a_tag_input_field = "//input[@id='id_tag_input']"
-    __add_a_tab_button = "//form[@class='tag-adder']/input[@type='submit']"
+    __question_tags_options_for_non_moderators = "//li[@class='tag']/a"
+    __question_tags_options_for_moderators = "//div[@class='ts-control']/div"
+    __add_a_tag_input_field = "//input[contains(@id, 'tag-select')]"
 
     # Post a reply section locators.
     __post_a_reply_section_heading = "//h3[@class='sumo-card-heading']"
@@ -269,36 +269,35 @@ class QuestionPage(BasePage):
                                          f"span[@class='user-title']")
 
     # Question tag actions.
-    def get_question_tag_options(self) -> list[str]:
-        return self._get_text_of_elements(self.__question_tags_options)
+    def get_question_tag_options(self, is_moderator: bool) -> list[str]:
+        return [tag.replace("\n×", "") for tag in self._get_text_of_elements(
+            self.__question_tags_options_for_moderators if is_moderator else self
+            .__question_tags_options_for_non_moderators
+        )]
 
     def get_remove_tag_button_locator(self, tag_name: str) -> Locator:
-        return self._get_element_locator(f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/"
-                                         f"following-sibling::button[@class='remover']")
+        return self._get_element_locator(f"//div[@class='ts-control']/div[normalize-space("
+                                         f"text())='{tag_name}']/a[@class='remove']")
 
     def add_text_to_add_a_tag_input_field(self, text: str):
         self._fill(self.__add_a_tag_input_field, text)
-        self.page.click(f"//li[@class='ui-menu-item']/div[text()='{text}']")
+        self._wait_for_given_timeout(2000)
+        self._press_a_key(self.__add_a_tag_input_field, "Enter")
 
     def get_add_a_tag_input_field(self) -> Locator:
         return self._get_element_locator(self.__add_a_tag_input_field)
-
-    def get_add_a_tag_button(self) -> Locator:
-        return self._get_element_locator(self.__add_a_tab_button)
-
-    def click_on_add_a_tag_button(self):
-        self._click(self.__add_a_tab_button)
 
     def click_on_a_certain_tag(self, tag_name: str):
         self._click(f"//li[@class='tag']//a[text()='{tag_name}']",
                     expected_locator=ProductSupportForum.PAGE_LOCATORS["ask_the_community_button"])
 
     def get_a_certain_tag(self, tag_name: str) -> Locator:
-        return self._get_element_locator(f"//li[@class='tag']//a[text()='{tag_name}']")
+        return self._get_element_locator(f"//div[@class='ts-control']/div[@class='item' and "
+                                         f"normalize-space(text())='{tag_name}']")
 
     def click_on_tag_remove_button(self, tag_name: str):
-        self._click(f"//li[@class='tag']//a[text()='{tag_name}']/"
-                    f"following-sibling::button[@class='remover']")
+        self._click(f"//div[@class='item' and normalize-space(text())='{tag_name}']/"
+                    f"a[@class='remove']")
 
     # Attached image actions.
     def get_attached_image(self) -> Locator:
