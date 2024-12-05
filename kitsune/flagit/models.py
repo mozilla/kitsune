@@ -20,14 +20,12 @@ class FlaggedObject(ModelBase):
 
     REASON_SPAM = "spam"
     REASON_LANGUAGE = "language"
-    REASON_BUG_SUPPORT = "bug_support"
     REASON_ABUSE = "abuse"
     REASON_CONTENT_MODERATION = "content_moderation"
     REASON_OTHER = "other"
     REASONS = (
         (REASON_SPAM, _lazy("Spam or other unrelated content")),
         (REASON_LANGUAGE, _lazy("Inappropriate language/dialog")),
-        (REASON_BUG_SUPPORT, _lazy("Misplaced bug report or support request")),
         (REASON_ABUSE, _lazy("Abusive content")),
         (REASON_OTHER, _lazy("Other (please specify)")),
     )
