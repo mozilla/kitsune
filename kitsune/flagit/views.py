@@ -61,25 +61,25 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     notes = request.POST.get("other", "")
     next = request.POST.get("next")
 
-    moderation_flag = FlaggedObject.objects.filter(
+    moderation_flag_query = FlaggedObject.objects.filter(
         content_type=content_type,
         object_id=object_id,
         reason=FlaggedObject.REASON_CONTENT_MODERATION,
     )
+    default_kwargs = {"content_object": content_object, "reason": reason, "notes": notes}
+    if reason == FlaggedObject.REASON_CONTENT_MODERATION:
+        moderation_flag_query.update(status=FlaggedObject.FLAG_PENDING)
+        default_kwargs["status"] = FlaggedObject.FLAG_DUPLICATE
+    else:
+        moderation_flag_query.delete()
+
     # Check that this user hasn't already flagged the object
     _flagged, created = FlaggedObject.objects.get_or_create(
         content_type=content_type,
         object_id=object_id,
         creator=request.user,
-        defaults={"content_object": content_object, "reason": reason, "notes": notes},
+        defaults=default_kwargs,
     )
-    if reason == FlaggedObject.REASON_CONTENT_MODERATION:
-        moderation_flag.update(status=FlaggedObject.FLAG_PENDING)
-        # If the object is flagged again as pending, treat it as new flag
-        created = True
-    else:
-        moderation_flag.delete()
-
     msg = (
         _("You already flagged this content.")
         if not created
