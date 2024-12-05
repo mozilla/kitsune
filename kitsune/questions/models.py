@@ -147,6 +147,7 @@ class Question(AAQBase):
     tags_cache_key = "question:tags:%s"
     images_cache_key = "question:images:%s"
     contributors_cache_key = "question:contributors:%s"
+    moderation_timestamp = models.DateTimeField(default=None, null=True)
 
     update_topic_counter = models.IntegerField(default=0)
 

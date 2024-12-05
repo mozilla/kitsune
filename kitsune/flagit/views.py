@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
@@ -173,9 +174,9 @@ def update(request, flagged_object_id):
     new_status = request.POST.get("status")
     reason = request.GET.get("reason")
     product = request.GET.get("product")
+    ct = flagged.content_type
 
     if new_status:
-        ct = flagged.content_type
         # If the object is an Answer let's fire a notification
         # if the flag is invalid
         if str(new_status) == str(FlaggedObject.FLAG_REJECTED) and ct.model_class() == Answer:
@@ -185,5 +186,8 @@ def update(request, flagged_object_id):
         flagged.status = new_status
         flagged.save()
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
+        question = flagged.content_object
+        question.moderation_timestamp = timezone.now()
+        question.save()
         return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))
     return HttpResponseRedirect(urlparams(reverse("flagit.flagged_queue"), reason=reason))
