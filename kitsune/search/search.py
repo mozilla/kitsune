@@ -76,6 +76,7 @@ class QuestionSearch(SumoSearch):
 
     locale: str = "en-US"
     product: Optional[Product] = None
+    is_archived: bool = False
 
     def get_index(self):
         return QuestionDocument.Index.read_alias
@@ -124,6 +125,8 @@ class QuestionSearch(SumoSearch):
                     "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
                 },
             ),
+            # don't return archived Questiosn
+            DSLQ("term", is_archived=self.is_archived),
         ]
 
         if self.product:
@@ -165,6 +168,7 @@ class WikiSearch(SumoSearch):
 
     locale: str = "en-US"
     product: Optional[Product] = None
+    is_archived: bool = False
 
     def get_index(self):
         return WikiDocument.Index.read_alias
@@ -205,6 +209,8 @@ class WikiSearch(SumoSearch):
             # limit scope to the Wiki index
             DSLQ("term", _index=self.get_index()),
             DSLQ("exists", field=f"title.{self.locale}"),
+            # Don't get archived docs
+            DSLQ("term", is_archived=self.is_archived),
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
