@@ -65,7 +65,7 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
         content_type=content_type,
         object_id=object_id,
         reason=FlaggedObject.REASON_CONTENT_MODERATION,
-    )
+    ).exclude(status=FlaggedObject.FLAG_DUPLICATE)
     default_kwargs = {"content_object": content_object, "reason": reason, "notes": notes}
     if reason == FlaggedObject.REASON_CONTENT_MODERATION:
         moderation_flag_query.update(status=FlaggedObject.FLAG_PENDING)
