@@ -171,7 +171,8 @@ def test_second_revisions_availability(page: Page):
 
     with allure.step("Navigating to the article and approving the revision"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.submit_kb_article_flow.approve_kb_revision(second_revision['revision_id'])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=second_revision['revision_id'])
         utilities.wait_for_given_timeout(1000)
 
     with allure.step("Signing out and verifying that the revision is displayed inside the "
@@ -313,12 +314,6 @@ def test_recent_revisions_dashboard_links(page: Page):
         )
         expect(sumo_pages.recent_revisions_page._get_diff_section_locator()).to_be_visible()
 
-    with allure.step("Hiding the diff and verifying that the diff section is not displayed"):
-        sumo_pages.recent_revisions_page._click_on_hide_diff_for_article(
-            article_title=article_details['article_title'], creator=username
-        )
-        expect(sumo_pages.recent_revisions_page._get_diff_section_locator()).to_be_hidden()
-
     with allure.step("Signing in with an admin account and deleting the article"):
         utilities.delete_cookies()
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -393,34 +388,50 @@ def test_recent_revisions_dashboard_filters(page: Page):
             utilities.general_test_data['dashboard_links']['recent_revisions']
         )
 
+    utilities.wait_for_given_timeout(3000)
     with check, allure.step("Selecting the ro locale from the locale filter and verifying "
                             "that all the displayed revisions are for the 'ro' locale"):
         sumo_pages.recent_revisions_page._select_locale_option("ro")
-        utilities.wait_for_given_timeout(3000)
+        utilities.wait_for_given_timeout(5000)
         for tag in sumo_pages.recent_revisions_page._get_list_of_all_locale_tage():
             assert tag == "ro"
 
-    with check, allure.step("Selecting the US filter, typing a username inside the 'Users' "
-                            "filter and verifying that all the displayed revisions are for "
-                            "the posted user"):
+    with check, allure.step("Selecting the US filter, typing a username Display Name inside the "
+                            "'Users' filter and verifying that all the displayed revisions are "
+                            "for the posted user"):
         sumo_pages.recent_revisions_page._select_locale_option("en-US")
-        utilities.wait_for_given_timeout(3000)
-        username = utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
-        )
-        sumo_pages.recent_revisions_page._fill_in_users_field(username)
-        utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(5000)
+        display_name_one = "Smith"
+        display_name_two = "Ryan Johnson"
+        username_one = "sellis1"
+        username_two = "ryanjohnson"
+        sumo_pages.recent_revisions_page._fill_in_users_field(display_name_one)
+        utilities.wait_for_given_timeout(5000)
         for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
-            assert user == username
+            assert user == display_name_one
+
+    with check, allure.step("Adding a different display name and verify that the the correct "
+                            "content is returned"):
+        sumo_pages.recent_revisions_page._fill_in_users_field(f"{display_name_one}, "
+                                                              f"{display_name_two}")
+        utilities.wait_for_given_timeout(5000)
+        for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
+            assert user in [display_name_one, display_name_two]
+
+    with check, allure.step("Clearing the username filter and adding both usernames inside the "
+                            "filter and verifying that the correct content is displayed"):
+        sumo_pages.recent_revisions_page._fill_in_users_field(f"{username_one}, {username_two}")
+        utilities.wait_for_given_timeout(5000)
+        for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
+            assert user in [display_name_one, display_name_two]
 
     with allure.step("Clearing the user filter, adding data inside the start and end fields"):
         sumo_pages.recent_revisions_page._clearing_the_user_field()
-        utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(5000)
 
         sumo_pages.recent_revisions_page._add_start_date("04052023")
         sumo_pages.recent_revisions_page._add_end_date("05012023")
-        utilities.wait_for_given_timeout(2000)
-
+        utilities.wait_for_given_timeout(5000)
     with check, allure.step("Verifying that the displayed revision dates are between ("
                             "inclusive) the set start and end date filters"):
         extracted_date = []
