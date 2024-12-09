@@ -189,12 +189,10 @@ class TopicSlugHistory(ModelBase):
 
     def save(self, *args, **kwargs):
         # Mark the old topics as archived
-        try:
-            old_topic = Topic.active.get(slug=self.slug, product=self.topic.product)
+        old_topics = Topic.active.filter(slug=self.slug)
+        for old_topic in old_topics:
             old_topic.is_archived = True
             old_topic.save()
-        except Topic.DoesNotExist:
-            ...
         super().save(*args, **kwargs)
 
 
