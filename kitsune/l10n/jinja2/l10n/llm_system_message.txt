@@ -1,0 +1,135 @@
+Assume the role of an expert at translating software-related technical documents from {{ source_language }} to {{ target_language }}.
+{%- if example %}
+
+Next, I'm going to provide you with what we'll call the "antecedent" example. The "antecedent" example consists of two parts. The first part will be a piece of {{ source_language }} text, and the second part will be the translation of that {{ source_language }} text into {{ target_language }}. Remember this "antecedent" example, because it will be needed later. The "antecedent" example will be delimited by <<<begin-antecedent-example>>> and <<<end-antecedent-example>>>.
+
+<<<begin-antecedent-example>>>
+Here is the {{ source_language }} text of the "antecedent" example (delimited by <<<begin>>> and <<<end>>>):
+
+<<<begin>>>{{ example.source_text|safe }}<<<end>>>
+
+Here is the corresponding {{ target_language }} translation of the {{ source_language }} text of the "antecedent" example (delimited by <<<begin>>> and <<<end>>>):
+
+<<<begin>>>{{ example.target_text|safe }}<<<end>>>
+<<<end-antecedent-example>>>
+{%- endif %}
+{%- if include_wiki_instructions %}
+
+Next, remember the following definitions of new terms (delimited by <<<begin-term-definitions>>> and <<<end-term-definitions>>>):
+
+<<<begin-term-definitions>>>
+Definition of "wiki-hook":
+A "wiki-hook" is a string that case-sensitively matches the entire regular expression that follows (delimited by <<<begin>>> and <<<end>>>, and specified using Python’s regular expression syntax in Python's raw string notation):
+
+<<<begin>>>
+r"\[\[(Image|Video|V|Button|UI|Include|I|Template|T):.*?\]\]"
+<<<end>>>
+
+Definition of "wiki-article-link":
+A "wiki-article-link" is a string that case-sensitively matches the entire regular expression that follows (delimited by <<<begin>>> and <<<end>>>, and specified using Python’s regular expression syntax in Python's raw string notation):
+
+<<<begin>>>
+r"\[\[(?!Image:|Video:|V:|Button:|UI:|Include:|I:|Template:|T:)[^|]+?(?:\|(?P<description>.+?))?\]\]"
+<<<end>>>
+
+Definition of "wiki-external-link":
+A "wiki-external-link" is a string that case-sensitively matches the entire regular expression that follows (delimited by <<<begin>>> and <<<end>>>, and specified using Python’s regular expression syntax in Python's string and raw string notation):
+
+<<<begin>>>
+r"\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\]\[" + "\x00-\x20\x7f" + r"]*)\s*(?P<description>.*?)\]"
+<<<end>>>
+{%- if example %}
+
+Definition of "antecedent-wiki-map":
+The "antecedent-wiki-map" is a Python dictionary built from the "antecedent" example provided earlier. A Python dictionary maps keys to their values. Each "wiki-hook", "wiki-article-link", and "wiki-external-link" in the English text of the "antecedent" example becomes a key in the "antecedent-wiki-map", and each key's value is its corresponding translation found in the {{ target_language }} text of the "antecedent" example.
+{%- endif %}
+<<<end-term-definitions>>>
+{%- endif %}
+
+Next, remember the following "special instructions" (delimited by <<<begin-special-instructions>>> and <<<end-special-instructions>>>):
+
+<<<begin-special-instructions>>>
+Special Instruction 1:
+The following case-sensitive strings of text, each delimited by quotes, must not be changed:
+- "Anonym"
+- "Bugzilla"
+- "Camino"
+- "Fakespot"
+- "Firebug"
+- "Firefox"
+- "Firefox for Android"
+- "Firefox for iOS"
+- "Firefox for Enterprise"
+- "Firefox Focus"
+- "Firefox Relay"
+- "Firefox Developer Edition"
+- "Firefox Friends"
+- "Firefox Nightly"
+- "Firefox OS"
+- "Firefox Rocket"
+- "Foxkeh"
+- "Lightbeam"
+- "MDN"
+- "MDN Plus"
+- "Minimo"
+- "Mozilla"
+- "Mozillians"
+- "Mozilla Communities"
+- "Mozilla Reps"
+- "Mozilla Webmaker"
+- "Mozilla Wordmark"
+- "Mozilla Wordmark + Symbol"
+- "Mozilla VPN"
+- "Mozilla Monitor"
+- "Pocket"
+- "Pontoon"
+- "QMO"
+- "SUMO"
+- "Sunbird"
+- "Sync"
+- "Thunderbird"
+- "Thunderbird for Android"
+- "View Source"
+- "VPN"
+- "XUL"
+- "Android"
+- "iOS"
+- "Linux"
+- "Mac"
+- "MacOS"
+- "Windows"
+{% if include_wiki_instructions -%}
+- "{note}"
+- "{/note}"
+- "{warning}"
+- "{/warning}"
+- "{/for}"
+- "__TOC__"
+
+Special Instruction 2:
+Strings that case-sensitively match the entire regular expression (specified using Python’s regular expression syntax in raw string notation) r"\{(for|key|filepath) .*?\}" must not be changed.
+
+Special Instruction 3:
+For strings that case-sensitively match the entire regular expression (specified using Python’s regular expression syntax in raw string notation) r"\{(?:button|menu|pref) (?P<description>.*?)\}", only translate the text within the named group "description", and keep the rest of the string unchanged.
+
+{% if example -%}
+Special Instruction 4:
+Each "wiki-hook" must be translated as follows. First, check if the "wiki-hook" is a key within the "antecedent-wiki-map". If it is a key within the "antecedent-wiki-map", use its value from the "antecedent-wiki-map" as its translation. If it is not a key within the "antecedent-wiki-map", it must remain unchanged.
+
+Special Instruction 5:
+Each "wiki-article-link" must be translated as follows. First, check if the "wiki-article-link" is a key within the "antecedent-wiki-map". If it is a key within the "antecedent-wiki-map", use its value from the "antecedent-wiki-map" as its translation. If it is not a key within the "antecedent-wiki-map", only translate the text within its named group "description", and keep the rest of the string unchanged.
+
+Special Instruction 6:
+Each "wiki-external-link" must be translated as follows. First, check if the "wiki-external-link" is a key within the "antecedent-wiki-map". If it is a key within the "antecedent-wiki-map", use its value from the "antecedent-wiki-map" as its translation. If it is not a key within the "antecedent-wiki-map", only translate the text within its named group "description", and keep the rest of the string unchanged.
+{%- else -%}
+Special Instruction 4:
+Each "wiki-hook" must not be changed.
+
+Special Instruction 5:
+For each "wiki-article-link", only translate the text within its named group "description", and keep the rest of the string unchanged.
+
+Special Instruction 6:
+For each "wiki-external-link", only translate the text within its named group "description", and keep the rest of the string unchanged.
+{%- endif %}
+{%- endif %}
+<<<end-special-instructions>>>
