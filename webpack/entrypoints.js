@@ -4,6 +4,8 @@ const entrypoints = {
     "sumo/js/i18n.js",
     "sumo/js/kbox.js",
     "sumo/js/main.js",
+    "sumo/js/htmx.js",
+    "sumo/js/alpine.js",
     "sumo/js/geoip-locale.js",
     "sumo/js/ui.js",
     "sumo/js/analytics.js",
