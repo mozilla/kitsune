@@ -121,21 +121,25 @@ def flagged_queue(request):
     )
 
 
-def get_hierarchical_topics(topics_queryset, product_slug=None, cache_timeout=3600):
+def get_hierarchical_topics(product, cache_timeout=3600):
     """
-    Build hierarchical topics.
+    Build hierarchical topics filtered by the given product.
 
     Args:
-        topics_queryset: A pre-filtered queryset of Topic objects.
+        product: The product that should be used to filter the topics.
+        cache_timeout: The number of seconds to cache the result for the
+                       given product. Defaults to 1 hour.
 
     Returns:
         A list of dictionaries representing the hierarchical structure of topics.
     """
-    cache_key = f"hierarchical_topics_{product_slug}" if product_slug else ""
-    if cache_key and (cached_topics := cache.get(cache_key)):
+    cache_key = f"hierarchical_topics_{product.slug}"
+    if cached_topics := cache.get(cache_key):
         return cached_topics
 
-    topics = list(topics_queryset.order_by("title").values("id", "title", "parent_id"))
+    topics = list(
+        Topic.active.filter(products=product).order_by("title").values("id", "title", "parent_id")
+    )
     topic_dict = {}
     for topic in topics:
         parent_id = topic["parent_id"]
@@ -179,8 +183,7 @@ def moderate_content(request):
 
     for obj in objects:
         question = obj.content_object
-        all_topics = Topic.active.filter(is_archived=False, products=question.product)
-        obj.available_topics = get_hierarchical_topics(all_topics, product_slug=product_slug)
+        obj.available_topics = get_hierarchical_topics(question.product)
         obj.available_tags = available_tags
         obj.saved_tags = question.tags.values_list("id", flat=True)
     return render(
