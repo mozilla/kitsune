@@ -2,6 +2,7 @@ import json
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -120,13 +121,39 @@ def flagged_queue(request):
     )
 
 
-def get_hierarchical_topics(topics, parent=None, level=0):
-    """Recursively build hierarchical topics."""
+def get_hierarchical_topics(topics_queryset, product_slug=None, cache_timeout=3600):
+    """
+    Build hierarchical topics.
+
+    Args:
+        topics_queryset: A pre-filtered queryset of Topic objects.
+
+    Returns:
+        A list of dictionaries representing the hierarchical structure of topics.
+    """
+    cache_key = f"hierarchical_topics_{product_slug}" if product_slug else ""
+    if cache_key and (cached_topics := cache.get(cache_key)):
+        return cached_topics
+
+    topics = list(topics_queryset.order_by("title").values("id", "title", "parent_id"))
+    topic_dict = {}
+    for topic in topics:
+        parent_id = topic["parent_id"]
+        if parent_id not in topic_dict:
+            topic_dict[parent_id] = []
+        topic_dict[parent_id].append(topic)
+
     hierarchical = []
-    for topic in topics.filter(parent=parent).order_by("title"):
-        spaces = "&nbsp;" * (level * 4)
-        hierarchical.append({"id": topic.id, "title": f"{spaces}{topic.title}"})
-        hierarchical.extend(get_hierarchical_topics(topics, parent=topic, level=level + 1))
+
+    def build_hierarchy(parent_id=None, level=0):
+        children = topic_dict.get(parent_id, [])
+        for child in children:
+            spaces = "&nbsp;" * (level * 4)
+            hierarchical.append({"id": child["id"], "title": f"{spaces}{child['title']}"})
+            build_hierarchy(child["id"], level + 1)
+
+    build_hierarchy()
+    cache.set(cache_key, hierarchical, cache_timeout)
     return hierarchical
 
 
@@ -153,7 +180,7 @@ def moderate_content(request):
     for obj in objects:
         question = obj.content_object
         all_topics = Topic.active.filter(is_archived=False, products=question.product)
-        obj.available_topics = get_hierarchical_topics(all_topics)
+        obj.available_topics = get_hierarchical_topics(all_topics, product_slug=product_slug)
         obj.available_tags = available_tags
         obj.saved_tags = question.tags.values_list("id", flat=True)
     return render(
