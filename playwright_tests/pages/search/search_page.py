@@ -5,10 +5,14 @@ from playwright.sync_api import Page, Locator
 class SearchPage(BasePage):
     # Locators belonging to the searchbar.
     SEARCHBAR_LOCATORS = {
-        "searchbar": "//form[@id='support-search-masthead']/input[@id='search-q']",
+        "searchbar_homepage": "//form[@id='support-search-masthead']/input[@id='search-q']",
+        "searchbar_aaq": "//form[@id='question-search-masthead']/input[@id='search-q']",
+        "searchbar_sidebar": "//form[@id='support-search-sidebar']/input[@id='search-q']",
+        "hidden_searchbar": "//form[@id='hidden-search']/input[@id='search-q']",
         "searchbar_search_button": "//form[@id='support-search-masthead']/button",
         "search_results_header": "//div[@class='home-search-section--content']/h2",
-        "popular_searches": "//p[@class='popular-searches']/a"
+        "popular_searches": "//p[@class='popular-searches']/a",
+        "search_results_section": "//main[@id='search-results-list']"
     }
 
     # Locators belonging to the search results filter
@@ -41,6 +45,9 @@ class SearchPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    def _wait_for_visibility_of_search_results_section(self):
+        self._wait_for_selector(self.SEARCHBAR_LOCATORS["search_results_section"])
+
     """
         Actions against the search results
     """
@@ -58,6 +65,7 @@ class SearchPage(BasePage):
         Args:
             article_title (str): The title of the article
         """
+        self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_element(f"//h3[@class='sumo-card-heading']/"
                                          f"a[normalize-space(text())='{article_title}']/../"
                                          f"../p")
@@ -68,6 +76,7 @@ class SearchPage(BasePage):
         Args:
             article_title (str): The title of the article
         """
+        self._wait_for_visibility_of_search_results_section()
         return self._is_element_visible(f"//h3[@class='sumo-card-heading']/"
                                         f"a[normalize-space(text())='{article_title}']")
 
@@ -77,11 +86,13 @@ class SearchPage(BasePage):
         Args:
             article_title (str): The title of the article
         """
+        self._wait_for_visibility_of_search_results_section()
         self._click(f"//h3[@class='sumo-card-heading']/"
                     f"a[normalize-space(text())='{article_title}']")
 
     def get_all_bolded_content(self) -> list[str]:
         """Get all the bolded content of the search results"""
+        self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_elements(self.SEARCH_RESULTS_LOCATORS
                                           ["all_bolded_article_content"])
 
@@ -91,6 +102,7 @@ class SearchPage(BasePage):
         Args:
             article_title (str): The title of the article
         """
+        self._wait_for_visibility_of_search_results_section()
         if "'" in article_title:
             parts = article_title.split("'")
             if len(parts) > 1:
@@ -110,10 +122,12 @@ class SearchPage(BasePage):
 
     def get_all_search_results_article_titles(self) -> list[str]:
         """Get all the titles of the search results"""
+        self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_elements(self.SEARCH_RESULTS_LOCATORS["search_results_titles"])
 
     def get_all_search_results_articles_summary(self) -> list[str]:
         """Get all the summaries of the search results"""
+        self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_elements(self.SEARCH_RESULTS_LOCATORS
                                           ["search_results_articles_summary"])
 
@@ -123,6 +137,7 @@ class SearchPage(BasePage):
         Args:
             article_title (str): The title of the article
         """
+        self._wait_for_visibility_of_search_results_section()
         return self._get_element_locator(f"//h3[@class='sumo-card-heading']/"
                                          f"a[normalize-space(text())='{article_title}']")
 
@@ -136,20 +151,38 @@ class SearchPage(BasePage):
 
     def get_text_of_searchbar_field(self) -> str:
         """Get the text of the search bar field"""
-        return self._get_element_input_value(self.SEARCHBAR_LOCATORS["searchbar"])
+        return self._get_element_input_value(self.SEARCHBAR_LOCATORS["searchbar_homepage"])
 
-    def fill_into_searchbar(self, text: str):
+    def fill_into_searchbar(self, text: str, is_aaq=False, is_sidebar=False):
         """Fill into the search bar
 
         Args:
             text (str): The text to fill into the search bar
+            is_aaq (bool): Whether the search bar is on the AAQ flow pages
+            is_sidebar (bool): Whether the search bar is on the sidebar
         """
-        self.clear_the_searchbar()
-        self._fill(self.SEARCHBAR_LOCATORS["searchbar"], text)
+        if is_aaq:
+            self.clear_the_searchbar(is_aaq=True)
+            self._fill(self.SEARCHBAR_LOCATORS["searchbar_aaq"], text)
+        elif is_sidebar:
+            self._fill(self.SEARCHBAR_LOCATORS["searchbar_sidebar"], text)
+        else:
+            self.clear_the_searchbar()
+            self._fill(self.SEARCHBAR_LOCATORS["searchbar_homepage"], text)
 
-    def clear_the_searchbar(self):
-        """Clear the search bar"""
-        self._clear_field(self.SEARCHBAR_LOCATORS["searchbar"])
+    def clear_the_searchbar(self, is_aaq=False, is_sidebar=False):
+        """Clear the search bar
+
+        Args:
+            is_aaq (bool): Whether the search bar is on the AAQ flow pages
+            is_sidebar (bool): Whether the search bar is on the sidebar
+        """
+        if is_aaq:
+            self._clear_field(self.SEARCHBAR_LOCATORS["searchbar_aaq"])
+        elif is_sidebar:
+            self._clear_field(self.SEARCHBAR_LOCATORS["hidden_searchbar"])
+        else:
+            self._clear_field(self.SEARCHBAR_LOCATORS["searchbar_homepage"])
 
     def click_on_search_button(self):
         """Click on the search button"""
@@ -188,4 +221,5 @@ class SearchPage(BasePage):
     """
     def get_search_results_header(self) -> str:
         """Get the search results header"""
+        self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_element(self.SEARCHBAR_LOCATORS["search_results_header"])
