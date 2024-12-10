@@ -6,7 +6,6 @@ import pytest
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import expect, TimeoutError, Page
-
 from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
     ModerateForumContentPageMessages)
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import (
@@ -19,7 +18,6 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C2191086, C2191094, C2191263,  C2191263, C2191087, C2191088
-# T5696747, T5696755, T5696748, T5696751, T5696749
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_MESSAGE_5', ''])
 def test_posted_question_details(page: Page, username):
@@ -64,7 +62,7 @@ def test_posted_question_details(page: Page, username):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# T5696750, T5696753
+# T5696750, T5696753, C2103331
 @pytest.mark.postedQuestions
 def test_edit_this_question_functionality_not_signed_in(page: Page):
     utilities = Utilities(page)

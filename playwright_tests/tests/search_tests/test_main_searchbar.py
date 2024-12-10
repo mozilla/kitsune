@@ -9,6 +9,249 @@ from playwright_tests.pages.sumo_pages import SumoPages
 from pytest_check import check
 
 
+# C890369
+@pytest.mark.searchTests
+def test_searchbar_functionality_product_solutions_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Navigating to the Firefox product solutions page and using the searchbar to "
+                     "search for a particular kb Article"):
+        utilities.navigate_to_link(utilities.general_test_data['product_solutions']['Firefox'])
+        sumo_pages.search_page.fill_into_searchbar(text=test_article_name, is_aaq=True)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.fill_into_searchbar(text=test_question_name, is_aaq=True)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
+
+
+@pytest.mark.searchTests
+def test_searchbar_functionality_product_support_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Navigating to the Firefox product support page and using the searchbar to "
+                     "search for a particular kb Article"):
+        utilities.navigate_to_link(utilities.general_test_data['product_support']['Firefox'])
+        sumo_pages.search_page.fill_into_searchbar(test_article_name)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.fill_into_searchbar(test_question_name)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
+
+
+@pytest.mark.searchTests
+def test_searchbar_functionality_explore_by_topic_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Navigating to the 'Browse' explore by topic page and using the searchbar to "
+                     "search for a particular kb Article"):
+        utilities.navigate_to_link("https://support.allizom.org/en-US/topics/browse")
+        sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+
+# C891284
+@pytest.mark.searchTests
+def test_searchbar_functionality_product_community_forum_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Navigating to the Firefox community forum page and using the searchbar to "
+                     "search for a particular kb Article"):
+        utilities.navigate_to_link("https://support.allizom.org/en-US/questions/firefox")
+        sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+
+@pytest.mark.searchTests
+def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Navigating to the 'Settings' browse all forum threads by topic page and "
+                     "using the searchbar to search for a particular kb Article"):
+        utilities.navigate_to_link("https://support.allizom.org/en-US/questions/topic/settings")
+        sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+
+@pytest.mark.searchTests
+def test_searchbar_functionality_on_aaq_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Submiting a new Firefox AAQ question and using the searchbar to search for "
+                     "a particular kb Article"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        sumo_pages.aaq_flow.submit_an_aaq_question(
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=utilities.
+            aaq_question_test_data["valid_firefox_question"]["topic_value"],
+            body=utilities.
+            aaq_question_test_data["valid_firefox_question"]["question_body"],
+            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+        )
+        sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+    sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+
+    with allure.step("Deleting the posted question"):
+        sumo_pages.aaq_flow.deleting_question_flow()
+
+
+# C890835
+@pytest.mark.searchTests
+def test_searchbar_functionality_on_article_page(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_article_name = "DoNotDelete"
+    test_question_name = "Test question - do not delete"
+
+    with allure.step("Submitting a new KB article agains the Firefox product and using the "
+                     "searchbar to search for a particular kb Article"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
+        sumo_pages.kb_article_page.click_on_article_option()
+
+        utilities.wait_for_given_timeout(2000)
+        sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the article is successfully returned"):
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
+
+    with allure.step("Using the searchbar to search for a particular question"):
+        sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+
+    with check, allure.step("Verifying that the question is successfully returned"):
+        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
+    sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+
+    with allure.step("Deleting the posted article"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
 # C1329220
 @pytest.mark.searchTests
 def test_popular_searches_homepage(page: Page):
@@ -20,7 +263,6 @@ def test_popular_searches_homepage(page: Page):
             sumo_pages.search_page.click_on_a_popular_search(popular_search)
             with check, allure.step("Verifying that the correct text is added inside the search "
                                     "field"):
-                utilities.wait_for_given_timeout(2000)
                 assert sumo_pages.search_page.get_text_of_searchbar_field() == popular_search
 
             with check, allure.step("Verifying that 'All products' is highlighted inside the "
@@ -54,7 +296,6 @@ def test_popular_searches_products(page: Page):
                 sumo_pages.search_page.click_on_a_popular_search(popular_search)
                 with check, allure.step("Verifying that the correct text was added inside the "
                                         "search field"):
-                    utilities.wait_for_given_timeout(2000)
                     assert sumo_pages.search_page.get_text_of_searchbar_field() == popular_search
 
                 with check, allure.step("Verifying that the correct product is listed in the side "
@@ -89,7 +330,7 @@ def test_stopwords(page: Page):
     with check, allure.step("Adding a search term inside the search bar which contains a stopword:"
                             " 'oricând' and verifying that it does not impact the search result"):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
+
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
             content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
             assert _verify_search_results(page, search_term.replace('oricând', ''),
@@ -100,13 +341,11 @@ def test_stopwords(page: Page):
 @pytest.mark.searchTests
 def test_synonyms(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_terms = ['addon', 'add-on', 'add', 'how to add bookmarks', 'how to add themes',
                     'pop-ups', 'popups', 'pop ups']
     with check, allure.step("Adding a search term and validating the search results"):
         for search_term in search_terms:
             sumo_pages.search_page.fill_into_searchbar(search_term)
-            utilities.wait_for_given_timeout(2000)
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title)
@@ -118,14 +357,12 @@ def test_synonyms(page: Page):
 @pytest.mark.searchTests
 def test_brand_synonyms(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_terms = ['mozilla', 'modzilla', 'mozzila', 'mozzilla', 'mozila', 'ios', 'ipad',
                     'iphone', 'ipod']
     with check, allure.step("Adding a search term inside the search bar and validating search "
                             "results"):
         for search_term in search_terms:
             sumo_pages.search_page.fill_into_searchbar(search_term)
-            utilities.wait_for_given_timeout(2000)
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title)
@@ -142,7 +379,7 @@ def test_searchbar_content_during_navigation(page: Page):
 
     with allure.step("Typing inside the searchbar and navigating back"):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
+        sumo_pages.search_page._wait_for_visibility_of_search_results_section()
         utilities.navigate_back()
 
     with check, allure.step("Verifying that the searchbar is empty"):
@@ -163,7 +400,7 @@ def test_logo_redirect_during_search(page: Page):
 
     with allure.step("Typing inside the searchbar and clicking on the logo"):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
+        sumo_pages.search_page._wait_for_visibility_of_search_results_section()
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
 
     with check, allure.step("Verifying that the user was redirected to the homepage and that the "
@@ -181,14 +418,12 @@ def test_logo_redirect_during_search(page: Page):
 @pytest.mark.searchTests
 def test_searchbar_search_update(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_terms = ['Mozilla', 'Mozilla themes', 'install']
 
     with check, allure.step("Adding a search term inside the search bar and validating search "
                             "results"):
         for search_term in search_terms:
             sumo_pages.search_page.fill_into_searchbar(search_term)
-            utilities.wait_for_given_timeout(3000)
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title)
@@ -199,7 +434,6 @@ def test_searchbar_search_update(page: Page):
 @pytest.mark.searchTests
 def test_search_from_products_page(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_term = 'Mozilla'
 
     with allure.step("Clicking on each product card from the SUMO homepage"):
@@ -209,7 +443,6 @@ def test_search_from_products_page(page: Page):
                                     "correct product and the search term is present"):
                 sumo_pages.homepage.click_on_product_card_by_title(product_card)
                 sumo_pages.search_page.fill_into_searchbar(search_term)
-                utilities.wait_for_given_timeout(2000)
                 assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == product_card
                 for title in sumo_pages.search_page.get_all_search_results_article_titles():
                     content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
@@ -224,13 +457,11 @@ def test_search_from_products_page(page: Page):
 @pytest.mark.searchTests
 def test_filter_switching(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_term = "Firefox Focus"
     with check, allure.step("Adding a search term inside the search bar and validating search "
                             "results"):
         sumo_pages.search_page.fill_into_searchbar(search_term)
         sumo_pages.search_page.click_on_a_particular_side_nav_item('Firefox for Android')
-        utilities.wait_for_given_timeout(2000)
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
             content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
             assert _verify_search_results(page, search_term, 'english', title, content)
@@ -245,14 +476,12 @@ def test_filter_switching(page: Page):
 @pytest.mark.searchTests
 def test_advanced_search_syntax(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_terms = ["crash sync", "crash + sync", "crash - sync", "crash +- sync"]
 
     with check, allure.step("Adding a search term inside the search bar and validating search "
                             "results"):
         for search_term in search_terms:
             sumo_pages.search_page.fill_into_searchbar(search_term)
-            utilities.wait_for_given_timeout(2000)
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title)
@@ -263,14 +492,12 @@ def test_advanced_search_syntax(page: Page):
 @pytest.mark.searchTests
 def test_conjunctions_and_disjunction_operators(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_terms = ["add-ons AND cache", "clear AND add-ons AND cache"]
 
     with (check, allure.step("Adding a search term inside the search bar and validating search "
                              "results")):
         for search_term in search_terms:
             sumo_pages.search_page.fill_into_searchbar(search_term)
-            utilities.wait_for_given_timeout(2000)
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                     title)
@@ -294,7 +521,6 @@ def test_or_operator(page: Page, locale):
 
     with check, allure.step("Adding a search term which contains the 'OR' inside the search term"):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
 
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
             content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
@@ -309,13 +535,11 @@ def test_or_operator(page: Page, locale):
 @pytest.mark.searchTests
 def test_not_operator(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_term = "crash NOT Mozilla"
 
     with (check, allure.step("Adding a search term which contains the 'NOT' inside the search "
                              "term")):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
         split_search_term = search_term.split("NOT")
 
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
@@ -348,7 +572,6 @@ def test_exact_phrase_searching(page: Page):
     with (check, allure.step("Adding a search term which contains the quotes inside the search "
                              "term")):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
 
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
             content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
@@ -366,7 +589,6 @@ def test_exact_phrase_searching(page: Page):
 
         with check, allure.step("Adding a search term with invalid exact phrase searching syntax"):
             sumo_pages.search_page.fill_into_searchbar(second_search_term)
-            utilities.wait_for_given_timeout(2000)
             not_exact_match = False
             for title in sumo_pages.search_page.get_all_search_results_article_titles():
                 content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
@@ -409,7 +631,6 @@ def test_keywords_field_and_content_operator(page: Page):
     sumo_pages.top_navbar.click_on_sumo_nav_logo()
     with allure.step("Searching for an article using the keywords field operator"):
         sumo_pages.search_page.fill_into_searchbar(search_term_keyword)
-        utilities.wait_for_given_timeout(2000)
 
         with check, allure.step("Verifying that the article is successfully returned after "
                                 "searching for its keyword"):
@@ -419,7 +640,6 @@ def test_keywords_field_and_content_operator(page: Page):
     with allure.step("Searching for an article using the keywords field operator and the NOT "
                      "operator"):
         sumo_pages.search_page.fill_into_searchbar(second_search_term_keyword)
-        utilities.wait_for_given_timeout(2000)
 
         with check, allure.step("Verifying that the test article is not returned when a keyword "
                                 "is placed after the 'NOT' operator"):
@@ -427,7 +647,6 @@ def test_keywords_field_and_content_operator(page: Page):
                 article_details['article_title'])
 
         sumo_pages.search_page.fill_into_searchbar(third_search_term_keyword)
-        utilities.wait_for_given_timeout(2000)
 
         with check, allure.step("Verifying that the test article is returned when a non-keyword "
                                 "term is used after the NOT operator"):
@@ -436,7 +655,6 @@ def test_keywords_field_and_content_operator(page: Page):
 
     with allure.step("Searching for an article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(search_term_content)
-        utilities.wait_for_given_timeout(2000)
         with check, allure.step("Verifying that the test article is successfully displayed"):
             assert sumo_pages.search_page.is_a_particular_article_visible(
                 article_details['article_title']
@@ -458,12 +676,10 @@ def test_keywords_field_and_content_operator(page: Page):
 @pytest.mark.searchTests
 def test_search_firefox_internal_pages(page: Page):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     search_term = "field:content.en-US:about:config"
 
     with (allure.step("Searching for an internal firefox about page inside the content field")):
         sumo_pages.search_page.fill_into_searchbar(search_term)
-        utilities.wait_for_given_timeout(2000)
 
         for title in sumo_pages.search_page.get_all_search_results_article_titles():
             content = sumo_pages.search_page.get_all_search_results_article_bolded_content(title)
@@ -518,7 +734,6 @@ def test_field_operators_for_non_us_locales(page: Page):
     with allure.step("Searching for the ro article using the title field operator"):
         sumo_pages.search_page.fill_into_searchbar(
             "field:title.ro:" + ro_article_info['translation_title'])
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ro article is successfully returned"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -528,7 +743,6 @@ def test_field_operators_for_non_us_locales(page: Page):
     with allure.step("Searching for the ro article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(
             "field:content.ro:" + ro_article_info['translation_body'])
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ro article is successfully displayed"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -539,7 +753,6 @@ def test_field_operators_for_non_us_locales(page: Page):
         sumo_pages.search_page.fill_into_searchbar(
             "field:summary.ro:" + ro_article_info['translation_summary']
         )
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ro article is successfully displayed"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -550,7 +763,6 @@ def test_field_operators_for_non_us_locales(page: Page):
         sumo_pages.search_page.fill_into_searchbar(
             " field:slug.ro:" + ro_article_info['translation_slug']
         )
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ro article is successfully displayed"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -559,12 +771,10 @@ def test_field_operators_for_non_us_locales(page: Page):
 
     with allure.step("Switching the locale to ja"):
         sumo_pages.footer_section.switch_to_a_locale('ja')
-        utilities.wait_for_given_timeout(2000)
 
     with allure.step("Searching for the ja article using the title field operator"):
         sumo_pages.search_page.fill_into_searchbar(
             "field:title.ja:" + ja_article_info['translation_title'])
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ja article is successfully returned"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -574,7 +784,6 @@ def test_field_operators_for_non_us_locales(page: Page):
     with allure.step("Searching for the ro article using the content field operator"):
         sumo_pages.search_page.fill_into_searchbar(
             "field:content.ja:" + ja_article_info['translation_body'])
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ro article is successfully displayed"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -585,7 +794,6 @@ def test_field_operators_for_non_us_locales(page: Page):
         sumo_pages.search_page.fill_into_searchbar(
             "field:summary.ja:" + ja_article_info['translation_summary']
         )
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ja article is successfully displayed"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -596,7 +804,6 @@ def test_field_operators_for_non_us_locales(page: Page):
         sumo_pages.search_page.fill_into_searchbar(
             " field:slug.ja:" + ja_article_info['translation_slug']
         )
-        utilities.wait_for_given_timeout(2000)
 
     with check, allure.step("Verifying that the ro article is successfully displayed"):
         assert sumo_pages.search_page.is_a_particular_article_visible(
@@ -632,7 +839,6 @@ def test_doc_id_field_operator(page: Page):
 
     with allure.step("Searching for the doc_id field operator inside the main searchbar"):
         sumo_pages.search_page.fill_into_searchbar(f"field:doc_id.en-US:{document_id}")
-        utilities.wait_for_given_timeout(2000)
 
     with allure.step("Verifying that the correct article is returned"):
         sumo_pages.search_page.is_a_particular_article_visible(kb_result_dict['kb_title'])
