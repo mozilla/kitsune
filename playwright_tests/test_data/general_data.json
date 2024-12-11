@@ -68,6 +68,15 @@
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus-firefox",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
   },
+  "product_forums" :{
+      "Firefox": "https://support.allizom.org/en-US/questions/firefox",
+      "Firefox for Android": "https://support.allizom.org/en-US/questions/mobile",
+      "Firefox for iOS": "https://support.allizom.org/en-US/questions/ios",
+      "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/firefox-enterprise",
+      "Firefox Focus": "https://support.allizom.org/en-US/questions/focus-firefox",
+      "Thunderbird": "https://support.allizom.org/en-US/questions/thunderbird",
+      "Thunderbird for Android": "https://support.allizom.org/en-US/questions/thunderbird-android"
+  },
   "dashboard_links": {
     "recent_revisions": "https://support.allizom.org/en-US/kb/revisions",
     "kb_overview": "https://support.allizom.org/en-US/contributors/kb-overview",
