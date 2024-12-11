@@ -60,7 +60,7 @@ jobs:
             ref: ${{ env.REF_ID }}
 
       - id: dev_image_tag
-        name: Set Docker Stag image tag for updates of the DEV branch
+        name: Set Docker dev image tag for updates of the DEV branch
         if: github.ref == 'refs/heads/dev'
         run: |
 
@@ -71,7 +71,7 @@ jobs:
           echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
       - id: stage_image_tag
-        name: Set Docker Stag image tag for updates of the main branch
+        name: Set Docker stage image tag for updates of the main branch
         if: github.ref == 'refs/heads/main'
         run: |
 
