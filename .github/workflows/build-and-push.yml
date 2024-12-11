@@ -41,7 +41,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
       - name: Create version.json
         run: |
           # create a version.json per
@@ -61,22 +60,22 @@ jobs:
             ref: ${{ env.REF_ID }}
 
       - id: dev_image_tag
-        name: Set Docker image tag for updates of the DEV branch
+        name: Set Docker Stag image tag for updates of the DEV branch
         if: github.ref == 'refs/heads/dev'
         run: |
 
-          echo TAG ="dev-$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+          echo TAG="dev-$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
 
           # Updates to the main branch are deployed to stage.
           echo DEPLOYMENT_ENV=dev >> "$GITHUB_ENV"
           echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
       - id: stage_image_tag
-        name: Set Docker image tag for updates of the main branch
+        name: Set Docker Stag image tag for updates of the main branch
         if: github.ref == 'refs/heads/main'
         run: |
 
-          echo TAG ="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+          echo TAG="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
 
           # Updates to the main branch are deployed to stage.
           echo DEPLOYMENT_ENV=stage >> "$GITHUB_ENV"
@@ -87,10 +86,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
 
-          echo TAG ="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+          echo TAG="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
           # Version tags are deployed to prod.
           echo DEPLOYMENT_ENV=prod >> "$GITHUB_ENV"
           echo DEPLOYMENT_REALM=prod >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
 
       - id: gcp_auth
         name: GCP authentication
@@ -99,7 +100,6 @@ jobs:
             token_format: access_token
             service_account:  artifact-writer@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
             workload_identity_provider: ${{ vars.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
-
 
       - id: docker_login
         name: Log in to the container registry
@@ -142,7 +142,6 @@ jobs:
           service_account: deploy-${{ needs.build.outputs.deployment_env }}@moz-fx-sumo-${{ needs.build.outputs.deployment_realm }}.iam.gserviceaccount.com
           workload_identity_provider: ${{ vars.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
 
-
       - id: docker_login
         name: docker login
         uses: docker/login-action@v3
@@ -160,7 +159,7 @@ jobs:
           TMP_DIR=static-upload
           TMP_DIR_HASHED=static-upload-hashed
 
-          docker create --name tmp $GAR_LOCATION-docker.pkg.dev/$GCP_PROJECT_ID/$GAR_REPOSITORY/$IMAGE:${{ needs.build.outputs.image_tag }}
+          docker create --name tmp $GAR_LOCATION-docker.pkg.dev/$GCP_PROJECT_ID/$GAR_REPOSITORY/$IMAGE_NAME:${{ needs.build.outputs.image_tag }}
 
           mkdir -p ./$TMP_DIR ./$TMP_DIR_HASHED
 
