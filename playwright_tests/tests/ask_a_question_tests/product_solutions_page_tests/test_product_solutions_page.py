@@ -10,7 +10,7 @@ from playwright_tests.messages.ask_a_question_messages.product_solutions_message
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-#  C890370, C890374
+#  C890370, C890374, C890372
 @pytest.mark.productSolutionsPage
 def test_featured_articles_redirect(page: Page, is_chromium):
     if is_chromium:
