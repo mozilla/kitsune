@@ -54,9 +54,6 @@ const entrypoints = {
   "questions.geo": [
     "sumo/js/location.js",
   ],
-  products: [
-    "sumo/js/products.js",
-  ],
   topics: [
     "sumo/js/topics.js",
   ],

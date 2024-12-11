@@ -957,27 +957,6 @@
         <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
       </ul>
     </div>
-    {#
-      afaict, this button is never shown. products.js is looking for a
-      data-latest-version attribute on the .download-button element above,
-      but it's not present. this should be fixed?
-    #}
-    <div class="refresh-firefox">
-      <p class="help-text">{{ _('Give Firefox a tune up') }}</p>
-      <a data-mozilla-ui-reset="reset" class="download-button sumo-button primary-button button-lg">
-        {{ _('Refresh Firefox') }}
-      </a>
-      <ul class="download-info text-body-xs">
-        <li><a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-            {{ _('How does it work?') }}
-          </a></li>
-        <li>
-          <a href="https://www.mozilla.org/firefox/new/#download-fx">
-            {{ _('Download a fresh copy') }}
-          </a>
-        </li>
-      </ul>
-    </div>
   </div>
 </div>
 {% endmacro %}
