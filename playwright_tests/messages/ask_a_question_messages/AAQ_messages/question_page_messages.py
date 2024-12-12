@@ -24,3 +24,4 @@ class QuestionPageMessages:
                                           "-mozilla-tech-support-scams")
     TRY_THESE_MANUAL_STEPS_LINK = ("https://support.mozilla.org/kb/use-troubleshooting"
                                    "-information-page-fix-firefox")
+    SPAM_FLAGGED_REPLY = "A moderator must manually approve your post before it will be visible."

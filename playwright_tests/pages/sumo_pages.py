@@ -1,5 +1,4 @@
 from playwright.sync_api import Page
-
 from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_flow import (
     AddKbArticleFlow)
@@ -19,6 +18,7 @@ from playwright_tests.flows.messaging_system_flows.messaging_system_flow import 
 from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFlow
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
+from playwright_tests.pages.common_elements.common_web_elements import CommonWebElements
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions_pages.\
     contributor_discussions_page import ContributorDiscussionPage
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions_pages.\
@@ -225,3 +225,6 @@ class SumoPages:
 
         # KB article threads Flow
         self.kb_article_thread_flow = KbThreads(page)
+
+        # Common Web Elements
+        self.common_web_elements = CommonWebElements(page)

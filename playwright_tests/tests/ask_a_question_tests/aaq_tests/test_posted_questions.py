@@ -1,6 +1,5 @@
 import os
 import time
-
 import allure
 import pytest
 from pytest_check import check
