@@ -1,4 +1,4 @@
-name: Build, test and push a Docker image
+name: Build and push a Docker image
 
 on:
   push:
@@ -60,7 +60,7 @@ jobs:
             ref: ${{ env.REF_ID }}
 
       - id: dev_image_tag
-        name: Set Docker Stag image tag for updates of the DEV branch
+        name: Set Docker dev image tag for updates of the DEV branch
         if: github.ref == 'refs/heads/dev'
         run: |
 
@@ -71,7 +71,7 @@ jobs:
           echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
       - id: stage_image_tag
-        name: Set Docker Stag image tag for updates of the main branch
+        name: Set Docker stage image tag for updates of the main branch
         if: github.ref == 'refs/heads/main'
         run: |
 
@@ -82,7 +82,7 @@ jobs:
           echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
       - id: prod_image_tag
-        name: Set Docker image tag to the git tag for tagged builds
+        name: Set Docker prod  image tag to the git tag for tagged builds
         if: startsWith(github.ref, 'refs/tags/')
         run: |
 
