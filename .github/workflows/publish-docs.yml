@@ -5,9 +5,11 @@ on:
   push:
     branches:
       - main
-    paths: # avoid extra builds
+    paths: # avoid building unless needed
       - docs/**
       - mkdocs.yml
+      - kitsune/sumo/static/sumo/scss/**
+      - styleguide/**
       - .github/workflows/publish-docs.yml
 
 permissions:
@@ -24,6 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -32,6 +38,8 @@ jobs:
         uses: actions/configure-pages@v5
       - run: pip install mkdocs-material 
       - run: mkdocs build -d dist
+      - run: npm ci
+      - run: npm run build:styleguide && mkdir dist/_kss && cp -r styleguide/build/. dist/_kss/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
