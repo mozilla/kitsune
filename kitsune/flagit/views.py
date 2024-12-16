@@ -16,6 +16,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import paginate
 from kitsune.tags.models import SumoTag
 
 
@@ -176,6 +177,11 @@ def moderate_content(request):
         .select_related("content_type", "creator")
         .prefetch_related("content_object__product")
     )
+
+    # It's essential that the objects are ordered for pagination. The
+    # default ordering for flagged objects is by ascending created date.
+    objects = paginate(request, objects)
+
     objects = set_form_action_for_objects(
         objects, reason=FlaggedObject.REASON_CONTENT_MODERATION, product_slug=product_slug
     )
@@ -186,6 +192,7 @@ def moderate_content(request):
         obj.available_topics = get_hierarchical_topics(question.product)
         obj.available_tags = available_tags
         obj.saved_tags = question.tags.values_list("id", flat=True)
+
     return render(
         request,
         "flagit/content_moderation.html",

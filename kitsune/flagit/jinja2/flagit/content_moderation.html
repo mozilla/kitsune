@@ -29,7 +29,7 @@
               <option value="1">{{ _('Content categorization is updated.') }}</option>
               <option value="2">{{ _('Content is appropriately categorized.') }}</option>
             </select>
-            <input id="update-status-button-{{ object.content_object.id }}" type="submit" 
+            <input id="update-status-button-{{ object.content_object.id }}" type="submit"
                    class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
           </form>
         </div>
@@ -38,6 +38,7 @@
   {% else %}
     <p>{{ _('There is no content pending moderation.') }}</p>
   {% endfor %}
+  {{ objects|paginator }}
 {% endblock %}
 
 {% block filter_dropdown %}
