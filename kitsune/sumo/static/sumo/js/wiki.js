@@ -572,7 +572,6 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
       let xhr = new XMLHttpRequest();
       let csrf = document.querySelector('#steal-lock-form input[name=csrfmiddlewaretoken]').value;
-      console.log(csrf);
       xhr.open("POST", url)
       if (csrf) {
         xhr.setRequestHeader('X-CSRFToken', csrf);
@@ -627,66 +626,66 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
   function initRevisionList() {
     var $form = $('#revision-list form.filter');
-    
+
     if (!$form.length) {
-        return;
+      return;
     }
 
     // Retrieve and safely parse form data from sessionStorage
     let formData = {};
     const savedFormData = sessionStorage.getItem('revision-list-filter');
-    
+
     if (savedFormData) {
-        try {
-            formData = JSON.parse(savedFormData); // Try parsing JSON
-        } catch (e) {
-            formData = {}; // Default to an empty object if parsing fails
-            sessionStorage.removeItem('revision-list-filter'); // Clear corrupted data
-        }
+      try {
+        formData = JSON.parse(savedFormData); // Try parsing JSON
+      } catch (e) {
+        formData = {}; // Default to an empty object if parsing fails
+        sessionStorage.removeItem('revision-list-filter'); // Clear corrupted data
+      }
     }
 
     // Populate form fields with saved data from sessionStorage
     for (let [name, value] of Object.entries(formData)) {
-        const field = $form.find(`[name="${name}"]`);
-        if (field.length) {
-            field.val(value);
-        }
+      const field = $form.find(`[name="${name}"]`);
+      if (field.length) {
+        field.val(value);
+      }
     }
 
     updateRevisionList(); // Initial update
-    
+
     // Update the revision list when the form changes
     function updateRevisionList(query) {
-        if (query === undefined) {
-            query = $form.serialize();
-        }
-        if (query.charAt(0) !== '?') {
-            query = '?' + query;
-        }
-        var url = $form.attr('action') + query;
+      if (query === undefined) {
+        query = $form.serialize();
+      }
+      if (query.charAt(0) !== '?') {
+        query = '?' + query;
+      }
+      var url = $form.attr('action') + query;
 
-        $('#revisions-fragment').css('opacity', 0);
-        $.get(url + '&fragment=1', function (data) {
-            $('.loading').hide();
-            $('#revisions-fragment').html(data).css('opacity', 1);
-        });
+      $('#revisions-fragment').css('opacity', 0);
+      $.get(url + '&fragment=1', function (data) {
+        $('.loading').hide();
+        $('#revisions-fragment').html(data).css('opacity', 1);
+      });
     }
 
     // Trigger update and save changes to localStorage on input change
     var timeout;
     $form.on('input change', 'input, select', function () {
-        $('.loading').show();
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            updateRevisionList();
-        }, 200);
+      $('.loading').show();
+      clearTimeout(timeout);
+      timeout = setTimeout(function () {
+        updateRevisionList();
+      }, 200);
 
-        // Collect form data and save it as JSON in sessionStorage
-        const currentData = $form.serializeArray().reduce((obj, item) => {
-            obj[item.name] = item.value;
-            return obj;
-        }, {});
-        sessionStorage.setItem('revision-list-filter', JSON.stringify(currentData)); // Save as JSON
+      // Collect form data and save it as JSON in sessionStorage
+      const currentData = $form.serializeArray().reduce((obj, item) => {
+        obj[item.name] = item.value;
+        return obj;
+      }, {});
+      sessionStorage.setItem('revision-list-filter', JSON.stringify(currentData)); // Save as JSON
     });
 
     // Remove submit button elements if present
@@ -694,11 +693,11 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
     // Disable form submission via Enter key
     $form.on('keydown', function (e) {
-        if (e.which === 13) {
-            e.preventDefault();
-        }
+      if (e.which === 13) {
+        e.preventDefault();
+      }
     });
-}
+  }
 
 
   init();

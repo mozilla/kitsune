@@ -5,25 +5,24 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
     if (countryField) {
         fetch(proxyUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Fetch failed, status ${response.status}`)
-            }
-            return response.json();
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Fetch failed, status ${response.status}`)
+                }
+                return response.json();
 
-        })
-        .then(data => {
-            
-            if(data && data.country_name) {
-                countryField.value = data.country_name;
-            } else {
+            })
+            .then(data => {
+
+                if (data && data.country_name) {
+                    countryField.value = data.country_name;
+                } else {
+                    countryField.value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching country:', error);
                 countryField.value = '';
-                console.log('No country name found in response.');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching country:', error);
-            countryField.value = '';
-        });
+            });
     }
 });
