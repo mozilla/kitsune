@@ -36,11 +36,9 @@
   "dependencies": {
     "@babel/runtime": "^7.20.13",
     "@urql/svelte": "^3.0.3",
-    "alpinejs": "^3.14.7",
     "codemirror": "^5.65.11",
     "d3": "^3.5.17",
     "graphql": "^16.8.1",
-    "htmx.org": "^2.0.3",
     "jquery": "^3.6.3",
     "jquery-ui": "1.13.2",
     "nunjucks": "^3.2.4",
