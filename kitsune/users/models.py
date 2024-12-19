@@ -56,6 +56,7 @@ class Profile(ModelBase):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True, verbose_name=_lazy("User")
     )
+    is_bot = models.BooleanField(default=False)
     name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name=_lazy("Display name")
     )

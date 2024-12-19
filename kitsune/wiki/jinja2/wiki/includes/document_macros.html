@@ -21,8 +21,8 @@
     </span>
     {% if created_date %}
       <span class="last-updated">
-       <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> 
-       <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong> 
+       <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" />
+       <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong>
         <span class="time">
           {{ datetimeformat(created_date, format="shortdate", use_naturaltime=True) }}
         </span>
@@ -75,6 +75,18 @@
 {% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision=False, full_locale_name=None) -%}
   <section id="doc-content" class="document--content {{ css_class }}">
     {% if not fallback_reason %}
+      {% if current_revision_is_unreviewed_machine_translation(document) %}
+      <div id="doc-unreviewed-machine-translation" class="mzp-c-notification-bar mzp-t-warning">
+        <button class="mzp-c-notification-bar-button" type="button"></button>
+        <div id="unreviewed-machine-translation-warning">
+          {% trans edit_link=url('wiki.edit_document', document.slug, locale=document.locale) %}
+            This is a machine-generated translation of the English content. It has not been
+            reviewed by a human, and may contain errors. If you would like to revise this
+            content, you can start <a href="{{ edit_link }}">here</a>.
+          {% endtrans %}
+        </div>
+      </div>
+      {% endif %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
       {% if document.is_localizable and any_localizable_revision and not document.is_archived %}

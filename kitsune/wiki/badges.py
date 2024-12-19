@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db.models.signals import post_save
 
 from kitsune.wiki.models import Revision
+from kitsune.l10n.utils import get_l10n_bot
+
 
 # Yo ******! These are year-agnostic badge templates which code uses
 # to get-or-create the actual Badge instances. These strings should
@@ -33,8 +35,8 @@ def on_revision_save(sender, instance, **kwargs):
     year = rev.created.year
     creator = rev.creator
 
-    # We only care about approved revisions.
-    if not rev.is_approved:
+    # We only care about approved revisions by real users.
+    if (not rev.is_approved) or (creator == get_l10n_bot()):
         return
 
     # The badge to be awarded depends on the locale.
