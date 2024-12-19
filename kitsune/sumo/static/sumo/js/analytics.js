@@ -1,11 +1,5 @@
 export default function trackEvent(name, parameters) {
   if (window.gtag) {
-    if (window.gaConsoleLogging) {
-      console.log("------------------------------");
-      console.log(`event: ${name}:`);
-      console.log(`parameters: ${JSON.stringify(parameters, null, 2)}`);
-      console.log("------------------------------");
-    }
     window.gtag('event', name, parameters);
   }
 }

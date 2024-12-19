@@ -1,9 +1,9 @@
 import "sumo/js/protocol";
 
-(function() {
-    'use strict';
-    Mzp.Navigation.init();
-    Mzp.Menu.init();
+(function () {
+  'use strict';
+  Mzp.Navigation.init();
+  Mzp.Menu.init();
 })();
 
 var toggleNavButtons = document.querySelectorAll('[data-sumo-toggle-nav]');
@@ -35,7 +35,7 @@ if (toggleNavButtons.length > 0) {
 
         // if search nav, focus the field
         if (toggleThisId == "#search-navigation") {
-          window.scrollTo(0,0);
+          window.scrollTo(0, 0);
           toggleThisItem.querySelector('.searchbox').focus();
         }
 
@@ -52,25 +52,12 @@ if (toggleNavButtons.length > 0) {
 // address bar slides away on scroll, which causes problems.
 var timeout = false;
 var width = window.innerWidth;
-window.addEventListener('resize', function() {
-    clearTimeout(timeout);
-    timeout = setTimeout(function(){
-      if (window.innerWidth != width) {
-        width = window.innerWidth;
-        resetNavs();
-      }
-    }, 250);
+window.addEventListener('resize', function () {
+  clearTimeout(timeout);
+  timeout = setTimeout(function () {
+    if (window.innerWidth != width) {
+      width = window.innerWidth;
+      resetNavs();
+    }
+  }, 250);
 });
-
-// lang switcher from protocol. #TODO: test this in app.
-// (function() {
-//   'use strict';
-//   // a custom callback can be passed to the lang switcher for analytics purposes.
-//   Mzp.LangSwitcher.init(function(
-//     previousLanguage, newLanguage) {
-//     console.log('Previous language: ',
-//       previousLanguage);
-//     console.log('New language: ',
-//       newLanguage);
-//   })
-// })();

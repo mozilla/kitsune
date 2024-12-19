@@ -13,12 +13,12 @@ export default function AjaxVote(form, options) {
   AjaxVote.prototype.init.call(this, form, options);
 }
 
-(function($) {
+(function ($) {
 
   'use strict';
 
   AjaxVote.prototype = {
-    init: function(form, options) {
+    init: function (form, options) {
       var self = this,
         $ajaxForm = $(form),
         $btns = $ajaxForm.find('[type="submit"], [data-type="submit"]');
@@ -32,13 +32,13 @@ export default function AjaxVote(form, options) {
       self.voted = false;
       self.$form = $ajaxForm;
 
-      $btns.on('click', function(e) {
+      $btns.on('click', function (e) {
         if (!self.voted) {
           var $btn = $(this),
             $form = $btn.closest('form'),
             url = $form.attr('action'),
             formDataArray = $form.serializeArray(),
-            data = {url},
+            data = { url },
             i, l;
           $btns.attr('disabled', 'disabled');
           $form.addClass('busy');
@@ -51,7 +51,7 @@ export default function AjaxVote(form, options) {
             type: 'POST',
             data: data,
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
               if (response.survey) {
                 self.showSurvey(response.survey, $form.parent());
               }
@@ -68,9 +68,9 @@ export default function AjaxVote(form, options) {
               }
 
               // Hide other forms
-              self.$form.filter(function() { return !$form.is(this); }).remove();
+              self.$form.filter(function () { return !$form.is(this); }).remove();
             },
-            error: function() {
+            error: function () {
               var msg = gettext('There was an error submitting your vote.');
               self.showMessage(msg, $btn, $form);
               $btns.prop("disabled", false);
@@ -84,13 +84,11 @@ export default function AjaxVote(form, options) {
         return false;
       });
     },
-    showMessage: function(message, $showAbove, $form) {
-      // TODO: Tweak KBox to handle this case.
+    showMessage: function (message, $showAbove, $form) {
       var self = this,
         $html = $('<div class="ajax-vote-box"><p class="msg document-vote--heading"></p></div>'),
         offset = $showAbove.offset();
       $html.find('p').html(message);
-      console.log('options', self.options)
 
       if (self.options.positionMessage) {
         // on desktop browsers we use absolute positioning
@@ -107,15 +105,15 @@ export default function AjaxVote(form, options) {
         // on mobile browsers we just append to the grandfather
         // TODO: make this more configurable with an extra option
         $showAbove.parent().parent()
-        .addClass($showAbove.val()).append($html);
+          .addClass($showAbove.val()).append($html);
       }
 
       function fadeOut() {
-        $html.fadeOut(function() {
+        $html.fadeOut(function () {
           $html.remove();
         });
         if (self.options.removeForm) {
-          self.$form.fadeOut(function() {
+          self.$form.fadeOut(function () {
             self.$form.remove();
           });
         }
@@ -123,7 +121,7 @@ export default function AjaxVote(form, options) {
         clearTimeout(timer);
       }
     },
-    showSurvey: function(survey, $container) {
+    showSurvey: function (survey, $container) {
       var $survey = $(survey);
       var $commentCount = $survey.find('#remaining-characters');
       var $commentBox = $survey.find('textarea');
@@ -148,7 +146,7 @@ export default function AjaxVote(form, options) {
         var checked = $radios.filter(':checked').val();
         var feedback = $textbox.val();
         if (checked === undefined ||
-            ((checked === 'other' || checked === 'firefox-feedback') && !feedback)) {
+          ((checked === 'other' || checked === 'firefox-feedback') && !feedback)) {
           $submit.prop('disabled', true);
           $reason.fadeIn(600);
         } else {
@@ -157,7 +155,7 @@ export default function AjaxVote(form, options) {
         }
       }
 
-      $commentBox.on('input', function() {
+      $commentBox.on('input', function () {
         var currentCount = $commentBox.val().length;
         var checked;
 
