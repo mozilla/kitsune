@@ -134,20 +134,28 @@ class GoogleAnalyticsTests(TestCase):
             ),
             Row(
                 dimension_values=[DimensionValue(value="/es/questions/782348")],
-                metric_values=[MetricValue(value="2000")],
+                metric_values=[MetricValue(value="187")],
             ),
             Row(
                 dimension_values=[DimensionValue(value="/de/questions/987235")],
                 metric_values=[MetricValue(value="3000")],
             ),
+            Row(
+                dimension_values=[DimensionValue(value="/it/questions/123456")],
+                metric_values=[MetricValue(value="17")],
+            ),
+            Row(
+                dimension_values=[DimensionValue(value="/en-US/questions/782348")],
+                metric_values=[MetricValue(value="2000")],
+            ),
         )
 
-        result = list(googleanalytics.pageviews_by_question(LAST_7_DAYS))
+        result = googleanalytics.pageviews_by_question(LAST_7_DAYS)
 
         self.assertEqual(3, len(result))
-        self.assertEqual(result[0], (123456, 1000))
-        self.assertEqual(result[1], (782348, 2000))
-        self.assertEqual(result[2], (987235, 3000))
+        self.assertEqual(result[123456], 1017)
+        self.assertEqual(result[782348], 2187)
+        self.assertEqual(result[987235], 3000)
 
     @patch.object(googleanalytics, "run_report")
     def test_search_clicks_and_impressions(self, run_report):
