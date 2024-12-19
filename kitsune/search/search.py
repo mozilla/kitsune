@@ -124,6 +124,8 @@ class QuestionSearch(SumoSearch):
                     "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
                 },
             ),
+            # exclude archived questions
+            DSLQ("term", question_is_archived=False),
         ]
 
         if self.product:
