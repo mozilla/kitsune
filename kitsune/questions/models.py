@@ -758,29 +758,15 @@ class QuestionVisits(ModelBase):
         from kitsune.sumo import googleanalytics
 
         with transaction.atomic():
-            # First, let's gather some data we need. We're sacrificing memory
-            # here in order to reduce the number of database queries later on.
             if verbose:
                 log.info("Gathering pageviews per question from GA4 data API...")
 
-            instance_by_question_id = {}
-            for question_id, visits in googleanalytics.pageviews_by_question(verbose=verbose):
-                instance_by_question_id[question_id] = cls(
-                    question_id=Subquery(Question.objects.filter(id=question_id).values("id")),
-                    visits=visits,
-                )
+            pageviews_by_question_id = googleanalytics.pageviews_by_question(verbose=verbose)
 
-            question_ids = list(instance_by_question_id)
+            total_count = len(pageviews_by_question_id)
 
-            # Next, let's clear out the stale instances that have new results.
             if verbose:
-                log.info(f"Deleting all stale instances of {cls.__name__}...")
-
-            cls.objects.filter(question_id__in=question_ids).delete()
-
-            # Then we can create fresh instances for the questions that have results.
-            if verbose:
-                log.info(f"Creating {len(question_ids)} fresh instances of {cls.__name__}...")
+                log.info(f"Gathered pageviews for {total_count} questions.")
 
             def create_batch(batch_of_question_ids):
                 """
@@ -798,26 +784,55 @@ class QuestionVisits(ModelBase):
                     ]
                 )
 
-            # Let's create the fresh instances in batches, so we avoid exposing ourselves to
-            # the possibility of transgressing some query size limit.
-            batch_size = 1000
-            for batch_of_question_ids in chunked(question_ids, batch_size):
+            instance_by_question_id = {}
+
+            for i, (question_id, visits) in enumerate(pageviews_by_question_id.items(), start=1):
+                instance_by_question_id[question_id] = cls(
+                    question_id=Subquery(Question.objects.filter(id=question_id).values("id")),
+                    visits=visits,
+                )
+
+                # Update the question visits in batches of 30K to avoid memory issues.
+                if ((i % 30000) != 0) and (i != total_count):
+                    continue
+
+                # We've got a batch, so let's update them.
+
+                question_ids = list(instance_by_question_id)
+
+                # Next, let's clear out the stale instances that have new results.
                 if verbose:
-                    log.info(f"Creating a batch of {len(batch_of_question_ids)} instances...")
+                    log.info(f"Deleting {len(question_ids)} stale instances of {cls.__name__}...")
 
-                try:
-                    with transaction.atomic():
+                cls.objects.filter(question_id__in=question_ids).delete()
+
+                # Then we can create fresh instances for the questions that have results.
+                if verbose:
+                    log.info(f"Creating {len(question_ids)} fresh instances of {cls.__name__}...")
+
+                # Let's create the fresh instances in batches of 1K, so we avoid exposing
+                # ourselves to the possibility of transgressing some query size limit.
+                for batch_of_question_ids in chunked(question_ids, 1000):
+                    if verbose:
+                        log.info(f"Creating a batch of {len(batch_of_question_ids)} instances...")
+
+                    try:
+                        with transaction.atomic():
+                            create_batch(batch_of_question_ids)
+                    except IntegrityError:
+                        # There is a very slim chance that one or more Questions have been
+                        # deleted in the moment of time between the formation of the list
+                        # of valid instances and actually creating them, so let's give it
+                        # one more try, assuming there's an even slimmer chance that
+                        # lightning will strike twice. If this one fails, we'll roll-back
+                        # everything and give up on the entire effort.
                         create_batch(batch_of_question_ids)
-                except IntegrityError:
-                    # There is a very slim chance that one or more Questions have been deleted in
-                    # the moment of time between the formation of the list of valid instances and
-                    # actually creating them, so let's give it one more try, assuming there's an
-                    # even slimmer chance that lightning will strike twice. If this one fails,
-                    # we'll roll-back everything and give up on the entire effort.
-                    create_batch(batch_of_question_ids)
 
-            if verbose:
-                log.info("Done.")
+                # We're done with this batch, so let's clear the memory for the next one.
+                instance_by_question_id.clear()
+
+        if verbose:
+            log.info("Done.")
 
 
 class QuestionLocale(ModelBase):

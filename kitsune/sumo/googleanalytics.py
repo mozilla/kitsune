@@ -332,6 +332,8 @@ def pageviews_by_question(period=LAST_YEAR, verbose=False):
     """
     date_range = DateRange(start_date=PERIOD_TO_DAYS_AGO[period], end_date="today")
 
+    pageviews_by_id = {}
+
     for row in run_report(date_range, create_question_report_request, verbose=verbose):
         path = row.dimension_values[0].value
         # The path should be a question path without any query parameters, but in reality
@@ -345,7 +347,13 @@ def pageviews_by_question(period=LAST_YEAR, verbose=False):
             question_id = int(question_id)
         except ValueError:
             continue
-        yield (question_id, num_page_views)
+
+        # The "run_report" will return one row for each unique question path. Since the
+        # path includes the locale, there can be multiple rows for each question, so we
+        # need to accumulate the sum of all of those rows.
+        pageviews_by_id[question_id] = pageviews_by_id.get(question_id, 0) + num_page_views
+
+    return pageviews_by_id
 
 
 def search_clicks_and_impressions(start_date, end_date, verbose=False):

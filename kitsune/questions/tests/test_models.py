@@ -572,7 +572,7 @@ class QuestionVisitsTests(TestCase):
         q2 = QuestionFactory()
         q3 = QuestionFactory()
 
-        pageviews_by_question.return_value = (
+        pageviews_by_question.return_value = dict(
             row
             for row in (
                 (q1.id, 42),
@@ -589,7 +589,7 @@ class QuestionVisitsTests(TestCase):
         self.assertEqual(1337, QuestionVisits.objects.get(question_id=q3.id).visits)
 
         # Change the data and run again to cover the update case.
-        pageviews_by_question.return_value = (
+        pageviews_by_question.return_value = dict(
             row
             for row in (
                 (q1.id, 100),
