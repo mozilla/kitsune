@@ -1,10 +1,11 @@
-{% macro help_topics(topics, documents, product_slug=None, new_tab=False) -%}
+{% macro help_topics(topics, product_slug=None, new_tab=False) -%}
 {# topics: List of topic_data dicts containing:
     - topic: Topic model instance
     - topic_url: URL to topic page
     - title: Topic title
     - total_articles: Number of articles
     - image_url: URL to topic icon
+    - documents: three documents for the topic
 #}
 <div class="topics-section">
   <h2>Topics</h2>
@@ -24,7 +25,7 @@
           </h3>
       </div>
       <ul class="article-list">
-        {% for document in documents[topic_data.topic] %}
+        {% for document in topic_data.documents %}
         <li>
           <a href="{{ document.url }}">      
             {{ document.document_title }}</a>

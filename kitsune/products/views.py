@@ -60,7 +60,6 @@ def product_landing(request, slug: str) -> HttpResponse:
     topics = topics_for(request.user, product=product, parent=None)
     # Create a dictionary of topics and three documents
     # TODO: get popular documents instead of just the first three
-    documents = {}
     topics_with_urls = []
     for topic in topics:
         docs, _ = documents_for(
@@ -73,10 +72,10 @@ def product_landing(request, slug: str) -> HttpResponse:
             "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
             "title": topic.title,
             "total_articles": total_articles,
-            "image_url": getattr(topic, "image_url", ""),
+            "image_url": topic.image_url,
+            "documents": docs[:3],
         }
         topics_with_urls.append(topic_data)
-        documents[topic] = docs[:3]
 
     return render(
         request,
@@ -89,7 +88,6 @@ def product_landing(request, slug: str) -> HttpResponse:
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
             "has_aaq_config": has_aaq_config(product),
-            "documents": documents,
         },
     )
 
