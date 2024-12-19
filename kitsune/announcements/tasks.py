@@ -31,9 +31,11 @@ def send_group_email(announcement_id):
     @safe_translation
     def _make_mail(locale, user):
         if groups.count() == 1:
-            subject = _(f"New announcement for {groups[0].name}")
+            subject = _("New announcement for {name}").format(name=groups[0].name)
         else:
-            subject = _(f"New announcement for groups [{', '.join([g.name for g in groups])}]")
+            subject = _("New announcement for groups [{names}]").format(
+                names=", ".join(g.name for g in groups)
+            )
 
         mail = make_mail(
             subject=subject,
