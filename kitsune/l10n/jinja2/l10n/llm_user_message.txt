@@ -1,0 +1,29 @@
+Please translate the {{ source_language }} text (delimited by <<<begin>>> and <<<end>>>) into {{ target_language }}, by strictly obeying each of the following steps:
+
+{% if example and include_wiki_instructions -%}
+Step 1: Build the "antecedent-wiki-map", and remember it.
+
+Step 2: Compare the {{ source_language }} text you've been asked to translate with the {{ source_language }} text of the "antecedent" example, and determine which parts are the same and which parts are different.
+
+Step 3: For each part that is the same, copy its corresponding translation from the {{ target_language }} text of the "antecedent" example.
+
+Step 4: For each part that is different, freshly translate that part while obeying the "special instructions" defined earlier.
+
+Step 5: Review your translation, replacing each "wiki-hook", "wiki-article-link", and "wiki-external-link", if it matches a key within the "antecedent-wiki-map", with its value within the "antecedent-wiki-map".
+
+Step 6: In your response, include the "antecedent-wiki-map", describe what you did for each step, and delimit your resulting translation with {{ result_delimiter_begin|safe }} and {{ result_delimiter_end|safe }}.
+{%- elif example -%}
+Step 1: Compare the {{ source_language }} text you've been asked to translate with the {{ source_language }} text of the "antecedent" example, and determine which parts are the same and which parts are different.
+
+Step 2: For each part that is the same, copy its corresponding translation from the {{ target_language }} text of the "antecedent" example.
+
+Step 3: For each part that is different, freshly translate that part while obeying the "special instructions" defined earlier.
+
+Step 4: In your response, include the "antecedent-wiki-map", describe what you did for each step, and delimit your resulting translation with {{ result_delimiter_begin|safe }} and {{ result_delimiter_end|safe }}.
+{%- else -%}
+Step 1: Obey the "special instructions" while translating.
+
+Step 2: In your response, delimit your resulting translation with {{ result_delimiter_begin|safe }} and {{ result_delimiter_end|safe }}.
+{%- endif %}
+
+<<<begin>>>{{ source_text|safe }}<<<end>>>
