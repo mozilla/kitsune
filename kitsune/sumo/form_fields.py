@@ -107,7 +107,7 @@ class MultiUsernameOrGroupnameField(forms.Field):
         for key, value in key_value_pairs:
             # check if the value is a valid username in the database
             if key.lower() == "user" and not User.objects.filter(username=value).exists():
-                raise ValidationError(_(f"{value} is not a valid username."))
+                raise ValidationError(_("{name} is not a valid username.").format(name=value))
             to_objects.setdefault(f"{key.lower()}s", []).append(value)
 
         return to_objects
