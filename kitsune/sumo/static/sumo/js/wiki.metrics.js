@@ -15,44 +15,41 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("vote", (event) => {
       if (('helpful' in event.detail) || ('not-helpful' in event.detail)) {
         trackEvent("article_vote", {
-          "vote": ("helpful" in event.detail) ? "helpful": "not-helpful",
+          "vote": ("helpful" in event.detail) ? "helpful" : "not-helpful",
         });
       }
     });
 
-    document.addEventListener("survey-loaded", (event) => {
-      const surveyCloseButton = document.querySelector("#unhelpful-survey .close-button");
-      const surveySubmitButton = document.querySelector('#unhelpful-survey button[type="submit"]');
-
-      function trackCloseEvent(event) {
-        trackEvent("article_unhelpful_survey_close");
+    // Track survey interactions
+    const surveyContainer = document.querySelector('.survey-container');
+    if (surveyContainer) {
+      // Track when survey is closed
+      const closeButton = surveyContainer.querySelector('button[type="button"]');
+      if (closeButton) {
+        closeButton.addEventListener("click", () => {
+          trackEvent("article_unhelpful_survey_close");
+        });
       }
 
-      if (surveySubmitButton) {
-        surveySubmitButton.addEventListener("click", function(event) {
+      // Track when survey is submitted
+      const form = surveyContainer.querySelector('form');
+      if (form) {
+        form.addEventListener("submit", () => {
           trackEvent("article_unhelpful_survey_submit");
-          if (surveyCloseButton) {
-            // After the survey is submitted, we don't want to track the
-            // close of the final message.
-            surveyCloseButton.removeEventListener("click", trackCloseEvent)
-          }
         });
       }
-      if (surveyCloseButton) {
-        surveyCloseButton.addEventListener("click", trackCloseEvent);
-      }
-    });
+    }
 
     // Track showfor changes in GA.
     if (versionSelect) {
-      versionSelect.addEventListener("change", function(event) {
+      versionSelect.addEventListener("change", function (event) {
         trackEvent("showfor_version_change", {
           "showfor_version": this.value,
         });
       });
     }
     if (platformSelect) {
-      platformSelect.addEventListener("change", function(event) {
+      platformSelect.addEventListener("change", function (event) {
         trackEvent("showfor_platform_change", {
           "showfor_platform": this.value,
         });

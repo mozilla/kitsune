@@ -13,19 +13,25 @@
 
   &--content {
     @media #{p.$mq-md} {
-      p, ul {
+
+      p,
+      ul {
         padding-right: c.col-width(1, 4);
       }
     }
 
     @media #{p.$mq-lg} {
-      p, ul {
+
+      p,
+      ul {
         padding-right: c.col-width(1, 6);
       }
     }
 
     @media #{p.$mq-xl} {
-      p, ul {
+
+      p,
+      ul {
         padding-right: c.col-width(1, 7);
       }
     }
@@ -47,17 +53,34 @@
 
 .document-vote {
   border-radius: 36px;
-  padding: 40px 0 p.$spacing-sm;
+  padding: p.$spacing-lg;
+  min-width: 225px;
 
   @at-root .hide-on-large & {
     padding: 20px;
+  }
+
+  .comments-label {
+    margin-bottom: 0;
+    text-align: left;
+    font-size: 0.75rem;
+  }
+
+  .character-counter {
+    text-align: left;
+    font-size: 0.75rem;
+  }
+
+  .required-text {
+    color: red;
   }
 
   &.is-forum-answer {
 
     .document-vote--form {
       flex-direction: row;
-      align-items: center;
+      justify-content: flex-start;
+      align-items: flex-start;
     }
 
     .document-vote--heading {
@@ -69,7 +92,7 @@
   &--form {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
   }
 
@@ -78,7 +101,8 @@
     margin: 0;
     margin-bottom: p.$spacing-md;
 
-    &.msg { // injected with JS
+    &.msg {
+      // injected with JS
       font-weight: bold;
       color: var(--color-heading);
       margin: 0;
@@ -172,6 +196,43 @@
     }
 
   }
+
+  .field.radio {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: p.$spacing-sm;
+    padding-right: 0;
+
+    input[type="radio"] {
+      flex-shrink: 0;
+      margin-top: 4px;
+      width: 20px;
+    }
+
+    label {
+      margin-left: p.$spacing-sm;
+      line-height: 1.4;
+      text-align: left;
+      flex: 1;
+    }
+  }
+
+  ul {
+    padding-left: 0;
+    margin: p.$spacing-md 0;
+    list-style: none;
+  }
+
+  textarea {
+    margin: p.$spacing-sm 0;
+    width: 100%;
+    min-height: 140px;
+  }
+
+  .sumo-button-wrap .sumo-button {
+    margin: 0px;
+    gap: p.$spacing-sm;
+  }
 }
 
 
@@ -180,6 +241,7 @@
 .document--content,
 .forum--entry-content,
 #doc-content {
+
   #toc,
   .note,
   .warning {
@@ -213,12 +275,21 @@
     @include c.text-display-xxs;
   }
 
-  h3, h4, h5, h6 {
+  h3,
+  h4,
+  h5,
+  h6 {
     @include c.text-display-xxxs;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     margin-top: 1.5em;
+
     &:first-child {
       margin-top: 0;
     }
@@ -256,15 +327,15 @@
 
   .button,
   .key {
-    display:inline-flex;
-    justify-content:center;
+    display: inline-flex;
+    justify-content: center;
     align-items: center;
     border: 2px solid var(--color-marketing-gray-03);
     padding: 0 p.$spacing-md;
     border-radius: p.$border-radius-xs;
     font-family: var(--heading-alt-font-family);
     @include p.font-size(14px);
-    font-weight:700;
+    font-weight: 700;
     text-decoration: none;
     color: var(--color-marketing-gray-07);
   }
@@ -390,4 +461,3 @@
     }
   }
 }
-
