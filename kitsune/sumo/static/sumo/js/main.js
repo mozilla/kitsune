@@ -30,7 +30,7 @@ export const getQueryParamsAsDict = function (url) {
   return urlParams;
 };
 
-export const getReferrer = function(urlParams) {
+export const getReferrer = function (urlParams) {
   /*
     Get the referrer to the current page. Returns:
     - 'search' - if current url has as=s
@@ -46,7 +46,7 @@ export const getReferrer = function(urlParams) {
   }
 };
 
-export const getSearchQuery = function(urlParams, referrer) {
+export const getSearchQuery = function (urlParams, referrer) {
   // If the referrer is a search page, return the search keywords.
   if (referrer === 'search') {
     return urlParams.s;
@@ -56,7 +56,7 @@ export const getSearchQuery = function(urlParams, referrer) {
   return '';
 };
 
-export const unquote = function(str) {
+export const unquote = function (str) {
   if (str) {
     // Replace all \" with "
     str = str.replace(/\\\"/g, '"');
@@ -75,15 +75,15 @@ var UNSAFE_CHARS = {
   "'": '&#39;',
   '"': '&quot;'
 };
-export const safeString = function(str) {
+export const safeString = function (str) {
   if (str) {
     return str.replace(new RegExp('[&<>\'"]', 'g'),
-      function(m) { return UNSAFE_CHARS[m]; });
+      function (m) { return UNSAFE_CHARS[m]; });
   }
   return str;
 };
 
-export const safeInterpolate = function(fmt, obj, named) {
+export const safeInterpolate = function (fmt, obj, named) {
   if (named) {
     for (var j in obj) {
       obj[j] = safeString(obj[j]);
@@ -99,7 +99,7 @@ export const safeInterpolate = function(fmt, obj, named) {
 
 // Pass CSRF token in XHR header
 $.ajaxSetup({
-  beforeSend: function(xhr, settings) {
+  beforeSend: function (xhr, settings) {
     var csrfElem = document.querySelector('input[name=csrfmiddlewaretoken]');
     var csrf = $.cookie('csrftoken');
     if (!csrf && csrfElem) {
@@ -111,7 +111,7 @@ $.ajaxSetup({
   }
 });
 
-$(function() {
+$(function () {
   layoutTweaks();
   /* Focus form field when clicking on error message. */
   $('#content ul.errorlist a').on("click", function () {
@@ -134,13 +134,13 @@ $(function() {
   userMessageUI();
 
   /* Skip to search (a11y) */
-  $('#skip-to-search').on('click', function(ev) {
+  $('#skip-to-search').on('click', function (ev) {
     ev.preventDefault();
     $('input[name=q]').last().get(0).focus();
   });
 });
 
-window.addEventListener('popstate', function() {
+window.addEventListener('popstate', function () {
   setTimeout(layoutTweaks, 0);
 });
 
@@ -148,7 +148,7 @@ window.addEventListener('popstate', function() {
   * Initialize some selects so that they auto-submit on change.
   */
 function initAutoSubmitSelects() {
-  $('select.autosubmit').on('change keyup', function() {
+  $('select.autosubmit').on('change keyup', function () {
     $(this).closest('form').trigger('submit');
   });
 }
@@ -161,9 +161,12 @@ function initAutoSubmitSelects() {
   * from being submitted and we depend on those in some views.
   */
 function disableFormsOnSubmit() {
-  $('form').on("submit", function(ev) {
+  $('form').on("submit", function (ev) {
     var $this = $(this);
-    if ($this.attr('method').toLowerCase() === 'post') {
+    // Get method, defaulting to GET if not specified
+    let method = ($this.attr('method') || 'get').toLowerCase();
+
+    if (method === 'post') {
       if ($this.data('disabled')) {
         ev.preventDefault();
       } else {
@@ -174,7 +177,7 @@ function disableFormsOnSubmit() {
         $this.data('disabled', false).removeClass('disabled');
       }
 
-      $this.ajaxComplete(function() {
+      $this.ajaxComplete(function () {
         enableForm();
         $this.off('ajaxComplete');
       });
@@ -203,9 +206,9 @@ function remove_item(from_list, match_against) {
 
 function userMessageUI() {
   // Add a close button to all messages.
-  $('.user-messages > li').each(function() {
+  $('.user-messages > li').each(function () {
     var $msg = $(this);
-    $('<div>', {'class': 'close-button'}).appendTo($msg);
+    $('<div>', { 'class': 'close-button' }).appendTo($msg);
   });
 
   function key($msg) {
@@ -213,13 +216,13 @@ function userMessageUI() {
   }
 
   // Some messages can be dismissed permanently.
-  $('.user-messages .dismissible').each(function() {
+  $('.user-messages .dismissible').each(function () {
     var $msg = $(this);
     if (!localStorage.getItem(key($msg))) {
       $msg.show();
     }
   });
-  $('.user-messages').on('click', '.dismissible .dismiss', function(e) {
+  $('.user-messages').on('click', '.dismissible .dismiss', function (e) {
     var $msg = $(this).parent();
     localStorage.setItem(key($msg), true);
     $msg.hide();
@@ -228,10 +231,10 @@ function userMessageUI() {
 
 function layoutTweaks() {
   // Adjust the height of cards to be consistent within a group.
-  $('.card-grid').each(function() {
+  $('.card-grid').each(function () {
     var $cards = $(this).children('li');
     var max = 0;
-    $cards.each(function() {
+    $cards.each(function () {
       var h = $(this).height();
       if (h > max) {
         max = h;
@@ -249,7 +252,7 @@ function pad(str, length, padChar) {
   return str;
 }
 
-export const dateFormat = function(format, d) {
+export const dateFormat = function (format, d) {
   var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
     'Friday', 'Saturday'];
 
@@ -275,14 +278,14 @@ export const dateFormat = function(format, d) {
   */
 function removeAuthToken() {
   var qs = window.location.search.slice(1);
-  var query = qs.split('&').map(function(pair) {
+  var query = qs.split('&').map(function (pair) {
     return [
       pair.split('=')[0],
       pair.split('=').slice(1).join('=')
     ];
   });
   var authFound = false;
-  query = query.filter(function(pair) {
+  query = query.filter(function (pair) {
     if (pair[0] === 'auth') {
       authFound = true;
       return false;
@@ -291,7 +294,7 @@ function removeAuthToken() {
   });
 
   if (authFound) {
-    qs = '?' + query.map(function(pair) { return pair.join('='); }).join('&');
+    qs = '?' + query.map(function (pair) { return pair.join('='); }).join('&');
     history.replaceState(this.state, {}, qs);
   }
 }

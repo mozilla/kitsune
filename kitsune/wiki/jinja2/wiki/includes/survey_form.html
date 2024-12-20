@@ -1,0 +1,84 @@
+<div class="survey-container"
+     x-data="{
+         selectedReason: '',
+         comment: '',
+         maxLength: 600,
+         hasError: false,
+         responseMessage: null,
+         validateForm() {
+             this.hasError = this.selectedReason === 'other' && !this.comment.trim();
+             return !this.hasError;
+         },
+         closeSurvey() {
+             document.querySelector('.document-vote').remove();
+         }
+     }"
+     x-init="
+         responseMessage = $refs.messageData.value;
+         if (responseMessage) {
+             setTimeout(() => {
+                 closeSurvey();
+             }, 5000);
+         }
+     ">
+    <input type="hidden" 
+           x-ref="messageData" 
+           value="{{ response_message if response_message else '' }}">
+    <template x-if="responseMessage">
+        <div class="survey-message">
+            <p x-text="responseMessage"></p>
+        </div>
+    </template>
+
+    <template x-if="!responseMessage">
+        <form hx-post="{{ action_url }}"
+              hx-target=".survey-container"
+              @submit.prevent="validateForm()"
+              hx-trigger="submit">
+            {% csrf_token %}
+            <input type="hidden" name="vote_id" value="{{ vote_id }}" />
+            <input type="hidden" name="revision_id" value="{{ revision_id }}" />
+            <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
+            <h3 class="sumo-card-heading text-center">
+                {{ survey_heading }}
+            </h3>
+            <ul id="{{ survey_type }}-contents">
+                {% for option in survey_options %}
+                    <li class="field is-condensed radio">
+                        <input type="radio" name="{{ survey_type }}-reason" 
+                               value="{{ option.value }}" 
+                               id="{{ survey_type }}_{{ loop.index }}" 
+                               x-model="selectedReason" />
+                        <label for="{{ survey_type }}_{{ loop.index }}">{{ option.text }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="comments-label align-start">
+                {{ _('Comments') }} 
+                <span x-show="selectedReason === 'other'" class="required-text">{{ _('Required') }}</span>
+            </p>
+            <textarea name="comment" 
+                      placeholder="{{ _('To protect your privacy, please do not include any personal information.') }}" 
+                      x-model="comment" 
+                      :required="selectedReason === 'other'" 
+                      :disabled="selectedReason !== 'other'" 
+                      @input="if (comment.length > maxLength) comment = comment.slice(0, maxLength)"></textarea>
+            <p class="character-counter">
+                <span x-text="maxLength - comment.length"></span> {{ _('characters remaining.') }}
+            </p>
+            <p class="error-text" 
+               x-show="hasError" 
+               style="display: none; color: red;">{{ _('Please provide more details.') }}</p>
+            <div class="sumo-button-wrap align-full">
+                <button class="sumo-button button-sm secondary-button" type="button" 
+                        @click="closeSurvey()">
+                    {{ _('Cancel') }}
+                </button>
+                <button class="sumo-button button-sm primary-button" type="submit" 
+                        :disabled="!selectedReason || (selectedReason === 'other' && !comment.trim())">
+                    {{ _('Submit') }}
+                </button>
+            </div>
+        </form>
+    </template>
+</div>

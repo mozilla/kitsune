@@ -3,7 +3,6 @@ import "sumo/js/libs/jquery.cookie";
 import _throttle from "underscore/modules/throttle";
 import KBox from "sumo/js/kbox";
 import AjaxPreview from "sumo/js/ajaxpreview";
-import AjaxVote from "sumo/js/ajaxvote";
 import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
 import Marky from "sumo/js/markup";
 import AAQSystemInfo from "sumo/js/aaq";
@@ -33,7 +32,7 @@ function init() {
   if ($body.is('.questions')) {
     initTagFilterToggle();
 
-    $('#flag-filter input[type="checkbox"]').on('click', function() {
+    $('#flag-filter input[type="checkbox"]').on('click', function () {
       window.location = $(this).data('url');
     });
   }
@@ -41,7 +40,7 @@ function init() {
   if ($body.is('.answers')) {
     // Put last search query into search box
     $('#support-search input[name=q]')
-    .val(unquote($.cookie('last_search')));
+      .val(unquote($.cookie('last_search')));
 
     function takeQuestion() {
       if ($(this).val().length > 0) {
@@ -51,7 +50,7 @@ function init() {
         $.ajax({
           url: url,
           method: 'POST',
-          beforeSend: function(xhr, settings) {
+          beforeSend: function (xhr, settings) {
             xhr.setRequestHeader('X-CSRFToken', csrftoken);
           }
         });
@@ -60,13 +59,12 @@ function init() {
 
     $('#id_content').on('keyup', _throttle(takeQuestion, 60000));
 
-    $(document).on('click', '#details-edit', function(ev) {
+    $(document).on('click', '#details-edit', function (ev) {
       ev.preventDefault();
       $('#question-details').addClass('editing');
     });
 
     initHaveThisProblemTooAjax();
-    initHelpfulVote();
     initCrashIdLinking();
     initEditDetails();
     addReferrerAndQueryToVoteForm();
@@ -74,10 +72,10 @@ function init() {
     new AjaxPreview($('#preview'));
   }
 
-  Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
+  Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', { cannedResponses: !$body.is('.new-question') });
 
   // product selector page reloading
-  $('#product-selector select').on('change', function() {
+  $('#product-selector select').on('change', function () {
     var val = $(this).val();
     var queryParams = getQueryParamsAsDict(document.location.toString());
 
@@ -90,7 +88,7 @@ function init() {
   });
 
   // sort questions page reloading
-  $('[data-sort-questions]').on('change', function() {
+  $('[data-sort-questions]').on('change', function () {
     document.location = $(this).val()
   });
 
@@ -116,10 +114,10 @@ function isLoggedIn() {
 
 // Handle changes to the details for a question
 function initEditDetails() {
-  $('#details-product').on('change', function() {
+  $('#details-product').on('change', function () {
     var $selected;
 
-    $(this).children().each(function() {
+    $(this).children().each(function () {
       if (this.selected) {
         $selected = $(this);
       }
@@ -130,7 +128,7 @@ function initEditDetails() {
 
     $.ajax($selected.data('url'), {
       'dataType': 'json',
-      'success': function(data) {
+      'success': function (data) {
         for (var i = 0; i < data.topics.length; i++) {
           var topic = data.topics[i];
           var $opt = $('<option />');
@@ -170,17 +168,17 @@ function initHaveThisProblemTooAjax() {
 
   // ajaxify each form individually so the resulting kbox attaches to
   // the correct DOM element
-  $container.each(function() {
+  $container.each(function () {
     initAjaxForm($(this), 'form', '#vote-thanks');
   });
 
-  $container.find('input').on("click", function() {
+  $container.find('input').on("click", function () {
     $(this).attr('disabled', 'disabled');
   });
 
   // closing or cancelling the kbox on any of the forms should remove
   // all of them
-  $container.on('click', '.kbox-close, .kbox-cancel', function(ev) {
+  $container.on('click', '.kbox-close, .kbox-cancel', function (ev) {
     ev.preventDefault();
     $container.off().remove();
   });
@@ -192,27 +190,15 @@ function addReferrerAndQueryToVoteForm() {
     referrer = getReferrer(urlParams),
     query = getSearchQuery(urlParams, referrer);
   $('form.helpful, .me-too form')
-  .append($('<input type="hidden" name="referrer"/>')
-  .attr('value', referrer))
-  .append($('<input type="hidden" name="query"/>')
-  .attr('value', query));
-}
-
-/*
-* Ajaxify the Helpful/Not Helpful form
-*/
-function initHelpfulVote() {
-  $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
-    new AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
-      replaceFormWithMessage: true,
-      removeForm: true
-    });
-  });
+    .append($('<input type="hidden" name="referrer"/>')
+      .attr('value', referrer))
+    .append($('<input type="hidden" name="query"/>')
+      .attr('value', query));
 }
 
 // Helper
 function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
-  $container.on('submit', formSelector, function(ev) {
+  $container.on('submit', formSelector, function (ev) {
     ev.preventDefault();
     var $form = $(this);
     var url = $form.attr('action');
@@ -223,7 +209,7 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
       type: 'POST',
       data: data,
       dataType: 'json',
-      success: function(response) {
+      success: function (response) {
         if (response.html) {
           if ($(boxSelector).length === 0) {
             // We don't have a modal set up yet.
@@ -238,8 +224,8 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
         } else if (response.message) {
           var html = '<div class="msg"></div>';
           $(boxSelector)
-          .html(html)
-          .find('.msg').text(response.message);
+            .html(html)
+            .find('.msg').text(response.message);
         }
 
         if (!response.ignored) {
@@ -247,7 +233,7 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
           document.dispatchEvent(new CustomEvent("vote-for-question", { bubbles: true, detail: { url } }));
         }
       },
-      error: function() {
+      error: function () {
         var message = gettext('There was an error.');
         alert(message);
       }
@@ -258,7 +244,7 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
 }
 
 function initTagFilterToggle() {
-  $('#toggle-tag-filter').on("click", function(e) {
+  $('#toggle-tag-filter').on("click", function (e) {
     e.preventDefault();
     $('#tag-filter').slideToggle('fast');  // CSS3: Y U NO TRANSITION TO `height: auto;`?
     $(this).toggleClass('off');
@@ -276,10 +262,10 @@ export function linkCrashIds(container) {
   var crashStatsBase = 'https://crash-stats.mozilla.org/report/index/';
   var helpingWithCrashesArticle = '/kb/helping-crashes';
   var crashReportContainer =
-  "<span class='crash-report'>" +
-  "<a href='" + crashStatsBase + "$1' target='_blank'>$1</a>" +
-  "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
-  "<img src='" + questionmarkIcon + "'></img></a></span>";
+    "<span class='crash-report'>" +
+    "<a href='" + crashStatsBase + "$1' target='_blank'>$1</a>" +
+    "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
+    "<img src='" + questionmarkIcon + "'></img></a></span>";
 
   container.html(container.html().replace(crashIDRegex, crashReportContainer));
 }
@@ -289,13 +275,13 @@ export function linkCrashIds(container) {
 */
 function initCrashIdLinking() {
   var postContents = $('.question .main-content, .answer .main-content, #more-system-details');
-  postContents.each(function() {
+  postContents.each(function () {
     linkCrashIds($(this));
   });
 }
 
 function initReplyToAnswer() {
-  $('a.quoted-reply').on("click", function() {
+  $('a.quoted-reply').on("click", function () {
     var contentId = $(this).data('content-id'),
       $content = $('#' + contentId),
       text = $content.find('.content-raw').text(),
@@ -306,7 +292,7 @@ function initReplyToAnswer() {
 
     $textarea.val(oldtext + reply_text);
 
-    setTimeout(function() {
+    setTimeout(function () {
       $textarea.focus();
     }, 10);
 

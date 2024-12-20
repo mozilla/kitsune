@@ -1246,36 +1246,94 @@ def json_view(request):
 
 @require_POST
 @ratelimit("document-vote", "10/d")
-def helpful_vote(request, document_slug):
-    """Vote for Helpful/Not Helpful document"""
+def handle_vote(request, document_slug):
+    """Handle both helpful/unhelpful votes and unhelpful surveys."""
     if "revision_id" not in request.POST:
         return HttpResponseBadRequest()
 
+    if "vote_id" in request.POST:
+        # Handle survey submission
+        vote = get_object_or_404(HelpfulVote, id=smart_int(request.POST["vote_id"]))
+
+        # Only save the survey if there's no already one
+        if not vote.metadata.filter(key="survey").exists():
+            survey = request.POST.copy()
+            survey.pop("vote_id")
+            survey.pop("revision_id", None)
+
+            # Save the survey in JSON format, ensuring it doesn't exceed 600 chars
+            vote.add_metadata("survey", truncated_json_dumps(survey, 600, "comment"))
+        survey_response = render_to_string(
+            "wiki/includes/survey_form.html",
+            {"response_message": _("Thanks for making us better!")},
+            request,
+        )
+        return HttpResponse(survey_response)
+
+    # Handle helpful/unhelpful voting
     revision = get_object_or_404(Revision, id=smart_int(request.POST["revision_id"]))
 
     if not revision.is_approved:
-        # I don't think it makes sense to vote for an unapproved revision.
         raise PermissionDenied
-
-    survey = None
 
     if revision.document.category == TEMPLATES_CATEGORY:
         return HttpResponseBadRequest()
 
+    survey_context = {}
+
     if not revision.has_voted(request):
-        ua = request.META.get("HTTP_USER_AGENT", "")[:1000]  # 1000 max_length
-        vote = HelpfulVote(revision=revision, user_agent=ua)
+        ua = request.META.get("HTTP_USER_AGENT", "")[:1000]  # Limit to 1000 characters
+        vote = HelpfulVote.objects.create(revision=revision, user_agent=ua)
+        survey_context = {
+            "vote_id": vote.id,
+            "action_url": reverse("wiki.document_vote", args=[document_slug]),
+            "revision_id": revision.id,
+            "response_message": "",
+        }
 
         if "helpful" in request.POST:
             vote.helpful = True
-            message = _(
-                "Great to hear &mdash; thanks for the feedback! <br />"
-                "<span disabled class=helpful-button>&#x1F44D;</span>"
+            survey_context.update(
+                {
+                    "survey_type": "helpful",
+                    "survey_heading": _('You voted "Yes 👍" Please tell us more'),
+                    "survey_options": [
+                        {"value": "article-accurate", "text": _("Article is accurate")},
+                        {
+                            "value": "article-easy-to-understand",
+                            "text": _("Article is easy to understand"),
+                        },
+                        {"value": "article-helpful-visuals", "text": _("The visuals are helpful")},
+                        {
+                            "value": "article-informative",
+                            "text": _("Article provided the information I needed"),
+                        },
+                        {"value": "other", "text": _("Other")},
+                    ],
+                }
             )
         else:
-            message = _("Sorry to hear that.")
+            survey_context.update(
+                {
+                    "survey_type": "unhelpful",
+                    "survey_heading": _('You voted "No 👎" Please tell us more'),
+                    "survey_options": [
+                        {"value": "article-inaccurate", "text": _("Article is inaccurate")},
+                        {"value": "article-confusing", "text": _("Article is confusing")},
+                        {
+                            "value": "article-not-helpful-visuals",
+                            "text": _("Missing, unclear, or unhelpful visuals"),
+                        },
+                        {
+                            "value": "article-not-informative",
+                            "text": _("Article didn't provide the information I needed"),
+                        },
+                        {"value": "other", "text": _("Other")},
+                    ],
+                }
+            )
 
-        # If user is over the limit, don't save but pretend everything is ok.
+        # If the user is over the limit,pretend everything is fine without saving
         if not request.limited:
             if request.user.is_authenticated:
                 vote.creator = request.user
@@ -1284,47 +1342,16 @@ def helpful_vote(request, document_slug):
 
             vote.save()
 
-            # Send a survey if flag is enabled and vote wasn't helpful.
-            if "helpful" not in request.POST:
-                survey = render_to_string(
-                    "wiki/includes/unhelpful_survey.html", {"vote_id": vote.id}, request
-                )
-
-            # Save vote metadata: referrer and search query (if available)
+            # Save metadata: referrer and search query (if available)
             for name in ["referrer", "query", "source"]:
                 val = request.POST.get(name)
                 if val:
                     vote.add_metadata(name, val)
-    else:
-        message = _("You already voted on this Article.")
 
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        r = {"message": message}
-        if survey:
-            r.update(survey=survey)
-
-        return HttpResponse(json.dumps(r))
-
+    if request.headers.get("HX-Request") and survey_context:
+        survey_html = render_to_string("wiki/includes/survey_form.html", survey_context, request)
+        return HttpResponse(survey_html)
     return HttpResponseRedirect(revision.document.get_absolute_url())
-
-
-@require_POST
-def unhelpful_survey(request):
-    """Ajax only view: Unhelpful vote survey processing."""
-    vote = get_object_or_404(HelpfulVote, id=smart_int(request.POST.get("vote_id")))
-
-    # Only save the survey if it was for a not helpful vote and a survey
-    # doesn't exist for it already.
-    if not vote.helpful and not vote.metadata.filter(key="survey").exists():
-        # The survey is the posted data, minus the vote_id and button value.
-        survey = request.POST.copy()
-        survey.pop("vote_id")
-        survey.pop("button")
-
-        # Save the survey in JSON format, taking care not to exceed 1000 chars.
-        vote.add_metadata("survey", truncated_json_dumps(survey, 1000, "comment"))
-
-    return HttpResponse(json.dumps({"message": _("Thanks for making us better!")}))
 
 
 @require_GET
