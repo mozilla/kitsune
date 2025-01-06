@@ -32,6 +32,7 @@ jobs:
       deployments: write
       id-token: write
     runs-on: ubuntu-latest
+    if: github.repository == 'mozilla/kitsune'
 
     outputs:
         deployment_env: ${{ env.DEPLOYMENT_ENV }}
