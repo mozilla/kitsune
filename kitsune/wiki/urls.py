@@ -30,7 +30,7 @@ document_patterns = [
     re_path(r"^/watch$", views.watch_document, name="wiki.document_watch"),
     re_path(r"^/unwatch$", views.unwatch_document, name="wiki.document_unwatch"),
     # Vote helpful/not helpful
-    re_path(r"^/vote", views.helpful_vote, name="wiki.document_vote"),
+    re_path(r"^/vote", views.handle_vote, name="wiki.document_vote"),
     # Get helpful votes data
     re_path(
         r"^/get-votes-async", views.get_helpful_votes_async, name="wiki.get_helpful_votes_async"
@@ -140,8 +140,6 @@ urlpatterns = [
         views.unwatch_ready,
         name="wiki.ready_unwatch",
     ),
-    # Unhelfpul vote survey
-    re_path(r"^/unhelpful-survey", views.unhelpful_survey, name="wiki.unhelpful_survey"),
     re_path(r"^/json$", views.json_view, name="wiki.json"),
     re_path(r"^/revisions", views.recent_revisions, name="wiki.revisions"),
     re_path(r"^/new$", views.new_document, name="wiki.new_document"),

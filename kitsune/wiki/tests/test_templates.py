@@ -2616,27 +2616,22 @@ class HelpfulVoteTests(TestCase):
 
     def test_vote_ajax(self):
         """Test voting via ajax."""
-        r = self.document.current_revision
+        rev = self.document.current_revision
         referrer = ""
         query = ""
         url = reverse("wiki.document_vote", args=[self.document.slug])
         response = self.client.post(
             url,
             data={
-                "helpful": "Yes",
-                "revision_id": r.id,
+                "helpful": "true",
+                "revision_id": rev.id,
                 "referrer": referrer,
                 "query": query,
             },
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            HTTP_HX_REQUEST="true",
         )
         self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            b'{"message": "Great to hear &mdash; thanks for the feedback!'
-            b' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
-            response.content,
-        )
-        votes = HelpfulVote.objects.filter(revision=r, creator=None)
+        votes = HelpfulVote.objects.filter(revision=rev, creator=None)
         votes = votes.exclude(anonymous_id=None)
         self.assertEqual(1, votes.count())
         assert votes[0].helpful

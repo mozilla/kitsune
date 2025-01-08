@@ -991,7 +991,9 @@ div.video .kbox-container {
 }
 
 article {
-  #unhelpful-survey {
+
+  #unhelpful-survey,
+  #helpful-survey {
     textarea {
       height: 65px;
       margin: 6px 0 2px 12px;
@@ -1015,7 +1017,8 @@ article {
   }
 }
 
-#unhelpful-survey {
+#unhelpful-survey,
+#helpful-survey {
   p {
     margin: p.$spacing-sm 0;
   }
@@ -1047,17 +1050,6 @@ article {
     }
   }
 
-  .close-button {
-    cursor: pointer;
-    font-size: p.$spacing-lg;
-    position: absolute;
-    right: 14px;
-    top: 6px;
-
-    &:before {
-      content: '\00d7';
-    }
-  }
 
   .btn-submit {
     margin: 6px 14px;
