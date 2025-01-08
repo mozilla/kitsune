@@ -10,6 +10,8 @@ import dntEnabled from "./libs/dnt-helper";
   let html = document.getElementsByTagName('html')[0];
   let GTM_CONTAINER_ID = html.getAttribute('data-gtm-container-id');
 
+  w.gaConsoleLogging = false;
+
   w.dataLayer = w.dataLayer || [];
 
   w.gtag = function () {
@@ -47,6 +49,15 @@ import dntEnabled from "./libs/dnt-helper";
     }
     if (html.dataset.gaDebugMode) {
       configParameters.debug_mode = true;
+    }
+    // Always ensure this block of console-logging code follows all
+    // of the code that modifies the "configParameters" object.
+    if (html.dataset.gaConsoleLogging) {
+      w.gaConsoleLogging = true;
+      console.log("------------------------------");
+      console.log(`config for ${GTM_CONTAINER_ID}:`);
+      console.log(`parameters: ${JSON.stringify(configParameters, null, 2)}`);
+      console.log("------------------------------");
     }
 
     w.gtag('config', GTM_CONTAINER_ID, configParameters);
