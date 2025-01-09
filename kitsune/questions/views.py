@@ -740,7 +740,7 @@ def edit_question(request, question_id):
             question.tags.remove(*existing_tags)
             question.topic = new_topic
             question.update_topic_counter += 1
-            question.save(update=True)
+            question.save()
             question.auto_tag()
             question.clear_cached_tags()
 
