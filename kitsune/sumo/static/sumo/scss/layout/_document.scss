@@ -168,10 +168,6 @@
       color: transparent;
     }
 
-    &:not([disabled]):hover {
-      transform: scale(1.2);
-    }
-
     &[disabled] {
       opacity: 1;
       cursor: default;

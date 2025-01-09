@@ -990,6 +990,77 @@ div.video .kbox-container {
   }
 }
 
+article {
+
+  #unhelpful-survey,
+  #helpful-survey {
+    textarea {
+      height: 65px;
+      margin: 6px 0 2px 12px;
+      resize: vertical;
+      width: 275px;
+    }
+
+    &:after {
+      background: #fff;
+      box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.3);
+      content: '';
+      display: block;
+      height: 10px;
+      left: -5px;
+      position: absolute;
+      top: 15px;
+      transform: rotate(45deg);
+      width: 10px;
+      z-index: 1;
+    }
+  }
+}
+
+#unhelpful-survey,
+#helpful-survey {
+  p {
+    margin: p.$spacing-sm 0;
+  }
+
+  .helpful-button {
+    display: block;
+    margin-top: p.$spacing-md;
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  li {
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+
+    label {
+      font-weight: normal;
+      margin: 0;
+      @include c.text-body-sm;
+
+
+      &:before {
+        top: 2px;
+        margin-right: 10px;
+      }
+    }
+  }
+
+
+  .btn-submit {
+    margin: 6px 14px;
+    float: left;
+  }
+
+  .character-counter,
+  .disabled-reason {
+    @include c.text-body-xs;
+  }
+}
 
 .doc-watch {
   padding: 40px 0 0 0;
