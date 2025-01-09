@@ -59,13 +59,15 @@ def product_landing(request, slug: str) -> HttpResponse:
             latest_version = 0
     topics = topics_for(request.user, product=product, parent=None)
     # Create a dictionary of topics and three documents
-    # TODO: get popular documents instead of just the first three
     topics_with_urls = []
     for topic in topics:
         docs, _ = documents_for(
             request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
         )
         total_articles = len(docs)
+        # Leverage get_featured_articles to get active articles
+        docs = get_featured_articles(product, locale=request.LANGUAGE_CODE, topic=topic)
+
         # Create a dict with topic data including the URL
         topic_data = {
             "topic": topic,
