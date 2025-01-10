@@ -12,7 +12,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import Count, Exists, F, Max, OuterRef, Q, Subquery
+from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Subquery, When
 from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
@@ -145,9 +145,25 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
     if category:
         docs = docs.filter(category__in=[category])
 
-    docs = docs.annotate(num_visits=get_visits_subquery(period=mode)).order_by(
-        F("num_visits").desc(nulls_last=True), "title"
-    )
+    docs = docs.annotate(
+        num_visits=get_visits_subquery(period=mode),
+        ready_for_l10n=Case(
+            When(
+                Q(latest_localizable_revision__isnull=False)
+                & ~Exists(
+                    Revision.objects.filter(
+                        document=OuterRef("pk"),
+                        is_approved=True,
+                        is_ready_for_localization=False,
+                        significance__gt=TYPO_SIGNIFICANCE,
+                        id__gt=F("document__latest_localizable_revision__id"),
+                    )
+                ),
+                then=True,
+            ),
+            default=False,
+        ),
+    ).order_by(F("num_visits").desc(nulls_last=True), "title")
 
     if max:
         docs = docs[:max]
@@ -164,9 +180,7 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
             ),
             "title": d.title,
             "num_visits": d.num_visits,
-            "ready_for_l10n": d.revisions.filter(
-                is_approved=True, is_ready_for_localization=True
-            ).exists(),
+            "ready_for_l10n": d.ready_for_l10n,
         }
 
         if d.current_revision:
