@@ -135,9 +135,11 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
     if mode is None:
         mode = LAST_30_DAYS
 
-    docs = Document.objects.visible(
-        user, locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False
-    ).exclude(html__startswith=REDIRECT_HTML)
+    docs = (
+        Document.objects.visible(user, locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False)
+        .exclude(html__startswith=REDIRECT_HTML)
+        .select_related("current_revision")
+    )
 
     if product:
         docs = docs.filter(products__in=[product])
@@ -163,7 +165,45 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
             ),
             default=False,
         ),
-    ).order_by(F("num_visits").desc(nulls_last=True), "title")
+        unapproved_revision_comment=Subquery(
+            Revision.objects.filter(
+                document=OuterRef("pk"),
+                reviewed=None,
+            )
+            .filter(
+                Q(document__current_revision__isnull=True)
+                | Q(id__gt=F("document__current_revision__id"))
+            )
+            .order_by("created")[:1]
+            .values("comment")
+        ),
+    )
+
+    if locale and (locale != settings.WIKI_DEFAULT_LANGUAGE):
+        transdoc_subquery = Document.objects.filter(
+            locale=locale,
+            is_archived=False,
+            parent=OuterRef("pk"),
+            current_revision__isnull=False,
+        )
+        docs = docs.annotate(
+            transdoc_exists=Exists(transdoc_subquery),
+            transdoc_current_revision_based_on_id=Subquery(
+                transdoc_subquery.values("current_revision__based_on__id")
+            ),
+        ).annotate(
+            transdoc_is_outdated=Exists(
+                Revision.objects.filter(
+                    document=OuterRef("pk"),
+                    is_approved=True,
+                    is_ready_for_localization=True,
+                    significance__gte=MEDIUM_SIGNIFICANCE,
+                    id__gt=OuterRef("transdoc_current_revision_based_on_id"),
+                )
+            ),
+        )
+
+    docs = docs.order_by(F("num_visits").desc(nulls_last=True), "title")
 
     if max:
         docs = docs[:max]
@@ -192,23 +232,15 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
         if "expiry_date" in data and data["expiry_date"]:
             data["stale"] = data["expiry_date"] < datetime.now()
 
-        # Check L10N status
-        if d.current_revision:
-            unapproved_revs = d.revisions.filter(reviewed=None, id__gt=d.current_revision.id)[:1]
-        else:
-            unapproved_revs = d.revisions.all()
-
-        if unapproved_revs.count():
-            data["revision_comment"] = unapproved_revs[0].comment
-        else:
+        if d.unapproved_revision_comment is None:
             data["latest_revision"] = True
+        else:
+            data["revision_comment"] = d.unapproved_revision_comment
 
         # Get the translated doc
-        if locale != settings.WIKI_DEFAULT_LANGUAGE:
-            transdoc = d.translations.filter(locale=locale, is_archived=False).first()
-
-            if transdoc:
-                data["needs_update"] = transdoc.is_outdated()
+        if locale and (locale != settings.WIKI_DEFAULT_LANGUAGE):
+            if d.transdoc_exists:
+                data["needs_update"] = d.transdoc_is_outdated
         else:  # For en-US we show the needs_changes comment.
             data["needs_update"] = d.needs_change
             data["needs_update_comment"] = d.needs_change_comment
