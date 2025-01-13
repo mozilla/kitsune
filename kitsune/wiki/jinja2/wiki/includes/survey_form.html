@@ -1,50 +1,4 @@
-<div class="survey-container" x-data="{
-         selectedReason: '',
-         comment: '',
-         maxLength: 600,
-         hasError: false,
-         responseMessage: null,
-         validateForm() {
-             this.hasError = this.selectedReason === 'other' && !this.comment.trim();
-             return !this.hasError;
-         },
-         handleSubmit() {
-             if (this.validateForm()) {
-                 trackEvent('article_survey_submitted', {
-                     survey_type: '{{ survey_type }}',
-                     reason: this.selectedReason
-                 });
-                 return true;  // Allow HTMX to proceed with submission
-             }
-             return false;
-         },
-         closeSurvey(message) {
-             const surveyType = '{{ survey_type }}'.trim();
-             if (surveyType) {
-                 trackEvent('article_survey_closed', { survey_type: surveyType });
-             }
-             const survey = document.querySelector('.document-vote');
-             if (message) {
-                 this.responseMessage = message;
-                 setTimeout(() => {
-                     survey.remove();
-                 }, 5000);
-             } else {
-                 survey.remove();
-             }
-         }
-     }" x-init="
-         const surveyType = '{{ survey_type }}'.trim();
-         if (surveyType) {
-             trackEvent('article_survey_opened', { survey_type: surveyType });
-         }
-         responseMessage = $refs.messageData.value;
-         if (responseMessage) {
-             setTimeout(() => {
-                 closeSurvey();
-             }, 5000);
-         }
-     ">
+<div class="survey-container" x-data="surveyForm" data-survey-type="{{ survey_type }}">
   <input type="hidden" x-ref="messageData" value="{{ response_message if response_message else '' }}">
   <template x-if="responseMessage">
     <div class="survey-message">
@@ -52,8 +6,8 @@
     </div>
   </template>
 
-  <template x-if="!responseMessage">
-    <form hx-post="{{ action_url }}" hx-target=".survey-container" @submit.prevent="handleSubmit()" hx-trigger="submit">
+  <template x-if="formVisible">
+    <form hx-post="{{ action_url }}" hx-target=".survey-container" hx-trigger="submit">
       {% csrf_token %}
       <input type="hidden" name="vote_id" value="{{ vote_id }}" />
       <input type="hidden" name="revision_id" value="{{ revision_id }}" />
@@ -64,32 +18,31 @@
       <ul id="{{ survey_type }}-contents">
         {% for option in survey_options %}
         <li class="field is-condensed radio">
-          <input type="radio" name="{{ survey_type }}-reason" value="{{ option.value }}"
-            id="{{ survey_type }}_{{ loop.index }}" x-model="selectedReason" />
+          <input type="radio"
+                 name="{{ survey_type }}-reason"
+                 value="{{ option.value }}"
+                 id="{{ survey_type }}_{{ loop.index }}" />
           <label for="{{ survey_type }}_{{ loop.index }}">{{ option.text }}</label>
         </li>
         {% endfor %}
       </ul>
       <p class="comments-label align-start">
         {{ _('Comments') }}
-        <span x-show="selectedReason === 'other'" class="required-text">{{ _('Required') }}</span>
+        <span x-show="isOtherSelected" class="required-text">{{ _('Required') }}</span>
       </p>
       <textarea name="comment"
-        placeholder="{{ _('To protect your privacy, please do not include any personal information.') }}"
-        x-model="comment" :required="selectedReason === 'other'" :disabled="selectedReason !== 'other'"
-        @input="if (comment.length > maxLength) comment = comment.slice(0, maxLength)"></textarea>
+        placeholder="{{ _('To protect your privacy, please do not include any personal information.') }}"></textarea>
       <p class="character-counter">
-        <span x-text="maxLength - comment.length"></span> {{ _('characters remaining.') }}
+        <span x-text="remainingChars"></span> {{ _('characters remaining.') }}
       </p>
       <p class="error-text" x-show="hasError" style="display: none; color: red;">{{ _('Please provide more details.') }}
       </p>
       <div class="sumo-button-wrap align-full">
-        <button class="sumo-button button-sm secondary-button" type="button"
-                @click="closeSurvey('Thanks for voting! Your additional feedback wasn\'t submitted.')">
+        <button class="sumo-button button-sm secondary-button" type="button" @click="closeSurvey">
           {{ _('Cancel') }}
         </button>
         <button class="sumo-button button-sm primary-button" type="submit"
-          :disabled="!selectedReason || (selectedReason === 'other' && !comment.trim())">
+          x-bind:disabled="isSubmitDisabled">
           {{ _('Submit') }}
         </button>
       </div>
