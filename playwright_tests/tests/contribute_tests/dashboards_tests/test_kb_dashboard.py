@@ -379,6 +379,287 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
+# C2875533
+@pytest.mark.kbDashboard
+def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    kb_dashboard_page_messages = KBDashboardPageMessages()
+
+    with allure.step("Signing in with the admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article and approving the first revision without marking "
+                     "it as ready for l10n"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=False)
+
+    with check, allure.step("Verifying that the correct kb dashboard l10n status is displayed "
+                            "(No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with check, allure.step("Approving the KB article without marking it as ready for l10n and "
+                            "verifying that the correct l10N status is displayed inside the KB "
+                            "dashboard (No)"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=article_details["first_revision_id"])
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new revision and approve it as minor significance"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='minor')
+
+    with check, allure.step("Verifying that the correct l10N status is inside the KB dashboard "
+                            "(No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new revision and approving it as normal significance and ready "
+                     "for localization"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='normal', ready_for_l10n=True
+        )
+
+    with check, allure.step("Verifying that the correct l10n status is inside the kb dashboard "
+                            "(Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with allure.step("Creating a new revision and approving it as normal significance and not "
+                     "ready for localization"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='normal'
+        )
+
+    with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
+                            "dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new minor revision and approving it"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='minor'
+        )
+
+    with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
+                            "dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new major revision and not marking it as ready for localization"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='major'
+        )
+
+    with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
+                            "dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new minor revision and approving it"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='minor'
+        )
+
+    with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
+                            "dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new major revision and marking it as ready for localization"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='major', ready_for_l10n=True
+        )
+
+    with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
+                            "dashboard (Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2875537
+@pytest.mark.kbDashboard
+def test_ready_for_l10n_status_update_via_history_page(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    kb_dashboard_page_messages = KBDashboardPageMessages()
+
+    with allure.step("Signing in with the admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article and approving the first revision without marking "
+                     "it as ready for l10n"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
+
+    with allure.step("Creating a new revision and approving it as Normal significance and not"
+                     "ready for localization"):
+        second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='normal'
+        )
+
+    with check, allure.step("Verifying that the correct ready for localization status is "
+                            "displayed inside the KB dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Marking the newly submitted revision as ready for localization via the"
+                     " /history page"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
+            second_revision["revision_id"])
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
+        utilities.wait_for_given_timeout(2000)
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            "inside the KB dashboard (Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with check, allure.step("Creating a new minor revision"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='minor'
+        )
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            " inside the KB dashboard (Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with allure.step("Creating a new major significance revision"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        third_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='major'
+        )
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            " inside the KB dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Marking the newly submitted revision as ready for localization via the"
+                     " /history page"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
+            third_revision["revision_id"])
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            " inside the KB dashboard (Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2875536
+@pytest.mark.kbDashboard
+def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    kb_dashboard_page_messages = KBDashboardPageMessages()
+
+    with allure.step("Signing in with the admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article and approving the first revision without marking "
+                     "it as ready for l10n"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
+
+    with allure.step("Creating a new kb article revision and deferring it instead of approving"):
+        second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+        sumo_pages.submit_kb_article_flow.defer_revision(second_revision['revision_id'])
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            " inside the KB dashboard (No)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
+
+    with allure.step("Creating a new revision of normal significance and approving it by marking"
+                     "it as ready for localization"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
+            approve_revision=True, significance_type='major', ready_for_l10n=True
+        )
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            " inside the KB dashboard (Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with allure.step("Creating a new revision and deferring it instead of approving"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        forth_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
+        sumo_pages.submit_kb_article_flow.defer_revision(forth_revision['revision_id'])
+
+    with check, allure.step("Verifying that the correct ready for localization status is displayed"
+                            " inside the KB dashboard (Yes)"):
+        utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
+        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+            article_details['article_title']
+        ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
 # C2266378
 @pytest.mark.kbDashboard
 def test_article_translation_not_allowed_kb_dashboard(page: Page):
