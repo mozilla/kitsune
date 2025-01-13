@@ -18,8 +18,8 @@
       <ul id="{{ survey_type }}-contents">
         {% for option in survey_options %}
         <li class="field is-condensed radio">
-          <input type="radio" 
-                 name="{{ survey_type }}-reason" 
+          <input type="radio"
+                 name="{{ survey_type }}-reason"
                  value="{{ option.value }}"
                  id="{{ survey_type }}_{{ loop.index }}" />
           <label for="{{ survey_type }}_{{ loop.index }}">{{ option.text }}</label>
@@ -38,7 +38,7 @@
       <p class="error-text" x-show="hasError" style="display: none; color: red;">{{ _('Please provide more details.') }}
       </p>
       <div class="sumo-button-wrap align-full">
-        <button class="sumo-button button-sm secondary-button" type="button" @click="closeSurvey()">
+        <button class="sumo-button button-sm secondary-button" type="button" @click="closeSurvey">
           {{ _('Cancel') }}
         </button>
         <button class="sumo-button button-sm primary-button" type="submit"
