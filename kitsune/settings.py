@@ -1167,6 +1167,7 @@ CSP_DEFAULT_SRC = ("'none'",)
 
 CSP_SCRIPT_SRC: tuple[str, ...] = (
     "'self'",
+    "'unsafe-eval'",
     "https://*.mozilla.org",
     "https://*.webservices.mozgcp.net",
     "https://*.google-analytics.com",
