@@ -83,19 +83,64 @@ class KBOverviewTests(TestCase):
         self.assertEqual(2, len(kb_overview_rows(user=user1)))
 
     def test_ready_for_l10n(self):
-        d = DocumentFactory()
-        r = RevisionFactory(document=d)
-        d.current_revision = r
-        d.save()
+        d1 = DocumentFactory()
+        ApprovedRevisionFactory(document=d1, significance=MAJOR_SIGNIFICANCE)
+        d2 = DocumentFactory()
+        rev1_d2 = RevisionFactory(document=d2, significance=None)
 
-        data = kb_overview_rows()
-        self.assertEqual(1, len(data))
+        WikiDocumentVisits.objects.create(document=d1, visits=20, period=LAST_30_DAYS)
+        WikiDocumentVisits.objects.create(document=d2, visits=10, period=LAST_30_DAYS)
+
+        data = kb_overview_rows(user=UserFactory(is_staff=True, is_superuser=True))
+        self.assertEqual(2, len(data))
         self.assertEqual(False, data[0]["ready_for_l10n"])
+        self.assertEqual(False, data[1]["ready_for_l10n"])
 
-        ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
-
+        ApprovedRevisionFactory(
+            document=d1, is_ready_for_localization=True, significance=MEDIUM_SIGNIFICANCE
+        )
+        rev1_d2.is_approved = True
+        rev1_d2.significance = MAJOR_SIGNIFICANCE
+        rev1_d2.save()
         data = kb_overview_rows()
         self.assertEqual(True, data[0]["ready_for_l10n"])
+        self.assertEqual(False, data[1]["ready_for_l10n"])
+
+        ApprovedRevisionFactory(document=d1, significance=TYPO_SIGNIFICANCE)
+        ApprovedRevisionFactory(
+            document=d2, is_ready_for_localization=True, significance=MEDIUM_SIGNIFICANCE
+        )
+        data = kb_overview_rows()
+        self.assertEqual(True, data[0]["ready_for_l10n"])
+        self.assertEqual(True, data[1]["ready_for_l10n"])
+
+        ApprovedRevisionFactory(document=d1, significance=MEDIUM_SIGNIFICANCE)
+        ApprovedRevisionFactory(document=d2, significance=TYPO_SIGNIFICANCE)
+        data = kb_overview_rows()
+        self.assertEqual(False, data[0]["ready_for_l10n"])
+        self.assertEqual(True, data[1]["ready_for_l10n"])
+
+        ApprovedRevisionFactory(
+            document=d1, is_ready_for_localization=True, significance=MAJOR_SIGNIFICANCE
+        )
+        ApprovedRevisionFactory(document=d2, significance=MAJOR_SIGNIFICANCE)
+        data = kb_overview_rows()
+        self.assertEqual(True, data[0]["ready_for_l10n"])
+        self.assertEqual(False, data[1]["ready_for_l10n"])
+
+        ApprovedRevisionFactory(document=d1, significance=TYPO_SIGNIFICANCE)
+        ApprovedRevisionFactory(document=d2, significance=TYPO_SIGNIFICANCE)
+        data = kb_overview_rows()
+        self.assertEqual(True, data[0]["ready_for_l10n"])
+        self.assertEqual(False, data[1]["ready_for_l10n"])
+
+        ApprovedRevisionFactory(document=d1, significance=MEDIUM_SIGNIFICANCE)
+        ApprovedRevisionFactory(
+            document=d2, is_ready_for_localization=True, significance=MEDIUM_SIGNIFICANCE
+        )
+        data = kb_overview_rows()
+        self.assertEqual(False, data[0]["ready_for_l10n"])
+        self.assertEqual(True, data[1]["ready_for_l10n"])
 
     def test_filter_by_category(self):
         ApprovedRevisionFactory(document__category=CATEGORIES[1][0])
