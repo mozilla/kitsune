@@ -11,6 +11,8 @@ from typing import Any, Union
 from datetime import datetime
 from nltk import SnowballStemmer, WordNetLemmatizer
 from playwright.sync_api import Page, Locator
+
+from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
@@ -307,8 +309,11 @@ class Utilities:
             try:
                 self.page.context.clear_cookies()
                 self.refresh_page()
-                self.page.wait_for_selector(top_navbar.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                            ["signin_signup_button"], timeout=3000)
+                if FxAPageMessages.AUTH_PAGE_URL in self.get_page_url():
+                    break
+                else:
+                    self.page.wait_for_selector(top_navbar.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
+                                                ["signin_signup_button"], timeout=3000)
                 break
             except PlaywrightTimeoutError:
                 print("Cookies were not successfully deleted. Retrying...")
