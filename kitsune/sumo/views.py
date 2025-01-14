@@ -105,7 +105,7 @@ def robots(request):
     if not settings.ENGAGE_ROBOTS:
         template = "User-Agent: *\nDisallow: /"
     else:
-        if not request.build_absolute_uri("/").startswith("https://support.mozilla.org"):
+        if request.get_host() != "support.mozilla.org":
             # We will differentiate this for tests with a comment
             template = "# Non-canoncial\nUser-Agent: *\nDisallow: /"
         else:
