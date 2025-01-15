@@ -32,3 +32,21 @@
     margin: 0 p.$spacing-xs;
   }
 }
+
+
+// SCSS for Topics Section Layout
+
+.topics-section {
+  padding: 40px 20px;
+  h2 {
+    font-size: 24px;
+    margin-bottom: 0px;
+    color: #333;
+  }
+}
+
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
