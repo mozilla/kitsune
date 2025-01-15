@@ -228,7 +228,9 @@
     textarea {
       margin: p.$spacing-sm 0;
       width: 100%;
+      max-width: 100%;
       min-height: 140px;
+      resize: vertical;
     }
 
     .sumo-button-wrap .sumo-button {
