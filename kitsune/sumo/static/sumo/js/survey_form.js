@@ -74,7 +74,20 @@ document.addEventListener('alpine:init', () => {
             if (this.surveyType) {
                 trackEvent('article_survey_closed', { survey_type: this.surveyType });
             }
-            document.querySelector('.document-vote').remove();
+            const survey = document.querySelector('.document-vote');
+            if (this.responseMessage) {
+                setTimeout(() => {
+                    survey.remove();
+                }, 5000);
+            } else {
+                survey.remove();
+            }
+        },
+
+        cancelSurvey() {
+            this.formVisible = false;
+            this.responseMessage = "Thanks for voting! Your additional feedback wasn't submitted.";
+            this.closeSurvey();
         },
 
         init() {
@@ -85,9 +98,7 @@ document.addEventListener('alpine:init', () => {
             this.responseMessage = document.querySelector('[x-ref="messageData"]').value;
             this.formVisible = !this.responseMessage;
             if (this.responseMessage) {
-                setTimeout(() => {
-                    this.closeSurvey();
-                }, 5000);
+                this.closeSurvey();
             }
 
             // Setup form after initialization
