@@ -269,7 +269,10 @@ class AddKbArticleFlow:
                                 expiry_date=None,
                                 changes_description=None,
                                 is_admin=False,
-                                approve_revision=False
+                                approve_revision=False,
+                                revision_needs_change=False,
+                                ready_for_l10n=False,
+                                significance_type=''
                                 ) -> dict[str, Any]:
 
         self.kb_article_page.click_on_edit_article_option()
@@ -324,7 +327,8 @@ class AddKbArticleFlow:
         revision_id = self.kb_article_show_history_page.get_last_revision_id()
 
         if approve_revision:
-            self.approve_kb_revision(revision_id=revision_id)
+            self.approve_kb_revision(revision_id=revision_id, ready_for_l10n=ready_for_l10n,
+                                     significance_type=significance_type)
 
         revision_time = self.kb_article_show_history_page.get_revision_time(revision_id)
 
@@ -385,3 +389,8 @@ class AddKbArticleFlow:
                 "first_revision_id": first_revision_id,
                 "article_review_description": kb_article_test_data["changes_description"]
                 }
+
+    def defer_revision(self, revision_id: str):
+        self.kb_article_show_history_page.click_on_review_revision(revision_id)
+        self.kb_article_review_revision_page.click_on_defer_revision_button()
+        self.kb_article_review_revision_page.click_on_defer_confirm_button()
