@@ -66,7 +66,7 @@ def get_mobile_product_from_ua(user_agent):
         return "mobile"
 
 
-def get_featured_articles(product, locale):
+def get_featured_articles(product, locale, topic=None):
     """
     Returns 4 featured articles for the AAQ.
 
@@ -91,7 +91,9 @@ def get_featured_articles(product, locale):
         pinned_articles = []
 
     if len(pinned_articles) < 4:
-        return (pinned_articles + kb_get_featured_articles(product=product, locale=locale))[:4]
+        return (
+            pinned_articles + kb_get_featured_articles(product=product, locale=locale, topic=topic)
+        )[:4]
 
     return pinned_articles[-4:]
 

@@ -69,7 +69,7 @@ from kitsune.tidings.events import ActivationRequestFailed
 from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
-from kitsune.wiki.facets import topics_for
+from kitsune.wiki.facets import documents_for, topics_for
 
 log = logging.getLogger("k.questions")
 
@@ -568,8 +568,35 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["ga_products"] = f"/{product_slug}/"
 
     if step == 2:
+        # Format topics data for the help_topics macro
+        topics_data = []
+        for topic in topics_for(request.user, product, parent=None):
+            # Get documents using get_featured_articles like product_landing does
+            docs = get_featured_articles(product, locale=request.LANGUAGE_CODE, topic=topic)
+
+            # Get total count of articles using documents_for like product_landing
+            all_docs, _ = documents_for(
+                request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
+            )
+            total_articles = len(all_docs)
+
+            topics_data.append(
+                {
+                    "topic": topic,
+                    "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
+                    "title": topic.title,
+                    "total_articles": total_articles,
+                    "image_url": topic.image_url
+                    or settings.STATIC_URL + "products/img/topic_placeholder.png",
+                    "documents": [
+                        {"url": doc.url, "document_title": doc.document_title}
+                        for doc in docs[:3]  # Limit to first 3 documents
+                    ],
+                }
+            )
+
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
-        context["topics"] = topics_for(request.user, product, parent=None)
+        context["topics"] = topics_data
 
     elif step == 3:
         context["cancel_url"] = get_next_url(request) or (
