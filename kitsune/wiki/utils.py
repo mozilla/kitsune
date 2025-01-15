@@ -10,7 +10,9 @@ from django.shortcuts import get_object_or_404
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.facets import documents_for
 
 
 def active_contributors(from_date, to_date=None, locale=None, product=None):
@@ -198,3 +200,36 @@ def get_visible_document_or_404(
 
 def get_visible_revision_or_404(user, **kwargs):
     return get_object_or_404(Revision.objects.visible(user, **kwargs))
+
+
+def build_topics_data(request, product, topics):
+    """Build topics_data for use in topic cards"""
+    topics_data = []
+    for topic in topics:
+        docs, _ = documents_for(
+            request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
+        )
+        docs = [Document.objects.get(id=doc_dict["id"]) for doc_dict in docs]
+
+        total_articles = len(docs)
+        # Leverage get_featured_articles to get active articles
+        featured_articles = get_featured_articles(
+            product, locale=request.LANGUAGE_CODE, topic=topic
+        )
+
+        if len(featured_articles) >= 3:
+            docs = featured_articles
+        else:
+            docs = set(featured_articles + docs)
+
+        # Create a dict with topic data including the URL
+        topic_data = {
+            "topic": topic,
+            "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
+            "title": topic.title,
+            "total_articles": total_articles,
+            "image_url": topic.image_url,
+            "documents": docs,
+        }
+        topics_data.append(topic_data)
+    return topics_data

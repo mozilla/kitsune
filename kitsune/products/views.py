@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic, TopicSlugHistory
@@ -12,7 +11,7 @@ from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.utils import get_featured_articles
+from kitsune.wiki.utils import build_topics_data, get_featured_articles
 
 
 @check_simple_wiki_locale
@@ -58,26 +57,7 @@ def product_landing(request, slug: str) -> HttpResponse:
         else:
             latest_version = 0
     topics = topics_for(request.user, product=product, parent=None)
-    # Create a dictionary of topics and three documents
-    topics_with_urls = []
-    for topic in topics:
-        docs, _ = documents_for(
-            request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
-        )
-        total_articles = len(docs)
-        # Leverage get_featured_articles to get active articles
-        docs = get_featured_articles(product, locale=request.LANGUAGE_CODE, topic=topic)
-
-        # Create a dict with topic data including the URL
-        topic_data = {
-            "topic": topic,
-            "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
-            "title": topic.title,
-            "total_articles": total_articles,
-            "image_url": topic.image_url,
-            "documents": docs[:3],
-        }
-        topics_with_urls.append(topic_data)
+    topics_data = build_topics_data(request, product, topics)
 
     return render(
         request,
@@ -85,7 +65,7 @@ def product_landing(request, slug: str) -> HttpResponse:
         {
             "product": product,
             "products": Product.active.filter(visible=True),
-            "topics": topics_with_urls,  # Use the new list with URLs
+            "topics": topics_data,  # Use the new list with URLs
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),

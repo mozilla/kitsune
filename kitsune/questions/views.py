@@ -70,6 +70,7 @@ from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
+from kitsune.wiki.utils import build_topics_data
 
 log = logging.getLogger("k.questions")
 
@@ -568,8 +569,11 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["ga_products"] = f"/{product_slug}/"
 
     if step == 2:
+        topics = topics_for(request.user, product, parent=None)
+        topics_data = build_topics_data(request, product, topics)
+
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
-        context["topics"] = topics_for(request.user, product, parent=None)
+        context["topics"] = topics_data
 
     elif step == 3:
         context["cancel_url"] = get_next_url(request) or (

@@ -26,7 +26,7 @@
       <ul class="article-list">
         {% for document in topic_data.documents %}
         <li>
-          <a href="{{ document.url }}">      
+          <a href="{{ document.get_absolute_url() }}">      
             {{ document.title }}</a>
         </li>
         {% endfor %}
