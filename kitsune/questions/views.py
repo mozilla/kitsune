@@ -70,6 +70,7 @@ from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import documents_for, topics_for
+from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
 
 log = logging.getLogger("k.questions")
 
@@ -571,8 +572,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         # Format topics data for the help_topics macro
         topics_data = []
         for topic in topics_for(request.user, product, parent=None):
-            # Get documents using get_featured_articles like product_landing does
-            docs = get_featured_articles(product, locale=request.LANGUAGE_CODE, topic=topic)
+            # Get documents using kb_get_featured_articles like product_landing does
+            docs = kb_get_featured_articles(product, locale=request.LANGUAGE_CODE, topic=topic)
 
             # Get total count of articles using documents_for like product_landing
             all_docs, _ = documents_for(
@@ -588,10 +589,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                     "total_articles": total_articles,
                     "image_url": topic.image_url
                     or settings.STATIC_URL + "products/img/topic_placeholder.png",
-                    "documents": [
-                        {"url": doc.url, "document_title": doc.document_title}
-                        for doc in docs[:3]  # Limit to first 3 documents
-                    ],
+                    "documents": docs[:3],
                 }
             )
 
