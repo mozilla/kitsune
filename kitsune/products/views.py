@@ -11,7 +11,7 @@ from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.utils import get_featured_articles
+from kitsune.wiki.utils import build_topics_data, get_featured_articles
 
 
 @check_simple_wiki_locale
@@ -23,8 +23,19 @@ def product_list(request):
 
 
 @check_simple_wiki_locale
-def product_landing(request, slug):
-    """The product landing page."""
+def product_landing(request, slug: str) -> HttpResponse:
+    """The product landing page.
+
+    Args:
+        request: The HTTP request
+        slug: Product slug identifier
+
+    Returns:
+        Rendered product landing page
+
+    Raises:
+        Http404: If product not found
+    """
     if slug == "firefox-accounts":
         return redirect(product_landing, slug="mozilla-account", permanent=True)
 
@@ -45,6 +56,7 @@ def product_landing(request, slug):
             latest_version = versions[0].min_version
         else:
             latest_version = 0
+    topics = topics_for(request.user, product=product, parent=None)
 
     return render(
         request,
@@ -52,7 +64,7 @@ def product_landing(request, slug):
         {
             "product": product,
             "products": Product.active.filter(visible=True),
-            "topics": topics_for(request.user, product=product, parent=None),
+            "topics": build_topics_data(request, product, topics),
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
