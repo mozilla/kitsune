@@ -10,20 +10,28 @@
          },
          handleSubmit() {
              if (this.validateForm()) {
-                 trackEvent('article_survey_submitted', { 
+                 trackEvent('article_survey_submitted', {
                      survey_type: '{{ survey_type }}',
-                     reason: this.selectedReason 
+                     reason: this.selectedReason
                  });
                  return true;  // Allow HTMX to proceed with submission
              }
              return false;
          },
-         closeSurvey() {
+         closeSurvey(message) {
              const surveyType = '{{ survey_type }}'.trim();
              if (surveyType) {
                  trackEvent('article_survey_closed', { survey_type: surveyType });
              }
-             document.querySelector('.document-vote').remove();
+             const survey = document.querySelector('.document-vote');
+             if (message) {
+                 this.responseMessage = message;
+                 setTimeout(() => {
+                     survey.remove();
+                 }, 5000);
+             } else {
+                 survey.remove();
+             }
          }
      }" x-init="
          const surveyType = '{{ survey_type }}'.trim();
@@ -76,7 +84,8 @@
       <p class="error-text" x-show="hasError" style="display: none; color: red;">{{ _('Please provide more details.') }}
       </p>
       <div class="sumo-button-wrap align-full">
-        <button class="sumo-button button-sm secondary-button" type="button" @click="closeSurvey()">
+        <button class="sumo-button button-sm secondary-button" type="button"
+                @click="closeSurvey('Thanks for voting! Your additional feedback wasn\'t submitted.')">
           {{ _('Cancel') }}
         </button>
         <button class="sumo-button button-sm primary-button" type="submit"
