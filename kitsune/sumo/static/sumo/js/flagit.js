@@ -128,11 +128,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const myQueueTools = document.getElementById('my-queue-tools');
+    const myQueueUnassign = document.getElementById('my-queue-unassign');
     const flaggedQueue = document.getElementById('flagged-queue');
     initializeFilterDropdown('flagit-reason-filter', 'reason');
     initializeFilterDropdown('flagit-product-filter', 'product');
+    initializeFilterDropdown('flagit-assignee-filter', 'assignee', (selectedValue) => {
+        myQueueTools.hidden = selectedValue !== myQueueTools.dataset.currentUsername;
+    });
 
-    function initializeFilterDropdown(filterId, queryParam) {
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        if (evt.detail.elt === myQueueUnassign) {
+            // We're going to remove all of the user's assigned items,
+            // so it doesn't make any sense to keep the page parameter.
+            const url = new URL(window.location.href);
+            url.searchParams.delete('page');
+            window.history.pushState({}, '', url);
+        }
+    });
+
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target === flaggedQueue) {
+            disableUpdateStatusButtons();
+            initializeDropdownsAndTags();
+        }
+    });
+
+    function initializeFilterDropdown(filterId, queryParam, postChangeFunction) {
         const filterElement = document.getElementById(filterId);
         if (!filterElement) return;
 
@@ -144,6 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
         filterElement.addEventListener('change', async () => {
             const selectedValue = filterElement.value;
             const url = new URL(window.location.href);
+
+            // Remove the page parameter since we'll show a new queue of items.
+            url.searchParams.delete('page');
 
             if (selectedValue) {
                 url.searchParams.set(queryParam, selectedValue);
@@ -160,6 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 disableUpdateStatusButtons();
                 initializeDropdownsAndTags();
                 htmx.process(flaggedQueue);
+            }
+            if (postChangeFunction) {
+                postChangeFunction(selectedValue);
             }
         });
     }

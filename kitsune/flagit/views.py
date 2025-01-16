@@ -1,13 +1,21 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models.functions import Now
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import group_required, login_required, permission_required
 from kitsune.flagit.models import FlaggedObject
@@ -163,9 +171,26 @@ def get_hierarchical_topics(product, cache_timeout=3600):
 
 
 @group_required("Content Moderators")
+@require_http_methods(["GET", "POST"])
 def moderate_content(request):
     """Display flagged content that needs moderation."""
     product_slug = request.GET.get("product")
+    assignee = request.GET.get("assignee")
+
+    if request.method == "POST":
+        if not (assignee and (request.user.username == assignee)):
+            return HttpResponseForbidden()
+        action = request.POST.get("action")
+        if not (action and (action in ("assign", "unassign"))):
+            return HttpResponseBadRequest()
+    else:
+        if (
+            assignee
+            and not User.objects.filter(
+                is_active=True, username=assignee, groups__name="Content Moderators"
+            ).exists()
+        ):
+            return HttpResponseNotFound()
 
     content_type = ContentType.objects.get_for_model(Question)
     objects = (
@@ -174,9 +199,21 @@ def moderate_content(request):
             content_model=content_type,
             product_slug=product_slug,
         )
-        .select_related("content_type", "creator")
+        .select_related("content_type", "creator", "assignee")
         .prefetch_related("content_object__product")
     )
+
+    if request.method == "POST":
+        if action == "assign":
+            # Assign another batch of objects to the user.
+            assigment_qs = objects.filter(assignee__isnull=True)[:20].values_list("id", flat=True)
+            objects.filter(id__in=assigment_qs).update(assignee=request.user, assigned=Now())
+        else:
+            # Unassign all of the user's objects.
+            objects.filter(assignee=request.user).update(assignee=None, assigned=None)
+
+    if assignee:
+        objects = objects.filter(assignee__username=assignee)
 
     # It's essential that the objects are ordered for pagination. The
     # default ordering for flagged objects is by ascending created date.
@@ -204,6 +241,15 @@ def moderate_content(request):
                 for p in Product.active.filter(codename="", aaq_configs__is_active=True)
             ],
             "selected_product": product_slug,
+            "assignees": sorted(
+                (user.username, user.get_full_name() or user.username)
+                for user in User.objects.filter(
+                    is_active=True,
+                    groups__name="Content Moderators",
+                ).distinct()
+            ),
+            "selected_assignee": assignee,
+            "current_username": request.user.username,
         },
     )
 
@@ -227,6 +273,8 @@ def update(request, flagged_object_id):
             QuestionReplyEvent(answer).fire(exclude=[answer.creator])
 
         flagged.status = new_status
+        flagged.assignee = None
+        flagged.assigned = None
         flagged.save()
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
         question = flagged.content_object
