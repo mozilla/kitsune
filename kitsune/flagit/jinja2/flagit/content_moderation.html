@@ -51,6 +51,15 @@
       options=products,
       selected_filter=selected_product
   ) }}
+  {{ filter_dropdown(
+      form_id='time-period-filter-form',
+      select_id='flagit-time-period-filter',
+      label='Filter by time periods:',
+      name='time-period',
+      default_option='All periods',
+      options=time_periods,
+      selected_filter=selected_time_period
+  ) }}
 {% endblock %}
 {# Hide the deactivation log on content moderation #}
 {% block deactivation_log %}

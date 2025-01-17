@@ -1,9 +1,13 @@
+from datetime import datetime, timedelta
+from itertools import chain, pairwise
 import json
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import F, Window
+from django.db.models.functions import Ntile
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -166,6 +170,7 @@ def get_hierarchical_topics(product, cache_timeout=3600):
 def moderate_content(request):
     """Display flagged content that needs moderation."""
     product_slug = request.GET.get("product")
+    time_period = request.GET.get("time-period")
 
     content_type = ContentType.objects.get_for_model(Question)
     objects = (
@@ -177,6 +182,39 @@ def moderate_content(request):
         .select_related("content_type", "creator")
         .prefetch_related("content_object__product")
     )
+
+    selected_time_period = ""
+    time_periods_for_filter = []
+
+    if time_period:
+        try:
+            from_dt, to_dt = map(datetime.fromisoformat, time_period.split(","))
+        except ValueError:
+            return HttpResponseBadRequest("Invalid time-period.")
+        else:
+            objects = objects.filter(created__range=(from_dt, to_dt))
+            # If we're filtering by a time period, only allow the user to switch
+            # between all time periods and the one they're currently filtering by.
+            value = f"{from_dt.isoformat()},{to_dt.isoformat()}"
+            display = f"{str(from_dt)} - {str(to_dt)}"
+            time_periods_for_filter.append((value, display))
+            selected_time_period = value
+    else:
+        num_time_periods = 5
+        starts = (
+            objects.annotate(
+                batch=Window(expression=Ntile(num_time_periods), order_by=F("created").asc())
+            )
+            .order_by("batch", "created")
+            .values("batch", "created")
+            .distinct("batch")
+        )
+        for start, next_start in pairwise(chain(starts, [dict(created=datetime.now())])):
+            start_dt = start["created"]
+            end_dt = next_start["created"] - timedelta(microseconds=1)
+            value = f"{start_dt.isoformat()},{end_dt.isoformat()}"
+            display = f"{str(start_dt)} - {str(end_dt)}"
+            time_periods_for_filter.append((value, display))
 
     # It's essential that the objects are ordered for pagination. The
     # default ordering for flagged objects is by ascending created date.
@@ -204,6 +242,8 @@ def moderate_content(request):
                 for p in Product.active.filter(codename="", aaq_configs__is_active=True)
             ],
             "selected_product": product_slug,
+            "time_periods": time_periods_for_filter,
+            "selected_time_period": selected_time_period,
         },
     )
 

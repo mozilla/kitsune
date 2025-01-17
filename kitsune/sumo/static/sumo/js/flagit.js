@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const flaggedQueue = document.getElementById('flagged-queue');
     initializeFilterDropdown('flagit-reason-filter', 'reason');
     initializeFilterDropdown('flagit-product-filter', 'product');
+    initializeFilterDropdown('flagit-time-period-filter', 'time-period');
 
     function initializeFilterDropdown(filterId, queryParam) {
         const filterElement = document.getElementById(filterId);
