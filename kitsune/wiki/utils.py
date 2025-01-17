@@ -206,30 +206,30 @@ def build_topics_data(request, product, topics):
     """Build topics_data for use in topic cards"""
     topics_data = []
     for topic in topics:
-        docs, _ = documents_for(
-            request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
-        )
-        docs = [Document.objects.get(id=doc_dict["id"]) for doc_dict in docs]
-
-        total_articles = len(docs)
-        # Leverage get_featured_articles to get active articles
+        # Get featured articles first (returns up to 4)
         featured_articles = get_featured_articles(
             product, locale=request.LANGUAGE_CODE, topic=topic
         )
 
-        if len(featured_articles) >= 3:
-            docs = featured_articles
-        else:
-            docs = set(featured_articles + docs)
+        # Always get total count of available documents
+        docs, _ = documents_for(
+            request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
+        )
+        total_articles = Document.objects.filter(id__in=[doc.id for doc in docs]).count()
 
-        # Create a dict with topic data including the URL
+        # Only query for additional docs if we need more to reach 3
+        if len(featured_articles) < 3:
+            docs = Document.objects.filter(id__in=[doc.id for doc in docs])
+            remaining_docs = [doc for doc in docs if doc not in featured_articles]
+            featured_articles.extend(remaining_docs)
+
         topic_data = {
             "topic": topic,
             "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
             "title": topic.title,
             "total_articles": total_articles,
             "image_url": topic.image_url,
-            "documents": docs,
+            "documents": featured_articles[:3],
         }
         topics_data.append(topic_data)
     return topics_data
