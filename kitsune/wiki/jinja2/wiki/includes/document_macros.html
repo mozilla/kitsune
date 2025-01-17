@@ -21,8 +21,8 @@
     </span>
     {% if created_date %}
       <span class="last-updated">
-       <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" /> 
-       <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong> 
+       <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" />
+       <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong>
         <span class="time">
           {{ datetimeformat(created_date, format="shortdate", use_naturaltime=True) }}
         </span>
@@ -353,10 +353,11 @@
   {% endif %}
   {% if document.allows_vote(request) and not document.current_revision.has_voted(request) %}
     <div class="document-vote elevation-02 text-center">
-      <form class="document-vote--form helpful" 
+      <form class="document-vote--form helpful"
             hx-post="{{ url('wiki.document_vote', document_slug=document.slug) }}"
             hx-indicator=".wait"
-            hx-target="this">
+            hx-target="this"
+            hx-swap="outerHTML">
           {% csrf_token %}
           <h4 class="document-vote--heading">{{ header }}</h4>
           <div class="document-vote--buttons">
