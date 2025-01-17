@@ -215,11 +215,11 @@ def build_topics_data(request, product, topics):
         docs, _ = documents_for(
             request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
         )
-        total_articles = Document.objects.filter(id__in=[doc.id for doc in docs]).count()
+        total_articles = Document.objects.filter(id__in=[doc["id"] for doc in docs]).count()
 
         # Only query for additional docs if we need more to reach 3
         if len(featured_articles) < 3:
-            docs = Document.objects.filter(id__in=[doc.id for doc in docs])
+            docs = Document.objects.filter(id__in=[doc["id"] for doc in docs])
             remaining_docs = [doc for doc in docs if doc not in featured_articles]
             featured_articles.extend(remaining_docs)
 
