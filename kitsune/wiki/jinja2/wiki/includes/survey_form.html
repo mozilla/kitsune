@@ -7,7 +7,7 @@
   </template>
 
   <template x-if="formVisible">
-    <form hx-post="{{ action_url }}" hx-target=".survey-container" hx-trigger="submit">
+    <form hx-post="{{ action_url }}" hx-target=".survey-container" hx-swap="outerHTML" hx-trigger="submit">
       {% csrf_token %}
       <input type="hidden" name="vote_id" value="{{ vote_id }}" />
       <input type="hidden" name="revision_id" value="{{ revision_id }}" />
