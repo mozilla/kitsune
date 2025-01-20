@@ -11,6 +11,14 @@
         overflow: hidden;
         background-color: p.$color-light-gray-20;
     }
+
+    .wait {
+        display: none;
+    }
+
+    .htmx-request .wait {
+        display: inline-block;
+    }
 }
 
 /* Flagged Item Content */

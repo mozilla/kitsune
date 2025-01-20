@@ -3,7 +3,7 @@
 
 {% block flagged_items %}
   {% for object in objects %}
-    <li class="{{ object.content_type }}">
+    <li id="flagged-item-{{ object.id }}" class="{{ object.content_type }}">
       <div class="flagged-item-content">
         <hgroup>
           <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
@@ -22,7 +22,12 @@
             <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
           {% endif %}
           <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
-          <form class="update inline-form" action="{{ object.form_action }}" method="post">
+          <form class="update inline-form"
+                hx-post="{{ object.form_action }}"
+                hx-disabled-elt="find select, find input"
+                hx-indicator=".wait"
+                hx-target="#flagged-item-{{ object.id }}"
+                hx-swap="delete">
             {% csrf_token %}
             <select name="status">
               <option value="">{{ _('Please select...') }}</option>
@@ -31,6 +36,7 @@
             </select>
             <input id="update-status-button-{{ object.content_object.id }}" type="submit"
                    class="sumo-button primary-button button-lg btn" value={{ _('Update') }} />
+            <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
           </form>
         </div>
       </div>

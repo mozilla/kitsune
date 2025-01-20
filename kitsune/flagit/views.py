@@ -232,5 +232,7 @@ def update(request, flagged_object_id):
         question = flagged.content_object
         question.moderation_timestamp = timezone.now()
         question.save()
+        if "hx-request" in request.headers:
+            return HttpResponse(status=202)
         return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))
     return HttpResponseRedirect(urlparams(reverse("flagit.flagged_queue"), reason=reason))
