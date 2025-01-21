@@ -103,11 +103,10 @@ def _active_contributors_id(from_date, to_date, locale, product):
     return set(list(editors) + list(reviewers))
 
 
-def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE, topic=None):
+def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     """Returns 4 random articles from the most visited.
 
-    If a product is passed, it returns 4 random highly visited articles from that product.
-    If a topic is passed, it returns 4 random highly visited articles from that topic.
+    If a product is passed, it returns 4 random highly visited articles.
     """
     visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
@@ -124,9 +123,6 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE, t
 
     if product:
         visits = visits.filter(document__products__in=[product.id])
-
-    if topic:
-        visits = visits.filter(document__topics__in=[topic.id])
 
     visits = visits[:10]
     documents = []
