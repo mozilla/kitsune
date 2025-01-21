@@ -205,31 +205,46 @@ def get_visible_revision_or_404(user, **kwargs):
 def build_topics_data(request, product, topics):
     """Build topics_data for use in topic cards"""
     topics_data = []
+
+    # Get all documents for all topics up front
+    all_docs, _ = documents_for(
+        request.user, request.LANGUAGE_CODE, topics=list(topics), products=[product]
+    )
+
+    # Convert all docs to Document objects
+    doc_ids = [doc["id"] for doc in all_docs]
+    documents = Document.objects.filter(id__in=doc_ids)
+
+    # Create a mapping of Document objects to their topics from all_docs
+    for doc_dict in all_docs:
+        for doc in documents:
+            if doc.id == doc_dict["id"]:
+                doc.topics_list = doc_dict.get("topics", [])
+                break
+
     for topic in topics:
-        # Get featured articles first (returns up to 4)
+        # Get featured articles first (returns up to 4 Document objects)
         featured_articles = get_featured_articles(
             product, locale=request.LANGUAGE_CODE, topic=topic
         )
 
-        # Always get total count of available documents
-        docs, _ = documents_for(
-            request.user, request.LANGUAGE_CODE, topics=[topic], products=[product]
-        )
-        total_articles = Document.objects.filter(id__in=[doc["id"] for doc in docs]).count()
+        # Get docs for this topic from documents
+        topic_docs = [doc for doc in documents if topic.id in getattr(doc, "topics_list", [])]
 
         # Only query for additional docs if we need more to reach 3
         if len(featured_articles) < 3:
-            docs = Document.objects.filter(id__in=[doc["id"] for doc in docs])
-            remaining_docs = [doc for doc in docs if doc not in featured_articles]
+            # If we don't have enough featured articles, append more from topic_docs
+            remaining_docs = [doc for doc in topic_docs if doc not in featured_articles]
             featured_articles.extend(remaining_docs)
 
         topic_data = {
             "topic": topic,
             "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
             "title": topic.title,
-            "total_articles": total_articles,
+            "total_articles": len(topic_docs),
             "image_url": topic.image_url,
             "documents": featured_articles[:3],
         }
         topics_data.append(topic_data)
+
     return topics_data

@@ -570,10 +570,9 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
-        topics_data = build_topics_data(request, product, topics)
 
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
-        context["topics"] = topics_data
+        context["topics"] = build_topics_data(request, product, topics)
 
     elif step == 3:
         context["cancel_url"] = get_next_url(request) or (

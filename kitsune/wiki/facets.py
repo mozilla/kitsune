@@ -177,6 +177,7 @@ def _documents_for(user, locale, topics=None, products=None):
                 document_summary=d.current_revision.summary,
                 display_order=d.original.display_order,
                 helpful_votes=votes_dict.get(d.current_revision_id, 0),
+                topics=d.topics.all().values_list("id", flat=True),
             )
         )
 
