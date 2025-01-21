@@ -24,11 +24,14 @@ document.addEventListener('alpine:init', () => {
                 radio.addEventListener('change', () => {
                     this.selectedReason = radio.value;
                     this.isOtherSelected = radio.value === 'other';
-                    this.isOtherNotSelected = radio.value !== 'other';
 
                     if (textarea) {
-                        textarea.disabled = !this.isOtherSelected;
-                        textarea.required = this.isOtherSelected;
+                        textarea.disabled = false;
+                        if (this.isOtherSelected) {
+                            textarea.setAttribute('required', 'required');
+                        } else {
+                            textarea.removeAttribute('required');
+                        }
                     }
 
                     this.updateSubmitDisabled();
