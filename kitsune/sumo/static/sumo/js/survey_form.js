@@ -27,16 +27,16 @@ document.addEventListener('alpine:init', () => {
                     this.isOtherNotSelected = radio.value !== 'other';
 
                     if (textarea) {
-                        textarea.disabled = radio.value !== 'other';
-                        textarea.required = radio.value === 'other';
+                        textarea.disabled = !this.isOtherSelected;
+                        textarea.required = this.isOtherSelected;
                     }
 
                     this.updateSubmitDisabled();
                 });
             });
 
-            // Setup textarea
             if (textarea) {
+                textarea.disabled = true;
                 textarea.addEventListener('input', (event) => {
                     this.comment = event.target.value;
                     if (this.comment.length > this.maxLength) {
@@ -48,7 +48,6 @@ document.addEventListener('alpine:init', () => {
                 });
             }
 
-            // Setup form submission
             if (form) {
                 form.addEventListener('submit', (event) => {
                     event.preventDefault();
