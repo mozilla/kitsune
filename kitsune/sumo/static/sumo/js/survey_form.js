@@ -1,3 +1,32 @@
+const channel = new BroadcastChannel('closeSurveyWidgets');
+
+document.addEventListener('closeSurveyWidgets', (event) => {
+    const post_message = {
+        url: event.detail.url,
+        message: 'closeSurveyWidgets'
+    }
+    channel.postMessage(post_message);
+
+});
+
+channel.onmessage = (event) => {
+    // remove all survey containers from non active tabs if the url matches with active tab
+    if (event.data.message === 'closeSurveyWidgets') {
+        const elements = document.querySelectorAll('.document-vote');
+        const matchAny = Array.from(elements).some(element => {
+            // Extract the KB slug from both URLs
+            const elementKbSlug = element.dataset.pageUrl.match(/kb\/([^/]+)/)?.[1];
+            const eventKbSlug = event.data.url.match(/kb\/([^/]+)/)?.[1];
+
+            return elementKbSlug?.toLowerCase() === eventKbSlug?.toLowerCase();
+        });
+        if (matchAny) {
+            elements.forEach(element => element.remove());
+        }
+    }
+}
+
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('surveyForm', () => ({
         selectedReason: '',

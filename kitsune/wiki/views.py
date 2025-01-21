@@ -1360,7 +1360,9 @@ def handle_vote(request, document_slug):
 
     if request.headers.get("HX-Request") and survey_context:
         survey_html = render_to_string("wiki/includes/survey_form.html", survey_context, request)
-        return HttpResponse(survey_html)
+        response = HttpResponse(survey_html)
+        response["HX-Trigger"] = json.dumps({"closeSurveyWidgets": {"url": request.path}})
+        return response
     return HttpResponseRedirect(revision.document.get_absolute_url())
 
 
