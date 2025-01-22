@@ -159,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 flaggedQueue.innerHTML = doc.querySelector('#flagged-queue').innerHTML;
                 disableUpdateStatusButtons();
                 initializeDropdownsAndTags();
+                htmx.process(flaggedQueue);
             }
         });
     }
