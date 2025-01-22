@@ -140,8 +140,7 @@ def _documents_for(user, locale, topics=None, products=None):
         # so we can cache it rather aggressively
         cache.set(votes_cache_key, votes_dict, timeout=settings.CACHE_LONG_TIMEOUT)
 
-    # Annotate each of the documents with its string of product titles. This must
-    # be a sub-query in order to free itself from the product filter(s) above.
+    # Annotate each of the documents with its string of product titles
     qs = qs.annotate(
         product_titles=Subquery(
             Document.objects.filter(pk=OuterRef("pk"))
@@ -177,7 +176,6 @@ def _documents_for(user, locale, topics=None, products=None):
                 document_summary=d.current_revision.summary,
                 display_order=d.original.display_order,
                 helpful_votes=votes_dict.get(d.current_revision_id, 0),
-                topics=d.topics.all().values_list("id", flat=True),
             )
         )
 

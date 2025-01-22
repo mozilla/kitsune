@@ -7,6 +7,10 @@ from django.db.models import Prefetch, Q
 from django.db.models.functions import Now
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import TextField
+from django.db.models.functions import Cast
+from itertools import chain, islice
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
@@ -122,6 +126,14 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE, t
         .exclude(document__is_template=True)
         .order_by("-visits")
         .select_related("document")
+        .annotate(
+            topic_ids=StringAgg(
+                Cast("document__topics__id", TextField()),
+                delimiter=",",
+                ordering="document__topics__id",
+                default="",
+            )
+        )
     )
 
     if product:
@@ -213,14 +225,15 @@ def build_topics_data(request, product, topics):
 
     # Convert all docs to Document objects
     doc_ids = [doc["id"] for doc in all_docs]
-    documents = Document.objects.filter(id__in=doc_ids)
-
-    # Create a mapping of Document objects to their topics from all_docs
-    for doc_dict in all_docs:
-        for doc in documents:
-            if doc.id == doc_dict["id"]:
-                doc.topics_list = doc_dict.get("topics", [])
-                break
+    documents = (
+        Document.objects.filter(id__in=doc_ids)
+        .prefetch_related("topics")
+        .annotate(
+            topic_ids=StringAgg(
+                Cast("topics__id", TextField()), delimiter=",", ordering="topics__id", default=""
+            )
+        )
+    )
 
     for topic in topics:
         # Get featured articles first (returns up to 4 Document objects)
@@ -229,13 +242,12 @@ def build_topics_data(request, product, topics):
         )
 
         # Get docs for this topic from documents
-        topic_docs = [doc for doc in documents if topic.id in getattr(doc, "topics_list", [])]
+        topic_docs = [
+            doc for doc in documents if doc.topic_ids and str(topic.id) in doc.topic_ids.split(",")
+        ]
 
-        # Only query for additional docs if we need more to reach 3
-        if len(featured_articles) < 3:
-            # If we don't have enough featured articles, append more from topic_docs
-            remaining_docs = [doc for doc in topic_docs if doc not in featured_articles]
-            featured_articles.extend(remaining_docs)
+        # Create a generator for remaining docs
+        remaining_docs = (doc for doc in topic_docs if doc not in featured_articles)
 
         topic_data = {
             "topic": topic,
@@ -243,7 +255,7 @@ def build_topics_data(request, product, topics):
             "title": topic.title,
             "total_articles": len(topic_docs),
             "image_url": topic.image_url,
-            "documents": featured_articles[:3],
+            "documents": list(islice(chain(featured_articles, remaining_docs), 3)),
         }
         topics_data.append(topic_data)
 
