@@ -57,7 +57,7 @@ class FlaggedObject(ModelBase):
     assignee = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="assigned_flags"
     )
-    assigned = models.DateTimeField(default=None, null=True)
+    assigned_timestamp = models.DateTimeField(default=None, null=True)
 
     objects = FlaggedObjectManager()
 

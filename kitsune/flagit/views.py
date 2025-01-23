@@ -177,20 +177,13 @@ def moderate_content(request):
     product_slug = request.GET.get("product")
     assignee = request.GET.get("assignee")
 
-    if request.method == "POST":
-        if not (assignee and (request.user.username == assignee)):
-            return HttpResponseForbidden()
-        action = request.POST.get("action")
-        if not (action and (action in ("assign", "unassign"))):
-            return HttpResponseBadRequest()
-    else:
-        if (
-            assignee
-            and not User.objects.filter(
-                is_active=True, username=assignee, groups__name="Content Moderators"
-            ).exists()
-        ):
-            return HttpResponseNotFound()
+    if (
+        assignee
+        and not User.objects.filter(
+            is_active=True, username=assignee, groups__name="Content Moderators"
+        ).exists()
+    ):
+        return HttpResponseNotFound()
 
     content_type = ContentType.objects.get_for_model(Question)
     objects = (
@@ -204,13 +197,22 @@ def moderate_content(request):
     )
 
     if request.method == "POST":
+        if not (assignee and (request.user.username == assignee)):
+            return HttpResponseForbidden()
+
+        action = request.POST.get("action")
+        if not (action and (action in ("assign", "unassign"))):
+            return HttpResponseBadRequest()
+
         if action == "assign":
             # Assign another batch of objects to the user.
             assigment_qs = objects.filter(assignee__isnull=True)[:20].values_list("id", flat=True)
-            objects.filter(id__in=assigment_qs).update(assignee=request.user, assigned=Now())
+            objects.filter(id__in=assigment_qs).update(
+                assignee=request.user, assigned_timestamp=Now()
+            )
         else:
             # Unassign all of the user's objects.
-            objects.filter(assignee=request.user).update(assignee=None, assigned=None)
+            objects.filter(assignee=request.user).update(assignee=None, assigned_timestamp=None)
 
     if assignee:
         objects = objects.filter(assignee__username=assignee)
@@ -274,7 +276,7 @@ def update(request, flagged_object_id):
 
         flagged.status = new_status
         flagged.assignee = None
-        flagged.assigned = None
+        flagged.assigned_timestamp = None
         flagged.save()
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
         question = flagged.content_object
