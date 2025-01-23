@@ -6,7 +6,16 @@
     <li id="flagged-item-{{ object.id }}" class="{{ object.content_type }}">
       <div class="flagged-item-content">
         <hgroup>
-          <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
+          <div class="flagged-item-header">
+            <h2 class="sumo-card-heading">{{ _('Flagged {t}')|f(t=object.content_type) }}</h2>
+            <span>
+              {% if object.assignee %}
+                {{ _('Assigned: {username}')|f(username=object.assignee.username) }}
+              {% else %}
+                {{ _('Unassigned') }}
+              {% endif %}
+            </span>
+          </div>
           {% if object.notes %}
             {% if object.content_type.model == 'question' %}
               <p class="notes">{{ _('Additional notes:') }} &nbsp;<a target="_blank" href="{{ object.content_object.get_absolute_url() }}">{{ object.notes }}</a></p>
@@ -57,6 +66,29 @@
       options=products,
       selected_filter=selected_product
   ) }}
+  {{ filter_dropdown(
+      form_id='assignee-filter-form',
+      select_id='flagit-assignee-filter',
+      label='Filter by assignee:',
+      name='assignee',
+      default_option='All assignees',
+      options=assignees,
+      selected_filter=selected_assignee
+  ) }}
+  <div id="my-queue-tools" data-current-username="{{ current_username }}"
+       {% if not (selected_assignee and (selected_assignee == current_username)) %} hidden{% endif %}>
+    <label>{{ _('Manage my queue') }}:</label>
+    <form hx-post="" hx-target="#flagged-queue" hx-select="#flagged-queue">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="assign">
+      <input class="sumo-button primary-button button-lg btn" type="submit" value="{{ _('Assign more') }}" />
+    </form>
+    <form id="my-queue-unassign" hx-post="" hx-target="#flagged-queue" hx-select="#flagged-queue">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="unassign">
+      <input class="sumo-button secondary-button button-lg btn" type="submit" value="{{ _('Unassign all') }}" />
+    </form>
+  </div>
 {% endblock %}
 {# Hide the deactivation log on content moderation #}
 {% block deactivation_log %}

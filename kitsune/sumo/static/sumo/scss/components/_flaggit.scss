@@ -24,6 +24,21 @@
 /* Flagged Item Content */
 .flagged-item-content {
     padding: p.$spacing-md;
+
+    .flagged-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h2 {
+            margin: 0;
+        }
+
+        span {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+    }
 }
 
 .flagged-content {
@@ -70,5 +85,17 @@
 
     &__tag-select {
         margin-top: p.$spacing-md;
+    }
+}
+
+#assignee-filter-form {
+    margin-top: p.$spacing-md;
+}
+
+#my-queue-tools {
+    margin-top: p.$spacing-2xl;
+
+    form {
+        margin-bottom: p.$spacing-sm;
     }
 }
