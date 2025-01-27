@@ -2,7 +2,7 @@ import json
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
@@ -23,7 +23,7 @@ def product_list(request):
 
 
 @check_simple_wiki_locale
-def product_landing(request, slug: str) -> HttpResponse:
+def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
     """The product landing page.
 
     Args:

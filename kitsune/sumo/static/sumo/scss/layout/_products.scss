@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-
 .sumo-page-subheader {
   display: flex;
   flex-direction: column-reverse;
@@ -33,9 +32,6 @@
   }
 }
 
-
-// SCSS for Topics Section Layout
-
 .topics-section {
   padding: 40px 20px;
   h2 {
@@ -45,7 +41,7 @@
   }
 
   @media #{p.$mq-sm} {
-    padding: 24px 16px;
+    padding: p.$spacing-lg p.$spacing-md;
   }
 }
 
@@ -56,35 +52,27 @@
     gap: 20px;
   }
 
-  // Mobile styles
   @media (max-width: #{p.$screen-lg}) {
     display: flex;
     overflow-x: auto;
-    gap: 16px;
-    padding: 16px 0;
+    gap: p.$spacing-md;
+    padding: p.$spacing-md 0;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     
-    // Hide scrollbar but keep functionality
-    scrollbar-width: none; // Firefox
     &::-webkit-scrollbar {
-      display: none; // Chrome, Safari, Edge
+      display: none;
     }
 
-    // Make sure child items are properly sized
     > .card--topic {
-      flex: 0 0 280px; // Fixed width for each item
-      height: 280px; // Fixed height
+      flex: 0 0 280px;
+      height: 280px;
       scroll-snap-align: start;
-      
-      // Force all content inside the card to respect the height
       display: flex;
       flex-direction: column;
-      
-      // Prevent content from overflowing
       overflow: hidden;
       
-      // Ensure all direct children within the card also respect the height
       > * {
         flex-shrink: 0;
       }

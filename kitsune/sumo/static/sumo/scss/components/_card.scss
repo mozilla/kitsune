@@ -185,18 +185,18 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    background-color: #fff;
+    background-color: p.$color-white;
     border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: p.$border-radius-md;
+    padding: p.$spacing-md;
+    box-shadow: p.$box-shadow-sm;
     box-sizing: border-box;
 
     .topic-header {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: p.$spacing-md;
     }
 
     .card--icon {
@@ -216,7 +216,7 @@
 
     .article-list {
       flex-grow: 1;
-      margin: 0 0 16px;
+      margin: 0 0 p.$spacing-md;
       padding: 0;
       list-style: none;
 
@@ -244,7 +244,7 @@
     .view-all-link {
       border-top: 1px solid #ddd;
       padding-top: 10px;
-      margin-top: 16px;
+      margin-top: p.$spacing-md;
       display: inline-block;
       font-size: 14px;
       color: #000000;
