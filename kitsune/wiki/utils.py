@@ -1,5 +1,3 @@
-import random
-
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -111,7 +109,7 @@ def _active_contributors_id(from_date, to_date, locale, product):
 
 
 def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
-    """Returns 4 random articles from the most visited.
+    """Returns up to 4 random articles per topic from the most visited.
 
     Args:
         product: Optional product to filter by
@@ -154,8 +152,8 @@ def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAUL
     if topics:
         visits = visits.filter(document__topics__in=topics).distinct()
 
-    # Order and limit after all filters are applied
-    visits = visits.order_by("-visits")[:10]
+    # Order by visits but don't limit - we need enough documents for all topics
+    visits = visits.order_by("-visits")
 
     # Convert to list to avoid additional queries
     visits = list(visits)
@@ -170,9 +168,8 @@ def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAUL
             if translation:
                 documents.append(translation)
 
-    if len(documents) <= 4:
-        return documents
-    return random.sample(documents, 4)
+    # Return all documents - the filtering per topic will happen in build_topics_data
+    return documents
 
 
 def get_visible_document_or_404(

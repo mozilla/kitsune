@@ -571,9 +571,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
 
-        context["featured"] = get_featured_articles(
-            product, topics=topics, locale=request.LANGUAGE_CODE
-        )
+        context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
         context["topics"] = build_topics_data(request, product, topics)
 
     elif step == 3:
