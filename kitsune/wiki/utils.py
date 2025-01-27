@@ -110,8 +110,14 @@ def _active_contributors_id(from_date, to_date, locale, product):
     return set(list(editors) + list(reviewers))
 
 
-def get_featured_articles(product=None, topic=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
-    """Returns 4 random articles from the most visited."""
+def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
+    """Returns 4 random articles from the most visited.
+
+    Args:
+        product: Optional product to filter by
+        topics: Optional iterable of topics to filter by
+        locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
+    """
     # Get base queryset with all needed relations in one hit
     visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
@@ -140,25 +146,19 @@ def get_featured_articles(product=None, topic=None, locale=settings.WIKI_DEFAULT
             document__is_template=False,
         )
         .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
-        .order_by("-visits")
-    )[
-        :10
-    ]  # Limit early to reduce memory usage
+    )
+
+    # Add product and topics filters to the database query
+    if product:
+        visits = visits.filter(document__products=product)
+    if topics:
+        visits = visits.filter(document__topics__in=topics).distinct()
+
+    # Order and limit after all filters are applied
+    visits = visits.order_by("-visits")[:10]
 
     # Convert to list to avoid additional queries
     visits = list(visits)
-
-    # Filter in memory
-    if product or topic:
-        filtered_visits = []
-        for visit in visits:
-            doc = visit.document
-            if product and product.id not in {p.id for p in doc.products.all()}:
-                continue
-            if topic and topic.id not in {t.id for t in doc.topics.all()}:
-                continue
-            filtered_visits.append(visit)
-        visits = filtered_visits
 
     # Get documents based on locale
     documents = []
@@ -239,16 +239,21 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         .annotate(topic_ids=StringAgg(Cast("topics__id", TextField()), delimiter=",", default=""))
     )
 
-    for topic in topics:
-        featured_articles = get_featured_articles(
-            product, locale=request.LANGUAGE_CODE, topic=topic
-        )
+    # Get featured articles for all topics in one query
+    featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
 
+    for topic in topics:
+        # Filter documents for this specific topic
         topic_docs = [
             doc for doc in documents if doc.topic_ids and str(topic.id) in doc.topic_ids.split(",")
         ]
 
-        remaining_docs = (doc for doc in topic_docs if doc not in featured_articles)
+        # Filter featured articles for this topic
+        topic_featured = [
+            doc for doc in featured_articles if any(t.id == topic.id for t in doc.topics.all())
+        ]
+
+        remaining_docs = (doc for doc in topic_docs if doc not in topic_featured)
 
         topic_data = {
             "topic": topic,
@@ -261,7 +266,7 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
             # remaining slots.
             # We use islice to limit the number of articles to 3, and chain to combine
             # featured_articles and remaining_docs so featured come first.
-            "documents": list(islice(chain(featured_articles, remaining_docs), 3)),
+            "documents": list(islice(chain(topic_featured, remaining_docs), 3)),
         }
         topics_data.append(topic_data)
 
