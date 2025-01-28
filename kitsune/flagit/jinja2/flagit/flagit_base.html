@@ -6,8 +6,9 @@
 
 {% block content %}
   <div id="flagged-queue" class="sumo-page-section">
-    <h1 class="sumo-page-heading">{{ _('Content Pending Moderation') }}</h1>
-      
+    {% block flagged_queue_header %}
+      <h1 class="sumo-page-heading">{{ _('Content Pending Moderation') }}</h1>
+    {% endblock %}
     <ul class="flagged-items">
       {% block flagged_items %}
       {% endblock %}
