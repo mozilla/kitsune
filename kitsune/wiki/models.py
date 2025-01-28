@@ -74,7 +74,9 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     # Is this document localizable or not?
     is_localizable = models.BooleanField(default=True, db_index=True)
 
-    restrict_to_groups = models.ManyToManyField(Group, related_name="restricted_documents")
+    restrict_to_groups = models.ManyToManyField(
+        Group, blank=True, related_name="restricted_documents"
+    )
 
     # TODO: validate (against settings.SUMO_LANGUAGES?)
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE, db_index=True)
