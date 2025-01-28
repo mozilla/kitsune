@@ -1,3 +1,5 @@
+import random
+
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -150,13 +152,10 @@ def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAUL
     if product:
         visits = visits.filter(document__products=product)
     if topics:
-        visits = visits.filter(document__topics__in=topics).distinct()
+        visits = visits.filter(document__topics__in=topics)
 
     # Order by visits but don't limit - we need enough documents for all topics
     visits = visits.order_by("-visits")
-
-    # Convert to list to avoid additional queries
-    visits = list(visits)
 
     # Get documents based on locale
     documents = []
@@ -168,8 +167,9 @@ def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAUL
             if translation:
                 documents.append(translation)
 
-    # Return all documents - the filtering per topic will happen in build_topics_data
-    return documents
+    if len(documents) <= 4:
+        return documents
+    return random.sample(documents, 4)
 
 
 def get_visible_document_or_404(
@@ -236,7 +236,6 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         .annotate(topic_ids=StringAgg(Cast("topics__id", TextField()), delimiter=",", default=""))
     )
 
-    # Get featured articles for all topics in one query
     featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
 
     for topic in topics:
