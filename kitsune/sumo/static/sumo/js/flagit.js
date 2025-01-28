@@ -147,13 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.body.addEventListener('htmx:afterSwap', function(evt) {
-        if (evt.detail.target === flaggedQueue) {
-            disableUpdateStatusButtons();
-            initializeDropdownsAndTags();
-        }
-    });
-
     function initializeFilterDropdown(filterId, queryParam, postChangeFunction) {
         const filterElement = document.getElementById(filterId);
         if (!filterElement) return;

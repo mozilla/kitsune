@@ -78,7 +78,7 @@
   <div id="my-queue-tools" data-current-username="{{ current_username }}"
        {% if not (selected_assignee and (selected_assignee == current_username)) %} hidden{% endif %}>
     <label>{{ _('Manage my queue') }}:</label>
-    <form hx-post="" hx-target="#flagged-queue" hx-select="#flagged-queue">
+    <form method="post" action="">
       {% csrf_token %}
       <input type="hidden" name="action" value="assign">
       <input class="sumo-button primary-button button-lg btn" type="submit" value="{{ _('Assign more') }}" />
