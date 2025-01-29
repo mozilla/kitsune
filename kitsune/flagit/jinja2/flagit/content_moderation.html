@@ -1,6 +1,12 @@
 {% extends "flagit/flagit_base.html" %}
 {% from "flagit/includes/macros.html" import filter_dropdown %}
 
+{% block title %}{{ _('Topic and Tag Moderation Tool') }} | {{ pgettext('site_title', 'Mozilla Support') }}{% endblock %}
+
+{% block flagged_queue_header %}
+  <h1 class="sumo-page-heading">{{ _('Topic and Tag Moderation Tool') }}</h1>
+{% endblock %}
+
 {% block flagged_items %}
   {% for object in objects %}
     <li id="flagged-item-{{ object.id }}" class="{{ object.content_type }}">
