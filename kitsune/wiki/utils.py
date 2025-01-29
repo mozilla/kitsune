@@ -5,12 +5,19 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
 from django.db.models.functions import Now
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import TextField
+from django.db.models.functions import Cast
+from itertools import chain, islice
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.facets import documents_for
+from kitsune.products.models import Product, Topic
 
 
 def active_contributors(from_date, to_date=None, locale=None, product=None):
@@ -103,52 +110,62 @@ def _active_contributors_id(from_date, to_date, locale, product):
     return set(list(editors) + list(reviewers))
 
 
-def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
-    """Returns 4 random articles from the most visited.
+def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
+    """Returns up to 4 random articles per topic from the most visited.
 
-    If a product is passed, it returns 4 random highly visited articles.
+    Args:
+        product: Optional product to filter by
+        topics: Optional iterable of topics to filter by
+        locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
     """
+    # Get base queryset with all needed relations in one hit
     visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
+        .select_related("document")
+        .prefetch_related(
+            "document__products",
+            "document__topics",
+            Prefetch(
+                "document__translations",
+                queryset=(
+                    Document.objects.visible(
+                        locale=locale,
+                        current_revision__is_approved=True,
+                        is_archived=False,
+                        is_template=False,
+                    )
+                    if locale != settings.WIKI_DEFAULT_LANGUAGE
+                    else None
+                ),
+            ),
+        )
         .filter(
             document__restrict_to_groups__isnull=True,
             document__locale=settings.WIKI_DEFAULT_LANGUAGE,
+            document__is_archived=False,
+            document__is_template=False,
         )
         .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
-        .exclude(document__is_archived=True)
-        .exclude(document__is_template=True)
-        .order_by("-visits")
-        .select_related("document")
     )
 
+    # Add product and topics filters to the database query
     if product:
-        visits = visits.filter(document__products__in=[product.id])
+        visits = visits.filter(document__products=product)
+    if topics:
+        visits = visits.filter(document__topics__in=topics)
 
-    visits = visits[:10]
+    # Order by visits but don't limit - we need enough documents for all topics
+    visits = visits.order_by("-visits")
+
+    # Get documents based on locale
     documents = []
-
     if locale == settings.WIKI_DEFAULT_LANGUAGE:
-        for visit in visits:
-            documents.append(visit.document)
+        documents = [visit.document for visit in visits]
     else:
-        # prefretch localised documents to avoid n+1 problem
-        visits = visits.prefetch_related(
-            Prefetch(
-                "document__translations",
-                queryset=Document.objects.visible(
-                    locale=locale,
-                    current_revision__is_approved=True,
-                    is_archived=False,
-                    is_template=False,
-                ),
-            )
-        )
-
         for visit in visits:
-            translation = visit.document.translations.first()
-            if not translation:
-                continue
-            documents.append(translation)
+            translation = next(iter(visit.document.translations.all()), None)
+            if translation:
+                documents.append(translation)
 
     if len(documents) <= 4:
         return documents
@@ -194,3 +211,59 @@ def get_visible_document_or_404(
 
 def get_visible_revision_or_404(user, **kwargs):
     return get_object_or_404(Revision.objects.visible(user, **kwargs))
+
+
+def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic]) -> list[dict]:
+    """Build topics_data for use in topic cards
+    Inputs:
+        request: HttpRequest
+        product: Product
+        topics: list[Topic]
+    Output:
+        topics_data: list[dict]
+    """
+    topics_data = []
+
+    all_docs, _ = documents_for(
+        request.user, request.LANGUAGE_CODE, topics=topics, products=[product]
+    )
+
+    # Convert all docs to Document objects
+    doc_ids = [doc["id"] for doc in all_docs]
+    documents = (
+        Document.objects.filter(id__in=doc_ids)
+        .prefetch_related("topics")
+        .annotate(topic_ids=StringAgg(Cast("topics__id", TextField()), delimiter=",", default=""))
+    )
+
+    featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
+
+    for topic in topics:
+        # Filter documents for this specific topic
+        topic_docs = [
+            doc for doc in documents if doc.topic_ids and str(topic.id) in doc.topic_ids.split(",")
+        ]
+
+        # Filter featured articles for this topic
+        topic_featured = [
+            doc for doc in featured_articles if any(t.id == topic.id for t in doc.topics.all())
+        ]
+
+        remaining_docs = (doc for doc in topic_docs if doc not in topic_featured)
+
+        topic_data = {
+            "topic": topic,
+            "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
+            "title": topic.title,
+            "total_articles": len(topic_docs),
+            "image_url": topic.image_url,
+            # We want to show three articles in total, and we prefer featured_articles
+            # but if we don't have enough we will then use remainind_docs to fill the
+            # remaining slots.
+            # We use islice to limit the number of articles to 3, and chain to combine
+            # featured_articles and remaining_docs so featured come first.
+            "documents": list(islice(chain(topic_featured, remaining_docs), 3)),
+        }
+        topics_data.append(topic_data)
+
+    return topics_data
