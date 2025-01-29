@@ -27,8 +27,14 @@
 
     .flagged-item-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        gap: p.$spacing-sm;
+
+        @media (min-width: p.$screen-md) {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
 
         h2 {
             margin: 0;
@@ -37,6 +43,7 @@
         span {
             font-size: 1rem;
             font-weight: bold;
+            white-space: nowrap;
         }
     }
 }
