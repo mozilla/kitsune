@@ -113,7 +113,17 @@
   &.is-inverse {
     background: var(--color-inverse-bg);
 
-    &, p, li, h1, h2, h3, h4, h5, h6, a, a:hover {
+    &,
+    p,
+    li,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    a,
+    a:hover {
       color: var(--color-inverse);
     }
   }
@@ -130,10 +140,9 @@
     align-items: center;
 
     .card--img {
-      @include p.bidi((
-        (margin-right, 20px, 0),
-        (margin-left, 0, 20px),
-      ));
+      @include p.bidi(((margin-right, 20px, 0),
+          (margin-left, 0, 20px),
+        ));
       margin-bottom: 0;
     }
   }
@@ -148,8 +157,8 @@
       padding-bottom: p.$spacing-xl;
 
       a {
-      	white-space: pre-line;
-      	word-wrap: break-word;
+        white-space: pre-line;
+        word-wrap: break-word;
       }
     }
 
@@ -191,12 +200,26 @@
     padding: p.$spacing-md;
     box-shadow: p.$box-shadow-sm;
     box-sizing: border-box;
+    min-height: 320px;
 
     .topic-header {
       display: flex;
       align-items: flex-start;
       gap: 10px;
       margin-bottom: p.$spacing-md;
+
+      .card--title {
+        font-family: Inter;
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
     }
 
     .card--icon {
@@ -205,25 +228,22 @@
       height: 18px;
     }
 
-    .card--title {
-      font-family: Inter;
-      font-size: 16px;
-      font-weight: 700;
-      margin: 0;
-      line-height: 1.2;
-      flex-grow: 1;
-    }
-
     .article-list {
       flex-grow: 1;
       margin: 0 0 p.$spacing-md;
       padding: 0;
       list-style: none;
+      min-height: 0;
+      overflow: hidden;
 
       li {
         margin-bottom: 8px;
         line-height: 1.5;
-        
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
         a {
           color: black;
           font-size: 14px;
@@ -244,12 +264,15 @@
     .view-all-link {
       border-top: 1px solid #ddd;
       padding-top: 10px;
-      margin-top: p.$spacing-md;
-      display: inline-block;
+      margin-top: auto;
+      display: block;
       font-size: 14px;
       color: #000000;
       text-decoration: underline;
       font-weight: normal;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       &:hover {
         text-decoration: underline;
@@ -344,10 +367,9 @@
   }
 
   &--icon {
-    @include p.bidi((
-      (margin-right, 20px, 0),
-      (margin-left, 0, 20px),
-    ));
+    @include p.bidi(((margin-right, 20px, 0),
+        (margin-left, 0, 20px),
+      ));
     margin-bottom: 10px;
     width: p.$spacing-2xl;
     flex: 0 0 auto;
@@ -358,9 +380,8 @@
     width: p.$spacing-lg;
 
     @at-root .sumo-card-heading & {
-      @include p.bidi((
-        (margin,  0 8px -4px 0,  0 0 -4px 8px),
-      ));
+      @include p.bidi(((margin, 0 8px -4px 0, 0 0 -4px 8px),
+        ));
     }
   }
 
@@ -369,7 +390,7 @@
     font-family: var(--base-font-family);
     margin-bottom: 0;
 
-    > a {
+    >a {
       text-decoration: none;
       color: var(--color-heading);
 
@@ -436,10 +457,9 @@
       .card--icon-sm {
         margin-right: 10px;
         margin-bottom: 0;
-        @include p.bidi((
-          (margin-right, 10px, 0),
-          (margin-left, 0, 10px),
-        ));
+        @include p.bidi(((margin-right, 10px, 0),
+            (margin-left, 0, 10px),
+          ));
       }
 
       .card--desc {
@@ -449,7 +469,7 @@
     }
 
     &--feature-img {
-      @include p.bidi(((margin, -90px 0 -90px, -90px 0 -90px),));
+      @include p.bidi(((margin, -90px 0 -90px, -90px 0 -90px), ));
       width: 50%;
       max-width: 320px;
     }
@@ -491,15 +511,25 @@
         min-width: 25ch;
         max-width: 45ch;
         flex: 1 1 0;
-        @include p.bidi((
-          (margin, 0 40px 0 0, 0 0 0 40px),
-        ));
+        @include p.bidi(((margin, 0 40px 0 0, 0 0 0 40px),
+          ));
       }
     }
   }
 }
 
-.elevation-00 { @include c.elevation-00;}
-.elevation-01 { @include c.elevation-01;}
-.elevation-02 { @include c.elevation-02;}
-.elevation-03 { @include c.elevation-03;}
+.elevation-00 {
+  @include c.elevation-00;
+}
+
+.elevation-01 {
+  @include c.elevation-01;
+}
+
+.elevation-02 {
+  @include c.elevation-02;
+}
+
+.elevation-03 {
+  @include c.elevation-03;
+}
