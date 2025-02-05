@@ -27,7 +27,7 @@
       <ul class="article-list">
         {% for document in topic_data.documents %}
         <li>
-          <a href="{{ document.get_absolute_url() }}">      
+          <a href="{{ document.get_absolute_url() | replace('/' + settings.WIKI_DEFAULT_LANGUAGE + '/', '/' + request.LANGUAGE_CODE + '/')}}">
             {{ document.title }}</a>
         </li>
         {% endfor %}
