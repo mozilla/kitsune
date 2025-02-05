@@ -1,4 +1,5 @@
 import random
+from itertools import chain, islice
 
 import requests
 from django.conf import settings
@@ -7,14 +8,13 @@ from django.db.models import Prefetch, Q
 from django.db.models.functions import Now
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
-from itertools import chain, islice
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.facets import documents_for
 from kitsune.products.models import Product, Topic
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.facets import documents_for
+from kitsune.wiki.models import Document, Revision
 
 
 def active_contributors(from_date, to_date=None, locale=None, product=None):
@@ -212,24 +212,33 @@ def get_visible_revision_or_404(user, **kwargs):
 
 def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic]) -> list[dict]:
     """Build topics_data for use in topic cards
-    Inputs:
-        request: HttpRequest
-        product: Product
-        topics: list[Topic]
-    Output:
-        topics_data: list[dict]
+    Args:
+        request: HttpRequest - The current request
+        product: Product - The product to get topics for
+        topics: list[Topic] - List of topics to process
+    Returns:
+        list[dict]: List of topic data dictionaries containing:
+            - topic: Topic object
+            - topic_url: URL to topic's documents
+            - title: Topic title
+            - total_articles: Combined count of main and fallback articles
+            - image_url: Topic image URL
+            - documents: Up to 3 documents to display
     """
     topics_data: list[dict] = []
 
-    all_docs, _ = documents_for(
+    featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
+
+    # Get both main and fallback documents from the faceted search
+    main_docs_data, fallback_docs_data = documents_for(
         request.user, request.LANGUAGE_CODE, topics=topics, products=[product]
     )
-    if not all_docs:
-        return []
 
-    doc_ids = [doc["id"] for doc in all_docs]
-    documents = (
-        Document.objects.filter(id__in=doc_ids)
+    main_doc_ids = {doc["id"] for doc in main_docs_data}
+    fallback_doc_ids = {doc["id"] for doc in (fallback_docs_data or [])}
+
+    all_documents = (
+        Document.objects.filter(id__in=main_doc_ids | fallback_doc_ids)
         .select_related("parent")
         .prefetch_related(
             "topics",
@@ -237,25 +246,28 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         )
     )
 
-    # topic_id -> documents mapping
-    topic_to_docs: dict[int, list[Document]] = {topic.id: [] for topic in topics}
+    # topic_id -> (main_docs, fallback_docs) mapping
+    topic_docs_map: dict[int, tuple[list[Document], list[Document]]] = {
+        topic.id: ([], []) for topic in topics
+    }
     doc_topics_map: dict[int, list[Topic]] = {}
-    for doc in documents:
-        # Try direct topics first, fall back to parent topics if empty
-        doc_topics = list(doc.topics.all().prefetch_related(None)) or (
-            list(doc.parent.topics.all().prefetch_related(None)) if doc.parent else []
+
+    for doc in all_documents:
+        doc_topics = list(doc.topics.all()) or (
+            list(doc.parent.topics.all()) if doc.parent else []
         )
 
         doc_topics_map[doc.id] = doc_topics
         for topic in doc_topics:
-            if topic.id in topic_to_docs:
-                topic_to_docs[topic.id].append(doc)
-
-    featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
+            if topic.id in topic_docs_map:
+                main_list, fallback_list = topic_docs_map[topic.id]
+                target_list = main_list if doc.id in main_doc_ids else fallback_list
+                target_list.append(doc)
 
     for topic in topics:
-        topic_docs = topic_to_docs[topic.id]
-        if not topic_docs:
+        main_topic_docs, fallback_topic_docs = topic_docs_map[topic.id]
+
+        if not main_topic_docs and not fallback_topic_docs:
             continue
 
         topic_featured = [
@@ -264,16 +276,22 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
             if doc.id in doc_topics_map and any(t.id == topic.id for t in doc_topics_map[doc.id])
         ]
 
-        remaining_docs = (doc for doc in topic_docs if doc not in topic_featured)
+        # Get remaining main documents excluding featured ones
+        remaining_docs = (doc for doc in main_topic_docs if doc not in topic_featured)
+
+        # First try to get documents from featured and main docs
+        main_docs = list(islice(chain(topic_featured, remaining_docs), 3))
+
+        # Fall back to fallback documents only if no main documents exist
+        documents_to_show = main_docs if main_docs else list(islice(fallback_topic_docs, 3))
 
         topic_data = {
             "topic": topic,
             "topic_url": reverse("products.documents", args=[product.slug, topic.slug]),
             "title": topic.title,
-            "total_articles": len(topic_docs),
+            "total_articles": len(main_topic_docs) + len(fallback_topic_docs),
             "image_url": topic.image_url,
-            # Use chain to combine featured + remaining articles, islice to take first 3
-            "documents": list(islice(chain(topic_featured, remaining_docs), 3)),
+            "documents": documents_to_show,
         }
         topics_data.append(topic_data)
 
