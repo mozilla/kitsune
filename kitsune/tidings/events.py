@@ -135,11 +135,9 @@ class Event(object):
           passed in, each of those users will not be notified, though anonymous
           notifications having the same email address may still be sent.
         """
-        connection = mail.get_connection(fail_silently=True)
-        # Warning: fail_silently swallows errors thrown by the generators, too.
-        connection.open()
-        for m in self._mails(self._users_watching(exclude=exclude)):
-            connection.send_messages([m])
+        with mail.get_connection(fail_silently=True) as connection:
+            for m in self._mails(self._users_watching(exclude=exclude)):
+                connection.send_messages([m])
 
     def serialize(self):
         """
