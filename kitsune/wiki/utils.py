@@ -253,16 +253,17 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     doc_topics_map: dict[int, list[Topic]] = {}
 
     for doc in all_documents:
-        doc_topics = set(doc.topics.all()) or (
-            set(doc.parent.topics.all()) if doc.parent else set()
+        doc_topics = list(doc.topics.all()) or (
+            list(doc.parent.topics.all()) if doc.parent else []
         )
 
-        doc_topics_map[doc.id] = list(doc_topics)
+        doc_topics_map[doc.id] = doc_topics
         for topic in doc_topics:
             if topic.id in topic_docs_map:
                 main_list, fallback_list = topic_docs_map[topic.id]
                 target_list = main_list if doc.id in main_doc_ids else fallback_list
-                target_list.append(doc)
+                if doc not in target_list:
+                    target_list.append(doc)
 
     for topic in topics:
         main_topic_docs, fallback_topic_docs = topic_docs_map[topic.id]
