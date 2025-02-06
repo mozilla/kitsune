@@ -7,6 +7,9 @@ from django.db.models import Prefetch, Q
 from django.db.models.functions import Now
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import TextField
+from django.db.models.functions import Cast
 from itertools import chain, islice
 
 from kitsune.dashboards import LAST_7_DAYS
@@ -219,49 +222,31 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     Output:
         topics_data: list[dict]
     """
-    topics_data: list[dict] = []
+    topics_data = []
 
     all_docs, _ = documents_for(
         request.user, request.LANGUAGE_CODE, topics=topics, products=[product]
     )
-    if not all_docs:
-        return []
 
+    # Convert all docs to Document objects
     doc_ids = [doc["id"] for doc in all_docs]
     documents = (
         Document.objects.filter(id__in=doc_ids)
-        .select_related("parent")
-        .prefetch_related(
-            "topics",
-            "parent__topics",
-        )
+        .prefetch_related("topics")
+        .annotate(topic_ids=StringAgg(Cast("topics__id", TextField()), delimiter=",", default=""))
     )
-
-    # topic_id -> documents mapping
-    topic_to_docs: dict[int, list[Document]] = {topic.id: [] for topic in topics}
-    doc_topics_map: dict[int, list[Topic]] = {}
-    for doc in documents:
-        # Try direct topics first, fall back to parent topics if empty
-        doc_topics = list(doc.topics.all().prefetch_related(None)) or (
-            list(doc.parent.topics.all().prefetch_related(None)) if doc.parent else []
-        )
-
-        doc_topics_map[doc.id] = doc_topics
-        for topic in doc_topics:
-            if topic.id in topic_to_docs:
-                topic_to_docs[topic.id].append(doc)
 
     featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
 
     for topic in topics:
-        topic_docs = topic_to_docs[topic.id]
-        if not topic_docs:
-            continue
+        # Filter documents for this specific topic
+        topic_docs = [
+            doc for doc in documents if doc.topic_ids and str(topic.id) in doc.topic_ids.split(",")
+        ]
 
+        # Filter featured articles for this topic
         topic_featured = [
-            doc
-            for doc in featured_articles
-            if doc.id in doc_topics_map and any(t.id == topic.id for t in doc_topics_map[doc.id])
+            doc for doc in featured_articles if any(t.id == topic.id for t in doc.topics.all())
         ]
 
         remaining_docs = (doc for doc in topic_docs if doc not in topic_featured)
@@ -272,7 +257,11 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
             "title": topic.title,
             "total_articles": len(topic_docs),
             "image_url": topic.image_url,
-            # Use chain to combine featured + remaining articles, islice to take first 3
+            # We want to show three articles in total, and we prefer featured_articles
+            # but if we don't have enough we will then use remainind_docs to fill the
+            # remaining slots.
+            # We use islice to limit the number of articles to 3, and chain to combine
+            # featured_articles and remaining_docs so featured come first.
             "documents": list(islice(chain(topic_featured, remaining_docs), 3)),
         }
         topics_data.append(topic_data)
