@@ -2,7 +2,7 @@ import json
 
 from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
@@ -11,7 +11,7 @@ from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.utils import build_topics_data, get_featured_articles
+from kitsune.wiki.utils import get_featured_articles
 
 
 @check_simple_wiki_locale
@@ -23,19 +23,8 @@ def product_list(request):
 
 
 @check_simple_wiki_locale
-def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
-    """The product landing page.
-
-    Args:
-        request: The HTTP request
-        slug: Product slug identifier
-
-    Returns:
-        Rendered product landing page
-
-    Raises:
-        Http404: If product not found
-    """
+def product_landing(request, slug):
+    """The product landing page."""
     if slug == "firefox-accounts":
         return redirect(product_landing, slug="mozilla-account", permanent=True)
 
@@ -56,7 +45,6 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             latest_version = versions[0].min_version
         else:
             latest_version = 0
-    topics = topics_for(request.user, product=product, parent=None)
 
     return render(
         request,
@@ -64,7 +52,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
         {
             "product": product,
             "products": Product.active.filter(visible=True),
-            "topics": build_topics_data(request, product, topics),
+            "topics": topics_for(request.user, product=product, parent=None),
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),

@@ -1,5 +1,5 @@
 {% extends "questions/includes/question_editing_frame.html" %}
-{% from "questions/includes/aaq_macros.html" import explore_solutions with context %}
+{% from "questions/includes/aaq_macros.html" import explore_solutions %}
 {% from "questions/includes/aaq_macros.html" import select_product %}
 {% set title = _('Get Support') %}
 {% set no_headline = True %}
@@ -20,7 +20,7 @@
 
 {% block contentwrap %}
   {% if current_step == 2 %}
-    {{ explore_solutions(current_product, search_box, featured, topics, has_ticketing_support) }}
+    {{ explore_solutions(current_product, search_box, featured, topics, request, has_ticketing_support) }}
   {% else %}
     {{ super() }}
   {% endif %}
