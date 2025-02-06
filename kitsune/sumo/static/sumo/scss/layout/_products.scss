@@ -1,6 +1,7 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
+
 .sumo-page-subheader {
   display: flex;
   flex-direction: column-reverse;
@@ -29,53 +30,5 @@
 
   li {
     margin: 0 p.$spacing-xs;
-  }
-}
-
-.topics-section {
-  padding: 40px 20px;
-  h2 {
-    font-size: 24px;
-    margin-bottom: 0px;
-    color: #333;
-  }
-
-  @media #{p.$mq-sm} {
-    padding: p.$spacing-lg p.$spacing-md;
-  }
-}
-
-.topics-grid {
-  @media #{p.$mq-lg} {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  @media (max-width: #{p.$screen-lg}) {
-    display: flex;
-    overflow-x: auto;
-    gap: p.$spacing-md;
-    padding: p.$spacing-md 0;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
-    > .card--topic {
-      flex: 0 0 280px;
-      height: 280px;
-      scroll-snap-align: start;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      
-      > * {
-        flex-shrink: 0;
-      }
-    }
   }
 }
