@@ -262,8 +262,7 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
             if topic.id in topic_docs_map:
                 main_list, fallback_list = topic_docs_map[topic.id]
                 target_list = main_list if doc.id in main_doc_ids else fallback_list
-                if doc not in target_list:
-                    target_list.append(doc)
+                target_list.append(doc)
 
     for topic in topics:
         main_topic_docs, fallback_topic_docs = topic_docs_map[topic.id]
