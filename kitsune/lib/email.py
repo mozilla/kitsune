@@ -3,7 +3,7 @@ import smtplib
 import time
 
 from django.conf import settings
-from django.core.mail.backends import smtp
+from django.core.mail.backends import base, smtp
 from django.utils.module_loading import import_string
 from sentry_sdk import capture_exception
 
@@ -11,7 +11,7 @@ from sentry_sdk import capture_exception
 log = logging.getLogger("k.lib.email")
 
 
-class LoggingEmailBackend(object):
+class LoggingEmailBackend(base.BaseEmailBackend):
     """
     Wraps a email backend defined in Django's settings and logs everything it does.
     """
