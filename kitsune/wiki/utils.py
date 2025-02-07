@@ -4,7 +4,7 @@ from itertools import chain, islice
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Prefetch, Q
+from django.db.models import OuterRef, Q, Subquery
 from django.db.models.functions import Now
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
@@ -13,6 +13,7 @@ from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, Revision
 
@@ -108,65 +109,60 @@ def _active_contributors_id(from_date, to_date, locale, product):
 
 
 def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
-    """Returns up to 4 random articles per topic from the most visited.
+    """Returns up to 4 random articles from the most visited.
 
     Args:
         product: Optional product to filter by
         topics: Optional iterable of topics to filter by
         locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
     """
-    # Get base queryset with all needed relations in one hit
-    visits = (
-        WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
-        .select_related("document")
-        .prefetch_related(
-            "document__products",
-            "document__topics",
-            Prefetch(
-                "document__translations",
-                queryset=(
-                    Document.objects.visible(
-                        locale=locale,
-                        current_revision__is_approved=True,
-                        is_archived=False,
-                        is_template=False,
-                    )
-                    if locale != settings.WIKI_DEFAULT_LANGUAGE
-                    else None
-                ),
-            ),
+    parent_prefix = "parent__" if locale != settings.WIKI_DEFAULT_LANGUAGE else ""
+
+    filter_kwargs = {
+        f"{parent_prefix}restrict_to_groups__isnull": True,
+    }
+
+    if product:
+        filter_kwargs[f"{parent_prefix}products"] = product
+
+    if topics:
+        filter_kwargs[f"{parent_prefix}topics__in"] = topics
+
+    excluded_product_slugs = settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES
+
+    qs = (
+        Document.objects.filter(
+            locale=locale,
+            is_template=False,
+            is_archived=False,
+            current_revision__isnull=False,
+            **filter_kwargs,
         )
-        .filter(
-            document__restrict_to_groups__isnull=True,
-            document__locale=settings.WIKI_DEFAULT_LANGUAGE,
-            document__is_archived=False,
-            document__is_template=False,
+        .exclude(**{f"{parent_prefix}products__slug__in": excluded_product_slugs})
+        .exclude(html__startswith=REDIRECT_HTML)
+        .select_related("current_revision")
+        .annotate(
+            num_visits=Subquery(
+                WikiDocumentVisits.objects.filter(
+                    document=OuterRef(f"{parent_prefix}pk"), period=LAST_7_DAYS
+                ).values("visits")
+            )
         )
-        .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
+        .exclude(num_visits__isnull=True)
+        .order_by("-num_visits")
     )
 
-    # Add product and topics filters to the database query
-    if product:
-        visits = visits.filter(document__products=product)
     if topics:
-        visits = visits.filter(document__topics__in=topics)
+        # Documents that match multiple topics will be repeated,
+        # so remove any duplicates when we're matching by topics.
+        qs = qs.distinct()
 
-    # Order by visits but don't limit - we need enough documents for all topics
-    visits = visits.order_by("-visits")
+    # Only include the ten most visited articles for sampling.
+    docs = list(qs[:10])
 
-    # Get documents based on locale
-    documents = []
-    if locale == settings.WIKI_DEFAULT_LANGUAGE:
-        documents = [visit.document for visit in visits]
-    else:
-        for visit in visits:
-            translation = next(iter(visit.document.translations.all()), None)
-            if translation:
-                documents.append(translation)
-
-    if len(documents) <= 4:
-        return documents
-    return random.sample(documents, 4)
+    if len(docs) <= 4:
+        return docs
+    return random.sample(docs, 4)
 
 
 def get_visible_document_or_404(
