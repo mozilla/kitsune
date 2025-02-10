@@ -285,7 +285,7 @@ def document(request, document_slug, document=None):
     breadcrumbs = [(None, trimmed_title)]
     # Get the dominant topic, and all parent topics. Save the topic chosen for
     # picking a product later.
-    document_topics = doc.topics.order_by("display_order")
+    document_topics = doc.get_topics().order_by("display_order")
     if len(document_topics) > 0:
         topic = document_topics.first()
         breadcrumbs.append((topic.get_absolute_url(product.slug), topic.title))
