@@ -4,11 +4,25 @@ from unittest import mock
 from django.test.utils import override_settings
 from requests.exceptions import HTTPError
 
-from kitsune.products.tests import ProductFactory
+from kitsune.dashboards import LAST_7_DAYS
+from kitsune.dashboards.models import WikiDocumentVisits
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
-from kitsune.wiki.utils import active_contributors, generate_short_url, num_active_contributors
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    RedirectRevisionFactory,
+    RevisionFactory,
+    TemplateDocumentFactory,
+    TranslatedRevisionFactory,
+)
+from kitsune.wiki.utils import (
+    active_contributors,
+    generate_short_url,
+    get_featured_articles,
+    num_active_contributors,
+)
 
 
 class ActiveContributorsTestCase(TestCase):
@@ -101,3 +115,132 @@ class GenerateShortUrlTestCase(TestCase):
         mock_response.raise_for_status.side_effect = HTTPError()
         mock_requests.return_value = mock_response
         self.assertRaises(HTTPError, generate_short_url, self.test_url)
+
+
+class FeaturedArticlesTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.product1 = product1 = ProductFactory()
+        self.product2 = product2 = ProductFactory()
+        self.topic1 = topic1 = TopicFactory(products=[product1])
+        self.topic2 = topic2 = TopicFactory(products=[product1, product2])
+        topic3 = TopicFactory(products=[product2])
+        # Create a variety of documents.
+        # These will have a current revision.
+        self.d1 = d1 = ApprovedRevisionFactory(
+            document__products=[product1], document__topics=[topic1]
+        ).document
+        self.d2 = d2 = ApprovedRevisionFactory(
+            document__products=[product1], document__topics=[topic1, topic2]
+        ).document
+        ApprovedRevisionFactory(
+            document__products=[product1, product2], document__topics=[topic2]
+        ).document
+        ApprovedRevisionFactory(
+            document__products=[product2], document__topics=[topic2, topic3]
+        ).document
+        # These will not have a current revision.
+        d3 = RevisionFactory().document
+        d4 = RevisionFactory().document
+        d5 = RevisionFactory().document
+        # This will be a redirect.
+        d6 = RedirectRevisionFactory().document
+        # These will be archived.
+        d7 = ApprovedRevisionFactory(document__is_archived=True).document
+        d8 = ApprovedRevisionFactory(document__is_archived=True).document
+        # These will be templates.
+        d9 = TemplateDocumentFactory()
+        ApprovedRevisionFactory(document=d9)
+        d10 = TemplateDocumentFactory()
+        ApprovedRevisionFactory(document=d10)
+
+        # German documents.
+        # These will have a current revision.
+        self.de1 = de1 = TranslatedRevisionFactory(
+            document__locale="de",
+            document__parent__products=[product1],
+            document__parent__topics=[topic1, topic2],
+        ).document
+        self.de2 = de2 = TranslatedRevisionFactory(
+            document__locale="de",
+            document__parent__products=[product2],
+            document__parent__topics=[topic2, topic3],
+        ).document
+        TranslatedRevisionFactory(
+            document__locale="de",
+            document__parent__products=[product1, product2],
+            document__parent__topics=[topic2],
+        ).document
+        TranslatedRevisionFactory(
+            document__locale="de",
+            document__parent__products=[product2],
+            document__parent__topics=[topic2, topic3],
+        ).document
+        # These will not have a current revision.
+        de3 = DocumentFactory(locale="de", parent=DocumentFactory())
+        de4 = DocumentFactory(locale="de", parent=DocumentFactory())
+        de5 = DocumentFactory(locale="de", parent=DocumentFactory())
+        # These will be redirects.
+        de6 = RedirectRevisionFactory(
+            document__locale="de", document__parent=DocumentFactory()
+        ).document
+        # These will be archived.
+        de7 = TranslatedRevisionFactory(
+            document__locale="de", document__is_archived=True, document__parent__is_archived=True
+        ).document
+        de8 = TranslatedRevisionFactory(
+            document__locale="de", document__is_archived=True, document__parent__is_archived=True
+        ).document
+        # These will be templates.
+        de9 = TemplateDocumentFactory(locale="de", parent=TemplateDocumentFactory())
+        ApprovedRevisionFactory(document=de9)
+        de10 = TemplateDocumentFactory(locale="de", parent=TemplateDocumentFactory())
+        ApprovedRevisionFactory(document=de10)
+
+        for i, doc in enumerate((d1, d2, d3, d4, d5, d6, d7, d8, d9, d10)):
+            WikiDocumentVisits.objects.create(document=doc, visits=(100 + i), period=LAST_7_DAYS)
+
+        for i, doc in enumerate((de1, de2, de3, de4, de5, de6, de7, de8, de9, de10)):
+            WikiDocumentVisits.objects.create(document=doc, visits=(20 + i), period=LAST_7_DAYS)
+            WikiDocumentVisits.objects.create(
+                document=doc.parent, visits=(60 + i), period=LAST_7_DAYS
+            )
+
+    def test_get_featured_articles(self):
+        with self.subTest("with defaults"):
+            featured = get_featured_articles()
+            self.assertEqual(len(featured), 4)
+            self.assertEqual(
+                set(d.id for d in featured),
+                set([self.d1.id, self.d2.id, self.de1.parent.id, self.de2.parent.id]),
+            )
+
+        with self.subTest("with product"):
+            featured = get_featured_articles(product=self.product1)
+            self.assertEqual(len(featured), 3)
+            self.assertEqual(
+                set(d.id for d in featured), set([self.d1.id, self.d2.id, self.de1.parent.id])
+            )
+
+        with self.subTest("with product and topic"):
+            featured = get_featured_articles(product=self.product1, topics=[self.topic2])
+            self.assertEqual(len(featured), 2)
+            self.assertEqual(set(d.id for d in featured), set([self.d2.id, self.de1.parent.id]))
+
+        with self.subTest("with locale"):
+            featured = get_featured_articles(locale="de")
+            self.assertEqual(len(featured), 2)
+            self.assertEqual(set(d.id for d in featured), set([self.de1.id, self.de2.id]))
+
+        with self.subTest("with locale and product"):
+            featured = get_featured_articles(locale="de", product=self.product2)
+            self.assertEqual(len(featured), 1)
+            self.assertEqual(featured[0].id, self.de2.id)
+
+        with self.subTest("with locale and product and topic"):
+            featured = get_featured_articles(
+                locale="de", product=self.product1, topics=[self.topic1, self.topic2]
+            )
+            self.assertEqual(len(featured), 1)
+            self.assertEqual(featured[0].id, self.de1.id)

@@ -1,31 +1,45 @@
 {% macro help_topics(topics, product_slug=None, new_tab=False) -%}
-  <div class="sumo-card-grid">
-    <div class="scroll-wrap">
-      {% for topic in topics %}
-      {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
-      <div class="card card--topic">
+{# topics: List of topic_data dicts containing:
+    - topic: Topic model instance
+    - topic_url: URL to topic page
+    - title: Topic title
+    - total_articles: Number of articles
+    - image_url: URL to topic icon
+    - documents: three documents for the topic
+#}
+<div class="topics-section">
+  <div class="topics-grid">
+    {% for topic_data in topics %}
+    <div class="card--topic">
+      <div class="topic-header">
         <img
           class="card--icon"
-          src="{{ topic.image_url }}"
-          alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
+          src="{{ topic_data.image_url }}"
+          alt="{{ pgettext('DB: products.Topic.title', topic_data.title) }} icon"
+          loading="lazy"
         />
-        <div class="card--details">
           <h3 class="card--title">
-            <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
-              data-event-name="link_click"
-              data-event-parameters='{
-                "link_name": "product-and-topic-home",
-                "link_detail": "{{ (product_slug or product.slug) + '/' + topic.slug }}"
-              }'>
-              {{ pgettext('DB: products.Topic.title', topic.title) }}
+            <a href="{{ topic_data.topic_url }}">
+              {{ pgettext('DB: products.Topic.title', topic_data.title) }}
             </a>
           </h3>
-        </div>
       </div>
-      {% endfor %}
+      <ul class="article-list">
+        {% for document in topic_data.documents %}
+        <li>
+          <a href="{{ document.get_absolute_url() | replace('/' + settings.WIKI_DEFAULT_LANGUAGE + '/', '/' + request.LANGUAGE_CODE + '/')}}">
+            {{ document.title }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      <a class="view-all-link" href="{{ topic_data.topic_url }}">View All {{ topic_data.total_articles }} Articles</a>
     </div>
+    {% endfor %}
   </div>
+</div>
 {%- endmacro %}
+
+
 
 {% macro topic_metadata(topics, product=None) %}
 {% if product and has_aaq_config and not settings.READ_ONLY %}
