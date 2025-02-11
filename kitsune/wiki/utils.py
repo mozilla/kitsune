@@ -249,9 +249,7 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     doc_topics_map: dict[int, list[Topic]] = {}
 
     for doc in all_documents:
-        doc_topics = set(doc.topics.all()) or (
-            set(doc.parent.topics.all()) if doc.parent else set()
-        )
+        doc_topics = set(doc.parent.topics.all()) if doc.parent else set(doc.topics.all())
 
         doc_topics_map[doc.id] = list(doc_topics)
         for topic in doc_topics:
