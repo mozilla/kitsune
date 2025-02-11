@@ -1697,10 +1697,10 @@ def recent_revisions(request):
     form.is_valid()
 
     filters = {}
+    locale = None
     if hasattr(form, "cleaned_data"):
         if form.cleaned_data.get("locale"):
             filters.update(document__locale=form.cleaned_data["locale"])
-
         # Only apply user filter if there are valid users
         if form.cleaned_data.get("users"):
             filters.update(creator__in=form.cleaned_data["users"])
@@ -1717,7 +1717,7 @@ def recent_revisions(request):
     c = {
         "revisions": revs,
         "form": form,
-        "locale": request.GET.get("locale", request.LANGUAGE_CODE),
+        "locale": locale or request.LANGUAGE_CODE,  # Ensure locale is always set
     }
     if fragment:
         template = "wiki/includes/recent_revisions_fragment.html"
