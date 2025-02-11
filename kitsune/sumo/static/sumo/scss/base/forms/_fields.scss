@@ -70,7 +70,11 @@ label {
 .form-as-ul>li {
   position: relative;
   margin-bottom: p.$spacing-lg;
-  max-width: p.remify(480px);
+  max-width: 25rem;  // Default for mobile
+
+  @media #{p.$mq-md} {
+    max-width: p.remify(480px);  // Original desktop width
+  }
 
   .error-text {
     display: none;
@@ -81,7 +85,11 @@ label {
   }
 
   &.has-large-textarea {
-    max-width: 100%;
+    max-width: 95%;  // Default for mobile
+
+    @media #{p.$mq-md} {
+      max-width: 100%;  // Return to full width on desktop
+    }
 
     textarea {
       min-height: 340px;
@@ -406,11 +414,34 @@ textarea {
 }
 
 .checkbox-list {
-  display: grid;
-  grid-auto-flow: row;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: masonry;
-  gap: p.$spacing-sm p.$spacing-sm;
+  display: block;
+  margin: 0 0 p.$spacing-xl 0;
+  padding: 0;
+  list-style: none;
+
+  @media #{p.$mq-md} {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: masonry;
+    gap: p.$spacing-sm p.$spacing-sm;
+  }
+
+  &--sublist {
+    margin-left: 24px;
+    
+    @include p.bidi(((margin-left, 24px, 0),
+        (margin-right, 0, 24px),
+    ));
+
+    @media #{p.$mq-md} {
+      margin-left: 32px;
+      
+      @include p.bidi(((margin-left, 32px, 0),
+          (margin-right, 0, 32px),
+      ));
+    }
+  }
 }
 
 .products.mzp-c-details .is-summary button {
