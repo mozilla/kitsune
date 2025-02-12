@@ -1697,7 +1697,7 @@ def recent_revisions(request):
     form.is_valid()
 
     filters = {}
-    locale = None
+
     if hasattr(form, "cleaned_data"):
         if form.cleaned_data.get("locale"):
             filters.update(document__locale=form.cleaned_data["locale"])
@@ -1717,7 +1717,7 @@ def recent_revisions(request):
     c = {
         "revisions": revs,
         "form": form,
-        "locale": locale or request.LANGUAGE_CODE,  # Ensure locale is always set
+        "locale": request.GET.get("locale") or request.LANGUAGE_CODE,
     }
     if fragment:
         template = "wiki/includes/recent_revisions_fragment.html"
