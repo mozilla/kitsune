@@ -70,10 +70,10 @@ label {
 .form-as-ul>li {
   position: relative;
   margin-bottom: p.$spacing-lg;
-  max-width: 25rem;  // Default for mobile
+  max-width: 25rem;
 
   @media #{p.$mq-md} {
-    max-width: p.remify(480px);  // Original desktop width
+    max-width: p.remify(480px);
   }
 
   .error-text {
@@ -85,10 +85,10 @@ label {
   }
 
   &.has-large-textarea {
-    max-width: 95%;  // Default for mobile
+    max-width: 95%;
 
     @media #{p.$mq-md} {
-      max-width: 100%;  // Return to full width on desktop
+      max-width: 100%;
     }
 
     textarea {
@@ -428,17 +428,17 @@ textarea {
   }
 
   &--sublist {
-    margin-left: 24px;
+    margin-left: p.$spacing-lg;
     
-    @include p.bidi(((margin-left, 24px, 0),
-        (margin-right, 0, 24px),
+    @include p.bidi(((margin-left, p.$spacing-lg, 0),
+        (margin-right, 0, p.$spacing-lg),
     ));
 
     @media #{p.$mq-md} {
-      margin-left: 32px;
+      margin-left: p.$spacing-xl;
       
-      @include p.bidi(((margin-left, 32px, 0),
-          (margin-right, 0, 32px),
+      @include p.bidi(((margin-left, p.$spacing-xl, 0),
+          (margin-right, 0, p.$spacing-xl),
       ));
     }
   }
