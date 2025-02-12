@@ -122,6 +122,7 @@ class Question(AAQBase):
     )
     is_locked = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False, null=True)
+    is_failed_deflection = models.BooleanField(default=False)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
     marked_as_spam_by = models.ForeignKey(
