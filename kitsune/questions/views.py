@@ -70,7 +70,7 @@ from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
-from kitsune.wiki.utils import build_topics_data
+from kitsune.wiki.utils import build_topics_data, has_visited_kb
 
 log = logging.getLogger("k.questions")
 
@@ -605,6 +605,10 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             context["form"] = zendesk_form
 
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
+
+                if has_visited_kb(request.session, product):
+                    print("RYAN: FAILED DEFLECTION!!")
+
                 try:
                     zendesk_form.send(request.user, product)
                     email = zendesk_form.cleaned_data["email"]
@@ -647,6 +651,11 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 locale=request.LANGUAGE_CODE,
                 product=product,
             )
+
+            if has_visited_kb(request.session, question.product, question.topic):
+                print("RYAN: FAILED DEFLECTION!!")
+                # question.is_failed_deflection = True
+                # question.save()
 
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
