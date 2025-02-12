@@ -56,7 +56,7 @@
     {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
   </div>
 
-  {% if default_slug != 'get-community-support' %}
+  {% if show_aaq_widget %}
     {{ aaq_widget(request) }}
   {% endif %}
 
