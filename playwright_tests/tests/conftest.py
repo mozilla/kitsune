@@ -79,6 +79,7 @@ def browser_context_args(browser_context_args, tmpdir_factory: pytest.TempdirFac
     Modifying the default browser context to include the location of the browser session screencast
     """
     return {
+        "user_agent": Utilities.user_agent,
         **browser_context_args,
         "record_video_dir": tmpdir_factory.mktemp('videos')
     }
