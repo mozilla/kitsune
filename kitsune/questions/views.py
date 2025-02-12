@@ -70,7 +70,7 @@ from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
-from kitsune.wiki.utils import build_topics_data
+from kitsune.wiki.utils import build_topics_data, has_visited_kb
 
 log = logging.getLogger("k.questions")
 
@@ -603,6 +603,13 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 user=request.user,
             )
             context["form"] = zendesk_form
+            context["submit_event_parameters"] = json.dumps(
+                {
+                    "is_failed_deflection": (
+                        "true" if has_visited_kb(request.session, product) else "false"
+                    ),
+                }
+            )
 
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
                 try:
@@ -648,6 +655,10 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 product=product,
             )
 
+            if has_visited_kb(request.session, product, question.topic):
+                question.is_failed_deflection = True
+                question.save()
+
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
 
@@ -680,6 +691,22 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             content_type=user_ct,
         ).order_by("-id")[:IMG_LIMIT]
 
+        if form.is_bound and (topic := form.cleaned_data.get("category")):
+            # We've got invalid POST data, but the topic has been provided.
+            # Let's set the proper GA4 event parameters on the submit button.
+            context["submit_event_parameters"] = json.dumps(
+                {
+                    "topics": f"/{topic.slug}/",
+                    "is_failed_deflection": (
+                        "true" if has_visited_kb(request.session, product, topic) else "false"
+                    ),
+                }
+            )
+        else:
+            # We don't know the topic yet, since that's set via the form, so let's
+            # start by providing default GA4 event parameters for the submit button.
+            context["submit_event_parameters"] = json.dumps({"is_failed_deflection": "false"})
+
     return render(request, template, context)
 
 
@@ -690,6 +717,32 @@ def aaq_step2(request, product_slug):
 
 def aaq_step3(request, product_slug):
     """Step 3: Show full question form."""
+
+    # This view can be called by htmx to set the GA4 event parameters on the submit
+    # button of the new-question form whenever the category (topic) menu is changed.
+    if ("hx-request" in request.headers) and (
+        request.headers.get("hx-trigger-name") == "category"
+    ):
+        topic_id = request.GET.get("category")
+        product = get_object_or_404(Product.active, slug=product_slug)
+        topic = get_object_or_404(Topic.active.filter(products=product, in_aaq=True), pk=topic_id)
+        is_failed_deflection = (
+            "true" if has_visited_kb(request.session, product, topic) else "false"
+        )
+        response = HttpResponse(status=204)
+        response["HX-Trigger"] = json.dumps(
+            {
+                "setQuestionSubmitEventParameters": {
+                    "eventParameters": json.dumps(
+                        {
+                            "is_failed_deflection": is_failed_deflection,
+                            "topics": f"/{topic.slug}/",
+                        }
+                    )
+                }
+            }
+        )
+        return response
 
     # Since removing the @login_required decorator for MA form
     # need to catch unauthenticated, non-MA users here """

@@ -1,4 +1,5 @@
 import random
+import time
 from itertools import chain, islice
 
 import requests
@@ -16,6 +17,9 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, Revision
+
+
+KB_VISITED_DEFAULT_TTL = 60 * 60 * 24  # 24 hours
 
 
 def active_contributors(from_date, to_date=None, locale=None, product=None):
@@ -290,3 +294,58 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         topics_data.append(topic_data)
 
     return topics_data
+
+
+def clean_kb_visited(session, ttl=KB_VISITED_DEFAULT_TTL):
+    """
+    Remove expired slugs from the "kb-visited" dictionary within the given session
+    based on the given TTL.
+    """
+    if (not session) or ((kb_visited := session.get("kb-visited")) is None):
+        return None
+
+    now = time.time()
+
+    # Remove any slugs that have expired.
+    if expired_slugs := [slug for slug, ts in kb_visited.items() if (now - ts) > ttl]:
+        for slug in expired_slugs:
+            del kb_visited[slug]
+        session.modified = True
+
+    return kb_visited
+
+
+def update_kb_visited(session, doc, ttl=KB_VISITED_DEFAULT_TTL):
+    """
+    Cleans and then updates the "kb-visited" dictionary within the given session.
+    """
+    if not session:
+        return
+
+    if (kb_visited := clean_kb_visited(session, ttl=ttl)) is None:
+        session["kb-visited"] = kb_visited = {}
+
+    # Note that we have visited the given KB article.
+    kb_visited[doc.original.slug] = time.time()
+    session.modified = True
+
+
+def has_visited_kb(session, product, topic=None, ttl=KB_VISITED_DEFAULT_TTL):
+    """
+    Does the given session indicate that the user has visited at least one
+    KB article associated with the given product and, if provided, topic,
+    within the given TTL.
+    """
+    if not (kb_visited := clean_kb_visited(session, ttl=ttl)):
+        return False
+
+    visited_slugs = tuple(kb_visited.keys())
+
+    qs = Document.objects.filter(
+        locale=settings.WIKI_DEFAULT_LANGUAGE, slug__in=visited_slugs, products=product
+    )
+
+    if topic:
+        qs = qs.filter(topics=topic)
+
+    return qs.exists()

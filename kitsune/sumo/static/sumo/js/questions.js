@@ -13,6 +13,18 @@ import AAQSystemInfo from "sumo/js/aaq";
 * Scripts for the questions app.
 */
 
+document.addEventListener("DOMContentLoaded", async () => {
+  const body = document.querySelector("body.new-question");
+  if (body) {
+    const submitButton = body.querySelector('#question-form button[type="submit"]');
+    if (submitButton) {
+      body.addEventListener('setQuestionSubmitEventParameters', (event) => {
+        submitButton.dataset.eventParameters = event.detail.eventParameters;
+      });
+    }
+  }
+});
+
 // TODO: Figure out how to break out the functionality here into
 // testable parts.
 

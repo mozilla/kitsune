@@ -7,6 +7,7 @@
 {% set meta = [('robots', 'noindex')] %}
 
 {% set classes = 'new-question' %}
+{% set category_field_attrs = {"hx-get": "", "hx-swap": "none"}%}
 
 {% block breadcrumbs %}{% endblock %}
 
@@ -39,4 +40,4 @@
 {% block submit_button_value %}
   {{ _('Submit') }}
 {% endblock %}
-{% block submit_button_attrs %}data-event-name="question_submit"{% endblock %}
+{% block submit_button_attrs %}data-event-name="question_submit" data-event-parameters='{{ submit_event_parameters }}'{% endblock %}
