@@ -75,6 +75,7 @@ class Utilities:
     }
     user_special_chars = os.environ.get("TEST_ACCOUNT_SPECIAL_CHARS")
     user_secrets_pass = os.environ.get("TEST_ACCOUNTS_PS")
+    user_agent = os.environ.get("PLAYWRIGHT_USER_AGENT")
 
     def clear_fxa_email(self, fxa_username: str):
         """

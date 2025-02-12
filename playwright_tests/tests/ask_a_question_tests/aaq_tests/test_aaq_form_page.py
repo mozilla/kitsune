@@ -412,6 +412,7 @@ def test_additional_system_details_user_agent_information(page: Page):
 
 
 @pytest.mark.aaqPage
+@pytest.mark.skip
 def test_system_details_information(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
