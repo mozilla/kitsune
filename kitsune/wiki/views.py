@@ -304,7 +304,10 @@ def document(request, document_slug, document=None):
 
     is_first_revision = doc.revisions.filter(is_approved=True).count() == 1
 
-    show_aaq_widget = doc.slug != "get-community-support"
+    show_aaq_widget = (
+        not (doc.parent and doc.parent.slug == "get-community-support")
+        and doc.slug != "get-community-support"
+    )
 
     data = {
         "document": doc,
