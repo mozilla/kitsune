@@ -1291,3 +1291,5 @@ MOZILLA_LOCATION_SERVICE = config(
     "MOZILLA_LOCATION_SERVICE",
     default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",  # noqa
 )
+
+SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")
