@@ -1,5 +1,6 @@
 from functools import cached_property
 from urllib.parse import parse_qsl
+import random
 import time
 
 from django.conf import settings
@@ -100,9 +101,15 @@ class RateLimit:
     ALLOWED_PERIODS = dict(sec=1, min=60, hour=3600, day=86400)
 
     def __init__(
-        self, key: str, rate: str, wait_period: int | float, max_wait_period: int | float
+        self,
+        key: str,
+        rate: str,
+        wait_period: int | float,
+        max_wait_period: int | float,
+        jitter: float = 0.2,
     ):
         self.key = key
+        self.jitter = jitter  # percentage
         self.wait_period = wait_period  # seconds
         self.max_wait_period = max_wait_period  # seconds
         max_calls, period = rate.replace("/", " ").split()
@@ -159,8 +166,9 @@ class RateLimit:
         """
         waited = 0
         while self.is_rate_limited():
-            time.sleep(self.wait_period)
-            waited += self.wait_period
+            jittered_wait = self.wait_period * random.uniform(1 - self.jitter, 1 + self.jitter)
+            time.sleep(jittered_wait)
+            waited += jittered_wait
             if self.max_wait_period and (waited >= self.max_wait_period):
                 break
         return waited

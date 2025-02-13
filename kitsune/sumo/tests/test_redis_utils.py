@@ -13,11 +13,13 @@ class TestRateLimit(TestCase):
         self.max_calls = 5
         self.wait_period = 0.1
         self.max_wait_period = 2
+        self.jitter = 0.2
         self.rate_limit = RateLimit(
             key=self.key,
             rate=f"{self.max_calls}/sec",
             wait_period=self.wait_period,
             max_wait_period=self.max_wait_period,
+            jitter=self.jitter,
         )
         self.rate_limit.redis.delete(self.key)
 
@@ -48,13 +50,13 @@ class TestRateLimit(TestCase):
         time_waited = self.rate_limit.wait()
 
         self.assertFalse(self.rate_limit.is_rate_limited())
-        self.assertTrue(time_waited >= self.wait_period)
+        self.assertTrue(time_waited >= self.wait_period * (1 - self.jitter))
         self.assertTrue(time_waited < self.max_wait_period)
 
     def test_wait_respects_max_wait_period(self):
         """Ensure wait() respects the "max_wait_period" setting."""
         self.rate_limit = RateLimit(
-            key=self.key, rate="1/sec", wait_period=0.05, max_wait_period=0.1
+            key=self.key, rate="1/sec", wait_period=0.05, max_wait_period=0.1, jitter=0.0
         )
         self.assertFalse(self.rate_limit.is_rate_limited())
         time_waited = self.rate_limit.wait()
