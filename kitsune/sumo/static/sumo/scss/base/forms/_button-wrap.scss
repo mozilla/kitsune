@@ -38,6 +38,11 @@
   margin-bottom: -#{p.$spacing-sm};
   padding: p.$spacing-sm 0;
   width: 100%;
+  max-width: 95%; 
+
+  @media #{p.$mq-md} {
+    max-width: 100%;
+  }
 
   &.align-end {
     justify-content: flex-end;
@@ -153,8 +158,6 @@
   }
 }
 
-
-// stack buttons and fit to the biggest one.
 .sumo-button-stack {
   display: flex;
   flex-direction: column;
