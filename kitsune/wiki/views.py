@@ -304,6 +304,11 @@ def document(request, document_slug, document=None):
 
     is_first_revision = doc.revisions.filter(is_approved=True).count() == 1
 
+    show_aaq_widget = (
+        not (doc.parent and doc.parent.slug == "get-community-support")
+        and doc.slug != "get-community-support"
+    )
+
     data = {
         "document": doc,
         "is_first_revision": is_first_revision,
@@ -318,6 +323,7 @@ def document(request, document_slug, document=None):
         "ga_products": ga_products,
         "ga_article_locale": ga_article_locale,
         "related_products": doc.related_products.exclude(pk=product.pk),
+        "show_aaq_widget": show_aaq_widget,
         "breadcrumb_items": breadcrumbs,
         "document_css_class": document_css_class,
         "any_localizable_revision": any_localizable_revision,
