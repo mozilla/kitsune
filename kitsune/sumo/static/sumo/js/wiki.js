@@ -657,7 +657,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       updateRevisionList();
     }
 
-    function updateRevisionList(query) {
+    function updateRevisionList(query, pushState = true) {
       if (query === undefined) {
         query = $form.serialize();
       }
@@ -680,11 +680,23 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         $('.loading').hide();
         $('#revisions-fragment').html(data).css('opacity', 1);
 
-        // Update URL without triggering page reload
-        const newUrl = window.location.pathname + query;
-        window.history.pushState({}, '', newUrl);
+        // Only update URL if pushState is true
+        if (pushState) {
+          const newUrl = window.location.pathname + query;
+          window.history.pushState({query: query}, '', newUrl);
+        }
       });
     }
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', function(event) {
+      if (event.state && event.state.query) {
+        updateRevisionList(event.state.query, false);
+      } else {
+        // Handle the initial state
+        updateRevisionList(window.location.search, false);
+      }
+    });
 
     // Handle filter changes
     var timeout;
@@ -720,7 +732,6 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       }
     });
   }
-
 
   init();
 
