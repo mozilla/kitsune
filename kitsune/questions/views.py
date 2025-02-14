@@ -115,6 +115,11 @@ ORDER_BY = OrderedDict(
 )
 
 
+def view_session(request):
+    kb_visited = request.session.get("kb-visited") or {}
+    return JsonResponse(kb_visited)
+
+
 def product_list(request):
     """View to select a product to see related questions."""
     return render(
@@ -607,7 +612,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
 
                 if has_visited_kb(request.session, product):
-                    print("RYAN: FAILED DEFLECTION!!")
+                    print("\nRYAN: FAILED DEFLECTION!!\n")
 
                 try:
                     zendesk_form.send(request.user, product)
@@ -653,7 +658,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             )
 
             if has_visited_kb(request.session, question.product, question.topic):
-                print("RYAN: FAILED DEFLECTION!!")
+                print("\nRYAN: FAILED DEFLECTION!!\n")
                 # question.is_failed_deflection = True
                 # question.save()
 

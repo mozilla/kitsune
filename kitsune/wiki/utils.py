@@ -298,9 +298,9 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
 
 def clean_kb_visited(session, ttl=KB_VISITED_DEFAULT_TTL):
     """
-    Within the given session, remove expired KB-visited slugs.
+    Remove expired slugs from the "kb-visited" dictionary within the given session.
     """
-    if not (session and ((kb_visited := session.get("kb-visited")) is not None)):
+    if (not session) or ((kb_visited := session.get("kb-visited")) is None):
         return None
 
     now = time.time()
@@ -316,13 +316,19 @@ def clean_kb_visited(session, ttl=KB_VISITED_DEFAULT_TTL):
 
 def update_kb_visited(session, doc, ttl=KB_VISITED_DEFAULT_TTL):
     """
-    Update the "kb_visited" dictionary within the given session.
+    Update the "kb-visited" dictionary within the given session.
     """
-    if (kb_visited := clean_kb_visited(session, ttl=ttl)) is None:
+    if not session:
         return
+
+    if (kb_visited := clean_kb_visited(session, ttl=ttl)) is None:
+        session["kb-visited"] = kb_visited = {}
 
     # Note that we have visited the given KB article.
     kb_visited[doc.original.slug] = time.time()
+
+    print(f"\nRYAN: {kb_visited}\n")
+
     session.modified = True
 
 

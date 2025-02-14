@@ -13,6 +13,28 @@ import AAQSystemInfo from "sumo/js/aaq";
 * Scripts for the questions app.
 */
 
+// // The "DOMContentLoaded" event is guaranteed not to have been
+// // called by the time the following code is run, because it always
+// // waits until all deferred scripts have been loaded, and the code
+// // in this file is always bundled into a script that is deferred.
+// document.addEventListener("DOMContentLoaded", async () => {
+//   const newQuestionForm = document.querySelector('body.new-question #question-form');
+//   if (newQuestionForm) {
+//     newQuestionForm.addEventListener('submit', (event) => {
+//       event.preventDefault();
+//       if (this.validateForm()) {
+//           trackEvent('article_survey_submitted', {
+//               survey_type: this.surveyType,
+//               reason: this.selectedReason
+//           });
+//           // Allow HTMX to handle the submission
+//           return true;
+//       }
+//       return false;
+//   });
+//   }
+// });
+
 // TODO: Figure out how to break out the functionality here into
 // testable parts.
 

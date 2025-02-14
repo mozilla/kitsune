@@ -18,6 +18,7 @@ else:
 
 urlpatterns = [
     re_path(r"^$", views.product_list, name="questions.home"),
+    re_path(r"^session$", views.view_session, name="questions.session"),
     re_path(
         r"^answer-preview-async$",
         views.answer_preview_async,
