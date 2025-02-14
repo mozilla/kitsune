@@ -562,17 +562,18 @@ class WebhookView(View):
             )
 
             if profile_obj:
-                if short_id == AccountEvent.DELETE_USER:
-                    process_event_delete_user.delay(account_event.id)
-                elif short_id == AccountEvent.SUBSCRIPTION_STATE_CHANGE:
-                    process_event_subscription_state_change.delay(account_event.id)
-                elif short_id == AccountEvent.PASSWORD_CHANGE:
-                    process_event_password_change.delay(account_event.id)
-                elif short_id == AccountEvent.PROFILE_CHANGE:
-                    process_event_profile_change.delay(account_event.id)
-                else:
-                    account_event.status = AccountEvent.NOT_IMPLEMENTED
-                    account_event.save()
+                match short_id:
+                    case AccountEvent.DELETE_USER:
+                        process_event_delete_user.delay(account_event.id)
+                    case AccountEvent.SUBSCRIPTION_STATE_CHANGE:
+                        process_event_subscription_state_change.delay(account_event.id)
+                    case AccountEvent.PASSWORD_CHANGE:
+                        process_event_password_change.delay(account_event.id)
+                    case AccountEvent.PROFILE_CHANGE:
+                        process_event_profile_change.delay(account_event.id)
+                    case _:
+                        account_event.status = AccountEvent.NOT_IMPLEMENTED
+                        account_event.save()
 
     def post(self, request, *args, **kwargs):
         authorization = request.META.get("HTTP_AUTHORIZATION")

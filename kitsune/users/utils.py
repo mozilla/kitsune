@@ -8,10 +8,17 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext as _
 
+from kitsune.forums.handlers import PostListener, ThreadListener
+from kitsune.kbforums.handlers import PostListener as KBPostListener
+from kitsune.kbforums.handlers import ThreadListener as KBThreadListener
+from kitsune.messages.handlers import MessageListener
 from kitsune.messages.models import InboxMessage, OutboxMessage
+from kitsune.questions.handlers import AAQListener
 from kitsune.sumo import email_utils
 from kitsune.tidings.models import Watch
+from kitsune.users.handlers import UserDeletionPublisher
 from kitsune.users.models import ContributionAreas, Deactivation, Setting
+from kitsune.wiki.handlers import DocumentListener
 
 log = logging.getLogger("k.users")
 
@@ -159,3 +166,22 @@ def user_is_contributor(user):
         user.is_authenticated
         and user.groups.filter(name__in=ContributionAreas.get_groups()).exists()
     )
+
+
+def delete_user_pipeline(user: User) -> None:
+    """
+    Deletes a user and all associated data.
+    """
+
+    publisher = UserDeletionPublisher(user=user)
+
+    publisher.register_listener(ThreadListener())
+    publisher.register_listener(PostListener())
+    publisher.register_listener(KBThreadListener())
+    publisher.register_listener(KBPostListener())
+    publisher.register_listener(AAQListener())
+    publisher.register_listener(DocumentListener())
+    publisher.register_listener(MessageListener())
+
+    publisher.publish()
+    user.delete()

@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.handlers import AbstractChain, AccountHandler
+from kitsune.users.handlers import UserDeletionListener
 
 
 class SpamAAQHandler(AccountHandler):
@@ -71,3 +72,11 @@ class AAQChain(AbstractChain[AccountHandler]):
         else:
             Question.objects.filter(creator=user).update(creator=sumo_bot)
             Answer.objects.filter(creator=user).update(creator=sumo_bot)
+
+
+class AAQListener(UserDeletionListener):
+    """Listener for AAQ-related tasks."""
+
+    def on_user_deletion(self, user: User) -> None:
+        """Handle the deletion of a user."""
+        AAQChain().run(user)

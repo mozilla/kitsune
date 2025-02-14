@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
 
+from django.conf import settings
+from django.contrib.auth.models import User
+
 from kitsune.messages.utils import send_message
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
@@ -14,6 +17,13 @@ from kitsune.users.tests import AccountEventFactory, GroupFactory, ProfileFactor
 
 
 class AccountEventsTasksTestCase(TestCase):
+    def setUp(self):
+        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        self.content_group = GroupFactory(name=settings.SUMO_CONTENT_GROUP)
+        self.group_user1 = UserFactory()
+        self.group_user2 = UserFactory()
+        self.content_group.user_set.add(self.group_user1, self.group_user2)
+
     def test_process_delete_user(self):
         profile = ProfileFactory()
         account_event = AccountEventFactory(
@@ -45,20 +55,10 @@ class AccountEventsTasksTestCase(TestCase):
 
         process_event_delete_user(account_event.id)
 
-        user.refresh_from_db()
+        with self.assertRaises(User.DoesNotExist):
+            user.refresh_from_db()
         account_event.refresh_from_db()
 
-        # The user should be anonymized.
-        self.assertTrue(user.username.startswith("user"))
-        self.assertTrue(user.email.endswith("@example.com"))
-        # The user should be deactivated, and the user's profile and groups cleared.
-        self.assertFalse(user.is_active)
-        self.assertFalse(user.profile.name)
-        self.assertEqual(user.groups.count(), 0)
-        # Confirm that the user's inbox and outbox have been cleared, and
-        # that the inbox and outbox of each of the other users remain intact.
-        self.assertEqual(user.outbox.count(), 0)
-        self.assertEqual(user.inbox.count(), 0)
         for other_user in other_users:
             self.assertEqual(other_user.inbox.count(), 1)
             self.assertEqual(other_user.outbox.count(), 1)

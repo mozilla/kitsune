@@ -369,7 +369,7 @@ class AccountEvent(models.Model):
     jwt_id = models.CharField(max_length=256)
     issued_at = models.CharField(max_length=32)
     profile = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name="account_events", null=True
+        Profile, on_delete=models.SET_NULL, related_name="account_events", null=True
     )
 
     class Meta(object):

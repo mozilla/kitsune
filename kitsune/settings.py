@@ -1294,3 +1294,4 @@ MOZILLA_LOCATION_SERVICE = config(
 )
 
 SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")
+SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="sumo-content-group")
