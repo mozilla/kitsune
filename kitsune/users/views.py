@@ -290,7 +290,7 @@ def edit_contribution_area(request):
 @require_http_methods(["GET", "POST"])
 def edit_watch_list(request):
     """Edit watch list"""
-    watches = Watch.objects.filter(user=request.user).order_by("content_type")
+    watches = Watch.objects.filter(user=request.user).order_by("content_type", "id")
 
     watch_list = []
     for item in watches:
