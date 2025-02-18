@@ -30,6 +30,7 @@
       <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update') }}</button>
     </div>
   </form>
+  {{ watch_list|paginator }}
 {% else %}
   <p>{{ _('You are not currently watching anything.') }}</p>
 {% endif %}

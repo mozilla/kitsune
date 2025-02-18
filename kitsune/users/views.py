@@ -302,6 +302,8 @@ def edit_watch_list(request):
             else:
                 watch_list.append(item)
 
+    watch_list = paginate(request, watch_list)
+
     if request.method == "POST":
         for item in watch_list:
             item.is_active = "watch_%s" % item.id in request.POST
