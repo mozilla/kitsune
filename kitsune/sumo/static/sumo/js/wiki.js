@@ -632,33 +632,10 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       return;
     }
 
-    // Retrieve form data from sessionStorage, excluding pagination parameters
-    let formData = {};
-    const savedFormData = sessionStorage.getItem('revision-list-filter');
+    const initialUrl = window.location.href;
+    window.history.replaceState({ url: initialUrl }, '', initialUrl);
 
-    if (savedFormData) {
-      try {
-        formData = JSON.parse(savedFormData);
-      } catch (e) {
-        formData = {};
-        sessionStorage.removeItem('revision-list-filter');
-      }
-    }
-
-    // Populate form fields with saved data
-    for (let [name, value] of Object.entries(formData)) {
-      const field = $form.find(`[name="${name}"]`);
-      if (field.length) {
-        field.val(value);
-      }
-    }
-
-    // Only update if there are saved filters
-    if (Object.keys(formData).length > 0) {
-      updateRevisionList();
-    }
-
-    function updateRevisionList(query) {
+    function updateRevisionList(query, pushState = true) {
       $('.loading').show();
 
       if (query === undefined) {
@@ -674,7 +651,9 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         url.searchParams.set(key, value);
       }
 
-      window.history.pushState({ url: url.toString() }, '', url);
+      if (pushState) {
+        window.history.pushState({ url: url.toString() }, '', url);
+      }
 
       $('#revisions-fragment').css('opacity', 0);
       $.get(url.toString() + (url.search ? '&' : '?') + 'fragment=1', function (data) {
@@ -696,9 +675,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
           }
         }
 
-        updateRevisionList(params.toString());
-      } else {
-        window.location.reload();
+        updateRevisionList(params.toString(), false);
       }
     });
 
@@ -733,7 +710,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         }
       }
 
-      updateRevisionList(params.toString());
+      updateRevisionList(params.toString(), true);
     });
 
     // Remove submit button and prevent form submission
