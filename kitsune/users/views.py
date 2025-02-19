@@ -290,7 +290,7 @@ def edit_contribution_area(request):
 @require_http_methods(["GET", "POST"])
 def edit_watch_list(request):
     """Edit watch list"""
-    watches = Watch.objects.filter(user=request.user).order_by("content_type")
+    watches = Watch.objects.filter(user=request.user).order_by("content_type", "id")
 
     watch_list = []
     for item in watches:
@@ -301,6 +301,8 @@ def edit_watch_list(request):
                     watch_list.append(item)
             else:
                 watch_list.append(item)
+
+    watch_list = paginate(request, watch_list)
 
     if request.method == "POST":
         for item in watch_list:
