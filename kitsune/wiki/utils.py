@@ -1,10 +1,12 @@
 import random
 import time
 from itertools import chain, islice
+from typing import Optional
 
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sessions.backends.base import SessionBase
 from django.db.models import OuterRef, Q, Subquery
 from django.db.models.functions import Now
 from django.http import Http404, HttpRequest
@@ -296,15 +298,16 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     return topics_data
 
 
-def clean_kb_visited(session, ttl=KB_VISITED_DEFAULT_TTL):
+def clean_kb_visited(session: SessionBase, ttl: int = KB_VISITED_DEFAULT_TTL) -> None:
     """
     Remove expired slugs from the "kb-visited" dictionary within the given session
     based on the given TTL.
     """
-    if (not session) or ((kb_visited := session.get("kb-visited")) is None):
-        return None
+    if not (session and ("kb-visited" in session)):
+        return
 
     now = time.time()
+    kb_visited = session["kb-visited"]
 
     # Remove any slugs that have expired.
     if expired_slugs := [slug for slug, ts in kb_visited.items() if (now - ts) > ttl]:
@@ -312,34 +315,45 @@ def clean_kb_visited(session, ttl=KB_VISITED_DEFAULT_TTL):
             del kb_visited[slug]
         session.modified = True
 
-    return kb_visited
 
-
-def update_kb_visited(session, doc, ttl=KB_VISITED_DEFAULT_TTL):
+def update_kb_visited(
+    session: SessionBase, doc: Document, ttl: int = KB_VISITED_DEFAULT_TTL
+) -> None:
     """
     Cleans and then updates the "kb-visited" dictionary within the given session.
     """
     if not session:
         return
 
-    if (kb_visited := clean_kb_visited(session, ttl=ttl)) is None:
-        session["kb-visited"] = kb_visited = {}
+    if "kb-visited" in session:
+        clean_kb_visited(session, ttl=ttl)
+        kb_visited = session["kb-visited"]
+    else:
+        kb_visited = session["kb-visited"] = {}
 
     # Note that we have visited the given KB article.
     kb_visited[doc.original.slug] = time.time()
     session.modified = True
 
 
-def has_visited_kb(session, product, topic=None, ttl=KB_VISITED_DEFAULT_TTL):
+def get_kb_visited(
+    session: SessionBase,
+    product: Product,
+    topic: Optional[Topic] = None,
+    ttl: int = KB_VISITED_DEFAULT_TTL,
+) -> list[str]:
     """
     Does the given session indicate that the user has visited at least one
     KB article associated with the given product and, if provided, topic,
     within the given TTL.
     """
-    if not (kb_visited := clean_kb_visited(session, ttl=ttl)):
-        return False
+    if not (session and ("kb-visited" in session)):
+        return []
 
-    visited_slugs = tuple(kb_visited.keys())
+    clean_kb_visited(session, ttl=ttl)
+
+    if not (visited_slugs := tuple(session["kb-visited"].keys())):
+        return []
 
     qs = Document.objects.filter(
         locale=settings.WIKI_DEFAULT_LANGUAGE, slug__in=visited_slugs, products=product
@@ -348,4 +362,4 @@ def has_visited_kb(session, product, topic=None, ttl=KB_VISITED_DEFAULT_TTL):
     if topic:
         qs = qs.filter(topics=topic)
 
-    return qs.exists()
+    return list(qs.values_list("slug", flat=True))
