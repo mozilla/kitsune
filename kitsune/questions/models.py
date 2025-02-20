@@ -234,7 +234,7 @@ class Question(AAQBase):
 
         """
         self.metadata_set.exclude(
-            name__in=["useragent", "product", "category", "kb_slugs_visited_prior"]
+            name__in=["useragent", "product", "category", "kb_visits_prior"]
         ).delete()
         self._metadata = None
 
@@ -406,21 +406,20 @@ class Question(AAQBase):
         )
 
     @cached_property
-    def created_after_failed_kb_deflection(self):
+    def created_after_failed_kb_deflection(self) -> bool:
         """
         Returns a boolean indicating whether or not this question was created after its
         creator had visited one or more KB articles with the same product and topic.
         """
-        return self.metadata_set.filter(name="kb_slugs_visited_prior").exists()
+        return self.metadata_set.filter(name="kb_visits_prior").exists()
 
     @cached_property
-    def kb_slugs_visited_prior_to_creation(self):
+    def kb_visits_prior_to_creation(self) -> list[str]:
         """
-        Returns the list of KB slugs visited prior to the creation of this question. The
-        slugs will always be for the default locale.
+        Returns the list of KB article URL's visited prior to the creation of this question.
         """
         try:
-            metadata = self.metadata_set.filter(name="kb_slugs_visited_prior").get()
+            metadata = self.metadata_set.filter(name="kb_visits_prior").get()
         except QuestionMetaData.DoesNotExist:
             return []
         return json.loads(metadata.value)

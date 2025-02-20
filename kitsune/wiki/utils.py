@@ -298,10 +298,12 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     return topics_data
 
 
-def clean_kb_visited(session: SessionBase, ttl: int = KB_VISITED_DEFAULT_TTL) -> None:
+def remove_expired_from_kb_visited(
+    session: SessionBase, ttl: int = KB_VISITED_DEFAULT_TTL
+) -> None:
     """
-    Remove expired slugs from the "kb-visited" dictionary within the given session
-    based on the given TTL.
+    Remove expired visits (KB article URL's and their timestamps) from the
+    "kb-visited" dictionary within the given session based on the given TTL.
     """
     if not (session and ("kb-visited" in session)):
         return
@@ -309,31 +311,67 @@ def clean_kb_visited(session: SessionBase, ttl: int = KB_VISITED_DEFAULT_TTL) ->
     now = time.time()
     kb_visited = session["kb-visited"]
 
-    # Remove any slugs that have expired.
-    if expired_slugs := [slug for slug, ts in kb_visited.items() if (now - ts) > ttl]:
-        for slug in expired_slugs:
-            del kb_visited[slug]
-        session.modified = True
+    empty_keys = []
+    for key, visits in kb_visited.items():
+        # Remove any visits that have expired within this products-topics key.
+        if expired_visits := [url for url, ts in visits.items() if (now - ts) > ttl]:
+            for url in expired_visits:
+                del visits[url]
+            if not visits:
+                # If there are no more visits under this key,
+                # add it to the list of keys to remove.
+                empty_keys.append(key)
+            session.modified = True
+
+    # Remove keys that no longer contain any slugs.
+    for key in empty_keys:
+        del kb_visited[key]
 
 
 def update_kb_visited(
     session: SessionBase, doc: Document, ttl: int = KB_VISITED_DEFAULT_TTL
 ) -> None:
     """
-    Cleans and then updates the "kb-visited" dictionary within the given session.
+    Updates the "kb-visited" dictionary within the given session, and also
+    removes any visits that have expired based on the given TTL.
     """
     if not session:
         return
 
-    if "kb-visited" in session:
-        clean_kb_visited(session, ttl=ttl)
-        kb_visited = session["kb-visited"]
-    else:
-        kb_visited = session["kb-visited"] = {}
+    remove_expired_from_kb_visited(session, ttl=ttl)
 
-    # Note that we have visited the given KB article.
-    kb_visited[doc.original.slug] = time.time()
+    kb_visited = session.setdefault("kb-visited", {})
+
+    product_slugs = doc.get_products().order_by("slug").values_list("slug", flat=True)
+    topic_slugs = doc.get_topics().order_by("slug").values_list("slug", flat=True)
+    key = f"/{'/'.join(product_slugs)}/{'/'.join(topic_slugs)}/"
+
+    url = doc.get_absolute_url()
+
+    kb_visited.setdefault(key, {})[url] = time.time()
     session.modified = True
+
+
+def has_visited_kb(
+    session: SessionBase,
+    product: Product,
+    topic: Optional[Topic] = None,
+    ttl: int = KB_VISITED_DEFAULT_TTL,
+) -> bool:
+    """
+    Return a boolean indicating whether or not the user has visited at least one
+    KB article associated with the given product and, optionally, topic, within
+    the given TTL.
+    """
+    if not (session and ("kb-visited" in session)):
+        return False
+
+    remove_expired_from_kb_visited(session, ttl=ttl)
+
+    return any(
+        (f"/{product.slug}/" in key) and ((topic is None) or (f"/{topic.slug}/" in key))
+        for key in session["kb-visited"].keys()
+    )
 
 
 def get_kb_visited(
@@ -343,23 +381,17 @@ def get_kb_visited(
     ttl: int = KB_VISITED_DEFAULT_TTL,
 ) -> list[str]:
     """
-    Does the given session indicate that the user has visited at least one
-    KB article associated with the given product and, if provided, topic,
-    within the given TTL.
+    Return the KB articles (as a list of document URL's) visited by the user that are
+    associated with the given product and, optionally, topic, within the given TTL.
     """
     if not (session and ("kb-visited" in session)):
         return []
 
-    clean_kb_visited(session, ttl=ttl)
+    remove_expired_from_kb_visited(session, ttl=ttl)
 
-    if not (visited_slugs := tuple(session["kb-visited"].keys())):
-        return []
+    urls = []
+    for key, visits in session["kb-visited"].items():
+        if (f"/{product.slug}/" in key) and ((topic is None) or (f"/{topic.slug}/" in key)):
+            urls.extend(visits.keys())
 
-    qs = Document.objects.filter(
-        locale=settings.WIKI_DEFAULT_LANGUAGE, slug__in=visited_slugs, products=product
-    )
-
-    if topic:
-        qs = qs.filter(topics=topic)
-
-    return list(qs.values_list("slug", flat=True))
+    return urls
