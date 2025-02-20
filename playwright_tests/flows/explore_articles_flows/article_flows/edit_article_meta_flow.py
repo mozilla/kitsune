@@ -70,7 +70,11 @@ class EditArticleMetaFlow:
                 )
 
         if obsolete:
-            self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
+            if not self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked():
+                self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
+        else:
+            if self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked():
+                self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
 
         if discussions:
             if not self.kb_article_edit_metadata_page.is_allow_discussion_checkbox_checked():

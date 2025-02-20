@@ -1434,3 +1434,310 @@ def test_revision_significance(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2903832  C2903833 C2903945  C2903946
+@pytest.mark.kbArticleCreationAndAccess
+def test_article_creation_and_frequent_topics_cards(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_topic_card = utilities.general_test_data["test_topics"]["Firefox"]["topic_name"]
+
+    with allure.step("Signing in with a contributor account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Ensuring that the 'Test topic is empty'"):
+        utilities.navigate_to_link(utilities.general_test_data["test_topics"]["Firefox"]["link"])
+        listed_articles = sumo_pages.product_topics_page.get_all_listed_article_titles()
+
+        for article in listed_articles:
+            sumo_pages.product_topics_page.click_on_a_particular_article(article)
+            sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            utilities.navigate_to_link(
+                utilities.general_test_data["test_topics"]["Firefox"]["link"])
+
+    with check, allure.step("Verifying that the topic card is not displayed"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Firefox"])
+            check.is_false(
+                sumo_pages.common_web_elements.is_frequent_topic_card_displayed(test_topic_card)
+            )
+
+    with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="1", topic="506", approve_revision=True)
+
+    with check, allure.step("Verifying that the article topic card and article is successfully "
+                            "listed and the 'View all {x} counter' is the correct one"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Firefox"])
+            check.is_in(
+                test_topic_card, sumo_pages.common_web_elements.get_frequent_topic_card_titles()
+            )
+            check.is_in(
+                article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
+            )
+            check.equal(
+                1,
+                utilities.number_extraction_from_string(
+                    sumo_pages.common_web_elements.
+                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
+                ))
+
+    with allure.step("Creating a new kb article and not approving the revision"):
+        second_article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="1", topic="506")
+
+    with check, allure.step("Verifying that the unapproved article is not listed inside the "
+                            "topic card list and the 'View all {x} articles' counter has not "
+                            "incremented'"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Firefox"])
+            check.is_not_in(
+                second_article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
+            )
+            check.equal(
+                1,
+                utilities.number_extraction_from_string(
+                    sumo_pages.common_web_elements.
+                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
+                ))
+
+    with check, allure.step("Approving the first revision for the second article and verifying "
+                            "that the article is now listed inside the topic card list and the"
+                            "'View all {x} articles' counter has incremented"):
+        utilities.navigate_to_link(second_article_details["article_url"])
+        sumo_pages.submit_kb_article_flow.approve_kb_revision(
+            revision_id=second_article_details["first_revision_id"])
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Firefox"])
+            check.is_in(
+                second_article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
+            )
+            check.equal(
+                2,
+                utilities.number_extraction_from_string(
+                    sumo_pages.common_web_elements.
+                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
+                )
+            )
+
+    with allure.step("Deleting the second article"):
+        utilities.navigate_to_link(second_article_details["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    with allure.step("Verifying that the article is no longer displayed inside the topic card and"
+                     "the 'View all {x} articles' counter has decremented"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Firefox"])
+            check.is_not_in(
+                second_article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
+            )
+            check.equal(
+                1,
+                utilities.number_extraction_from_string(
+                    sumo_pages.common_web_elements.
+                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
+                )
+            )
+
+    with allure.step("Deleting the first article"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    with allure.step("Verifying that the topic card is not displayed"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Firefox"])
+            check.is_false(
+                sumo_pages.common_web_elements.is_frequent_topic_card_displayed(test_topic_card)
+            )
+
+
+# C2903878
+@pytest.mark.kbArticleCreationAndAccess
+def test_article_update_and_frequent_topics_cards(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    new_article_name = "This title has been updated"
+
+    with allure.step("Signing in with a contributor account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="8", topic="505", approve_revision=True)
+
+    with allure.step("Updating the title of the article"):
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=new_article_name)
+
+    with check, allure.step("Verifying that the updated article is listed inside the topic card"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Thunderbird"])
+            check.is_in(
+                new_article_name,
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]
+                )
+            )
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2903948
+@pytest.mark.kbArticleCreationAndAccess
+def test_obsolete_articles_and_frequent_topics_cards(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in with a contributor account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="8", topic="505", approve_revision=True)
+
+    with allure.step("Marking the article as Obsolete via the 'Edit Article Metadata' page"):
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
+
+    with check, allure.step("Verifying that the article is no longer displayed inside the topic "
+                            "card"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Thunderbird"])
+            check.is_not_in(
+                article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]
+                )
+            )
+
+    with allure.step("Unmarking the article as Obsolete via the 'Edit Article Metadata' page"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=False)
+
+    with check, allure.step("Verifying that the article is displayed inside the topic card"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Thunderbird"])
+            check.is_in(
+                article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]
+                )
+            )
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2904497
+@pytest.mark.parametrize("category", ["60", "70", "50", "40"])
+@pytest.mark.kbArticleCreationAndAccess
+def test_ignored_article_types_from_frequent_topics_cards(page: Page, category):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in with a contributor account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article of 'Canned Responses' type, under the Test Topic "
+                     "and approving the revision"):
+        article = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="19", topic="507", approve_revision=True, category=category)
+
+    with check, allure.step("Verifying that the article is not displayed inside the topic card"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(
+                utilities.general_test_data[link]["Pocket"])
+            check.is_not_in(
+                article["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]
+                )
+            )
+
+    with allure.step("Deleting the articles"):
+        utilities.navigate_to_link(article["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2903871 C2903873 C2903874
+@pytest.mark.kbArticleCreationAndAccess
+def test_article_topic_and_product_change(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in with a contributor account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="19", topic="507", approve_revision=True)
+
+    with allure.step("Updating the article metadata to add the MDN product and test topic"):
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            product="MDN Plus",
+            topics=utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"])
+
+    with check, allure.step("Verifying that the article is displayed in bot products and topic "
+                            "cards"):
+        for product in ["MDN Plus", "Pocket"]:
+            for link in ["product_support", "product_solutions"]:
+                utilities.navigate_to_link(utilities.general_test_data[link][product])
+                check.is_in(
+                    article_details["article_title"],
+                    sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                        utilities.general_test_data["test_topics"][product]["topic_name"]
+                    )
+                )
+
+    with check, allure.step("Removing the article from the Pocket product & topic"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            product="Pocket",
+            topics=utilities.general_test_data["test_topics"]["Pocket"]["topic_name"])
+
+    with check, allure.step("Verifying that the article is not displayed in the Pocket product & "
+                            "topic"):
+        for link in ["product_support", "product_solutions"]:
+            utilities.navigate_to_link(utilities.general_test_data[link]["Pocket"])
+            check.is_not_in(
+                article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]
+                )
+            )
+            check.is_not_in(
+                article_details["article_title"],
+                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]
+                )
+            )
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()

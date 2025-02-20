@@ -1,7 +1,8 @@
+import random
 import allure
 import pytest
 from pytest_check import check
-from playwright.sync_api import expect, TimeoutError, Page
+from playwright.sync_api import expect, Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
     AAQWidgetMessages)
@@ -48,7 +49,7 @@ def test_featured_articles_redirect(page: Page, is_chromium):
             utilities.navigate_back()
 
 
-#  T5696585, T5696587
+#  C2903828, C2903829, C2903831
 @pytest.mark.productSolutionsPage
 def test_popular_topics_redirect(page: Page):
     utilities = Utilities(page)
@@ -56,41 +57,28 @@ def test_popular_topics_redirect(page: Page):
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
-
-    for card in sumo_pages.contact_support_page.get_all_product_card_titles():
-        sumo_pages.contact_support_page.click_on_a_particular_card(card)
-        with check, allure.step(f"Clicking on the {card} card and verifying that the correct "
-                                f"product solutions page is displayed"):
-            assert sumo_pages.product_solutions_page.get_product_solutions_heading(
-            ) == card + ProductSolutionsMessages.PAGE_HEADER
-
-        if sumo_pages.product_solutions_page.is_popular_topics_section_displayed:
-            for topic in sumo_pages.product_solutions_page.get_popular_topics():
-                sumo_pages.product_solutions_page.click_on_a_popular_topic_card(topic)
-                with check, allure.step(f"Clicking on the {topic} topic and verifying if "
-                                        f"correct topic page title is displayed"):
-                    try:
-                        with page.context.expect_page() as tab:
-                            feature_article_page = tab.value
-                            print(f"Tab open for topic: {topic}")
-                    except TimeoutError:
-                        print("Trying to click on the popular topic again")
-                        sumo_pages.product_solutions_page.click_on_a_popular_topic_card(
-                            topic)
-                        with page.context.expect_page() as tab:
-                            feature_article_page = tab.value
-                            print(f"Tab open for topic: {topic}")
-
-                    popular_topic = (feature_article_page
-                                     .locator("//h1[@class='topic-title sumo-page-heading']")
-                                     .inner_text()
-                                     .strip())
-                    assert popular_topic == topic
-                    feature_article_page.close()
-        else:
-            print(f"{card} has no featured articles displayed!!!")
-
+        product = random.choice(sumo_pages.contact_support_page.get_all_product_card_titles())
         utilities.navigate_back()
+
+    with allure.step("Navigating to a random product page"):
+        sumo_pages.contact_support_page.click_on_a_particular_card(product)
+
+    topic_card = random.choice(sumo_pages.common_web_elements.get_frequent_topic_card_titles())
+    with allure.step(f"Verifying that the {topic_card} card heading redirects to the correct "
+                     f"page topic listing page"):
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities,sumo_pages,
+                                                                         topic_card, "heading")
+
+    with allure.step(f"Verifying that the listed articles for the {topic_card} card are is "
+                     f"redirecting to the article page successfully"):
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
+                                                                         topic_card, "article")
+
+    with allure.step(f"Verifying that the 'View all articles' link for the {topic_card} card "
+                     f"redirects the user to the correct topic listing page and the counter "
+                     f"successfully reflects the number of articles for that topic"):
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
+                                                                         topic_card, "counter")
 
 
 # T5696588

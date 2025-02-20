@@ -338,18 +338,33 @@ class AddKbArticleFlow:
                 }
 
     def kb_article_creation_via_api(self, page: Page, approve_revision=False,
-                                    is_template=False) -> dict[str, Any]:
+                                    is_template=False, product=None, topic=None, category=None
+                                    ) -> dict[str, Any]:
+        """
+        Create a new KB article via API.
+        :param page: Page object.
+        :param approve_revision: Approve the first revision of the article.
+        :param is_template: Create a KB template.
+        :param product: Product ID.
+        :param topic: Topic ID.
+        :param category: Category ID.
+        """
         kb_article_test_data = self.utilities.kb_article_test_data
         self.utilities.navigate_to_link(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
-        if is_template:
+        if is_template or category == "60":
             kb_title = (kb_article_test_data["kb_template_title"] + self.utilities.
                         generate_random_number(0, 5000))
             category = "60"
-        else:
+        elif category is None:
             kb_title = (kb_article_test_data["kb_article_title"] + self.utilities.
                         generate_random_number(0, 5000))
             category = "10"
+        else:
+            kb_title = (kb_article_test_data["kb_article_title"] + self.utilities.
+                        generate_random_number(0, 5000))
 
+        topic = topic if topic is not None else "383"
+        product = product if product is not None else "1"
         slug = slugify(kb_title)
 
         form_data = {
@@ -358,8 +373,8 @@ class AddKbArticleFlow:
             "slug": slug,
             "category": category,
             "is_localizable": "on",
-            "products": "1",
-            "topics": "383",
+            "products": product,
+            "topics": topic,
             "allow_discussion": "on",
             "keywords": kb_article_test_data["keywords"],
             "summary": kb_article_test_data["search_result_summary"],
@@ -372,6 +387,7 @@ class AddKbArticleFlow:
         response = self.utilities.post_api_request(
             page, KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL, data=form_data
         )
+
         print(response)
         self.utilities.navigate_to_link(response.url)
 

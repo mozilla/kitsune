@@ -89,6 +89,7 @@ class KBArticleShowHistoryPage(BasePage):
         return self._get_element_locator(self.__article_deleted_confirmation_message)
 
     def get_last_revision_id(self) -> str:
+        self._wait_for_selector(self.__article_revision_list_items)
         revisions = self._get_elements_locators(self.__article_revision_list_items)
         return self._get_element_attribute_value(
             revisions[0], "id"
