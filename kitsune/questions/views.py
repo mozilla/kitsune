@@ -49,7 +49,11 @@ from kitsune.questions.forms import (
     WatchQuestionForm,
 )
 from kitsune.questions.models import AAQConfig, Answer, AnswerVote, Question, QuestionVote
-from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
+from kitsune.questions.utils import (
+    get_featured_articles,
+    get_ga_submit_event_parameters_as_json,
+    get_mobile_product_from_ua,
+)
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -70,7 +74,7 @@ from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
-from kitsune.wiki.utils import build_topics_data, has_visited_kb
+from kitsune.wiki.utils import build_topics_data, get_kb_visited
 
 log = logging.getLogger("k.questions")
 
@@ -603,12 +607,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 user=request.user,
             )
             context["form"] = zendesk_form
-            context["submit_event_parameters"] = json.dumps(
-                {
-                    "is_failed_deflection": (
-                        "true" if has_visited_kb(request.session, product) else "false"
-                    ),
-                }
+            context["submit_event_parameters"] = get_ga_submit_event_parameters_as_json(
+                request.session, product
             )
 
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
@@ -655,9 +655,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 product=product,
             )
 
-            if has_visited_kb(request.session, product, question.topic):
-                question.is_failed_deflection = True
-                question.save()
+            if visited_slugs := get_kb_visited(request.session, product, question.topic):
+                question.add_metadata(kb_slugs_visited_prior=json.dumps(visited_slugs))
 
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
@@ -694,18 +693,13 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         if form.is_bound and (topic := form.cleaned_data.get("category")):
             # We've got invalid POST data, but the topic has been provided.
             # Let's set the proper GA4 event parameters on the submit button.
-            context["submit_event_parameters"] = json.dumps(
-                {
-                    "topics": f"/{topic.slug}/",
-                    "is_failed_deflection": (
-                        "true" if has_visited_kb(request.session, product, topic) else "false"
-                    ),
-                }
+            context["submit_event_parameters"] = get_ga_submit_event_parameters_as_json(
+                request.session, product, topic=topic
             )
         else:
             # We don't know the topic yet, since that's set via the form, so let's
             # start by providing default GA4 event parameters for the submit button.
-            context["submit_event_parameters"] = json.dumps({"is_failed_deflection": "false"})
+            context["submit_event_parameters"] = get_ga_submit_event_parameters_as_json()
 
     return render(request, template, context)
 
@@ -726,18 +720,12 @@ def aaq_step3(request, product_slug):
         topic_id = request.GET.get("category")
         product = get_object_or_404(Product.active, slug=product_slug)
         topic = get_object_or_404(Topic.active.filter(products=product, in_aaq=True), pk=topic_id)
-        is_failed_deflection = (
-            "true" if has_visited_kb(request.session, product, topic) else "false"
-        )
         response = HttpResponse(status=204)
         response["HX-Trigger"] = json.dumps(
             {
                 "setQuestionSubmitEventParameters": {
-                    "eventParameters": json.dumps(
-                        {
-                            "is_failed_deflection": is_failed_deflection,
-                            "topics": f"/{topic.slug}/",
-                        }
+                    "eventParameters": get_ga_submit_event_parameters_as_json(
+                        request.session, product, topic=topic
                     )
                 }
             }

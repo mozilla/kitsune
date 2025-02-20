@@ -1,6 +1,8 @@
+import time
 from datetime import date, timedelta
 from unittest import mock
 
+from django.contrib.sessions.backends.base import SessionBase
 from django.test.utils import override_settings
 from requests.exceptions import HTTPError
 
@@ -19,9 +21,12 @@ from kitsune.wiki.tests import (
 )
 from kitsune.wiki.utils import (
     active_contributors,
+    clean_kb_visited,
     generate_short_url,
     get_featured_articles,
+    get_kb_visited,
     num_active_contributors,
+    update_kb_visited,
 )
 
 
@@ -244,3 +249,197 @@ class FeaturedArticlesTestCase(TestCase):
             )
             self.assertEqual(len(featured), 1)
             self.assertEqual(featured[0].id, self.de1.id)
+
+
+class CleanKBVisitedTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.session = SessionBase()
+
+    def test_no_session(self):
+        try:
+            clean_kb_visited(None)
+        except Exception as err:
+            self.fail(f"clean_kb_visited() raised an exception with a session of None: {err}")
+
+    def test_session_without_kb_visited(self):
+
+        clean_kb_visited(self.session)
+        self.assertFalse(self.session.modified)
+
+    def test_session_with_empty_kb_visited(self):
+        self.session["kb-visited"] = {}
+        self.session.modified = False
+        clean_kb_visited(self.session)
+        self.assertFalse(self.session.modified)
+
+    def test_no_expired_slugs(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            "slug1": now,
+            "slug2": now,
+        }
+        self.session.modified = False
+        clean_kb_visited(self.session, ttl=10)
+        self.assertEqual(self.session["kb-visited"], {"slug1": now, "slug2": now})
+        self.assertFalse(self.session.modified)
+
+    def test_remove_expired_slugs(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            "expired": now - 20,
+            "valid": now,
+        }
+        self.session.modified = False
+        clean_kb_visited(self.session, ttl=10)
+        self.assertTrue(self.session.modified)
+        self.assertEqual(self.session["kb-visited"], {"valid": now})
+
+    def test_all_slugs_expired(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            "expired-1": now - 20,
+            "expired-2": now - 15,
+        }
+        self.session.modified = False
+        clean_kb_visited(self.session, ttl=10)
+        self.assertTrue(self.session.modified)
+        self.assertEqual(self.session["kb-visited"], {})
+
+
+class UpdateKBVisitedTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.session = SessionBase()
+        self.doc = DocumentFactory()
+
+    def test_no_session(self):
+        try:
+            update_kb_visited(None, self.doc)
+        except Exception as err:
+            self.fail(f"update_kb_visited() raised an exception with a session of None: {err}")
+
+    def test_session_without_kb_visited(self):
+        update_kb_visited(self.session, self.doc)
+        self.assertIn("kb-visited", self.session)
+        self.assertIn(self.doc.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)
+
+    def test_parent_slug_used(self):
+        doc = TranslatedRevisionFactory().document
+        update_kb_visited(self.session, doc)
+        self.assertIn("kb-visited", self.session)
+        self.assertIn(doc.parent.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)
+
+    def test_session_with_existing_kb_visited(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            "valid": now,
+            "expired": now - 11,
+        }
+        self.session.modified = False
+        update_kb_visited(self.session, self.doc, ttl=10)
+        self.assertIn("valid", self.session["kb-visited"])
+        self.assertNotIn("expired", self.session["kb-visited"])
+        self.assertIn(self.doc.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)
+
+
+class GetKBVisitedTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.session = SessionBase()
+        self.product1 = product1 = ProductFactory()
+        self.product2 = product2 = ProductFactory()
+        self.topic1 = topic1 = TopicFactory(products=[product1])
+        self.topic2 = topic2 = TopicFactory(products=[product1, product2])
+        self.doc1 = DocumentFactory(products=[product1], topics=[topic1])
+        self.doc2 = DocumentFactory(products=[product1, product2], topics=[topic2])
+        DocumentFactory(locale="de", slug=self.doc1.slug, parent=self.doc1)
+
+    def test_no_session(self):
+        try:
+            get_kb_visited(None, self.product1, topic=self.topic1)
+        except Exception as err:
+            self.fail(f"get_kb_visited() raised an exception with a session of None: {err}")
+
+    def test_session_without_kb_visited(self):
+        slugs = get_kb_visited(self.session, self.product1)
+        self.assertEqual(slugs, [])
+        self.assertFalse(self.session.modified)
+
+    def test_session_with_empty_kb_visited(self):
+        self.session["kb-visited"] = {}
+        self.session.modified = False
+        slugs = get_kb_visited(self.session, self.product2)
+        self.assertEqual(slugs, [])
+        self.assertFalse(self.session.modified)
+
+    def test_with_product_1(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            self.doc1.slug: now,
+            self.doc2.slug: now,
+            "expired": now - 15,
+            "valid": now,
+        }
+        self.session.modified = False
+        slugs = get_kb_visited(self.session, self.product1, ttl=10)
+        self.assertEqual(set(slugs), set([self.doc1.slug, self.doc2.slug]))
+        self.assertIn("valid", self.session["kb-visited"])
+        self.assertNotIn("expired", self.session["kb-visited"])
+        self.assertIn(self.doc1.slug, self.session["kb-visited"])
+        self.assertIn(self.doc2.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)
+
+    def test_with_product_2(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            self.doc1.slug: now,
+            self.doc2.slug: now,
+            "expired": now - 15,
+            "valid": now,
+        }
+        self.session.modified = False
+        slugs = get_kb_visited(self.session, self.product2, ttl=10)
+        self.assertEqual(slugs, [self.doc2.slug])
+        self.assertIn("valid", self.session["kb-visited"])
+        self.assertNotIn("expired", self.session["kb-visited"])
+        self.assertIn(self.doc1.slug, self.session["kb-visited"])
+        self.assertIn(self.doc2.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)
+
+    def test_with_product_and_topic_1(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            self.doc1.slug: now,
+            self.doc2.slug: now,
+            "expired": now - 15,
+            "valid": now,
+        }
+        self.session.modified = False
+        slugs = get_kb_visited(self.session, self.product1, topic=self.topic1, ttl=10)
+        self.assertEqual(slugs, [self.doc1.slug])
+        self.assertIn("valid", self.session["kb-visited"])
+        self.assertNotIn("expired", self.session["kb-visited"])
+        self.assertIn(self.doc1.slug, self.session["kb-visited"])
+        self.assertIn(self.doc2.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)
+
+    def test_with_product_and_topic_2(self):
+        now = time.time()
+        self.session["kb-visited"] = {
+            self.doc1.slug: now,
+            self.doc2.slug: now,
+            "expired": now - 15,
+            "valid": now,
+        }
+        self.session.modified = False
+        slugs = get_kb_visited(self.session, self.product1, topic=self.topic2, ttl=10)
+        self.assertEqual(slugs, [self.doc2.slug])
+        self.assertIn("valid", self.session["kb-visited"])
+        self.assertNotIn("expired", self.session["kb-visited"])
+        self.assertIn(self.doc1.slug, self.session["kb-visited"])
+        self.assertIn(self.doc2.slug, self.session["kb-visited"])
+        self.assertTrue(self.session.modified)

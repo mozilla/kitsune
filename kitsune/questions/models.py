@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from datetime import datetime, timedelta
@@ -122,7 +123,6 @@ class Question(AAQBase):
     )
     is_locked = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False, null=True)
-    is_failed_deflection = models.BooleanField(default=False)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
     marked_as_spam_by = models.ForeignKey(
@@ -233,7 +233,9 @@ class Question(AAQBase):
         This excludes immutable fields: user agent, product, and category.
 
         """
-        self.metadata_set.exclude(name__in=["useragent", "product", "category"]).delete()
+        self.metadata_set.exclude(
+            name__in=["useragent", "product", "category", "kb_slugs_visited_prior"]
+        ).delete()
         self._metadata = None
 
     def remove_metadata(self, name):
@@ -402,6 +404,26 @@ class Question(AAQBase):
             .exclude(status=FlaggedObject.FLAG_PENDING)
             .exists()
         )
+
+    @cached_property
+    def created_after_failed_kb_deflection(self):
+        """
+        Returns a boolean indicating whether or not this question was created after its
+        creator had visited one or more KB articles with the same product and topic.
+        """
+        return self.metadata_set.filter(name="kb_slugs_visited_prior").exists()
+
+    @cached_property
+    def kb_slugs_visited_prior_to_creation(self):
+        """
+        Returns the list of KB slugs visited prior to the creation of this question. The
+        slugs will always be for the default locale.
+        """
+        try:
+            metadata = self.metadata_set.filter(name="kb_slugs_visited_prior").get()
+        except QuestionMetaData.DoesNotExist:
+            return []
+        return json.loads(metadata.value)
 
     @property
     def my_tags(self):
