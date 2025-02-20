@@ -655,8 +655,8 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 product=product,
             )
 
-            if visited_slugs := get_kb_visited(request.session, product, question.topic):
-                question.add_metadata(kb_slugs_visited_prior=json.dumps(visited_slugs))
+            if visits := get_kb_visited(request.session, product, question.topic):
+                question.add_metadata(kb_visits_prior=json.dumps(visits))
 
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)

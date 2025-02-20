@@ -8,7 +8,7 @@ from django.contrib.sessions.backends.base import SessionBase
 
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
-from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles, get_kb_visited
+from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles, has_visited_kb
 
 
 REGEX_NON_WINDOWS_HOME_DIR = re.compile(
@@ -133,9 +133,7 @@ def get_ga_submit_event_parameters_as_json(
     data = dict(is_failed_deflection="false")
 
     if session and product:
-        data["is_failed_deflection"] = str(
-            bool(get_kb_visited(session, product, topic=topic))
-        ).lower()
+        data["is_failed_deflection"] = str(has_visited_kb(session, product, topic=topic)).lower()
         if topic:
             data["topics"] = f"/{topic.slug}/"
 
