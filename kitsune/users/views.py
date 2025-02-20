@@ -290,17 +290,19 @@ def edit_contribution_area(request):
 @require_http_methods(["GET", "POST"])
 def edit_watch_list(request):
     """Edit watch list"""
-    watches = Watch.objects.filter(user=request.user).order_by("content_type", "id")
+    watches = (
+        Watch.objects.filter(user=request.user)
+        .select_related("content_type")
+        .prefetch_related("content_object")
+        .order_by("content_type", "id")
+    )
 
-    watch_list = []
-    for item in watches:
-        if item.content_object is not None:
-            if item.content_type.name == "question":
-                # Only list questions that are not archived
-                if not item.content_object.is_archived:
-                    watch_list.append(item)
-            else:
-                watch_list.append(item)
+    watch_list = [
+        item
+        for item in watches
+        if item.content_object is not None
+        and (item.content_type.name != "question" or not item.content_object.is_archived)
+    ]
 
     watch_list = paginate(request, watch_list)
 
