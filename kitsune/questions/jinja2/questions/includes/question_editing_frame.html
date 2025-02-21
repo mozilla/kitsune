@@ -142,8 +142,6 @@ behaviors like editing them can be provided by overriding blocks.
                       </label>
                       {{ field }}
                       {{ field.errors }}
-                    {% elif category_field_attrs and (field.name == 'category') %}
-                      {{ field.as_widget(attrs=category_field_attrs)|safe }}
                     {% else %}
                       {{ field|safe }}
                     {% endif %}

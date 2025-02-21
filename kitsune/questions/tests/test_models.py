@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta
 from unittest import mock
 
@@ -215,7 +214,6 @@ class TestQuestionMetadata(TestCase):
             category="fix-problems",
             useragent="Fyerfocks",
             crash_id="7",
-            kb_visits_prior='["/en-US/kb/stuff", "/en-US/kb/nonsense"]',
         )
 
         q.metadata
@@ -223,13 +221,7 @@ class TestQuestionMetadata(TestCase):
         md = q.metadata
         assert "crash_id" not in md, "clear_mutable_metadata() didn't clear the cached metadata."
         self.assertEqual(
-            dict(
-                product="desktop",
-                category="fix-problems",
-                useragent="Fyerfocks",
-                kb_visits_prior='["/en-US/kb/stuff", "/en-US/kb/nonsense"]',
-            ),
-            md,
+            dict(product="desktop", category="fix-problems", useragent="Fyerfocks"), md
         )
 
     def test_auto_tagging(self):
@@ -275,16 +267,6 @@ class TestQuestionMetadata(TestCase):
         assert _has_beta("5.7", {"5.7b1": "2011-06-01"})
         assert _has_beta("11.0", {"11.0b7": "2011-06-01"})
         assert not _has_beta("10.0", {"11.0b7": "2011-06-01"})
-
-    def test_kb_visits_prior(self):
-        visits = ["/en-US/kb/stuff", "/en-US/kb/nonsense"]
-        self.question.add_metadata(kb_visits_prior=json.dumps(visits))
-        self.assertTrue(self.question.created_after_failed_kb_deflection)
-        self.assertEqual(set(self.question.kb_visits_prior_to_creation), set(visits))
-
-    def test_no_kb_visits_prior(self):
-        self.assertFalse(self.question.created_after_failed_kb_deflection)
-        self.assertEqual(self.question.kb_visits_prior_to_creation, [])
 
 
 class QuestionTests(TestCase):
