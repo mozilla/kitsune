@@ -1,14 +1,10 @@
-import json
 import logging
 import re
-from typing import Optional
 
 from django.conf import settings
-from django.contrib.sessions.backends.base import SessionBase
 
-from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
-from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles, has_visited_kb
+from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
 
 
 REGEX_NON_WINDOWS_HOME_DIR = re.compile(
@@ -119,22 +115,3 @@ def remove_pii(data: dict) -> None:
             remove_pii(value)
         elif isinstance(value, str):
             data[key] = remove_home_dir_pii(value)
-
-
-def get_ga_submit_event_parameters_as_json(
-    session: Optional[SessionBase] = None,
-    product: Optional[Product] = None,
-    topic: Optional[Topic] = None,
-) -> str:
-    """
-    Returns a JSON string of the event parameters for the GA4 "question_submit"
-    event, given the session, product, and/or topic.
-    """
-    data = dict(is_failed_deflection="false")
-
-    if session and product:
-        data["is_failed_deflection"] = str(has_visited_kb(session, product, topic=topic)).lower()
-        if topic:
-            data["topics"] = f"/{topic.slug}/"
-
-    return json.dumps(data)

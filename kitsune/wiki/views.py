@@ -80,11 +80,7 @@ from kitsune.wiki.tasks import (
     send_contributor_notification,
     send_reviewed_notification,
 )
-from kitsune.wiki.utils import (
-    get_visible_document_or_404,
-    get_visible_revision_or_404,
-    update_kb_visited,
-)
+from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
 
 log = logging.getLogger("k.wiki")
 
@@ -312,8 +308,6 @@ def document(request, document_slug, document=None):
         not (doc.parent and doc.parent.slug == "get-community-support")
         and doc.slug != "get-community-support"
     )
-
-    update_kb_visited(request.session, doc)
 
     data = {
         "document": doc,

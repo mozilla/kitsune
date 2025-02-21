@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 from datetime import datetime, timedelta
@@ -233,9 +232,7 @@ class Question(AAQBase):
         This excludes immutable fields: user agent, product, and category.
 
         """
-        self.metadata_set.exclude(
-            name__in=["useragent", "product", "category", "kb_visits_prior"]
-        ).delete()
+        self.metadata_set.exclude(name__in=["useragent", "product", "category"]).delete()
         self._metadata = None
 
     def remove_metadata(self, name):
@@ -404,25 +401,6 @@ class Question(AAQBase):
             .exclude(status=FlaggedObject.FLAG_PENDING)
             .exists()
         )
-
-    @cached_property
-    def created_after_failed_kb_deflection(self) -> bool:
-        """
-        Returns a boolean indicating whether or not this question was created after its
-        creator had visited one or more KB articles with the same product and topic.
-        """
-        return self.metadata_set.filter(name="kb_visits_prior").exists()
-
-    @cached_property
-    def kb_visits_prior_to_creation(self) -> list[str]:
-        """
-        Returns the list of KB article URL's visited prior to the creation of this question.
-        """
-        try:
-            metadata = self.metadata_set.filter(name="kb_visits_prior").get()
-        except QuestionMetaData.DoesNotExist:
-            return []
-        return json.loads(metadata.value)
 
     @property
     def my_tags(self):
