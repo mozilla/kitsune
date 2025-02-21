@@ -7,7 +7,9 @@
 {% set meta = [('robots', 'noindex')] %}
 
 {% set classes = 'new-question' %}
-{% set category_field_attrs = {"hx-get": "", "hx-swap": "none"}%}
+{% if not has_ticketing_support %}
+  {% set category_field_attrs = {"hx-get": "", "hx-swap": "none"}%}
+{% endif %}
 
 {% block breadcrumbs %}{% endblock %}
 
