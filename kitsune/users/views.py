@@ -297,19 +297,22 @@ def edit_watch_list(request):
         .order_by("content_type", "id")
     )
 
-    watch_list = [
-        item
-        for item in watches
-        if item.content_object is not None
-        and (item.content_type.name != "question" or not item.content_object.is_archived)
-    ]
+    watch_list = []
+    for item in watches:
+        if item.content_object is None:
+            continue
+        if item.content_type.name == "question":
+            if not item.content_object.is_archived:
+                watch_list.append(item)
+        else:
+            watch_list.append(item)
 
     watch_list = paginate(request, watch_list)
 
     if request.method == "POST":
         for item in watch_list:
-            item.is_active = "watch_%s" % item.id in request.POST
-            item.save()
+            item.is_active = f"watch_{item.id}" in request.POST
+        Watch.objects.bulk_update(watch_list, ["is_active"])
 
     return render(request, "users/edit_watches.html", {"watch_list": watch_list})
 
