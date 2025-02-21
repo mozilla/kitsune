@@ -841,6 +841,7 @@ EMAIL_SUBJECT_PREFIX = config("EMAIL_SUBJECT_PREFIX", default="[support] ")
 if EMAIL_LOGGING_REAL_BACKEND in (
     "bandit.backends.smtp.HijackSMTPBackend",
     "django.core.mail.backends.smtp.EmailBackend",
+    "kitsune.lib.email.SMTPEmailBackendWithSentryCapture",
 ):
     EMAIL_HOST = config("EMAIL_HOST")
     EMAIL_HOST_USER = config("EMAIL_HOST_USER")
