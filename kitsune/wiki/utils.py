@@ -1,9 +1,12 @@
 import random
+import time
 from itertools import chain, islice
+from typing import Optional
 
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sessions.backends.base import SessionBase
 from django.db.models import OuterRef, Q, Subquery
 from django.db.models.functions import Now
 from django.http import Http404, HttpRequest
@@ -16,6 +19,9 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, Revision
+
+
+KB_VISITED_DEFAULT_TTL = 60 * 60 * 24  # 24 hours
 
 
 def active_contributors(from_date, to_date=None, locale=None, product=None):
@@ -290,3 +296,102 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         topics_data.append(topic_data)
 
     return topics_data
+
+
+def remove_expired_from_kb_visited(
+    session: SessionBase, ttl: int = KB_VISITED_DEFAULT_TTL
+) -> None:
+    """
+    Remove expired visits (KB article URL's and their timestamps) from the
+    "kb-visited" dictionary within the given session based on the given TTL.
+    """
+    if not (session and ("kb-visited" in session)):
+        return
+
+    now = time.time()
+    kb_visited = session["kb-visited"]
+
+    empty_keys = []
+    for key, visits in kb_visited.items():
+        # Remove any visits that have expired within this products-topics key.
+        if expired_visits := [url for url, ts in visits.items() if (now - ts) > ttl]:
+            for url in expired_visits:
+                del visits[url]
+            if not visits:
+                # If there are no more visits under this key,
+                # add it to the list of keys to remove.
+                empty_keys.append(key)
+            session.modified = True
+
+    # Remove keys that no longer contain any slugs.
+    for key in empty_keys:
+        del kb_visited[key]
+
+
+def update_kb_visited(
+    session: SessionBase, doc: Document, ttl: int = KB_VISITED_DEFAULT_TTL
+) -> None:
+    """
+    Updates the "kb-visited" dictionary within the given session, and also
+    removes any visits that have expired based on the given TTL.
+    """
+    if not session:
+        return
+
+    remove_expired_from_kb_visited(session, ttl=ttl)
+
+    kb_visited = session.setdefault("kb-visited", {})
+
+    product_slugs = doc.get_products().order_by("slug").values_list("slug", flat=True)
+    topic_slugs = doc.get_topics().order_by("slug").values_list("slug", flat=True)
+    key = f"/{'/'.join(product_slugs)}/{'/'.join(topic_slugs)}/"
+
+    url = doc.get_absolute_url()
+
+    kb_visited.setdefault(key, {})[url] = time.time()
+    session.modified = True
+
+
+def has_visited_kb(
+    session: SessionBase,
+    product: Product,
+    topic: Optional[Topic] = None,
+    ttl: int = KB_VISITED_DEFAULT_TTL,
+) -> bool:
+    """
+    Return a boolean indicating whether or not the user has visited at least one
+    KB article associated with the given product and, optionally, topic, within
+    the given TTL.
+    """
+    if not (session and ("kb-visited" in session)):
+        return False
+
+    remove_expired_from_kb_visited(session, ttl=ttl)
+
+    return any(
+        (f"/{product.slug}/" in key) and ((topic is None) or (f"/{topic.slug}/" in key))
+        for key in session["kb-visited"].keys()
+    )
+
+
+def get_kb_visited(
+    session: SessionBase,
+    product: Product,
+    topic: Optional[Topic] = None,
+    ttl: int = KB_VISITED_DEFAULT_TTL,
+) -> list[str]:
+    """
+    Return the KB articles (as a list of document URL's) visited by the user that are
+    associated with the given product and, optionally, topic, within the given TTL.
+    """
+    if not (session and ("kb-visited" in session)):
+        return []
+
+    remove_expired_from_kb_visited(session, ttl=ttl)
+
+    urls = []
+    for key, visits in session["kb-visited"].items():
+        if (f"/{product.slug}/" in key) and ((topic is None) or (f"/{topic.slug}/" in key)):
+            urls.extend(visits.keys())
+
+    return urls
