@@ -7,8 +7,6 @@ from django.core.mail.backends import base, smtp
 from django.utils.module_loading import import_string
 from sentry_sdk import capture_exception
 
-from kitsune.sumo.redis_utils import RateLimit
-
 
 log = logging.getLogger("k.lib.email")
 
@@ -118,9 +116,6 @@ class SMTPEmailBackendWithSentryCapture(smtp.EmailBackend):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fail_silently = False
-        self.rate_limit = RateLimit(
-            key="rate-limit-emails", rate="100/sec", wait_period=1, max_wait_period=30
-        )
 
     def open(self):
         try:
@@ -130,7 +125,6 @@ class SMTPEmailBackendWithSentryCapture(smtp.EmailBackend):
             return None
 
     def close(self):
-        self.rate_limit.close()
         try:
             return super().close()
         except smtplib.SMTPException as err:
@@ -138,7 +132,6 @@ class SMTPEmailBackendWithSentryCapture(smtp.EmailBackend):
             return None
 
     def _send(self, email_message):
-        self.rate_limit.wait()
         try:
             return super()._send(email_message)
         except smtplib.SMTPException as err:

@@ -10,6 +10,7 @@ from parameterized import parameterized
 from kitsune.journal.models import Record
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.utils import (
+    batched,
     chunked,
     get_browser,
     get_next_url,
@@ -335,3 +336,26 @@ class WebpackStaticTests(TestCase):
     def test_exception(self):
         with self.assertRaises(RuntimeError):
             webpack_static("this_file_does_not_exist")
+
+
+class TestBatched(TestCase):
+    def test_empty_iterable(self):
+        """Test that an empty iterable produces no batches."""
+        self.assertEqual(list(batched([], 3)), [])
+
+    def test_exact_multiple(self):
+        """Test when the length of the iterable is an exact multiple of the batch size."""
+        self.assertEqual(list(batched([1, 2, 3, 4, 5, 6], 2)), [(1, 2), (3, 4), (5, 6)])
+
+    def test_not_exact_multiple(self):
+        """Test when the length is not an exact multiple of the batch size."""
+        self.assertEqual(list(batched([1, 2, 3, 4, 5], 2)), [(1, 2), (3, 4), (5,)])
+
+    def test_string_input(self):
+        """Test that a string is correctly batched into tuples of characters."""
+        self.assertEqual(list(batched("ABCDEFG", 3)), [("A", "B", "C"), ("D", "E", "F"), ("G",)])
+
+    def test_iterator_input(self):
+        """Test that the function works with iterators, not just sequences."""
+        it = iter([10, 20, 30, 40, 50])
+        self.assertEqual(list(batched(it, 2)), [(10, 20), (30, 40), (50,)])

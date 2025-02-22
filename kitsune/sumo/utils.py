@@ -3,6 +3,8 @@ import re
 import sys
 from datetime import datetime
 from functools import lru_cache
+from itertools import islice
+from typing import Any, Generator, Iterable
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -407,3 +409,18 @@ def set_aaq_context(request, product):
         "product_slug": product.slug,
         "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
     }
+
+
+def batched(iterable: Iterable[Any], n: int) -> Generator[tuple[Any], None, None]:
+    """
+    A smarter version of "chunked()" above that can handle iterators.
+
+    Taken from https://docs.python.org/3/library/itertools.html#itertools.batched
+    but with the "strict" argument removed. Delete and replace with the built-in
+    "from itertools import batched" once we move to Python 3.12 or greater.
+
+    Example: batched('ABCDEFG', 3) → ABC DEF G
+    """
+    iterator = iter(iterable)
+    while batch := tuple(islice(iterator, n)):
+        yield batch

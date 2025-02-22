@@ -10,76 +10,69 @@ class TestRateLimit(TestCase):
 
     def setUp(self):
         self.key = "test-key"
-        self.max_calls = 5
-        self.wait_period = 0.1
-        self.max_wait_period = 2
-        self.jitter = 0.2
-        self.rate_limit = RateLimit(
-            key=self.key,
-            rate=f"{self.max_calls}/sec",
-            wait_period=self.wait_period,
-            max_wait_period=self.max_wait_period,
-            jitter=self.jitter,
-        )
+        self.max_calls = 10
+        self.rate_limit = RateLimit(key=self.key, rate=f"{self.max_calls}/sec")
         self.rate_limit.redis.delete(self.key)
 
     def tearDown(self):
         self.rate_limit.close()
 
-    def test_is_rate_limited(self):
-        """Ensure basic operation of is_rate_limited()."""
-        for i in range(self.max_calls):
-            self.assertFalse(self.rate_limit.is_rate_limited(), f"is_rate_limited() call: {i+1}")
+    def test_attributes(self):
+        rl = RateLimit(key="test-1", rate="100/sec")
+        self.assertEqual(rl.key, "test-1")
+        self.assertEqual(rl.reservation_per_call_ms, 10)
+        self.assertEqual(rl.max_num_calls_allowed_per_reservation, 100)
 
-        self.assertTrue(self.rate_limit.is_rate_limited())
+        rl = RateLimit(key="test-2", rate="30/min")
+        self.assertEqual(rl.key, "test-2")
+        self.assertEqual(rl.reservation_per_call_ms, 2000)
+        self.assertEqual(rl.max_num_calls_allowed_per_reservation, 30)
 
-    def test_is_rate_limited_expiration(self):
-        """Ensure is_rate_limited() resets after the expiration period."""
-        for i in range(self.max_calls):
-            self.assertFalse(self.rate_limit.is_rate_limited(), f"is_rate_limited() call: {i+1}")
+        rl = RateLimit(key="test-3", rate="7200/hour")
+        self.assertEqual(rl.reservation_per_call_ms, 500)
+        self.assertEqual(rl.max_num_calls_allowed_per_reservation, 7200)
 
-        self.assertTrue(self.rate_limit.is_rate_limited())
-        time.sleep(1)
-        self.assertFalse(self.rate_limit.is_rate_limited())
+        rl = RateLimit(key="test-4", rate="400/day")
+        self.assertEqual(rl.reservation_per_call_ms, 216000)
+        self.assertEqual(rl.max_num_calls_allowed_per_reservation, 400)
 
-    def test_wait(self):
-        """Ensure wait() waits until we're no longer rate limited."""
-        for i in range(self.max_calls):
-            self.assertFalse(self.rate_limit.is_rate_limited(), f"is_rate_limited() call: {i+1}")
+    def test_reserve(self):
+        self.assertTrue(self.rate_limit.reserve(num_calls=5))
+        self.assertFalse(self.rate_limit.reserve(num_calls=1))
+        wait_time = self.rate_limit.get_wait_time()
+        self.assertTrue(wait_time > 0)
+        time.sleep(wait_time)
+        self.assertTrue(self.rate_limit.reserve(num_calls=10))
 
-        time_waited = self.rate_limit.wait()
+    def test_reserve_more_than_allowed(self):
+        with self.assertRaises(ValueError):
+            self.rate_limit.reserve(num_calls=self.max_calls + 1)
 
-        self.assertFalse(self.rate_limit.is_rate_limited())
-        self.assertTrue(time_waited >= self.wait_period * (1 - self.jitter))
-        self.assertTrue(time_waited < self.max_wait_period)
+    def test_wait_until_reserved(self):
+        waited = self.rate_limit.wait_until_reserved(num_calls=3, jitter=0.0, wait_limit=1)
+        self.assertEqual(waited, 0)
+        waited = self.rate_limit.wait_until_reserved(num_calls=7, jitter=0.0, wait_limit=1)
+        self.assertTrue(waited > 0)
+        self.assertFalse(self.rate_limit.reserve(num_calls=3))
 
-    def test_wait_respects_max_wait_period(self):
-        """Ensure wait() respects the "max_wait_period" setting."""
-        self.rate_limit = RateLimit(
-            key=self.key, rate="1/sec", wait_period=0.05, max_wait_period=0.1, jitter=0.0
-        )
-        self.assertFalse(self.rate_limit.is_rate_limited())
-        time_waited = self.rate_limit.wait()
-        # We stopped waiting only because we hit the maximum waiting period.
-        self.assertTrue(self.rate_limit.is_rate_limited())
-        self.assertTrue(time_waited == 0.1)
+    def test_wait_until_reserved_respects_wait_limit(self):
+        waited = self.rate_limit.wait_until_reserved(num_calls=5, wait_limit=1)
+        self.assertEqual(waited, 0)
+        waited = self.rate_limit.wait_until_reserved(num_calls=1, wait_limit=0)
+        self.assertEqual(waited, 0)
+        self.assertFalse(self.rate_limit.reserve(num_calls=1))
 
-    def test_is_rate_limited_multiple_processes(self):
-        """Test is_rate_limited() across multiple processes."""
+    def test_wait_until_reserved_with_multiple_processes(self):
         shared_counter = multiprocessing.Value("i", 0)
-        # Create a lock to ensure safe increments of the shared counter.
-        shared_counter_lock = multiprocessing.Lock()
 
-        def rate_limited_task():
+        def func():
             """Worker function for multi-process testing."""
-            rate_limit = RateLimit(
-                key="test-key", rate="5/sec", wait_period=0.1, max_wait_period=2
-            )
-            if not rate_limit.is_rate_limited():
-                with shared_counter_lock:
+            rate_limit = RateLimit(key="test-key", rate="5/sec")
+            if rate_limit.reserve(num_calls=5):
+                with shared_counter.get_lock():
                     shared_counter.value += 1
 
-        processes = [multiprocessing.Process(target=rate_limited_task) for _ in range(10)]
+        processes = [multiprocessing.Process(target=func) for _ in range(4)]
 
         for p in processes:
             p.start()
@@ -88,7 +81,8 @@ class TestRateLimit(TestCase):
         for p in processes:
             p.join()
 
-        self.assertEqual(shared_counter.value, 5)
+        # Only one of the processes should have been able to reserve its calls.
+        self.assertEqual(shared_counter.value, 1)
 
     @mock.patch("kitsune.sumo.redis_utils.redis_client")
     @mock.patch("kitsune.sumo.redis_utils.capture_exception")
@@ -96,14 +90,12 @@ class TestRateLimit(TestCase):
         """Ensure that RateLimit handles Redis failures gracefully."""
         redis_mock.side_effect = RedisError()
 
-        self.rate_limit = RateLimit(
-            key=self.key, rate="1/min", wait_period=0.05, max_wait_period=0.1
-        )
+        self.rate_limit = RateLimit(key=self.key, rate="1/min")
 
         # If the creation of the redis client failed, there should be no rate limiting.
-        self.assertFalse(self.rate_limit.is_rate_limited())
-        self.assertFalse(self.rate_limit.is_rate_limited())
-        self.assertFalse(self.rate_limit.is_rate_limited())
+        self.assertTrue(self.rate_limit.reserve(num_calls=1))
+        self.assertTrue(self.rate_limit.reserve(num_calls=1))
+        self.assertTrue(self.rate_limit.reserve(num_calls=1))
 
         redis_mock.assert_called_once()
         capture_mock.assert_called_once_with(redis_mock.side_effect)
