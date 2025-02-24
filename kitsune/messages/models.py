@@ -5,7 +5,6 @@ from django.db import models
 
 from kitsune.sumo.models import ModelBase
 
-
 ALLOWED_MESSAGE_ATTRIBUTES = {
     "a": ["href", "title", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
     "div": ["id", "data-for", "title", "data-target", "data-modal"],
