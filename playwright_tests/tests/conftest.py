@@ -77,6 +77,7 @@ def pytest_runtest_makereport(item, call) -> None:
 def browser_context_args(browser_context_args, tmpdir_factory: pytest.TempdirFactory):
     """
     Modifying the default browser context to include the location of the browser session screencast
+    and the custom user agent.
     """
     return {
         "user_agent": Utilities.user_agent,

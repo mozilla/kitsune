@@ -1,3 +1,4 @@
+import random
 import allure
 import pytest
 from pytest_check import check
@@ -67,7 +68,7 @@ def test_product_support_page_join_community_section(page: Page):
 
 # C890929, C891335, C891336
 @pytest.mark.productSupportPage
-def test_product_support_page_frequent_topics_redirect(page: Page):
+def test_product_support_page_info(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
 
@@ -99,26 +100,50 @@ def test_product_support_page_frequent_topics_redirect(page: Page):
                         assert (sumo_pages.product_support_page.get_product_support_title_text()
                                 ) == card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE
 
-                if sumo_pages.product_support_page.is_frequent_topics_section_displayed():
+                if sumo_pages.common_web_elements.is_frequent_topics_section_displayed():
                     with check, allure.step("Verifying the correct topics header is displayed"):
-                        assert (sumo_pages.product_support_page.get_frequent_topics_title_text()
+                        assert (sumo_pages.common_web_elements.get_frequent_topics_title_text()
                                 ) == (ProductSupportPageMessages
                                       .PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_TITLE)
 
                     with check, allure.step("Verifying that the correct topics subheader is "
                                             "displayed"):
-                        assert sumo_pages.product_support_page.get_frequent_topics_subtitle_text(
+                        assert sumo_pages.common_web_elements.get_frequent_topics_subtitle_text(
                         ) == (ProductSupportPageMessages.
                               PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_SUBTITLE)
-
-                    assert _verify_card_redirect(
-                        page, sumo_pages.product_support_page.get_all_frequent_topics_cards(),
-                        is_topic=True
-                    )
                 else:
                     print(f"{card} has no frequent topics displayed!!!")
             with allure.step("Navigating back"):
                 utilities.navigate_back()
+
+
+# C2903828 C2903829  C2903831
+@pytest.mark.productSupportPage
+def test_product_support_frequent_topics_redirects(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Navigating to a random product page"):
+        sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
+        product = sumo_pages.products_page.get_all_product_support_titles()
+        sumo_pages.products_page.click_on_a_particular_product_support_card(random.choice(product))
+
+    topic_card = random.choice(sumo_pages.common_web_elements.get_frequent_topic_card_titles())
+    with allure.step(f"Verifying that the {topic_card} card heading redirects to the correct "
+                     f"page topic listing page"):
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
+                                                                         topic_card, "heading")
+
+    with allure.step(f"Verifying that the listed articles for the {topic_card} card are is "
+                     f"redirecting to the article page successfully"):
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
+                                                                         topic_card, "article")
+
+    with allure.step(f"Verifying that the 'View all articles' link for the {topic_card} card "
+                     f"redirects the user to the correct topic listing page and the counter "
+                     f"successfully reflects the number of articles for that topic"):
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
+                                                                         topic_card, "counter")
 
 
 #  T5696580, C891335, C891336
@@ -163,9 +188,8 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
                                 .get_featured_articles_header_text()
                                 ) == (ProductSupportPageMessages
                                       .PRODUCT_SUPPORT_PAGE_FREQUENT_ARTICLES_TITLE)
-                    assert _verify_card_redirect(
-                        page, (sumo_pages.product_support_page.get_feature_articles_count()),
-                        is_article=True)
+                    assert _verify_featured_article_card_redirect(
+                        page, (sumo_pages.product_support_page.get_feature_articles_count()),)
                 else:
                     print(f"{card} has no featured articles displayed!!!")
 
@@ -262,27 +286,16 @@ def test_still_need_help_button_redirect(page: Page):
                     sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
 
-def _verify_card_redirect(page: Page, cards: Union[int, list[Locator]], is_topic=False,
-                          is_article=False) -> bool:
+def _verify_featured_article_card_redirect(page: Page, cards: Union[int, list[Locator]]) -> bool:
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-
-    if is_topic:
-        for card in cards:
-            sumo_pages.product_support_page.click_on_a_particular_frequent_topic_card(card)
-            if sumo_pages.product_topics_page.get_page_title() != card:
-                return False
-            utilities.navigate_back()
-    if is_article:
-        count = 1
-        while count <= cards:
-            featured_article_names = (sumo_pages.product_support_page.
-                                      get_list_of_featured_articles_headers())
-            sumo_pages.product_support_page.click_on_a_particular_feature_article_card(
-                featured_article_names[count - 1])
-            if featured_article_names[count - 1] != (sumo_pages.
-                                                     kb_article_page.get_text_of_article_title()):
-                return False
-            count += 1
-            utilities.navigate_back()
+    count = 1
+    while count <= cards:
+        featured_articles = sumo_pages.product_support_page.get_list_of_featured_articles_headers()
+        sumo_pages.product_support_page.click_on_a_particular_feature_article_card(
+            featured_articles[count - 1])
+        if featured_articles[count - 1] != sumo_pages.kb_article_page.get_text_of_article_title():
+            return False
+        count += 1
+        utilities.navigate_back()
     return True

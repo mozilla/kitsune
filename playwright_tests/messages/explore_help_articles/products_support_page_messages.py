@@ -1,6 +1,6 @@
 class ProductSupportPageMessages:
     PRODUCT_SUPPORT_PAGE_TITLE = " Support"
-    PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_TITLE = "Frequent Topics"
+    PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_TITLE = "Topics"
     PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_SUBTITLE = "Explore the knowledge base."
     PRODUCT_SUPPORT_PAGE_FREQUENT_ARTICLES_TITLE = "Featured Articles"
     STILL_NEED_HELP_WIDGET_TITLE = "Still need help?"

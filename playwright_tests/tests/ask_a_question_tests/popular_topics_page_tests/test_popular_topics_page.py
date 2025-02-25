@@ -76,10 +76,10 @@ def test_aaq_redirect(page: Page):
             with check, allure.step(f"Verifying that the correct subheading page for "
                                     f"{product_topic} is displayed"):
                 if product_topic in utilities.general_test_data["premium_products"]:
-                    assert sumo_pages.product_topics_page._get_aaq_widget_subheading_text(
+                    assert sumo_pages.product_topics_page.get_aaq_widget_subheading_text(
                     ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
                 else:
-                    assert sumo_pages.product_topics_page._get_aaq_widget_subheading_text(
+                    assert sumo_pages.product_topics_page.get_aaq_widget_subheading_text(
                     ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
             with allure.step("Clicking on the AAQ button"):

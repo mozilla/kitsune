@@ -39,6 +39,28 @@
     "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/Focus-ios",
     "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
   },
+  "test_topics": {
+      "Thunderbird for Android": {
+            "topic_name": "Thunderbird for Android test topic",
+            "link": "https://support.allizom.org/en-US/products/thunderbird-android/test-topic-tha"
+      },
+      "Thunderbird": {
+            "topic_name": "Thunderbird test topic",
+            "link": "https://support.allizom.org/en-US/products/thunderbird/test-topic-th"
+      },
+      "Firefox": {
+            "topic_name": "Firefox test topic",
+            "link": "https://support.allizom.org/en-US/products/firefox/test-topic-firefox"
+        },
+      "Pocket": {
+            "topic_name": "Pocket test topic",
+            "link": "https://support.allizom.org/en-US/products/pocket/test-topic-pocket"
+      },
+      "MDN Plus": {
+            "topic_name": "MDN test topic",
+            "link": "https://support.allizom.org/en-US/products/mdn-plus/test-topic-mdn"
+      }
+      },
   "product_support": {
     "Firefox": "https://support.allizom.org/en-US/products/firefox",
     "Firefox for Android": "https://support.allizom.org/en-US/products/mobile",
