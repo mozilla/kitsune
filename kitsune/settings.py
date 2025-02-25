@@ -848,6 +848,12 @@ if EMAIL_LOGGING_REAL_BACKEND in (
     EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
     EMAIL_PORT = config("EMAIL_PORT", default=25, cast=int)
     EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
+elif EMAIL_LOGGING_REAL_BACKEND == "django_ses.SESBackend":
+    AWS_SES_ACCESS_KEY_ID = config("AWS_SES_ACCESS_KEY_ID")
+    AWS_SES_SECRET_ACCESS_KEY = config("AWS_SES_SECRET_ACCESS_KEY")
+    AWS_SES_REGION_NAME = config("AWS_SES_REGION_NAME", default="us-west-2")
+    AWS_SES_AUTO_THROTTLE = None
+    USE_SES_V2 = config("USE_SES_V2", default=True, cast=bool)
 
 # If using "bandit.backends.smtp.HijackSMTPBackend", set the target email address(es).
 BANDIT_EMAIL = config("BANDIT_EMAIL", default="", cast=Csv())
