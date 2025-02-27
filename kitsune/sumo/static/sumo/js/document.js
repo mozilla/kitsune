@@ -42,6 +42,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error(err);
     }
   }
+
+  document.querySelectorAll(".is-summary button").forEach(button => {
+    button.addEventListener("click", function () {
+      let wrapper = this.closest(".is-summary").nextElementSibling;
+      let is_expanded = this.getAttribute("aria-expanded") === "true";
+
+      if (is_expanded) {
+        wrapper.querySelectorAll("img.lazy").forEach(img => {
+          let src = img.getAttribute("data-original-src");
+          if (src) {
+            img.setAttribute("src", src);
+            img.classList.remove("lazy");
+            img.removeAttribute("data-original-src");
+          }
+        });
+      }
+    });
+  });
+
 });
 
 function positionVotingBasedOnScreenWidth() {
