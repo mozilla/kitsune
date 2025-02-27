@@ -22,10 +22,10 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         @email_utils.safe_translation
-        def _send_mail(locale, user, context):
+        def _make_digest_mail(locale, user, context):
             subject = _("[Reviews Pending: %s] SUMO needs your help!") % locale
 
-            mail = email_utils.make_mail(
+            return email_utils.make_mail(
                 subject=subject,
                 text_template="wiki/email/ready_for_review_weekly_digest.ltxt",
                 html_template="wiki/email/ready_for_review_weekly_digest.html",
@@ -33,8 +33,6 @@ class Command(BaseCommand):
                 from_email=settings.TIDINGS_FROM_ADDRESS,
                 to_email=user.email,
             )
-
-            email_utils.send_messages([mail])
 
         # Get the list of revisions ready for review
         categories = (HOW_TO_CATEGORY, TROUBLESHOOTING_CATEGORY, TEMPLATES_CATEGORY)
@@ -49,6 +47,8 @@ class Command(BaseCommand):
 
         locales = revs.values_list("document__locale", flat=True).distinct()
         products = Product.active.all()
+
+        messages = []
 
         for loc in locales:
             doc_ids = (
@@ -85,14 +85,18 @@ class Command(BaseCommand):
                 if product_docs:
                     docs_list.append(dict(product=_("Other products"), docs=product_docs))
 
-                _send_mail(
-                    loc,
-                    user,
-                    {
-                        "host": Site.objects.get_current().domain,
-                        "locale": loc,
-                        "recipient": user,
-                        "docs_list": docs_list,
-                        "products": products,
-                    },
+                messages.append(
+                    _make_digest_mail(
+                        loc,
+                        user,
+                        {
+                            "host": Site.objects.get_current().domain,
+                            "locale": loc,
+                            "recipient": user,
+                            "docs_list": docs_list,
+                            "products": products,
+                        },
+                    )
                 )
+
+        email_utils.send_messages(messages)

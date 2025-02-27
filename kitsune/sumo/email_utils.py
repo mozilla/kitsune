@@ -20,8 +20,7 @@ def send_messages(messages):
         return
 
     with mail.get_connection(fail_silently=True) as conn:
-        for msg in messages:
-            conn.send_messages([msg])
+        conn.send_messages(list(messages))
 
 
 def safe_translation(f):

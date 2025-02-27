@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Django settings for kitsune project."""
 
+import datetime
 import logging
 import os
 import platform
@@ -677,6 +678,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "rest_framework",
     "statici18n",
     "watchman",
+    "post_office",
     "bandit",
     "dockerflow.django",
     # 'axes',
@@ -832,28 +834,59 @@ PRODUCT_IMAGE_PATH = "uploads/products/"
 # Badges (kbadge)
 BADGE_IMAGE_PATH = "uploads/badges/"
 
-# Email
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="kitsune.lib.email.LoggingEmailBackend")
-EMAIL_LOGGING_REAL_BACKEND = config(
-    "EMAIL_LOGGING_REAL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+# Email settings
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="post_office.EmailBackend")
+POST_OFFICE_DEFAULT_EMAIL_BACKEND = config(
+    "POST_OFFICE_DEFAULT_EMAIL_BACKEND", default="django_ses.SESBackend"
 )
 EMAIL_SUBJECT_PREFIX = config("EMAIL_SUBJECT_PREFIX", default="[support] ")
-if EMAIL_LOGGING_REAL_BACKEND in (
+# What email backend is actually sending the emails?
+REAL_EMAIL_BACKEND = (
+    POST_OFFICE_DEFAULT_EMAIL_BACKEND
+    if EMAIL_BACKEND == "post_office.EmailBackend"
+    else EMAIL_BACKEND
+)
+# Settings for specific email backends.
+if REAL_EMAIL_BACKEND in (
     "bandit.backends.smtp.HijackSMTPBackend",
     "django.core.mail.backends.smtp.EmailBackend",
     "kitsune.lib.email.SMTPEmailBackendWithSentryCapture",
 ):
+    # Settings for SMTP email backends.
     EMAIL_HOST = config("EMAIL_HOST")
     EMAIL_HOST_USER = config("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
     EMAIL_PORT = config("EMAIL_PORT", default=25, cast=int)
     EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
-elif EMAIL_LOGGING_REAL_BACKEND == "django_ses.SESBackend":
+elif REAL_EMAIL_BACKEND == "django_ses.SESBackend":
+    # Settings for the django_ses.SESBackend.
     AWS_SES_ACCESS_KEY_ID = config("AWS_SES_ACCESS_KEY_ID")
     AWS_SES_SECRET_ACCESS_KEY = config("AWS_SES_SECRET_ACCESS_KEY")
     AWS_SES_REGION_NAME = config("AWS_SES_REGION_NAME", default="us-west-2")
     AWS_SES_AUTO_THROTTLE = None
     USE_SES_V2 = config("USE_SES_V2", default=True, cast=bool)
+
+# Settings for django-post-office.
+POST_OFFICE = {
+    "CELERY_ENABLED": True,
+    "BACKENDS": {
+        "default": POST_OFFICE_DEFAULT_EMAIL_BACKEND,
+    },
+    "THREADS_PER_PROCESS": 1,
+    "BATCH_SIZE": 10,
+    "BATCH_DELIVERY_TIMEOUT": 180,
+    "MESSAGE_ID_ENABLED": True,
+    "MESSAGE_ID_FQDN": "support.mozilla.org",
+    "MAX_RETRIES": 4,
+    "RETRY_INTERVAL": datetime.timedelta(minutes=15),
+    "LOG_LEVEL": 2,
+    "SENDING_ORDER": ["-priority", "created"],
+    "OVERRIDE_RECIPIENTS": config(
+        "POST_OFFICE_OVERRIDE_RECIPIENTS",
+        default=None,
+        cast=Csv(),
+    ),
+}
 
 # If using "bandit.backends.smtp.HijackSMTPBackend", set the target email address(es).
 BANDIT_EMAIL = config("BANDIT_EMAIL", default="", cast=Csv())
