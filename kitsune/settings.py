@@ -873,7 +873,7 @@ POST_OFFICE = {
         "default": POST_OFFICE_DEFAULT_EMAIL_BACKEND,
     },
     "THREADS_PER_PROCESS": 1,
-    "BATCH_SIZE": 10,
+    "BATCH_SIZE": 30,
     "BATCH_DELIVERY_TIMEOUT": 180,
     "MESSAGE_ID_ENABLED": True,
     "MESSAGE_ID_FQDN": "support.mozilla.org",
