@@ -1,23 +1,25 @@
-from unittest.mock import patch, call
-from kitsune.search.tests import Elastic7TestCase
-from kitsune.questions.models import Answer
-from kitsune.questions.tests import (
-    QuestionFactory,
-    AnswerFactory,
-    QuestionVoteFactory,
-    AnswerVoteFactory,
-)
-from kitsune.wiki.tests import DocumentFactory
-from kitsune.tags.tests import TagFactory
+from unittest.mock import call, patch
 
-from kitsune.search.documents import QuestionDocument, AnswerDocument
+from django.test.utils import override_settings
 from elasticsearch.exceptions import NotFoundError
 
+from kitsune.questions.tests import (
+    AnswerFactory,
+    AnswerVoteFactory,
+    QuestionFactory,
+    QuestionVoteFactory,
+)
+from kitsune.search.documents import AnswerDocument, QuestionDocument
+from kitsune.search.tests import Elastic7TestCase
+from kitsune.tags.tests import TagFactory
+from kitsune.wiki.tests import DocumentFactory
 
+
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 class QuestionDocumentSignalsTests(Elastic7TestCase):
     def setUp(self):
         self.question = QuestionFactory()
-        AnswerFactory(question=self.question, content="answer 1")
+        self.answer = AnswerFactory(question=self.question, content="answer 1")
         self.question_id = self.question.id
 
     def get_doc(self):
@@ -62,7 +64,7 @@ class QuestionDocumentSignalsTests(Elastic7TestCase):
         self.assertIn("answer 1", self.get_doc().answer_content["en-US"])
 
     def test_question_without_answer(self):
-        Answer.objects.filter(question=self.question).delete()
+        self.answer.delete()
 
         with self.assertRaises(NotFoundError):
             self.get_doc()

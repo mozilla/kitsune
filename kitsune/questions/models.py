@@ -112,21 +112,21 @@ class Question(AAQBase):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions")
 
     updated_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True, related_name="questions_updated"
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="questions_updated"
     )
     last_answer = models.ForeignKey(
-        "Answer", on_delete=models.CASCADE, related_name="last_reply_in", null=True, blank=True
+        "Answer", on_delete=models.SET_NULL, related_name="last_reply_in", null=True, blank=True
     )
     num_answers = models.IntegerField(default=0, db_index=True)
     solution = models.ForeignKey(
-        "Answer", on_delete=models.CASCADE, related_name="solution_for", null=True
+        "Answer", on_delete=models.SET_NULL, related_name="solution_for", null=True
     )
     is_locked = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
     marked_as_spam_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, related_name="questions_marked_as_spam"
+        User, on_delete=models.SET_NULL, null=True, related_name="questions_marked_as_spam"
     )
 
     images = GenericRelation(ImageAttachment)
@@ -139,7 +139,7 @@ class Question(AAQBase):
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
-    taken_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    taken_by = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     taken_until = models.DateTimeField(blank=True, null=True)
 
     tags = BigVocabTaggableManager(related_name="questions")
@@ -895,11 +895,11 @@ class Answer(AAQBase):
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="answers")
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="answers")
     updated_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True, related_name="answers_updated"
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="answers_updated"
     )
     page = models.IntegerField(default=1)
     marked_as_spam_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, related_name="answers_marked_as_spam"
+        User, on_delete=models.SET_NULL, null=True, related_name="answers_marked_as_spam"
     )
 
     images = GenericRelation(ImageAttachment)
@@ -983,9 +983,9 @@ class Answer(AAQBase):
         answers = question.answers.filter(is_spam=False)
         question.num_answers = answers.count() - 1
         question.save()
-        question.clear_cached_contributors()
 
         super(Answer, self).delete(*args, **kwargs)
+        question.clear_cached_contributors()
 
         update_answer_pages.delay(question.id)
 

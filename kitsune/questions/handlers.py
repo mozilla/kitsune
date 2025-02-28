@@ -39,10 +39,22 @@ class OrphanedQuestionAAQHandler(AccountHandler):
         questions.filter(num_answers=0).delete()
 
 
+class ResetTakenByHandler(AccountHandler):
+    """Handler to reset the taken_until field for a given user."""
+
+    def handle_account(self, data: dict) -> None:
+        """Handler to reset the taken_until field for a given user."""
+        # taken_by will be updated to None when the user is deleted because of the cascade
+        # set_null on the User model.
+        questions = data["questions"]
+        questions.filter(taken_by=data["user"]).update(taken_until=None)
+
+
 FORUM_HANDLERS = [
     SpamAAQHandler(),
     ArchivedProductAAQHandler(),
     OrphanedQuestionAAQHandler(),
+    ResetTakenByHandler(),
 ]
 
 
@@ -59,6 +71,7 @@ class AAQChain(AbstractChain[AccountHandler]):
         data = {
             "questions": Question.objects.filter(creator=user),
             "answers": Answer.objects.filter(creator=user),
+            "user": user,
         }
 
         for handler in self.handlers:
