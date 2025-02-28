@@ -65,8 +65,17 @@ class Announcement(ModelBase):
 
     @classmethod
     def get_for_groups(cls, group_ids: Iterable[int]) -> QuerySet[Self]:
-        """Returns visible announcements for the given group ids."""
-        return cls._visible_query(groups__id__in=group_ids).distinct()
+        """Returns visible announcements for the given group ids.
+
+        If an announcement has no groups, it's considered site-wide and will be included.
+        If an announcement has any groups, it will only be included if one of those groups
+        is in the provided group_ids.
+        """
+        return (
+            cls._visible_query()
+            .filter(Q(groups__isnull=True) | Q(groups__id__in=group_ids))
+            .distinct()
+        )
 
     @classmethod
     def get_for_locale_name(cls, locale_name):
