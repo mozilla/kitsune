@@ -56,6 +56,7 @@ from kitsune.users.utils import (
     add_to_contributors,
     anonymize_user,
     deactivate_user,
+    delete_user_pipeline,
     get_oidc_fxa_setting,
 )
 from kitsune.wiki.models import user_documents, user_redirects
@@ -605,3 +606,22 @@ class WebhookView(View):
 
             return HttpResponse(status=202)
         raise Http404
+
+
+@login_required
+def trigger_delete(request, username=None):
+    """
+    Log in with only a username, for use in testing.
+    Set ENABLE_DELETE_ENDPOINT=True to enable.
+    """
+    if not (settings.DEV and settings.ENABLE_DELETE_ENDPOINT):
+        raise Http404
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        raise Http404
+    else:
+        delete_user_pipeline(user)
+
+    return HttpResponseRedirect(reverse("home"))
