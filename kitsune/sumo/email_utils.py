@@ -15,7 +15,7 @@ log = logging.getLogger("k.email")
 
 
 def send_messages(messages):
-    """Sends a a bunch of EmailMessages."""
+    """Sends a bunch of EmailMessages."""
     if not messages:
         return
 
