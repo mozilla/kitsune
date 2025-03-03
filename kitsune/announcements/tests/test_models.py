@@ -42,16 +42,31 @@ class AnnouncementModelTests(TestCase):
         self.assertEqual(0, Announcement.get_site_wide().count())
 
     def test_get_for_groups(self):
-        """If no groups are passed, nothing is returned."""
+        """Test that get_for_groups returns both site-wide and group-specific announcements."""
         # Site-wide announcement
-        AnnouncementFactory()
-        # Announcement in a group.
-        a = AnnouncementFactory()
-        a.groups.add(self.group)
+        site_wide_ann = AnnouncementFactory()
+        # Announcement in a group
+        group_ann = AnnouncementFactory()
+        group_ann.groups.add(self.group)
 
-        group_ann = Announcement.get_for_groups([self.group.id])
-        self.assertEqual(1, len(group_ann))
-        self.assertEqual(a, group_ann[0])
+        # Should return both announcements
+        announcements = Announcement.get_for_groups([self.group.id])
+        self.assertEqual(2, announcements.count())
+        self.assertIn(site_wide_ann, announcements)
+        self.assertIn(group_ann, announcements)
+
+        # For a different group, should only return site-wide announcement
+        other_group = GroupFactory()
+        announcements = Announcement.get_for_groups([other_group.id])
+        self.assertEqual(1, announcements.count())
+        self.assertIn(site_wide_ann, announcements)
+        self.assertNotIn(group_ann, announcements)
+
+        # For no groups, should only return site-wide announcement
+        announcements = Announcement.get_for_groups([])
+        self.assertEqual(1, announcements.count())
+        self.assertIn(site_wide_ann, announcements)
+        self.assertNotIn(group_ann, announcements)
 
     def test_get_for_locale_name(self):
         """Announcements for a specific locale are shown."""
