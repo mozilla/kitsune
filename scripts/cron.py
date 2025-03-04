@@ -74,6 +74,37 @@ def job_send_welcome_emails():
     call_command("send_welcome_emails")
 
 
+# Every 15 minutes, retry any failed emails.
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="*",
+    minute="*/15",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+def job_send_queued_mail():
+    call_command("send_queued_mail")
+
+
+# Every week, cleanup any expired emails.
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="12",
+    minute="0",
+    day_of_week=0,
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+def job_cleanup_mail():
+    call_command("cleanup_mail")
+
+
 @scheduled_job(
     "cron",
     month="*",

@@ -1109,6 +1109,25 @@ Django = ">=2.2"
 requests = ">=2.21.0"
 
 [[package]]
+name = "django-post-office"
+version = "3.9.1"
+description = "A Django app to monitor and send mail asynchronously, complete with template support."
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "django-post_office-3.9.1.tar.gz", hash = "sha256:3d8f502f7829e4cf83e830d9efd6909bb44690af6bc41c7e4fc5a85d7b04df10"},
+    {file = "django_post_office-3.9.1-py3-none-any.whl", hash = "sha256:0082c4dd17854f66077ef457cf868c9bc5b6247de99d5755c45ddea1c518ed6f"},
+]
+
+[package.dependencies]
+bleach = {version = "*", extras = ["css"]}
+django = ">=4.2"
+
+[package.extras]
+prevent-xss = ["bleach"]
+test = ["tox (>=2.3)"]
+
+[[package]]
 name = "django-ratelimit"
 version = "4.1.0"
 description = "Cache-based rate-limiting for Django."
@@ -5074,4 +5093,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4b515e20160774d1e9fc1f35419de7556cfaee3a63adec37d53d1ad2f40335ed"
+content-hash = "37901cfca48b2d5cb30e6e5142f4a3fbe3e05a0bff69566f88e73f12952b3615"

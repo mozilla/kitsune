@@ -8,6 +8,7 @@ from django.core import mail
 from django.db import models
 from django.db.models import Q
 
+from kitsune.sumo.email_utils import send_messages
 from kitsune.tidings.models import EmailUser, Watch, WatchFilter, multi_raw
 from kitsune.tidings.tasks import send_emails
 from kitsune.tidings.utils import collate, hash_to_unsigned
@@ -135,9 +136,7 @@ class Event(object):
           passed in, each of those users will not be notified, though anonymous
           notifications having the same email address may still be sent.
         """
-        with mail.get_connection(fail_silently=True) as connection:
-            for m in self._mails(self._users_watching(exclude=exclude)):
-                connection.send_messages([m])
+        send_messages(self._mails(self._users_watching(exclude=exclude)))
 
     def serialize(self):
         """

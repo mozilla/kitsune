@@ -8,6 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.test.client import RequestFactory
 from django.utils import translation
+from post_office.settings import get_override_recipients
 from premailer import transform
 
 
@@ -15,13 +16,12 @@ log = logging.getLogger("k.email")
 
 
 def send_messages(messages):
-    """Sends a a bunch of EmailMessages."""
+    """Sends a bunch of EmailMessages."""
     if not messages:
         return
 
     with mail.get_connection(fail_silently=True) as conn:
-        for msg in messages:
-            conn.send_messages([msg])
+        conn.send_messages(list(messages))
 
 
 def safe_translation(f):
@@ -91,8 +91,9 @@ def make_mail(
     headers=None,
     **extra_kwargs,
 ):
-    """Return an instance of EmailMultiAlternative with both plaintext and
-    html versions."""
+    """
+    Return an instance of EmailMultiAlternative with both plaintext and HTML versions.
+    """
     default_headers = {
         "Reply-To": settings.DEFAULT_REPLY_TO_EMAIL,
     }
@@ -100,13 +101,20 @@ def make_mail(
         default_headers.update(headers)
     headers = default_headers
 
+    body = render_email(text_template, context_vars)
+
+    # If we're overriding the recipients, show the original recipient
+    # in the text and HTML alternatives of the email. The post-office
+    # backend will take care of replacing the actual "to" email address
+    # with the value of the OVERRIDE_RECIPIENTS post-office setting.
+    if get_override_recipients():
+        # Update the rendering context for the HTML version of the email.
+        context_vars.update(original_recipient=to_email)
+        # Prefix the text version of the email with the original recipient.
+        body = f"Original recipient: {to_email}\n" + body
+
     mail = EmailMultiAlternatives(
-        subject,
-        render_email(text_template, context_vars),
-        from_email,
-        [to_email],
-        headers=headers,
-        **extra_kwargs,
+        subject, body, from_email, [to_email], headers=headers, **extra_kwargs
     )
 
     if html_template:
