@@ -38,9 +38,13 @@
                 <div class="email-cell sent">{{ datetimeformat(message.created) }}</div>
                 <div class="email-cell to">
                 {% for user in message.to.all()[:1] -%}
-                    <a rel="nofollow" href="{{ profile_url(user) }}">
+                    {% if user.profile.is_system_account %}
+                      {{ _('deleted user') }}
+                    {% else %}
+                      <a rel="nofollow" href="{{ profile_url(user) }}">
                         {{ user.profile.display_name }}
-                    </a>
+                      </a>
+                    {% endif %}
                     {%- if message.recipients_count > 1 -%}, ...{% endif %}
                 {%- endfor %}
                 </div>

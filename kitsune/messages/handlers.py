@@ -13,8 +13,16 @@ class MessageListener(UserDeletionListener):
         When a user is deleted:
         - Delete their outbox messages
         - Keep inbox messages for other users and reassign them to SumoBot
+        - Update outbox message recipients to SumoBot where the deleted user was a recipient
         """
         sumo_bot = Profile.get_sumo_bot()
         InboxMessage.objects.filter(to=user).delete()
         InboxMessage.objects.filter(sender=user).update(sender=sumo_bot)
+
+        # Update outbox messages where the deleted user was a recipient
+        outbox_messages = OutboxMessage.objects.filter(to=user)
+        for message in outbox_messages:
+            message.to.remove(user)
+            message.to.add(sumo_bot)
+
         OutboxMessage.objects.filter(sender=user).delete()
