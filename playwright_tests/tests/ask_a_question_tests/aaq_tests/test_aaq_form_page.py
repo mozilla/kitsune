@@ -270,8 +270,7 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                         body=utilities.aaq_question_test_data["valid_firefox_question"]
                         ["question_body"],
                         attach_image=False,
-                        expected_locator=sumo_pages.question_page.QUESTION_LOCATORS
-                        ["questions_header"]
+                        expected_locator=sumo_pages.question_page.questions_header
                     )
 
                 with allure.step("Verifying that the correct implicit tags are added to the "
@@ -356,7 +355,7 @@ def test_share_firefox_data_functionality(page: Page):
         )
         utilities.re_call_function_on_error(
             sumo_pages.aaq_form_page.click_aaq_form_submit_button,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
     with allure.step("Verifying that the troubleshooting information is displayed"):
@@ -395,7 +394,7 @@ def test_additional_system_details_user_agent_information(page: Page):
                     body=utilities.aaq_question_test_data["valid_firefox_question"]
                     ["question_body"],
                     attach_image=True,
-                    expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+                    expected_locator=sumo_pages.question_page.questions_header
                 )
 
             with check, allure.step("Verifying that the correct user-agent information is "
@@ -412,7 +411,6 @@ def test_additional_system_details_user_agent_information(page: Page):
 
 
 @pytest.mark.aaqPage
-@pytest.mark.skip
 def test_system_details_information(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
@@ -458,8 +456,7 @@ def test_system_details_information(page: Page):
                                         "displayed"):
                     utilities.re_call_function_on_error(
                         sumo_pages.aaq_form_page.click_aaq_form_submit_button,
-                        expected_locator=sumo_pages.question_page.
-                        QUESTION_LOCATORS["questions_header"]
+                        expected_locator=sumo_pages.question_page.questions_header
                     )
 
                     sumo_pages.question_page.click_on_question_details_button()
@@ -504,8 +501,7 @@ def test_premium_products_aaq(page: Page):
                     utilities.re_call_function_on_error(
                         sumo_pages.aaq_form_page.click_aaq_form_submit_button,
                         with_force=True,
-                        expected_locator=sumo_pages.question_page.
-                        QUESTION_LOCATORS["questions_header"]
+                        expected_locator=sumo_pages.question_page.questions_header
                     )
 
         with allure.step("Verifying that the correct success message is displayed"):

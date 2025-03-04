@@ -642,7 +642,8 @@ def test_new_message_preview(page: Page):
                      "'Sent Messages page'"):
         sumo_pages.top_navbar.click_on_inbox_option()
         sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
-        expect(sumo_pages.sent_message_page.sent_messages(username=test_user)).to_be_hidden()
+        expect(sumo_pages.sent_message_page.sent_messages_by_username(
+            username=test_user)).to_be_hidden()
 
     with allure.step("Signing in with the potential message receiver and verifying that no "
                      "message were received"):
@@ -686,10 +687,7 @@ def test_messages_can_be_selected_and_deleted(page: Page):
 
     with allure.step("Clicking on the 'Delete Selected' button"):
         sumo_pages.sent_message_page.click_on_delete_selected_button(
-            expected_locator=(
-                sumo_pages.sent_message_page.SENT_MESSAGE_PAGE_LOCATORS
-                ["sent_messages_page_message_banner_text"])
-        )
+            expected_locator=sumo_pages.sent_message_page.sent_messages_page_message_banner_text)
 
     with check, allure.step("Verifying that the correct message is displayed"):
         assert sumo_pages.sent_message_page.get_sent_messages_page_deleted_banner_text(
@@ -714,9 +712,7 @@ def test_messages_can_be_selected_and_deleted(page: Page):
                             "selected and verifying that the correct banner is displayed"):
         sumo_pages.mess_system_user_navbar.click_on_messaging_system_navbar_inbox()
         sumo_pages.inbox_page.click_on_inbox_delete_selected_button(
-            expected_locator=sumo_pages.inbox_page.INBOX_PAGE_LOCATORS
-            ['inbox_page_message_action_banner']
-        )
+            expected_locator=sumo_pages.inbox_page.inbox_page_message_action_banner)
         assert sumo_pages.inbox_page.get_text_inbox_page_message_banner_text(
         ) in InboxPageMessages.NO_MESSAGES_SELECTED_BANNER_TEXT
         expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message_body).first
@@ -1143,7 +1139,6 @@ def test_clear_inbox_and_outbox(page: Page):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts[user]
         ))
-        utilities.navigate_to_link(InboxPageMessages.INBOX_PAGE_STAGE_URL)
         inbox_and_outbox_deletion(page)
 
     utilities.delete_cookies()
@@ -1156,6 +1151,7 @@ def test_clear_inbox_and_outbox(page: Page):
 
 def inbox_and_outbox_deletion(page: Page):
     sumo_pages = SumoPages(page)
+    sumo_pages.top_navbar.click_on_inbox_option()
     if sumo_pages.inbox_page.are_inbox_messages_displayed():
         sumo_pages.inbox_page.delete_all_inbox_messages_via_delete_selected_button(
             expected_url=InboxPageMessages.INBOX_PAGE_STAGE_URL

@@ -2,8 +2,7 @@ import random
 import allure
 import pytest
 from pytest_check import check
-from typing import Union
-from playwright.sync_api import expect, Page, Locator
+from playwright.sync_api import expect, Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
@@ -189,7 +188,7 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
                                 ) == (ProductSupportPageMessages
                                       .PRODUCT_SUPPORT_PAGE_FREQUENT_ARTICLES_TITLE)
                     assert _verify_featured_article_card_redirect(
-                        page, (sumo_pages.product_support_page.get_feature_articles_count()),)
+                        page, sumo_pages.product_support_page.get_feature_articles_count())
                 else:
                     print(f"{card} has no featured articles displayed!!!")
 
@@ -286,15 +285,16 @@ def test_still_need_help_button_redirect(page: Page):
                     sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
 
-def _verify_featured_article_card_redirect(page: Page, cards: Union[int, list[Locator]]) -> bool:
+def _verify_featured_article_card_redirect(page: Page, card_count: int) -> bool:
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     count = 1
-    while count <= cards:
+    while count <= card_count:
         featured_articles = sumo_pages.product_support_page.get_list_of_featured_articles_headers()
         sumo_pages.product_support_page.click_on_a_particular_feature_article_card(
-            featured_articles[count - 1])
-        if featured_articles[count - 1] != sumo_pages.kb_article_page.get_text_of_article_title():
+            featured_articles[count - 1].strip())
+        if (featured_articles[count - 1].strip() != sumo_pages.kb_article_page.
+                get_text_of_article_title()):
             return False
         count += 1
         utilities.navigate_back()

@@ -3,80 +3,82 @@ from playwright_tests.core.basepage import BasePage
 
 
 class WaysToContributePages(BasePage):
-    # Breadcrumbs
-    __interactable_breadcrumbs = "//ol[@id='breadcrumbs']/li/a"
-    __all_breadcrumbs = "//ol[@id='breadcrumbs']/li"
-
-    # Page Content
-    __hero_main_header = "//div[contains(@class,'hero')]/div/h1"
-    __hero_second_header = "//div[contains(@class,'hero')]/div/h2"
-    __hero_text = "//div[contains(@class,'hero')]/div/p"
-    __all_page_images = "//div[@id='svelte']//img"
-
-    # How to contribute_messages section
-    __how_to_contribute_header = "//section[@class='mzp-l-content']/h2"
-    __all_how_to_contribute_option_links = "//section[@class='mzp-l-content']/div/ol/li/a"
-    __start_answering_how_to_contribute_option_text = ("//section[@class='mzp-l-content']/div/ol"
-                                                       "/li[4]")
-    __first_fact_text = "//div[contains(@class,'fact')]/span[1]"
-    __second_fact_text = "//div[contains(@class,'fact')]/span[2]"
-
-    # Other ways to contribute_messages section
-    __other_ways_to_contribute_header = "//div[@id='svelte']/section[2]/h2"
-    __other_ways_to_contribute_card_titles = "//div[@id='svelte']/section[2]//nav//span"
-    __other_ways_to_contribute_card_list = "//div[@id='svelte']/section[2]//ul/a"
-
     def __init__(self, page: Page):
         super().__init__(page)
 
+        # Breadcrumbs
+        self.interactable_breadcrumbs = page.locator("ol#breadcrumbs li a")
+        self.all_breadcrumbs = page.locator("ol#breadcrumbs li")
+
+        # Page Content
+        self.hero_main_header = page.locator("div[class*='hero'] div h1")
+        self.hero_second_header = page.locator("div[class*='hero'] div h2")
+        self.hero_text = page.locator("div[class*='hero'] div p")
+        self.all_page_images = page.locator("div#svelte img")
+
+        # How to contribute_messages section
+        self.how_to_contribute_header = page.locator("section[class='mzp-l-content'] > h2")
+        self.all_how_to_contribute_option_links = page.locator("section.mzp-l-content div ol li a")
+        self.start_answering_how_to_contribute_option_text = page.locator(
+            "//section[@class='mzp-l-content']/div/ol/li[4]")
+        self.first_fact_text = page.locator("//div[contains(@class,'fact')]/span[1]")
+        self.second_fact_text = page.locator("//div[contains(@class,'fact')]/span[2]")
+
+        # Other ways to contribute_messages section
+        self.other_ways_to_contribute_header = page.locator("//div[@id='svelte']/section[2]/h2")
+        self.other_ways_to_contribute_card_titles = page.locator(
+            "//div[@id='svelte']/section[2]//nav//span")
+        self.other_ways_to_contribute_card_list = page.locator("//div[@id='svelte']/section[2]//"
+                                                               "ul/a")
+
     # Breadcrumbs
     def get_text_of_all_breadcrumbs(self) -> list[str]:
-        return self._get_text_of_elements(self.__all_breadcrumbs)
+        return self._get_text_of_elements(self.all_breadcrumbs)
 
     def get_interactable_breadcrumbs(self) -> list[ElementHandle]:
-        return self._get_element_handles(self.__interactable_breadcrumbs)
+        return self._get_element_handles(self.interactable_breadcrumbs)
 
     def click_on_breadcrumb(self, element: ElementHandle):
         element.click()
 
     # Page content
     def get_hero_main_header_text(self) -> str:
-        return self._get_text_of_element(self.__hero_main_header)
+        return self._get_text_of_element(self.hero_main_header)
 
     def get_hero_second_header(self) -> str:
-        return self._get_text_of_element(self.__hero_second_header)
+        return self._get_text_of_element(self.hero_second_header)
 
     def get_hero_text(self) -> str:
-        return self._get_text_of_element(self.__hero_text)
+        return self._get_text_of_element(self.hero_text)
 
     def get_all_page_image_links(self) -> list[ElementHandle]:
-        return self._get_element_handles(self.__all_page_images)
+        return self._get_element_handles(self.all_page_images)
 
     # How to contribute_messages section
     def get_how_to_contribute_header_text(self) -> str:
-        return self._get_text_of_element(self.__how_to_contribute_header)
+        return self._get_text_of_element(self.how_to_contribute_header)
 
     def get_how_to_contribute_link_options(self) -> list[str]:
-        return self._get_text_of_elements(self.__all_how_to_contribute_option_links)
+        return self._get_text_of_elements(self.all_how_to_contribute_option_links)
 
     def get_how_to_contribute_option_four(self) -> str:
-        return self._get_text_of_element(self.__start_answering_how_to_contribute_option_text)
+        return self._get_text_of_element(self.start_answering_how_to_contribute_option_text)
 
     def get_first_fact_text(self) -> str:
-        return self._get_text_of_element(self.__first_fact_text)
+        return self._get_text_of_element(self.first_fact_text)
 
     def get_second_fact_text(self) -> str:
-        return self._get_text_of_element(self.__second_fact_text)
+        return self._get_text_of_element(self.second_fact_text)
 
     # Other ways to contribute_messages section
     def get_other_ways_to_contribute_header(self) -> str:
-        return self._get_text_of_element(self.__other_ways_to_contribute_header)
+        return self._get_text_of_element(self.other_ways_to_contribute_header)
 
     def get_other_ways_to_contribute_cards(self) -> list[str]:
-        return self._get_text_of_elements(self.__other_ways_to_contribute_card_titles)
+        return self._get_text_of_elements(self.other_ways_to_contribute_card_titles)
 
     def get_other_ways_to_contribute_card_list(self) -> list[ElementHandle]:
-        return self._get_element_handles(self.__other_ways_to_contribute_card_list)
+        return self._get_element_handles(self.other_ways_to_contribute_card_list)
 
     def click_on_other_way_to_contribute_card(self, card_item: ElementHandle):
         card_item.click()

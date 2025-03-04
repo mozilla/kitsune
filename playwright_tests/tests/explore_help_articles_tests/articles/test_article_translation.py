@@ -48,7 +48,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        expect(sumo_pages.most_visited_translations_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.most_visited_translations_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Navigating to the localization unreviewed page and verifying that the "
@@ -56,7 +56,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['localization_unreviewed']
         )
-        expect(sumo_pages.localization_unreviewed_page._get_listed_article(
+        expect(sumo_pages.localization_unreviewed_page.get_listed_article(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Navigating back to the translation page and performing a translation"):
@@ -70,7 +70,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        expect(sumo_pages.most_visited_translations_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.most_visited_translations_page.get_a_particular_article_title_locator(
             translation['translation_title'])).to_be_hidden()
 
     with allure.step("Navigating to the localization unreviewed page and verifying that the "
@@ -78,16 +78,16 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['localization_unreviewed']
         )
-        expect(sumo_pages.localization_unreviewed_page._get_listed_article(
+        expect(sumo_pages.localization_unreviewed_page.get_listed_article(
             translation['translation_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the correct modified by text is displayed"):
-        check.equal(sumo_pages.localization_unreviewed_page._get_modified_by_text(
+        check.equal(sumo_pages.localization_unreviewed_page.get_modified_by_text(
             translation['translation_title']),
             kb_translation_messages.get_unreviewed_localization_modified_by_text(username)
         )
     with allure.step("Clicking on the article approving the revision"):
-        sumo_pages.localization_unreviewed_page._click_on_a_listed_article(
+        sumo_pages.localization_unreviewed_page.click_on_a_listed_article(
             translation['translation_title']
         )
         sumo_pages.submit_kb_translation_flow.approve_kb_translation(translation['revision_id'])
@@ -97,7 +97,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        expect(sumo_pages.localization_unreviewed_page._get_listed_article(
+        expect(sumo_pages.localization_unreviewed_page.get_listed_article(
             translation['translation_title'])).to_be_hidden()
 
     with check, allure.step("Navigating to the localization dashboard and verifying that the "
@@ -105,7 +105,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        expect(sumo_pages.localization_unreviewed_page._get_listed_article(
+        expect(sumo_pages.localization_unreviewed_page.get_listed_article(
             translation['translation_title'])).to_be_hidden()
 
     with allure.step("Navigating to the parent article and marking it as ready for l10n"):
@@ -121,7 +121,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        check.equal(sumo_pages.most_visited_translations_page._get_updated_localization_status(
+        check.equal(sumo_pages.most_visited_translations_page.get_updated_localization_status(
             translation['translation_title']),
             kb_translation_messages.LOCALIZATION_DASHBOARD_TRANSLATED_STATUS
         )
@@ -161,14 +161,14 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        check.equal(sumo_pages.most_visited_translations_page._get_a_particular_translation_status(
+        check.equal(sumo_pages.most_visited_translations_page.get_a_particular_translation_status(
             article_details['article_title']),
             kb_translation_messages.LOCALIZATION_DASHBOARD_NEEDS_TRANSLATION_STATUS
         )
 
     with allure.step("Navigating to the article translation page and verifying that no "
                      "banner is displayed"):
-        sumo_pages.most_visited_translations_page._click_on_a_particular_article_status(
+        sumo_pages.most_visited_translations_page.click_on_a_particular_article_status(
             article_details['article_title'])
         translation_url = utilities.get_page_url()
         expect(sumo_pages.translate_article_page.get_unready_for_translation_banner()
@@ -185,14 +185,14 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        check.equal(sumo_pages.most_visited_translations_page._get_a_particular_translation_status(
+        check.equal(sumo_pages.most_visited_translations_page.get_a_particular_translation_status(
             translation['translation_title']),
             kb_translation_messages.LOCALIZATION_DASHBOARD_NEEDS_REVIEW_STATUS
         )
 
     with check, allure.step("Navigating to the article translation and approving the "
                             "translation revision"):
-        sumo_pages.most_visited_translations_page._click_on_a_particular_article_status(
+        sumo_pages.most_visited_translations_page.click_on_a_particular_article_status(
             translation['translation_title']
         )
         sumo_pages.submit_kb_translation_flow.approve_kb_translation(translation['revision_id'])
@@ -204,7 +204,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
         check.equal(
-            sumo_pages.most_visited_translations_page._get_updated_localization_status(
+            sumo_pages.most_visited_translations_page.get_updated_localization_status(
                 translation['translation_title']
             ), kb_translation_messages.LOCALIZATION_DASHBOARD_TRANSLATED_STATUS
         )
@@ -262,7 +262,7 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
-        expect(sumo_pages.most_visited_translations_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.most_visited_translations_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Navigating to the localization unreviewed page and verifying that the "
@@ -270,7 +270,7 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['localization_unreviewed']
         )
-        expect(sumo_pages.localization_unreviewed_page._get_listed_article(
+        expect(sumo_pages.localization_unreviewed_page.get_listed_article(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Navigating back to the article and deleting it"):

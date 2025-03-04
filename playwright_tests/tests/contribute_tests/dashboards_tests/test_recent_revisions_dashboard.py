@@ -31,7 +31,7 @@ def test_recent_revisions_revision_availability(page: Page):
             utilities.general_test_data['dashboard_links']['recent_revisions']
         )
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -40,48 +40,48 @@ def test_recent_revisions_revision_availability(page: Page):
                      "displayed for signed out users"):
         utilities.delete_cookies()
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
                 article_details['article_title']
             )
         ).to_be_hidden()
 
     with allure.step("Typing the article creator username inside the 'Users' field and "
                      "verifying that the article is not displayed"):
-        sumo_pages.recent_revisions_page._fill_in_users_field(username)
+        sumo_pages.recent_revisions_page.fill_in_users_field(username)
         utilities.wait_for_given_timeout(2000)
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
                 article_details['article_title']
             )
         ).to_be_hidden()
 
     with allure.step("Clearing the user search field and signing in with a different "
                      "non-admin account"):
-        sumo_pages.recent_revisions_page._clearing_the_user_field()
+        sumo_pages.recent_revisions_page.clearing_the_user_field()
         utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         )
 
     with allure.step("Verifying that the revision is not displayed for non-admin accounts"):
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
                 article_details['article_title']
             )
         ).to_be_hidden()
 
     with allure.step("Typing the article creator username inside the 'Users' field and "
                      "verifying that the article is not displayed"):
-        sumo_pages.recent_revisions_page._fill_in_users_field(username)
+        sumo_pages.recent_revisions_page.fill_in_users_field(username)
         utilities.wait_for_given_timeout(2000)
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
                 article_details['article_title']
             )
         ).to_be_hidden()
 
     with allure.step("Clearing the user search field and signing in back with the admin "
                      "account"):
-        sumo_pages.recent_revisions_page._clearing_the_user_field()
+        sumo_pages.recent_revisions_page.clearing_the_user_field()
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -96,7 +96,7 @@ def test_recent_revisions_revision_availability(page: Page):
             utilities.general_test_data['dashboard_links']['recent_revisions']
         )
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
                 article_details['article_title']
             )
         ).to_be_hidden()
@@ -132,7 +132,7 @@ def test_second_revisions_availability(page: Page):
             utilities.general_test_data['dashboard_links']['recent_revisions']
         )
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_visible()
@@ -141,7 +141,7 @@ def test_second_revisions_availability(page: Page):
                      "displayed"):
         utilities.delete_cookies()
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_visible()
@@ -152,7 +152,7 @@ def test_second_revisions_availability(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_visible()
@@ -164,7 +164,7 @@ def test_second_revisions_availability(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_visible()
@@ -181,7 +181,7 @@ def test_second_revisions_availability(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['recent_revisions'])
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_visible()
@@ -192,7 +192,7 @@ def test_second_revisions_availability(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_visible()
@@ -213,7 +213,7 @@ def test_second_revisions_availability(page: Page):
         utilities.wait_for_given_timeout(1000)
         utilities.delete_cookies()
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_hidden()
@@ -224,7 +224,7 @@ def test_second_revisions_availability(page: Page):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
         expect(
-            sumo_pages.recent_revisions_page._get_recent_revision_based_on_article_title_and_user(
+            sumo_pages.recent_revisions_page.get_recent_revision_based_on_article_title_and_user(
                 article_details['article_title'], username
             )
         ).to_be_hidden()
@@ -250,7 +250,7 @@ def test_recent_revisions_dashboard_links(page: Page):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
         utilities.wait_for_given_timeout(3000)
         expect(
-            sumo_pages.recent_revisions_page._get_show_diff_article_locator(
+            sumo_pages.recent_revisions_page.get_show_diff_article_locator(
                 article_title=article_details['article_title'], creator=first_username
             )
         ).to_be_hidden()
@@ -270,7 +270,7 @@ def test_recent_revisions_dashboard_links(page: Page):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
         utilities.wait_for_given_timeout(3000)
         utilities.delete_cookies()
-        sumo_pages.recent_revisions_page._click_on_revision_date_for_article(
+        sumo_pages.recent_revisions_page.click_on_revision_date_for_article(
             article_title=article_details['article_title'], username=username
         )
         expect(page).to_have_url(
@@ -281,13 +281,13 @@ def test_recent_revisions_dashboard_links(page: Page):
         )
 
     with check, allure.step("Verifying that the revision id is the correct one"):
-        assert sumo_pages.kb_article_preview_revision_page._get_preview_revision_id_text(
+        assert sumo_pages.kb_article_preview_revision_page.get_preview_revision_id_text(
         ) == str(utilities.number_extraction_from_string(second_revision['revision_id']))
 
     with allure.step("Navigating back, clicking on the revision title and verifying that the "
                      "user is redirected to the article page"):
         utilities.navigate_back()
-        sumo_pages.recent_revisions_page._click_on_article_title(
+        sumo_pages.recent_revisions_page.click_on_article_title(
             article_title=article_details['article_title'], creator=username
         )
         expect(page).to_have_url(article_details['article_url'])
@@ -295,13 +295,13 @@ def test_recent_revisions_dashboard_links(page: Page):
     with check, allure.step("Navigating back and verifying that the correct comment is "
                             "displayed"):
         utilities.navigate_back()
-        assert sumo_pages.recent_revisions_page._get_revision_comment(
+        assert sumo_pages.recent_revisions_page.get_revision_comment(
             article_title=article_details['article_title'], username=username
         ) == utilities.kb_article_test_data['changes_description']
 
     with allure.step("Clicking on the editor and verifying that the user was redirected to "
                      "the correct page"):
-        sumo_pages.recent_revisions_page._click_article_creator_link(
+        sumo_pages.recent_revisions_page.click_article_creator_link(
             article_title=article_details['article_title'], creator=username
         )
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(username))
@@ -309,10 +309,10 @@ def test_recent_revisions_dashboard_links(page: Page):
     with allure.step("Navigating back, clicking on the show diff option and verifying that"
                      "diff section is displayed"):
         utilities.navigate_back()
-        sumo_pages.recent_revisions_page._click_on_show_diff_for_article(
+        sumo_pages.recent_revisions_page.click_on_show_diff_for_article(
             article_title=article_details['article_title'], creator=username
         )
-        expect(sumo_pages.recent_revisions_page._get_diff_section_locator()).to_be_visible()
+        expect(sumo_pages.recent_revisions_page.get_diff_section_locator()).to_be_visible()
 
     with allure.step("Signing in with an admin account and deleting the article"):
         utilities.delete_cookies()
@@ -357,7 +357,7 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
         utilities.wait_for_given_timeout(3000)
         expect(
-            sumo_pages.recent_revisions_page._get_revision_and_username_locator(
+            sumo_pages.recent_revisions_page.get_revision_and_username_locator(
                 article_title=(utilities.kb_article_test_data
                                ['updated_kb_article_title'] + article_details['article_title']),
                 username=new_username
@@ -391,52 +391,52 @@ def test_recent_revisions_dashboard_filters(page: Page):
     utilities.wait_for_given_timeout(3000)
     with check, allure.step("Selecting the ro locale from the locale filter and verifying "
                             "that all the displayed revisions are for the 'ro' locale"):
-        sumo_pages.recent_revisions_page._select_locale_option("ro")
+        sumo_pages.recent_revisions_page.select_locale_option("ro")
         utilities.wait_for_given_timeout(5000)
-        for tag in sumo_pages.recent_revisions_page._get_list_of_all_locale_tage():
+        for tag in sumo_pages.recent_revisions_page.get_list_of_all_locale_tage():
             assert tag == "ro"
 
     with check, allure.step("Selecting the US filter, typing a username Display Name inside the "
                             "'Users' filter and verifying that all the displayed revisions are "
                             "for the posted user"):
-        sumo_pages.recent_revisions_page._select_locale_option("en-US")
+        sumo_pages.recent_revisions_page.select_locale_option("en-US")
         utilities.wait_for_given_timeout(5000)
         display_name_one = "Smith"
         display_name_two = "Ryan Johnson"
         username_one = "sellis1"
         username_two = "ryanjohnson"
-        sumo_pages.recent_revisions_page._fill_in_users_field(display_name_one)
+        sumo_pages.recent_revisions_page.fill_in_users_field(display_name_one)
         utilities.wait_for_given_timeout(5000)
-        for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
+        for user in sumo_pages.recent_revisions_page.get_list_of_all_editors():
             assert user == display_name_one
 
     with check, allure.step("Adding a different display name and verify that the the correct "
                             "content is returned"):
-        sumo_pages.recent_revisions_page._fill_in_users_field(f"{display_name_one}, "
-                                                              f"{display_name_two}")
+        sumo_pages.recent_revisions_page.fill_in_users_field(f"{display_name_one}, "
+                                                             f"{display_name_two}")
         utilities.wait_for_given_timeout(5000)
-        for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
+        for user in sumo_pages.recent_revisions_page.get_list_of_all_editors():
             assert user in [display_name_one, display_name_two]
 
     with check, allure.step("Clearing the username filter and adding both usernames inside the "
                             "filter and verifying that the correct content is displayed"):
-        sumo_pages.recent_revisions_page._fill_in_users_field(f"{username_one}, {username_two}")
+        sumo_pages.recent_revisions_page.fill_in_users_field(f"{username_one}, {username_two}")
         utilities.wait_for_given_timeout(5000)
-        for user in sumo_pages.recent_revisions_page._get_list_of_all_editors():
+        for user in sumo_pages.recent_revisions_page.get_list_of_all_editors():
             assert user in [display_name_one, display_name_two]
 
     with allure.step("Clearing the user filter, adding data inside the start and end fields"):
-        sumo_pages.recent_revisions_page._clearing_the_user_field()
+        sumo_pages.recent_revisions_page.clearing_the_user_field()
         utilities.wait_for_given_timeout(5000)
 
-        sumo_pages.recent_revisions_page._add_start_date("04052023")
-        sumo_pages.recent_revisions_page._add_end_date("05012023")
+        sumo_pages.recent_revisions_page.add_start_date("04052023")
+        sumo_pages.recent_revisions_page.add_end_date("05012023")
         utilities.wait_for_given_timeout(5000)
     with check, allure.step("Verifying that the displayed revision dates are between ("
                             "inclusive) the set start and end date filters"):
         extracted_date = []
         date_filters = [int(start_date), int(end_date)]
-        for date in sumo_pages.recent_revisions_page._get_all_revision_dates():
+        for date in sumo_pages.recent_revisions_page.get_all_revision_dates():
             extracted_date.append(utilities.extract_date_to_digit_format(
                 utilities.extract_month_day_year_from_string(date)
             ))

@@ -6,13 +6,17 @@ class UnreviewedLocalizationPage(BasePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
+        self.listed_article = lambda title: page.locator("td[class='doc-title']").get_by_role(
+            "link", name=title, exact=True)
+        self.modified_by_text = lambda title: page.locator(
+            "td[class='doc-title']").get_by_role("link", name=title, exact=True).locator(
+            "+ div[class='users']")
 
-    def _get_listed_article(self, title: str) -> Locator:
-        return super()._get_element_locator(f"//td[@class='doc-title']/a[text()='{title}']")
+    def get_listed_article(self, title: str) -> Locator:
+        return self.listed_article(title)
 
-    def _click_on_a_listed_article(self, title: str):
-        super()._click(f"//td[@class='doc-title']/a[text()='{title}']")
+    def click_on_a_listed_article(self, title: str):
+        self._click(self.listed_article(title))
 
-    def _get_modified_by_text(self, title: str) -> str:
-        return super()._get_text_of_element(f"//td[@class='doc-title']/a[text()='{title}']/"
-                                            f"following-sibling::div[@class='users']")
+    def get_modified_by_text(self, title: str) -> str:
+        return self._get_text_of_element(self.modified_by_text(title))

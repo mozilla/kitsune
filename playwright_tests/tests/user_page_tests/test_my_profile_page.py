@@ -84,7 +84,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page):
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+                expected_locator=sumo_pages.question_page.questions_header
             )
         )
 
@@ -162,7 +162,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page):
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
                 body=utilities.
                 aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+                expected_locator=sumo_pages.question_page.questions_header
             )
         )
 

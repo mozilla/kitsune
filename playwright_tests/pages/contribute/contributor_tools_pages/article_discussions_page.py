@@ -6,6 +6,8 @@ class ArticleDiscussionsPage(BasePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
+        self.article_discussion_title = lambda article_title: page.locator(
+            "td[class='title']").get_by_role("link", name=article_title, exact=True)
 
-    def _is_title_for_article_discussion_displayed(self, article_title: str) -> Locator:
-        return super()._get_element_locator(f"//td[@class='title']/a[text()='{article_title}']")
+    def is_title_for_article_discussion_displayed(self, article_title: str) -> Locator:
+        return self.article_discussion_title(article_title)

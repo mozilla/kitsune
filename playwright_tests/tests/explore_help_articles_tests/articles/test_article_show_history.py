@@ -562,7 +562,7 @@ def test_kb_article_revision_date_functionality(page: Page):
 
     with check, allure.step("Verifying that the correct 'Is current revision?' text is "
                             "displayed"):
-        assert sumo_pages.kb_article_preview_revision_page._get_is_current_revision_text(
+        assert sumo_pages.kb_article_preview_revision_page.get_is_current_revision_text(
         ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS
 
     with allure.step("Navigating back and clicking on the revision time"):
@@ -572,104 +572,104 @@ def test_kb_article_revision_date_functionality(page: Page):
 
     with allure.step("Verifying that the revision information content is expanded by default"):
         expect(
-            sumo_pages.kb_article_preview_revision_page._get_revision_information_content_locator(
+            sumo_pages.kb_article_preview_revision_page.get_revision_information_content_locator(
             )).to_be_visible()
 
     with allure.step("Clicking on the 'Revision Information' foldout section and Verifying "
                      "that the revision information content is collapsed/no longer displayed"):
         (sumo_pages.kb_article_preview_revision_page
-         ._click_on_revision_information_foldout_section())
+         .click_on_revision_information_foldout_section())
         expect(
-            sumo_pages.kb_article_preview_revision_page._get_revision_information_content_locator(
+            sumo_pages.kb_article_preview_revision_page.get_revision_information_content_locator(
             )).to_be_hidden()
 
     with allure.step("Clicking on the 'Revision Information' foldout section"):
         (sumo_pages.kb_article_preview_revision_page
-         ._click_on_revision_information_foldout_section())
+         .click_on_revision_information_foldout_section())
 
     with allure.step("Verifying that the revision information content is displayed"):
         expect(
-            sumo_pages.kb_article_preview_revision_page._get_revision_information_content_locator(
+            sumo_pages.kb_article_preview_revision_page.get_revision_information_content_locator(
             )).to_be_visible()
 
     with check, allure.step("Verifying that the revision id is the correct one"):
-        assert sumo_pages.kb_article_preview_revision_page._get_preview_revision_id_text(
+        assert sumo_pages.kb_article_preview_revision_page.get_preview_revision_id_text(
         ) == str(utilities.number_extraction_from_string(second_revision_info['revision_id']))
 
     with check, allure.step("Verifying that the correct revision time is displayed"):
         assert (
-            sumo_pages.kb_article_preview_revision_page._get_preview_revision_created_date_text(
+            sumo_pages.kb_article_preview_revision_page.get_preview_revision_created_date_text(
             ) == revision_time)
 
     with check, allure.step("Verifying that the correct creator is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page._get_preview_revision_creator_text(
+        assert (sumo_pages.kb_article_preview_revision_page.get_preview_revision_creator_text(
         ) == creator_username)
 
     with allure.step("Clicking on the creator link and verifying that we are redirected to "
                      "the username page"):
-        sumo_pages.kb_article_preview_revision_page._click_on_creator_link()
+        sumo_pages.kb_article_preview_revision_page.click_on_creator_link()
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(creator_username))
 
     with check, allure.step("Navigating back to the revision preview page and verifying that "
                             "the correct review comment is displayed"):
         utilities.navigate_back()
-        assert (sumo_pages.kb_article_preview_revision_page._get_preview_revision_comment_text(
+        assert (sumo_pages.kb_article_preview_revision_page.get_preview_revision_comment_text(
         ) == utilities.kb_article_test_data['changes_description'])
 
     with check, allure.step("Verifying that the correct reviewed status is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page._get_preview_revision_reviewed_text(
+        assert (sumo_pages.kb_article_preview_revision_page.get_preview_revision_reviewed_text(
         ) == KBArticleRevision.KB_ARTICLE_REVISION_NO_STATUS)
 
     with allure.step("Verifying that the reviewed by locator is hidden"):
         expect(
-            sumo_pages.kb_article_preview_revision_page._get_reviewed_by_locator()).to_be_hidden()
+            sumo_pages.kb_article_preview_revision_page.get_reviewed_by_locator()).to_be_hidden()
 
     with allure.step("Verifying that the is approved locator is hidden"):
         expect(
-            sumo_pages.kb_article_preview_revision_page._get_is_approved_text_locator()
+            sumo_pages.kb_article_preview_revision_page.get_is_approved_text_locator()
         ).to_be_hidden()
 
     with allure.step("Verifying that the is current revision locator is hidden"):
         expect(
-            sumo_pages.kb_article_preview_revision_page._is_current_revision_locator()
+            sumo_pages.kb_article_preview_revision_page.is_current_revision_locator()
         ).to_be_hidden()
 
     with check, allure.step("Verifying that the correct ready for localization locator is "
                             "displayed"):
         assert (sumo_pages.kb_article_preview_revision_page
-                ._get_preview_revision_ready_for_localization_text(
+                .get_preview_revision_ready_for_localization_text(
                 ) == KBArticleRevision.KB_ARTICLE_REVISION_NO_STATUS)
 
     with allure.step("Verifying that the readied for localization by is hidden"):
-        expect(sumo_pages.kb_article_preview_revision_page._readied_for_localization_by_locator(
+        expect(sumo_pages.kb_article_preview_revision_page.readied_for_localization_by_locator(
         )).to_be_hidden()
 
     with allure.step("Verifying that the 'Edit article based on this revision' is not "
                      "displayed"):
         expect(
             (sumo_pages.kb_article_preview_revision_page
-                ._get_edit_article_based_on_this_revision_link_locator())).to_be_hidden()
+             .get_edit_article_based_on_this_revision_link_locator())).to_be_hidden()
 
     with allure.step("Verifying that the 'Revision Source' section is hidden by default"):
         expect((sumo_pages.kb_article_preview_revision_page
-                ._get_preview_revision_source_textarea_locator())).to_be_hidden()
+                .get_preview_revision_source_textarea_locator())).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Revision Source' foldout section option and "
                             "verifying that the 'Revision Source' textarea contains the "
                             "correct details"):
-        sumo_pages.kb_article_preview_revision_page._click_on_revision_source_foldout_section()
+        sumo_pages.kb_article_preview_revision_page.click_on_revision_source_foldout_section()
         assert (sumo_pages.kb_article_preview_revision_page
-                ._get_preview_revision_source_textarea_content(
+                .get_preview_revision_source_textarea_content(
                 ) == utilities.kb_article_test_data['updated_article_content'])
 
     with allure.step("Verifying that the 'Revision Content' section is hidden by default"):
-        expect(sumo_pages.kb_article_preview_revision_page._get_revision_content_html_locator(
+        expect(sumo_pages.kb_article_preview_revision_page.get_revision_content_html_locator(
         )).to_be_hidden()
 
     with allure.step("Clicking on the 'Revision Content' foldout option and verifying that "
                      "the 'Revision Content' section is visible"):
-        sumo_pages.kb_article_preview_revision_page._click_on_revision_content_foldout_section()
-        expect(sumo_pages.kb_article_preview_revision_page._get_revision_content_html_locator(
+        sumo_pages.kb_article_preview_revision_page.click_on_revision_content_foldout_section()
+        expect(sumo_pages.kb_article_preview_revision_page.get_revision_content_html_locator(
         )).to_be_visible()
 
     with allure.step("Signing in with an admin account and approving the revision"):
@@ -687,37 +687,37 @@ def test_kb_article_revision_date_functionality(page: Page):
         sumo_pages.kb_article_show_history_page.click_on_a_revision_date(
             second_revision_info['revision_id']
         )
-        assert (sumo_pages.kb_article_preview_revision_page._get_preview_revision_reviewed_text(
+        assert (sumo_pages.kb_article_preview_revision_page.get_preview_revision_reviewed_text(
         ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with allure.step("Verifying that the reviewed by date is displayed"):
         expect((sumo_pages.kb_article_preview_revision_page
-                ._get_preview_revision_reviewed_date_locator())).to_be_visible()
+                .get_preview_revision_reviewed_date_locator())).to_be_visible()
 
     with check, allure.step("Verifying that the correct 'Reviewed by' text is displayed"):
-        assert sumo_pages.kb_article_preview_revision_page._get_reviewed_by_text() == main_user
+        assert sumo_pages.kb_article_preview_revision_page.get_reviewed_by_text() == main_user
 
     with check, allure.step("Verifying that the correct is approved status displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page._get_is_approved_text(
+        assert (sumo_pages.kb_article_preview_revision_page.get_is_approved_text(
         ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with check, allure.step("Verifying that the correct is current revision status displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page._get_is_current_revision_text(
+        assert (sumo_pages.kb_article_preview_revision_page.get_is_current_revision_text(
         ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with check, allure.step("Verifying that the correct is ready for localization status "
                             "displayed"):
         assert (sumo_pages.kb_article_preview_revision_page
-                ._get_preview_revision_ready_for_localization_text(
+                .get_preview_revision_ready_for_localization_text(
                 ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with allure.step("Verifying that the 'Readied for localization' date is displayed"):
         expect(
-            sumo_pages.kb_article_preview_revision_page._ready_for_localization_date()
+            sumo_pages.kb_article_preview_revision_page.ready_for_localization_date()
         ).to_be_visible()
 
     with check, allure.step("Verifying that the correct localization by text is displayed"):
-        assert sumo_pages.kb_article_preview_revision_page._readied_for_localization_by_text(
+        assert sumo_pages.kb_article_preview_revision_page.readied_for_localization_by_text(
         ) == main_user
 
     with allure.step("Signing in with an admin account"):
@@ -728,7 +728,7 @@ def test_kb_article_revision_date_functionality(page: Page):
     with allure.step("Clicking on the 'Edit article based on this revision option' and "
                      "verifying that the correct link is displayed"):
         (sumo_pages.kb_article_preview_revision_page
-         ._click_on_edit_article_based_on_this_revision_link())
+         .click_on_edit_article_based_on_this_revision_link())
         expect(page).to_have_url(
             article_details['article_url'] + QuestionPageMessages.
             EDIT_QUESTION_URL_ENDPOINT + "/" + str(utilities.number_extraction_from_string(

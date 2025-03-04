@@ -137,8 +137,8 @@ def test_non_admin_users_kb_article_submission(page: Page):
                             "received"):
         with page.expect_navigation() as navigation_info:
             utilities.delete_cookies()
-        response = navigation_info.value
-        assert response.status == 404
+            response = navigation_info.value
+            assert response.status == 404
 
     with allure.step("Signing in with an admin account"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -1067,7 +1067,7 @@ def test_edit_article_metadata_category(page: Page):
             [article_details['article_category']]
         )
         expect(
-            sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
                 article_details['article_title']
             )
         ).to_be_hidden()
@@ -1077,7 +1077,7 @@ def test_edit_article_metadata_category(page: Page):
             utilities.different_endpoints['kb_categories_links']["Navigation"]
         )
         expect(
-            sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -1096,7 +1096,7 @@ def test_edit_article_metadata_category(page: Page):
             utilities.different_endpoints['kb_categories_links']["Navigation"]
         )
         expect(
-            sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
                 article_template_title
             )
         ).to_be_hidden()
@@ -1106,7 +1106,7 @@ def test_edit_article_metadata_category(page: Page):
             utilities.different_endpoints['kb_categories_links']["Templates"]
         )
         expect(
-            sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
                 article_template_title
             )
         ).to_be_visible()
@@ -1340,7 +1340,7 @@ def test_archived_kb_article_edit(page: Page):
     with allure.step("Clicking on the 'Edit Article based on this Revision' and submitting a "
                      "new article edit"):
         (sumo_pages.kb_article_preview_revision_page
-         ._click_on_edit_article_based_on_this_revision_link())
+         .click_on_edit_article_based_on_this_revision_link())
 
         sumo_pages.kb_edit_article_page.fill_edit_article_content_field(
             utilities.kb_article_test_data['updated_article_content']

@@ -4,263 +4,244 @@ from playwright_tests.core.basepage import BasePage
 
 
 class TopNavbar(BasePage):
-    # General page locators
-    TOP_NAVBAR_GENERAL_PAGE_LOCATORS = {
-        "menu_titles": "//div[@id='main-navigation']//a[contains(@class,'mzp-c-menu-title')]",
-        "sumo_nav_logo": "//div[@class='sumo-nav--logo']/a/img"
-    }
-    # Locators belonging to the 'Explore Help Articles' top-navbar section".
-    TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS = {
-        "explore_by_topic_top_navbar_header": "//h4[@class='mzp-c-menu-item-title' and text()='"
-                                              "Explore by topic']",
-        "explore_by_product_top_navbar_header": "//h4[@class='mzp-c-menu-item-title' and text()="
-                                                "'Explore by product']",
-        "explore_help_articles_top_navbar_option": "//a[@class='mzp-c-menu-title sumo-nav--link' "
-                                                   "and normalize-space(text())='Explore Help "
-                                                   "Articles']",
-
-        "explore_our_help_articles_view_all_option": "//ul[@class='mzp-c-menu-item-list sumo-nav"
-                                                     "--sublist']/li/a[normalize-space(text())="
-                                                     "'View all products']",
-
-        "explore_by_product_top_navbar_options": "//h4[text()='Explore by product']/../following-"
-                                                 "sibling::ul/li/a",
-        "explore_by_topic_top_navbar_options": ("//h4[text()='Explore by topic']/../following-"
-                                                "sibling::ul/li/a")
-    }
-    # Locators belonging to the 'Ask a Question' top-navbar section.
-    TOP_NAVBAR_AAQ_LOCATORS = {
-        "ask_a_question_top_navbar": "//li[@class='mzp-c-menu-category mzp-has-drop-down "
-                                     "mzp-js-expandable']/a[contains(text(), 'Ask a Question')]",
-        "get_help_with_heading": "//h4[@class='mzp-c-menu-item-title' and text()='Get help with']",
-
-        "ask_a_question_top_navbar_options": "//a[text()='Ask a Question']/following-sibling::div/"
-                                             "li/a",
-
-        "aaq_firefox_browser_option": "//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
-                                      "Question')]/../..//a[contains(text(),'Firefox desktop')]",
-        "browse_all_products_option": "//div[@id='main-navigation']//a[normalize-space(text(" "))="
-                                      "'View all']"
-    }
-    # Locators belonging to the 'Community Forums' top-navbar section.
-    TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS = {
-        "browse_by_product_top_navbar_header": "//h4[@class='mzp-c-menu-item-title' and text()="
-                                               "'Browse by product']",
-        "browse_all_forum_threads_by_topic_top_navbar_header": "//h4[@class='mzp-c-menu-item-"
-                                                               "title' and text()='Browse all "
-                                                               "forum threads by topic']",
-        "community_forums_top_navbar_option": "//a[@class='mzp-c-menu-title sumo-nav--link' and "
-                                              "normalize-space(text())='Community Forums']",
-        "browse_by_product_top_navbar_options": "//h4[text()='Browse by product']/../following-"
-                                                "sibling::ul/li/a",
-        "browse_all_forum_threads_by_topics_top_navbar_options": "//h4[text()='Browse all forum "
-                                                                 "threads by topic']/../following-"
-                                                                 "sibling::ul/li/a"
-    }
-    # Locators belonging to the 'Contribute' top-navbar section.
-    TOP_NAVBAR_CONTRIBUTE_LOCATORS = {
-        "contribute_option": "//a[contains(text(),'Contribute')]",
-        "contributor_discussions_top_navbar_header": "//h4[@class='mzp-c-menu-item-title' and text"
-                                                     "()='Contributor discussions']",
-        "contributor_discussions_options": "//h4[text()='Contributor discussions']/../following-"
-                                           "sibling::ul/li/a",
-        "contributor_discussions_option": "//h4[@class='mzp-c-menu-item-title' and text() ='"
-                                          "Contributor discussions']",
-        "article_discussions_option": "//div[@id='main-navigation']//a[normalize-space(text(" "))="
-                                      "'Article discussions']",
-        "moderate_forum_content": "//div[@id='main-navigation']//a[contains(text(), 'Moderate "
-                                  "forum content')]",
-
-        "recent_revisions_option": "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                                   "normalize-space(text())='Recent revisions']",
-        "dashboards_option": "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[normalize-"
-                             "space(text())='Knowledge base dashboards']",
-        "media_gallery_option": "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a["
-                                "normalize-space(text())='Media gallery']",
-        "guides_option": "//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[normalize-"
-                         "space(text())='Guides']"
-    }
-    # Locators belonging to the 'Sign In/Up' top-navbar section.
-    TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS = {
-        "signin_signup_button": "//div[@id='profile-navigation']//a[contains(text(), "
-                                "'Sign In/Up')]",
-        "signed_in_username": "//span[@class='sumo-nav--username']",
-        "signed_in_view_profile_option": "//h4[contains(text(), 'View Profile')]/parent::a",
-        "signed_in_edit_profile_option": "//a[contains(text(),'Edit Profile')]",
-        "signed_in_my_questions_option": "//div[@class='sumo-nav--dropdown-thirds']//a[contains("
-                                         "text(), 'My Questions')]",
-        "signed_in_settings_option": "//h4[contains(text(), 'Settings')]/parent::a",
-        "signed_in_inbox_option": "//h4[contains(text(), 'Inbox')]/parent::a",
-        "sign_out_button": "//a[contains(text(), 'Sign Out')]",
-        "unread_message_profile_notification": "//div[@id='profile-navigation']//div[@class='"
-                                               "avatar-container-message-alert']",
-        "unread_message_count": "//span[@class='message-count-alert']"
-    }
-
     def __init__(self, page: Page):
         super().__init__(page)
+
+        # General page locators
+        self.menu_titles = page.locator("div#main-navigation a.mzp-c-menu-title")
+        self.sumo_nav_logo = page.locator(
+            "div.sumo-nav--logo").get_by_role("link").get_by_role("img")
+
+        # Locators belonging to the 'Explore Help Articles' top-navbar section.
+        self.explore_by_topic_top_navbar_header = page.locator(
+            "h4.mzp-c-menu-item-title").filter(has_text="Explore by topic")
+        self.explore_by_product_top_navbar_header = page.locator(
+            "h4.mzp-c-menu-item-title").filter(has_text="Explore by product")
+        self.explore_help_articles_top_navbar_option = page.locator(
+            "a[class='mzp-c-menu-title sumo-nav--link']").filter(has_text="Explore Help Articles")
+        self.explore_our_help_articles_view_all_option = page.locator(
+            "ul[class='mzp-c-menu-item-list sumo-nav--sublist'] li"
+        ).get_by_role("link", name="View all products", exact=True)
+        self.explore_by_product_top_navbar_options = page.locator(
+            "//h4[text()='Explore by product']/../following-sibling::ul/li/a")
+        self.explore_by_topic_top_navbar_options = page.locator(
+            "//h4[text()='Explore by topic']/../following-sibling::ul/li/a")
+
+        # Locators belonging to the 'Ask a Question' top-navbar section.
+        self.ask_a_question_top_navbar = page.locator(
+            "li[class='mzp-c-menu-category mzp-has-drop-down mzp-js-expandable']").filter(
+            has_text="Ask a Question")
+        self.get_help_with_heading = page.locator(
+            "h4[class='mzp-c-menu-item-title']").filter(has_text="Get help with")
+        self.ask_a_question_top_navbar_options = page.get_by_role(
+            "link", name="Ask a Question", exact=True).locator("+ div li a")
+        self.aaq_firefox_browser_option = page.get_by_role(
+            "link", name="Ask a Question", exact=True).locator("+ div li").get_by_role(
+            "link").filter(has_text="Firefox desktop")
+        self.browse_all_products_option = page.locator(
+            "div#main-navigation").get_by_role("link", name="View all", exact=True)
+
+        # Locators belonging to the 'Community Forums' top-navbar section.
+        self.browse_by_product_top_navbar_header = page.locator(
+            "h4.mzp-c-menu-item-title").filter(has_text="Browse by product")
+        self.browse_all_forum_threads_by_topic_top_navbar_header = page.locator(
+            "h4.mzp-c-menu-item-title").filter(has_text="Browse all forum threads by topic")
+        self.community_forums_top_navbar_option = page.locator(
+            "a[class='mzp-c-menu-title sumo-nav--link']").filter(has_text="Community Forums")
+        self.browse_by_product_top_navbar_options = page.locator(
+            "//h4[text()='Browse by product']/../following-sibling::ul/li/a")
+        self.browse_all_forum_threads_by_topics_top_navbar_options = page.locator(
+            "//h4[text()='Browse all forum threads by topic']/../following-sibling::ul/li/a")
+        # Locators belonging to the 'Contribute' top-navbar section.
+        self.contribute_option = page.get_by_role("link").filter(has_text="Contribute")
+        self.contributor_discussions_top_navbar_header = page.locator(
+            "h4.mzp-c-menu-item-title").filter(has_text="Contributor discussions")
+        self.contributor_discussions_options = page.locator(
+            "//h4[text()='Contributor discussions']/../following-sibling::ul/li/a")
+        self.contributor_discussions_option = page.locator(
+            "h4.mzp-c-menu-item-title").filter(has_text="Contributor discussions")
+        self.article_discussions_option = page.locator(
+            "div#main-navigation").get_by_role("link", name="Article discussions", exact=True)
+        self.moderate_forum_content = page.locator(
+            "div#main-navigation").get_by_role("link").filter(has_text="Moderate forum content")
+        self.recent_revisions_option = page.locator(
+            "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role(
+            "link").filter(has_text="Recent revisions")
+        self.dashboards_option = page.locator(
+            "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
+            has_text="Knowledge base dashboards")
+        self.media_gallery_option = page.locator(
+            "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
+            has_text="Media gallery")
+        self.guides_option = page.locator(
+            "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
+            has_text="Guides")
+
+        # Locators belonging to the 'Sign In/Up' top-navbar section.
+        self.signin_signup_button = page.locator("div#profile-navigation").get_by_role(
+            "link").filter(has_text="Sign In/Up")
+        self.signed_in_username = page.locator("span.sumo-nav--username")
+        self.signed_in_view_profile_option = page.locator(
+            "//h4[contains(text(), 'View Profile')]/parent::a")
+        self.signed_in_edit_profile_option = page.get_by_role("link").filter(
+            has_text="Edit Profile")
+        self.signed_in_my_questions_option = page.locator(
+            "div.sumo-nav--dropdown-thirds").get_by_role("link").filter(has_text="My Questions")
+        self.signed_in_settings_option = page.locator(
+            "//h4[contains(text(), 'Settings')]/parent::a")
+        self.signed_in_inbox_option = page.locator("//h4[contains(text(), 'Inbox')]/parent::a")
+        self.sign_out_button = page.locator("div#mzp-c-menu-panel-profile").get_by_role(
+            "link").get_by_text("Sign Out")
+        self.unread_message_profile_notification = page.locator(
+            "div#profile-navigation div.avatar-container-message-alert")
+        self.unread_message_count = page.locator("span.message-count-alert")
 
     """
         Actions against the top-navbar logo.
     """
     def get_sumo_nav_logo(self) -> ElementHandle:
         """Get sumo nav logo element handle"""
-        return self._get_element_handle(self.TOP_NAVBAR_GENERAL_PAGE_LOCATORS["sumo_nav_logo"])
+        return self._get_element_handle(self.sumo_nav_logo)
 
     def click_on_sumo_nav_logo(self):
         """Click on the sumo nav logo"""
-        self._click(self.TOP_NAVBAR_GENERAL_PAGE_LOCATORS["sumo_nav_logo"])
+        self._click(self.sumo_nav_logo)
 
     """
         Actions against the 'Explore Help Articles' top-navbar section.
     """
     def hover_over_explore_by_product_top_navbar_option(self):
         """Hover over the 'Explore by product' top-navbar option"""
-        self._hover_over_element(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
-                                 ["explore_help_articles_top_navbar_option"])
-        self.page.wait_for_selector(
-            self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS["explore_by_product_top_navbar_header"])
+        self._hover_over_element(self.explore_help_articles_top_navbar_option)
+        self._wait_for_locator(self.explore_by_product_top_navbar_header)
 
     def get_all_explore_by_product_options_locators(self) -> list[Locator]:
         """Get all 'Explore by product' top-navbar options locators"""
         self.hover_over_explore_by_product_top_navbar_option()
-        return self._get_elements_locators(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
-                                           ["explore_by_product_top_navbar_options"])
+        return self.explore_by_product_top_navbar_options.all()
 
     def get_all_explore_by_topic_locators(self) -> list[Locator]:
         """Get all 'Explore by topic' top-navbar options locators"""
         self.hover_over_explore_by_product_top_navbar_option()
-        return self._get_elements_locators(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
-                                           ["explore_by_topic_top_navbar_options"])
+        return self.explore_by_topic_top_navbar_options.all()
 
     def click_on_explore_our_help_articles_view_all_option(self):
         """Click on the 'View all products' option"""
         self.hover_over_explore_by_product_top_navbar_option()
-        self._click(self.TOP_NAVBAR_EXPLORE_HELP_ARTICLES_LOCATORS
-                    ["explore_our_help_articles_view_all_option"])
+        self._click(self.explore_our_help_articles_view_all_option)
     """
         Actions against the 'Community Forums' top-navbar section.
     """
     def hover_over_community_forums_top_navbar_option(self):
         """Hover over the 'Community Forums' top-navbar option"""
-        self._hover_over_element(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
-                                 ["community_forums_top_navbar_option"])
-        self.page.wait_for_selector(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
-                                    ["browse_by_product_top_navbar_header"])
+        self._hover_over_element(self.community_forums_top_navbar_option)
+        self._wait_for_locator(self.browse_by_product_top_navbar_header)
 
     def get_all_browse_by_product_options_locators(self) -> list[Locator]:
         """Get all 'Browse by product' top-navbar options locators"""
         self.hover_over_community_forums_top_navbar_option()
-        return self._get_elements_locators(self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
-                                           ["browse_by_product_top_navbar_options"])
+        return self.browse_by_product_top_navbar_options.all()
 
     def get_all_browse_all_forum_threads_by_topic_locators(self) -> list[Locator]:
         """Get all 'Browse all forum threads by topic' top-navbar options locators"""
         self.hover_over_community_forums_top_navbar_option()
-        return self._get_elements_locators(
-            self.TOP_NAVBAR_COMMUNITY_FORUMS_LOCATORS
-            ["browse_all_forum_threads_by_topics_top_navbar_options"])
+        return self.browse_all_forum_threads_by_topics_top_navbar_options.all()
 
     """
         Actions against the 'Ask a Question' top-navbar section.
     """
     def hover_over_ask_a_question_top_navbar(self):
         """Hover over the 'Ask a Question' top-navbar option"""
-        self._hover_over_element(self.TOP_NAVBAR_AAQ_LOCATORS["ask_a_question_top_navbar"])
-        self.page.wait_for_selector(self.TOP_NAVBAR_AAQ_LOCATORS["get_help_with_heading"])
+        self._hover_over_element(self.ask_a_question_top_navbar)
+        self._wait_for_locator(self.get_help_with_heading)
 
     def get_all_ask_a_question_locators(self) -> list[Locator]:
         """Get all 'Ask a Question' top-navbar options locators"""
         self.hover_over_ask_a_question_top_navbar()
-        return self._get_elements_locators(self.TOP_NAVBAR_AAQ_LOCATORS
-                                           ["ask_a_question_top_navbar_options"])
+        return self.ask_a_question_top_navbar_options.all()
 
     def click_on_browse_all_products_option(self):
         """Click on the 'Browse all products' option"""
         self.hover_over_ask_a_question_top_navbar()
-        self._click(self.TOP_NAVBAR_AAQ_LOCATORS["browse_all_products_option"])
+        self._click(self.browse_all_products_option)
 
     """
         Actions against the 'Contribute' top-navbar section.
     """
     def hover_over_contribute_top_navbar(self):
         """Hover over the 'Contribute' top-navbar option"""
-        self._hover_over_element(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["contribute_option"])
-        self.page.wait_for_selector(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS
-                                    ["contributor_discussions_top_navbar_header"])
+        self._hover_over_element(self.contribute_option)
+        self._wait_for_locator(self.contributor_discussions_top_navbar_header)
 
     def get_all_contributor_discussions_locators(self) -> list[Locator]:
         """Get all 'Contributor discussions' top-navbar options locators"""
         self.hover_over_contribute_top_navbar()
-        return self._get_elements_locators(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS
-                                           ["contributor_discussions_options"])
+        return self.contributor_discussions_options.all()
 
     def click_on_contribute_top_navbar_option(self):
         """Click on the 'Contribute' top-navbar option"""
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["contribute_option"])
+        self._click(self.contribute_option)
 
     def click_on_community_discussions_top_navbar_option(self):
         """Click on the 'Contributor discussions' top-navbar option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["contributor_discussions_option"])
+        self._click(self.contributor_discussions_option)
 
     def click_on_article_discussions_option(self):
         """Click on the 'Article discussions' option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["article_discussions_option"])
+        self._click(self.article_discussions_option)
 
     # Contributor tools
     def click_on_moderate_forum_content_option(self):
         """Click on the 'Moderate forum content' option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["moderate_forum_content"])
+        self._click(self.moderate_forum_content)
 
     def click_on_recent_revisions_option(self):
         """Click on the 'Recent revisions' option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["recent_revisions_option"])
+        self._click(self.recent_revisions_option)
 
     def click_on_dashboards_option(self):
         """Click on the 'Knowledge base dashboards' option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["dashboards_option"])
+        self._click(self.dashboards_option)
 
     def click_on_media_gallery_option(self):
         """Click on the 'Media gallery' option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["media_gallery_option"])
+        self._click(self.media_gallery_option)
 
     def click_on_guides_option(self):
         """Click on the 'Guides' option"""
         self.hover_over_contribute_top_navbar()
-        self._click(self.TOP_NAVBAR_CONTRIBUTE_LOCATORS["guides_option"])
+        self._click(self.guides_option)
 
     """
         Actions against the sign-in/sign-up top-navbar section.
     """
     def click_on_signin_signup_button(self):
         """Click on the 'Sign In/Up' button"""
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signin_signup_button"])
+        self._click(self.signin_signup_button)
 
     def mouse_over_profile_avatar(self):
         """Mouse over the profile avatar"""
-        self._hover_over_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_username"])
-        self._wait_for_selector(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["sign_out_button"])
+        self._hover_over_element(self.signed_in_username)
+        self._wait_for_locator(self.sign_out_button)
 
     def click_on_sign_out_button(self):
         """Click on the 'Sign Out' button"""
         self.mouse_over_profile_avatar()
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["sign_out_button"])
+        self._click(self.sign_out_button)
 
     def sign_in_up_button_displayed_element(self) -> Locator:
         """Get the 'Sign In/Up' button displayed element locator"""
-        return self._get_element_locator(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                         ["signin_signup_button"])
+        return self.signin_signup_button
 
     def is_sign_in_up_button_displayed(self) -> bool:
         """Check if the 'Sign In/Up' button is displayed"""
-        return self._is_element_visible(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                        ["signin_signup_button"])
+        return self._is_element_visible(self.signin_signup_button)
 
     """
         Actions against the user profile top-navbar section.
@@ -268,7 +249,7 @@ class TopNavbar(BasePage):
     def click_on_view_profile_option(self):
         """Click on the 'View Profile' option"""
         self.mouse_over_profile_avatar()
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_view_profile_option"])
+        self._click(self.signed_in_view_profile_option)
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
         self._move_mouse_to_location(0, 0)
@@ -276,7 +257,7 @@ class TopNavbar(BasePage):
     def click_on_edit_profile_option(self):
         """Click on the 'Edit Profile' option"""
         self.mouse_over_profile_avatar()
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_edit_profile_option"])
+        self._click(self.signed_in_edit_profile_option)
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
         self._move_mouse_to_location(0, 0)
@@ -284,7 +265,7 @@ class TopNavbar(BasePage):
     def click_on_settings_profile_option(self):
         """Click on the 'Settings' option"""
         self.mouse_over_profile_avatar()
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_settings_option"])
+        self._click(self.signed_in_settings_option)
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
         self._move_mouse_to_location(0, 0)
@@ -292,7 +273,7 @@ class TopNavbar(BasePage):
     def click_on_inbox_option(self):
         """Click on the 'Inbox' option"""
         self.mouse_over_profile_avatar()
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_inbox_option"])
+        self._click(self.signed_in_inbox_option)
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
         self._move_mouse_to_location(0, 0)
@@ -300,34 +281,30 @@ class TopNavbar(BasePage):
     def click_on_my_questions_profile_option(self):
         """Click on the 'My Questions' option"""
         self.mouse_over_profile_avatar()
-        self._click(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS["signed_in_my_questions_option"])
+        self._click(self.signed_in_my_questions_option)
         # Sometimes the top-navbar is not hidden after clicking on the 'Settings' option. This
         # action is to move the mouse to the top-left corner of the page to hide the top-navbar.
         self._move_mouse_to_location(0, 0)
 
     def get_text_of_logged_in_username(self) -> str:
         """Get the text of the logged in username"""
-        return self._get_text_of_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                         ["signed_in_username"])
+        return self._get_text_of_element(self.signed_in_username)
 
     def is_unread_message_notification_displayed(self) -> bool:
         """Check if the unread message notification is displayed"""
-        return self._is_element_visible(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                        ["unread_message_profile_notification"])
+        return self._is_element_visible(self.unread_message_profile_notification)
 
     def get_unread_message_notification_counter_value(self) -> int:
         """Get the unread message notification counter value"""
-        return int(self._get_text_of_element(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                             ["unread_message_count"]))
+        return int(self._get_text_of_element(self.unread_message_count))
 
     def is_unread_message_notification_counter_visible(self) -> bool:
         """Check if the unread message notification counter is visible"""
-        return self._is_element_visible(self.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                        ["unread_message_count"])
+        return self._is_element_visible(self.unread_message_count)
 
     """
         General actions against the top-navbar section.
     """
     def get_available_menu_titles(self) -> list[str]:
         """Get the available menu titles"""
-        return self._get_text_of_elements(self.TOP_NAVBAR_GENERAL_PAGE_LOCATORS["menu_titles"])
+        return self._get_text_of_elements(self.menu_titles)
