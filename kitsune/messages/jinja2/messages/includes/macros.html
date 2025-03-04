@@ -42,7 +42,11 @@
       {{ avatar_link(message.sender, default_avatar) }}
     </div>
     <div class="user from">
-      {{ name_link(message.sender) }} {{ datetimeformat(message.created) }}
+      {% if message.sender.username == "SumoBot" %}
+        {{ _('deleted user') }} {{ datetimeformat(message.created) }}
+      {% else %}
+        {{ name_link(message.sender) }} {{ datetimeformat(message.created) }}
+      {% endif %}
     </div>
   </div>
 </section>
@@ -56,8 +60,13 @@
     <p><strong>{{ _('To') }}:</strong>
     {% set comma = joiner(', ') %}
     {% for user in message.to.all() -%}
+      {% if user.username == "SumoBot" %}
+        {{ comma() }}
+        {{ _('deleted user') }}
+      {% else %}
         {{ comma() }}
         {{ name_link(user) }}
+      {% endif %}
     {% else %}
       {{ name_link(message.recipient) }}
     {% endfor %}
