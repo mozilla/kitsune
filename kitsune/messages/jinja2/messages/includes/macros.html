@@ -12,7 +12,11 @@
 
 {% macro name_link(user=None, name=None) -%}
   {% if user -%}
-    <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
+    {% if user.username == "SumoBot" %}
+      {{ _('deleted user') }}
+    {% else %}
+      <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
+    {% endif %}
   {%- else -%}
     {{ name if name else _('None') }}
   {%- endif %}
@@ -42,11 +46,7 @@
       {{ avatar_link(message.sender, default_avatar) }}
     </div>
     <div class="user from">
-      {% if message.sender.username == "SumoBot" %}
-        {{ _('deleted user') }} {{ datetimeformat(message.created) }}
-      {% else %}
         {{ name_link(message.sender) }} {{ datetimeformat(message.created) }}
-      {% endif %}
     </div>
   </div>
 </section>
@@ -60,13 +60,8 @@
     <p><strong>{{ _('To') }}:</strong>
     {% set comma = joiner(', ') %}
     {% for user in message.to.all() -%}
-      {% if user.username == "SumoBot" %}
-        {{ comma() }}
-        {{ _('deleted user') }}
-      {% else %}
         {{ comma() }}
         {{ name_link(user) }}
-      {% endif %}
     {% else %}
       {{ name_link(message.recipient) }}
     {% endfor %}

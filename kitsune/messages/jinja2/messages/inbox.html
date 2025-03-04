@@ -37,11 +37,7 @@
                     {{ avatar_link(message.sender, default_avatar) }}
                 </div>
                 <div class="email-cell from">
-                  {% if message.sender.username == 'SumoBot' %}
-                    {{ _('deleted user') }}
-                  {% else %}
                     {{ name_link(message.sender) }}
-                  {% endif %}
                 </div>
                 <div class="email-cell date">
                     {{ datetimeformat(message.created) }}

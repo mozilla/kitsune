@@ -42,12 +42,18 @@ def read(request, msgid):
     was_new = message.unread
     if was_new:
         message.update(read=True)
+
     initial = {"to": message.sender, "in_reply_to": message.pk}
     form = ReplyForm(initial=initial)
     response = render(
         request,
         "messages/read.html",
-        {"message": message, "form": form, "default_avatar": settings.DEFAULT_AVATAR},
+        {
+            "message": message,
+            "form": form,
+            "default_avatar": settings.DEFAULT_AVATAR,
+            "is_bot_user": message.sender.username == "SumoBot",
+        },
     )
     return response
 
@@ -185,6 +191,11 @@ def _add_recipients(msg):
 
     # Assign the recipient based on the number of recipients
     msg.recipient = msg.to.all()[0] if msg.recipients_count == 1 else None
+
+    if msg.recipient.username == "SumoBot":
+        msg.recipient.is_bot_user = True
+    else:
+        msg.recipient.is_bot_user = False
 
     # Assign the group(s) based on the number of groups
     msg.to_groups = list(msg.to_group.prefetch_related("profile"))
