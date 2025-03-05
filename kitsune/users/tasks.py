@@ -1,13 +1,14 @@
 import json
 from datetime import datetime, timedelta
 
+import waffle
 from celery import shared_task
 
 from kitsune.products.models import Product
 from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import AccountEvent
-from kitsune.users.utils import delete_user_pipeline
+from kitsune.users.utils import anonymize_user, delete_user_pipeline
 
 shared_task_with_retry = shared_task(
     acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs=dict(max_retries=4)
@@ -22,7 +23,10 @@ def process_event_delete_user(event_id):
     event.profile = None
     event.save(update_fields=["profile"])
 
-    delete_user_pipeline(user)
+    if waffle.switch_is_active("enable-account-deletion"):
+        delete_user_pipeline(user)
+    else:
+        anonymize_user(user)
 
     event.status = AccountEvent.PROCESSED
     event.save()
