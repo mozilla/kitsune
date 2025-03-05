@@ -396,7 +396,7 @@ def has_aaq_config(product=None):
         return False
 
 
-def set_aaq_context(request, product):
+def set_aaq_context(request, product, multiple_products=False):
     """Set the AAQ context for a product."""
     if not has_aaq_config(product):
         request.session["aaq_context"] = {}
@@ -406,4 +406,5 @@ def set_aaq_context(request, product):
         "has_ticketing_support": product.has_ticketing_support,
         "product_slug": product.slug,
         "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
+        "multiple_products": multiple_products,
     }
