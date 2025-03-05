@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from waffle.testutils import override_switch
 
 from kitsune.messages.utils import send_message
 from kitsune.products.tests import ProductFactory
@@ -24,6 +25,7 @@ class AccountEventsTasksTestCase(TestCase):
         self.group_user2 = UserFactory()
         self.content_group.user_set.add(self.group_user1, self.group_user2)
 
+    @override_switch("enable-account-deletion", active=True)
     def test_process_delete_user(self):
         profile = ProfileFactory()
         account_event = AccountEventFactory(
