@@ -58,6 +58,7 @@ from kitsune.users.utils import (
     deactivate_user,
     delete_user_pipeline,
     get_oidc_fxa_setting,
+    user_is_bot,
 )
 from kitsune.wiki.models import user_documents, user_redirects
 
@@ -147,6 +148,10 @@ def profile(request, username):
 @login_required
 @require_POST
 def close_account(request):
+    # Forbid this for bots.
+    if user_is_bot(request.user):
+        return HttpResponseForbidden()
+
     anonymize_user(request.user)
 
     # Log the user out
@@ -159,6 +164,11 @@ def close_account(request):
 @permission_required("users.deactivate_users")
 def deactivate(request, mark_spam=False):
     user = get_object_or_404(User, id=request.POST["user_id"], is_active=True)
+
+    # Forbid this for bots.
+    if user_is_bot(user):
+        return HttpResponseForbidden()
+
     deactivate_user(user, request.user)
 
     if mark_spam:
@@ -247,6 +257,10 @@ def documents_contributed(request, username):
 @require_http_methods(["GET", "POST"])
 def edit_settings(request):
     """Edit user settings"""
+    # Forbid this for bots.
+    if user_is_bot(request.user):
+        return HttpResponseForbidden()
+
     template = "users/edit_settings.html"
     if request.method == "POST":
         settings_form = SettingsForm(request.POST)
@@ -276,7 +290,11 @@ def edit_settings(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def edit_contribution_area(request):
-    """Edit user settings"""
+    """Edit the user's contribution area."""
+    # Forbid this for bots.
+    if user_is_bot(request.user):
+        return HttpResponseForbidden()
+
     template = "users/edit_contributions.html"
     contribution_form = ContributionAreaForm(request.POST or None, request=request)
 
@@ -291,6 +309,10 @@ def edit_contribution_area(request):
 @require_http_methods(["GET", "POST"])
 def edit_watch_list(request):
     """Edit watch list"""
+    # Forbid this for bots.
+    if user_is_bot(request.user):
+        return HttpResponseForbidden()
+
     watches = (
         Watch.objects.filter(user=request.user)
         .select_related("content_type")
@@ -336,6 +358,7 @@ def edit_profile(request, username=None):
             # Make sure the auth'd user has permission:
             if not request.user.has_perm("users.change_profile"):
                 return HttpResponseForbidden()
+
     if not user:
         user = request.user
 
@@ -345,6 +368,10 @@ def edit_profile(request, username=None):
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=user)
+
+    # Forbid this for bots.
+    if user_profile.is_bot:
+        return HttpResponseForbidden()
 
     profile_form = ProfileForm(request.POST or None, request.FILES or None, instance=user_profile)
     user_form = UserForm(request.POST or None, instance=user_profile.user)
@@ -379,6 +406,10 @@ def edit_profile(request, username=None):
 @require_http_methods(["POST"])
 def make_contributor(request):
     """Adds the logged in user to the contributor group"""
+    # Forbid this for bots.
+    if user_is_bot(request.user):
+        return HttpResponseForbidden()
+
     add_to_contributors(request.user, request.LANGUAGE_CODE)
 
     if "return_to" in request.POST:
