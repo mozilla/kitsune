@@ -8,4 +8,4 @@ class Command(BaseCommand):
         """
         Queue the send_queued_mail() Celery task.
         """
-        queued_mail_handler()
+        queued_mail_handler(None)
