@@ -12,7 +12,11 @@
 
 {% macro name_link(user=None, name=None) -%}
   {% if user -%}
-    <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
+    {% if user.username == "SumoBot" %}
+      {{ _('deleted user') }}
+    {% else %}
+      <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
+    {% endif %}
   {%- else -%}
     {{ name if name else _('None') }}
   {%- endif %}
