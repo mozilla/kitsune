@@ -86,7 +86,7 @@ def job_send_welcome_emails():
     skip=settings.READ_ONLY,
 )
 def job_send_queued_mail():
-    call_command("send_queued_mail")
+    call_command("send_queued_mail_async")
 
 
 # Every week, cleanup any expired emails.
