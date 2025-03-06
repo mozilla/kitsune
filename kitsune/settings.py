@@ -681,7 +681,6 @@ INSTALLED_APPS: tuple[str, ...] = (
     "statici18n",
     "watchman",
     "post_office",
-    "bandit",
     "dockerflow.django",
     # 'axes',
     # Extra app for python migrations.
@@ -850,7 +849,6 @@ REAL_EMAIL_BACKEND = (
 )
 # Settings for specific email backends.
 if REAL_EMAIL_BACKEND in (
-    "bandit.backends.smtp.HijackSMTPBackend",
     "django.core.mail.backends.smtp.EmailBackend",
     "kitsune.lib.email.SMTPEmailBackendWithSentryCapture",
 ):
@@ -889,9 +887,6 @@ POST_OFFICE = {
         cast=Csv(),
     ),
 }
-
-# If using "bandit.backends.smtp.HijackSMTPBackend", set the target email address(es).
-BANDIT_EMAIL = config("BANDIT_EMAIL", default="", cast=Csv())
 
 # Celery
 CELERY_TASK_PROTOCOL = 2
