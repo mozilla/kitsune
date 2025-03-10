@@ -20,7 +20,7 @@ brought up with:
 
 Kitsune should then be configured to use it:
 
-    EMAIL_LOGGING_REAL_BACKEND = django.core.mail.backends.smtp.EmailBackend
+    POST_OFFICE_DEFAULT_EMAIL_BACKEND = django.core.mail.backends.smtp.EmailBackend
     EMAIL_HOST = mailcatcher
     EMAIL_HOST_USER =
     EMAIL_HOST_PASSWORD =
