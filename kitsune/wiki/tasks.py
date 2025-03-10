@@ -214,6 +214,7 @@ def rebuild_kb():
 
 
 @shared_task(rate_limit="5/m")
+@skip_if_read_only_mode
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
