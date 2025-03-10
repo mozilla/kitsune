@@ -2,11 +2,12 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.mail import EmailMultiAlternatives
 from django.utils.functional import lazy
 from django.utils import translation
 from django.utils.translation import get_language
 
-from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation
+from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation, send_messages
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -132,3 +133,30 @@ class PremailerTests(TestCase):
             for m in msg:
                 tag = '<a href="https://%s/test" style="color:#000">Hyperlink</a>'
                 self.assertIn(tag % Site.objects.get_current().domain, str(m.message()))
+
+
+class SendMessagesTests(TestCase):
+
+    @patch("kitsune.sumo.email_utils.mail")
+    def test_when_messages_have_valid_email(self, mock_mail):
+        from_email = "notifications@support.mozilla.org"
+        messages = [
+            EmailMultiAlternatives("Test", "Testing", from_email, ["ringo@beatles.org"]),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["george@beatles.org"]),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["paul@beatles.org"]),
+        ]
+        send_messages(messages)
+        send_messages_mock = mock_mail.get_connection().__enter__().send_messages
+        send_messages_mock.assert_called_once_with(messages)
+
+    @patch("kitsune.sumo.email_utils.mail")
+    def test_when_message_has_invalid_email(self, mock_mail):
+        from_email = "notifications@support.mozilla.org"
+        messages = [
+            EmailMultiAlternatives("Test", "Testing", from_email, ["ringo@beatles.org"]),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["george.@beatles.org"]),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["paul@beatles.org"]),
+        ]
+        send_messages(messages)
+        send_messages_mock = mock_mail.get_connection().__enter__().send_messages
+        send_messages_mock.assert_called_once_with([messages[0], messages[2]])

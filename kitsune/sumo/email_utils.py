@@ -4,7 +4,9 @@ from functools import wraps
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import EmailValidator
 from django.template.loader import render_to_string
 from django.test.client import RequestFactory
 from django.utils import translation
@@ -13,15 +15,29 @@ from premailer import transform
 
 
 log = logging.getLogger("k.email")
+email_validator = EmailValidator()
+
+
+def is_valid_email(email):
+    """
+    Returns True if the given email address is valid, False otherwise.
+    """
+    try:
+        email_validator(email)
+    except ValidationError:
+        return False
+    return True
 
 
 def send_messages(messages):
-    """Sends a bunch of EmailMessages."""
+    """Sends a bunch of email messages."""
     if not messages:
         return
 
     with mail.get_connection(fail_silently=True) as conn:
-        conn.send_messages(list(messages))
+        conn.send_messages(
+            list(msg for msg in messages if all(is_valid_email(email) for email in msg.to))
+        )
 
 
 def safe_translation(f):
