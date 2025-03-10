@@ -193,7 +193,7 @@ def moderate_content(request):
             product_slug=product_slug,
         )
         .select_related("content_type", "creator", "assignee")
-        .prefetch_related("content_object__product")
+        .prefetch_related("content_object__product", "content_object__tags")
     )
 
     if request.method == "POST":
