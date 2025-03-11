@@ -671,14 +671,15 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         if not self.current_revision:
             return ""
 
-        # Remove "what links here" reverse links, because they might be
-        # stale and re-rendering will re-add them. This cannot be done
-        # reliably in the parser's parse() function, because that is
-        # often called multiple times per document.
-        self.links_from().delete()
+        if not settings.READ_ONLY:
+            # Remove "what links here" reverse links, because they might be
+            # stale and re-rendering will re-add them. This cannot be done
+            # reliably in the parser's parse() function, because that is
+            # often called multiple times per document.
+            self.links_from().delete()
 
-        # Also delete the DocumentImage instances for this document.
-        DocumentImage.objects.filter(document=self).delete()
+            # Also delete the DocumentImage instances for this document.
+            DocumentImage.objects.filter(document=self).delete()
 
         from kitsune.wiki.parser import WhatLinksHereParser, wiki_to_html
 
