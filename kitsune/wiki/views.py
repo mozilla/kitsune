@@ -238,7 +238,7 @@ def document(request, document_slug, document=None):
         product = products.first()
 
     # Set the AAQ context for the widget
-    set_aaq_context(request, product, multiple_products=True if len(products) > 1 else False)
+    set_aaq_context(request, product, multiple_products=len(products) > 1)
 
     product_topics = Topic.active.filter(products=product, visible=True)
 
