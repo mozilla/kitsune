@@ -44,7 +44,6 @@ users_patterns = [
         r"^deactivate-spam$", views.deactivate, {"mark_spam": True}, name="users.deactivate-spam"
     ),
     re_path(r"^deactivation_log$", views.deactivation_log, name="users.deactivation_log"),
-    re_path(r"^make_contributor$", views.make_contributor, name="users.make_contributor"),
     re_path(r"^api/", include(api_patterns)),
 ]
 

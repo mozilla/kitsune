@@ -53,7 +53,6 @@ from kitsune.users.tasks import (
 )
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (
-    add_to_contributors,
     anonymize_user,
     deactivate_user,
     delete_user_pipeline,
@@ -373,18 +372,6 @@ def edit_profile(request, username=None):
             "fxa_messages": fxa_messages,
         },
     )
-
-
-@login_required
-@require_http_methods(["POST"])
-def make_contributor(request):
-    """Adds the logged in user to the contributor group"""
-    add_to_contributors(request.user, request.LANGUAGE_CODE)
-
-    if "return_to" in request.POST:
-        return HttpResponseRedirect(request.POST["return_to"])
-    else:
-        return HttpResponseRedirect(reverse("landings.contribute"))
 
 
 def become(request, username=None):
