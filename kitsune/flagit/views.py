@@ -31,20 +31,23 @@ from kitsune.tags.models import SumoTag
 def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, product_slug=None):
     """Retrieve pending flagged objects with optional filtering, eager loading related fields."""
     queryset = FlaggedObject.objects.pending().select_related("content_type", "creator")
+
     if exclude_reason:
         queryset = queryset.exclude(reason=exclude_reason)
     if reason:
         queryset = queryset.filter(reason=reason)
     if content_model:
         queryset = queryset.filter(content_type=content_model)
-    if product_slug:
-        matching_product_ids = [
-            obj.id
-            for obj in queryset
-            if hasattr(obj.content_object, "product")
-            and obj.content_object.product.slug == product_slug
-        ]
-        queryset = queryset.filter(id__in=matching_product_ids)
+
+        if product_slug:
+            model_class = content_model.model_class()
+
+            if hasattr(model_class, "product"):
+                matching_objects = model_class.objects.filter(product__slug=product_slug)
+                matching_ids = matching_objects.values_list("id", flat=True)
+
+                queryset = queryset.filter(object_id__in=matching_ids)
+
     return queryset
 
 
