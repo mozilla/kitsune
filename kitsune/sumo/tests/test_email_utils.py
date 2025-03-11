@@ -138,25 +138,21 @@ class PremailerTests(TestCase):
 class SendMessagesTests(TestCase):
 
     @patch("kitsune.sumo.email_utils.mail")
-    def test_when_messages_have_valid_email(self, mock_mail):
+    def test_send_messages(self, mock_mail):
         from_email = "notifications@support.mozilla.org"
         messages = [
-            EmailMultiAlternatives("Test", "Testing", from_email, ["ringo@beatles.org"]),
-            EmailMultiAlternatives("Test", "Testing", from_email, ["george@beatles.org"]),
-            EmailMultiAlternatives("Test", "Testing", from_email, ["paul@beatles.org"]),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["beatles"]),
+            EmailMultiAlternatives(
+                "Test", "Testing", from_email, ["george.harrison.@gmail.com", "ringo"]
+            ),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["paul.mccartney.@gmail.com"]),
+            EmailMultiAlternatives(
+                "Test", "Testing", from_email, ["ringo@beatles.com", "george@beatles.com"]
+            ),
         ]
         send_messages(messages)
         send_messages_mock = mock_mail.get_connection().__enter__().send_messages
-        send_messages_mock.assert_called_once_with(messages)
-
-    @patch("kitsune.sumo.email_utils.mail")
-    def test_when_message_has_invalid_email(self, mock_mail):
-        from_email = "notifications@support.mozilla.org"
-        messages = [
-            EmailMultiAlternatives("Test", "Testing", from_email, ["ringo@beatles.org"]),
-            EmailMultiAlternatives("Test", "Testing", from_email, ["george.@beatles.org"]),
-            EmailMultiAlternatives("Test", "Testing", from_email, ["paul@beatles.org"]),
-        ]
-        send_messages(messages)
-        send_messages_mock = mock_mail.get_connection().__enter__().send_messages
-        send_messages_mock.assert_called_once_with([messages[0], messages[2]])
+        send_messages_mock.assert_called_once_with([messages[1], messages[2], messages[3]])
+        self.assertEqual(messages[1].to, ["georgeharrison@gmail.com"])
+        self.assertEqual(messages[2].to, ["paulmccartney@gmail.com"])
+        self.assertEqual(messages[3].to, ["ringo@beatles.com", "george@beatles.com"])

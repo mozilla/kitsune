@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
-from django.core.validators import EmailValidator
+from django.core.validators import validate_email
 from django.template.loader import render_to_string
 from django.test.client import RequestFactory
 from django.utils import translation
@@ -15,15 +15,28 @@ from premailer import transform
 
 
 log = logging.getLogger("k.email")
-email_validator = EmailValidator()
 
 
-def is_valid_email(email):
+def normalize_gmail(email: str) -> str:
+    """
+    Return the given email with periods removed from its "local part"
+    if it's a gmail address, otherwise return it unchanged.
+    """
+    if email.lower().endswith("@gmail.com"):
+        # Periods are ignored in the "local part" of gmail addresses.
+        # We need to remove them before using Django's "validate_email",
+        # otherwise it might incorrectly raise a ValidationError.
+        local_part, domain = email.rsplit("@", maxsplit=1)
+        return f"{local_part.replace('.', '')}@{domain}"
+    return email
+
+
+def is_valid_email(email: str) -> bool:
     """
     Returns True if the given email address is valid, False otherwise.
     """
     try:
-        email_validator(email)
+        validate_email(normalize_gmail(email))
     except ValidationError:
         return False
     return True
@@ -34,10 +47,18 @@ def send_messages(messages):
     if not messages:
         return
 
+    # Only send each message to its valid recipients,
+    # excluding messages without any valid recipients.
+    cleaned_messages = []
+    for message in messages:
+        # Remove invalid emails and normalize gmails.
+        cleaned_to = [normalize_gmail(email) for email in message.to if is_valid_email(email)]
+        if cleaned_to:
+            message.to = cleaned_to
+            cleaned_messages.append(message)
+
     with mail.get_connection(fail_silently=True) as conn:
-        conn.send_messages(
-            list(msg for msg in messages if all(is_valid_email(email) for email in msg.to))
-        )
+        conn.send_messages(cleaned_messages)
 
 
 def safe_translation(f):
