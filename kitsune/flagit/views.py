@@ -226,9 +226,20 @@ def moderate_content(request):
     )
     available_tags = SumoTag.objects.segmentation_tags().values("id", "name")
 
+    product_topics_cache = {}
+    unique_products = set()
+
     for obj in objects:
         question = obj.content_object
-        obj.available_topics = get_hierarchical_topics(question.product)
+        if question.product:
+            unique_products.add(question.product)
+
+    for product in unique_products:
+        product_topics_cache[product.id] = get_hierarchical_topics(product)
+
+    for obj in objects:
+        question = obj.content_object
+        obj.available_topics = product_topics_cache.get(question.product.id, [])
         obj.available_tags = available_tags
         obj.saved_tags = question.tags.values_list("id", flat=True)
 
