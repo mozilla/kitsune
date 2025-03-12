@@ -708,10 +708,10 @@ class Question(AAQBase):
         this will reset the database fields and return False.
         """
         if self.taken_by is None or self.taken_until is None or self.taken_until < datetime.now():
-
-            self.taken_by = None
-            self.taken_until = None
-            self.save()
+            if (self.taken_by is not None) or (self.taken_until is not None):
+                self.taken_by = None
+                self.taken_until = None
+                self.save()
             return False
         return True
 
