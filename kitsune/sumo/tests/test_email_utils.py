@@ -3,8 +3,8 @@ from unittest.mock import patch
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
-from django.utils.functional import lazy
 from django.utils import translation
+from django.utils.functional import lazy
 from django.utils.translation import get_language
 
 from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation, send_messages
@@ -156,3 +156,20 @@ class SendMessagesTests(TestCase):
         self.assertEqual(messages[1].to, ["georgeharrison@gmail.com"])
         self.assertEqual(messages[2].to, ["paulmccartney@gmail.com"])
         self.assertEqual(messages[3].to, ["ringo@beatles.com", "george@beatles.com"])
+
+    @patch("kitsune.sumo.email_utils.mail")
+    def test_send_messages_with_invalid_email(self, mock_mail):
+        from_email = "notifications@support.mozilla.org"
+        messages = [
+            EmailMultiAlternatives(
+                "Test",
+                "Testing",
+                from_email,
+                ["valid@example.com", "invalid@email", "another.valid@example.com"],
+            ),
+        ]
+        send_messages(messages)
+        send_messages_mock = mock_mail.get_connection().__enter__().send_messages
+        send_messages_mock.assert_called_once_with(messages)
+        # Check that the invalid email was removed
+        self.assertEqual(messages[0].to, ["valid@example.com", "another.valid@example.com"])

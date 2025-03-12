@@ -13,7 +13,6 @@ from django.utils import translation
 from post_office.settings import get_override_recipients
 from premailer import transform
 
-
 log = logging.getLogger("k.email")
 
 
@@ -31,34 +30,28 @@ def normalize_gmail(email: str) -> str:
     return email
 
 
-def is_valid_email(email: str) -> bool:
-    """
-    Returns True if the given email address is valid, False otherwise.
-    """
-    try:
-        validate_email(normalize_gmail(email))
-    except ValidationError:
-        return False
-    return True
-
-
 def send_messages(messages):
     """Sends a bunch of email messages."""
     if not messages:
         return
 
-    # Only send each message to its valid recipients,
-    # excluding messages without any valid recipients.
-    cleaned_messages = []
+    valid_messages = []
     for message in messages:
-        # Remove invalid emails and normalize gmails.
-        cleaned_to = [normalize_gmail(email) for email in message.to if is_valid_email(email)]
-        if cleaned_to:
-            message.to = cleaned_to
-            cleaned_messages.append(message)
+        valid_emails = []
+        for email in message.to:
+            normalized_email = normalize_gmail(email)
+            try:
+                validate_email(normalized_email)
+                valid_emails.append(normalized_email)
+            except ValidationError:
+                pass
+
+        if valid_emails:
+            message.to = valid_emails
+            valid_messages.append(message)
 
     with mail.get_connection(fail_silently=True) as conn:
-        conn.send_messages(cleaned_messages)
+        conn.send_messages(valid_messages)
 
 
 def safe_translation(f):
