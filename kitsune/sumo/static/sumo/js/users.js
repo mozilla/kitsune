@@ -25,8 +25,33 @@
     });
   }
 
+  function handleAccountDeletion() {
+    // Handle the delete account button click 
+    $('#delete-profile-button').on('click', function(e) {
+      e.preventDefault();
+      
+      var $form = $(this).closest('form');
+      
+      // Close modals - keep both systems for compatibility
+      if (typeof Mzp !== 'undefined' && Mzp.Modal) {
+        Mzp.Modal.closeModal();
+      }
+      
+      if ($.kbox) {
+        $.kbox.close();
+      }
+      
+      // Directly submit the form after a small delay
+      // This ensures the modal closing completes before submission
+      setTimeout(function() {
+        $form[0].submit();
+      }, 50);
+    });
+  }
+
   $(function() {
     makeEmailsClickable();
     confirmUserDeactivation();
+    handleAccountDeletion();
   });
 })(jQuery);
