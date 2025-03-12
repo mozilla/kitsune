@@ -2,11 +2,12 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.mail import EmailMultiAlternatives
 from django.utils.functional import lazy
 from django.utils import translation
 from django.utils.translation import get_language
 
-from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation
+from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation, send_messages
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -132,3 +133,26 @@ class PremailerTests(TestCase):
             for m in msg:
                 tag = '<a href="https://%s/test" style="color:#000">Hyperlink</a>'
                 self.assertIn(tag % Site.objects.get_current().domain, str(m.message()))
+
+
+class SendMessagesTests(TestCase):
+
+    @patch("kitsune.sumo.email_utils.mail")
+    def test_send_messages(self, mock_mail):
+        from_email = "notifications@support.mozilla.org"
+        messages = [
+            EmailMultiAlternatives("Test", "Testing", from_email, ["beatles"]),
+            EmailMultiAlternatives(
+                "Test", "Testing", from_email, ["george.harrison.@gmail.com", "ringo"]
+            ),
+            EmailMultiAlternatives("Test", "Testing", from_email, ["paul.mccartney.@gmail.com"]),
+            EmailMultiAlternatives(
+                "Test", "Testing", from_email, ["ringo@beatles.com", "george@beatles.com"]
+            ),
+        ]
+        send_messages(messages)
+        send_messages_mock = mock_mail.get_connection().__enter__().send_messages
+        send_messages_mock.assert_called_once_with([messages[1], messages[2], messages[3]])
+        self.assertEqual(messages[1].to, ["georgeharrison@gmail.com"])
+        self.assertEqual(messages[2].to, ["paulmccartney@gmail.com"])
+        self.assertEqual(messages[3].to, ["ringo@beatles.com", "george@beatles.com"])
