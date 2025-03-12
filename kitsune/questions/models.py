@@ -704,20 +704,15 @@ class Question(AAQBase):
         """
         Convenience method to check that a question is taken.
 
-        Additionally, if ``self.taken_until`` is in the past, this will reset
-        the database fields to expire the setting.
+        If the question is no longer validly taken (due to missing user or expired time),
+        this will reset the database fields and return False.
         """
-        if self.taken_by is None:
-            assert self.taken_until is None
-            return False
+        if self.taken_by is None or self.taken_until is None or self.taken_until < datetime.now():
 
-        assert self.taken_until is not None
-        if self.taken_until < datetime.now():
             self.taken_by = None
             self.taken_until = None
             self.save()
             return False
-
         return True
 
     def take(self, user, force=False):
