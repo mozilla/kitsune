@@ -98,6 +98,7 @@
     {% set link_detail = aaq_context.product_slug if aaq_context else topic %}
     {% set has_support = aaq_context.has_ticketing_support if aaq_context else False %}
     {% set has_forum = aaq_context.has_public_forum if aaq_context else False %}
+    {% set multiple_products = aaq_context.multiple_products if aaq_context else False %}
 
     {% if aaq_context %}
       {% if request.user.is_authenticated %}
@@ -117,9 +118,15 @@
       <p>{{ _('Still need help? Continue to ask your question and get help.') }}</p>
     {% endif %}
 
-    {% set link_name = "aaq-widget.community-support.kb-article" if not (has_support or has_forum) else "aaq-widget.aaq-step-3" %}
-    {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) if not (has_support or has_forum or topic) else url('questions.aaq_step3', product_slug=aaq_context.product_slug) if aaq_context else url('questions.aaq_step1') %}
+    {% set link_name = "aaq-widget.community-support.kb-article" if not (has_support or has_forum)
+                      else "aaq-widget.aaq-step-3" %}
 
+    {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) 
+                       if not (has_support or has_forum or topic)
+                       else url('questions.aaq_step3', product_slug=aaq_context.product_slug) 
+                       if aaq_context and not multiple_products
+                       else url('questions.aaq_step1') %}
+  
     <a class="sumo-button primary-button feature-box"
       href="{{ next_step }}"
       data-event-name="link_click"
