@@ -16,6 +16,7 @@ from kitsune.products.models import Product
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
+from kitsune.users.managers import AllProfilesManager, RegularProfileManager
 from kitsune.users.validators import TwitterValidator
 
 log = logging.getLogger("k.users")
@@ -58,6 +59,10 @@ class Profile(ModelBase):
         REGULAR = "regular", _lazy("Regular User Account")
         SYSTEM = "system", _lazy("System Account")
         ADMIN = "admin", _lazy("Admin Account")
+
+    # Override the default manager to exclude system accounts
+    objects = RegularProfileManager()
+    all_profiles = AllProfilesManager()
 
     user = models.OneToOneField(
         User,
@@ -156,7 +161,7 @@ class Profile(ModelBase):
     @classmethod
     def get_sumo_bot(cls, user_instance=True):
         """Get or create the system account."""
-        system_user, _ = User.objects.get_or_create(
+        system_user, _ = User.all_users.get_or_create(
             username=settings.SUMO_BOT_USERNAME,
             defaults={
                 "email": "no-reply@mozilla.org",
@@ -165,7 +170,7 @@ class Profile(ModelBase):
             },
         )
 
-        profile, _ = cls.objects.get_or_create(
+        profile, _ = cls.all_profiles.get_or_create(
             user=system_user,
             defaults={
                 "name": "SuMo Bot",
