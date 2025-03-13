@@ -1,18 +1,18 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.handlers import AAQChain
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 
 
 class TestSpamAAQHandler(TestCase):
     def setUp(self):
         self.user = UserFactory()
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        self.sumo_bot = Profile.get_sumo_bot()
         self.chain = AAQChain()
 
     def test_spam_cleanup(self):
@@ -29,14 +29,14 @@ class TestSpamAAQHandler(TestCase):
 
         good_q.refresh_from_db()
         good_a.refresh_from_db()
-        self.assertEqual(good_q.creator.username, settings.SUMO_BOT_USERNAME)
-        self.assertEqual(good_a.creator.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(good_q.creator.username, self.sumo_bot.username)
+        self.assertEqual(good_a.creator.username, self.sumo_bot.username)
 
 
 class TestArchivedProductAAQHandler(TestCase):
     def setUp(self):
         self.user = UserFactory()
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        self.sumo_bot = Profile.get_sumo_bot()
         self.chain = AAQChain()
 
     def test_archived_product_cleanup(self):
@@ -62,7 +62,7 @@ class TestArchivedProductAAQHandler(TestCase):
 class TestOrphanedQuestionAAQHandler(TestCase):
     def setUp(self):
         self.user = UserFactory()
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        self.sumo_bot = Profile.get_sumo_bot()
         self.chain = AAQChain()
 
     def test_orphaned_question_cleanup(self):
@@ -83,16 +83,10 @@ class TestAAQChain(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.chain = AAQChain()
-
-    def test_missing_sumo_bot(self):
-        """Test that chain raises ValueError when SumoBot user doesn't exist."""
-
-        with self.assertRaises(ValueError):
-            self.chain.run(self.user)
+        self.sumo_bot = Profile.get_sumo_bot()
 
     def test_reassign_to_sumo_bot(self):
         """Test that remaining content is reassigned to SumoBot."""
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
         q = QuestionFactory(creator=self.user)
         a = AnswerFactory(creator=self.user, question=q)
 
@@ -100,5 +94,5 @@ class TestAAQChain(TestCase):
 
         q.refresh_from_db()
         a.refresh_from_db()
-        self.assertEqual(q.creator.username, settings.SUMO_BOT_USERNAME)
-        self.assertEqual(a.creator.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(q.creator.username, self.sumo_bot.username)
+        self.assertEqual(a.creator.username, self.sumo_bot.username)

@@ -1,8 +1,8 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.users.handlers import UserDeletionListener
+from kitsune.users.models import Profile
 
 
 class MessageListener(UserDeletionListener):
@@ -14,11 +14,7 @@ class MessageListener(UserDeletionListener):
         - Delete their outbox messages
         - Keep inbox messages for other users and reassign them to SumoBot
         """
-        try:
-            sumo_bot = User.objects.get(username=settings.SUMO_BOT_USERNAME)
-        except User.DoesNotExist:
-            raise ValueError("SumoBot user not found")
-
+        sumo_bot = Profile.get_sumo_bot()
         InboxMessage.objects.filter(to=user).delete()
         InboxMessage.objects.filter(sender=user).update(sender=sumo_bot)
         OutboxMessage.objects.filter(sender=user).delete()
