@@ -259,7 +259,10 @@ class Question(AAQBase):
         """Get the user that solved the question."""
         solver_id = self.metadata.get("solver_id")
         if solver_id:
-            return User.objects.get(id=solver_id)
+            try:
+                return User.objects.get(id=solver_id)
+            except User.DoesNotExist:
+                return None
 
     @property
     def product_config(self):
