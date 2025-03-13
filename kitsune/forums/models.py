@@ -183,7 +183,7 @@ class Post(ModelBase):
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="post_last_updated_by", null=True
+        User, on_delete=models.SET_NULL, related_name="post_last_updated_by", null=True
     )
     flags = GenericRelation(FlaggedObject)
 
