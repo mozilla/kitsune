@@ -4,7 +4,12 @@ from django.contrib.auth.models import User
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.handlers import AAQChain
 from kitsune.questions.models import Answer, Question
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.questions.tests import (
+    AnswerFactory,
+    AnswerVoteFactory,
+    QuestionFactory,
+    QuestionVoteFactory,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -95,10 +100,19 @@ class TestAAQChain(TestCase):
         User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
         q = QuestionFactory(creator=self.user)
         a = AnswerFactory(creator=self.user, question=q)
+        qv = AnswerVoteFactory(creator=self.user)
+        av = QuestionVoteFactory(creator=self.user)
+        spam_q = QuestionFactory(is_spam=True, marked_as_spam_by=self.user)
+        spam_a = AnswerFactory(is_spam=True, marked_as_spam_by=self.user)
 
         self.chain.run(self.user)
 
-        q.refresh_from_db()
-        a.refresh_from_db()
+        for obj in (q, a, qv, av, spam_q, spam_a):
+            obj.refresh_from_db()
+
         self.assertEqual(q.creator.username, settings.SUMO_BOT_USERNAME)
         self.assertEqual(a.creator.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(qv.creator.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(av.creator.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(spam_q.marked_as_spam_by.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(spam_a.marked_as_spam_by.username, settings.SUMO_BOT_USERNAME)

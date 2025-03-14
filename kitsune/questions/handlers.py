@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from kitsune.questions.models import Answer, Question
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionVote
 from kitsune.sumo.handlers import AbstractChain, AccountHandler
 from kitsune.users.handlers import UserDeletionListener
 
@@ -77,14 +77,18 @@ class AAQChain(AbstractChain[AccountHandler]):
         for handler in self.handlers:
             handler.handle_account(data)
 
-        # Re-assign remaining questions and answers to SumoBot.
+        # Re-assign remaining questions, answers, and votes to SumoBot.
         try:
             sumo_bot = User.objects.get(username=settings.SUMO_BOT_USERNAME)
         except User.DoesNotExist:
             raise ValueError("SumoBot user not found")
         else:
             Question.objects.filter(creator=user).update(creator=sumo_bot)
+            Question.objects.filter(marked_as_spam_by=user).update(marked_as_spam_by=sumo_bot)
             Answer.objects.filter(creator=user).update(creator=sumo_bot)
+            Answer.objects.filter(marked_as_spam_by=user).update(marked_as_spam_by=sumo_bot)
+            QuestionVote.objects.filter(creator=user).update(creator=sumo_bot)
+            AnswerVote.objects.filter(creator=user).update(creator=sumo_bot)
 
 
 class AAQListener(UserDeletionListener):
