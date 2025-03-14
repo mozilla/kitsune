@@ -24,3 +24,7 @@ class DocumentListener(UserDeletionListener):
             raise ValueError("SumoBot user not found")
         else:
             Revision.objects.filter(creator=user).update(creator=sumo_bot)
+            Revision.objects.filter(reviewer=user).update(reviewer=sumo_bot)
+            Revision.objects.filter(readied_for_localization_by=user).update(
+                readied_for_localization_by=sumo_bot
+            )

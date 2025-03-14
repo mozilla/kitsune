@@ -4,13 +4,13 @@ from django.contrib.auth.models import User
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.handlers import DocumentListener
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class TestDocumentListener(TestCase):
     def setUp(self):
         self.user = UserFactory()
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        self.sumo_bot, _ = User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
         self.listener = DocumentListener()
 
         self.content_group = GroupFactory(name=settings.SUMO_CONTENT_GROUP)
@@ -69,3 +69,23 @@ class TestDocumentListener(TestCase):
 
         self.assertTrue(doc3.contributors.filter(id=other_contributor.id).exists())
         self.assertEqual(doc3.contributors.count(), 1)
+
+    def test_revision_user_fields_replacement(self):
+        rev1 = ApprovedRevisionFactory()
+        rev2 = ApprovedRevisionFactory(creator=self.user)
+        rev3 = ApprovedRevisionFactory(reviewer=self.user, readied_for_localization_by=self.user)
+
+        self.listener.on_user_deletion(self.user)
+
+        for rev in (rev1, rev2, rev3):
+            rev.refresh_from_db()
+
+        self.assertNotEqual(rev1.creator, self.sumo_bot)
+        self.assertNotEqual(rev1.reviewer, self.sumo_bot)
+        self.assertNotEqual(rev1.readied_for_localization_by, self.sumo_bot)
+        self.assertEqual(rev2.creator, self.sumo_bot)
+        self.assertNotEqual(rev2.reviewer, self.sumo_bot)
+        self.assertNotEqual(rev2.readied_for_localization_by, self.sumo_bot)
+        self.assertNotEqual(rev3.creator, self.sumo_bot)
+        self.assertEqual(rev3.reviewer, self.sumo_bot)
+        self.assertEqual(rev3.readied_for_localization_by, self.sumo_bot)
