@@ -53,6 +53,8 @@ class TestPostListener(TestCase):
         post1 = PostFactory(author=self.user)
         post2 = PostFactory(author=self.user)
         post3 = PostFactory(author=self.user)
+        post4 = PostFactory(updated_by=self.user)
+        post5 = PostFactory(updated_by=self.user)
 
         self.listener.on_user_deletion(self.user)
 
@@ -60,24 +62,35 @@ class TestPostListener(TestCase):
             post.refresh_from_db()
             self.assertEqual(post.author.username, settings.SUMO_BOT_USERNAME)
 
+        for post in [post4, post5]:
+            post.refresh_from_db()
+            self.assertEqual(post.updated_by.username, settings.SUMO_BOT_USERNAME)
+
     def test_other_users_posts_unaffected(self):
         """Test that other users' posts are not affected."""
         other_user = UserFactory()
-        post1 = PostFactory(author=self.user)
-        post2 = PostFactory(author=other_user)
+        post1 = PostFactory(author=self.user, updated_by=other_user)
+        post2 = PostFactory(author=other_user, updated_by=other_user)
+        post3 = PostFactory(author=other_user, updated_by=self.user)
 
         self.listener.on_user_deletion(self.user)
 
-        post1.refresh_from_db()
-        post2.refresh_from_db()
+        for post in [post1, post2, post3]:
+            post.refresh_from_db()
+
         self.assertEqual(post1.author.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(post1.updated_by, other_user)
         self.assertEqual(post2.author, other_user)
+        self.assertEqual(post2.updated_by, other_user)
+        self.assertEqual(post3.author, other_user)
+        self.assertEqual(post3.updated_by.username, settings.SUMO_BOT_USERNAME)
 
     def test_flagged_posts_deletion(self):
         """Test that flagged posts are deleted."""
         post1 = PostFactory(author=self.user)
         post2 = PostFactory(author=self.user)
         post3 = PostFactory(author=self.user)
+        post4 = PostFactory(updated_by=self.user)
 
         post_content_type = ContentType.objects.get_for_model(Post)
 
@@ -103,3 +116,5 @@ class TestPostListener(TestCase):
 
         post3.refresh_from_db()
         self.assertEqual(post3.author.username, settings.SUMO_BOT_USERNAME)
+        post4.refresh_from_db()
+        self.assertEqual(post4.updated_by.username, settings.SUMO_BOT_USERNAME)

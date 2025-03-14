@@ -38,3 +38,8 @@ class PostListener(UserDeletionListener):
         Post.objects.filter(author=user).exclude(
             id__in=flagged_posts.values_list("id", flat=True)
         ).update(author=sumo_bot)
+
+        # Assuming that only trusted contributors can edit posts, we shouldn't
+        # need to first delete any posts that have been updated by the user and
+        # then flagged after the update.
+        Post.objects.filter(updated_by=user).update(updated_by=sumo_bot)
