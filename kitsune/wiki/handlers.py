@@ -30,6 +30,10 @@ class DocumentListener(UserDeletionListener):
 
         sumo_bot = Profile.get_sumo_bot()
         Revision.objects.filter(creator=user).update(creator=sumo_bot)
+        Revision.objects.filter(reviewer=user).update(reviewer=sumo_bot)
+        Revision.objects.filter(readied_for_localization_by=user).update(
+            readied_for_localization_by=sumo_bot
+        )
         # Anonymize any revision votes.
         HelpfulVote.objects.filter(creator=user).update(
             creator=None, anonymous_id=AnonymousIdentity().anonymous_id
