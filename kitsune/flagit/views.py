@@ -70,6 +70,13 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     content_type = get_object_or_404(ContentType, id=int(content_type))
     content_object = get_object_or_404(content_type.model_class(), pk=object_id)
 
+    if (
+        content_type.model_class() == User
+        and hasattr(content_object, "profile")
+        and content_object.profile.is_system_account
+    ):
+        return HttpResponseForbidden(_("System account content cannot be flagged."))
+
     reason = request.POST.get("reason")
     notes = request.POST.get("other", "")
     next = request.POST.get("next")

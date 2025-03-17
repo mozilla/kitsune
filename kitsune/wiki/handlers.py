@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 
 from kitsune.users.handlers import UserDeletionListener
+from kitsune.users.models import Profile
 from kitsune.wiki.models import Document, Revision
 
 
@@ -18,9 +19,5 @@ class DocumentListener(UserDeletionListener):
                 document.contributors.add(*content_group.user_set.all())
             document.contributors.remove(user)
 
-        try:
-            sumo_bot = User.objects.get(username=settings.SUMO_BOT_USERNAME)
-        except User.DoesNotExist:
-            raise ValueError("SumoBot user not found")
-        else:
-            Revision.objects.filter(creator=user).update(creator=sumo_bot)
+        sumo_bot = Profile.get_sumo_bot()
+        Revision.objects.filter(creator=user).update(creator=sumo_bot)

@@ -1,7 +1,7 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.handlers import DocumentListener
 from kitsune.wiki.tests import DocumentFactory
@@ -10,7 +10,7 @@ from kitsune.wiki.tests import DocumentFactory
 class TestDocumentListener(TestCase):
     def setUp(self):
         self.user = UserFactory()
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        Profile.get_sumo_bot()
         self.listener = DocumentListener()
 
         self.content_group = GroupFactory(name=settings.SUMO_CONTENT_GROUP)

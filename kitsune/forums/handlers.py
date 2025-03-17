@@ -1,10 +1,10 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.forums.models import Post, Thread
 from kitsune.users.handlers import UserDeletionListener
+from kitsune.users.models import Profile
 
 
 class ThreadListener(UserDeletionListener):
@@ -12,7 +12,7 @@ class ThreadListener(UserDeletionListener):
 
     def on_user_deletion(self, user: User) -> None:
 
-        sumo_bot = User.objects.get(username=settings.SUMO_BOT_USERNAME)
+        sumo_bot = Profile.get_sumo_bot()
         Thread.objects.filter(creator=user).update(creator=sumo_bot)
 
 
@@ -20,7 +20,7 @@ class PostListener(UserDeletionListener):
     """Handles post cleanup when a user is deleted."""
 
     def on_user_deletion(self, user: User) -> None:
-        sumo_bot = User.objects.get(username=settings.SUMO_BOT_USERNAME)
+        sumo_bot = Profile.get_sumo_bot()
         posts = Post.objects.filter(author=user)
 
         post_content_type = ContentType.objects.get_for_model(Post)

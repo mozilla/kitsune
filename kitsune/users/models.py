@@ -10,11 +10,13 @@ from django.db.models.functions import Upper
 from django.utils.translation import gettext_lazy as _lazy
 from timezone_field import TimeZoneField
 
+from kitsune import users as constants
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
+from kitsune.users.managers import AllProfilesManager, RegularProfileManager
 from kitsune.users.validators import TwitterValidator
 
 log = logging.getLogger("k.users")
@@ -53,8 +55,27 @@ class ContributionAreas(models.TextChoices):
 class Profile(ModelBase):
     """Profile model for django users."""
 
+    class AccountType(models.TextChoices):
+        REGULAR = "regular", _lazy("Regular User Account")
+        SYSTEM = "system", _lazy("System Account")
+        ADMIN = "admin", _lazy("Admin Account")
+
+    # Override the default manager to exclude system accounts
+    objects = RegularProfileManager()
+    all_profiles = AllProfilesManager()
+
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, primary_key=True, verbose_name=_lazy("User")
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        verbose_name=_lazy("User"),
+        related_name="profile",
+    )
+    account_type = models.CharField(
+        max_length=255,
+        choices=AccountType.choices,
+        default=AccountType.REGULAR,
+        verbose_name=_lazy("Account Type"),
     )
     name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name=_lazy("Display name")
@@ -136,6 +157,31 @@ class Profile(ModelBase):
             return str(self.user)
         except Exception as exc:
             return str("%d (%r)" % (self.pk, exc))
+
+    @classmethod
+    def get_sumo_bot(cls, user_instance=True):
+        """Get or create the system account."""
+        system_user, _ = User.all_users.get_or_create(
+            username=settings.SUMO_BOT_USERNAME,
+            defaults={
+                "email": "no-reply@mozilla.org",
+                "first_name": "SuMo",
+                "last_name": "Bot",
+            },
+        )
+
+        profile, _ = cls.all_profiles.get_or_create(
+            user=system_user,
+            defaults={
+                "name": "SuMo Bot",
+                "public_email": False,
+                "account_type": cls.AccountType.SYSTEM,
+                "bio": constants.SUMO_BOT_BIO,
+            },
+        )
+        if user_instance:
+            return system_user
+        return profile
 
     def get_absolute_url(self):
         return reverse("users.profile", args=[self.user_id])
@@ -224,6 +270,11 @@ class Profile(ModelBase):
     @cached_property
     def in_staff_group(self):
         return self.user.groups.filter(name=settings.STAFF_GROUP).exists()
+
+    @property
+    def is_system_account(self):
+        """Helper property to check if this is a system account."""
+        return self.account_type == self.AccountType.SYSTEM
 
 
 class Setting(ModelBase):

@@ -332,8 +332,8 @@ class ProfileDocument(SumoDocument):
     def prepare(cls, instance):
         """Override super method to exclude docs from indexing."""
         # Add a discard field in the document if the following conditions are met
-        # User is not active
-        if not instance.user.is_active:
+        # User is not active or is a system account
+        if not instance.user.is_active or instance.is_system_account:
             instance.es_discard_doc = "unindex_me"
 
         return super(ProfileDocument, cls).prepare(instance)

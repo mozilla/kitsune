@@ -8,7 +8,7 @@ from waffle.testutils import override_switch
 from kitsune.messages.utils import send_message
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.models import AccountEvent
+from kitsune.users.models import AccountEvent, Profile
 from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
@@ -19,7 +19,7 @@ from kitsune.users.tests import AccountEventFactory, GroupFactory, ProfileFactor
 
 class AccountEventsTasksTestCase(TestCase):
     def setUp(self):
-        User.objects.get_or_create(username=settings.SUMO_BOT_USERNAME)
+        Profile.get_sumo_bot()
         self.content_group = GroupFactory(name=settings.SUMO_CONTENT_GROUP)
         self.group_user1 = UserFactory()
         self.group_user2 = UserFactory()
