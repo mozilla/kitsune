@@ -271,6 +271,11 @@ class Profile(ModelBase):
     def in_staff_group(self):
         return self.user.groups.filter(name=settings.STAFF_GROUP).exists()
 
+    @property
+    def is_system_account(self):
+        """Helper property to check if this is a system account."""
+        return self.account_type == self.AccountType.SYSTEM
+
 
 class Setting(ModelBase):
     """User specific value per setting"""

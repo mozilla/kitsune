@@ -10,207 +10,211 @@
 
 {% block breadcrumbs %}{% endblock %}
 {% block content %}
-      <article id="profile">
-        {% if is_owner and profile.is_fxa_migrated %}
-        <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
-        <p class="mb-0"><strong>{{ user.email }}</strong></p>
-        <p>
-          {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-            To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
-          {% endtrans %}
-        </p>
-        <section class="avatar-group">
-          <figure class="avatar-group--figure">
-            <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-          </figure>
-        </section>
-        <hr class="section-break"/>
-        {% endif %}
+  <article id="profile">
+    {% if is_owner and profile.is_fxa_migrated %}
+    <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
+    <p class="mb-0"><strong>{{ user.email }}</strong></p>
+    <p>
+      {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+        To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
+      {% endtrans %}
+    </p>
+    <section class="avatar-group">
+      <figure class="avatar-group--figure">
+        <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+      </figure>
+    </section>
+    <hr class="section-break"/>
+    {% endif %}
 
-        {% if request.user.is_authenticated and request.user != profile.user %}
-          {% if user.has_perm('users.change_profile') %}
-            <div id="admin-actions">
-              <a class="edit" rel="nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
-                {{ _('Edit user profile') }}
-              </a>
-           </div>
-          {% endif %}
-          {{ flag_form(url('users.flag', object_id=profile.pk), profile.id, False) }}
-        {% endif %}
-        <h2 class="sumo-callout-heading user">{{ display_name(profile.user) }}
-          {% if profile.name %}
-            <span class="username">({{ profile.user.username }})</span>
-          {% endif %}
-        </h2>
-        <p>
-          {% if is_owner %}
-            {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
-              Your privacy is important to us. Your username is always visible to the public -
-              if you would like to edit your username, {{ a_open }} click here. {{ a_close }}
-            {% endtrans %}
-          {% endif %}
-        </p>
-
-        <h2 class="sumo-page-subheading location">
-          {% if profile.city and profile.country %}
-            {{ _('{city}, {country}')|f(city=profile.city,
-                                        country=profile.get_country_display() ) }}
-          {% elif profile.city %}
-            {{ profile.city }}
-          {% elif profile.country %}
-            {{ profile.get_country_display() }}
-          {% endif %}
-        </h2>
-
-      <section class="avatar-group">
-        {% if not is_owner %}
-        <figure class="avatar-group--figure">
-          <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-        </figure>
-        {% endif %}
-        <div class="avatar-group--details">
-          {% if profile.public_email or profile.website or profile.twitter or
-                profile.community_mozilla_org or profile.people_mozilla_org or profile.matrix_handle %}
-              <ul class="avatar-group--details-list">
-                {% if profile.public_email and request.user.is_authenticated %}
-                  <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Email') }}:</label>
-                    {{ profile.user.email|public_email }}
-                  </li>
-                {% endif %}
-                {% if profile.website %}
-                  <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Website') }}:</label>
-                      <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
-                  </li>
-                {% endif %}
-                {% if profile.twitter %}
-                  <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Twitter') }}:</label>
-                    <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
-                  </li>
-                {% endif %}
-                {% if profile.community_mozilla_org %}
-                  <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Community Portal') }}:</label>
-                    <a rel="nofollow" href="https://community.mozilla.org/people/{{profile.community_mozilla_org}}/">{{ profile.community_mozilla_org }}</a>
-                  </li>
-                {% endif %}
-                {% if profile.people_mozilla_org %}
-                  <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('People Directory') }}:</label>
-                    <a rel="nofollow" href="https://people.mozilla.org/p/{{profile.people_mozilla_org}}/">{{ profile.people_mozilla_org }}</a>
-                  </li>
-                {% endif %}
-                {% if profile.matrix_handle %}
-                  <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Matrix') }}:</label>
-                    {{ profile.matrix_handle }}
-                  </li>
-                {% endif %}
-              </ul>
-          {% endif %}
-        </div>
-      </section>
-
-
-      {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') %}
-        {% if profile.user.is_active %}
-          <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
-            {% csrf_token %}
-            <input type="hidden" name="user_id" value="{{ profile.user.id }}">
-            <input type="submit" value="{{ _('Deactivate this user') }}">
-          </form>
-          <form class="deactivate" method="post" action="{{ url('users.deactivate-spam') }}">
-            {% csrf_token %}
-            <input type="hidden" name="user_id" value="{{ profile.user.id }}">
-            <input type="submit" value="{{ _('Deactivate this user and mark all content as spam') }}">
-          </form>
-        {% else %}
-          <div id="deactivated-msg">{{ _('This user has been deactivated.') }}</div>
-        {% endif %}
-      {% endif %}
-
-      {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
-        <section class="contributions">
-          <h2 class="sumo-page-subheading mt-lg">{{ _('Contributions') }}</h2>
-          <ul>
-            {% if profile.involved_from %}
-              <li>
-                {{ _('Involved with Mozilla since {date}')|f(date=profile.involved_from.strftime('%b %Y')) }}
-              </li>
-            {% endif %}
-            {% if num_questions %}
-              <li>
-                <a rel="nofollow" href="{{ url('users.questions', profile.user.username) }}">
-                  {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
-                </a>
-              </li>
-            {% endif %}
-            {% if num_answers %}
-              <li>
-                <a rel="nofollow" href="{{ url('users.answers', profile.user.username) }}">
-                  {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
-                </a>
-              </li>
-            {% endif %}
-            {% if num_solutions %}
-              <li>
-                {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
-              </li>
-            {% endif %}
-            {% if num_documents %}
-              <li>
-                <a rel="nofollow" href="{{ url('users.documents', profile.user.username) }}">
-                  {{ ngettext('{0} document', '{0} documents', num_documents)|f(num_documents) }}
-                </a>
-              </li>
-            {% endif %}
-          </ul>
-        </section>
-      {% endif %}
-
-
-      {% if profile.bio %}
-        <section class="bio">
-          <h2 class="sumo-page-subheading mt-lg">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
-          {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
-        </section>
-      {% endif %}
-      {% if groups %}
-        <section class="groups">
-          <h2 class="sumo-page-subheading mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
-          <ul>
-            {% for g in groups %}
-              <li>{{ group_link(g) }}</li>
-            {% endfor %}
-          </ul>
-        </section>
-      {% endif %}
-      {% if awards %}
-        <section class="badges cf">
-          <h2 class="sumo-page-subheading mt-lg">{{ _('Badges') }}</h2>
-          {{ awards_list(awards) }}
-          <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
-        </section>
-      {% endif %}
-
-      <div class="pm-or-signout sumo-button-wrap extra-pad-top">
-        {% if profile.user == user %}
-          <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-            {% csrf_token %}
-          </form>
-          <a
-            class="sumo-button primary-button push-right"
-            data-type="submit"
-            data-form="sign-out"
-            href="#sign-out"
-            data-event-label="Sign Out">
-            {{ _('Sign Out') }}
+    {% if request.user.is_authenticated and request.user != profile.user and not profile.is_system_account %}
+      {% if user.has_perm('users.change_profile') %}
+        <div id="admin-actions">
+          <a class="edit" rel="nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
+            {{ _('Edit user profile') }}
           </a>
-        {% else %}
-          {{ private_message(profile.user) }}
+        </div>
+      {% endif %}
+      {% if not profile.is_system_account %}
+        {{ flag_form(url('users.flag', object_id=profile.pk), profile.id, False) }}
+      {% endif %}
+    {% endif %}
+    <h2 class="sumo-callout-heading user">{{ display_name(profile.user) }}
+      {% if profile.name %}
+        <span class="username">({{ profile.user.username }})</span>
+      {% endif %}
+    </h2>
+    <p>
+      {% if is_owner %}
+        {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+          Your privacy is important to us. Your username is always visible to the public -
+          if you would like to edit your username, {{ a_open }} click here. {{ a_close }}
+        {% endtrans %}
+      {% endif %}
+    </p>
+
+    <h2 class="sumo-page-subheading location">
+      {% if profile.city and profile.country %}
+        {{ _('{city}, {country}')|f(city=profile.city,
+                                    country=profile.get_country_display() ) }}
+      {% elif profile.city %}
+        {{ profile.city }}
+      {% elif profile.country %}
+        {{ profile.get_country_display() }}
+      {% endif %}
+    </h2>
+
+  <section class="avatar-group">
+    {% if not is_owner %}
+    <figure class="avatar-group--figure">
+      <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+    </figure>
+    {% endif %}
+    <div class="avatar-group--details">
+      {% if profile.public_email or profile.website or profile.twitter or
+            profile.community_mozilla_org or profile.people_mozilla_org or profile.matrix_handle %}
+          <ul class="avatar-group--details-list">
+            {% if profile.public_email and request.user.is_authenticated %}
+              <li class="avatar-group--details-item">
+                <label class="avatar-group--details-label">{{ _('Email') }}:</label>
+                {{ profile.user.email|public_email }}
+              </li>
+            {% endif %}
+            {% if profile.website %}
+              <li class="avatar-group--details-item">
+                <label class="avatar-group--details-label">{{ _('Website') }}:</label>
+                  <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
+              </li>
+            {% endif %}
+            {% if profile.twitter %}
+              <li class="avatar-group--details-item">
+                <label class="avatar-group--details-label">{{ _('Twitter') }}:</label>
+                <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
+              </li>
+            {% endif %}
+            {% if profile.community_mozilla_org %}
+              <li class="avatar-group--details-item">
+                <label class="avatar-group--details-label">{{ _('Community Portal') }}:</label>
+                <a rel="nofollow" href="https://community.mozilla.org/people/{{profile.community_mozilla_org}}/">{{ profile.community_mozilla_org }}</a>
+              </li>
+            {% endif %}
+            {% if profile.people_mozilla_org %}
+              <li class="avatar-group--details-item">
+                <label class="avatar-group--details-label">{{ _('People Directory') }}:</label>
+                <a rel="nofollow" href="https://people.mozilla.org/p/{{profile.people_mozilla_org}}/">{{ profile.people_mozilla_org }}</a>
+              </li>
+            {% endif %}
+            {% if profile.matrix_handle %}
+              <li class="avatar-group--details-item">
+                <label class="avatar-group--details-label">{{ _('Matrix') }}:</label>
+                {{ profile.matrix_handle }}
+              </li>
+            {% endif %}
+          </ul>
+      {% endif %}
+    </div>
+  </section>
+
+
+  {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') and not profile.is_system_account %}
+    {% if profile.user.is_active %}
+      <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+        <input type="submit" value="{{ _('Deactivate this user') }}">
+      </form>
+      <form class="deactivate" method="post" action="{{ url('users.deactivate-spam') }}">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+        <input type="submit" value="{{ _('Deactivate this user and mark all content as spam') }}">
+      </form>
+    {% else %}
+      <div id="deactivated-msg">{{ _('This user has been deactivated.') }}</div>
+    {% endif %}
+  {% endif %}
+
+  {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
+    <section class="contributions">
+      <h2 class="sumo-page-subheading mt-lg">{{ _('Contributions') }}</h2>
+      <ul>
+        {% if profile.involved_from %}
+          <li>
+            {{ _('Involved with Mozilla since {date}')|f(date=profile.involved_from.strftime('%b %Y')) }}
+          </li>
         {% endif %}
-      </div>
+        {% if num_questions %}
+          <li>
+            <a rel="nofollow" href="{{ url('users.questions', profile.user.username) }}">
+              {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
+            </a>
+          </li>
+        {% endif %}
+        {% if num_answers %}
+          <li>
+            <a rel="nofollow" href="{{ url('users.answers', profile.user.username) }}">
+              {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
+            </a>
+          </li>
+        {% endif %}
+        {% if num_solutions %}
+          <li>
+            {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+          </li>
+        {% endif %}
+        {% if num_documents %}
+          <li>
+            <a rel="nofollow" href="{{ url('users.documents', profile.user.username) }}">
+              {{ ngettext('{0} document', '{0} documents', num_documents)|f(num_documents) }}
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </section>
+  {% endif %}
+
+
+  {% if profile.bio %}
+    <section class="bio">
+      <h2 class="sumo-page-subheading mt-lg">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
+      {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
+    </section>
+  {% endif %}
+  {% if groups %}
+    <section class="groups">
+      <h2 class="sumo-page-subheading mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
+      <ul>
+        {% for g in groups %}
+          <li>{{ group_link(g) }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if awards %}
+    <section class="badges cf">
+      <h2 class="sumo-page-subheading mt-lg">{{ _('Badges') }}</h2>
+      {{ awards_list(awards) }}
+      <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
+    </section>
+  {% endif %}
+
+  {% if not profile.is_system_account %}
+    <div class="pm-or-signout sumo-button-wrap extra-pad-top">
+      {% if profile.user == user %}
+        <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+          {% csrf_token %}
+        </form>
+        <a
+          class="sumo-button primary-button push-right"
+          data-type="submit"
+          data-form="sign-out"
+          href="#sign-out"
+          data-event-label="Sign Out">
+          {{ _('Sign Out') }}
+        </a>
+      {% else %}
+        {{ private_message(profile.user) }}
+      {% endif %}
+    </div>
+  {% endif %}
 </article>
 {% endblock %}

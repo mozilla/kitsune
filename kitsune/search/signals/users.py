@@ -1,13 +1,10 @@
-from django.db.models.signals import post_save, post_delete, m2m_changed
-from django.contrib.auth.models import User, Group
-from kitsune.users.models import Profile
-from kitsune.search.es_utils import (
-    index_object,
-    delete_object,
-    remove_from_field,
-)
-from kitsune.search.decorators import search_receiver
+from django.contrib.auth.models import Group, User
+from django.db.models.signals import m2m_changed, post_delete, post_save
+
 from kitsune.products.models import Product
+from kitsune.search.decorators import search_receiver
+from kitsune.search.es_utils import delete_object, index_object, remove_from_field
+from kitsune.users.models import Profile
 
 
 @search_receiver(post_save, User)

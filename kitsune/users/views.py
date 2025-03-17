@@ -112,35 +112,41 @@ def profile(request, username):
     # We do this to deal with legacy usernames that have a '+' in them.
 
     username = username.replace(" ", "+")
+    ctx = {}
 
-    user = User.objects.filter(username=username).first()
+    if username == settings.SUMO_BOT_USERNAME:
+        user_profile = Profile.get_sumo_bot(user_instance=False)
+        ctx["profile"] = user_profile
 
-    if not user:
-        try:
-            user = get_object_or_404(User, id=username)
-        except ValueError:
+    else:
+        user = User.objects.filter(username=username).first()
+
+        if not user:
+            try:
+                user = get_object_or_404(User, id=username)
+            except ValueError:
+                raise Http404("No Profile matches the given query.")
+            return redirect(reverse("users.profile", args=(user.username,)))
+
+        user_profile = get_object_or_404(Profile, user__id=user.id)
+
+        if not (request.user.has_perm("users.deactivate_users") or user_profile.user.is_active):
             raise Http404("No Profile matches the given query.")
-        return redirect(reverse("users.profile", args=(user.username,)))
 
-    user_profile = get_object_or_404(Profile, user__id=user.id)
+        groups = user_profile.user.groups.all()
+        ctx.update(
+            {
+                "profile": user_profile,
+                "awards": Award.objects.filter(user=user_profile.user),
+                "groups": groups,
+                "num_questions": num_questions(user_profile.user),
+                "num_answers": num_answers(user_profile.user),
+                "num_solutions": num_solutions(user_profile.user),
+                "num_documents": user_documents(user_profile.user, viewer=request.user).count(),
+            }
+        )
 
-    if not (request.user.has_perm("users.deactivate_users") or user_profile.user.is_active):
-        raise Http404("No Profile matches the given query.")
-
-    groups = user_profile.user.groups.all()
-    return render(
-        request,
-        "users/profile.html",
-        {
-            "profile": user_profile,
-            "awards": Award.objects.filter(user=user_profile.user),
-            "groups": groups,
-            "num_questions": num_questions(user_profile.user),
-            "num_answers": num_answers(user_profile.user),
-            "num_solutions": num_solutions(user_profile.user),
-            "num_documents": user_documents(user_profile.user, viewer=request.user).count(),
-        },
-    )
+    return render(request, "users/profile.html", ctx)
 
 
 @login_required
@@ -158,6 +164,8 @@ def close_account(request):
 @permission_required("users.deactivate_users")
 def deactivate(request, mark_spam=False):
     user = get_object_or_404(User, id=request.POST["user_id"], is_active=True)
+    if user.profile.is_system_account:
+        raise Http404
     deactivate_user(user, request.user)
 
     if mark_spam:

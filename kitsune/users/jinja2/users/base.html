@@ -15,7 +15,7 @@
   {% if not profile and user.is_authenticated %}
     {% set profile = get_profile(user) %}
   {% endif %}
-  {% if profile %}
+  {% if profile and not profile.is_system_account %}
     {% if request.user == profile.user %}
       {{ personal_tabs(request.user, active) }}
     {% else %}
