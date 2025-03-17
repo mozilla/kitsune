@@ -74,6 +74,7 @@ from kitsune.wiki.models import (
     doc_html_cache_key,
 )
 from kitsune.wiki.parser import wiki_to_html
+from kitsune.wiki.signals import revision_approved
 from kitsune.wiki.tasks import (
     render_document_cascade,
     schedule_rebuild_kb,
@@ -814,8 +815,10 @@ def review_revision(request, document_slug, revision_id):
 
                 doc.save()
 
-            # Send notifications of approvedness and readiness:
             if rev.is_ready_for_localization or rev.is_approved:
+                # Send the "revision_approved" signal.
+                revision_approved.send(sender="kitsune.wiki.views.review_revision", revision=rev)
+                # Send notifications of approvedness and readiness:
                 ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
 
             # Send an email (not really a "notification" in the sense that
@@ -1703,6 +1706,9 @@ def _show_revision_warning(document, revision):
 def recent_revisions(request):
     request.GET = request.GET.copy()
     fragment = request.GET.pop("fragment", None)
+    if not fragment:
+        request.GET.setdefault("include_bots", "on")
+
     form = RevisionFilterForm(request.GET)
 
     # Validate the form to populate cleaned_data, even with invalid usernames.
@@ -1716,6 +1722,9 @@ def recent_revisions(request):
         # Only apply user filter if there are valid users
         if form.cleaned_data.get("users"):
             filters.update(creator__in=form.cleaned_data["users"])
+
+        if not form.cleaned_data.get("include_bots"):
+            filters.update(creator__profile__is_bot=False)
 
         start = form.cleaned_data.get("start")
         end = form.cleaned_data.get("end")
