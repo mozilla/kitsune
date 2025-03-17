@@ -3,7 +3,12 @@ from django.conf import settings
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.handlers import AAQChain
 from kitsune.questions.models import Answer, Question
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.questions.tests import (
+    AnswerFactory,
+    AnswerVoteFactory,
+    QuestionFactory,
+    QuestionVoteFactory,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
@@ -96,3 +101,25 @@ class TestAAQChain(TestCase):
         a.refresh_from_db()
         self.assertEqual(q.creator.username, self.sumo_bot.username)
         self.assertEqual(a.creator.username, self.sumo_bot.username)
+
+    def test_anonymize_votes(self):
+        """Test that question and answer votes are anonymized."""
+        av1 = AnswerVoteFactory()
+        qv1 = QuestionVoteFactory()
+        av2 = AnswerVoteFactory(creator=self.user)
+        qv2 = QuestionVoteFactory(creator=self.user)
+
+        self.chain.run(self.user)
+
+        for obj in (av1, av2, qv1, qv2):
+            obj.refresh_from_db()
+
+        self.assertIs(av2.creator, None)
+        self.assertTrue(av2.anonymous_id)
+        self.assertIs(qv2.creator, None)
+        self.assertTrue(qv2.anonymous_id)
+        # The rest should remain untouched.
+        self.assertTrue(av1.creator)
+        self.assertFalse(av1.anonymous_id)
+        self.assertTrue(qv1.creator)
+        self.assertFalse(qv1.anonymous_id)

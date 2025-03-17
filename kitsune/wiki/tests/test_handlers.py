@@ -4,7 +4,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.handlers import DocumentListener
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import DocumentFactory, HelpfulVoteFactory
 
 
 class TestDocumentListener(TestCase):
@@ -69,3 +69,19 @@ class TestDocumentListener(TestCase):
 
         self.assertTrue(doc3.contributors.filter(id=other_contributor.id).exists())
         self.assertEqual(doc3.contributors.count(), 1)
+
+    def test_anonymize_votes(self):
+        """Test that revision votes are anonymized."""
+        v1 = HelpfulVoteFactory(creator=self.user)
+        v2 = HelpfulVoteFactory(creator=UserFactory())
+
+        self.listener.on_user_deletion(self.user)
+
+        v1.refresh_from_db()
+        v2.refresh_from_db()
+
+        self.assertIs(v1.creator, None)
+        self.assertTrue(v1.anonymous_id)
+        # The rest should remain untouched.
+        self.assertTrue(v2.creator)
+        self.assertFalse(v2.anonymous_id)

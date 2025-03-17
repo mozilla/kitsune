@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 
 from django.contrib.auth.models import User
 
-from kitsune.questions.models import Answer, Question
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionVote
+from kitsune.sumo.anonymous import AnonymousIdentity
 from kitsune.sumo.handlers import AbstractChain, AccountHandler
 from kitsune.users.handlers import UserDeletionListener
 from kitsune.users.models import Profile
@@ -81,6 +82,10 @@ class AAQChain(AbstractChain[AccountHandler]):
         sumo_bot = Profile.get_sumo_bot()
         Question.objects.filter(creator=user).update(creator=sumo_bot)
         Answer.objects.filter(creator=user).update(creator=sumo_bot)
+        # Anonymize question and answer votes.
+        anonymous_id = AnonymousIdentity().anonymous_id
+        QuestionVote.objects.filter(creator=user).update(creator=None, anonymous_id=anonymous_id)
+        AnswerVote.objects.filter(creator=user).update(creator=None, anonymous_id=anonymous_id)
 
 
 class AAQListener(UserDeletionListener):
