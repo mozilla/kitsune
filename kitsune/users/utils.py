@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from kitsune.forums.handlers import PostListener, ThreadListener
 from kitsune.gallery.handlers import MediaListener
+from kitsune.kbadge.handlers import AwardListener, BadgeListener
 from kitsune.kbforums.handlers import PostListener as KBPostListener
 from kitsune.kbforums.handlers import ThreadListener as KBThreadListener
 from kitsune.messages.handlers import MessageListener
@@ -184,6 +185,8 @@ def delete_user_pipeline(user: User) -> None:
     publisher.register_listener(DocumentListener())
     publisher.register_listener(MessageListener())
     publisher.register_listener(MediaListener())
+    publisher.register_listener(AwardListener())
+    publisher.register_listener(BadgeListener())
 
     publisher.publish()
     user.delete()
