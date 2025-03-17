@@ -20,6 +20,14 @@ class DocumentListener(UserDeletionListener):
                 document.contributors.add(*content_group.user_set.all())
             document.contributors.remove(user)
 
+        non_approved_revisions = Revision.objects.filter(creator=user, is_approved=False)
+        # Delete documents with no approved revisions
+        Document.objects.filter(
+            current_revision__isnull=True, revisions__in=non_approved_revisions
+        ).delete()
+        # delete remaining non-approved revisions
+        non_approved_revisions.delete()
+
         sumo_bot = Profile.get_sumo_bot()
         Revision.objects.filter(creator=user).update(creator=sumo_bot)
         # Anonymize any revision votes.
