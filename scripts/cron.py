@@ -384,6 +384,27 @@ def job_update_l10n_contributor_metrics():
     call_command("update_l10n_contributor_metrics")
 
 
+# Every 4 hours, 15 minutes after the hour.
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="*/4",
+    minute="15",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+def job_update_product_details():
+    """
+    Re-process any account events created within the past 24 hours. Kicks off
+    a Celery task that does the following:
+        * Gathers all unprocessed account events created within the past 24 hours.
+        * Kicks off a separate Celery task to reprocess each one.
+    """
+    call_command("process_account_events 1")
+
+
 def run():
     try:
         schedule.start()
