@@ -4,7 +4,8 @@ from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.handlers import DocumentListener
-from kitsune.wiki.tests import DocumentFactory, HelpfulVoteFactory
+from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.tests import DocumentFactory, HelpfulVoteFactory, RevisionFactory
 
 
 class TestDocumentListener(TestCase):
@@ -85,3 +86,41 @@ class TestDocumentListener(TestCase):
         # The rest should remain untouched.
         self.assertTrue(v2.creator)
         self.assertFalse(v2.anonymous_id)
+
+    def test_non_approved_revision_handling(self):
+        """Test handling of non-approved revisions when a user is deleted."""
+        doc_to_delete = DocumentFactory(current_revision=None)
+        RevisionFactory(document=doc_to_delete, creator=self.user, is_approved=False)
+
+        doc_to_keep = DocumentFactory()
+        other_user = UserFactory()
+        approved_rev = RevisionFactory(document=doc_to_keep, creator=other_user, is_approved=True)
+        doc_to_keep.current_revision = approved_rev
+        doc_to_keep.save()
+        non_approved_rev = RevisionFactory(
+            document=doc_to_keep, creator=self.user, is_approved=False
+        )
+
+        doc_to_reassign = DocumentFactory()
+        approved_user_rev = RevisionFactory(
+            document=doc_to_reassign, creator=self.user, is_approved=True
+        )
+        doc_to_reassign.current_revision = approved_user_rev
+        doc_to_reassign.save()
+
+        self.listener.on_user_deletion(self.user)
+
+        self.assertFalse(Document.objects.filter(id=doc_to_delete.id).exists())
+
+        self.assertTrue(Document.objects.filter(id=doc_to_keep.id).exists())
+        doc_to_keep.refresh_from_db()
+
+        self.assertTrue(Revision.objects.filter(id=approved_rev.id).exists())
+
+        self.assertFalse(Revision.objects.filter(id=non_approved_rev.id).exists())
+
+        self.assertTrue(Document.objects.filter(id=doc_to_reassign.id).exists())
+        doc_to_reassign.refresh_from_db()
+        self.assertEqual(
+            doc_to_reassign.current_revision.creator.username, settings.SUMO_BOT_USERNAME
+        )
