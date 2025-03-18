@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 
+from kitsune.sumo.anonymous import AnonymousIdentity
 from kitsune.users.handlers import UserDeletionListener
 from kitsune.users.models import Profile
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document, HelpfulVote, Revision
 
 
 class DocumentListener(UserDeletionListener):
@@ -21,3 +22,7 @@ class DocumentListener(UserDeletionListener):
 
         sumo_bot = Profile.get_sumo_bot()
         Revision.objects.filter(creator=user).update(creator=sumo_bot)
+        # Anonymize any revision votes.
+        HelpfulVote.objects.filter(creator=user).update(
+            creator=None, anonymous_id=AnonymousIdentity().anonymous_id
+        )
