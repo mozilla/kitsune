@@ -135,9 +135,15 @@
 
         {% if question.is_spam %}
           <p class="is-spam">
-            {% trans marked_by=question.marked_as_spam_by, marked_time=question.marked_as_spam %}
-              Marked as spam by {{ marked_by }} at {{ marked_time }}
-            {% endtrans %}
+            {% if question.marked_as_spam_by %}
+              {% trans marked_by=question.marked_as_spam_by, marked_time=question.marked_as_spam %}
+                Marked as spam by {{ marked_by }} at {{ marked_time }}
+              {% endtrans %}
+            {% else %}
+              {% trans marked_time=question.marked_as_spam %}
+                Marked as spam at {{ marked_time }}
+              {% endtrans %}
+            {% endif %}
           </p>
         {% endif %}
       </div>
@@ -395,14 +401,14 @@
                 {% if can_tag %}
                   {% if tag_adding_error %}
                     <p class="tag-error-message">{{ tag_adding_error }}</p>
-                  {% endif %} 
+                  {% endif %}
                   <form id="tag-adder-form-{{ question.id }}">
                     <div class="field">
                       <select id="tag-select-{{ question.id }}" name="tags" multiple class="tag-select"
                               data-add-url="{{ url('questions.add_tag_async', question.id) }}"
                               data-remove-url="{{ url('questions.remove_tag_async', question.id) }}">
                         {% for tag in all_tags %}
-                          <option value="{{ tag.id }}" 
+                          <option value="{{ tag.id }}"
                                   data-url="{{ url('questions.list', product.slug if product else 'all')|urlparams(tagged=tag.slug) }}"
                                   {% if tag in question.tags.all() %}selected{% endif %}>
                             {{ tag.name }}
