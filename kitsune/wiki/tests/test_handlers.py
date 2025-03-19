@@ -167,3 +167,54 @@ class TestDocumentListener(TestCase):
         self.assertEqual(rev3.creator.username, contributor.username)
         self.assertEqual(rev3.reviewer.username, settings.SUMO_BOT_USERNAME)
         self.assertEqual(rev3.readied_for_localization_by.username, settings.SUMO_BOT_USERNAME)
+
+    def test_document_with_mixed_revisions(self):
+        """Test handling of documents with both approved and non-approved revisions."""
+        doc = DocumentFactory(current_revision=None)
+        initial_rev = RevisionFactory(document=doc, creator=self.user, is_approved=False)
+
+        approved_rev = RevisionFactory(document=doc, creator=self.user, is_approved=True)
+        doc.current_revision = approved_rev
+        doc.save()
+
+        self.listener.on_user_deletion(self.user)
+
+        doc.refresh_from_db()
+        self.assertTrue(Document.objects.filter(id=doc.id).exists())
+
+        self.assertFalse(Revision.objects.filter(id=initial_rev.id).exists())
+
+        approved_rev.refresh_from_db()
+        self.assertEqual(approved_rev.creator.username, settings.SUMO_BOT_USERNAME)
+
+    def test_document_revision_edge_cases(self):
+        """Test various edge cases with document revisions during user deletion."""
+        doc1 = DocumentFactory(current_revision=None)
+        rev1_doc1 = RevisionFactory(document=doc1, creator=self.user, is_approved=False)
+        rev2_doc1 = RevisionFactory(document=doc1, creator=UserFactory(), is_approved=False)
+
+        doc2 = DocumentFactory(current_revision=None)
+        rev1_doc2 = RevisionFactory(document=doc2, creator=self.user, is_approved=False)
+        rev2_doc2 = RevisionFactory(document=doc2, creator=UserFactory(), is_approved=True)
+        doc2.current_revision = rev2_doc2
+        doc2.save()
+
+        doc3 = DocumentFactory()
+        rev1_doc3 = RevisionFactory(document=doc3, creator=UserFactory(), is_approved=True)
+        doc3.current_revision = rev1_doc3
+        doc3.save()
+        rev2_doc3 = RevisionFactory(document=doc3, creator=self.user, is_approved=False)
+
+        self.listener.on_user_deletion(self.user)
+
+        self.assertFalse(Document.objects.filter(id=doc1.id).exists())
+        self.assertFalse(Revision.objects.filter(id=rev1_doc1.id).exists())
+        self.assertFalse(Revision.objects.filter(id=rev2_doc1.id).exists())
+
+        self.assertTrue(Document.objects.filter(id=doc2.id).exists())
+        self.assertFalse(Revision.objects.filter(id=rev1_doc2.id).exists())
+        self.assertTrue(Revision.objects.filter(id=rev2_doc2.id).exists())
+
+        self.assertTrue(Document.objects.filter(id=doc3.id).exists())
+        self.assertTrue(Revision.objects.filter(id=rev1_doc3.id).exists())
+        self.assertFalse(Revision.objects.filter(id=rev2_doc3.id).exists())

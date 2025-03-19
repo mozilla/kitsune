@@ -21,11 +21,13 @@ class DocumentListener(UserDeletionListener):
             document.contributors.remove(user)
 
         non_approved_revisions = Revision.objects.filter(creator=user, is_approved=False)
-        # Delete documents with no approved revisions
-        Document.objects.filter(
-            current_revision__isnull=True, revisions__in=non_approved_revisions
-        ).delete()
-        # delete remaining non-approved revisions
+
+        docs_to_delete = Document.objects.filter(
+            current_revision__isnull=True,
+            revisions__creator=user,
+        ).exclude(revisions__is_approved=True)
+
+        docs_to_delete.delete()
         non_approved_revisions.delete()
 
         sumo_bot = Profile.get_sumo_bot()
