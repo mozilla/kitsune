@@ -5,7 +5,12 @@ from kitsune.users.models import Profile
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.handlers import DocumentListener
 from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.tests import DocumentFactory, HelpfulVoteFactory, RevisionFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    HelpfulVoteFactory,
+    RevisionFactory,
+)
 
 
 class TestDocumentListener(TestCase):
@@ -124,3 +129,41 @@ class TestDocumentListener(TestCase):
         self.assertEqual(
             doc_to_reassign.current_revision.creator.username, settings.SUMO_BOT_USERNAME
         )
+
+    def test_revision_reviewer_replacement(self):
+        """
+        Test handling of a revision's "reviewer" and "readied_for_localization_by" fields
+        when the user they reference is deleted.
+        """
+        reviewer = UserFactory()
+        contributor = UserFactory()
+        rev1 = ApprovedRevisionFactory(
+            creator=contributor,
+            reviewer=reviewer,
+            readied_for_localization_by=reviewer,
+        )
+        rev2 = ApprovedRevisionFactory(
+            creator=self.user,
+            reviewer=reviewer,
+            readied_for_localization_by=reviewer,
+        )
+        rev3 = ApprovedRevisionFactory(
+            creator=contributor,
+            reviewer=self.user,
+            readied_for_localization_by=self.user,
+        )
+
+        self.listener.on_user_deletion(self.user)
+
+        for rev in (rev1, rev2, rev3):
+            rev.refresh_from_db()
+
+        self.assertEqual(rev1.creator.username, contributor.username)
+        self.assertEqual(rev1.reviewer.username, reviewer.username)
+        self.assertEqual(rev1.readied_for_localization_by.username, reviewer.username)
+        self.assertEqual(rev2.creator.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(rev2.reviewer.username, reviewer.username)
+        self.assertEqual(rev2.readied_for_localization_by.username, reviewer.username)
+        self.assertEqual(rev3.creator.username, contributor.username)
+        self.assertEqual(rev3.reviewer.username, settings.SUMO_BOT_USERNAME)
+        self.assertEqual(rev3.readied_for_localization_by.username, settings.SUMO_BOT_USERNAME)
