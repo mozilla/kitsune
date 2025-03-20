@@ -1,5 +1,13 @@
 {% from "includes/common_macros.html" import content_editor with context %}
 
+{% macro display_user(user) -%}
+  {% if user.profile.is_system_account %}
+    {{ _('deleted user') }}
+  {% else %}
+    {{ name_link(user) }}
+  {% endif %}
+{%- endmacro %}
+
 {% macro avatar_link(user=None, default_avatar=None) -%}
   {% if user %}
     <a rel="nofollow" href="{{ profile_url(user) }}">
@@ -12,11 +20,7 @@
 
 {% macro name_link(user=None, name=None) -%}
   {% if user -%}
-    {% if user.profile.is_system_account %}
-      {{ _('deleted user') }}
-    {% else %}
-      <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
-    {% endif %}
+    <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
   {%- else -%}
     {{ name if name else _('None') }}
   {%- endif %}
@@ -46,11 +50,7 @@
       {{ avatar_link(message.sender, default_avatar) }}
     </div>
     <div class="user from">
-    {% if message.sender.profile.is_system_account %}
-      {{ _('deleted user') }}
-    {% else %}
-      {{ name_link(message.sender) }} {{ datetimeformat(message.created) }}
-    {% endif %}
+      {{ display_user(message.sender) }} {{ datetimeformat(message.created) }}
     </div>
   </div>
 </section>
@@ -65,13 +65,9 @@
     {% set comma = joiner(', ') %}
     {% for user in message.to_users -%}
         {{ comma() }}
-      {% if user.profile.is_system_account %}
-        {{ _('deleted user') }}
-      {% else %}
-        {{ name_link(user) }}
-      {% endif %}
+        {{ display_user(user) }}
     {% else %}
-      {{ name_link(message.recipient) }}
+      {{ display_user(message.recipient) }}
     {% endfor %}
     </p>
   {% endif %}
