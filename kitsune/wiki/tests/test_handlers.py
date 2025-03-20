@@ -152,18 +152,56 @@ class TestDocumentListener(TestCase):
             reviewer=self.user,
             readied_for_localization_by=self.user,
         )
+        # Add a revision that has a reviewer but no readied_for_localization_by
+        rev4 = ApprovedRevisionFactory(
+            creator=contributor,
+            reviewer=self.user,
+        )
 
         self.listener.on_user_deletion(self.user)
 
-        for rev in (rev1, rev2, rev3):
+        for rev in (rev1, rev2, rev3, rev4):
             rev.refresh_from_db()
 
         self.assertEqual(rev1.creator.username, contributor.username)
         self.assertEqual(rev1.reviewer.username, reviewer.username)
         self.assertEqual(rev1.readied_for_localization_by.username, reviewer.username)
+
         self.assertEqual(rev2.creator.username, settings.SUMO_BOT_USERNAME)
         self.assertEqual(rev2.reviewer.username, reviewer.username)
         self.assertEqual(rev2.readied_for_localization_by.username, reviewer.username)
+
         self.assertEqual(rev3.creator.username, contributor.username)
         self.assertEqual(rev3.reviewer.username, settings.SUMO_BOT_USERNAME)
         self.assertEqual(rev3.readied_for_localization_by.username, settings.SUMO_BOT_USERNAME)
+
+        self.assertEqual(rev4.creator.username, contributor.username)
+        self.assertEqual(rev4.reviewer.username, settings.SUMO_BOT_USERNAME)
+        self.assertIsNone(rev4.readied_for_localization_by)
+
+    def test_mixed_revisions_user_deletion(self):
+        """
+        Test that when a user is deleted, only their unapproved revisions are deleted,
+        and documents with revisions from other users are preserved.
+        """
+        doc = DocumentFactory(current_revision=None)
+
+        other_user = UserFactory()
+        rev1 = RevisionFactory(document=doc, creator=other_user, is_approved=False)
+
+        rev2 = RevisionFactory(document=doc, creator=self.user, is_approved=False)
+
+        doc_id = doc.id
+        rev1_id = rev1.id
+        rev2_id = rev2.id
+
+        self.listener.on_user_deletion(self.user)
+
+        doc = Document.objects.filter(id=doc_id).first()
+        self.assertIsNotNone(doc, "Document should not be deleted")
+
+        rev1 = Revision.objects.filter(id=rev1_id).first()
+        self.assertIsNotNone(rev1, "Other user's revision should not be deleted")
+
+        rev2 = Revision.objects.filter(id=rev2_id).first()
+        self.assertIsNone(rev2, "Deleted user's revision should be deleted")
