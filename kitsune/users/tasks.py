@@ -3,22 +3,26 @@ from datetime import datetime, timedelta
 
 import waffle
 from celery import shared_task
+from django.db import transaction
 
 from kitsune.products.models import Product
-from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import AccountEvent
 from kitsune.users.utils import anonymize_user, delete_user_pipeline
 
 shared_task_with_retry = shared_task(
-    acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs=dict(max_retries=4)
+    acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs=dict(max_retries=3)
 )
 
 
 @shared_task_with_retry
-@skip_if_read_only_mode
+@transaction.atomic
 def process_event_delete_user(event_id):
-    event = AccountEvent.objects.get(id=event_id)
+    try:
+        event = AccountEvent.objects.get(id=event_id, status=AccountEvent.UNPROCESSED)
+    except AccountEvent.DoesNotExist:
+        return
+
     user = event.profile.user
     event.profile = None
     event.save(update_fields=["profile"])
@@ -33,9 +37,13 @@ def process_event_delete_user(event_id):
 
 
 @shared_task_with_retry
-@skip_if_read_only_mode
+@transaction.atomic
 def process_event_subscription_state_change(event_id):
-    event = AccountEvent.objects.get(id=event_id)
+    try:
+        event = AccountEvent.objects.get(id=event_id, status=AccountEvent.UNPROCESSED)
+    except AccountEvent.DoesNotExist:
+        return
+
     body = json.loads(event.body)
 
     last_event = AccountEvent.objects.filter(
@@ -60,9 +68,13 @@ def process_event_subscription_state_change(event_id):
 
 
 @shared_task_with_retry
-@skip_if_read_only_mode
+@transaction.atomic
 def process_event_password_change(event_id):
-    event = AccountEvent.objects.get(id=event_id)
+    try:
+        event = AccountEvent.objects.get(id=event_id, status=AccountEvent.UNPROCESSED)
+    except AccountEvent.DoesNotExist:
+        return
+
     body = json.loads(event.body)
 
     change_time = datetime.utcfromtimestamp(body["changeTime"] / 1000.0)
@@ -79,9 +91,13 @@ def process_event_password_change(event_id):
 
 
 @shared_task_with_retry
-@skip_if_read_only_mode
+@transaction.atomic
 def process_event_profile_change(event_id):
-    event = AccountEvent.objects.get(id=event_id)
+    try:
+        event = AccountEvent.objects.get(id=event_id, status=AccountEvent.UNPROCESSED)
+    except AccountEvent.DoesNotExist:
+        return
+
     refresh_token = event.profile.fxa_refresh_token
 
     fxa = FXAAuthBackend()
