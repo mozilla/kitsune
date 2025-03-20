@@ -1,4 +1,5 @@
 from kitsune.kbforums.handlers import PostListener, ThreadListener
+from kitsune.kbforums.models import Thread
 from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
@@ -13,9 +14,9 @@ class TestThreadListener(TestCase):
 
     def test_multiple_threads_reassignment(self):
         """Test that multiple threads are reassigned correctly."""
-        thread1 = ThreadFactory(creator=self.user)
-        thread2 = ThreadFactory(creator=self.user)
-        thread3 = ThreadFactory(creator=self.user)
+        thread1 = ThreadFactory(creator=self.user, replies=1)
+        thread2 = ThreadFactory(creator=self.user, replies=1)
+        thread3 = ThreadFactory(creator=self.user, replies=1)
 
         self.listener.on_user_deletion(self.user)
 
@@ -26,9 +27,7 @@ class TestThreadListener(TestCase):
     def test_other_users_threads_unaffected(self):
         """Test that other users' threads are not affected."""
         other_user = UserFactory()
-
-        other_user = UserFactory()
-        thread1 = ThreadFactory(creator=self.user)
+        thread1 = ThreadFactory(creator=self.user, replies=1)
         thread2 = ThreadFactory(creator=other_user)
 
         self.listener.on_user_deletion(self.user)
@@ -37,6 +36,19 @@ class TestThreadListener(TestCase):
         thread2.refresh_from_db()
         self.assertEqual(thread1.creator.username, self.sumo_bot.username)
         self.assertEqual(thread2.creator, other_user)
+
+    def test_empty_thread_deletion(self):
+        """Test that threads with no replies are deleted."""
+        empty_thread = ThreadFactory(creator=self.user, replies=0)
+        thread_with_replies = ThreadFactory(creator=self.user, replies=1)
+
+        self.listener.on_user_deletion(self.user)
+
+        with self.assertRaises(Thread.DoesNotExist):
+            empty_thread.refresh_from_db()
+
+        thread_with_replies.refresh_from_db()
+        self.assertEqual(thread_with_replies.creator.username, self.sumo_bot.username)
 
 
 class TestPostListener(TestCase):
