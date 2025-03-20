@@ -384,6 +384,21 @@ def job_update_l10n_contributor_metrics():
     call_command("update_l10n_contributor_metrics")
 
 
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="02",
+    minute="00",
+    day_of_week=0,
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+def job_cleanup_old_account_events():
+    call_command("cleanup_old_account_events")
+
+
 def run():
     try:
         schedule.start()
