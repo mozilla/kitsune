@@ -1,5 +1,5 @@
 {% extends "messages/base.html" %}
-{% from "messages/includes/macros.html" import avatar_link, name_link %}
+{% from "messages/includes/macros.html" import avatar_link, display_user %}
 {% set title = _('Sent Messages') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')),
                  (None, title)] %}
@@ -38,9 +38,7 @@
                 <div class="email-cell sent">{{ datetimeformat(message.created) }}</div>
                 <div class="email-cell to">
                 {% for user in message.to.all()[:1] -%}
-                    <a rel="nofollow" href="{{ profile_url(user) }}">
-                        {{ user.profile.display_name }}
-                    </a>
+                    {{ display_user(user) }}
                     {%- if message.recipients_count > 1 -%}, ...{% endif %}
                 {%- endfor %}
                 </div>

@@ -1,5 +1,5 @@
 {% extends "messages/base.html" %}
-{% from "messages/includes/macros.html" import avatar_link, name_link %}
+{% from "messages/includes/macros.html" import avatar_link, display_user %}
 {% set title = _('Inbox') %}
 {% set crumbs = [(url('messages.inbox'), _('Messages')),
                  (None, title)] %}
@@ -37,7 +37,7 @@
                     {{ avatar_link(message.sender, default_avatar) }}
                 </div>
                 <div class="email-cell from">
-                    {{ name_link(message.sender) }}
+                    {{ display_user(message.sender) }}
                 </div>
                 <div class="email-cell date">
                     {{ datetimeformat(message.created) }}
