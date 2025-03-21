@@ -63,7 +63,7 @@
   {% if message.recipients_count > 0 %}
     <p><strong>{{ _('To') }}:</strong>
     {% set comma = joiner(', ') %}
-    {% for user in message.to_users -%}
+    {% for user in message.to.all() -%}
         {{ comma() }}
         {{ display_user(user) }}
     {% else %}
