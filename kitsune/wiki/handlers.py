@@ -43,6 +43,6 @@ class DocumentListener(UserDeletionListener):
 
         Document.objects.filter(
             revisions__creator=user,
-            revisions__is_approved=False,
+            current_revision__isnull=True,
         ).exclude(revisions__creator__in=User.objects.exclude(id=user.id)).delete()
         Revision.objects.filter(creator=user, is_approved=False).delete()
