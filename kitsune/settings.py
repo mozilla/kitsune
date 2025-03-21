@@ -962,7 +962,6 @@ GA_DEBUG_MODE = config("GA_DEBUG_MODE", default=False, cast=bool)
 GA_CONSOLE_LOGGING = config("GA_CONSOLE_LOGGING", default=False, cast=bool)
 
 REDIS_BACKENDS = {
-    # TODO: Make sure that db number is respected
     "default": config("REDIS_DEFAULT_URL"),
     "helpfulvotes": config("REDIS_HELPFULVOTES_URL"),
 }
