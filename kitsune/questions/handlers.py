@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from django.contrib.auth.models import User
+from django.utils.translation import gettext as _
 
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionVote
 from kitsune.sumo.anonymous import AnonymousIdentity
@@ -78,11 +79,28 @@ class AAQChain(AbstractChain[AccountHandler]):
         for handler in self.handlers:
             handler.handle_account(data)
 
-        # Re-assign remaining questions and answers to SumoBot.
         sumo_bot = Profile.get_sumo_bot()
-        Question.objects.filter(creator=user).update(creator=sumo_bot)
+
+        questions_to_update = list(Question.objects.filter(creator=user))
+
+        Question.objects.filter(creator=user).update(creator=sumo_bot, is_locked=True)
+        Answer.objects.bulk_create(
+            [
+                Answer(
+                    creator=sumo_bot,
+                    content=_(
+                        "This question has been locked because the original author has "
+                        "deleted their account. While you can no longer post new replies, "
+                        "the existing content remains available for reference."
+                    ),
+                    question=question,
+                )
+                for question in questions_to_update
+            ]
+        )
+
         Answer.objects.filter(creator=user).update(creator=sumo_bot)
-        # Anonymize question and answer votes.
+
         anonymous_id = AnonymousIdentity().anonymous_id
         QuestionVote.objects.filter(creator=user).update(creator=None, anonymous_id=anonymous_id)
         AnswerVote.objects.filter(creator=user).update(creator=None, anonymous_id=anonymous_id)
