@@ -81,7 +81,7 @@ class AAQChain(AbstractChain[AccountHandler]):
 
         sumo_bot = Profile.get_sumo_bot()
 
-        questions_to_update = list(Question.objects.filter(creator=user))
+        questions_to_update = list(Question.objects.filter(creator=user, is_locked=False))
 
         Question.objects.filter(creator=user).update(creator=sumo_bot, is_locked=True)
         Answer.objects.bulk_create(
