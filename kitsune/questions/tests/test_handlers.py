@@ -151,3 +151,27 @@ class TestAAQChain(TestCase):
         self.assertIn(
             "locked because the original author has deleted their account", last_answer.content
         )
+
+    def test_question_notification_when_already_locked(self):
+        """
+        Test that another explanatory answer is not added to a question that was
+        already locked prior to its creator being deleted.
+        """
+        question = QuestionFactory(creator=self.user, is_locked=True)
+        AnswerFactory(question=question)
+
+        self.chain.run(self.user)
+
+        # Refresh from DB
+        question.refresh_from_db()
+
+        # Check question is reassigned and locked
+        self.assertEqual(question.creator.username, self.sumo_bot.username)
+        self.assertTrue(question.is_locked)
+
+        # Verify the explanatory answer was NOT added
+        last_answer = question.answers.order_by("-created")[0]
+        self.assertNotEqual(last_answer.creator.username, self.sumo_bot.username)
+        self.assertNotIn(
+            "locked because the original author has deleted their account", last_answer.content
+        )
