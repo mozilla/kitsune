@@ -75,6 +75,8 @@ class TestOrphanedQuestionAAQHandler(TestCase):
         orphaned_q = QuestionFactory(creator=self.user)
         answered_q = QuestionFactory(creator=self.user)
         AnswerFactory(question=answered_q)
+        voted_q = QuestionFactory(creator=self.user)
+        QuestionVoteFactory(question=voted_q)
 
         self.chain.run(self.user)
 
@@ -82,6 +84,9 @@ class TestOrphanedQuestionAAQHandler(TestCase):
 
         answered_q.refresh_from_db()
         self.assertEqual(answered_q.creator.username, settings.SUMO_BOT_USERNAME)
+
+        voted_q.refresh_from_db()
+        self.assertEqual(voted_q.creator.username, settings.SUMO_BOT_USERNAME)
 
 
 class TestAAQChain(TestCase):
@@ -132,22 +137,25 @@ class TestAAQChain(TestCase):
         3. An explanatory answer is added
         """
         # Create a question with an answer from another user
-        question = QuestionFactory(creator=self.user)
-        other_user = UserFactory()
-        AnswerFactory(creator=other_user, question=question)
+        answered_q = QuestionFactory(creator=self.user)
+        AnswerFactory(question=answered_q)
+        voted_q = QuestionFactory(creator=self.user)
+        QuestionVoteFactory(question=voted_q)
 
         self.chain.run(self.user)
 
-        # Refresh from DB
-        question.refresh_from_db()
+        for q in (answered_q, voted_q):
 
-        # Check question is reassigned and locked
-        self.assertEqual(question.creator.username, self.sumo_bot.username)
-        self.assertTrue(question.is_locked)
+            # Refresh from DB
+            q.refresh_from_db()
 
-        # Verify the explanatory answer was added
-        last_answer = question.answers.order_by("-created")[0]
-        self.assertEqual(last_answer.creator.username, self.sumo_bot.username)
-        self.assertIn(
-            "locked because the original author has deleted their account", last_answer.content
-        )
+            # Check question is reassigned and locked
+            self.assertEqual(q.creator.username, self.sumo_bot.username)
+            self.assertTrue(q.is_locked)
+
+            # Verify the explanatory answer was added
+            last_answer = q.answers.order_by("-created")[0]
+            self.assertEqual(last_answer.creator.username, self.sumo_bot.username)
+            self.assertIn(
+                "locked because the original author has deleted their account", last_answer.content
+            )
