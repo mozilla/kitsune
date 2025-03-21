@@ -9,15 +9,12 @@ class ThreadListener(UserDeletionListener):
     """Handles thread cleanup when a user is deleted."""
 
     def on_user_deletion(self, user: User) -> None:
-
-        sumo_bot = Profile.get_sumo_bot()
-        Thread.objects.filter(creator=user).update(creator=sumo_bot)
+        Thread.objects.filter(creator=user, replies__gt=0).update(creator=Profile.get_sumo_bot())
+        Thread.objects.filter(creator=user).delete()
 
 
 class PostListener(UserDeletionListener):
     """Handles post cleanup when a user is deleted."""
 
     def on_user_deletion(self, user: User) -> None:
-
-        sumo_bot = Profile.get_sumo_bot()
-        Post.objects.filter(creator=user).update(creator=sumo_bot)
+        Post.objects.filter(creator=user).update(creator=Profile.get_sumo_bot())
