@@ -38,7 +38,7 @@ class OrphanedQuestionAAQHandler(AccountHandler):
         """Handler to delete all questions without answers."""
         questions = data["questions"]
 
-        questions.filter(num_answers=0).delete()
+        questions.filter(num_answers=0, votes__isnull=True).delete()
 
 
 class ResetTakenByHandler(AccountHandler):
