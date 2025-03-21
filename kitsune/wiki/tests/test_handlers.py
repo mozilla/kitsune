@@ -205,3 +205,68 @@ class TestDocumentListener(TestCase):
 
         rev2 = Revision.objects.filter(id=rev2_id).first()
         self.assertIsNone(rev2, "Deleted user's revision should be deleted")
+
+    def test_revision_based_on_deletion(self):
+        """
+        Test the handling of a revision's "based_on" field when it references a revision
+        created by a user that is deleted.
+        """
+        doc = DocumentFactory()
+        rev1 = RevisionFactory(document=doc, creator=self.user)
+        rev2 = RevisionFactory(document=doc, based_on=rev1)
+        rev3 = ApprovedRevisionFactory(document=doc, based_on=rev2)
+
+        doc_id = doc.id
+        rev1_id = rev1.id
+        rev2_id = rev2.id
+        rev3_id = rev3.id
+
+        self.listener.on_user_deletion(self.user)
+
+        self.assertTrue(
+            Document.objects.filter(id=doc_id).exists(), "Document should not be deleted"
+        )
+        self.assertFalse(
+            Revision.objects.filter(id=rev1_id).exists(),
+            "Deleted user's unapproved revision should be deleted",
+        )
+        rev2 = Revision.objects.filter(id=rev2_id).first()
+        self.assertIsNotNone(rev2, "Other user's revision should not be deleted")
+        self.assertIsNone(rev2.based_on, "Other user's revision's based_on should now be None")
+        rev3 = Revision.objects.filter(id=rev3_id).first()
+        self.assertIsNotNone(rev3, "The approved revision should not be deleted")
+        self.assertEqual(rev3.based_on, rev2)
+
+        it_doc = DocumentFactory(locale="it", parent=doc)
+        it_rev = RevisionFactory(document=it_doc, based_on=rev2)
+
+        it_doc_id = it_doc.id
+        it_rev_id = it_rev.id
+
+        self.listener.on_user_deletion(rev2.creator)
+
+        # Ensure that the default document wasn't deleted.
+        self.assertTrue(
+            Document.objects.filter(id=doc_id).exists(), "Document should not be deleted"
+        )
+
+        # The deleted user's un-approved revision should not have been deleted,
+        # but instead re-assigned to the sumo bot, because it's the based-on
+        # value of a localized revision.
+        rev2 = Revision.objects.filter(id=rev2_id).first()
+        self.assertIsNotNone(rev2, "Deleted user's revision should not be deleted")
+        self.assertEqual(rev2.creator.username, settings.SUMO_BOT_USERNAME)
+
+        # Ensure that the third revision, whose based-on value is the revision
+        # whose creator was deleted, was not affected at all.
+        rev3 = Revision.objects.filter(id=rev3_id).first()
+        self.assertIsNotNone(rev3, "The approved revision should not be deleted")
+        self.assertEqual(rev3.based_on, rev2)
+
+        self.assertTrue(
+            Document.objects.filter(id=it_doc_id).exists(),
+            "The Italian document should not be deleted",
+        )
+        it_rev = Revision.objects.filter(id=it_rev_id).first()
+        self.assertIsNotNone(it_rev, "The Italian revision should not be deleted")
+        self.assertEqual(it_rev.based_on, rev2)

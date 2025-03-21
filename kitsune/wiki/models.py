@@ -836,7 +836,7 @@ class Revision(ModelBase, AbstractRevision):
     # Edit button was hit to begin creating this revision. If there was none,
     # this is simply the latest of the default locale's revs as of that time.
     # Used to determine whether localizations are out of date.
-    based_on = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
+    based_on = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
@@ -965,7 +965,6 @@ class Revision(ModelBase, AbstractRevision):
             except IndexError:
                 return None
 
-        Revision.objects.filter(based_on=self).update(based_on=None)
         document = self.document
 
         # If the current_revision is being deleted, try to update it to the

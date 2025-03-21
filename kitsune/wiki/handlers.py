@@ -30,6 +30,24 @@ class DocumentListener(UserDeletionListener):
         Revision.objects.filter(readied_for_localization_by=user).update(
             readied_for_localization_by=sumo_bot
         )
+        # The based-on value of localized revisions is essential, so if the based-on revision
+        # is un-approved and created by the user to be deleted, we should ensure that it is
+        # retained by re-assigning it to the "sumo_bot". It's very rare that the based-on
+        # revision of a localized revision is un-approved (less than 1%), but it is possible.
+        # The based-on value of non-localized revisions is not nearly as important, so in those
+        # cases, we can simply let the cascade behavior set the based-on value to NULL.
+        Revision.objects.filter(
+            id__in=(
+                Revision.objects.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+                .filter(
+                    based_on__creator=user,
+                    based_on__is_approved=False,
+                    # This locale check ensures only legitimate based-on references.
+                    based_on__document__locale=settings.WIKI_DEFAULT_LANGUAGE,
+                )
+                .values_list("based_on__id", flat=True)
+            )
+        ).update(creator=sumo_bot)
 
         documents = Document.objects.filter(contributors=user)
         for document in documents:
