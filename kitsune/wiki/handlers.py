@@ -11,30 +11,38 @@ class DocumentListener(UserDeletionListener):
     """Listener for document-related tasks."""
 
     def on_user_deletion(self, user: User) -> None:
-        """Handle the deletion of a user."""
+        """Handle the deletion of a user.
+
+        - Replace the user as a document contributor with content group members
+          if they were the only contributor.
+        - Anonymize the user's revision votes.
+        - Delete the user's non-approved revisions.
+        - Replace the user as creator/reviewer of approved revisions with the SUMO bot.
+        """
+        sumo_bot = Profile.get_sumo_bot()
+        content_group = Group.objects.get(name=settings.SUMO_CONTENT_GROUP)
+
+        # Handle approved revisions first to avoid cascade deletion issues
+        Revision.objects.filter(creator=user, is_approved=True).update(creator=sumo_bot)
+        # Update reviewer field
+        Revision.objects.filter(reviewer=user).update(reviewer=sumo_bot)
+        # Update readied_for_localization_by field separately
+        Revision.objects.filter(readied_for_localization_by=user).update(
+            readied_for_localization_by=sumo_bot
+        )
 
         documents = Document.objects.filter(contributors=user)
-        content_group = Group.objects.get(name=settings.SUMO_CONTENT_GROUP)
         for document in documents:
             if not document.contributors.exclude(id=user.id).exists():
                 document.contributors.add(*content_group.user_set.all())
             document.contributors.remove(user)
 
-        non_approved_revisions = Revision.objects.filter(creator=user, is_approved=False)
-        # Delete documents with no approved revisions
-        Document.objects.filter(
-            current_revision__isnull=True, revisions__in=non_approved_revisions
-        ).delete()
-        # delete remaining non-approved revisions
-        non_approved_revisions.delete()
-
-        sumo_bot = Profile.get_sumo_bot()
-        Revision.objects.filter(creator=user).update(creator=sumo_bot)
-        Revision.objects.filter(reviewer=user).update(reviewer=sumo_bot)
-        Revision.objects.filter(readied_for_localization_by=user).update(
-            readied_for_localization_by=sumo_bot
-        )
-        # Anonymize any revision votes.
         HelpfulVote.objects.filter(creator=user).update(
             creator=None, anonymous_id=AnonymousIdentity().anonymous_id
         )
+
+        Document.objects.filter(
+            revisions__creator=user,
+            current_revision__isnull=True,
+        ).exclude(revisions__creator__in=User.objects.exclude(id=user.id)).delete()
+        Revision.objects.filter(creator=user, is_approved=False).delete()
