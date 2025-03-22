@@ -311,8 +311,7 @@ function initReplyToAnswer() {
     var contentId = $(this).data('content-id'),
       $content = $('#' + contentId),
       text = $content.find('.content-raw').text(),
-      user = $content.find('.display-name').text(),
-      reply_text = `''<p>${user} [[#${contentId}|${gettext('said')}]]</p>''\n<blockquote>${text}\n</blockquote>\n\n`,
+      reply_text = `''<p>Another post [[#${contentId}|${gettext('said')}]]</p>''\n<blockquote>${text}\n</blockquote>\n\n`,
       $textarea = $('#id_content'),
       oldtext = $textarea.val();
 
