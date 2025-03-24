@@ -257,6 +257,31 @@ class Profile(ModelBase):
         return self.user.settings
 
     @property
+    def has_content(self):
+        """Returns True if the user has created any content on the site."""
+        content_types = [
+            self.user.answer_votes,
+            self.user.answers,
+            self.user.award_creator,
+            self.user.badge_set,
+            self.user.created_revisions,
+            self.user.gallery_images,
+            self.user.gallery_videos,
+            self.user.inboxmessage_set,
+            self.user.outbox,
+            self.user.poll_votes,
+            self.user.post_set,
+            self.user.question_votes,
+            self.user.questions,
+            self.user.readied_for_l10n_revisions,
+            self.user.reviewed_revisions,
+            self.user.thread_set,
+            self.user.wiki_post_set,
+            self.user.wiki_thread_set,
+        ]
+        return any(queryset.exists() for queryset in content_types)
+
+    @property
     def answer_helpfulness(self):
         # Avoid circular import
         from kitsune.questions.models import AnswerVote
