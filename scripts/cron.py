@@ -396,6 +396,7 @@ def job_update_l10n_contributor_metrics():
     coalesce=True,
     skip=settings.READ_ONLY,
 )
+@babis.decorator(ping_after=settings.DMS_CLEANUP_OLD_ACCOUNT_EVENTS)
 def job_cleanup_old_account_events():
     call_command("cleanup_old_account_events")
 
