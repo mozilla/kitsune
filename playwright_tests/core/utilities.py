@@ -197,7 +197,7 @@ class Utilities:
             if response.status >= 400:
                 self.refresh_page()
 
-    def upload_file(self, element: str, path_to_file: str):
+    def upload_file(self, element: Locator, path_to_file: str):
         """This helper function uploads the test-image.png file to a given file element chooser.
 
         Args:
@@ -205,7 +205,7 @@ class Utilities:
             path_to_file (str): The path to the file to be uploaded.
         """
         with self.page.expect_file_chooser() as file_chooser:
-            self.page.locator(element).click()
+            element.click()
         file_chooser_value = file_chooser.value
         file_chooser_value.set_files(os.path.abspath(path_to_file))
 
@@ -313,8 +313,7 @@ class Utilities:
                 if FxAPageMessages.AUTH_PAGE_URL in self.get_page_url():
                     break
                 else:
-                    self.page.wait_for_selector(top_navbar.TOP_NAVBAR_SIGNIN_SIGNUP_LOCATORS
-                                                ["signin_signup_button"], timeout=3000)
+                    top_navbar._wait_for_locator(top_navbar.signin_signup_button)
                 break
             except PlaywrightTimeoutError:
                 print("Cookies were not successfully deleted. Retrying...")

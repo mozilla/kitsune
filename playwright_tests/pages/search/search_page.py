@@ -3,50 +3,53 @@ from playwright.sync_api import Page, Locator
 
 
 class SearchPage(BasePage):
-    # Locators belonging to the searchbar.
-    SEARCHBAR_LOCATORS = {
-        "searchbar_homepage": "//form[@id='support-search-masthead']/input[@id='search-q']",
-        "searchbar_aaq": "//form[@id='question-search-masthead']/input[@id='search-q']",
-        "searchbar_sidebar": "//form[@id='support-search-sidebar']/input[@id='search-q']",
-        "hidden_searchbar": "//form[@id='hidden-search']/input[@id='search-q']",
-        "searchbar_search_button": "//form[@id='support-search-masthead']/button",
-        "search_results_header": "//div[@class='home-search-section--content']/h2",
-        "popular_searches": "//p[@class='popular-searches']/a",
-        "search_results_section": "//main[@id='search-results-list']"
-    }
-
-    # Locators belonging to the search results filter
-    SEARCH_RESULTS_FILTER_LOCATORS = {
-        "view_all_filter": "//span[text()='View All']/..[0]",
-        "help_articles_only_filter": "//span[text()='Help Articles Only']/..[0]",
-        "community_discussions_only_filter": "//span[text()='Community Discussion Only']/..[0]"
-    }
-    # Locators belonging to the search results
-
-    SEARCH_RESULTS_LOCATORS = {
-        "search_results_titles": "//section[@class='topic-list content-box']//a[@class='title']",
-        "search_results_articles_summary": "//div[@class='topic-article--text']/p",
-        "search_results_content": "//section[@class='topic-list content-box']",
-        "all_bolded_article_content": "//h3[@class='sumo-card-heading']/a/../following-sibling::"
-                                      "p/strong"
-    }
-    # Locators belonging to the side navbar
-    SEARCH_RESULTS_SIDE_NAV_LOCATORS = {
-        "search_results_side_nav_header": "//h3[@class='sidebar-subheading']",
-        "search_results_side_nav_selected_item": "//ul[@id='product-filter']//"
-                                                 "li[@class='selected']/a",
-        "search_results_side_nav_elements": "//ul[@id='product-filter']//a"
-    }
-    # General page locators
-    GENERAL_LOCATORS = {
-        "page_header": "//h1[@class='sumo-page-heading-xl']"
-    }
-
     def __init__(self, page: Page):
         super().__init__(page)
 
+        # Locators belonging to the searchbar.
+        self.searchbar_homepage = page.locator("form#support-search-masthead input#search-q")
+        self.searchbar_aaq = page.locator("form#question-search-masthead input#search-q")
+        self.searchbar_sidebar = page.locator("form#support-search-sidebar input#search-q")
+        self.hidden_searchbar = page.locator("form#hidden-search input#search-q")
+        self.searchbar_search_button = page.locator("form#support-search-masthead button")
+        self.search_results_header = page.locator("div[class='home-search-section--content'] h2")
+        self.popular_searches = page.locator("div[class='popular-searches'] a")
+        self.popular_search = lambda option: page.locator(
+            "p[class='popular-searches']").get_by_role("link", name=option, exact=True)
+        self.search_results_section = page.locator("main#search-results-list")
+
+        # Locators belonging to the search results filter
+        self.view_all_filter = page.locator("//span[text()='View All']/..[0]")
+        self.help_articles_only_filter = page.locator("//span[text()='Help Articles Only']/..[0]")
+        self.community_discussions_only_filter = page.locator(
+            "//span[text()='Community Discussion Only']/..[0]")
+
+        # Locators belonging to the search results
+        self.search_results_titles = page.locator(
+            "section[class='topic-list content-box'] a[class='title']")
+        self.search_results_articles_summary = page.locator("div[class='topic-article--text'] p")
+        self.search_results_content = page.locator("section[class='topic-list content-box']")
+        self.all_bolded_article_content = page.locator(
+            "//h3[@class='sumo-card-heading']/a/../following-sibling::p/strong")
+        self.article_search_summary = lambda article_title: page.locator(
+            f"//h3[@class='sumo-card-heading']/a[normalize-space("
+            f"text())='{article_title}']/../../p")
+        self.article = lambda article_title: page.locator(
+            "h3[class='sumo-card-heading']").get_by_role("link", name=article_title, exact=True)
+
+        # Locators belonging to the side navbar
+        self.search_results_side_nav_header = page.locator("h3[class='sidebar-subheading']")
+        self.search_results_side_nav_selected_item = page.locator(
+            "ul#product-filter li[class='selected'] a")
+        self.search_results_side_nav_elements = page.locator("ul#product-filter a")
+        self.search_results_side_nav_element = lambda product_name: page.locator(
+            "ul#product-filter").get_by_role("link", name=product_name, exact=True)
+
+        # General page locators
+        self.page_header = page.locator("h1[class='sumo-page-heading-xl']")
+
     def _wait_for_visibility_of_search_results_section(self):
-        self._wait_for_selector(self.SEARCHBAR_LOCATORS["search_results_section"])
+        self._wait_for_locator(self.search_results_section)
 
     """
         Actions against the search results
@@ -57,7 +60,7 @@ class SearchPage(BasePage):
         Args:
             popular_search_option (str): The popular search option to click on
         """
-        self._click(f"//p[@class='popular-searches']/a[text()='{popular_search_option}']")
+        self._click(self.popular_search(popular_search_option))
 
     def get_search_result_summary_text_of_a_particular_article(self, article_title) -> str:
         """Get the search result summary text of a particular article
@@ -66,9 +69,7 @@ class SearchPage(BasePage):
             article_title (str): The title of the article
         """
         self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_element(f"//h3[@class='sumo-card-heading']/"
-                                         f"a[normalize-space(text())='{article_title}']/../"
-                                         f"../p")
+        return self._get_text_of_element(self.article_search_summary(article_title))
 
     def is_a_particular_article_visible(self, article_title: str) -> bool:
         """Check if a particular article is visible
@@ -77,8 +78,7 @@ class SearchPage(BasePage):
             article_title (str): The title of the article
         """
         self._wait_for_visibility_of_search_results_section()
-        return self._is_element_visible(f"//h3[@class='sumo-card-heading']/"
-                                        f"a[normalize-space(text())='{article_title}']")
+        return self._is_element_visible(self.article(article_title))
 
     def click_on_a_particular_article(self, article_title: str):
         """Click on a particular article
@@ -87,14 +87,12 @@ class SearchPage(BasePage):
             article_title (str): The title of the article
         """
         self._wait_for_visibility_of_search_results_section()
-        self._click(f"//h3[@class='sumo-card-heading']/"
-                    f"a[normalize-space(text())='{article_title}']")
+        self._click(self.article(article_title))
 
     def get_all_bolded_content(self) -> list[str]:
         """Get all the bolded content of the search results"""
         self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_elements(self.SEARCH_RESULTS_LOCATORS
-                                          ["all_bolded_article_content"])
+        return self._get_text_of_elements(self.all_bolded_article_content)
 
     def get_all_search_results_article_bolded_content(self, article_title: str) -> list[str]:
         """Get all the bolded content of a particular article
@@ -118,18 +116,17 @@ class SearchPage(BasePage):
 
             xpath = (f"//h3[@class='sumo-card-heading']/a[normalize-space(text()"
                      f")='{article_title}']/../following-sibling::p/strong")
-        return self._get_text_of_elements(xpath)
+        return self._get_text_of_elements(self.page.locator(xpath))
 
     def get_all_search_results_article_titles(self) -> list[str]:
         """Get all the titles of the search results"""
         self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_elements(self.SEARCH_RESULTS_LOCATORS["search_results_titles"])
+        return self._get_text_of_elements(self.search_results_titles)
 
     def get_all_search_results_articles_summary(self) -> list[str]:
         """Get all the summaries of the search results"""
         self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_elements(self.SEARCH_RESULTS_LOCATORS
-                                          ["search_results_articles_summary"])
+        return self._get_text_of_elements(self.search_results_articles_summary)
 
     def get_locator_of_a_particular_article(self, article_title: str) -> Locator:
         """Get the locator of a particular article
@@ -138,12 +135,11 @@ class SearchPage(BasePage):
             article_title (str): The title of the article
         """
         self._wait_for_visibility_of_search_results_section()
-        return self._get_element_locator(f"//h3[@class='sumo-card-heading']/"
-                                         f"a[normalize-space(text())='{article_title}']")
+        return self.article(article_title)
 
     def is_search_content_section_displayed(self) -> bool:
         """Check if the search content section is displayed"""
-        return self._is_element_visible(self.SEARCH_RESULTS_LOCATORS["search_results_content"])
+        return self._is_element_visible(self.search_results_content)
 
     """
         Actions against the search bar
@@ -151,7 +147,7 @@ class SearchPage(BasePage):
 
     def get_text_of_searchbar_field(self) -> str:
         """Get the text of the search bar field"""
-        return self._get_element_input_value(self.SEARCHBAR_LOCATORS["searchbar_homepage"])
+        return self._get_element_input_value(self.searchbar_homepage)
 
     def fill_into_searchbar(self, text: str, is_aaq=False, is_sidebar=False):
         """Fill into the search bar
@@ -163,12 +159,12 @@ class SearchPage(BasePage):
         """
         if is_aaq:
             self.clear_the_searchbar(is_aaq=True)
-            self._fill(self.SEARCHBAR_LOCATORS["searchbar_aaq"], text)
+            self._fill(self.searchbar_aaq, text)
         elif is_sidebar:
-            self._fill(self.SEARCHBAR_LOCATORS["searchbar_sidebar"], text)
+            self._fill(self.searchbar_sidebar, text)
         else:
             self.clear_the_searchbar()
-            self._fill(self.SEARCHBAR_LOCATORS["searchbar_homepage"], text)
+            self._fill(self.searchbar_homepage, text)
 
     def clear_the_searchbar(self, is_aaq=False, is_sidebar=False):
         """Clear the search bar
@@ -178,19 +174,19 @@ class SearchPage(BasePage):
             is_sidebar (bool): Whether the search bar is on the sidebar
         """
         if is_aaq:
-            self._clear_field(self.SEARCHBAR_LOCATORS["searchbar_aaq"])
+            self._clear_field(self.searchbar_aaq)
         elif is_sidebar:
-            self._clear_field(self.SEARCHBAR_LOCATORS["hidden_searchbar"])
+            self._clear_field(self.hidden_searchbar)
         else:
-            self._clear_field(self.SEARCHBAR_LOCATORS["searchbar_homepage"])
+            self._clear_field(self.searchbar_homepage)
 
     def click_on_search_button(self):
         """Click on the search button"""
-        self._click(self.SEARCHBAR_LOCATORS["searchbar_search_button"])
+        self._click(self.searchbar_search_button)
 
     def get_list_of_popular_searches(self) -> list[str]:
         """Get the list of popular searches"""
-        return self._get_text_of_elements(self.SEARCHBAR_LOCATORS["popular_searches"])
+        return self._get_text_of_elements(self.popular_searches)
 
     def click_on_a_popular_search(self, popular_search_name: str):
         """Click on a popular search
@@ -198,15 +194,14 @@ class SearchPage(BasePage):
         Args:
             popular_search_name (str): The name of the popular search
         """
-        self._click(f"//p[@class='popular-searches']/a[text()='{popular_search_name}']")
+        self._click(self.popular_search(popular_search_name))
 
     """
         Actions against the side navbar
     """
     def get_the_highlighted_side_nav_item(self) -> str:
         """Get the highlighted side nav item"""
-        return self._get_text_of_element(self.SEARCH_RESULTS_SIDE_NAV_LOCATORS
-                                         ["search_results_side_nav_selected_item"])
+        return self._get_text_of_element(self.search_results_side_nav_selected_item)
 
     def click_on_a_particular_side_nav_item(self, product_name: str):
         """Click on a particular side nav item
@@ -214,7 +209,7 @@ class SearchPage(BasePage):
         Args:
             product_name (str): The name of the product
         """
-        self._click(f"//ul[@id='product-filter']//a[normalize-space(text())='{product_name}']")
+        self._click(self.search_results_side_nav_element(product_name))
 
     """
         General page actions
@@ -222,4 +217,4 @@ class SearchPage(BasePage):
     def get_search_results_header(self) -> str:
         """Get the search results header"""
         self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_element(self.SEARCHBAR_LOCATORS["search_results_header"])
+        return self._get_text_of_element(self.search_results_header)

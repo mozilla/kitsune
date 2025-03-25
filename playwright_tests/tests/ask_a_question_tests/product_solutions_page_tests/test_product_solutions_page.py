@@ -34,16 +34,17 @@ def test_featured_articles_redirect(page: Page, is_chromium):
                 for featured_article_card in (sumo_pages.product_solutions_page
                                               .get_all_featured_articles_titles()):
                     sumo_pages.product_solutions_page.click_on_a_featured_article_card(
-                        featured_article_card)
+                        featured_article_card.strip())
                     with check, allure.step(f"Clicking on the {featured_article_card} and "
                                             f"verifying that the correct article page title "
                                             f"is displayed"):
                         with page.context.expect_page() as tab:
                             feature_article_page = tab.value
-                        article_text = (feature_article_page.
-                                        locator("//h1[@class='sumo-page-heading']").inner_text())
-                        assert article_text == featured_article_card
-                        feature_article_page.close()
+                            article_text = (feature_article_page.
+                                            locator("//h1[@class='sumo-page-heading']"
+                                                    ).inner_text())
+                            assert article_text == featured_article_card.strip()
+                            feature_article_page.close()
             else:
                 print(f"{card} has no featured articles displayed!!!")
             utilities.navigate_back()

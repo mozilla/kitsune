@@ -121,8 +121,8 @@ def test_change_group_avatar(page: Page):
     with allure.step("Clicking on the 'Change' avatar button, uploading the image and clicking on"
                      "the 'Cancel' button"):
         sumo_pages.user_groups.click_on_change_avatar_button()
-        utilities.upload_file(sumo_pages.user_groups.CHANGE_AVATAR_PAGE_LOCATORS
-                              ['upload_avatar_browse_button'], first_uploaded_image)
+        utilities.upload_file(sumo_pages.user_groups.upload_avatar_browse_button,
+                              first_uploaded_image)
         sumo_pages.user_groups.click_on_upload_avatar_cancel_button()
 
     with check, allure.step("Verifying that the uploaded avatar image is not displayed inside the "
@@ -132,8 +132,8 @@ def test_change_group_avatar(page: Page):
     with allure.step("Clicking on the 'Change' avatar button, uploading the image and clicking on"
                      "the 'Upload' button"):
         sumo_pages.user_groups.click_on_change_avatar_button()
-        utilities.upload_file(sumo_pages.user_groups.CHANGE_AVATAR_PAGE_LOCATORS
-                              ['upload_avatar_browse_button'], first_uploaded_image)
+        utilities.upload_file(sumo_pages.user_groups.upload_avatar_browse_button,
+                              first_uploaded_image)
         sumo_pages.user_groups.click_on_upload_avatar_button(expected_url=group_url)
 
     with check, allure.step("Verifying that the uploaded image is successfully displayed inside "
@@ -158,16 +158,16 @@ def test_change_group_avatar(page: Page):
 
     with check, allure.step("Adding a new image, clicking on the 'Cancel' button and verifying "
                             "that the new image was not added to the group"):
-        utilities.upload_file(sumo_pages.user_groups.CHANGE_AVATAR_PAGE_LOCATORS
-                              ['upload_avatar_browse_button'], second_uploaded_image)
+        utilities.upload_file(sumo_pages.user_groups.upload_avatar_browse_button,
+                              second_uploaded_image)
         sumo_pages.user_groups.click_on_upload_avatar_cancel_button()
         assert utilities.are_images_different(first_uploaded_image, second_uploaded_image)
 
     with check, allure.step("Adding a new image, clicking on the 'Upload' button and verifying "
                             "that the newly uploaded image is displayed inside the group"):
         sumo_pages.user_groups.click_on_change_uploaded_avatar_button()
-        utilities.upload_file(sumo_pages.user_groups.CHANGE_AVATAR_PAGE_LOCATORS
-                              ['upload_avatar_browse_button'], second_uploaded_image)
+        utilities.upload_file(sumo_pages.user_groups.upload_avatar_browse_button,
+                              second_uploaded_image)
         sumo_pages.user_groups.click_on_upload_avatar_button(expected_url=group_url)
 
         utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),

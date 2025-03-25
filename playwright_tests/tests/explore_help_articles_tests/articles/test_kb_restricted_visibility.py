@@ -268,7 +268,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template):
     with check, allure.step("Navigating to the recent revisions page and verifying that the "
                             "article is displayed"):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
-        expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+        expect(sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Signing in with an account belonging to group one"):
@@ -277,7 +277,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template):
         ))
 
     with check, allure.step("Verifying that the article is displayed"):
-        expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+        expect(sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Signing in with a user belonging to a different user group"):
@@ -286,7 +286,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template):
         ))
 
     with allure.step("Verifying that the article is not displayed"):
-        expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+        expect(sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
@@ -306,7 +306,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
 
     with allure.step("Verifying that the article is displayed"):
-        expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+        expect(sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Removing restrictions"):
@@ -318,7 +318,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['recent_revisions']
         )
-        expect(sumo_pages.recent_revisions_page._get_recent_revision_based_on_article(
+        expect(sumo_pages.recent_revisions_page.get_recent_revision_based_on_article(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Deleting the article"):
@@ -472,7 +472,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template):
 
     with check, allure.step("Verifying that the the kb article is displayed for admin users"):
         expect(sumo_pages.article_discussions_page
-               ._is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
+               .is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the kb article is displayed for whitelisted "
                             "group users"):
@@ -480,12 +480,12 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
         expect(sumo_pages.article_discussions_page
-               ._is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
+               .is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the kb article is not displayed for signed out users"):
         utilities.delete_cookies()
         expect(sumo_pages.article_discussions_page
-               ._is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_hidden()
+               .is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_hidden()
 
     with allure.step("Verifying that the kb article is displayed for non-whitelisted group "
                      "users"):
@@ -493,7 +493,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
         expect(sumo_pages.article_discussions_page
-               ._is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_hidden()
+               .is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_hidden()
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -514,7 +514,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template):
             utilities.general_test_data['discussions_links']['article_discussions']
         )
         expect(sumo_pages.article_discussions_page
-               ._is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
+               .is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
@@ -527,7 +527,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template):
             utilities.general_test_data['discussions_links']['article_discussions']
         )
         expect(sumo_pages.article_discussions_page
-               ._is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
+               .is_title_for_article_discussion_displayed(thread['thread_title'])).to_be_visible()
 
     with allure.step("Deleting the article"):
         utilities.start_existing_session(utilities.username_extraction_from_email(
@@ -734,7 +734,7 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template):
                             "the kb-overview dashboard"):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the article is displayed for users belonging to "
@@ -744,7 +744,7 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template):
         ))
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Verifying that the article is not displayed for users belonging to "
@@ -754,7 +754,7 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template):
         ))
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Removing restrictions"):
@@ -766,7 +766,7 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template):
         utilities.delete_cookies()
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Deleting the article"):
@@ -799,7 +799,7 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template):
                             "the kb-overview dashboard"):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the article is displayed for users belonging to "
@@ -810,7 +810,7 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template):
         ))
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Verifying that the article is not displayed for users belonging to "
@@ -821,7 +821,7 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template):
         ))
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Removing restrictions"):
@@ -833,7 +833,7 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template):
         utilities.delete_cookies()
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Deleting the article"):
@@ -870,7 +870,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template):
                             "restricted article is displayed for admin accounts"):
         sumo_pages.kb_article_page.click_on_what_links_here_option()
         expect(
-            sumo_pages.kb_what_links_here_page._get_a_particular_what_links_here_article_locator(
+            sumo_pages.kb_what_links_here_page.get_a_particular_what_links_here_article_locator(
                 article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the restricted article is displayed for users "
@@ -879,7 +879,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template):
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
         expect(sumo_pages.kb_what_links_here_page
-               ._get_a_particular_what_links_here_article_locator(article_details['article_title'])
+               .get_a_particular_what_links_here_article_locator(article_details['article_title'])
                ).to_be_visible()
 
     with check, allure.step("Verifying that the restricted article is not displayed for "
@@ -889,13 +889,13 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template):
         ))
         expect(
             sumo_pages.kb_what_links_here_page
-            ._get_a_particular_what_links_here_article_locator(article_details['article_title'])
+            .get_a_particular_what_links_here_article_locator(article_details['article_title'])
         ).to_be_hidden()
 
     with (allure.step("Verifying that the article is not displayed for signed out users")):
         utilities.delete_cookies()
         expect(sumo_pages.kb_what_links_here_page.
-               _get_a_particular_what_links_here_article_locator(article_details['article_title'])
+               get_a_particular_what_links_here_article_locator(article_details['article_title'])
                ).to_be_hidden()
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
@@ -917,7 +917,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template):
                      "article is displayed to the newly added group members"):
         sumo_pages.kb_article_page.click_on_what_links_here_option()
         expect(sumo_pages.kb_what_links_here_page
-               ._get_a_particular_what_links_here_article_locator(article_details['article_title'])
+               .get_a_particular_what_links_here_article_locator(article_details['article_title'])
                ).to_be_visible()
 
     with allure.step("Removing restrictions"):
@@ -932,7 +932,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template):
         sumo_pages.kb_article_page.click_on_what_links_here_option()
         utilities.delete_cookies()
         expect(sumo_pages.kb_what_links_here_page
-               ._get_a_particular_what_links_here_article_locator(article_details['article_title'])
+               .get_a_particular_what_links_here_article_locator(article_details['article_title'])
                ).to_be_visible()
 
     with allure.step("Deleting the article"):
@@ -967,7 +967,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template):
         sumo_pages.kb_article_page.click_on_show_history_option()
         sumo_pages.kb_article_show_history_page.click_on_show_history_category()
 
-        expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+        expect(sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the restricted kb article is displayed for users "
@@ -975,7 +975,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
-        expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+        expect(sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_visible()
 
     with check, allure.step("Verifying that the restricted kb article is displayed for users "
@@ -983,13 +983,13 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template):
         utilities.start_existing_session(utilities.username_extraction_from_email(
             utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
-        expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+        expect(sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Verifying that the restricted kb article is displayed for signed out "
                      "users"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+        expect(sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_hidden()
 
     with allure.step("Signing in with an admin account and whitelisting a new group"):
@@ -1009,7 +1009,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template):
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_page.click_on_show_history_option()
         sumo_pages.kb_article_show_history_page.click_on_show_history_category()
-        expect(sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+        expect(sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
             article_details['article_title'])).to_be_visible()
 
     with allure.step("Removing restrictions"):
@@ -1024,7 +1024,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template):
                      "article is displayed for signed out users"):
         utilities.delete_cookies()
         expect(
-            sumo_pages.kb_category_page._get_a_particular_article_locator_from_list(
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
                 article_details['article_title']
             )
         ).to_be_visible()

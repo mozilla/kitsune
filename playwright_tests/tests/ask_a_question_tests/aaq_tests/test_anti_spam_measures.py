@@ -28,7 +28,7 @@ def test_anti_spam_banner(page: Page, username):
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
     if username != '':
@@ -78,7 +78,7 @@ def test_valid_tld_in_question_comment(page: Page):
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
     with allure.step("Signing in with an account that doesn't have the bypass ratelimit "

@@ -347,7 +347,7 @@ def test_lock_and_archive_this_question(page: Page, status):
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
     with allure.step("Navigating to the first posted question"):
@@ -518,7 +518,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox):
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
     with allure.step("Signing in with a different non admin user account and posting a "
@@ -534,7 +534,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox):
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
     with allure.step("Navigating to the first question, clicking on the 'Subscribe to feed' "
@@ -781,7 +781,9 @@ def test_question_topics(page: Page, username):
             with check, allure.step(f"Clicking on the {question} tag and verifying tha the "
                                     f"filter is applied to the clicked tag"):
                 time.sleep(1)
-                sumo_pages.question_page.click_on_a_certain_tag(question)
+                sumo_pages.question_page.click_on_a_certain_tag(
+                    tag_name=question,
+                    expected_locator=sumo_pages.product_support_forum.ask_the_community_button)
                 assert (question == sumo_pages.product_support_forum.
                         get_text_of_selected_tag_filter_option())
 
@@ -1941,7 +1943,7 @@ def post_firefox_product_question_flow(page: Page, username: str):
             body=utilities.aaq_question_test_data["valid_firefox_question"]
             ["simple_body_text"],
             attach_image=False,
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
 
         return {"username_one": username_one, "question_details": question_details}

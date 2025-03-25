@@ -25,13 +25,13 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
     with allure.step("Navigating to the kb dashboards and clicking on the 'Complete "
                      "overview' option"):
         sumo_pages.top_navbar.click_on_dashboards_option()
-        sumo_pages.kb_dashboard_page._click_on_the_complete_overview_link()
+        sumo_pages.kb_dashboard_page.click_on_the_complete_overview_link()
 
     with allure.step("Verifying that we are redirected to the correct page"):
         expect(page).to_have_url(utilities.general_test_data['dashboard_links']['kb_overview'])
 
     with check, allure.step("Verifying that the correct live status is displayed"):
-        assert sumo_pages.kb_dashboard_page._get_a_particular_article_status(
+        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
             article_details['article_title']
         ).strip() == kb_dashboard_page_messages.get_kb_not_live_status(
             revision_note=article_details['article_review_description']
@@ -41,7 +41,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
                      "is not live yet"):
         utilities.delete_cookies()
         expect(
-            sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+            sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
                 article_details['article_title']
             )
         ).to_be_hidden()
@@ -57,7 +57,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
                      "displayed since it is not live yet"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
         expect(
-            sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+            sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
                 article_details['article_title']
             )
         ).to_be_hidden()
@@ -70,7 +70,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
 
     with allure.step("Navigating to the kb overview page and clicking on the article title"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        sumo_pages.kb_dashboard_page._click_on_article_title(article_details['article_title'])
+        sumo_pages.kb_dashboard_page.click_on_article_title(article_details['article_title'])
 
     with allure.step("Verifying that the user is redirected to the correct kb page"):
         expect(page).to_have_url(article_details['article_url'])
@@ -82,14 +82,14 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
     with check, allure.step("Navigating back to the kb overview page and verifying that the "
                             "correct live status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_a_particular_article_status(
+        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
             article_details['article_title']
         ).strip() == kb_dashboard_page_messages.KB_LIVE_STATUS
 
     with allure.step("Signing out and verifying that the article is visible"):
         utilities.delete_cookies()
         expect(
-            sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+            sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -105,7 +105,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
         expect(
-            sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+            sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -117,7 +117,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
         ))
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        sumo_pages.kb_dashboard_page._click_on_article_title(article_details['article_title'])
+        sumo_pages.kb_dashboard_page.click_on_article_title(article_details['article_title'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -143,7 +143,7 @@ def test_kb_dashboard_articles_status(page: Page):
                             "correct status is displayed"):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_a_particular_article_status(
+        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
             article_details['article_title']
         ).strip() == kb_dashboard_page_messages.get_kb_not_live_status(
             revision_note=second_revision['changes_description']
@@ -159,12 +159,12 @@ def test_kb_dashboard_articles_status(page: Page):
     with check, allure.step("Navigating back to the kb dashboard and verifying that the live "
                             "status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_a_particular_article_status(
+        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
             article_details['article_title']
         ).strip() == kb_dashboard_page_messages.KB_LIVE_STATUS
 
     with allure.step("Clicking on the article title and deleting it"):
-        sumo_pages.kb_dashboard_page._click_on_article_title(article_details['article_title'])
+        sumo_pages.kb_dashboard_page.click_on_article_title(article_details['article_title'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -191,7 +191,7 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
     with check, allure.step("Navigating to the kb overview page and verifying that the "
                             "correct kb status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_a_particular_article_status(
+        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.get_kb_not_live_status(
             second_revision['changes_description'])
@@ -207,7 +207,7 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
     with check, allure.step("Navigating back to the kb overview page and verifying that the "
                             "correct status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_a_particular_article_status(
+        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.KB_LIVE_STATUS
 
@@ -239,7 +239,7 @@ def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page):
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct article status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_needs_update_status(
+        assert sumo_pages.kb_dashboard_page.get_needs_update_status(
             article_details['article_title']
         ).strip() == utilities.kb_revision_test_data['needs_change_message']
 
@@ -272,7 +272,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
     with check, allure.step("Navigating to the kb dashboard and verifying that the correct "
                             "needs change status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_needs_update_status(
+        assert sumo_pages.kb_dashboard_page.get_needs_update_status(
             article_details['article_title']
         ).strip() == utilities.kb_revision_test_data['needs_change_message']
 
@@ -284,7 +284,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
     with allure.step("Navigating to the complete dashboard list and verifying that the "
                      "correct needs change status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_needs_update_status(
+        assert sumo_pages.kb_dashboard_page.get_needs_update_status(
             article_details['article_title']
         ).strip() == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -296,7 +296,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
     with check, allure.step("Navigating to the kb overview page and verifying that the "
                             "correct needs change status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._is_needs_change_empty(
+        assert sumo_pages.kb_dashboard_page.is_needs_change_empty(
             article_details['article_title']
         )
 
@@ -328,7 +328,7 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -355,7 +355,7 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -370,7 +370,7 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -399,7 +399,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct kb dashboard l10n status is displayed "
                             "(No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -410,7 +410,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=article_details["first_revision_id"])
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -422,7 +422,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10N status is inside the KB dashboard "
                             "(No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -436,7 +436,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10n status is inside the kb dashboard "
                             "(Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -450,7 +450,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -463,7 +463,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -476,7 +476,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -489,7 +489,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -502,7 +502,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -537,7 +537,7 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page):
     with check, allure.step("Verifying that the correct ready for localization status is "
                             "displayed inside the KB dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -552,7 +552,7 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page):
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             "inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -565,7 +565,7 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page):
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -578,7 +578,7 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page):
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -592,7 +592,7 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page):
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -625,7 +625,7 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page)
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -639,7 +639,7 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page)
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -651,7 +651,7 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page)
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
@@ -682,7 +682,7 @@ def test_article_translation_not_allowed_kb_dashboard(page: Page):
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_ready_for_l10n_status(
+        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
@@ -713,10 +713,10 @@ def test_article_stale_kb_dashboard(page: Page):
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct stale status and date is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._get_stale_status(
+        assert sumo_pages.kb_dashboard_page.get_stale_status(
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
-        assert sumo_pages.kb_dashboard_page._get_existing_expiry_date(
+        assert sumo_pages.kb_dashboard_page.get_existing_expiry_date(
             article_details['article_title']
         ) == utilities.convert_string_to_datetime(
             utilities.kb_article_test_data['old_expiry_date']
@@ -733,10 +733,10 @@ def test_article_stale_kb_dashboard(page: Page):
     with check, allure.step("Navigating to the kb dashboard and verifying that the correct "
                             "stale status and date is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page._is_stale_status_empty(
+        assert sumo_pages.kb_dashboard_page.is_stale_status_empty(
             article_details['article_title']
         )
-        assert sumo_pages.kb_dashboard_page._get_existing_expiry_date(
+        assert sumo_pages.kb_dashboard_page.get_existing_expiry_date(
             article_details['article_title']
         ) == utilities.convert_string_to_datetime(utilities.kb_article_test_data['expiry_date'])
 
@@ -762,7 +762,7 @@ def test_article_title_update(page: Page):
                      "correct title is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
         expect(
-            sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+            sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
                 article_details['article_title']
             )
         ).to_be_visible()
@@ -776,7 +776,7 @@ def test_article_title_update(page: Page):
     with allure.step("Navigating back to the kb dashboard page and verifying that the "
                      "correct title is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(sumo_pages.kb_dashboard_page._get_a_particular_article_title_locator(
+        expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             new_article_title)
         ).to_be_visible()
 

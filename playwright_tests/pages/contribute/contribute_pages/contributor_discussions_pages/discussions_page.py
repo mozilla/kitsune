@@ -8,17 +8,16 @@ from playwright_tests.core.basepage import BasePage
 
 
 class DiscussionsPage(BasePage):
-    __discussions_page_title = "//article[@id='threads']/h1"
-    __contributor_discussions_side_nav_selected_option = ("//nav[@id='for-contributors-sidebar']//"
-                                                          "a[@class='selected']")
-
     def __init__(self, page: Page):
         super().__init__(page)
+        self.discussions_page_title = page.locator("article#threads h1")
+        self.contributor_discussions_side_nav_selected_option = page.locator(
+            "nav#for-contributors-sidebar a.selected")
 
-    def _get_contributor_discussions_page_title(self) -> str:
-        return super()._get_text_of_element(self.__discussions_page_title)
+    def get_contributor_discussions_page_title(self) -> str:
+        return super()._get_text_of_element(self.discussions_page_title)
 
-    def _get_contributor_discussions_side_nav_selected_option(self) -> str:
+    def get_contributor_discussions_side_nav_selected_option(self) -> str:
         option = super()._get_text_of_element(
-            self.__contributor_discussions_side_nav_selected_option)
+            self.contributor_discussions_side_nav_selected_option)
         return re.sub(r'\s+', ' ', option).strip()

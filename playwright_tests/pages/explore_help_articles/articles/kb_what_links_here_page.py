@@ -3,11 +3,11 @@ from playwright.sync_api import Page, Locator
 
 
 class WhatLinksHerePage(BasePage):
-    __what_links_here_list = "//article[@id]//li/a"
-
     def __init__(self, page: Page):
         super().__init__(page)
+        self.what_links_here_list = self.page.locator("article[id] li a")
+        self.what_links_here_for_article = lambda article_name: self.page.locator(
+            "article[id] li").get_by_role("link").filter(has_text=article_name)
 
-    def _get_a_particular_what_links_here_article_locator(self, article_name: str) -> Locator:
-        return super()._get_element_locator(f"//article[@id]//li/"
-                                            f"a[contains(text(), '{article_name}')]")
+    def get_a_particular_what_links_here_article_locator(self, article_name: str) -> Locator:
+        return self.what_links_here_for_article(article_name)

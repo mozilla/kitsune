@@ -1,10 +1,12 @@
-from playwright.sync_api import Locator
-
+from playwright.sync_api import Locator, Page
 from playwright_tests.core.basepage import BasePage
 
 
 class KBCategoryPage(BasePage):
+    def __init__(self, page: Page):
+        super().__init__(page)
+        self.article_from_list = lambda article_name: page.locator(
+            "ul[class='documents'] li").get_by_role("link", name=article_name, exact=True)
 
-    def _get_a_particular_article_locator_from_list(self, article_name: str) -> Locator:
-        return super()._get_element_locator(f"//ul[@class='documents']/li/"
-                                            f"a[text()='{article_name}']")
+    def get_a_particular_article_locator_from_list(self, article_name: str) -> Locator:
+        return self.article_from_list(article_name)

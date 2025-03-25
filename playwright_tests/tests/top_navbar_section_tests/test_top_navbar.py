@@ -226,7 +226,7 @@ def test_contribute_top_navbar_redirects(page: Page):
     with allure.step("Clicking on the 'Contributor discussions' top-navbar option and verifying "
                      "the redirect"):
         sumo_pages.top_navbar.click_on_community_discussions_top_navbar_option()
-        assert (sumo_pages.contributor_discussions_page._get_contributor_discussions_page_title()
+        assert (sumo_pages.contributor_discussions_page.get_contributor_discussions_page_title()
                 == "Contributor Discussions")
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar options and verifying "
@@ -244,23 +244,23 @@ def test_contribute_top_navbar_redirects(page: Page):
                 sumo_pages.top_navbar._click(option)
 
             if current_option == "Article discussions":
-                assert (sumo_pages.discussions_page._get_contributor_discussions_page_title()
-                        .lower()
-                        == "english knowledge base discussions")
+                assert (sumo_pages.discussions_page.get_contributor_discussions_page_title()
+                        .lower() == "english knowledge base discussions")
                 with allure.step("Verifying that the correct option is highlighted inside the "
                                  "'Contributor discussions' side navbar"):
                     assert (sumo_pages.discussions_page
-                            ._get_contributor_discussions_side_nav_selected_option()
+                            .get_contributor_discussions_side_nav_selected_option()
                             == current_option)
             elif current_option == "View all discussions":
                 assert (sumo_pages.contributor_discussions_page
-                        ._get_contributor_discussions_page_title(
-                        ).lower() == "contributor discussions")
+                        .get_contributor_discussions_page_title().lower()
+                        == "contributor discussions")
             else:
-                assert (sumo_pages.discussions_page._get_contributor_discussions_page_title()
-                        .lower() == current_option.lower())
+                assert (
+                    sumo_pages.discussions_page.get_contributor_discussions_page_title().lower()
+                    == current_option.lower())
                 with allure.step("Verifying that the correct option is highlighted inside the "
                                  "'Contributor discussions' side navbar"):
                     assert (sumo_pages.discussions_page
-                            ._get_contributor_discussions_side_nav_selected_option()
+                            .get_contributor_discussions_side_nav_selected_option()
                             == current_option)

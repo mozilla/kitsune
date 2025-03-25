@@ -183,7 +183,7 @@ def test_searchbar_functionality_on_aaq_page(page: Page):
             aaq_question_test_data["valid_firefox_question"]["topic_value"],
             body=utilities.
             aaq_question_test_data["valid_firefox_question"]["question_body"],
-            expected_locator=sumo_pages.question_page.QUESTION_LOCATORS["questions_header"]
+            expected_locator=sumo_pages.question_page.questions_header
         )
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 

@@ -30,29 +30,33 @@ class BasePage:
         """
         return self.page.url
 
-    def _get_element_handles(self, xpath: str) -> list[ElementHandle]:
+    def _get_element_handles(self, locator: Locator) -> list[ElementHandle]:
         """
-        This helper function returns a list of element handles from a given xpath.
+        This helper function returns a list of element handles from a given locator.
         """
-        return self._get_element_locator(xpath).element_handles()
+        self.wait_for_dom_to_load()
+        return locator.element_handles()
 
-    def _get_element_handle(self, xpath: str) -> ElementHandle:
+    def _get_element_handle(self, locator: Locator) -> ElementHandle:
         """
-        This helper function returns a single element handle from a given xpath.
+        This helper function returns a single element handle from a given locator.
         """
-        return self._get_element_locator(xpath).element_handle()
+        self.wait_for_dom_to_load()
+        return locator.element_handle()
 
-    def _get_text_of_elements(self, xpath: str) -> list[str]:
+    def _get_text_of_elements(self, locator: Locator) -> list[str]:
         """
-        This helper function returns a list containing the inner texts of a given xpath.
+        This helper function returns a list containing the inner texts of a given locator.
         """
-        return self._get_element_locator(xpath).all_inner_texts()
+        self.wait_for_dom_to_load()
+        return locator.all_inner_texts()
 
-    def _get_text_of_element(self, xpath: str) -> str:
+    def _get_text_of_element(self, locator: Locator) -> str:
         """
-        This helper function returns the inner text of a given xpath.
+        This helper function returns the inner text of a given locator.
         """
-        return self._get_element_locator(xpath).inner_text()
+        self.wait_for_dom_to_load()
+        return locator.inner_text()
 
     def _get_text_of_locator(self, locator: Locator) -> str:
         """
@@ -60,17 +64,19 @@ class BasePage:
         """
         return locator.inner_text()
 
-    def _is_element_empty(self, xpath: str) -> bool:
+    def _is_element_empty(self, locator: Locator) -> bool:
         """
-        This helper function returns checks if the given xpath has an inner text.
+        This helper function returns checks if the given locator has an inner text.
         """
-        return not self._get_element_locator(xpath).inner_text()
+        self.wait_for_dom_to_load()
+        return not locator.inner_text()
 
-    def _get_elements_count(self, xpath: str) -> int:
+    def _get_elements_count(self, locator: Locator) -> int:
         """
-        This helper function returns the web element count from a given xpath.
+        This helper function returns the web element count from a given locator.
         """
-        return self._get_element_locator(xpath).count()
+        self.wait_for_dom_to_load()
+        return locator.count()
 
     def _get_element_attribute_value(self, element: Union[str, Locator, list[Locator],
                                      ElementHandle], attribute: str) -> Union[str, list[str]]:
@@ -86,6 +92,7 @@ class BasePage:
                 values.append(element.get_attribute(attribute))
             return values
         else:
+            self.wait_for_dom_to_load()
             return element.get_attribute(attribute)
 
     def _wait_for_given_timeout(self, timeout: float):
@@ -94,23 +101,23 @@ class BasePage:
         """
         self.page.wait_for_timeout(timeout)
 
-    def _get_element_input_value(self, xpath: str) -> str:
+    def _get_element_input_value(self, locator: Locator) -> str:
         """
         This helper function returns the input value of a given element locator.
         """
-        return self._get_element_locator(xpath).input_value()
+        return locator.input_value()
 
-    def _get_element_inner_text_from_page(self, xpath: str) -> str:
+    def _get_element_inner_text_from_page(self, locator: Locator) -> str:
         """
         This helper function returns the inner text of a given locator via the page instance.
         """
-        return self.page.inner_text(xpath)
+        return locator.inner_text()
 
-    def _get_element_text_content(self, xpath: str) -> str:
+    def _get_element_text_content(self, locator: Locator) -> str:
         """
         This helper function returns the text content of a given locator via the page instance.
         """
-        return self.page.text_content(xpath)
+        return locator.text_content()
 
     def _get_text_content_of_all_locators(self, locator: Locator) -> list[str]:
         """
@@ -162,7 +169,7 @@ class BasePage:
                     element, str) else element
                 element_locator.click(force=with_force)
                 if expected_locator:
-                    self.page.wait_for_selector(expected_locator, timeout=3000)
+                    self._wait_for_locator(expected_locator, timeout=3000)
                 if expected_url:
                     self.page.wait_for_url(expected_url, timeout=3000)
                 break
@@ -174,62 +181,69 @@ class BasePage:
                 if attempt < retries - 1:
                     self.page.wait_for_timeout(delay)
 
-    def _click_on_an_element_by_index(self, xpath: str, index: int):
+    def _click_on_an_element_by_index(self, locator: Locator, index: int):
         """
         This helper function clicks on a given element locator based on a given index.
         """
         self.wait_for_networkidle()
-        self._get_element_locator(xpath).nth(index).click()
+        locator.nth(index).click()
 
-    def _click_on_first_item(self, xpath: str):
+    def _click_on_first_item(self, locator: Locator):
         """
         This helper function clicks on the first item from a given web element locator list.
         """
         self.wait_for_networkidle()
-        self._get_element_locator(xpath).first.click()
+        locator.first.click()
 
-    def _fill(self, xpath: str, text: str):
+    def _fill(self, locator: Locator, text: str, with_force=False):
         """
         This helper function fills a given text inside a given element locator.
         """
-        self._get_element_locator(xpath).fill(text)
+        self.wait_for_dom_to_load()
+        locator.fill(text, force=with_force)
 
-    def _type(self, xpath: str, text: str, delay: int):
+    def _type(self, locator: Locator, text: str, delay: int):
         """
         This helper function types a given string inside a given element locator with a given delay
         """
-        self._get_element_locator(xpath).type(text=text, delay=delay)
+        self.wait_for_dom_to_load()
+        locator.type(text=text, delay=delay)
 
-    def _press_a_key(self, xpath: str, key: str):
+    def _press_a_key(self, locator: Locator, key: str):
         """
         This helper function types a given key inside a given element locator.
         """
-        self._get_element_locator(xpath).press(key)
+        self.wait_for_dom_to_load()
+        locator.press(key)
 
-    def _clear_field(self, xpath: str):
+    def _clear_field(self, locator: Locator):
         """
         This helper function clears the given element locator input field.
         """
-        self._get_element_locator(xpath).clear()
+        self.wait_for_dom_to_load()
+        locator.clear()
 
-    def _select_option_by_label(self, xpath: str, label_name: str):
+    def _select_option_by_label(self, locator: Locator, label_name: str):
         """
         This helper function selects an element from a given select box based on label.
         """
-        self._get_element_locator(xpath).select_option(label=label_name)
+        self.wait_for_dom_to_load()
+        locator.select_option(label=label_name)
 
-    def _select_option_by_value(self, xpath: str, value: str):
+    def _select_option_by_value(self, locator: Locator, value: str):
         """
         This helper function selects a element from a given select box based on value.
         """
-        self._get_element_locator(xpath).select_option(value=value)
+        self.wait_for_dom_to_load()
+        locator.select_option(value=value)
 
-    def _select_random_option_by_value(self, dropdown_locator: str, xpath_options: str):
+    def _select_random_option_by_value(self, dropdown_locator: Locator, locator_options: Locator):
         """
         This helper function selects a random option from a given web element locator.
         """
+        self.wait_for_dom_to_load()
         elements = []
-        for element in self._get_elements_locators(xpath_options):
+        for element in locator_options.all():
             locator_value = self._get_element_attribute_value(element, 'value')
             if locator_value == '':
                 continue
@@ -243,17 +257,19 @@ class BasePage:
         """
         self.page.on("dialog", lambda dialog: dialog.accept())
 
-    def _hover_over_element(self, xpath: str):
+    def _hover_over_element(self, locator: Locator):
         """
         This helper function performs a mouse-over action over a given element locator.
         """
-        self._get_element_locator(xpath).hover()
+        self.wait_for_dom_to_load()
+        locator.hover()
 
-    def _is_element_visible(self, xpath: str) -> bool:
+    def _is_element_visible(self, locator: Locator) -> bool:
         """
-        This helper function finds the locator of the given xpath and checks if it is visible.
+        This helper function finds the locator of the given locator and checks if it is visible.
         """
-        return self._get_element_locator(xpath).is_visible()
+        self.wait_for_dom_to_load()
+        return locator.is_visible()
 
     def _is_locator_visible(self, locator: Locator) -> bool:
         """
@@ -261,21 +277,22 @@ class BasePage:
         """
         return locator.is_visible()
 
-    def _is_checkbox_checked(self, xpath: str) -> bool:
+    def _is_checkbox_checked(self, locator: Locator) -> bool:
         """
         This helper function checks if a given element locator is checked.
         """
-        return self._get_element_locator(xpath).is_checked()
+        self.wait_for_dom_to_load()
+        return locator.is_checked()
 
-    def _wait_for_selector(self, xpath: str, timeout=3500):
+    def _wait_for_locator(self, locator: Locator, timeout=3500):
         """
         This helper function waits for a given element locator to be visible based on a given
         timeout.
         """
         try:
-            self.page.wait_for_selector(xpath, timeout=timeout)
+            locator.wait_for(state="visible", timeout=timeout)
         except PlaywrightTimeoutError:
-            print(f"{xpath} is not displayed")
+            print(f"{locator} is not displayed")
 
     def _move_mouse_to_location(self, x: int, y: int):
         """

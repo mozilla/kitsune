@@ -30,14 +30,8 @@ class AuthFlowPage:
         self.auth_page.add_data_to_email_input_field(username)
         self.auth_page.click_on_enter_your_email_submit_button()
 
-        if self.auth_page.is_logged_in_sign_in_button_displayed():
-            """If the user the sign in button is displayed, click on it."""
-            self.auth_page.click_on_user_logged_in_sign_in_button()
-        else:
-            """If the password input field is displayed, add the password to it and
-            click on the submit button."""
-            self.auth_page.add_data_to_password_input_field(password)
-            self.auth_page.click_on_enter_your_password_submit_button()
+        self.auth_page.add_data_to_password_input_field(password)
+        self.auth_page.click_on_enter_your_password_submit_button()
 
     def login_with_existing_session(self):
         """Login with an existing session."""
