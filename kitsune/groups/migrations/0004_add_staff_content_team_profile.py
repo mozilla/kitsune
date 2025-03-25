@@ -7,15 +7,15 @@ def create_staff_content_team_profile(apps, schema_editor):
 
     try:
         group = Group.objects.get(name='Staff Content Team')
-        # Create the group profile if it doesn't exist
-        if not GroupProfile.objects.filter(group=group).exists():
-            GroupProfile.objects.create(
-                group=group,
-                information='Staff Content Team group for content management.',
-                information_html='Staff Content Team group for content management.'
-            )
     except Group.DoesNotExist:
         raise Exception("Staff Content Team group must exist before running this migration")
+
+    if not GroupProfile.objects.filter(group=group).exists():
+        GroupProfile.objects.create(
+            group=group,
+            information='Staff Content Team group for content management.',
+            information_html='Staff Content Team group for content management.'
+        )
 
 
 def remove_staff_content_team_profile(apps, schema_editor):
@@ -24,9 +24,10 @@ def remove_staff_content_team_profile(apps, schema_editor):
 
     try:
         group = Group.objects.get(name='Staff Content Team')
-        GroupProfile.objects.filter(group=group).delete()
     except Group.DoesNotExist:
-        pass
+        return
+
+    GroupProfile.objects.filter(group=group).delete()
 
 
 class Migration(migrations.Migration):
