@@ -399,6 +399,22 @@ def job_cleanup_old_account_events():
     call_command("cleanup_old_account_events")
 
 
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="03",
+    minute="00",
+    day_of_week=0,
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_CLEANUP_EXPIRED_USERS)
+def job_cleanup_expired_users():
+    call_command("cleanup_expired_users")
+
+
 def run():
     try:
         schedule.start()
