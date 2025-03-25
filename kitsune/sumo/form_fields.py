@@ -81,6 +81,24 @@ class MultiUsernameField(forms.Field):
         return users
 
 
+class MultiUsernameFilterField(forms.Field):
+    """
+    Similar to MultiUsernameField with the following differences:
+        * Allows system accounts
+        * Cleaned data provides User querysets rather than User instances
+    """
+
+    def to_python(self, value):
+        if value:
+            usernames = value.replace(",", " ").split()
+            if usernames:
+                return User.all_users.filter(is_active=True).filter(
+                    Q(username__in=usernames) | Q(profile__name__in=usernames)
+                )
+
+        return User.objects.none()
+
+
 class MultiUsernameOrGroupnameField(forms.Field):
     """Form field that takes a comma-separated list of usernames or groupnames
     and validates that users/groups exist for each one, and returns the list of
