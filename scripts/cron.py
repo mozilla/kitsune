@@ -4,6 +4,7 @@ import sys
 from subprocess import check_call
 
 import babis
+import waffle
 from apscheduler.schedulers.blocking import BlockingScheduler
 from django.conf import settings
 from django.utils import timezone
@@ -408,7 +409,7 @@ def job_cleanup_old_account_events():
     day_of_week=0,
     max_instances=1,
     coalesce=True,
-    skip=settings.READ_ONLY,
+    skip=(settings.READ_ONLY or not waffle.switch_is_active('cleanup-expired-users')),
 )
 @babis.decorator(ping_after=settings.DMS_CLEANUP_EXPIRED_USERS)
 def job_cleanup_expired_users():

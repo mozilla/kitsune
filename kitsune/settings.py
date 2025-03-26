@@ -1333,4 +1333,4 @@ MOZILLA_LOCATION_SERVICE = config(
 SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")
 SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="Staff Content Team")
 
-USER_EXPIRATION_DAYS = config("USER_EXPIRATION_DAYS", default=1095, cast=int)
+USER_INACTIVITY_DAYS = config("USER_INACTIVITY_DAYS", default=1095, cast=int)

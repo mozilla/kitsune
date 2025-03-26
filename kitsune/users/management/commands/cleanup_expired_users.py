@@ -9,11 +9,11 @@ from kitsune.users.utils import delete_user_pipeline
 
 
 class Command(BaseCommand):
-    help = "Delete users who haven't logged in for more than settings.USER_EXPIRATION_DAYS days"
+    help = "Delete users who haven't logged in for more than settings.USER_INACTIVITY_DAYS days"
 
     def handle(self, *args, **options):
         User = get_user_model()
-        expiration_date = timezone.now() - timedelta(days=settings.USER_EXPIRATION_DAYS)
+        expiration_date = timezone.now() - timedelta(days=settings.USER_INACTIVITY_DAYS)
 
         expired_users = User.objects.filter(last_login__lt=expiration_date)
         self.stdout.write(f"Found {expired_users.count()} expired users")
