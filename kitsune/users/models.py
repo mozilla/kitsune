@@ -259,27 +259,41 @@ class Profile(ModelBase):
     @property
     def has_content(self):
         """Returns True if the user has created any content on the site."""
-        content_types = [
-            self.user.answer_votes,
-            self.user.answers,
-            self.user.award_creator,
-            self.user.badge_set,
-            self.user.created_revisions,
-            self.user.gallery_images,
-            self.user.gallery_videos,
-            self.user.inboxmessage_set,
-            self.user.outbox,
-            self.user.poll_votes,
-            self.user.post_set,
-            self.user.question_votes,
-            self.user.questions,
-            self.user.readied_for_l10n_revisions,
-            self.user.reviewed_revisions,
-            self.user.thread_set,
-            self.user.wiki_post_set,
-            self.user.wiki_thread_set,
+        user = self.user
+
+        # Items we consider content
+        content_relations = [
+            "answers",
+            "answer_votes",
+            "award_creator",
+            "badge_set",
+            "created_revisions",
+            "gallery_images",
+            "gallery_videos",
+            "inboxmessage_set",
+            "outbox",
+            "poll_votes",
+            "post_set",
+            "question_votes",
+            "questions",
+            "readied_for_l10n_revisions",
+            "reviewed_revisions",
+            "thread_set",
+            "wiki_post_set",
+            "wiki_thread_set",
         ]
-        return any(queryset.exists() for queryset in content_types)
+
+        # Check if any content exists
+        for relation in content_relations:
+            try:
+                if hasattr(user, relation) and getattr(user, relation).exists():
+                    return True
+            except Exception:
+                # Skip any relations that don't exist or cause errors
+                continue
+
+        # If no content found through direct checks, return False
+        return False
 
     @property
     def answer_helpfulness(self):
