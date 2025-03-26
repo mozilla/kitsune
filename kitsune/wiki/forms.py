@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext_lazy as _nlazy
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.form_fields import MultiUsernameField
+from kitsune.sumo.form_fields import MultiUsernameField, MultiUsernameFilterField
 from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
 from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
 from kitsune.wiki.tasks import add_short_links
@@ -425,6 +425,6 @@ class RevisionFilterForm(forms.Form):
     """Form to filter a list of revisions."""
 
     locale = forms.ChoiceField(label=_lazy("Locale:"), choices=languages, required=False)
-    users = MultiUsernameField(label=_lazy("Users:"), required=False)
+    users = MultiUsernameFilterField(label=_lazy("Users:"), required=False)
     start = forms.DateField(label=_lazy("Start:"), required=False)
     end = forms.DateField(label=_lazy("End:"), required=False)
