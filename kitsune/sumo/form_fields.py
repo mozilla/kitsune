@@ -90,7 +90,7 @@ class MultiUsernameFilterField(forms.Field):
 
     def to_python(self, value):
         if value:
-            usernames = value.replace(",", " ").split()
+            usernames = list(filter(None, (name.strip() for name in value.split(","))))
             if usernames:
                 return User.all_users.filter(is_active=True).filter(
                     Q(username__in=usernames) | Q(profile__name__in=usernames)
