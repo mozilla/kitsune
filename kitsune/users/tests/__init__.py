@@ -47,7 +47,6 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     country = "US"
     city = "Portland"
     locale = "en-US"
-    is_fxa_migrated = True
     user = factory.SubFactory(UserFactory, profile=None)
 
 
