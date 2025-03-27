@@ -23,7 +23,7 @@
 
 {% block content %}
 <article id="edit-profile">
-  {% if profile and profile.is_fxa_migrated and request.user == profile.user %}
+  {% if profile and request.user == profile.user %}
     <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
     <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
