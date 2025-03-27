@@ -5,7 +5,7 @@ from django.db.models import Q
 def delete_non_migrated_users(apps, schema_editor):
     """
     Delete users where is_fxa_migrated is False and who aren't creators/owners/users of
-    any content or relationships in the system
+    any important content
     """
     User = apps.get_model('auth', 'User')
     
