@@ -12,6 +12,7 @@ import django_cache_url
 from decouple import Csv, config
 
 from kitsune.lib.sumo_locales import LOCALES
+from kitsune.celery_schedules import CELERY_BEAT_SCHEDULE
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
@@ -691,6 +692,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "django_user_agents",
     # Last so we can override admin templates.
     "django.contrib.admin",
+    "django_celery_beat",
 )
 
 
@@ -888,23 +890,22 @@ POST_OFFICE = {
     ),
 }
 
-# Celery
+# Celery Configuration
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
 CELERY_TASK_PROTOCOL = 2
 CELERY_TASK_SERIALIZER = config("CELERY_TASK_SERIALIZER", default="json")
 CELERY_RESULT_SERIALIZER = config("CELERY_RESULT_SERIALIZER", default="json")
-CELERY_TASK_IGNORE_RESULT = config("CELERY_TASK_IGNORE_RESULT", default=True, cast=bool)
-if not CELERY_TASK_IGNORE_RESULT:
-    # E.g. redis://localhost:6479/1
-    CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
+CELERY_ACCEPT_CONTENT = config("CELERY_ACCEPT_CONTENT", default="json", cast=Csv())
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 
+# Additional Celery settings
+CELERY_TASK_IGNORE_RESULT = config("CELERY_TASK_IGNORE_RESULT", default=True, cast=bool)
 CELERY_TASK_ALWAYS_EAGER = config(
     "CELERY_TASK_ALWAYS_EAGER", default=DEBUG, cast=bool
 )  # For tests. Set to False for use.
-if not CELERY_TASK_ALWAYS_EAGER:
-    CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="")
-
-# TODO:PY3: Setting gone, use celery worker --loglevel flag.
-# CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
 CELERY_WORKER_CONCURRENCY = config("CELERY_WORKER_CONCURRENCY", default=4, cast=int)
 CELERY_TASK_EAGER_PROPAGATES = config(
     "CELERY_TASK_EAGER_PROPAGATES", default=True, cast=bool
@@ -912,6 +913,9 @@ CELERY_TASK_EAGER_PROPAGATES = config(
 CELERY_WORKER_HIJACK_ROOT_LOGGER = config(
     "CELERY_WORKER_HIJACK_ROOT_LOGGER", default=False, cast=bool
 )
+
+# Celery Beat Configuration
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = "sumo:wiki:full-rebuild"
