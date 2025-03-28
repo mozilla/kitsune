@@ -14,8 +14,8 @@
           <span class="display-name">{{ display_name(post.author) }}</span>
           {% if not post.author.profile.is_system_account %}
             {# L10n: {0} is the number of posts. #}
-            <span
-              class="user-title">{{ ngettext('1 post', '{0} posts', post.author_post_count)|f(post.author_post_count) }}
+            <span class="user-title">
+              {{ ngettext('1 post', '{0} posts', post.author_post_count)|f(post.author_post_count) }}
             </span>
           {% endif %}
         </a>
