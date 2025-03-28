@@ -35,9 +35,13 @@ def test_explore_by_topic_product_filter(page: Page):
             if product.strip() == "All Products":
                 continue
             else:
-                sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(
-                    product.strip())
-                time.sleep(2)
+                with page.expect_navigation(timeout=3000) as navigation_info:
+                    sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(
+                        product.strip())
+                response = navigation_info.value
+                if response is None:
+                    print("Navigation did not occur. Refreshing the page.")
+                    utilities.refresh_page()
                 if not sumo_pages.explore_by_topic_page.get_metadata_of_all_listed_articles():
                     pytest.fail(f"There is no sublist for {product}")
 
