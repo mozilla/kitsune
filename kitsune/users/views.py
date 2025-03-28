@@ -53,7 +53,6 @@ from kitsune.users.tasks import (
 )
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (
-    anonymize_user,
     deactivate_user,
     delete_user_pipeline,
     get_oidc_fxa_setting,
@@ -152,7 +151,7 @@ def profile(request, username):
 @login_required
 @require_POST
 def close_account(request):
-    anonymize_user(request.user)
+    delete_user_pipeline(request.user)
 
     # Log the user out
     auth.logout(request)

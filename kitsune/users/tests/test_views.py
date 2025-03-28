@@ -452,29 +452,10 @@ class UserCloseAccountTests(TestCase):
         # Confirm the expected initial state.
         self.assertTrue(self.user.is_active)
         self.assertTrue(self.user.profile.name)
-        self.assertEqual(self.user.groups.count(), 1)
-        self.assertEqual(self.user.outbox.count(), 1)
-        self.assertEqual(self.user.inbox.count(), len(self.other_users))
-        for other_user in self.other_users:
-            self.assertEqual(other_user.inbox.count(), 1)
-            self.assertEqual(other_user.outbox.count(), 1)
 
         res = self.client.post(reverse("users.close_account", locale="en-US"))
         self.assertEqual(200, res.status_code)
 
-        self.user.refresh_from_db()
-
-        # The user should be anonymized.
-        self.assertTrue(self.user.username.startswith("user"))
-        self.assertTrue(self.user.email.endswith("@example.com"))
-        # The user should be deactivated, and the user's profile and groups cleared.
-        self.assertFalse(self.user.is_active)
-        self.assertFalse(self.user.profile.name)
-        self.assertEqual(self.user.groups.count(), 0)
-        # Confirm that the user's inbox and outbox have been cleared, and
-        # that the inbox and outbox of each of the other users remain intact.
-        self.assertEqual(self.user.outbox.count(), 0)
-        self.assertEqual(self.user.inbox.count(), 0)
-        for other_user in self.other_users:
-            self.assertEqual(other_user.inbox.count(), 1)
-            self.assertEqual(other_user.outbox.count(), 1)
+        # The user should be completely deleted
+        with self.assertRaises(User.DoesNotExist):
+            self.user.refresh_from_db()
