@@ -41,8 +41,17 @@ class DocumentListener(UserDeletionListener):
             creator=None, anonymous_id=AnonymousIdentity().anonymous_id
         )
 
+        revs_to_delete = Revision.objects.filter(creator=user, is_approved=False)
+
+        # The "based_on" of revisions of parent documents often gets set to a prior
+        # revision within the same document, but is never used afterwards. Update
+        # the "based_on" of these revisions to NULL to avoid cascade deletion issues.
+        Revision.objects.filter(document__parent__isnull=True, based_on__in=revs_to_delete).update(
+            based_on=None
+        )
+
         Document.objects.filter(
             revisions__creator=user,
             current_revision__isnull=True,
         ).exclude(revisions__creator__in=User.objects.exclude(id=user.id)).delete()
-        Revision.objects.filter(creator=user, is_approved=False).delete()
+        revs_to_delete.delete()
