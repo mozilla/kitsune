@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext as _
 
+from kitsune.flagit.handlers import FlagListener
 from kitsune.forums.handlers import PostListener, ThreadListener
 from kitsune.gallery.handlers import MediaListener
 from kitsune.kbadge.handlers import AwardListener, BadgeListener
@@ -187,6 +188,7 @@ def delete_user_pipeline(user: User) -> None:
     publisher.register_listener(MediaListener())
     publisher.register_listener(AwardListener())
     publisher.register_listener(BadgeListener())
+    publisher.register_listener(FlagListener())
 
     publisher.publish()
     user.delete()
