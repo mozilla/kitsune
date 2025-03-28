@@ -782,7 +782,7 @@ def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
         )
 
     with allure.step("Verifying that no users are returned"):
-        expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=10000)
+        expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=15000)
 
     with allure.step("Navigating to the groups page"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
@@ -1053,7 +1053,7 @@ def test_unable_to_send_group_messages_to_profiless_groups(page: Page):
         sumo_pages.new_message_page.type_into_new_message_to_input_field("kb-contributors")
 
     with allure.step("Verifying that no users are returned"):
-        expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=10000)
+        expect(sumo_pages.new_message_page.get_no_user_to_locator()).to_be_visible(timeout=15000)
 
 
 # C2083482

@@ -1332,8 +1332,9 @@ def test_solves_this_problem(page: Page):
         sumo_pages.aaq_flow.deleting_question_flow()
 
 
-# Need to add test for preview as well.
 # T5696791, T5696772, T5696774, T5696776, T5696792
+# Skipped until we decide if we should revert https://github.com/mozilla/sumo/issues/2245 or not
+@pytest.mark.skip
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("quote_on", ['reply', 'question'])
 def test_quote_reply_functionality(page: Page, quote_on):

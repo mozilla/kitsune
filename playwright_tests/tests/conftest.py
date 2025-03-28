@@ -41,36 +41,29 @@ def navigate_to_homepage(page: Page):
     return page
 
 
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call) -> None:
     """
     This pytest hook is triggered after each test execution.
-    If a test failure occurred we are saving & attaching the test execution screencast to the
-    allure report for better debugging.
+    If a test failure occurred (including pytest assertion failures) we are saving & attaching the
+    test execution screencast to the allure report for better debugging.
     """
-    if call.when == "call":
-        # Check if the test has raised an exception (test failed or encountered an error during
-        # execution). Also checks if the test function has the page instance in its arguments
-        # ensuring that video recording is applied only when the test involves playwright
-        # automation.
-        if call.excinfo is not None and "page" in item.funcargs:
-            # Retrieve the page object from the test function arguments.
-            page: Page = item.funcargs["page"]
-            # Provide the path to the recorded video (the video recording starts when the browser
-            # context is created).
-            video_path = page.video.path()
-            # Ensure that the browser context is closed after test. Closing the context also
-            # ensures that the video is properly saved.
-            page.context.close()
-            # Attaching the video to the Allure report:
-            # 1. Opening the video file in binary mode and reading its content.
-            # 2. Assigning a name to the video attachment based on the slugyfied version of the
-            # test node id.
-            # 3. Saving the video as a .webm extension.
-            allure.attach(
-                open(video_path, 'rb').read(),
-                name=f"{slugify(item.nodeid)}.webm",
-                attachment_type=allure.attachment_type.WEBM
-            )
+
+    outcome = yield  # Capture the result of the test execution.
+    report = outcome.get_result()  # Retrieve the test execution report.
+
+    # Ensure the test has failed and involves Playwright automation.
+    if report.failed and "page" in item.funcargs:
+        page: Page = item.funcargs["page"]  # Retrieve the page object from the test function args.
+        video_path = page.video.path()  # Retrieve the path to the recorded video.
+        page.context.close()  # Close the browser context to ensure the video is properly saved.
+
+        # Attaching the video to the Allure report:
+        allure.attach(
+            open(video_path, 'rb').read(),
+            name=f"{slugify(item.nodeid)}.webm",
+            attachment_type=allure.attachment_type.WEBM
+        )
 
 
 @pytest.fixture()

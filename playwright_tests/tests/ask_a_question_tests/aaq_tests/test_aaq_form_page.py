@@ -521,7 +521,11 @@ def test_loginless_mozilla_account_aaq(page: Page):
                      "blocked after 3 submissions"):
         i = 1
         while i <= 4:
-            sumo_pages.top_navbar.click_on_signin_signup_button()
+            # In case a 502 error occurs we might end up in the auth page after the automatic
+            # refresh/retry so we need to skip the signin_signup button click since the
+            # element is not available.
+            if sumo_pages.top_navbar.is_sign_in_up_button_displayed():
+                sumo_pages.top_navbar.click_on_signin_signup_button()
             sumo_pages.auth_page.click_on_cant_sign_in_to_my_mozilla_account_link()
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
