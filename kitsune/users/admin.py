@@ -1,10 +1,16 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 from django.db.models import Q
 
 from kitsune.products.models import Product
 from kitsune.users import monkeypatch
 from kitsune.users.models import AccountEvent, Profile
+
+
+class SumoUserAdmin(UserAdmin):
+    list_display = UserAdmin.list_display + ("last_login",)
 
 
 class ProfileAdminForm(forms.ModelForm):
@@ -118,6 +124,8 @@ class AccountEventAdmin(admin.ModelAdmin):
         model = AccountEvent
 
 
+admin.site.unregister(User)
+admin.site.register(User, SumoUserAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(AccountEvent, AccountEventAdmin)
 monkeypatch.patch_all()
