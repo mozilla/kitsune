@@ -26,8 +26,11 @@ class TestDocumentListener(TestCase):
 
     def test_document_contributor_replacement(self):
         """Test that sole contributor is replaced with content group members."""
-        document = DocumentFactory()
-        document.contributors.add(self.user)
+        document = ApprovedRevisionFactory(creator=self.user).document
+
+        # Ensure that everything is setup properly prior to deleting the user.
+        self.assertEqual(document.contributors.count(), 1)
+        self.assertTrue(document.contributors.filter(id=self.user.id).exists())
 
         self.listener.on_user_deletion(self.user)
 
@@ -38,9 +41,14 @@ class TestDocumentListener(TestCase):
 
     def test_document_multiple_contributors(self):
         """Test that user is removed but other contributors remain."""
-        document = DocumentFactory()
+        document = ApprovedRevisionFactory(creator=self.user).document
         other_contributor = UserFactory()
-        document.contributors.add(self.user, other_contributor)
+        ApprovedRevisionFactory(document=document, creator=other_contributor)
+
+        # Ensure that everything is setup properly prior to deleting the user.
+        self.assertEqual(document.contributors.count(), 2)
+        self.assertTrue(document.contributors.filter(id=self.user.id).exists())
+        self.assertTrue(document.contributors.filter(id=other_contributor.id).exists())
 
         self.listener.on_user_deletion(self.user)
 
@@ -53,15 +61,22 @@ class TestDocumentListener(TestCase):
 
     def test_multiple_documents(self):
         """Test handling multiple documents with different contributor scenarios."""
-        doc1 = DocumentFactory()
-        doc1.contributors.add(self.user)
+        doc1 = ApprovedRevisionFactory(creator=self.user).document
 
-        doc2 = DocumentFactory()
+        doc2 = ApprovedRevisionFactory(creator=self.user).document
         other_contributor = UserFactory()
-        doc2.contributors.add(self.user, other_contributor)
+        ApprovedRevisionFactory(document=doc2, creator=other_contributor)
 
-        doc3 = DocumentFactory()
-        doc3.contributors.add(other_contributor)
+        doc3 = ApprovedRevisionFactory(creator=other_contributor).document
+
+        # Ensure that everything is setup properly prior to deleting the user.
+        self.assertEqual(doc1.contributors.count(), 1)
+        self.assertTrue(doc1.contributors.filter(id=self.user.id).exists())
+        self.assertEqual(doc2.contributors.count(), 2)
+        self.assertTrue(doc2.contributors.filter(id=self.user.id).exists())
+        self.assertTrue(doc2.contributors.filter(id=other_contributor.id).exists())
+        self.assertEqual(doc3.contributors.count(), 1)
+        self.assertTrue(doc3.contributors.filter(id=other_contributor.id).exists())
 
         self.listener.on_user_deletion(self.user)
 
@@ -236,3 +251,37 @@ class TestDocumentListener(TestCase):
         rev3 = Revision.objects.filter(id=rev3_id).first()
         self.assertIsNotNone(rev3, "The approved revision should not be deleted")
         self.assertEqual(rev3.based_on, rev2)
+
+    def test_revision_based_on_deletion_with_translation(self):
+        """
+        Test the handling of a revision's "based_on" field, when it references a revision
+        created by a user that is deleted, within the context of a translation.
+        """
+        doc = DocumentFactory()
+        rev1 = RevisionFactory(document=doc, creator=self.user)
+        rev2 = ApprovedRevisionFactory(document=doc, based_on=rev1)
+
+        de_doc = DocumentFactory(parent=doc, locale="de")
+        de_rev = RevisionFactory(document=de_doc, based_on=rev1)
+
+        doc_id = doc.id
+        rev1_id = rev1.id
+        rev2_id = rev2.id
+        de_doc_id = de_doc.id
+        de_rev_id = de_rev.id
+
+        self.listener.on_user_deletion(self.user)
+
+        # Ensure that the based-on handling of revisions within parent-less
+        # documents is correct.
+        self.assertTrue(Document.objects.filter(id=doc_id).exists())
+        self.assertFalse(Revision.objects.filter(id=rev1_id).exists())
+        rev2 = Revision.objects.filter(id=rev2_id).first()
+        self.assertIsNotNone(rev2)
+        self.assertIsNone(rev2.based_on)
+
+        # Ensure that the un-approved translated revision is cascade deleted,
+        # and also that its document, since it no longer has any revisions, is
+        # also deleted.
+        self.assertFalse(Revision.objects.filter(id=de_rev_id).exists())
+        self.assertFalse(Document.objects.filter(id=de_doc_id).exists())

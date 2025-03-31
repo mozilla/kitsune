@@ -55,3 +55,6 @@ class DocumentListener(UserDeletionListener):
             current_revision__isnull=True,
         ).exclude(revisions__creator__in=User.objects.exclude(id=user.id)).delete()
         revs_to_delete.delete()
+
+        # Now that we've deleted the revisions, cleanup any empty documents.
+        Document.objects.filter(revisions__isnull=True).delete()
