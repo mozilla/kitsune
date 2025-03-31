@@ -48,22 +48,24 @@ def pytest_runtest_makereport(item, call) -> None:
     If a test failure occurred (including pytest assertion failures) we are saving & attaching the
     test execution screencast to the allure report for better debugging.
     """
-
     outcome = yield  # Capture the result of the test execution.
-    report = outcome.get_result()  # Retrieve the test execution report.
 
-    # Ensure the test has failed and involves Playwright automation.
-    if report.failed and "page" in item.funcargs:
-        page: Page = item.funcargs["page"]  # Retrieve the page object from the test function args.
-        video_path = page.video.path()  # Retrieve the path to the recorded video.
-        page.context.close()  # Close the browser context to ensure the video is properly saved.
+    # Ensure that the hook is executed during the test execution phase.
+    if call.when == "call":
+        report = outcome.get_result()  # Retrieve the test execution report.
 
-        # Attaching the video to the Allure report:
-        allure.attach(
-            open(video_path, 'rb').read(),
-            name=f"{slugify(item.nodeid)}.webm",
-            attachment_type=allure.attachment_type.WEBM
-        )
+        # Ensure the test has failed and involves Playwright automation.
+        if report.failed and "page" in item.funcargs:
+            page: Page = item.funcargs["page"]  # Retrieve the page object from the test args.
+            video_path = page.video.path()  # Retrieve the path to the recorded video.
+            page.context.close()  # Close the browser context to ensure the video is saved.
+
+            # Attaching the video to the Allure report:
+            allure.attach(
+                open(video_path, 'rb').read(),
+                name=f"{slugify(item.nodeid)}.webm",
+                attachment_type=allure.attachment_type.WEBM
+            )
 
 
 @pytest.fixture()
