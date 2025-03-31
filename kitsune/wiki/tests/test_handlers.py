@@ -236,3 +236,46 @@ class TestDocumentListener(TestCase):
         rev3 = Revision.objects.filter(id=rev3_id).first()
         self.assertIsNotNone(rev3, "The approved revision should not be deleted")
         self.assertEqual(rev3.based_on, rev2)
+
+    def test_revision_based_on_deletion_with_translation(self):
+        """
+        Test the handling of a revision's "based_on" field, when it references a revision
+        created by a user that is deleted, within the context of a translation.
+        """
+        doc = DocumentFactory()
+        rev1 = RevisionFactory(document=doc, creator=self.user)
+        rev2 = ApprovedRevisionFactory(document=doc, based_on=rev1)
+
+        de_doc = DocumentFactory(parent=doc, locale="de")
+        de_rev = RevisionFactory(document=de_doc, based_on=rev1)
+
+        it_doc = DocumentFactory(parent=doc, locale="it")
+        it_rev1 = RevisionFactory(document=it_doc, based_on=rev1)
+        it_rev2 = RevisionFactory(document=it_doc, based_on=rev2)
+
+        doc_id = doc.id
+        rev1_id = rev1.id
+        rev2_id = rev2.id
+        de_doc_id = de_doc.id
+        de_rev_id = de_rev.id
+        it_doc_id = it_doc.id
+        it_rev1_id = it_rev1.id
+        it_rev2_id = it_rev2.id
+
+        self.listener.on_user_deletion(self.user)
+
+        # Ensure that the based-on handling of revisions within parent-less
+        # documents is correct.
+        self.assertTrue(Document.objects.filter(id=doc_id).exists())
+        self.assertFalse(Revision.objects.filter(id=rev1_id).exists())
+        self.assertTrue(Revision.objects.filter(id=rev2_id, based_on=None).exists())
+
+        # Ensure that the un-approved translated revision is cascade deleted,
+        # and also that its document, if it no longer has any revisions, is
+        # also deleted.
+        self.assertFalse(Revision.objects.filter(id=de_rev_id).exists())
+        self.assertFalse(Document.objects.filter(id=de_doc_id).exists())
+
+        self.assertFalse(Revision.objects.filter(id=it_rev1_id).exists())
+        self.assertTrue(Revision.objects.filter(id=it_rev2_id, based_on=rev2).exists())
+        self.assertTrue(Document.objects.filter(id=it_doc_id).exists())
