@@ -3,6 +3,12 @@
 
 @import 'tom-select/dist/scss/tom-select.default';
 
+// Hide the related documents list on edit metadata and new document pages
+body.edit_metadata #related-docs-list,
+body.new #related-docs-list {
+  display: none !important;
+}
+
 figure {
   &.linked-in-product {
     display: flex;

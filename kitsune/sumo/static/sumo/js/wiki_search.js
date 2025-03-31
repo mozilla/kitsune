@@ -1,82 +1,104 @@
 import Search from "sumo/js/search_utils";
+import TomSelect from "tom-select";
 
 import "sumo/tpl/wiki-related-doc.njk";
 import "sumo/tpl/wiki-search-results.njk";
 import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
 (function($) {
-  var searchTimeout;
   var locale = $('html').attr('lang');
-
-  var $searchField = $('#search-related');
-  var $relatedDocsList = $('#related-docs-list');
-  var $resultsList;
-
-  // To search for only wiki articles we pass w=1
   var search = new Search('/' + locale + '/search', {w: 1, format: 'json'});
 
-  function createResultsList() {
-    $resultsList = $('<div />').addClass('input-dropdown');
-    $searchField.after($resultsList);
-    $resultsList.css('width', $searchField.outerWidth());
-    $resultsList.show();
+  document.addEventListener("DOMContentLoaded", function() {
+    var $relatedDocsList = $('#related-docs-list');
+    var searchInput = document.getElementById('search-related');
+    
+    if (!searchInput) return;
 
-    $resultsList.on('click', '[data-pk]', function() {
-      var $this = $(this);
+    if (document.body.classList.contains('edit_metadata') || document.body.classList.contains('new')) {
+      $relatedDocsList.css('display', 'none');
+    }
 
-      $relatedDocsList.children('.empty-message').remove();
+    var currentDocId = null;
+    var $documentForm = $('form[data-document-id]');
+    if ($documentForm.length) {
+      currentDocId = $documentForm.data('document-id');
+    }
 
-      if (!$relatedDocsList.children('[data-pk=' + $this.data('pk') + ']').length) {
-        var context = {
-          name: 'related_documents',
-          doc: {
-            id: $this.data('pk'),
-            title: $this.text()
+    var tomSelect = new TomSelect(searchInput, {
+      valueField: 'id',
+      labelField: 'title',
+      searchField: 'title',
+      create: false,
+      closeAfterSelect: true,
+      maxItems: null,
+      plugins: {
+        remove_button: {
+          title: 'Remove this document'
+        }
+      },
+      load: function(query, callback) {
+        if (!query.length) return callback();
+        
+        search.query(query, function(data) {
+          if (!data || !data.results) {
+            return callback();
           }
-        };
-
-        $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.njk', context));
+          
+          var formattedResults = data.results
+            .filter(result => result.type === 'document')
+            .map(function(item) {
+              var id = item.id;
+              if (!id && item.url) {
+                var match = item.url.match(/\/(\d+)\//);
+                if (match) {
+                  id = match[1];
+                }
+              }
+              
+              return {
+                id: id,
+                title: item.title,
+                url: item.url
+              };
+            })
+            .filter(item => item.id)
+            .filter(item => !currentDocId || item.id != currentDocId)
+          callback(formattedResults);
+        });
+      },
+      onItemAdd: function(value, item) {
+        $relatedDocsList.children('.empty-message').remove();
+      },
+      render: {
+        option: function(item, escape) {
+          return '<div>' + escape(item.title) + '</div>';
+        },
+        item: function(item, escape) {
+          var context = {
+            name: 'related_documents',
+            doc: {
+              id: item.id,
+              title: item.title
+            }
+          };
+          
+          $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.njk', context));
+          
+          return '<div>' + escape(item.title) + '</div>';
+        },
+        no_results: function(data, escape) {
+          return '<div class="no-results">No documents found</div>';
+        }
       }
     });
-  }
-
-  function showResults(data) {
-    if (!$resultsList) {
-      createResultsList();
-    }
-    $resultsList.html(nunjucksEnv.render('wiki-search-results.njk', data));
-  }
-
-  function handleSearch() {
-    var $this = $(this);
-    if ($this.val().length === 0) {
-      window.clearTimeout(searchTimeout);
-      if ($resultsList) {
-        $resultsList.html('');
-        $resultsList.hide();
+    
+    tomSelect.on('item_remove', function(value) {
+      $relatedDocsList.children('[data-pk=' + value + ']').remove();
+      
+      if (!$relatedDocsList.children().length) {
+        $relatedDocsList.html('<div class="empty-message">' + gettext('No related documents.') + '</div>');
       }
-    } else if ($this.val() !== search.lastQuery) {
-      window.clearTimeout(searchTimeout);
-      searchTimeout = window.setTimeout(function () {
-        search.query($this.val(), showResults);
-      }, 200);
-    }
-  }
-
-  $searchField.on('keyup', handleSearch);
-
-  $searchField.on('focus', function() {
-    if ($resultsList) {
-      $resultsList.show();
-    }
-  });
-
-  $searchField.on('blur', function() {
-    if ($resultsList) {
-      // We use a timeout to ensure that you can still click on the dropdown
-      window.setTimeout(function() {
-        $resultsList.hide();
-      }, 100);
-    }
+    });
   });
 })(jQuery);
