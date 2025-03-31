@@ -227,7 +227,6 @@ class WikiSearch(SumoSearch):
             "score": hit.meta.score,
             "title": hit.title[self.locale],
             "search_summary": summary,
-            "id": hit.meta.id,
         }
 
 
