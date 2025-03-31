@@ -1,9 +1,9 @@
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
 from kitsune.flagit.handlers import FlagListener
 from kitsune.flagit.models import FlaggedObject
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 
 
@@ -17,7 +17,7 @@ class TestFlagListener(TestCase):
         reporting_user1 = UserFactory()
         reporting_user2 = UserFactory()
 
-        user_content_type = ContentType.objects.get_for_model(User)
+        user_content_type = ContentType.objects.get_for_model(Profile)
         flag1 = FlaggedObject.objects.create(
             content_type=user_content_type,
             object_id=self.flagged_user.id,
@@ -49,7 +49,7 @@ class TestFlagListener(TestCase):
     def test_flags_created_by_user_remain(self):
         """Test that flags created by the deleted user remain."""
         user_to_be_flagged = UserFactory()
-        user_content_type = ContentType.objects.get_for_model(User)
+        user_content_type = ContentType.objects.get_for_model(Profile)
 
         flag1 = FlaggedObject.objects.create(
             content_type=user_content_type,
@@ -64,7 +64,7 @@ class TestFlagListener(TestCase):
     def test_multiple_content_types(self):
         """Test that only flags against the user are deleted, not flags of other content types."""
         reporting_user = UserFactory()
-        user_content_type = ContentType.objects.get_for_model(User)
+        user_content_type = ContentType.objects.get_for_model(Profile)
 
         flag1 = FlaggedObject.objects.create(
             content_type=user_content_type,
