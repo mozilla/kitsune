@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.users.handlers import UserDeletionListener
+from kitsune.users.models import Profile
 
 
 class FlagListener(UserDeletionListener):
@@ -13,5 +14,5 @@ class FlagListener(UserDeletionListener):
         When a user is deleted:
         - Delete flags where the user was the content object
         """
-        user_content_type = ContentType.objects.get_for_model(User)
+        user_content_type = ContentType.objects.get_for_model(Profile)
         FlaggedObject.objects.filter(content_type=user_content_type, object_id=user.id).delete()
