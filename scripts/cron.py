@@ -410,11 +410,33 @@ def job_cleanup_old_account_events():
     day_of_week=0,
     max_instances=1,
     coalesce=True,
-    skip=(settings.READ_ONLY or not waffle.switch_is_active('cleanup-expired-users')),
+    skip=(settings.READ_ONLY or not waffle.switch_is_active("cleanup-expired-users")),
 )
 @babis.decorator(ping_after=settings.DMS_CLEANUP_EXPIRED_USERS)
 def job_cleanup_expired_users():
     call_command("cleanup_expired_users")
+
+
+# Every 4 hours, 15 minutes after the hour.
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="*/4",
+    minute="15",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_REPROCESS_FAILED_ACCOUNT_EVENTS)
+def job_reprocess_failed_account_events():
+    """
+    Re-process any account events created within the past 24 hours that remain
+    in the unprocessed state. Kicks off a Celery task that does the following:
+        * Gathers all unprocessed account events created within the past 24 hours.
+        * Kicks off a separate Celery task to reprocess each one.
+    """
+    call_command("reprocess_failed_account_events --within-hours 24")
 
 
 def run():
