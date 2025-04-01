@@ -50,8 +50,21 @@ class DocumentListener(UserDeletionListener):
             based_on=None
         )
 
+        # Translations with one or more revisions whose based-on matches one of the
+        # revisions that will be deleted, will lose those revisions via cascade deletion.
+        # Gather these translations, so we can check later if they no longer have any
+        # revisions, and so need to be deleted themselves.
+        translations_affected = list(
+            Document.objects.filter(
+                parent__isnull=False, revisions__based_on__in=revs_to_delete
+            ).values_list("id", flat=True)
+        )
+
         Document.objects.filter(
             revisions__creator=user,
             current_revision__isnull=True,
         ).exclude(revisions__creator__in=User.objects.exclude(id=user.id)).delete()
         revs_to_delete.delete()
+
+        # Delete any translations that no longer have any revisions due to cascade deletions.
+        Document.objects.filter(revisions__isnull=True, id__in=translations_affected).delete()
