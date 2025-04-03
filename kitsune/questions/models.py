@@ -21,7 +21,7 @@ from django.dispatch import receiver
 from django.urls import is_valid_path
 from django.utils import translation
 from django.utils.translation import pgettext
-from elasticsearch import ElasticsearchException
+from elasticsearch.exceptions import ElasticsearchException
 from product_details import product_details
 
 from kitsune.flagit.models import FlaggedObject
