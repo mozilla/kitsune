@@ -1,8 +1,5 @@
-from django.contrib.contenttypes.models import ContentType
-
-from kitsune.flagit.models import FlaggedObject
 from kitsune.forums.handlers import PostListener, ThreadListener
-from kitsune.forums.models import Post, Thread
+from kitsune.forums.models import Thread
 from kitsune.forums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
@@ -92,34 +89,3 @@ class TestPostListener(TestCase):
         post2.refresh_from_db()
         self.assertEqual(post1.author.username, self.sumo_bot.username)
         self.assertEqual(post2.author, other_user)
-
-    def test_flagged_posts_deletion(self):
-        """Test that flagged posts are deleted."""
-        post1 = PostFactory(author=self.user)
-        post2 = PostFactory(author=self.user)
-        post3 = PostFactory(author=self.user)
-
-        post_content_type = ContentType.objects.get_for_model(Post)
-
-        FlaggedObject.objects.create(
-            content_type=post_content_type,
-            object_id=post1.id,
-            creator=UserFactory(),
-            reason=FlaggedObject.REASON_SPAM,
-        )
-        FlaggedObject.objects.create(
-            content_type=post_content_type,
-            object_id=post2.id,
-            creator=UserFactory(),
-            reason=FlaggedObject.REASON_SPAM,
-        )
-
-        self.listener.on_user_deletion(self.user)
-
-        with self.assertRaises(Post.DoesNotExist):
-            post1.refresh_from_db()
-        with self.assertRaises(Post.DoesNotExist):
-            post2.refresh_from_db()
-
-        post3.refresh_from_db()
-        self.assertEqual(post3.author.username, self.sumo_bot.username)

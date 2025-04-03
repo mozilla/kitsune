@@ -65,3 +65,20 @@ class FlaggedObject(ModelBase):
         unique_together = (("content_type", "object_id", "creator"),)
         ordering = ["created"]
         permissions = (("can_moderate", "Can moderate flagged objects"),)
+
+    def save(self, *args, **kwargs):
+        owner = None
+        if hasattr(self.content_object, "creator"):
+            owner = self.content_object.creator
+        elif hasattr(self.content_object, "author"):
+            owner = self.content_object.author
+
+        if (
+            int(self.status) == FlaggedObject.FLAG_ACCEPTED
+            and owner
+            and owner.profile.is_system_account
+        ):
+            self.content_object.delete()
+            self.delete()
+            return
+        super().save(*args, **kwargs)
