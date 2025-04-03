@@ -210,6 +210,7 @@ class WikiSearch(SumoSearch):
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
+
         return DSLQ("bool", filter=filters, must=self.build_query())
 
     def make_result(self, hit):
@@ -221,12 +222,17 @@ class WikiSearch(SumoSearch):
             summary = hit.content[self.locale][:SNIPPET_LENGTH]
         summary = strip_html(summary)
 
+        # Get is_restricted value with fallback to False
+        is_restricted = getattr(hit, "is_restricted", False)
+
         return {
             "type": "document",
             "url": reverse("wiki.document", args=[hit.slug[self.locale]], locale=self.locale),
             "score": hit.meta.score,
             "title": hit.title[self.locale],
             "search_summary": summary,
+            "id": hit.meta.id,
+            "is_restricted": is_restricted,
         }
 
 

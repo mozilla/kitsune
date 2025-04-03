@@ -27,6 +27,7 @@ class WikiDocument(SumoDocument):
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
     category = field.Keyword()
+    is_restricted = field.Boolean()
 
     # Document specific fields (locale aware)
     title = SumoLocaleAwareTextField()
@@ -83,6 +84,9 @@ class WikiDocument(SumoDocument):
 
     def prepare_product_ids(self, instance):
         return [product.id for product in instance.products.all()]
+
+    def prepare_is_restricted(self, instance):
+        return instance.is_restricted
 
     def prepare_display_order(self, instance):
         return instance.original.display_order
