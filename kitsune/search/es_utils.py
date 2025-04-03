@@ -97,7 +97,38 @@ def es_client(**kwargs):
         kwargs.update({"cloud_id": es_cloud_id, "http_auth": settings.ES_HTTP_AUTH})
     else:
         kwargs.update({"hosts": settings.ES_URLS})
+
+    # Add SSL settings for ES 8.x if they exist
+    if hasattr(settings, "ES_CA_CERTS"):
+        kwargs.update({"ca_certs": settings.ES_CA_CERTS})
+
+    # Set verify_certs if explicitly configured
+    if hasattr(settings, "ES_VERIFY_CERTS"):
+        kwargs.update({"verify_certs": settings.ES_VERIFY_CERTS})
+
+    # Default to not using SSL verification in development environments
+    if not settings.DEBUG and not kwargs.get("verify_certs", None) and not settings.ES_CLOUD_ID:
+        kwargs.update({"verify_certs": False})
+
     return Elasticsearch(**kwargs)
+
+
+def recreate_index_and_mapping(doc_type):
+    """
+    Recreate the index with the mappings defined in the Document class.
+    """
+    client = es_client()
+    index_name = doc_type._index._name
+
+    # Check if the index exists first
+    if client.indices.exists(index=index_name):
+        # Delete the index if it exists
+        client.indices.delete(index=index_name)
+
+    # Create the index with the document mapping
+    doc_type.init(using=client)
+
+    return index_name
 
 
 def get_doc_types(paths=["kitsune.search.documents"]):
@@ -170,7 +201,6 @@ def index_objects_bulk(
         es_client(
             timeout=timeout,
             retry_on_timeout=True,
-            initial_backoff=timeout,
             max_retries=settings.ES_BULK_MAX_RETRIES,
         ),
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),

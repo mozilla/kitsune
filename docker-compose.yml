@@ -34,9 +34,10 @@ services:
       - pgvolume:/var/lib/postgresql/data
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
       - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
     ports:
       - "9200:9200"
@@ -45,7 +46,7 @@ services:
       - ./kitsune/search/dictionaries/synonyms:/usr/share/elasticsearch/config/synonyms
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.10.2
+    image: docker.elastic.co/kibana/kibana:8.17.0
     ports:
       - 5601:5601
     environment:

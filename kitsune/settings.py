@@ -6,6 +6,7 @@ import logging
 import os
 import platform
 import re
+from typing import Any
 
 import dj_database_url
 import django_cache_url
@@ -320,11 +321,11 @@ ES_PLUGIN_ANALYZERS = ["polish"]
 
 ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=not DEBUG, cast=bool)
 
-ES_BULK_DEFAULT_TIMEOUT = config("ES_BULK_DEFAULT_TIMEOUT", default=10, cast=float)
-ES_BULK_MAX_RETRIES = config("ES_BULK_MAX_RETRIES", default=1, cast=int)
+ES_BULK_DEFAULT_TIMEOUT = config("ES_BULK_DEFAULT_TIMEOUT", default=60, cast=int)
+ES_BULK_MAX_RETRIES = config("ES_BULK_MAX_RETRIES", default=2, cast=int)
 
 ES_DEFAULT_SQL_CHUNK_SIZE = config("ES_DEFAULT_SQL_CHUNK_SIZE", default=1000, cast=int)
-ES_DEFAULT_ELASTIC_CHUNK_SIZE = config("ES_DEFAULT_ELASTIC_CHUNK_SIZE", default=50, cast=int)
+ES_DEFAULT_ELASTIC_CHUNK_SIZE = config("ES_DEFAULT_ELASTIC_CHUNK_SIZE", default=100, cast=int)
 
 TEXT_DOMAIN = "messages"
 
@@ -741,16 +742,24 @@ STAFF_GROUP = "Staff"
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
-# Connection information for Elastic 7
+# Connection information for Elasticsearch 8.x
 ES_TIMEOUT = 5  # Timeout for querying requests
-ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
+ES_URLS = config("ES_URLS", cast=Csv(), default="http://elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
 ES_USE_SSL = config("ES_USE_SSL", default=False, cast=bool)
-ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
+ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="elastic:changeme", cast=str)
 ES_ENABLE_CONSOLE_LOGGING = config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
 # Pass parameters to the ES client
-# like "search_type": "dfs_query_then_fetch"
-ES_SEARCH_PARAMS = {"request_timeout": ES_TIMEOUT}
+ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=not DEBUG, cast=bool)
+
+ES_BULK_DEFAULT_TIMEOUT = config("ES_BULK_DEFAULT_TIMEOUT", default=60, cast=int)
+ES_BULK_MAX_RETRIES = config("ES_BULK_MAX_RETRIES", default=2, cast=int)
+
+ES_DEFAULT_SQL_CHUNK_SIZE = config("ES_DEFAULT_SQL_CHUNK_SIZE", default=1000, cast=int)
+ES_DEFAULT_ELASTIC_CHUNK_SIZE = config("ES_DEFAULT_ELASTIC_CHUNK_SIZE", default=100, cast=int)
+# Added for ES 8.x compatibility
+ES_VERIFY_CERTS = config("ES_VERIFY_CERTS", default=False, cast=bool)
+ES_CA_CERTS = config("ES_CA_CERTS", default=None)
 
 # This is prepended to index names to get the final read/write index
 # names used by kitsune. This is so that you can have multiple
@@ -1335,3 +1344,26 @@ SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")
 SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="Staff Content Team")
 
 USER_INACTIVITY_DAYS = config("USER_INACTIVITY_DAYS", default=1095, cast=int)
+
+# Elasticsearch settings
+ES_URLS = config("ES_URLS", cast=Csv(), default="http://elasticsearch:9200")
+ES_INDEXES = {
+    "default": "sumo-{}".format(config("ES_INDEX_PREFIX", default="", cast=str)),
+    "metrics": "sumo-metrics-{}".format(config("ES_INDEX_PREFIX", default="", cast=str)),
+    "questions": "sumo_questions_{}".format(config("ES_INDEX_PREFIX", default="", cast=str)),
+    "forums": "sumo_forums_{}".format(config("ES_INDEX_PREFIX", default="", cast=str)),
+}
+ES_SYNONYMS_PATH = "/tmp/synonyms"
+ES_LIVE_INDEXING = config("ES_LIVE_INDEXING", default=True, cast=bool)
+ES_DEFAULT_SQL_CHUNK_SIZE = config("ES_DEFAULT_SQL_CHUNK_SIZE", default=1000, cast=int)
+ES_DEFAULT_ELASTIC_CHUNK_SIZE = config("ES_DEFAULT_ELASTIC_CHUNK_SIZE", default=100, cast=int)
+ES_BULK_DEFAULT_TIMEOUT = config("ES_BULK_DEFAULT_TIMEOUT", default=60, cast=int)
+ES_SEARCH_PARAMS: dict[str, Any] = (
+    {}
+)  # Additional parameters to pass to Elasticsearch for searches
+ES_ENABLE_CONSOLE_LOGGING = config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
+ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=False, cast=bool)
+ES_CLOUD_ID = config("ES_CLOUD_ID", default="", cast=str)
+ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="elastic:changeme", cast=str)
+ES_VERIFY_CERTS = config("ES_VERIFY_CERTS", default=False, cast=bool)
+ES_CA_CERTS = config("ES_CA_CERTS", default=None)

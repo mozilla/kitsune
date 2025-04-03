@@ -96,10 +96,10 @@ class SumoDocument(DSLDocument):
         client = es_client()
         old_index = cls.alias_points_at(alias)
         if not old_index:
-            client.indices.put_alias(new_index, alias)
+            client.indices.put_alias(index=new_index, name=alias)
         else:
             client.indices.update_aliases(
-                {
+                body={
                     "actions": [
                         {"remove": {"index": old_index, "alias": alias}},
                         {"add": {"index": new_index, "alias": alias}},
