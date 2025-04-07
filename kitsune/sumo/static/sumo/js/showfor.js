@@ -43,7 +43,7 @@ ShowFor.prototype.platformMap = {
 
 /* Get the product/platform data from the DOM, and munge it into the
   * desired format. */
-ShowFor.prototype.loadData = function() {
+ShowFor.prototype.loadData = function () {
   try {
     this.data = JSON.parse(this.$container.find('.showfor-data').html());
   } catch (e) {
@@ -53,25 +53,25 @@ ShowFor.prototype.loadData = function() {
       versions: [],
     };
   }
-  this.productSlugs = this.data.products.map(function(prod) {
+  this.productSlugs = this.data.products.map(function (prod) {
     return prod.slug;
   });
   this.platformSlugs = [];
   for (var product in this.data.platforms) {
-    this.data.platforms[product].forEach(function(platform) {
+    this.data.platforms[product].forEach(function (platform) {
       this.platformSlugs.push(platform.slug);
     }.bind(this));
   }
   this.versionSlugs = {};
   for (var prod in this.data.versions) {
-    this.data.versions[prod].forEach(function(version) {
+    this.data.versions[prod].forEach(function (version) {
       this.versionSlugs[version.slug] = prod;
     }.bind(this));
   }
 };
 
 // Bind events for ShowFor.
-ShowFor.prototype.initEvents = function() {
+ShowFor.prototype.initEvents = function () {
   window.onpopstate = this.updateUI.bind(this);
   this.$container.on('change keyup', 'input, select', this.onUIChange.bind(this));
 };
@@ -87,11 +87,14 @@ ShowFor.prototype.initEvents = function() {
   * include Firefox 18. Users that aren't running Firefox 18 won't see it as an
   * option though
   */
-ShowFor.prototype.ensureSelect = function($select, type, product, val) {
+ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
   var $opt;
   var key;
   var extra = {};
   var target;
+
+  // Version pattern used for parsing product versions (e.g., 'fx114', 'm95')
+  const VERSION_PATTERN = /^([a-z]+)(\d+)/;
 
   function select(searchArray, slug) {
     for (var i = 0; i < searchArray.length; i++) {
@@ -104,6 +107,36 @@ ShowFor.prototype.ensureSelect = function($select, type, product, val) {
 
   if (type === 'version') {
     target = select(this.data.versions[product], val);
+
+    // Handle case where version isn't found but might be newer than known versions
+    if (target === null && this.data.versions[product]?.length > 0) {
+      const versionMatch = val.match(VERSION_PATTERN);
+      if (versionMatch) {
+        const [, productPrefix, versionStr] = versionMatch;
+        const requestedVersion = parseInt(versionStr, 10);
+
+        let latestKnownVersion = null;
+        let latestVersionNum = 0;
+
+        this.data.versions[product].forEach(function (version) {
+          const knownVersionMatch = version.slug.match(VERSION_PATTERN);
+          if (knownVersionMatch && knownVersionMatch[1] === productPrefix) {
+            const knownVersionNum = parseInt(knownVersionMatch[2], 10);
+            if (knownVersionNum > latestVersionNum) {
+              latestVersionNum = knownVersionNum;
+              latestKnownVersion = version;
+            }
+          }
+        });
+
+        // If requested version is newer, use latest known version as base
+        if (latestKnownVersion && requestedVersion > latestVersionNum) {
+          target = { ...latestKnownVersion };
+          target.max_version = requestedVersion;
+        }
+      }
+    }
+
     if (target !== null) {
       extra['data-min'] = target.min_version;
       extra['data-max'] = target.max_version;
@@ -144,7 +177,7 @@ ShowFor.prototype.ensureSelect = function($select, type, product, val) {
   *      * sessionStore
   *      * browser detection via useragent sniffing.
   */
-ShowFor.prototype.updateUI = async function() {
+ShowFor.prototype.updateUI = async function () {
   var persisted = null;
   var hash = document.location.hash;
 
@@ -161,7 +194,7 @@ ShowFor.prototype.updateUI = async function() {
   if (persisted) {
     var itWorked = false;
     this.$container.find('.product input[type=checkbox]').prop('checked', false);
-    persisted.split('&').forEach(function(prodInfo) {
+    persisted.split('&').forEach(function (prodInfo) {
       var data = prodInfo.split(':');
       var product = data[0] || null;
       var platform = data[1] || null;
@@ -197,7 +230,7 @@ ShowFor.prototype.updateUI = async function() {
 
   var $products = this.$container.find('.product');
   var productElems = {};
-  $products.each(function(i, elem) {
+  $products.each(function (i, elem) {
     var $elem = $(elem);
     productElems[$elem.data('product')] = $elem;
   });
@@ -226,14 +259,14 @@ ShowFor.prototype.updateUI = async function() {
 };
 
 // Called when the user touches something.
-ShowFor.prototype.onUIChange = function() {
+ShowFor.prototype.onUIChange = function () {
   this.updateState();
   this.showAndHide();
   this.persist();
 };
 
 // Stores the current object state in the url hash and/or sessionStorage.
-ShowFor.prototype.persist = function() {
+ShowFor.prototype.persist = function () {
   var key, val, i = 0;
 
   var persisted = '';
@@ -273,17 +306,17 @@ ShowFor.prototype.persist = function() {
   *
   * This gets stored in this object's internal state, in the url via a
   * has, and into sessionstorage (if available) */
-ShowFor.prototype.updateState = function() {
+ShowFor.prototype.updateState = function () {
   this.state = {};
 
-  this.$container.find('.product').each(function(i, productElem) {
+  this.$container.find('.product').each(function (i, productElem) {
     var $productElem = $(productElem);
     var slug = $productElem.data('product');
     this.state[slug] = {
       enabled: $productElem.find('input[type=checkbox]').prop('checked')
     };
 
-    $productElem.find('select').each(function(j, selectElem) {
+    $productElem.find('select').each(function (j, selectElem) {
       var $selectElem = $(selectElem);
       var combined = $selectElem.val();
       var parts = combined.split(':');
@@ -307,13 +340,13 @@ ShowFor.prototype.updateState = function() {
 /* Table of Contents entries need to be shown shown and hidden too.
   * For any TOC entry that corresponds to a header that might be hidden,
   * wrap it in a span to mimic showfor elements. */
-ShowFor.prototype.wrapTOCs = function() {
+ShowFor.prototype.wrapTOCs = function () {
   /* This works by going through the TOC that already exists, and for
     * every element, checking if the corresponding heading in the
     * article is contained in a showfor. If it is, this wraps the TOC
     * element in <span>s that mimic showfor. */
 
-  this.$container.find('#toc a').each(function(i, elem) {
+  this.$container.find('#toc a').each(function (i, elem) {
     var $elem = $(elem);
     var idSelector = $elem.attr('href');
     if (idSelector[0] !== '#') {
@@ -339,8 +372,8 @@ ShowFor.prototype.wrapTOCs = function() {
 
 /* Attach functions to each DOM element that determine whether it should
   /* be shown or hidden. */
-ShowFor.prototype.initShowFuncs = function() {
-  this.$container.find('.for').each(function(i, elem) {
+ShowFor.prototype.initShowFuncs = function () {
+  this.$container.find('.for').each(function (i, elem) {
     var $elem = $(elem);
     var showFor = $elem.data('for');
     var criteria = showFor.split(/\s*,\s*/);
@@ -353,8 +386,8 @@ ShowFor.prototype.initShowFuncs = function() {
   *
   * If no deciding function is attached, the element will be shown as a fallback.
   */
-ShowFor.prototype.showAndHide = function() {
-  this.$container.find('.for').each(function(i, elem) {
+ShowFor.prototype.showAndHide = function () {
+  this.$container.find('.for').each(function (i, elem) {
     var $elem = $(elem);
     var showFuncVal = $elem.data('show-func')();
     if (showFuncVal !== undefined) {
@@ -370,7 +403,7 @@ ShowFor.prototype.showAndHide = function() {
   * criteria is an array of strings like "fx24" or "not m", which
   * generally come from splitting the for selectors on commas.
   */
-ShowFor.prototype.matchesCriteria = function(criteria) {
+ShowFor.prototype.matchesCriteria = function (criteria) {
   /* The basic logic for showfor is that there are two kinds of
     * things: platforms and products. If one or more platforms are
     * in the criteria, at least one has to match. If one or more
@@ -404,7 +437,7 @@ ShowFor.prototype.matchesCriteria = function(criteria) {
     * has/matches variables above to true if at least one
     * product/platform is found, and at least one of those matches
     * respectively. */
-  criteria.forEach(function(name) {
+  criteria.forEach(function (name) {
     var productSlug, elemVersion;
 
     // Does this start with "not" ? Set a flag.
@@ -473,7 +506,7 @@ ShowFor.prototype.matchesCriteria = function(criteria) {
       var windowsTypes = ['winxp', 'win7', 'win8', 'win10', 'win11'];
       var winMatches = false;
 
-      windowsTypes.forEach(function(fakeName) {
+      windowsTypes.forEach(function (fakeName) {
         if (enabledPlatforms.indexOf(fakeName) >= 0) {
           winMatches = true;
         }
