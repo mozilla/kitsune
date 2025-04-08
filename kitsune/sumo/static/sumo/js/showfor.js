@@ -106,37 +106,43 @@ ShowFor.prototype.ensureSelect = function ($select, type, product, val) {
   }
 
   if (type === 'version') {
-    target = select(this.data.versions[product], val);
+    const exactVersionVal = 'version:' + val;
+    const exactMatch = $select.find('option[value="' + exactVersionVal + '"]');
 
-    // Handle case where version isn't found but might be newer than known versions
-    if (target === null && this.data.versions[product]?.length > 0) {
-      const versionMatch = val.match(VERSION_PATTERN);
-      if (versionMatch) {
-        const [, productPrefix, versionStr] = versionMatch;
-        const requestedVersion = parseInt(versionStr, 10);
+    if (exactMatch.length > 0) {
+      $select.val(exactVersionVal);
+      return;
+    }
 
-        let latestKnownVersion = null;
-        let latestVersionNum = 0;
+    const versionMatch = val.match(VERSION_PATTERN);
+    if (versionMatch) {
+      const [, productPrefix, versionStr] = versionMatch;
+      const browserVersion = parseInt(versionStr, 10);
 
-        this.data.versions[product].forEach(function (version) {
-          const knownVersionMatch = version.slug.match(VERSION_PATTERN);
-          if (knownVersionMatch && knownVersionMatch[1] === productPrefix) {
-            const knownVersionNum = parseInt(knownVersionMatch[2], 10);
-            if (knownVersionNum > latestVersionNum) {
-              latestVersionNum = knownVersionNum;
-              latestKnownVersion = version;
-            }
+      let highestOption = null;
+      let highestVersionNum = 0;
+
+      $select.find('option').each(function () {
+        const optVal = $(this).val();
+        const optSlug = optVal.split(':')[1];
+        const optMatch = optSlug.match(VERSION_PATTERN);
+
+        if (optMatch && optMatch[1] === productPrefix) {
+          const optVersion = parseInt(optMatch[2], 10);
+          if (optVersion > highestVersionNum) {
+            highestVersionNum = optVersion;
+            highestOption = optVal;
           }
-        });
-
-        // If requested version is newer, use latest known version as base
-        if (latestKnownVersion && requestedVersion > latestVersionNum) {
-          target = { ...latestKnownVersion };
-          target.max_version = requestedVersion;
         }
+      });
+
+      if (highestOption && browserVersion > highestVersionNum) {
+        $select.val(highestOption);
+        return;
       }
     }
 
+    target = select(this.data.versions[product], val);
     if (target !== null) {
       extra['data-min'] = target.min_version;
       extra['data-max'] = target.max_version;
