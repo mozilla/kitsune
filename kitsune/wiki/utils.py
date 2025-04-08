@@ -182,28 +182,81 @@ def get_visible_document_or_404(
     except Document.DoesNotExist:
         pass
 
-    if (
-        not look_for_translation_via_parent
-        or not (locale := kwargs.get("locale"))
-        or (locale == settings.WIKI_DEFAULT_LANGUAGE)
-    ):
+    if not look_for_translation_via_parent or not (locale := kwargs.get("locale")):
         # We either don't want to try to find the translation via its parent, or it doesn't
-        # make sense, because we're not making a locale-specific request or the locale we're
-        # requesting is already the default locale.
+        # make sense because we're not making a locale-specific request.
         raise Http404
 
-    # We couldn't find a visible translation in the requested non-default locale, so let's
-    # see if we can find a visible translation via its parent.
-    kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
-    parent = get_object_or_404(Document.objects.visible(user, **kwargs))
+    # First try to find the document in the default locale
+    if locale != settings.WIKI_DEFAULT_LANGUAGE:
+        kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        try:
+            parent = Document.objects.get_visible(user, **kwargs)
+            # If there's a visible translation of the parent for the requested locale, return it
+            translation = parent.translations.filter(locale=locale).first()
+            if translation and translation.is_visible_for(user):
+                return translation
+        except Document.DoesNotExist:
+            pass
 
-    # If there's a visible translation of the parent for the requested locale, return it.
-    if translation := parent.translated_to(locale, visible_for_user=user):
-        return translation
+    # If we're in the default locale or couldn't find a parent, try to find a document
+    # that has a translation with the given slug
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        # Look for a document in any locale that has a translation in the default locale
+        # with the given slug
+        translation = Document.objects.filter(
+            translations__slug=kwargs.get("slug"),
+            translations__locale=settings.WIKI_DEFAULT_LANGUAGE,
+        ).first()
+        if translation and translation.is_visible_for(user):
+            return translation
+    else:
+        # Look for a document in the requested locale with the given slug
+        # and then get its parent
+        translation = Document.objects.filter(
+            slug=kwargs.get("slug"),
+            locale=locale,
+        ).first()
+        if translation and translation.is_visible_for(user) and translation.parent:
+            # Use the parent's slug to find the English document
+            try:
+                return Document.objects.get_visible(
+                    user,
+                    slug=translation.parent.slug,
+                    locale=settings.WIKI_DEFAULT_LANGUAGE,
+                )
+            except Document.DoesNotExist:
+                pass
 
-    # Otherwise, we're left with the parent.
-    if return_parent_if_no_translation:
-        return parent
+    # If we're in the default locale, try to find any document that has a translation
+    # with the given slug in any locale
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        translation = (
+            Document.objects.filter(
+                slug=kwargs.get("slug"),
+            )
+            .exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
+            .first()
+        )
+        if translation and translation.is_visible_for(user) and translation.parent:
+            try:
+                return Document.objects.get_visible(
+                    user,
+                    slug=translation.parent.slug,
+                    locale=settings.WIKI_DEFAULT_LANGUAGE,
+                )
+            except Document.DoesNotExist:
+                pass
+
+    if return_parent_if_no_translation and locale != settings.WIKI_DEFAULT_LANGUAGE:
+        # If we're in a non-default locale and couldn't find a translation,
+        # try to return the parent document
+        try:
+            return Document.objects.get_visible(
+                user, locale=settings.WIKI_DEFAULT_LANGUAGE, **kwargs
+            )
+        except Document.DoesNotExist:
+            pass
 
     raise Http404
 
