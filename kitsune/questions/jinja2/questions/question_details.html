@@ -443,7 +443,7 @@
                   {% if product %}
                     <span class="detail">{{ pgettext('DB: products.Product.title', product.title) }}</span>
                   {% endif %}
-                  {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
+                  {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-product" name="product">
                       {% for p in all_products %}
                         <option {% if product and p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
@@ -459,7 +459,7 @@
                   {% if topic %}
                     <span class="detail">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
                   {% endif %}
-                  {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
+                  {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">
                       {% for t in all_topics %}
                         <option {% if topic and t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
@@ -469,7 +469,7 @@
                 </div>
               {% endif %}
 
-              {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
+              {% if user and user.has_perm('questions.change_question') %}
                 <div class="sidebox tight condensed" id="question-locale">
                   <span class="title">{{ _('Locale') }}:</span>
                   <span class="detail">{{ settings.LANGUAGES_DICT[question.locale.lower()] }}</span>
@@ -528,7 +528,7 @@
                 </section>
               </div>
 
-              {% if not question.is_moderated and user and user.has_perm('questions.change_question') %}
+              {% if user and user.has_perm('questions.change_question') %}
                 <div class="sidebox tight">
                   <a href="#" id="details-edit">{{ _('Edit details') }}</a>
                 </div>

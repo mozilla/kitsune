@@ -401,14 +401,6 @@ class Question(AAQBase):
         return config.OFFTOPIC_TAG_NAME in [t.name for t in self.my_tags]
 
     @cached_property
-    def is_moderated(self):
-        return (
-            self.flags.filter(reason=FlaggedObject.REASON_CONTENT_MODERATION)
-            .exclude(status=FlaggedObject.FLAG_PENDING)
-            .exists()
-        )
-
-    @cached_property
     def created_after_failed_kb_deflection(self) -> bool:
         """
         Returns a boolean indicating whether or not this question was created after its
