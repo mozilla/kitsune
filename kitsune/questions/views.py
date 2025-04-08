@@ -37,6 +37,7 @@ from zenpy.lib.exception import APIException
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
+from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -450,7 +451,8 @@ def question_details(
     extra_kwargs.update(ans_)
 
     products = Product.active.with_question_forums(request)
-    topics = topics_for(request.user, product=question.product)
+    # Use get_hierarchical_topics instead of topics_for to match the moderate view
+    topics = get_hierarchical_topics(question.product) if question.product else []
 
     related_documents = question.related_documents
     related_questions = question.related_questions

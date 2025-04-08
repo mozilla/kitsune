@@ -157,7 +157,9 @@ def get_hierarchical_topics(product, cache_timeout=3600):
         return cached_topics
 
     topics = list(
-        Topic.active.filter(products=product).order_by("title").values("id", "title", "parent_id")
+        Topic.active.filter(products=product, visible=True)
+        .order_by("title")
+        .values("id", "title", "parent_id")
     )
     topic_dict = {}
     for topic in topics:
