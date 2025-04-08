@@ -5,7 +5,7 @@ from playwright.sync_api import expect, Page
 
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
     ContactSupportMessages)
-from playwright_tests.messages.contribute_messages.con_discussions.support_forums_messages import (
+from playwright_tests.messages.ask_a_question_messages.community_forums_messages import (
     SupportForumsPageMessages)
 from playwright_tests.messages.ask_a_question_messages.product_solutions_messages import (
     ProductSolutionsMessages)
