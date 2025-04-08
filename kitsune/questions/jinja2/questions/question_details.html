@@ -462,7 +462,7 @@
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">
                       {% for t in all_topics %}
-                        <option {% if topic and t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
+                        <option {% if topic and t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title|safe }}</option>
                       {% endfor %}
                     </select>
                   {% endif %}
