@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
 
@@ -119,6 +120,10 @@ class Topic(BaseProductTopic):
     objects = models.Manager()
     active = NonArchivedManager()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._topic_is_archived = self.is_archived
+
     def __str__(self):
         return self.title
 
@@ -163,6 +168,15 @@ class Topic(BaseProductTopic):
                 kwargs.update({"topic_slug": self.parent.slug, "subtopic_slug": self.slug})
                 named_url = "products.subtopics"
         return reverse(named_url, kwargs=kwargs)
+
+    def save(self, *args, **kwargs):
+        if self._topic_is_archived != self.is_archived and self.is_archived:
+            for product in self.products.all():
+                cache_key = f"hierarchical_topics_{product.slug}"
+                cache.delete(cache_key)
+
+        super().save(*args, **kwargs)
+        self._topic_is_archived = self.is_archived
 
 
 class ProductTopic(ModelBase):
