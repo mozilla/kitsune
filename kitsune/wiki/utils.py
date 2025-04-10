@@ -189,9 +189,11 @@ def get_visible_document_or_404(
 
     # First try to find the document in the default locale
     if locale != settings.WIKI_DEFAULT_LANGUAGE:
-        kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        # Create a copy of kwargs to avoid modifying the original
+        default_locale_kwargs = kwargs.copy()
+        default_locale_kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
         try:
-            parent = Document.objects.get_visible(user, **kwargs)
+            parent = Document.objects.get_visible(user, **default_locale_kwargs)
             # If there's a visible translation of the parent for the requested locale, return it
             translation = parent.translations.filter(locale=locale).first()
             if translation and translation.is_visible_for(user):
@@ -252,9 +254,11 @@ def get_visible_document_or_404(
         # If we're in a non-default locale and couldn't find a translation,
         # try to return the parent document
         try:
-            return Document.objects.get_visible(
-                user, locale=settings.WIKI_DEFAULT_LANGUAGE, **kwargs
-            )
+            # Create a copy of kwargs to avoid modifying the original and
+            # set the locale to the default language
+            default_locale_kwargs = kwargs.copy()
+            default_locale_kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
+            return Document.objects.get_visible(user, **default_locale_kwargs)
         except Document.DoesNotExist:
             pass
 
