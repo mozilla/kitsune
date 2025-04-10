@@ -201,54 +201,9 @@ def get_visible_document_or_404(
         except Document.DoesNotExist:
             pass
 
-    # If we're in the default locale or couldn't find a parent, try to find a document
-    # that has a translation with the given slug
-    if locale == settings.WIKI_DEFAULT_LANGUAGE:
-        # Look for a document in any locale that has a translation in the default locale
-        # with the given slug
-        translation = Document.objects.filter(
-            translations__slug=kwargs.get("slug"),
-            translations__locale=settings.WIKI_DEFAULT_LANGUAGE,
-        ).first()
-        if translation and translation.is_visible_for(user):
-            return translation
-    else:
-        # Look for a document in the requested locale with the given slug
-        # and then get its parent
-        translation = Document.objects.filter(
-            slug=kwargs.get("slug"),
-            locale=locale,
-        ).first()
-        if translation and translation.is_visible_for(user) and translation.parent:
-            # Use the parent's slug to find the English document
-            try:
-                return Document.objects.get_visible(
-                    user,
-                    slug=translation.parent.slug,
-                    locale=settings.WIKI_DEFAULT_LANGUAGE,
-                )
-            except Document.DoesNotExist:
-                pass
-
-    # If we're in the default locale, try to find any document that has a translation
-    # with the given slug in any locale
-    if locale == settings.WIKI_DEFAULT_LANGUAGE:
-        translation = (
-            Document.objects.filter(
-                slug=kwargs.get("slug"),
-            )
-            .exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
-            .first()
-        )
-        if translation and translation.is_visible_for(user) and translation.parent:
-            try:
-                return Document.objects.get_visible(
-                    user,
-                    slug=translation.parent.slug,
-                    locale=settings.WIKI_DEFAULT_LANGUAGE,
-                )
-            except Document.DoesNotExist:
-                pass
+    # Try to find a document through translation paths
+    if document := _find_document_through_translations(user, locale, kwargs):
+        return document
 
     if return_parent_if_no_translation and locale != settings.WIKI_DEFAULT_LANGUAGE:
         # If we're in a non-default locale and couldn't find a translation,
@@ -263,6 +218,65 @@ def get_visible_document_or_404(
             pass
 
     raise Http404
+
+
+def _find_document_through_translations(user, locale, kwargs):
+    """
+    Try different strategies to find a document through its translations.
+    Returns the document if found and visible, None otherwise.
+    """
+    slug = kwargs.get("slug")
+
+    # Strategy 1: For default locale, find documents that have translations with the given slug
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        # Look for a document in any locale that has a translation in the default locale
+        # with the given slug
+        translation = Document.objects.filter(
+            translations__slug=slug,
+            translations__locale=settings.WIKI_DEFAULT_LANGUAGE,
+        ).first()
+        if translation and translation.is_visible_for(user):
+            return translation
+
+    # Strategy 2: For non-default locale, find translation and use its parent
+    else:
+        # Look for a document in the requested locale with the given slug
+        # and then get its parent
+        translation = Document.objects.filter(
+            slug=slug,
+            locale=locale,
+        ).first()
+        if translation and translation.is_visible_for(user) and translation.parent:
+            # Use the parent's slug to find the English document
+            try:
+                return Document.objects.get_visible(
+                    user,
+                    slug=translation.parent.slug,
+                    locale=settings.WIKI_DEFAULT_LANGUAGE,
+                )
+            except Document.DoesNotExist:
+                pass
+
+    # Strategy 3: For default locale, find any translation and use its parent
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        translation = (
+            Document.objects.filter(
+                slug=slug,
+            )
+            .exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
+            .first()
+        )
+        if translation and translation.is_visible_for(user) and translation.parent:
+            try:
+                return Document.objects.get_visible(
+                    user,
+                    slug=translation.parent.slug,
+                    locale=settings.WIKI_DEFAULT_LANGUAGE,
+                )
+            except Document.DoesNotExist:
+                pass
+
+    return None
 
 
 def get_visible_revision_or_404(user, **kwargs):
