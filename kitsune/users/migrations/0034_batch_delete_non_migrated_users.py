@@ -1,6 +1,5 @@
 import time
 from datetime import timedelta
-from itertools import islice
 
 from django.db import migrations
 from django.db.models import Q
@@ -109,7 +108,7 @@ def reverse_migration(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0032_profile_account_type_alter_profile_user"),
+        ("users", "0033_delete_old_account_events"),
     ]
 
     operations = [
