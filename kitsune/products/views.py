@@ -12,6 +12,7 @@ from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.utils import build_topics_data, get_featured_articles
+from kitsune.flagit.views import get_hierarchical_topics
 
 
 @check_simple_wiki_locale
@@ -43,9 +44,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         # Return a list of topics/subtopics for the product
-        topic_list = list()
-        for t in Topic.active.filter(products=product, visible=True):
-            topic_list.append({"id": t.id, "title": t.title})
+        topic_list = get_hierarchical_topics(product)
         return HttpResponse(json.dumps({"topics": topic_list}), content_type="application/json")
 
     if slug == "firefox":
