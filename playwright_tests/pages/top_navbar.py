@@ -182,7 +182,7 @@ class TopNavbar(BasePage):
         """Click on the 'Contribute' top-navbar option"""
         self._click(self.contribute_option)
 
-    def click_on_community_discussions_top_navbar_option(self):
+    def click_on_contributor_discussions_top_navbar_option(self):
         """Click on the 'Contributor discussions' top-navbar option"""
         self.hover_over_contribute_top_navbar()
         self._click(self.contributor_discussions_option)

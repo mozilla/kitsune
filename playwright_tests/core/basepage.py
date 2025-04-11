@@ -269,7 +269,10 @@ class BasePage:
         This helper function finds the locator of the given locator and checks if it is visible.
         """
         self.wait_for_dom_to_load()
-        return locator.is_visible()
+        if locator.count() > 0:
+            return locator.is_visible()
+        else:
+            return False
 
     def _is_locator_visible(self, locator: Locator) -> bool:
         """
@@ -312,6 +315,16 @@ class BasePage:
             self.page.wait_for_load_state("load")
         except PlaywrightTimeoutError:
             print("Load event was not fired. Continuing...")
+
+    def eval_on_selector_for_last_child_text(self, element: str) -> str:
+        """
+        This helper function evaluates a JavaScript expression on the given element and returns
+        the text content of the last child element.
+        """
+        return self.page.eval_on_selector(
+            element,
+            "el => el.lastChild?.textContent?.trim()"
+        )
 
     def wait_for_dom_to_load(self):
         """

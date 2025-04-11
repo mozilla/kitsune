@@ -9,6 +9,9 @@ from PIL import Image
 from PIL import ImageChops
 from typing import Any, Union
 from datetime import datetime
+
+from dateutil import parser
+from dateutil.tz import tz
 from nltk import SnowballStemmer, WordNetLemmatizer
 from playwright.sync_api import Page, Locator
 
@@ -60,6 +63,10 @@ class Utilities:
     with open("test_data/different_endpoints.json", "r") as different_endpoints_file:
         different_endpoints = json.load(different_endpoints_file)
     different_endpoints_file.close()
+
+    with open("test_data/discussion_thread_data.json", "r") as discussion_thread_data_file:
+        discussion_thread_data = json.load(discussion_thread_data_file)
+    discussion_thread_data_file.close()
 
     # Fetching user secrets from GH.
     user_secrets_accounts = {
@@ -437,6 +444,20 @@ class Utilities:
         """
         date = datetime.strptime(date_str, "%b %d, %Y")
         return int(date.strftime("%m%d%Y"))
+
+    def parse_date(self, date_time: str, tzinfo: str = None) -> datetime:
+        """
+        This helper function parses a date string into a datetime object.
+        Args:
+            date_time (str): The date string to be parsed
+            tzinfo (dict[str, str]): The timezone information
+        """
+        def tzinfo_resolver(tzname, offset):
+            if tzname in ('CST', 'CDT'):
+                return tz.gettz(tzinfo)
+            return None
+
+        return parser.parse(date_time, tzinfos=tzinfo_resolver)
 
     def tokenize_string(self, text: str) -> list[str]:
         """

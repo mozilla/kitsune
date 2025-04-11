@@ -1,5 +1,7 @@
 from playwright.sync_api import Page
 from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFlow
+from playwright_tests.flows.contributor_threads_flows.contributor_threads_flows import \
+    ContributorThreadFlow
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_flow import (
     AddKbArticleFlow)
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
@@ -19,10 +21,16 @@ from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFl
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.common_elements.common_web_elements import CommonWebElements
-from playwright_tests.pages.contribute.contribute_pages.contributor_discussions_pages.\
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     contributor_discussions_page import ContributorDiscussionPage
-from playwright_tests.pages.contribute.contribute_pages.contributor_discussions_pages.\
-    discussions_page import DiscussionsPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
+    edit_thread_title_page import EditThreadTitle
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
+    forum_discussions_page import ForumDiscussionsPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.forum_thread_page \
+    import ForumThreadPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.new_thread_page \
+    import NewThreadPage
 from playwright_tests.pages.contribute.contributor_tools_pages.article_discussions_page import \
     ArticleDiscussionsPage
 from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
@@ -191,7 +199,13 @@ class SumoPages:
 
         # Discussions pages
         self.contributor_discussions_page = ContributorDiscussionPage(page)
-        self.discussions_page = DiscussionsPage(page)
+        self.forum_discussions_page = ForumDiscussionsPage(page)
+        self.new_thread_page = NewThreadPage(page)
+        self.edit_thread_title_page = EditThreadTitle(page)
+        self.forum_thread_page = ForumThreadPage(page)
+
+        # Discussion Threads flow.
+        self.contributor_thread_flow = ContributorThreadFlow(page)
 
         # Auth flow Page.
         self.auth_flow_page = AuthFlowPage(page)

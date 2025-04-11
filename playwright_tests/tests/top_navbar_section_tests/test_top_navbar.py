@@ -9,7 +9,7 @@ import requests
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import \
     ContactSupportMessages
-from playwright_tests.messages.contribute_messages.con_discussions.support_forums_messages import \
+from playwright_tests.messages.ask_a_question_messages.community_forums_messages import \
     SupportForumsPageMessages
 from playwright_tests.messages.explore_help_articles.products_page_messages import \
     ProductsPageMessages
@@ -214,7 +214,7 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
                 assert utilities.get_page_url() == ContactSupportMessages.PAGE_URL
 
 
-# C2462871
+# C2462871, C890957
 @pytest.mark.topNavbarTests
 def test_contribute_top_navbar_redirects(page: Page):
     sumo_pages = SumoPages(page)
@@ -225,7 +225,7 @@ def test_contribute_top_navbar_redirects(page: Page):
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar option and verifying "
                      "the redirect"):
-        sumo_pages.top_navbar.click_on_community_discussions_top_navbar_option()
+        sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
         assert (sumo_pages.contributor_discussions_page.get_contributor_discussions_page_title()
                 == "Contributor Discussions")
 
@@ -244,12 +244,12 @@ def test_contribute_top_navbar_redirects(page: Page):
                 sumo_pages.top_navbar._click(option)
 
             if current_option == "Article discussions":
-                assert (sumo_pages.discussions_page.get_contributor_discussions_page_title()
+                assert (sumo_pages.forum_discussions_page.get_forum_discussions_page_title()
                         .lower() == "english knowledge base discussions")
                 with allure.step("Verifying that the correct option is highlighted inside the "
                                  "'Contributor discussions' side navbar"):
-                    assert (sumo_pages.discussions_page
-                            .get_contributor_discussions_side_nav_selected_option()
+                    assert (sumo_pages.forum_discussions_page
+                            .get_forum_discussions_side_nav_selected_option()
                             == current_option)
             elif current_option == "View all discussions":
                 assert (sumo_pages.contributor_discussions_page
@@ -257,10 +257,10 @@ def test_contribute_top_navbar_redirects(page: Page):
                         == "contributor discussions")
             else:
                 assert (
-                    sumo_pages.discussions_page.get_contributor_discussions_page_title().lower()
+                    sumo_pages.forum_discussions_page.get_forum_discussions_page_title().lower()
                     == current_option.lower())
                 with allure.step("Verifying that the correct option is highlighted inside the "
                                  "'Contributor discussions' side navbar"):
-                    assert (sumo_pages.discussions_page
-                            .get_contributor_discussions_side_nav_selected_option()
+                    assert (sumo_pages.forum_discussions_page
+                            .get_forum_discussions_side_nav_selected_option()
                             == current_option)

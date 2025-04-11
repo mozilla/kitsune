@@ -40,6 +40,8 @@ on:
                     - searchTests
                     - userGroupsTests
                     - antiSpamTests
+                    - contributorDiscussions
+                    - contributorDiscussionsThreads
 
 env:
     TEST_ACCOUNT_12: ${{secrets.AUTOMATION_TEST_ACCOUNT_12}}
@@ -106,7 +108,7 @@ jobs:
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
             declare dispatch_test_suite="${{inputs.TestSuite}}"
-            declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "messagingSystemCleanup" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "userGroupsTests", "antiSpamTests")
+            declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "messagingSystemCleanup" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "userGroupsTests" "antiSpamTests" "contributorDiscussions" "contributorDiscussionsThreads")
             if [ "$dispatch_test_suite" == "All" ] || [ "${{ github.event_name}}" == "schedule" ] ; then
                 for test in "${all_test_suites[@]}"; do
                     if ! poetry run pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2; then
