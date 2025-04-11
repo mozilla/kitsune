@@ -74,6 +74,12 @@
       width: 100%;
       max-width: none;
       margin: 0 0 p.$spacing-md 0;
+
+      &[type="checkbox"] {
+        width: auto;
+        margin-right: p.$spacing-md;
+        margin-left: p.$spacing-xs;
+      }
     }
 
     img {
@@ -86,7 +92,6 @@
       select,
       input {
         margin: 0 10px;
-
       }
     }
   }
