@@ -148,7 +148,7 @@ function initEditDetails() {
           var $opt = $('<option />');
 
           $opt.attr('value', topic.id);
-          $opt.text(topic.title);
+          $opt.html(topic.title);
 
           $('#details-topic').append($opt);
         }
