@@ -21,6 +21,7 @@ from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, webpack_static
+from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.services")
 
@@ -156,3 +157,35 @@ def serve_cors(*args, **kwargs):
     from django.views.static import serve
 
     return serve(*args, **kwargs)
+
+
+@require_GET
+def translate_url(request):
+    """Find the correct translation URL for a given document.
+
+    Required parameters:
+    - current_slug
+    - current_locale
+    - target_locale
+    """
+    current_slug = request.GET.get("current_slug")
+    current_locale = request.GET.get("current_locale")
+    target_locale = request.GET.get("target_locale")
+
+    if not all([current_slug, current_locale, target_locale]):
+        return JsonResponse({"error": "Missing required parameters", "found": False}, status=400)
+
+    try:
+        current_doc = Document.objects.get(slug=current_slug, locale=current_locale)
+        parent_doc = current_doc.parent or current_doc
+        translation = Document.objects.filter(parent=parent_doc, locale=target_locale).first()
+
+        if translation:
+            return JsonResponse({"url": translation.get_absolute_url(), "found": True})
+        elif parent_doc.locale == target_locale:
+            return JsonResponse({"url": parent_doc.get_absolute_url(), "found": True})
+        else:
+            return JsonResponse({"error": "Translation not found", "found": False})
+
+    except Document.DoesNotExist:
+        return JsonResponse({"error": "Document not found", "found": False}, status=404)
