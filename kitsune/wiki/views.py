@@ -14,7 +14,13 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.cache import patch_vary_headers
@@ -1833,3 +1839,35 @@ def pocket_article(request, article_id=None, document_slug=None, extra_path=None
         _("Sorry, that article wasn't found."),
     )
     return redirect(product_landing, slug="pocket", permanent=True)
+
+
+@require_GET
+def translate_url(request):
+    """Find the correct translation URL for a given document.
+
+    Required parameters:
+    - current_slug
+    - current_locale
+    - target_locale
+    """
+    current_slug = request.GET.get("current_slug")
+    current_locale = request.GET.get("current_locale")
+    target_locale = request.GET.get("target_locale")
+
+    if not all([current_slug, current_locale, target_locale]):
+        return JsonResponse({"error": "Missing required parameters", "found": False}, status=400)
+
+    try:
+        current_doc = Document.objects.get(slug=current_slug, locale=current_locale)
+        parent_doc = current_doc.parent or current_doc
+        translation = Document.objects.filter(parent=parent_doc, locale=target_locale).first()
+
+        if translation:
+            return JsonResponse({"url": translation.get_absolute_url(), "found": True})
+        elif parent_doc.locale == target_locale:
+            return JsonResponse({"url": parent_doc.get_absolute_url(), "found": True})
+        else:
+            return JsonResponse({"error": "Translation not found", "found": False})
+
+    except Document.DoesNotExist:
+        return JsonResponse({"error": "Document not found", "found": False}, status=404)

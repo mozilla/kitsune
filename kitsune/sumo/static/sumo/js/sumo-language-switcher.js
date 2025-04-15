@@ -3,30 +3,29 @@
  */
 export default class SumoLanguageSwitcher {
   constructor() {
-    this.currentLocale = this._getCurrentLocale();
-    this.isDocumentPage = this._isDocumentPage();
-    this.currentSlug = this.isDocumentPage ? this._getCurrentSlug() : null;
+    this.langSwitcher = document.querySelector('.mzp-c-language-switcher');
   }
 
   /**
    * @param {Function} callback - Optional callback to be called after language switch
    */
   init(callback) {
-    const langSwitcher = document.querySelector('.mzp-c-language-switcher');
-    if (!langSwitcher) return;
+    if (!this.langSwitcher) return;
 
-    langSwitcher.addEventListener('change', async (event) => {
+    this.langSwitcher.addEventListener('change', async (event) => {
       event.preventDefault();
       const targetLocale = event.target.value;
+      const currentLocale = this.getCurrentLocale();
       
-      if (this.isDocumentPage) {
+      if (this.isDocumentPage()) {
+        const currentSlug = this.getCurrentSlug();
         try {
-          const response = await fetch(`/translate-url?current_slug=${this.currentSlug}&current_locale=${this.currentLocale}&target_locale=${targetLocale}`);
+          const response = await fetch(`/kb/translate-url?current_slug=${currentSlug}&current_locale=${currentLocale}&target_locale=${targetLocale}`);
           const data = await response.json();
 
           if (data.found) {
             if (callback) {
-              callback(this.currentLocale, targetLocale);
+              callback(currentLocale, targetLocale);
             }
             window.location.href = data.url;
             return;
@@ -37,26 +36,31 @@ export default class SumoLanguageSwitcher {
       }
 
       if (callback) {
-        callback(this.currentLocale, targetLocale);
+        callback(currentLocale, targetLocale);
       }
       const newPath = window.location.pathname.replace(
-        new RegExp(`^/${this.currentLocale}/`),
+        new RegExp(`^/${currentLocale}/`),
         `/${targetLocale}/`
       );
       window.location.href = newPath + window.location.search + window.location.hash;
     });
   }
 
-  _isDocumentPage() {
-    return /\/(kb|wiki)\//.test(window.location.pathname);
+  isDocumentPage() {
+    const path = window.location.pathname;
+    // Check if it's a KB path but not a special page
+    return /\/kb\//.test(path) && 
+           !/(\/kb\/(all|revisions|new|category|json|locales|preview-wiki-content|save_draft))$/.test(path);
   }
 
-  _getCurrentSlug() {
-    const pathParts = window.location.pathname.split('/');
-    return pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+  getCurrentSlug() {
+    const path = window.location.pathname;
+    // Extract the slug from KB URLs, handling both direct and sub-paths
+    const matches = path.match(/\/kb\/([^\/]+)/);
+    return matches && matches.length > 1 ? matches[1] : '';
   }
 
-  _getCurrentLocale() {
+  getCurrentLocale() {
     return window.location.pathname.split('/')[1];
   }
 } 

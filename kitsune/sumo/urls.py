@@ -11,5 +11,4 @@ urlpatterns = [
     path("manifest.json", views.manifest, name="manifest.json"),
     path("geoip-suggestion", views.geoip_suggestion, name="sumo.geoip_suggestion"),
     path("csrftoken", views.csrftoken, name="sumo.csrftoken"),
-    path("translate-url", views.translate_url, name="sumo.translate_url"),
 ]
