@@ -1858,16 +1858,24 @@ def translate_url(request):
         return JsonResponse({"error": "Missing required parameters", "found": False}, status=400)
 
     try:
-        current_doc = Document.objects.get(slug=current_slug, locale=current_locale)
-        parent_doc = current_doc.parent or current_doc
-        translation = Document.objects.filter(parent=parent_doc, locale=target_locale).first()
-
-        if translation:
-            return JsonResponse({"url": translation.get_absolute_url(), "found": True})
-        elif parent_doc.locale == target_locale:
-            return JsonResponse({"url": parent_doc.get_absolute_url(), "found": True})
-        else:
-            return JsonResponse({"error": "Translation not found", "found": False})
-
+        current_doc = (
+            Document.objects.filter(slug=current_slug, locale=current_locale)
+            .visible(request.user)
+            .get()
+        )
     except Document.DoesNotExist:
         return JsonResponse({"error": "Document not found", "found": False}, status=404)
+
+    parent_doc = current_doc.parent or current_doc
+    translation = (
+        parent_doc
+        if parent_doc.locale == target_locale
+        else Document.objects.filter(parent=parent_doc, locale=target_locale)
+        .visible(request.user)
+        .first()
+    )
+
+    if translation:
+        return JsonResponse({"url": translation.get_absolute_url(), "found": True})
+    else:
+        return JsonResponse({"error": "Translation not found", "found": False})
