@@ -284,7 +284,7 @@ class SumoSearchInterface(ABC):
         ...
 
     @abstractmethod
-    def get_filter(self):
+    def get_filter(self, is_simple_search: bool):
         """A query which filters for all documents to be searched over."""
         ...
 
@@ -344,6 +344,10 @@ class SumoSearch(SumoSearchInterface):
             return self.results[0]
         return self.results
 
+    def get_filter(self, is_simple_search: bool):
+        """Placeholder for subclasses, should be implemented there."""
+        raise NotImplementedError
+
     def build_query(self):
         """Build a query to search over a specific set of documents."""
         parsed = None
@@ -372,8 +376,9 @@ class SumoSearch(SumoSearchInterface):
             **settings.ES_SEARCH_PARAMS
         )
 
-        # add the search class' filter
-        search = search.query(self.get_filter())
+        # filter method needs simple_search status
+        # (True for keyword search, False for advanced syntax)
+        search = search.query(self.get_filter(is_simple_search=not self.parse_query))
         # add highlights for the search class' highlight_fields
         for highlight_field, options in self.get_highlight_fields_options():
             search = search.highlight(highlight_field, **options)

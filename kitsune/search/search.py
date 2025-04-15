@@ -111,7 +111,7 @@ class QuestionSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self):
+    def get_filter(self, is_simple_search: bool):
         filters = [
             # restrict to the question index
             DSLQ("term", _index=self.get_index()),
@@ -124,9 +124,11 @@ class QuestionSearch(SumoSearch):
                     "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
                 },
             ),
-            # exclude archived questions
-            DSLQ("term", question_is_archived=False),
         ]
+
+        if is_simple_search:
+            # Only exclude archived questions in simple search
+            filters.append(DSLQ("term", question_is_archived=False))
 
         if self.product:
             filters.append(DSLQ("term", question_product_id=self.product.id))
@@ -201,13 +203,18 @@ class WikiSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self):
+    def get_filter(self, is_simple_search: bool):
         # Add default filters:
         filters = [
             # limit scope to the Wiki index
             DSLQ("term", _index=self.get_index()),
             DSLQ("exists", field=f"title.{self.locale}"),
         ]
+
+        if is_simple_search:
+            # Only exclude archived documents in simple search
+            filters.append(DSLQ("term", is_archived=False))
+
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
         return DSLQ("bool", filter=filters, must=self.build_query())
@@ -245,7 +252,8 @@ class ProfileSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return []
 
-    def get_filter(self):
+    def get_filter(self, is_simple_search: bool):
+        # Note: Profile search doesn't seem to have an archived status
         return DSLQ(
             "boosting",
             positive=self.build_query(),
@@ -293,7 +301,7 @@ class ForumSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return []
 
-    def get_filter(self):
+    def get_filter(self, is_simple_search: bool):
         # Add default filters:
         filters = [
             # limit scope to the Forum index
@@ -366,9 +374,14 @@ class CompoundSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return self._from_children("get_highlight_fields_options")
 
-    def get_filter(self):
+    def get_filter(self, is_simple_search: bool):
         # `should` with `minimum_should_match=1` acts like an OR filter
-        return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
+        # Pass the flag down to children filters
+        return DSLQ(
+            "bool",
+            should=[child.get_filter(is_simple_search) for child in self._children],
+            minimum_should_match=1,
+        )
 
     def make_result(self, hit):
         index = hit.meta.index
