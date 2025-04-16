@@ -7,7 +7,8 @@ export default class SumoLanguageSwitcher {
   }
 
   /**
-   * @param {Function} callback - Optional callback to be called after language switch
+   * @param {Function} callback - Optional callback to be called prior to language switch
+   * being performed.
    */
   init(callback) {
     if (!this.langSwitcher) return;
