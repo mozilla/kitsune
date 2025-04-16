@@ -13,28 +13,28 @@ files = [
 
 [[package]]
 name = "allure-pytest"
-version = "2.13.5"
+version = "2.14.0"
 description = "Allure pytest integration"
 optional = false
 python-versions = "*"
 files = [
-    {file = "allure-pytest-2.13.5.tar.gz", hash = "sha256:0ef8e1790c44a988db6b83c4d4f5e91451e2c4c8ea10601dfa88528d23afcf6e"},
-    {file = "allure_pytest-2.13.5-py3-none-any.whl", hash = "sha256:94130bac32964b78058e62cf4b815ad97a5ac82a065e6dd2d43abac2be7640fc"},
+    {file = "allure_pytest-2.14.0-py3-none-any.whl", hash = "sha256:6ddb68ef42bd5a2dfbcc136a184bf3e78e631ede7b8c54750026ffd407bda9af"},
+    {file = "allure_pytest-2.14.0.tar.gz", hash = "sha256:2b485dc307755f8f3207783a69558ca1cc72f1e2c97bedc65c93fdb77adf328f"},
 ]
 
 [package.dependencies]
-allure-python-commons = "2.13.5"
+allure-python-commons = "2.14.0"
 pytest = ">=4.5.0"
 
 [[package]]
 name = "allure-python-commons"
-version = "2.13.5"
-description = "('Contains the API for end users as well as helper functions and classes to build Allure adapters for Python test frameworks',)"
+version = "2.14.0"
+description = "Contains the API for end users as well as helper functions and classes to build Allure adapters for Python test frameworks"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "allure-python-commons-2.13.5.tar.gz", hash = "sha256:a232e7955811f988e49a4c1dd6c16cce7e9b81d0ea0422b1e5654d3254e2caf3"},
-    {file = "allure_python_commons-2.13.5-py3-none-any.whl", hash = "sha256:8b0e837b6e32d810adec563f49e1d04127a5b6770e0232065b7cb09b9953980d"},
+    {file = "allure_python_commons-2.14.0-py3-none-any.whl", hash = "sha256:9200f40abee697133e9ed9f68887cde996a24b9eb33fcf528da8fe50fae88e43"},
+    {file = "allure_python_commons-2.14.0.tar.gz", hash = "sha256:9b217e2f6c74cdbd0e253f89059d4165346e95fcb28228fae333ff4dccea0bd5"},
 ]
 
 [package.dependencies]
@@ -3431,13 +3431,13 @@ test = ["pytest", "pytest-cov", "requests", "webob", "webtest"]
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
+    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
 ]
 
 [package.dependencies]
@@ -3469,13 +3469,13 @@ test = ["black (>=22.1.0)", "flake8 (>=4.0.1)", "pre-commit (>=2.17.0)", "pytest
 
 [[package]]
 name = "pytest-check"
-version = "2.5.0"
+version = "2.5.3"
 description = "A pytest plugin that allows multiple failures per test."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pytest_check-2.5.0-py3-none-any.whl", hash = "sha256:5c90dfe92e5e5870b34c1ed7a648aef5c2dfb2273acfba77f35ca648219a33f3"},
-    {file = "pytest_check-2.5.0.tar.gz", hash = "sha256:3a6be8431c7720287958436d97a6b823eed5ae5ceb7da5572a0e4a9462feaf88"},
+    {file = "pytest_check-2.5.3-py3-none-any.whl", hash = "sha256:354685dfa63e714a20aa62b61c4d30d5acfa30891319df9046f59af653c3b9ba"},
+    {file = "pytest_check-2.5.3.tar.gz", hash = "sha256:2357d7df77c395d30c0c4957724fdfce1a75ea8bc9eb2308c0ffe56f62ac70ca"},
 ]
 
 [package.dependencies]
@@ -3536,18 +3536,18 @@ python-slugify = ">=6.0.0,<9.0.0"
 
 [[package]]
 name = "pytest-rerunfailures"
-version = "12.0"
+version = "15.0"
 description = "pytest plugin to re-run tests to eliminate flaky failures"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 files = [
-    {file = "pytest-rerunfailures-12.0.tar.gz", hash = "sha256:784f462fa87fe9bdf781d0027d856b47a4bfe6c12af108f6bd887057a917b48e"},
-    {file = "pytest_rerunfailures-12.0-py3-none-any.whl", hash = "sha256:9a1afd04e21b8177faf08a9bbbf44de7a0fe3fc29f8ddbe83b9684bd5f8f92a9"},
+    {file = "pytest-rerunfailures-15.0.tar.gz", hash = "sha256:2d9ac7baf59f4c13ac730b47f6fa80e755d1ba0581da45ce30b72fb3542b4474"},
+    {file = "pytest_rerunfailures-15.0-py3-none-any.whl", hash = "sha256:dd150c4795c229ef44320adc9a0c0532c51b78bb7a6843a8c53556b9a611df1a"},
 ]
 
 [package.dependencies]
 packaging = ">=17.1"
-pytest = ">=6.2"
+pytest = ">=7.4,<8.2.2 || >8.2.2"
 
 [[package]]
 name = "pytest-xdist"
@@ -5084,4 +5084,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "470e1613971111c979eb0f890908ac8f373e549917921be189e073514bd61e3e"
+content-hash = "9dd9ab3b045c410af9c69ce614f577044576db85d3a5f26cbcbdb94e8027b109"
