@@ -12,6 +12,21 @@ class ForumThreadPage(BasePage):
         super().__init__(page)
         self.utilities = Utilities(page)
 
+        # Locators related to the page breadcrumb.
+        self.breadcrumb_options = page.locator("ol#breadcrumbs li")
+        self.breadcrumb_links = page.locator("ol#breadcrumbs li a")
+        self.breadcrumb_link = lambda breadcrumb_name: page.locator(
+            "ol#breadcrumbs li").get_by_role("link", name=breadcrumb_name)
+
+        # Locators related to the Contributor Discussions side navbar.
+        self.contributor_discussions_side_navbar_header = page.locator(
+            "#for-contributors-sidebar ul li.sidebar-subheading")
+        self.contributor_discussions_side_navbar_items = page.locator(
+            "#for-contributors-sidebar ul li:not(.sidebar-subheading)")
+        self.contributor_discussions_side_navbar_item = lambda item_name: page.locator(
+            "#for-contributors-sidebar ul li:not(.sidebar-subheading)").get_by_role(
+            "link", name=item_name, exact=True)
+
         # Locators related to the thread-actions section.
         self.edit_thread_title_option = page.get_by_role("link", name="Edit Thread Title")
         self.delete_this_thread_option = page.get_by_role("link", name="Delete this thread")
@@ -65,6 +80,30 @@ class ForumThreadPage(BasePage):
         self.post_reply_textarea = page.locator("textarea#id_content")
         self.preview_reply_button = page.locator("button#preview")
         self.post_reply_button = page.get_by_role("button", name="Post Reply")
+
+    def get_breadcrumb_options(self) -> list[str]:
+        """
+            Get the breadcrumb options.
+            Returns:
+                list[str]: A list of breadcrumb options.
+        """
+        return self._get_text_of_elements(self.breadcrumb_options)
+
+    def click_on_a_breadcrumb_link(self, breadcrumb_name: str):
+        """
+            Click on a specific breadcrumb link.
+            Args:
+                breadcrumb_name (str): The name of the breadcrumb link.
+        """
+        self._click(self.breadcrumb_link(breadcrumb_name))
+
+    def get_all_breadcrumb_link_names(self) -> list[str]:
+        """
+            Get all breadcrumb link names.
+            Returns:
+                list[str]: A list of breadcrumb link names.
+        """
+        return self._get_text_of_elements(self.breadcrumb_links)
 
     def get_thread_meta_information(self) -> list[str]:
         return self._get_text_of_elements(self.thread_meta)
@@ -236,3 +275,27 @@ class ForumThreadPage(BasePage):
                 bool: True if the textarea is visible, False otherwise.
         """
         return self._is_element_visible(self.post_reply_textarea)
+
+    def get_contributor_discussions_side_navbar_header(self) -> str:
+        """
+        Get the header text of the Contributor Discussions side navbar.
+        Returns:
+            str: The header text of the side navbar.
+        """
+        return self._get_text_of_element(self.contributor_discussions_side_navbar_header)
+
+    def get_contributor_discussions_side_navbar_items(self) -> list[str]:
+        """
+        Get the text of all items in the Contributor Discussions side navbar.
+        Returns:
+            list[str]: A list of side navbar item texts.
+        """
+        return self._get_text_of_elements(self.contributor_discussions_side_navbar_items)
+
+    def click_on_contributor_discussions_side_navbar_item(self, item_name: str):
+        """
+        Click on a specific item in the Contributor Discussions side navbar.
+        Args:
+            item_name (str): The name of the item to click on.
+        """
+        self._click(self.contributor_discussions_side_navbar_item(item_name))
