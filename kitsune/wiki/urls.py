@@ -109,6 +109,7 @@ urlpatterns = [
     ),
     re_path(r"^/locales$", locale_views.locale_list, name="wiki.locales"),
     re_path(r"^/locales/(?P<locale_code>[^/]+)/", include(locale_patterns)),
+    re_path(r"^/translate-url$", views.translate_url, name="wiki.translate_url"),
     # (Un)subscribe to locale 'ready for review' notifications.
     re_path(
         r"^/watch-ready-for-review(?:/(?P<product>[^\/]+))?$",
