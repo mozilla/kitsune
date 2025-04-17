@@ -8,6 +8,7 @@ from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
     OffTopicForumMessages
+from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -525,4 +526,157 @@ def test_sticky_this_thread(page: Page):
 
     with allure.step("Deleting the thread"):
         utilities.navigate_to_link(thread_link)
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C890978
+@pytest.mark.contributorDiscussionsThreads
+def test_thread_breadcrumbs(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Signing in with a contributor and posting a new thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
+                        generate_random_number(1, 1000))
+        sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with check, allure.step("Verifying that the thread title is displayed inside the list of "
+                            "breadcrumbs"):
+        check.is_in(
+            thread_title,
+            sumo_pages.forum_thread_page.get_breadcrumb_options()
+        )
+
+    with check, allure.step("Clicking on all breadcrumb links and verifying that they redirect to "
+                            "the correct page"):
+        for breadcrumb in sumo_pages.forum_thread_page.get_all_breadcrumb_link_names():
+            sumo_pages.forum_thread_page.click_on_a_breadcrumb_link(breadcrumb)
+            if breadcrumb == "Home":
+                check.equal(
+                    utilities.get_page_url(),
+                    HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+                )
+            elif breadcrumb == OffTopicForumMessages.PAGE_TITLE:
+                check.equal(
+                    breadcrumb,
+                    sumo_pages.forum_discussions_page.get_forum_discussions_page_title()
+                )
+            else :
+                check.equal(
+                    breadcrumb,
+                    sumo_pages.contributor_discussions_page.get_contributor_discussions_page_title(
+                    )
+                )
+            utilities.navigate_back()
+
+    with allure.step("Deleting the article"):
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3010845
+@pytest.mark.contributorDiscussionsThreads
+def test_forum_post_side_navbar_redirects(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Signing in with a contributor account and navigating to the Off Topic forum "
+                     "page"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+
+    with allure.step("Creating a new forum thread"):
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    navbar_items = sumo_pages.forum_thread_page.get_contributor_discussions_side_navbar_items()
+    for option in navbar_items:
+        with check, allure.step(f"Verifying navigation for side navbar option: {option}"):
+            sumo_pages.forum_thread_page.click_on_contributor_discussions_side_navbar_item(option)
+            check.equal(
+                sumo_pages.forum_discussions_page.get_forum_discussions_side_nav_selected_option(
+                ).lower(),
+                option.lower()
+            )
+            expected_title = {
+                "Forum moderator discussions": "Forum Moderators",
+                "Article discussions": "English Knowledge Base Discussions",
+                "Mobile support discussions": "Mobile Support forum discussions",
+                "Off topic discussions": "Off Topic",
+                "Lost thread discussions": "Lost Threads"
+            }.get(option, option)
+            check.equal(
+                sumo_pages.forum_discussions_page.get_forum_discussions_page_title().lower(),
+                expected_title.lower()
+            )
+            utilities.navigate_back()
+
+    with allure.step("Deleting the thread"):
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3010846
+@pytest.mark.contributorDiscussionsThreads
+@pytest.mark.parametrize("user", [None, 'simple_user', 'moderator'])
+def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, user):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    utilities.start_existing_session(utilities.username_extraction_from_email(
+        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+    ))
+
+    with allure.step("Navigating to the Contributor Discussions forum"):
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+
+    with allure.step("Creating a new forum thread"):
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    utilities.delete_cookies()
+
+    if user in ['simple_user', None]:
+        account = "TEST_ACCOUNT_12" if user == 'simple_user' else None
+        if account:
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts[account]
+            ))
+        with check, allure.step("Verifying that the 'Forum Moderators' forum is not available "
+                                "inside the navbar"):
+            check.is_not_in(
+                "Forum moderator discussions",
+                sumo_pages.forum_thread_page.get_contributor_discussions_side_navbar_items()
+            )
+    else:
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        with check, allure.step("Verifying that the 'Forum Moderators' forum is available inside "
+                                "the navbar"):
+            check.is_in(
+                "Forum moderator discussions",
+                sumo_pages.forum_thread_page.get_contributor_discussions_side_navbar_items()
+            )
+
+    with allure.step("Deleting the thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(utilities.get_page_url())
         sumo_pages.contributor_thread_flow.delete_thread()
