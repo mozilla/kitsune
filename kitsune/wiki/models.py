@@ -797,18 +797,6 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             locale__in=("", self.locale), target__contains=f"kb/{self.slug}"
         ).exists()
 
-    def propagate_topics_to_translations(self):
-        """Propagate topic changes from a parent document to its translations."""
-        if self.locale != settings.WIKI_DEFAULT_LANGUAGE:
-            # Only operate on parent documents
-            return
-
-        parent_topics = list(self.topics.all())
-        for translated_doc in self.translations.all():
-            # Clear existing topics and add parent's topics
-            translated_doc.topics.clear()
-            translated_doc.topics.add(*parent_topics)
-
 
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
