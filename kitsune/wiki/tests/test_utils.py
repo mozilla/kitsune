@@ -25,11 +25,13 @@ from kitsune.wiki.utils import (
     generate_short_url,
     get_featured_articles,
     get_kb_visited,
+    get_visible_document_or_404,
     has_visited_kb,
     num_active_contributors,
     remove_expired_from_kb_visited,
     update_kb_visited,
 )
+from django.http import Http404
 
 
 class ActiveContributorsTestCase(TestCase):
@@ -700,3 +702,137 @@ class HasVisitedKBTests(TestCase):
             },
         )
         self.assertFalse(self.session.modified)
+
+
+class GetVisibleDocumentTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = UserFactory()
+
+        # Create an English document
+        self.en_doc = DocumentFactory(locale="en-US", slug="test-document")
+        RevisionFactory(document=self.en_doc, is_approved=True)
+
+        # Create a German translation with a different slug
+        self.de_doc = DocumentFactory(locale="de", parent=self.en_doc, slug="test-document-de")
+        RevisionFactory(document=self.de_doc, is_approved=True)
+
+        # Create a French translation with yet another slug
+        self.fr_doc = DocumentFactory(locale="fr", parent=self.en_doc, slug="test-document-fr")
+        RevisionFactory(document=self.fr_doc, is_approved=True)
+
+    def test_get_document_by_locale_and_slug_direct_match(self):
+        """Test getting a document when there's a direct match for locale and slug."""
+        doc = get_visible_document_or_404(self.user, locale="en-US", slug="test-document")
+        self.assertEqual(doc, self.en_doc)
+
+        doc = get_visible_document_or_404(self.user, locale="de", slug="test-document-de")
+        self.assertEqual(doc, self.de_doc)
+
+        doc = get_visible_document_or_404(self.user, locale="fr", slug="test-document-fr")
+        self.assertEqual(doc, self.fr_doc)
+
+    def test_get_document_via_translation_for_nondefault_locale(self):
+        """Test getting a document via its parent when no direct match in the requested locale."""
+        # Looking for en-US document with de slug
+        with self.assertRaises(Http404):
+            # This should raise a 404 because we're explicitly
+            # setting look_for_translation_via_parent=False
+            get_visible_document_or_404(
+                self.user,
+                locale="en-US",
+                slug="test-document-de",
+                look_for_translation_via_parent=False,
+            )
+
+        # This should also raise a 404 because cross-locale lookups should only work when
+        # look_for_translation_via_parent is True
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(self.user, locale="en-US", slug="test-document-de")
+
+    def test_cross_locale_lookup(self):
+        """Test the new cross-locale lookup functionality for language switcher."""
+        # When switching from German to English, we should find the English document
+        # even though we're looking for the German slug in English
+        doc = get_visible_document_or_404(
+            self.user,
+            locale="en-US",
+            slug="test-document-de",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, self.en_doc)
+
+        # When switching from French to English, we should find the English document
+        # even though we're looking for the French slug in English
+        doc = get_visible_document_or_404(
+            self.user,
+            locale="en-US",
+            slug="test-document-fr",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, self.en_doc)
+
+        # When switching from English to German with the English slug
+        doc = get_visible_document_or_404(
+            self.user, locale="de", slug="test-document", look_for_translation_via_parent=True
+        )
+        self.assertEqual(doc, self.de_doc)
+
+        # When switching from French to German with the French slug
+        doc = get_visible_document_or_404(
+            self.user, locale="de", slug="test-document-fr", look_for_translation_via_parent=True
+        )
+        self.assertEqual(doc, self.de_doc)
+
+    def test_fallback_to_parent(self):
+        """Test falling back to parent document when translation doesn't exist."""
+        # Create a document without a Spanish translation
+        no_es_doc = DocumentFactory(locale="en-US", slug="no-spanish")
+        RevisionFactory(document=no_es_doc, is_approved=True)
+
+        # When we look for a Spanish version that doesn't exist
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user, locale="es", slug="no-spanish", look_for_translation_via_parent=True
+            )
+
+        # But with return_parent_if_no_translation=True, we should get the English parent
+        doc = get_visible_document_or_404(
+            self.user,
+            locale="es",
+            slug="no-spanish",
+            look_for_translation_via_parent=True,
+            return_parent_if_no_translation=True,
+        )
+        self.assertEqual(doc, no_es_doc)
+
+    def test_nonexistent_document(self):
+        """Test that we get a 404 for documents that don't exist in any locale."""
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user,
+                locale="en-US",
+                slug="doesnt-exist",
+                look_for_translation_via_parent=True,
+            )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user, locale="de", slug="doesnt-exist", look_for_translation_via_parent=True
+            )
+
+    def test_unapproved_revision(self):
+        """Test that users can't see documents without approved revisions."""
+        # Create a document without an approved revision
+        unapproved_doc = DocumentFactory(locale="en-US", slug="unapproved")
+        RevisionFactory(document=unapproved_doc, is_approved=False)
+
+        # Regular user can't see it
+        random_user = UserFactory()
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(random_user, locale="en-US", slug="unapproved")
+
+        # But the creator can
+        creator = unapproved_doc.revisions.first().creator
+        doc = get_visible_document_or_404(creator, locale="en-US", slug="unapproved")
+        self.assertEqual(doc, unapproved_doc)
