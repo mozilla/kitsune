@@ -111,11 +111,16 @@ def _documents_for(user, locale, topics=None, products=None):
 
     if topics:
         topic_ids = [t.id for t in topics]
-        # we need to filter against parent topics for localized articles
+        # For parent documents: include if they have the requested topics
+        # For translations: include ONLY if their parent has the requested topics,
+        # completely ignoring any topics directly assigned to the translation
         qs = qs.filter(
-            Q(parent__isnull=True, topics__in=topic_ids)
-            | Q(parent__isnull=False, parent__topics__in=topic_ids)
+            # Either this is a parent document with matching topics
+            (Q(parent__isnull=True) & Q(topics__in=topic_ids))
+            # OR this is a translation and its parent has matching topics
+            | (Q(parent__isnull=False) & Q(parent__topics__in=topic_ids))
         )
+
     for product in products or []:
         # we need to filter against parent products for localized articles
         qs = qs.filter(Q(products=product) | Q(parent__products=product))
