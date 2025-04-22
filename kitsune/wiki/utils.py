@@ -177,34 +177,48 @@ def get_visible_document_or_404(
     """
     Get the document specified by the keyword arguments and visible to the given user, or 404.
     """
+
     try:
         return Document.objects.get_visible(user, **kwargs)
     except Document.DoesNotExist:
         pass
 
-    if (
-        not look_for_translation_via_parent
-        or not (locale := kwargs.get("locale"))
-        or (locale == settings.WIKI_DEFAULT_LANGUAGE)
-    ):
-        # We either don't want to try to find the translation via its parent, or it doesn't
-        # make sense, because we're not making a locale-specific request or the locale we're
-        # requesting is already the default locale.
+    if not (locale := kwargs.get("locale")):
         raise Http404
 
-    # We couldn't find a visible translation in the requested non-default locale, so let's
-    # see if we can find a visible translation via its parent.
-    kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+    slug = kwargs.get("slug")
+
+    if not (slug and look_for_translation_via_parent):
+        raise Http404
+
+    other_docs_qs = (
+        Document.objects.filter(slug=slug).exclude(locale=locale).select_related("parent")
+    )
+
+    for doc in other_docs_qs:
+        base_doc = doc.parent or doc
+        if base_doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
+            if base_doc.locale == locale:
+                return base_doc
+            translation = base_doc.translated_to(locale, visible_for_user=user)
+            if translation:
+                return translation
+        else:
+            translation = base_doc.translated_to(locale, visible_for_user=user)
+            if translation:
+                return translation
+
+    # Don't try final fallback if not looking for translations or in default language
+    if not look_for_translation_via_parent or locale == settings.WIKI_DEFAULT_LANGUAGE:
+        raise Http404
+
+    kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
     parent = get_object_or_404(Document.objects.visible(user, **kwargs))
-
-    # If there's a visible translation of the parent for the requested locale, return it.
-    if translation := parent.translated_to(locale, visible_for_user=user):
+    translation = parent.translated_to(locale, visible_for_user=user)
+    if translation:
         return translation
-
-    # Otherwise, we're left with the parent.
     if return_parent_if_no_translation:
         return parent
-
     raise Http404
 
 
