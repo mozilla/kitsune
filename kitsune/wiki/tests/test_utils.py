@@ -709,17 +709,30 @@ class GetVisibleDocumentTests(TestCase):
         super().setUp()
         self.user = UserFactory()
 
-        # Create an English document
-        self.en_doc = DocumentFactory(locale="en-US", slug="test-document")
-        RevisionFactory(document=self.en_doc, is_approved=True)
+        # Create an English document with an approved revision
+        self.en_doc = ApprovedRevisionFactory(
+            document__locale="en-US",
+            document__slug="test-document",
+            is_ready_for_localization=True,
+        ).document
 
-        # Create a German translation with a different slug
-        self.de_doc = DocumentFactory(locale="de", parent=self.en_doc, slug="test-document-de")
-        RevisionFactory(document=self.de_doc, is_approved=True)
+        # Create a German translation
+        self.de_rev = TranslatedRevisionFactory(
+            document__locale="de",
+            document__slug="test-document-de",
+            document__parent=self.en_doc,
+            based_on=self.en_doc.current_revision,
+        )
+        self.de_doc = self.de_rev.document
 
-        # Create a French translation with yet another slug
-        self.fr_doc = DocumentFactory(locale="fr", parent=self.en_doc, slug="test-document-fr")
-        RevisionFactory(document=self.fr_doc, is_approved=True)
+        # Create a French translation
+        self.fr_rev = TranslatedRevisionFactory(
+            document__locale="fr",
+            document__slug="test-document-fr",
+            document__parent=self.en_doc,
+            based_on=self.en_doc.current_revision,
+        )
+        self.fr_doc = self.fr_rev.document
 
     def test_get_document_by_locale_and_slug_direct_match(self):
         """Test getting a document when there's a direct match for locale and slug."""
@@ -787,8 +800,9 @@ class GetVisibleDocumentTests(TestCase):
     def test_fallback_to_parent(self):
         """Test falling back to parent document when translation doesn't exist."""
         # Create a document without a Spanish translation
-        no_es_doc = DocumentFactory(locale="en-US", slug="no-spanish")
-        RevisionFactory(document=no_es_doc, is_approved=True)
+        no_es_doc = ApprovedRevisionFactory(
+            document__locale="en-US", document__slug="no-spanish"
+        ).document
 
         # When we look for a Spanish version that doesn't exist
         with self.assertRaises(Http404):
@@ -824,8 +838,9 @@ class GetVisibleDocumentTests(TestCase):
     def test_unapproved_revision(self):
         """Test that users can't see documents without approved revisions."""
         # Create a document without an approved revision
-        unapproved_doc = DocumentFactory(locale="en-US", slug="unapproved")
-        RevisionFactory(document=unapproved_doc, is_approved=False)
+        unapproved_doc = RevisionFactory(
+            document__locale="en-US", document__slug="unapproved", is_approved=False
+        ).document
 
         # Regular user can't see it
         random_user = UserFactory()
