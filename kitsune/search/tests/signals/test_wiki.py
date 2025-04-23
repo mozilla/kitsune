@@ -35,7 +35,7 @@ class WikiDocumentSignalsTests(Elastic7TestCase):
 
         self.document.products.remove(product)
 
-        self.assertEqual(None, self.get_doc().product_ids)
+        self.assertEqual([], self.get_doc().product_ids)
 
     def test_topics_change(self):
         topic = TopicFactory()
@@ -46,7 +46,7 @@ class WikiDocumentSignalsTests(Elastic7TestCase):
 
         self.document.topics.remove(topic)
 
-        self.assertEqual(None, self.get_doc().topic_ids)
+        self.assertEqual([], self.get_doc().topic_ids)
 
     def test_document_delete(self):
         RevisionFactory(document=self.document, is_approved=True)

@@ -33,7 +33,7 @@ class ToActionTests(Elastic7TestCase):
 
     def test_update_empty_list(self):
         self.prepare().to_action("update")
-        self.assertEqual(self.doc.group_ids, None)
+        self.assertEqual(self.doc.group_ids, [])
 
     def test_update_bulk_empty_list(self):
         payload = self.prepare().to_action("update", is_bulk=True)
