@@ -445,6 +445,9 @@ class TestFacetHelpers(TestCase):
         parent_doc.topics.remove(privacy_topic)
         parent_doc.topics.add(billing_topic)
 
+        # Clear any caches that might interfere with the test
+        cache.clear()
+
         # EXPECTED BEHAVIOR: The child document should now appear in the billing topic listing
         docs_billing_fr_after = _documents_for(self.anonymous, locale="fr", topics=[billing_topic])
         self.assertEqual(len(docs_billing_fr_after), 1)
