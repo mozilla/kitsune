@@ -268,20 +268,20 @@ class TestFacetHelpers(TestCase):
             docs = _documents_for(
                 self.anonymous, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual(set(d["id"] for d in docs), {self.doc1_localized.id})
+            self.assertEqual({d["id"] for d in docs}, {self.doc1_localized.id})
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-user1"):
             docs = _documents_for(
                 self.user1, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual(set(d["id"] for d in docs), {self.doc1_localized.id})
+            self.assertEqual({d["id"] for d in docs}, {self.doc1_localized.id})
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-user2"):
             docs = _documents_for(
                 self.user2, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
             self.assertEqual(
-                set(d["id"] for d in docs), {self.doc1_localized.id, self.doc8_localized.id}
+                {d["id"] for d in docs}, {self.doc1_localized.id, self.doc8_localized.id}
             )
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-staff"):
@@ -289,7 +289,7 @@ class TestFacetHelpers(TestCase):
                 self.staff, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
             self.assertEqual(
-                set(d["id"] for d in docs), {self.doc1_localized.id, self.doc8_localized.id}
+                {d["id"] for d in docs}, {self.doc1_localized.id, self.doc8_localized.id}
             )
 
         with self.subTest("documents_for-general_sync-anon"):
