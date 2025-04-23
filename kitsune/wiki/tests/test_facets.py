@@ -268,39 +268,34 @@ class TestFacetHelpers(TestCase):
             docs = _documents_for(
                 self.anonymous, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertIn(self.doc1.id, [d["id"] for d in docs])
-            self.assertIn(self.doc2.id, [d["id"] for d in docs])
+            self.assertEqual(set(d["id"] for d in docs), {self.doc1.id, self.doc2.id})
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-user1"):
             docs = _documents_for(
                 self.user1, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            doc_ids = [d["id"] for d in docs]
-            self.assertIn(self.doc1.id, doc_ids)
-            self.assertIn(self.doc2.id, doc_ids)
-            self.assertIn(self.doc6.id, doc_ids)
-            self.assertIn(self.doc7.id, doc_ids)
+            self.assertEqual(
+                set(d["id"] for d in docs),
+                {self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id},
+            )
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-user2"):
             docs = _documents_for(
                 self.user2, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            doc_ids = [d["id"] for d in docs]
-            self.assertIn(self.doc1.id, doc_ids)
-            self.assertIn(self.doc2.id, doc_ids)
-            self.assertIn(self.doc7.id, doc_ids)
-            self.assertIn(self.doc8.id, doc_ids)
+            self.assertEqual(
+                set(d["id"] for d in docs),
+                {self.doc1.id, self.doc2.id, self.doc7.id, self.doc8.id},
+            )
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-staff"):
             docs = _documents_for(
                 self.staff, locale="en-US", topics=[self.general_d, self.bookmarks_d]
             )
-            doc_ids = [d["id"] for d in docs]
-            self.assertIn(self.doc1.id, doc_ids)
-            self.assertIn(self.doc2.id, doc_ids)
-            self.assertIn(self.doc6.id, doc_ids)
-            self.assertIn(self.doc7.id, doc_ids)
-            self.assertIn(self.doc8.id, doc_ids)
+            self.assertEqual(
+                set(d["id"] for d in docs),
+                {self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id, self.doc8.id},
+            )
 
         with self.subTest("documents_for-general_sync-anon"):
             docs = _documents_for(self.anonymous, locale="en-US", topics=[self.sync_d])
