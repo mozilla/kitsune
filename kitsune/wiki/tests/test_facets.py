@@ -266,35 +266,30 @@ class TestFacetHelpers(TestCase):
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-anon"):
             docs = _documents_for(
-                self.anonymous, locale="en-US", topics=[self.general_d, self.bookmarks_d]
+                self.anonymous, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual(set(d["id"] for d in docs), {self.doc1.id, self.doc2.id})
+            self.assertEqual(set(d["id"] for d in docs), {self.doc1_localized.id})
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-user1"):
             docs = _documents_for(
-                self.user1, locale="en-US", topics=[self.general_d, self.bookmarks_d]
+                self.user1, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
-            self.assertEqual(
-                set(d["id"] for d in docs),
-                {self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id},
-            )
+            self.assertEqual(set(d["id"] for d in docs), {self.doc1_localized.id})
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-user2"):
             docs = _documents_for(
-                self.user2, locale="en-US", topics=[self.general_d, self.bookmarks_d]
+                self.user2, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
             self.assertEqual(
-                set(d["id"] for d in docs),
-                {self.doc1.id, self.doc2.id, self.doc7.id, self.doc8.id},
+                set(d["id"] for d in docs), {self.doc1_localized.id, self.doc8_localized.id}
             )
 
         with self.subTest("documents_for-general_bookmarks_sync_localized-staff"):
             docs = _documents_for(
-                self.staff, locale="en-US", topics=[self.general_d, self.bookmarks_d]
+                self.staff, locale="de", topics=[self.general_d, self.bookmarks_d]
             )
             self.assertEqual(
-                set(d["id"] for d in docs),
-                {self.doc1.id, self.doc2.id, self.doc6.id, self.doc7.id, self.doc8.id},
+                set(d["id"] for d in docs), {self.doc1_localized.id, self.doc8_localized.id}
             )
 
         with self.subTest("documents_for-general_sync-anon"):
