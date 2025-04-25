@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import TestCase
@@ -400,3 +401,105 @@ class TestFacetHelpers(TestCase):
                 [d["id"] for d in docs], [self.doc1_localized.id, self.doc8_localized.id]
             )
             self.assertEqual([d["id"] for d in fallbacks], [self.doc6.id, self.doc7.id])
+
+    def test_topic_change_with_translations(self):
+        """Test that when a parent document's topics change, the child translations
+        appear in the correct topic listings.
+
+        This test demonstrates the correct behavior where translated documents only
+        appear in topic listings based on their parent's topics.
+        """
+        # Create a parent document in en-US with the first topic
+        privacy_topic = TopicFactory(products=[self.desktop], slug="privacy")
+        billing_topic = TopicFactory(products=[self.desktop], slug="billing")
+
+        parent_doc = DocumentFactory(products=[self.desktop], topics=[privacy_topic])
+        parent_revision = ApprovedRevisionFactory(
+            document=parent_doc, is_ready_for_localization=True
+        )
+
+        # Create a child translation in a different locale
+        child_doc = DocumentFactory(locale="fr", parent=parent_doc)
+        ApprovedRevisionFactory(document=child_doc, based_on=parent_revision)
+
+        # Verify the child document appears in the privacy topic listing
+        docs_privacy_fr = _documents_for(self.anonymous, locale="fr", topics=[privacy_topic])
+        self.assertEqual(len(docs_privacy_fr), 1)
+        self.assertEqual(docs_privacy_fr[0]["id"], child_doc.id)
+
+        # Verify the child document doesn't appear in the billing topic listing
+        docs_billing_fr = _documents_for(self.anonymous, locale="fr", topics=[billing_topic])
+        self.assertEqual(len(docs_billing_fr), 0)
+
+        # Change the parent document's topic
+        parent_doc.topics.remove(privacy_topic)
+        parent_doc.topics.add(billing_topic)
+
+        # Clear any caches that might interfere with the test
+        cache.clear()
+
+        # EXPECTED BEHAVIOR: The child document should now appear in the billing topic listing
+        docs_billing_fr_after = _documents_for(self.anonymous, locale="fr", topics=[billing_topic])
+        self.assertEqual(len(docs_billing_fr_after), 1)
+        self.assertEqual(docs_billing_fr_after[0]["id"], child_doc.id)
+
+        # EXPECTED BEHAVIOR: The child document should no longer appear
+        # in the privacy topic listing
+        docs_privacy_fr_after = _documents_for(self.anonymous, locale="fr", topics=[privacy_topic])
+        self.assertEqual(len(docs_privacy_fr_after), 0)
+
+    def test_documents_for_with_topic_change(self):
+        """Test the full documents_for function with topic changes in parent docs.
+
+        This test confirms that translated documents correctly follow their parent's
+        topics in the public documents_for function.
+        """
+        # Create a parent document in en-US with the first topic
+        privacy_topic = TopicFactory(products=[self.desktop], slug="privacy")
+        billing_topic = TopicFactory(products=[self.desktop], slug="billing")
+
+        parent_doc = DocumentFactory(products=[self.desktop], topics=[privacy_topic])
+        parent_revision = ApprovedRevisionFactory(
+            document=parent_doc, is_ready_for_localization=True
+        )
+
+        # Create a child translation in a different locale
+        child_doc = DocumentFactory(locale="fr", parent=parent_doc)
+        ApprovedRevisionFactory(document=child_doc, based_on=parent_revision)
+
+        # Test with the public documents_for function
+        # Verify the child document appears in the privacy topic listing
+        docs_fr, fallbacks = documents_for(
+            self.anonymous, locale="fr", topics=[privacy_topic], products=[self.desktop]
+        )
+        doc_ids = [d["id"] for d in docs_fr]
+        self.assertIn(child_doc.id, doc_ids)
+
+        # Verify the child document doesn't appear in the billing topic listing
+        docs_fr, fallbacks = documents_for(
+            self.anonymous, locale="fr", topics=[billing_topic], products=[self.desktop]
+        )
+        doc_ids = [d["id"] for d in docs_fr]
+        self.assertNotIn(child_doc.id, doc_ids)
+
+        # Change the parent document's topic
+        parent_doc.topics.remove(privacy_topic)
+        parent_doc.topics.add(billing_topic)
+
+        # Clear any caches that might interfere with the test
+        cache.clear()
+
+        # EXPECTED BEHAVIOR: The child document should now appear in the billing topic listing
+        docs_fr, fallbacks = documents_for(
+            self.anonymous, locale="fr", topics=[billing_topic], products=[self.desktop]
+        )
+        doc_ids = [d["id"] for d in docs_fr]
+        self.assertIn(child_doc.id, doc_ids)
+
+        # EXPECTED BEHAVIOR: The child document should no longer appear in the
+        # privacy topic listing
+        docs_fr, fallbacks = documents_for(
+            self.anonymous, locale="fr", topics=[privacy_topic], products=[self.desktop]
+        )
+        doc_ids = [d["id"] for d in docs_fr]
+        self.assertNotIn(child_doc.id, doc_ids)
