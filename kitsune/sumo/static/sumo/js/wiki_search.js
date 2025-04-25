@@ -5,100 +5,112 @@ import "sumo/tpl/wiki-related-doc.njk";
 import "sumo/tpl/wiki-search-results.njk";
 import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
-(function($) {
-  var locale = $('html').attr('lang');
-  var search = new Search('/' + locale + '/search', {w: 1, format: 'json'});
+document.addEventListener("DOMContentLoaded", function() {
+  const locale = document.documentElement.lang;
+  const search = new Search(`/${locale}/search`, { w: 1, format: 'json' });
 
-  document.addEventListener("DOMContentLoaded", function() {
-    var $relatedDocsList = $('#related-docs-list');
-    var searchInput = document.getElementById('search-related');
-    
-    if (!searchInput) return;
+  const relatedDocsList = document.getElementById('related-docs-list');
+  const searchInput = document.getElementById('search-related');
 
-    if (document.body.classList.contains('edit_metadata') || document.body.classList.contains('new')) {
-      $relatedDocsList.css('display', 'none');
-    }
+  if (!searchInput || !relatedDocsList) {
+    return;
+  }
 
-    var currentDocId = null;
-    var $documentForm = $('form[data-document-id]');
-    if ($documentForm.length) {
-      currentDocId = $documentForm.data('document-id');
-    }
+  if (document.body.classList.contains('edit_metadata') || document.body.classList.contains('new')) {
+    relatedDocsList.style.display = 'none';
+  }
 
-    var tomSelect = new TomSelect(searchInput, {
-      valueField: 'id',
-      labelField: 'title',
-      searchField: 'title',
-      create: false,
-      closeAfterSelect: true,
-      maxItems: null,
-      plugins: {
-        remove_button: {
-          title: 'Remove this document'
+  let currentDocId = null;
+  const documentForm = document.querySelector('form[data-document-id]');
+  if (documentForm) {
+    currentDocId = documentForm.dataset.documentId;
+  }
+
+  const tomSelect = new TomSelect(searchInput, {
+    valueField: 'id',
+    labelField: 'title',
+    searchField: 'title',
+    create: false,
+    closeAfterSelect: true,
+    maxItems: null, // Allow multiple selections
+    plugins: {
+      remove_button: {
+        title: 'Remove this document'
+      }
+    },
+    load: function(query, callback) {
+      if (!query.length) {
+        return callback();
+      }
+
+      search.query(query, function(data) {
+        if (!data || !data.results) {
+          return callback();
         }
-      },
-      load: function(query, callback) {
-        if (!query.length) return callback();
-        
-        search.query(query, function(data) {
-          if (!data || !data.results) {
-            return callback();
-          }
-          
-          var formattedResults = data.results
-            .filter(result => result.type === 'document')
-            .map(function(item) {
-              var id = item.id;
-              if (!id && item.url) {
-                var match = item.url.match(/\/(\d+)\//);
-                if (match) {
-                  id = match[1];
-                }
+
+        const formattedResults = data.results
+          .filter(result => result.type === 'document')
+          .map(item => {
+            let id = item.id;
+            if (!id && item.url) {
+              const match = item.url.match(/\/(\d+)\//);
+              if (match) {
+                id = match[1];
               }
-              
-              return {
-                id: id,
-                title: item.title,
-                url: item.url
-              };
-            })
-            .filter(item => item.id)
-            .filter(item => !currentDocId || item.id != currentDocId)
-          callback(formattedResults);
-        });
-      },
-      onItemAdd: function(value, item) {
-        $relatedDocsList.children('.empty-message').remove();
-      },
-      render: {
-        option: function(item, escape) {
-          return '<div>' + escape(item.title) + '</div>';
-        },
-        item: function(item, escape) {
-          var context = {
-            name: 'related_documents',
-            doc: {
-              id: item.id,
-              title: item.title
             }
-          };
-          
-          $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.njk', context));
-          
-          return '<div>' + escape(item.title) + '</div>';
-        },
-        no_results: function(data, escape) {
-          return '<div class="no-results">No documents found</div>';
-        }
+            return {
+              id: id,
+              title: item.title,
+              url: item.url
+            };
+          })
+          .filter(item => item.id)
+          .filter(item => !currentDocId || item.id != currentDocId);
+
+        callback(formattedResults);
+      });
+    },
+    onItemAdd: function(value, item) {
+      const emptyMessage = relatedDocsList.querySelector('.empty-message');
+      if (emptyMessage) {
+        emptyMessage.remove();
       }
-    });
-    
-    tomSelect.on('item_remove', function(value) {
-      $relatedDocsList.children('[data-pk=' + value + ']').remove();
-      
-      if (!$relatedDocsList.children().length) {
-        $relatedDocsList.html('<div class="empty-message">' + gettext('No related documents.') + '</div>');
+      // Note: The actual list item is added in render.item
+    },
+    render: {
+      option: function(item, escape) {
+        return `<div>${escape(item.title)}</div>`;
+      },
+      // Renders the selected item in the input field and triggers adding the item visually to the list below.
+      item: function(item, escape) {
+        const context = {
+          name: 'related_documents', // Input field name prefix
+          doc: {
+            id: item.id,
+            title: item.title
+          }
+        };
+        relatedDocsList.insertAdjacentHTML('beforeend', nunjucksEnv.render('wiki-related-doc.njk', context));
+
+        // This div is what TomSelect displays in the input field for the selected item
+        return `<div>${escape(item.title)}</div>`;
+      },
+      no_results: function(data, escape) {
+        const noDocsFound = typeof gettext !== 'undefined' ? gettext('No documents found') : 'No documents found';
+        return `<div class="no-results">${noDocsFound}</div>`;
       }
-    });
+    }
   });
-})(jQuery);
+
+  tomSelect.on('item_remove', function(value) {
+    const itemToRemove = relatedDocsList.querySelector(`[data-pk="${value}"]`);
+    if (itemToRemove) {
+      itemToRemove.remove();
+    }
+
+    if (relatedDocsList.children.length === 0) {
+      const noRelatedDocs = typeof gettext !== 'undefined' ? gettext('No related documents.') : 'No related documents.';
+      relatedDocsList.innerHTML = `<div class="empty-message">${noRelatedDocs}</div>`;
+    }
+  });
+});
