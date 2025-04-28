@@ -388,3 +388,84 @@ def test_sumo_locale_priority(page: Page):
         utilities.set_extra_http_headers(headers)
         utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
         expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL + "/de/")
+
+
+# C3016012
+@pytest.mark.kbArticleTranslation
+def test_topic_inheritance_from_parent(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    original_topic_listing_page = "https://support.allizom.org/ro/products/firefox/accounts"
+    new_topic_listing_page = ("https://support.allizom.org/ro/products/firefox/settings/"
+                              "customization")
+
+    with allure.step("Signing in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Create a new simple article and approving it without marking it as "
+                     "ready for localization"):
+        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        parent_article_url = utilities.get_page_url()
+
+    with allure.step("Creating a new translation in the ro locale"):
+        sumo_pages.kb_article_page.click_on_translate_article_option()
+        sumo_pages.translate_article_page.click_on_locale_from_list("ro")
+        translation = sumo_pages.submit_kb_translation_flow._add_article_translation(
+            approve_translation_revision=True)
+
+    with check, allure.step("Navigating to the topic listing page and verifying that the "
+                            "translation is successfully displayed"):
+        utilities.navigate_to_link(original_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_visible()
+
+    with allure.step("Navigating to the parent article and editing it's metadata by adding a new "
+                     "topic"):
+        utilities.navigate_to_link(parent_article_url)
+        sumo_pages.edit_article_metadata_flow._edit_article_metadata(
+            topics=["Settings", "Customization"]
+        )
+
+    with check, allure.step("Navigating to the first topic listing page and verifying that the "
+                            "translations is successfully displayed"):
+        utilities.navigate_to_link(original_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_visible()
+
+    with check, allure.step("Navigating to the new topic listing page and verifying that the "
+                            "translations is successfully displayed"):
+        utilities.navigate_to_link(new_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_visible()
+
+    with allure.step("Removing the old topic from the parent article"):
+        utilities.navigate_to_link(parent_article_url)
+        sumo_pages.edit_article_metadata_flow._edit_article_metadata(topics="Accounts")
+
+    with check, allure.step("Navigating to the first topic listing page and verifying that the "
+                            "translation is not displayed"):
+        utilities.navigate_to_link(original_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_hidden()
+
+    with check, allure.step("Navigating to the new topic listing page and verifying that the "
+                            "translation is displayed"):
+        utilities.navigate_to_link(new_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_visible()
+
+    with allure.step("Deleting the parent article"):
+        utilities.navigate_to_link(parent_article_url)
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+    with allure.step("Verifying that the translation is not visible in both the original and new "
+                     "topic listing pages"):
+        utilities.navigate_to_link(original_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_hidden()
+
+        utilities.navigate_to_link(new_topic_listing_page)
+        expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
+            translation['translation_title'])).to_be_hidden()
