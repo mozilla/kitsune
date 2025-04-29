@@ -743,7 +743,7 @@ CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
 # Connection information for Elastic 7
 ES_TIMEOUT = 5  # Timeout for querying requests
-ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
+ES_URLS = config("ES_URLS", cast=Csv(), default="http://elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
 ES_USE_SSL = config("ES_USE_SSL", default=False, cast=bool)
 ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
@@ -759,6 +759,15 @@ ES_SEARCH_PARAMS = {"request_timeout": ES_TIMEOUT}
 ES_INDEX_PREFIX = config("ES_INDEX_PREFIX", default="sumo")
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = config("ES_LIVE_INDEXING", default=True, cast=bool)
+
+# Elasticsearch client settings
+ES_RETRY_ON_TIMEOUT = config("ES_RETRY_ON_TIMEOUT", default=True, cast=bool)
+ES_VERIFY_CERTS = config("ES_VERIFY_CERTS", default=False, cast=bool)
+ES_SSL_SHOW_WARN = config("ES_SSL_SHOW_WARN", default=False, cast=bool)
+ES_SNIFF_ON_START = config("ES_SNIFF_ON_START", default=False, cast=bool)
+ES_SNIFF_ON_CONNECTION_FAIL = config("ES_SNIFF_ON_CONNECTION_FAIL", default=False, cast=bool)
+ES_TEST_MAX_RETRIES = config("ES_TEST_MAX_RETRIES", default=5, cast=int)
+ES_TEST_TIMEOUT_MULTIPLIER = config("ES_TEST_TIMEOUT_MULTIPLIER", default=3, cast=int)
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10

@@ -1,7 +1,7 @@
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from django.test.utils import override_settings
-from kitsune.search.es_utils import index_objects_bulk
+from kitsune.search.es_utils import index_objects_bulk, es_client
 from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch.exceptions import NotFoundError
 from kitsune.search.documents import QuestionDocument
@@ -11,9 +11,11 @@ from kitsune.search.base import SumoDocument
 
 
 @override_settings(ES_LIVE_INDEXING=False)
-class IndexObjectsBulkTestCase(Elastic7TestCase):
+class IndexObjectsBulkTestCase(ElasticTestCase):
     def test_delete_not_found_not_raised(self):
         q_id = QuestionFactory(is_spam=True).id
+        # Force ES index refresh before testing to ensure consistency
+        QuestionDocument._index.refresh()
         index_objects_bulk("QuestionDocument", [q_id])
 
     @patch("kitsune.search.documents.QuestionDocument.to_action", autospec=True)
@@ -45,10 +47,17 @@ class IndexObjectsBulkTestCase(Elastic7TestCase):
         for question_id in ids:
             question = Question.objects.get(id=question_id)
             AnswerFactory(question=question, content=f"answer {question_id}")
+            
+        # Force ES index refresh before testing
+        QuestionDocument._index.refresh()
 
         with self.assertRaises(BulkIndexError):
             index_objects_bulk("QuestionDocument", ids, elastic_chunk_size=1)
 
+        # After the exception, verify the document was properly indexed
+        # Give ES some time to process before checking
+        QuestionDocument._index.refresh()
+        
         try:
             QuestionDocument.get(id_without_exception)
         except NotFoundError:

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from elasticsearch_dsl import Q as DSLQ
+from elasticsearch.dsl import Q as DSLQ
 
 
 class BaseToken(ABC):
