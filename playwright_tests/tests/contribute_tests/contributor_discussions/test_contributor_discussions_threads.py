@@ -1,14 +1,17 @@
 from urllib.parse import urlsplit
-
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
     OffTopicForumMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from playwright_tests.messages.mess_system_pages_messages.inbox_page_messages import \
+    InboxPageMessages
+from playwright_tests.messages.mess_system_pages_messages.sent_messages_page_messages import \
+    SentMessagesPageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -679,4 +682,422 @@ def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, us
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         utilities.navigate_to_link(utilities.get_page_url())
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3016247
+@pytest.mark.contributorDiscussionsThreads
+@pytest.mark.parametrize("user_type", ['simple_user', 'moderator'])
+def test_edit_own_forum_post(page: Page, user_type):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Signing in to SUMO"):
+        account = "TEST_ACCOUNT_12" if user_type == 'simple_user' else "TEST_ACCOUNT_MODERATOR"
+        user = utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts[account]
+        ))
+
+    with allure.step("Creating a new forum thread"):
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with allure.step("Editing the own forum thread post"):
+        sumo_pages.contributor_thread_flow.edit_thread_post(
+            thread_id,
+            "Edited thread body"
+        )
+
+    with check, allure.step("Verifying that the edited post is displayed"):
+        check.is_true(sumo_pages.forum_thread_page.is_thread_post_by_name_visible(
+            "Edited thread body"
+        ))
+
+    with check, allure.step("Verifying that the 'Modified by' information is displayed"):
+        check.is_in(
+            f"Modified by {user}",
+            sumo_pages.forum_thread_page.get_modified_by_text(thread_id)
+        )
+
+    with allure.step("Deleting the posted thread"):
+        if user_type == 'simple_user':
+            utilities.delete_cookies()
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3016248
+@pytest.mark.contributorDiscussionsThreads
+def test_edit_forum_posts(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in to SUMO and creating a new forum thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+        thread_url = utilities.get_page_url()
+
+    with allure.step("Verifying that the 'Edit this post' option is displayed and accessible"):
+        sumo_pages.forum_thread_page.click_on_edit_this_post_option(thread_id)
+        edit_url = utilities.get_page_url()
+
+    with check, allure.step("Signing in with a user that doesn't have the necessary permissions "
+                            "to edit the post and verifying that the 'Edit this post' option is "
+                            "not displayed"):
+        utilities.navigate_to_link(thread_url)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+        check.is_false(sumo_pages.forum_thread_page.is_edit_this_post_option_displayed(thread_id))
+
+    with check, allure.step("Navigating to the edit page directly and verifying that a 403 is "
+                            "returned"):
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(edit_url)
+        response = navigation_info.value
+        assert response.status == 403
+
+    with check, allure.step("Signing out from SUMO and verifying that the 'Edit this post' option"
+                            " is not displayed"):
+        utilities.navigate_to_link(thread_url)
+        utilities.delete_cookies()
+        check.is_false(sumo_pages.forum_thread_page.is_edit_this_post_option_displayed(thread_id))
+
+    with check, allure.step("Navigate to the edit page directly and verifying that the user is "
+                            "redirected to the auth page"):
+        utilities.navigate_to_link(edit_url)
+        check.is_in(
+            FxAPageMessages.AUTH_PAGE_URL,
+            utilities.get_page_url()
+        )
+
+    with check, allure.step("Singing in with an admin account and verifying that the 'Edit this "
+                            "post' option is displayed"):
+        utilities.navigate_to_link(thread_url)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        check.is_true(sumo_pages.forum_thread_page.is_edit_this_post_option_displayed(thread_id))
+
+    with allure.step("Deleting the posted thread"):
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3020040
+@pytest.mark.contributorDiscussionsThreads
+def test_delete_this_post(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in to SUMO and creating a new forum thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+        thread_url = utilities.get_page_url()
+
+    with allure.step("Creating a new thread post"):
+        thread_id = sumo_pages.contributor_thread_flow.post_thread_reply(
+            reply_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with check, allure.step("Deleting the thread post and verifying that the thread post is no "
+                            "longer displayed"):
+        sumo_pages.forum_thread_page.click_on_delete_this_post_option(thread_id)
+        sumo_pages.delete_thread_post_page.click_on_delete_button()
+        check.is_false(sumo_pages.forum_thread_page.is_thread_post_visible(thread_id))
+
+    with allure.step("Signing in with a different user and posting a new thread post"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+        thread_id = sumo_pages.contributor_thread_flow.post_thread_reply(
+            reply_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with allure.step("Signing in with an admin account and verifying that the delete this post is "
+                     "accessible"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.forum_thread_page.click_on_delete_this_post_option(thread_id)
+        delete_post_url = utilities.get_page_url()
+
+    with check, allure.step("Signing in with the thread reply author and verifying that the"
+                            " delete this post option is not displayed"):
+        utilities.navigate_to_link(thread_url)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+        check.is_false(sumo_pages.forum_thread_page.is_delete_this_post_option_displayed(
+            thread_id))
+
+    with check, allure.step("Navigating to the delete page directly and verifying that a 403 is "
+                            "returned"):
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(delete_post_url)
+        response = navigation_info.value
+        assert response.status == 403
+
+    with check, allure.step("Signing out from SUMO and verifying that the delete this post option "
+                            "is not displayed"):
+        utilities.navigate_to_link(thread_url)
+        utilities.delete_cookies()
+        check.is_false(sumo_pages.forum_thread_page.is_delete_this_post_option_displayed(
+            thread_id))
+
+    with check, allure.step("Navigate to the delete page directly and verifying that the user is "
+                            "redirected to the auth page"):
+        utilities.navigate_to_link(delete_post_url)
+        check.is_in(
+            FxAPageMessages.AUTH_PAGE_URL,
+            utilities.get_page_url()
+        )
+
+    with allure.step("Deleting the thread"):
+        utilities.navigate_to_link(thread_url)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3020041
+@pytest.mark.contributorDiscussionsThreads
+def test_delete_this_post_option_availability(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in to SUMO and creating a new forum thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        first_thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with allure.step("Creating a new thread post"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        ))
+        second_thread_id = sumo_pages.contributor_thread_flow.post_thread_reply(
+            reply_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with allure.step("Signing in with and admin account and deleting the first thread post"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.contributor_thread_flow.delete_thread_post(first_thread_id)
+
+    with check, allure.step("Verifying that the first thread post is no longer displayed"):
+        check.is_false(sumo_pages.forum_thread_page.is_thread_post_visible(first_thread_id))
+        check.is_true(sumo_pages.forum_thread_page.is_thread_post_visible(second_thread_id))
+
+    with check, allure.step("Deleting the second thread and verifying that the thread is no "
+                            "longer displayed"):
+        sumo_pages.contributor_thread_flow.delete_thread_post(second_thread_id)
+        check.is_false(sumo_pages.forum_discussions_page.is_thread_displayed(thread_title))
+
+
+# C3020042
+@pytest.mark.contributorDiscussionsThreads
+def test_quote_this_post(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Signing in to SUMO and creating a new forum thread"):
+        user = utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        thread_body = utilities.discussion_thread_data['thread_body']
+        thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=thread_body
+        )
+
+    with check, allure.step("Signing in with a different account and quoting the first post"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+        second_quote = sumo_pages.contributor_thread_flow.quote_thread_post(thread_id)
+
+    with check, allure.step("Verifying that the correct information is displayed inside the "
+                            "reply section"):
+        check.equal(
+            sumo_pages.forum_thread_page.get_thread_post_mention_text(second_quote),
+            f"{user} said"
+        )
+
+        check.equal(
+            sumo_pages.forum_thread_page.get_thread_post_quote_text(second_quote).strip(),
+            thread_body.strip()
+        )
+
+    with check, allure.step("Clicking on the 'said' link and verifying that the user is redirected"
+                            "to the correct section of the page"):
+        sumo_pages.forum_thread_page.click_on_post_mention_link(second_quote)
+        check.is_in(
+            f"#post-{thread_id}",
+            utilities.get_page_url()
+        )
+
+    with check, allure.step("Signing out from SUMO and verifying that the 'Quote' option is not "
+                            "displayed"):
+        utilities.delete_cookies()
+        check.is_false(sumo_pages.forum_thread_page.is_quote_option_displayed(thread_id))
+
+    with allure.step("Deleting the thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3020047
+@pytest.mark.contributorDiscussionsThreads
+def test_link_to_this_post_option(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in to SUMO and creating a new forum thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+
+    with check, allure.step("Signing in with a different user and clicking on the 'Link to this "
+                            "post' option and verifying that the correct URL is displayed"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+        sumo_pages.forum_thread_page.click_on_link_to_this_post_option(thread_id)
+        check.is_in(
+            f"#post-{thread_id}",
+            utilities.get_page_url()
+        )
+
+    with check, allure.step("Signing out from SUMO and clicking on the 'Link to this post' option "
+                            "and verifying that the correct URL is displayed"):
+        utilities.delete_cookies()
+        sumo_pages.forum_thread_page.click_on_link_to_this_post_option(thread_id)
+        check.is_in(
+            f"#post-{thread_id}",
+            utilities.get_page_url()
+        )
+
+    with allure.step("Deleting the thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.contributor_thread_flow.delete_thread()
+
+
+# C3020048
+@pytest.mark.contributorDiscussionsThreads
+def test_private_message_option(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    message = "This is a test message " + utilities.generate_random_number(1, 1000)
+
+    with allure.step("Signing in to SUMO and creating a new forum thread"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+        thread_title = utilities.discussion_thread_data['thread_title'] + (
+            utilities.generate_random_number(1, 1000))
+        thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
+        )
+        thread_url = utilities.get_page_url()
+
+    with allure.step("Signing in with a different user, clicking on the 'Private message' option "
+                     "and sending out a message"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+        sumo_pages.forum_thread_page.click_on_private_message_option(thread_id)
+        sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+            message_body=message,
+            expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
+        )
+
+    with check, allure.step("Verifying that the sent message is displayed inside the sent "
+                            "messages page"):
+        sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
+        expect(sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message)
+               ).to_be_visible()
+
+    with allure.step("Clearing the sent messages list"):
+        sumo_pages.messaging_system_flow.delete_message_flow(
+            excerpt=message, from_sent_list=True,
+            expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
+        )
+
+    with check, allure.step("Signing in with the receiver account and verifying that the message "
+                            "is displayed inside the inbox section"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.top_navbar.click_on_inbox_option()
+        expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message)).to_be_visible()
+
+    with allure.step("Clearing the inbox"):
+        sumo_pages.messaging_system_flow.delete_message_flow(
+            excerpt=message, from_inbox_list=True,
+            expected_url=InboxPageMessages.INBOX_PAGE_STAGE_URL
+        )
+
+    with check, allure.step("Navigating back to the thread, signing out and verifying that the "
+                            "'Private message' option redirects the user to the auth page"):
+        utilities.navigate_to_link(thread_url)
+        utilities.delete_cookies()
+        sumo_pages.forum_thread_page.click_on_private_message_option(thread_id)
+        check.is_in(
+            FxAPageMessages.AUTH_PAGE_URL,
+            utilities.get_page_url()
+        )
+
+    with allure.step("Deleting the thread"):
+        utilities.navigate_to_link(thread_url)
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
         sumo_pages.contributor_thread_flow.delete_thread()

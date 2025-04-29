@@ -24,6 +24,10 @@ from playwright_tests.pages.common_elements.common_web_elements import CommonWeb
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     contributor_discussions_page import ContributorDiscussionPage
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
+    delete_thread_post_page import DeleteThreadPostPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
+    edit_thread_post_page import EditThreadPostPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     edit_thread_title_page import EditThreadTitle
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     forum_discussions_page import ForumDiscussionsPage
@@ -202,6 +206,8 @@ class SumoPages:
         self.forum_discussions_page = ForumDiscussionsPage(page)
         self.new_thread_page = NewThreadPage(page)
         self.edit_thread_title_page = EditThreadTitle(page)
+        self.edit_post_thread_page = EditThreadPostPage(page)
+        self.delete_thread_post_page = DeleteThreadPostPage(page)
         self.forum_thread_page = ForumThreadPage(page)
 
         # Discussion Threads flow.
