@@ -1,4 +1,9 @@
-from elasticsearch_dsl import Q as DSLQ
+from django.conf import settings
+
+if settings.ES_VERSION == 8:
+    from elasticsearch8.dsl import Q as DSLQ
+else:
+    from elasticsearch_dsl import Q as DSLQ
 
 from .tokens import BaseToken
 
