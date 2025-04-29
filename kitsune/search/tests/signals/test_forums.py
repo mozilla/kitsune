@@ -7,6 +7,7 @@ from kitsune.search.documents import ForumDocument
 
 class ForumDocumentSignalsTests(Elastic7TestCase):
     def setUp(self):
+        super().setUp()
         self.post = PostFactory()
         self.post_id = self.post.id
 
