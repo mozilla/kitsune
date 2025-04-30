@@ -1,7 +1,7 @@
 from kitsune.search.tests import ElasticTestCase
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from django.test.utils import override_settings
-from kitsune.search.es_utils import index_objects_bulk, es_client
+from kitsune.search.es_utils import index_objects_bulk
 from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch.exceptions import NotFoundError
 from kitsune.search.documents import QuestionDocument
@@ -47,7 +47,7 @@ class IndexObjectsBulkTestCase(ElasticTestCase):
         for question_id in ids:
             question = Question.objects.get(id=question_id)
             AnswerFactory(question=question, content=f"answer {question_id}")
-            
+
         # Force ES index refresh before testing
         QuestionDocument._index.refresh()
 
@@ -57,7 +57,7 @@ class IndexObjectsBulkTestCase(ElasticTestCase):
         # After the exception, verify the document was properly indexed
         # Give ES some time to process before checking
         QuestionDocument._index.refresh()
-        
+
         try:
             QuestionDocument.get(id_without_exception)
         except NotFoundError:
