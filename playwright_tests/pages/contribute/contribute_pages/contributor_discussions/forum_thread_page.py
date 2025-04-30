@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 from playwright_tests.core.basepage import BasePage
 from playwright_tests.core.utilities import Utilities
 
@@ -56,24 +57,38 @@ class ForumThreadPage(BasePage):
         self.post_content = lambda post_id: page.locator(
             f"//li[@id='post-{post_id}']//div[@class='content']/p")
         self.thread_post = lambda post_id: page.locator(f"li#post-{post_id}")
+        self.thread_post_by_content = lambda post_content: page.locator(
+            f"//div[@class='content']/p[normalize-space(text())='{post_content}']")
+        self.modified_by = lambda post_id: page.locator(f"li#post-{post_id} p.text-body-sm")
+        self.quoted_thread_post_mention = lambda post_id: page.locator(
+            f"li#post-{post_id} div.content em")
+        self.quoted_thread_post_mention_link = lambda post_id: page.locator(
+            f"li#post-{post_id} div.content em a")
+        self.quoted_thread_post_quote = lambda post_id: page.locator(
+            f"li#post-{post_id} div.content blockquote")
 
         # Thread post more options locators
         self.post_3_dotted_menu = lambda post_id: page.locator(f"li#post-{post_id}").get_by_role(
             "button", name="more options")
+        self.post_3_dotted_menu_expanded = lambda post_id: page.locator(
+            f"//li[@id='post-{post_id}']//ul[contains(@id,'expand-datahasdropdown')]")
+        self.private_message = lambda post_id: page.locator(
+            f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
+            "link", name="Private message")
         self.post_edit_this_post = lambda post_id: page.locator(
-            f"li#post-{post_id} ul#expand-expand-datahasdropdown-0 li").get_by_role(
+            f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
             "link", name="Edit this post")
         self.delete_this_post = lambda post_id: page.locator(
-            f"li#post-{post_id} ul#expand-expand-datahasdropdown-0 li").get_by_role(
+            f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
             "link", name="Delete this post")
         self.quote_this_post = lambda post_id: page.locator(
-            f"li#post-{post_id} ul#expand-expand-datahasdropdown-0 li").get_by_role(
+            f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
             "link", name="Quote")
         self.report_this_post = lambda post_id: page.locator(
-            f"li#post-{post_id} ul#expand-expand-datahasdropdown-0 li").get_by_role(
+            f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
             "link", name="Report Abuse")
         self.link_this_post = lambda post_id: page.locator(
-            f"li#post-{post_id} ul#expand-expand-datahasdropdown-0 li").get_by_role(
+            f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
             "link", name="Link to this post")
 
         # Post a reply locators
@@ -117,6 +132,26 @@ class ForumThreadPage(BasePage):
                 bool: True if the post is visible, False otherwise.
         """
         return self._is_element_visible(self.thread_post(post_id))
+
+    def is_thread_post_by_name_visible(self, post_name: str) -> bool:
+        """
+            Check if a specific thread post by name is visible.
+            Args:
+                post_name (str): The name of the post.
+            Returns:
+                bool: True if the post is visible, False otherwise.
+        """
+        return self._is_element_visible(self.thread_post_by_content(post_name))
+
+    def get_modified_by_text(self, post_id: str) -> str:
+        """
+            Get the modified by text for a specific post.
+            Args:
+                post_id (str): The ID of the post.
+            Returns:
+                str: The modified by text.
+        """
+        return self._get_text_of_element(self.modified_by(post_id))
 
     def is_edit_thread_title_option_visible(self) -> bool:
         """
@@ -299,3 +334,140 @@ class ForumThreadPage(BasePage):
             item_name (str): The name of the item to click on.
         """
         self._click(self.contributor_discussions_side_navbar_item(item_name))
+
+    def click_on_3_dotted_menu(self, post_id: str):
+        """
+        Click on the 3-dotted menu for a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        """
+        self._click(self.post_3_dotted_menu(post_id),
+                    expected_locator=self.post_3_dotted_menu_expanded(post_id))
+
+    def click_on_edit_this_post_option(self, post_id: str):
+        """
+        1. Click on the "Edit this post" option for a specific post.
+        2. Click on the "Edit this post" option in the 3-dotted menu of the post.
+        Args:
+            post_id (str): The ID of the post.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        self._click(self.post_edit_this_post(post_id))
+
+    def is_edit_this_post_option_displayed(self, post_id: str):
+        """
+        Check if the "Edit this post" option is displayed in the 3-dotted menu of a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        Returns:
+            bool: True if the option is displayed, False otherwise.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        return self._is_element_visible(self.post_edit_this_post(post_id))
+
+    def is_delete_this_post_option_displayed(self, post_id: str):
+        """
+        Check if the "Delete this post" option is displayed in the 3-dotted menu of a specific
+        post.
+        Args:
+            post_id (str): The ID of the post.
+        Returns:
+            bool: True if the option is displayed, False otherwise.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        return self._is_element_visible(self.delete_this_post(post_id))
+
+    def click_on_quote_option(self, post_id: str):
+        """
+        Click on the "Quote" option for a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        self._click(self.quote_this_post(post_id))
+
+    def click_on_delete_this_post_option(self, post_id: str):
+        """
+        Click on the "Delete this post" option for a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        self._click(self.delete_this_post(post_id))
+
+    def click_on_private_message_option(self, post_id: str):
+        """
+        Click on the "Private message" option for a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        self._click(self.private_message(post_id))
+
+    def is_quote_option_displayed(self, post_id: str) -> bool:
+        """
+        Check if the "Quote" option is displayed in the 3-dotted menu of a specific post.
+        Returns:
+            bool: True if the option is displayed, False otherwise.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        return self._is_element_visible(self.quote_this_post(post_id))
+
+    def click_on_report_abuse_option(self, post_id: str):
+        """
+        Click on the "Report Abuse" option for a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        self._click(self.report_this_post(post_id))
+
+    def click_on_link_to_this_post_option(self, post_id: str) -> str:
+        """
+        Click on the "Link to this post" option for a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        Returns:
+            str: The ID of the post.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        self._click(self.link_this_post(post_id))
+
+        return re.search(r'post-(\d+)', self.utilities.get_page_url()).group(1)
+
+    def is_report_abuse_option_displayed(self, post_id: str) -> bool:
+        """
+        Check if the "Report Abuse" option is displayed in the 3-dotted menu of a specific post.
+        Args:
+            post_id (str): The ID of the post.
+        Returns:
+            bool: True if the option is displayed, False otherwise.
+        """
+        self.click_on_3_dotted_menu(post_id)
+        return self._is_element_visible(self.report_this_post(post_id))
+
+    def get_thread_post_mention_text(self, post_id: str) -> str:
+        """
+            Get the thread post mention text for a specific post.
+            Args:
+                post_id (str): The ID of the post.
+            Returns:
+                str: The thread post mention text.
+        """
+        return self._get_text_of_element(self.quoted_thread_post_mention(post_id))
+
+    def click_on_post_mention_link(self, post_id: str):
+        """
+            Click on the post mention link.
+        """
+        self._click(self.quoted_thread_post_mention_link(post_id))
+
+    def get_thread_post_quote_text(self, post_id: str) -> str:
+        """
+            Get the thread post quote text for a specific post.
+            Args:
+                post_id (str): The ID of the post.
+            Returns:
+                str: The thread post quote text.
+        """
+        return self._get_text_of_element(self.quoted_thread_post_quote(post_id))

@@ -2,6 +2,10 @@ import re
 from playwright.sync_api import Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
+    delete_thread_post_page import DeleteThreadPostPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
+    edit_thread_post_page import EditThreadPostPage
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     edit_thread_title_page import EditThreadTitle
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions\
     .forum_discussions_page import ForumDiscussionsPage
@@ -18,6 +22,8 @@ class ContributorThreadFlow:
         self.forum_discussions_page = ForumDiscussionsPage(page)
         self.forum_thread_page = ForumThreadPage(page)
         self.edit_thread_title_page = EditThreadTitle(page)
+        self.edit_post_page = EditThreadPostPage(page)
+        self.delete_thread_post_page = DeleteThreadPostPage(page)
 
     def post_a_new_thread(self, thread_title: str, thread_body: str, cancel=False) -> str:
         """
@@ -59,6 +65,17 @@ class ContributorThreadFlow:
 
         return re.search(r'post-(\d+)', self.utilities.get_page_url()).group(1)
 
+    def quote_thread_post(self, post_id: str) -> str:
+        """
+            Quote a thread post.
+            Args:
+                post_id (str): The ID of the post to be quoted.
+        """
+        self.forum_thread_page.click_on_quote_option(post_id)
+        self.forum_thread_page.click_on_post_reply_button()
+
+        return re.search(r'post-(\d+)', self.utilities.get_page_url()).group(1)
+
     def edit_thread_title(self, new_title: str):
         """
             Edit the title of a thread.
@@ -68,6 +85,34 @@ class ContributorThreadFlow:
         self.forum_thread_page.click_on_edit_thread_title_option()
         self.edit_thread_title_page.fill_into_thread_title_input_field(new_title)
         self.edit_thread_title_page.click_on_update_thread_button()
+
+    def edit_thread_post(self, post_id: str, new_thread_post: str):
+        """
+            Edit the thread post.
+            Args:
+                post_id (str): The ID of the post to be edited.
+                new_thread_post (str): The new post for the thread.
+        """
+        self.forum_thread_page.click_on_edit_this_post_option(post_id)
+        self.edit_post_page.add_text_inside_the_edit_post_textarea(new_thread_post)
+        self.edit_post_page.click_on_update_post_button()
+
+    def delete_thread_post(self, post_id: str):
+        """
+            Delete a thread post.
+            Args:
+                post_id (str): The ID of the post to be deleted.
+        """
+        self.forum_thread_page.click_on_delete_this_post_option(post_id)
+        self.delete_thread_post_page.click_on_delete_button()
+
+    def report_thread_post(self, post_id: str):
+        """
+            Report a thread post.
+            Args:
+                post_id (str): The ID of the post to be reported.
+        """
+        self.forum_thread_page.click_on_report_abuse_option(post_id)
 
     def delete_thread(self):
         """
