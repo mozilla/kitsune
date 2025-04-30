@@ -7,11 +7,11 @@ from kitsune.sumo.tests import TestCase
 @override_settings(ES_LIVE_INDEXING=True, TEST=True)
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
-    
+
     def setUp(self):
         """Set up test environment by ensuring clean indexes."""
         super().setUp()
-        
+
         # Initialize indexes before tests if they don't exist
         client = es_client()
         for doc_type in get_doc_types():
@@ -23,11 +23,12 @@ class ElasticTestCase(TestCase):
                     doc_type._index.refresh()
                 except Exception as e:
                     self.fail(f"Failed to initialize index {index_name}: {e}")
-        
+
         # Clean up indices before tests
         for doc_type in get_doc_types():
             try:
-                # Delete all documents in the index without deleting the index itself
+                # Delete all documents in the index without deleting the
+                # index itself
                 doc_type.search().query("match_all").delete()
                 doc_type._index.refresh()
             except Exception as e:
@@ -39,10 +40,10 @@ class ElasticTestCase(TestCase):
             try:
                 # First refresh the index to ensure all operations are complete
                 doc_type._index.refresh()
-                
+
                 # Delete all documents using query matching
                 doc_type.search().query("match_all").delete()
-                
+
                 # Specify a refresh operation on the index to update all shards
                 # participated in the delete operation. This is different from
                 # the API refresh=True which only updates the shard that performed
@@ -50,7 +51,7 @@ class ElasticTestCase(TestCase):
                 doc_type._index.refresh()
             except Exception as e:
                 print(f"Error cleaning up ES index for {doc_type.__name__}: {e}")
-        
+
         super().tearDown()
 
 
