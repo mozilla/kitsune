@@ -6,7 +6,11 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
-from elasticsearch.dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
+
+if settings.ES_VERSION == 8:
+    from elasticsearch8.dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
+else:
+    from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
 from kitsune.search import config
 
@@ -46,6 +50,7 @@ def _create_synonym_graph_filter(synonym_file_name):
         synonyms_path=f"synonyms/{synonym_file_name}.txt",
         expand="true",
         lenient="true",
+        updateable="true",
     )
 
 
@@ -94,15 +99,22 @@ def es_client(**kwargs):
     if es_cloud_id := settings.ES_CLOUD_ID:
         kwargs.update({"cloud_id": es_cloud_id, "basic_auth": settings.ES_HTTP_AUTH})
     else:
-        # Elasticsearch 8.x settings
+        # Basic ES settings that apply to all versions
         es_settings = {
             "hosts": settings.ES_URLS,
-            "request_timeout": settings.ES_TIMEOUT,
-            "retry_on_timeout": settings.ES_RETRY_ON_TIMEOUT,
-            # SSL settings - these are needed for ES8 which requires SSL by default
-            "verify_certs": settings.ES_VERIFY_CERTS,
-            "ssl_show_warn": settings.ES_SSL_SHOW_WARN,
         }
+
+        # Add settings that are specific to ES 8+
+        if getattr(settings, "ES_VERSION", 0) >= 8:
+            es_settings.update(
+                {
+                    "request_timeout": settings.ES_TIMEOUT,
+                    "retry_on_timeout": settings.ES_RETRY_ON_TIMEOUT,
+                    # SSL settings - these are needed for ES8 which requires SSL by default
+                    "verify_certs": settings.ES_VERIFY_CERTS,
+                    "ssl_show_warn": settings.ES_SSL_SHOW_WARN,
+                }
+            )
 
         if settings.ES_HTTP_AUTH:
             es_settings.update({"basic_auth": settings.ES_HTTP_AUTH})
@@ -149,7 +161,10 @@ def index_object(doc_type_name, obj_id):
     kwargs = {}
     # For ES8, use string "true" instead of boolean True for refresh parameter
     if settings.TEST:
-        kwargs["refresh"] = "true"
+        if settings.ES_VERSION >= 8:
+            kwargs["refresh"] = "true"
+        else:
+            kwargs["refresh"] = True
 
     if doc_type.update_document:
         doc_type.prepare(obj).to_action("update", doc_as_upsert=True, **kwargs)
@@ -191,7 +206,11 @@ def index_objects_bulk(
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
         chunk_size=elastic_chunk_size,
         raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
-        refresh="true" if settings.TEST else False,  # use string "true" for ES8 compatibility
+        refresh=(
+            "true"
+            if settings.TEST and settings.ES_VERSION >= 8
+            else (True if settings.TEST else False)
+        ),  # refresh parameter based on test mode and ES version
     )
     errors = [
         error
@@ -212,17 +231,39 @@ def remove_from_field(doc_type_name, field_name, field_value):
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
 
     # Create script as a string
-    script_source = (
-        f"if (ctx._source.{field_name} != null) {{ "
-        f"ctx._source.{field_name}.removeAll(Collections.singleton(params.value)); "
-        f"}}"
-    )
+    if getattr(settings, "ES_VERSION", 0) >= 8:
+        script_source = (
+            f"if (ctx._source.{field_name} != null) {{ "
+            f"ctx._source.{field_name}.removeAll(Collections.singleton(params.value)); "
+            f"}}"
+        )
+    else:
+        script_source = (
+            f"if (ctx._source.{field_name}.contains(params.value)) {{"
+            f"ctx._source.{field_name}.remove(ctx._source.{field_name}.indexOf(params.value))"
+            f"}}"
+        )
 
     # Set up the update query
     update = UpdateByQuery(using=es_client(), index=doc_type._index._name)
 
     # Apply the script with parameters
-    update = update.script(source=script_source, lang="painless", params={"value": field_value})
+    if getattr(settings, "ES_VERSION", 0) >= 8:
+        update = update.script(
+            source=script_source, lang="painless", params={"value": field_value}
+        )
+    else:
+        # For ES7 and below, we need to filter documents explicitly
+        update = update.filter("term", **{field_name: field_value})
+        update = update.script(
+            source=script_source,
+            lang="painless",
+            params={"value": field_value},
+            conflicts="proceed",
+        )
+
+    # refresh index to ensure search fetches all matches
+    doc_type._index.refresh()
 
     update.execute()
 
@@ -238,6 +279,9 @@ def delete_object(doc_type_name, obj_id):
     kwargs = {}
     # For ES8, use string "true" instead of boolean True for refresh parameter
     if settings.TEST:
-        kwargs["refresh"] = "true"
+        if settings.ES_VERSION >= 8:
+            kwargs["refresh"] = "true"
+        else:
+            kwargs["refresh"] = True
 
     doc.to_action("delete", **kwargs)

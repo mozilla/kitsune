@@ -1,9 +1,15 @@
 from functools import partial
 
 from django.conf import settings
-from elasticsearch.dsl.field import Keyword
-from elasticsearch.dsl.field import Object as DSLObject
-from elasticsearch.dsl.field import Text
+
+if settings.ES_VERSION == 8:
+    from elasticsearch8.dsl.field import Keyword
+    from elasticsearch8.dsl.field import Object as DSLObject
+    from elasticsearch8.dsl.field import Text
+else:
+    from elasticsearch_dsl.field import Keyword
+    from elasticsearch_dsl.field import Object as DSLObject
+    from elasticsearch_dsl.field import Text
 
 from kitsune.search.es_utils import es_analyzer_for_locale
 

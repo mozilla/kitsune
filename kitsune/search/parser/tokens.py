@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
+from django.conf import settings
 
-from elasticsearch.dsl import Q as DSLQ
+if settings.ES_VERSION == 8:
+    from elasticsearch8.dsl import Q as DSLQ
+else:
+    from elasticsearch_dsl import Q as DSLQ
 
 
 class BaseToken(ABC):

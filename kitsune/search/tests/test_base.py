@@ -1,4 +1,5 @@
 from django.test.utils import override_settings
+from django.conf import settings
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.search.documents import ProfileDocument
 from kitsune.users.tests import ProfileFactory, GroupFactory
@@ -33,7 +34,10 @@ class ToActionTests(Elastic7TestCase):
 
     def test_update_empty_list(self):
         self.prepare().to_action("update")
-        self.assertEqual(self.doc.group_ids, [])
+        if hasattr(settings, "ES_VERSION") and settings.ES_VERSION < 8:
+            self.assertEqual(self.doc.group_ids, None)
+        else:
+            self.assertEqual(self.doc.group_ids, [])
 
     def test_update_bulk_empty_list(self):
         payload = self.prepare().to_action("update", is_bulk=True)

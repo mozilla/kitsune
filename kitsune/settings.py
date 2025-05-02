@@ -11,7 +11,10 @@ import dj_database_url
 import django_cache_url
 from decouple import Csv, config
 
+from elasticsearch7 import Elasticsearch as ES7
+from elasticsearch8 import Elasticsearch as ES8
 from kitsune.lib.sumo_locales import LOCALES
+from kitsune.search.utils import get_es_version
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
@@ -741,7 +744,8 @@ STAFF_GROUP = "Staff"
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
-# Connection information for Elastic 7
+# CSettings for Elasticsearch
+ES_VERSION = get_es_version()
 ES_TIMEOUT = 5  # Timeout for querying requests
 ES_URLS = config("ES_URLS", cast=Csv(), default="http://elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
