@@ -73,20 +73,20 @@ def test_explore_by_topic_aaq_widget_text(page: Page):
             time.sleep(2)
             with allure.step("Verifying the correct AAQ widget text is displayed for products"):
                 if product == "All Products":
-                    assert (sumo_pages.explore_by_topic_page
-                            .get_text_of_aaq_widget() == AAQWidgetMessages
+                    assert (sumo_pages.common_web_elements
+                            .get_aaq_widget_text() == AAQWidgetMessages
                             .NEUTRAL_AAQ_SUBHEADING_TEXT)
                 elif product in utilities.general_test_data['freemium_products']:
-                    assert (sumo_pages.explore_by_topic_page
-                            .get_text_of_aaq_widget() == AAQWidgetMessages
+                    assert (sumo_pages.common_web_elements
+                            .get_aaq_widget_text() == AAQWidgetMessages
                             .FREEMIUM_AAQ_SUBHEADING_TEXT)
                 elif product in utilities.general_test_data['premium_products']:
-                    assert (sumo_pages.explore_by_topic_page
-                            .get_text_of_aaq_widget() == AAQWidgetMessages
+                    assert (sumo_pages.common_web_elements
+                            .get_aaq_widget_text() == AAQWidgetMessages
                             .PREMIUM_AAQ_SUBHEADING_TEXT)
                 else:
-                    assert (sumo_pages.explore_by_topic_page
-                            .get_text_of_aaq_widget() == AAQWidgetMessages.
+                    assert (sumo_pages.common_web_elements
+                            .get_aaq_widget_text() == AAQWidgetMessages.
                             NEUTRAL_AAQ_SUBHEADING_TEXT)
 
 
@@ -115,7 +115,7 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page):
             print(f"This is the product: {product}")
             time.sleep(2)
             with page.expect_navigation() as navigation_info:
-                sumo_pages.explore_by_topic_page.click_on_aaq_continue_button()
+                sumo_pages.common_web_elements.click_on_aaq_button()
             response = navigation_info.value
             assert response.status == 200
             if product == "All Products":

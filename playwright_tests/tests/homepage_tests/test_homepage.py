@@ -17,7 +17,7 @@ def test_join_our_community_card_learn_more_redirects_to_contribute_page(page: P
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     with allure.step("Clicking on the 'Learn More' option"):
-        sumo_pages.homepage.click_learn_more_option()
+        sumo_pages.common_web_elements.click_on_volunteer_learn_more_link()
 
     with allure.step("Verifying that we are redirected to the 'Contribute' page successfully"):
         assert (
@@ -34,9 +34,9 @@ def test_join_our_community_card_has_the_correct_content(page: Page):
         "Verifying that the 'Join Our Community' card has the correct strings applied"
     ):
         assert (
-            sumo_pages.homepage.get_community_card_title()
+            sumo_pages.common_web_elements.get_volunteer_learn_more_card_header()
             == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_TITLE
-            and sumo_pages.homepage.get_community_card_description()
+            and sumo_pages.common_web_elements.get_volunteer_learn_more_card_text()
             == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_DESCRIPTION
         ), "Incorrect strings are displayed"
 

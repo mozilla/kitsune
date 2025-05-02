@@ -66,9 +66,6 @@ class QuestionPage(BasePage):
         self.search_support_searchbar = page.locator("form#support-search-sidebar input")
         self.search_support_search_button = page.locator("form#support-search-sidebar button")
 
-        # Still need help widget locators.
-        self.still_need_help_ask_now_button = page.locator("div[class*='aaq-widget'] a")
-
         # Question Tools locators.
         self.edit_this_question_option = page.locator("ul#related-content li[class='edit'] a")
         self.stop_email_updates_option = page.locator("ul#related-content li[class='email'] a")

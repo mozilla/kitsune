@@ -16,12 +16,6 @@ class Homepage(BasePage):
         self.featured_articles_list = page.locator("div.card--article")
         self.featured_articles_card_titles = page.locator("div.card--article").get_by_role("link")
 
-        # Join our Community section locators.
-        self.join_our_community_card_title = page.locator("div.card--callout-wrap-narrow h3")
-        self.join_our_community_card_description = page.locator("div.card--callout-wrap-narrow "
-                                                                "p:nth-of-type(1)")
-        self.learn_more_option = page.get_by_role("link").filter(has_text="Learn More")
-
     # Product Cards
     def get_text_of_product_card_titles(self) -> list[str]:
         """Get text of all product card titles"""
@@ -47,16 +41,3 @@ class Homepage(BasePage):
     def click_on_a_featured_card(self, element_number: int):
         """Click on a featured card by its index"""
         self._click_on_an_element_by_index(self.featured_articles_list, element_number)
-
-    # Learn More
-    def click_learn_more_option(self):
-        """Click on Learn More option"""
-        self._click(self.learn_more_option)
-
-    def get_community_card_title(self) -> str:
-        """Get the title of the community card"""
-        return self._get_text_of_element(self.join_our_community_card_title)
-
-    def get_community_card_description(self) -> str:
-        """Get the description of the community card"""
-        return self._get_text_of_element(self.join_our_community_card_description)

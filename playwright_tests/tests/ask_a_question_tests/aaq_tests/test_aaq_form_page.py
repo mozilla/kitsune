@@ -37,7 +37,7 @@ def test_community_card_and_helpful_tip_are_displayed_for_freemium_product(page:
 
             with allure.step("Clicking on the 'Learn More' button from the community help "
                              "card and verifying that we are on the contribute messages page"):
-                sumo_pages.aaq_form_page.click_on_learn_more_button()
+                sumo_pages.common_web_elements.click_on_volunteer_learn_more_link()
                 expect(page).to_have_url(ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL)
 
 
@@ -63,7 +63,8 @@ def test_community_card_and_helpful_tip_not_displayed_for_premium_products(page:
 
             with allure.step("Verifying that the 'Learn More' button from the community help "
                              "banner is not displayed"):
-                expect(sumo_pages.aaq_form_page.get_learn_more_button_locator()).to_be_hidden()
+                expect(sumo_pages.common_web_elements.get_learn_more_button_locator()
+                       ).to_be_hidden()
 
 
 # C1511570
@@ -91,7 +92,7 @@ def test_scam_banner_premium_products_not_displayed(page: Page, username):
             if username != '':
                 with allure.step("Clicking on the Ask Now button and verifying that the scam "
                                  "banner is not displayed"):
-                    sumo_pages.product_solutions_page.click_ask_now_button()
+                    sumo_pages.common_web_elements.click_on_aaq_button()
                     utilities.wait_for_url_to_be(
                         utilities.aaq_question_test_data["products_aaq_url"][premium_product]
                     )
@@ -125,7 +126,7 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, username):
             if username != '':
                 with check, allure.step("Clicking on the Ask Now button and verifying that "
                                         "the 'Learn More' button contains the correct link"):
-                    sumo_pages.product_solutions_page.click_ask_now_button()
+                    sumo_pages.common_web_elements.click_on_aaq_button()
                     utilities.wait_for_url_to_be(
                         utilities.aaq_question_test_data["products_aaq_url"][freemium_product]
                     )

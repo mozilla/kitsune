@@ -28,12 +28,6 @@ class ExploreByTopicPage(BasePage):
         self.all_topics_selected_option = page.locator("ul.sidebar-nav--list li a.selected")
         self.topic_filter = lambda option: page.locator(
             "ul.sidebar-nav--list li").get_by_role("link", name=option, exact=True)
-        self.AAQ_widget_continue_button = page.locator("div[class='aaq-widget card is-inverse "
-                                                       "elevation-01 text-center radius-md'] a")
-        self.AAQ_widget_text = page.locator("div[class='aaq-widget card is-inverse elevation-01 "
-                                            "text-center radius-md'] p")
-        # Locators belonging to the Volunteer card section.
-        self.volunteer_learn_more_option = page.locator("section#get-involved-button a")
 
     """
         Actions against the page header section.
@@ -89,15 +83,3 @@ class ExploreByTopicPage(BasePage):
             option (str): The option to select in the dropdown
         """
         self._select_option_by_label(self.filter_by_product_dropdown, option)
-
-    def get_text_of_aaq_widget(self) -> str:
-        """Get the text of the AAQ widget."""
-        return self._get_text_of_element(self.AAQ_widget_text)
-
-    def click_on_aaq_continue_button(self):
-        """Click on the continue button of the AAQ widget."""
-        self._click(self.AAQ_widget_continue_button)
-
-    def is_aaq_text_visible(self) -> bool:
-        """Check if the AAQ widget text is visible."""
-        return self._is_element_visible(self.AAQ_widget_text)

@@ -54,7 +54,7 @@ def test_learn_more_redirect(page: Page):
             utilities.wait_for_url_to_be(topic_url)
 
             with allure.step("Clicking on the 'Learn More' button"):
-                sumo_pages.product_topics_page.click_on_learn_more_button()
+                sumo_pages.common_web_elements.click_on_volunteer_learn_more_link()
 
             with allure.step("Verifying that the user is redirected to the contribute messages "
                              "page"):
@@ -76,14 +76,14 @@ def test_aaq_redirect(page: Page):
             with check, allure.step(f"Verifying that the correct subheading page for "
                                     f"{product_topic} is displayed"):
                 if product_topic in utilities.general_test_data["premium_products"]:
-                    assert sumo_pages.product_topics_page.get_aaq_widget_subheading_text(
+                    assert sumo_pages.common_web_elements.get_aaq_widget_text(
                     ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
                 else:
-                    assert sumo_pages.product_topics_page.get_aaq_widget_subheading_text(
+                    assert sumo_pages.common_web_elements.get_aaq_widget_text(
                     ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
             with allure.step("Clicking on the AAQ button"):
-                sumo_pages.product_topics_page.click_on_aaq_button()
+                sumo_pages.common_web_elements.click_on_aaq_button()
 
             with allure.step("Signing in to SUMO and verifying that we are on the correct AAQ "
                              "form page"):

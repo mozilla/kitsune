@@ -23,11 +23,6 @@ class ProductSolutionsPage(BasePage):
         self.product_solutions_find_help_search_button = page.locator(
             "form#question-search-masthead button")
 
-        # Still need help locators.
-        self.still_need_help_subheading = page.locator("div.aaq-widget p")
-        self.still_need_help_ask_now_button = page.get_by_role(
-            "link", name="Continue", exact=True)
-
         # Featured articles locators.
         self.featured_article_section_title = page.get_by_role("heading").filter(
             has_text="Featured Articles")
@@ -49,19 +44,6 @@ class ProductSolutionsPage(BasePage):
         # Support scam banner locators.
         self.support_scams_banner = page.locator("div#id_scam_alert")
         self.support_scam_banner_learn_more_button = page.locator("div#id_scam_alert a")
-
-    # Still need help actions.
-    def click_ask_now_button(self):
-        self._click(self.still_need_help_ask_now_button)
-
-    def get_aaq_product_solutions_subheading_text(self) -> str:
-        return self._get_text_of_element(self.still_need_help_subheading)
-
-    def get_aaq_widget_button_name(self) -> str:
-        return self._get_text_of_element(self.still_need_help_ask_now_button)
-
-    def get_still_need_help_locator(self) -> Locator:
-        return self.still_need_help_subheading
 
     # Breadcrumb actions.
     def click_on_the_completed_milestone(self):
