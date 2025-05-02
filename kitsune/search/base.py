@@ -96,29 +96,17 @@ class SumoDocument(DSLDocument):
         client = es_client()
         old_index = cls.alias_points_at(alias)
 
-        # Handle special case where an index with same name as alias exists
-        try:
-            if client.indices.exists(index=alias) and not client.indices.exists_alias(name=alias):
-                client.indices.delete(index=alias, ignore=[400, 404])
-        except Exception:
-            # If we can't check or delete, proceed anyway and let the update_aliases handle it
-            pass
-
-        try:
-            if not old_index:
-                client.indices.put_alias(index=new_index, name=alias)
-            else:
-                client.indices.update_aliases(
-                    body={
-                        "actions": [
-                            {"remove": {"index": old_index, "alias": alias}},
-                            {"add": {"index": new_index, "alias": alias}},
-                        ]
-                    }
-                )
-        except Exception as e:
-            print(f"Error updating aliases: {str(e)}")
-            raise
+        if not old_index:
+            client.indices.put_alias(index=new_index, name=alias)
+        else:
+            client.indices.update_aliases(
+                body={
+                    "actions": [
+                        {"remove": {"index": old_index, "alias": alias}},
+                        {"add": {"index": new_index, "alias": alias}},
+                    ]
+                }
+            )
 
     @classmethod
     def alias_points_at(cls, alias):

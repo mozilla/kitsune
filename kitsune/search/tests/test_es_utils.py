@@ -48,15 +48,8 @@ class IndexObjectsBulkTestCase(ElasticTestCase):
             question = Question.objects.get(id=question_id)
             AnswerFactory(question=question, content=f"answer {question_id}")
 
-        # Force ES index refresh before testing
-        QuestionDocument._index.refresh()
-
         with self.assertRaises(BulkIndexError):
             index_objects_bulk("QuestionDocument", ids, elastic_chunk_size=1)
-
-        # After the exception, verify the document was properly indexed
-        # Give ES some time to process before checking
-        QuestionDocument._index.refresh()
 
         try:
             QuestionDocument.get(id_without_exception)

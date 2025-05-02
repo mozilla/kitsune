@@ -102,23 +102,10 @@ def es_client(**kwargs):
             # SSL settings - these are needed for ES8 which requires SSL by default
             "verify_certs": settings.ES_VERIFY_CERTS,
             "ssl_show_warn": settings.ES_SSL_SHOW_WARN,
-            # Disable auto-discovery which can cause connection issues
-            "sniff_on_start": settings.ES_SNIFF_ON_START,
-            "sniff_on_connection_fail": settings.ES_SNIFF_ON_CONNECTION_FAIL,
         }
 
         if settings.ES_HTTP_AUTH:
             es_settings.update({"basic_auth": settings.ES_HTTP_AUTH})
-
-        if settings.TEST:
-            # In tests, increase timeout and retry settings
-            es_settings.update(
-                {
-                    "request_timeout": settings.ES_TIMEOUT * settings.ES_TEST_TIMEOUT_MULTIPLIER,
-                    "max_retries": settings.ES_TEST_MAX_RETRIES,
-                    "retry_on_timeout": settings.ES_RETRY_ON_TIMEOUT,
-                }
-            )
 
         kwargs.update(es_settings)
 
