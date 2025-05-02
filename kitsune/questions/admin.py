@@ -1,15 +1,9 @@
-import json
-
 from django import forms
 from django.conf import settings
 from django.contrib import admin
 
 from kitsune.questions.models import AAQConfig, QuestionLocale
-
-
-class PrettyJSONEncoder(json.JSONEncoder):
-    def __init__(self, *args, indent, sort_keys, **kwargs):
-        super().__init__(*args, indent=2, sort_keys=True, **kwargs)
+from kitsune.sumo.utils import PrettyJSONEncoder
 
 
 class AAQConfigForm(forms.ModelForm):

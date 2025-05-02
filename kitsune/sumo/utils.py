@@ -25,6 +25,12 @@ POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 User: models.Model = get_user_model()
 
 
+class PrettyJSONEncoder(json.JSONEncoder):
+    def __init__(self, *args, **kwargs):
+        kwargs.update(indent=2, sort_keys=True)
+        super().__init__(*args, **kwargs)
+
+
 def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, **kwargs):
     """Get a Paginator, abstracting some common paging actions."""
     p = paginator_cls(queryset, per_page, **kwargs)
