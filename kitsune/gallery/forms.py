@@ -90,7 +90,7 @@ class ImageForm(MediaForm):
             "Accepted formats include: PNG, JPEG, GIF. "
             '<a target="_blank" href="{learn_more}">Learn more...</a>'
         )
-        url = "http://infohost.nmt.edu/tcc/help/pubs/pil/formats.html"
+        url = "https://developer.mozilla.org/docs/Web/Media/Guides/Formats/Image_types"
         self.fields["file"].help_text = msg.format(learn_more=url)
 
     class Meta:
