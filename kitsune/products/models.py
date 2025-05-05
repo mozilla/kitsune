@@ -7,7 +7,7 @@ from kitsune.products.managers import NonArchivedManager, ProductManager
 from kitsune.sumo.fields import ImagePlusField
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import webpack_static
+from kitsune.sumo.utils import PrettyJSONEncoder, webpack_static
 
 HOT_TOPIC_SLUG = "hot"
 
@@ -111,6 +111,12 @@ class Topic(BaseProductTopic):
     # Whether or not this topic is displayed in navigation menus
     in_nav = models.BooleanField(
         default=False, help_text=_lazy("Whether this topic is shown in navigation menus.")
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        encoder=PrettyJSONEncoder,
+        help_text=_lazy("Data useful for things like LLM prompts."),
     )
 
     class Meta(object):
