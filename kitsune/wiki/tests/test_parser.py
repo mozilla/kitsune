@@ -941,10 +941,10 @@ class WhatLinksHereTests(TestCase):
     def test_unicode(self):
         """Unicode is hard. Test that."""
         # \u03C0 is pi and \u2764 is a heart symbol.
-        d1 = DocumentFactory(title="\u03C0", slug="pi")
-        ApprovedRevisionFactory(document=d1, content="I \u2764 \u03C0")
+        d1 = DocumentFactory(title="\u03c0", slug="pi")
+        ApprovedRevisionFactory(document=d1, content="I \u2764 \u03c0")
         d2 = DocumentFactory(title="\u2764", slug="heart")
-        ApprovedRevisionFactory(document=d2, content="What do you think about [[\u03C0]]?")
+        ApprovedRevisionFactory(document=d2, content="What do you think about [[\u03c0]]?")
 
         self.assertEqual(len(d1.links_to()), 1)
         self.assertEqual(len(d1.links_from()), 0)
