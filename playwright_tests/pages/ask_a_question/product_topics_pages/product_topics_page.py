@@ -20,13 +20,6 @@ class ProductTopicPage(BasePage):
         self.navbar_option = lambda option_name: page.locator(
             "ul[class='sidebar-nav--list'] li").get_by_role("link").filter(has_text=option_name)
 
-        # Product topic page learn more locators.
-        self.learn_more_button = page.locator("section#get-involved-button a")
-
-        # Product topic page still need help locators.
-        self.still_need_help_subheading = page.locator("div[class*='aaq-widget'] p")
-        self.aaq_button = page.locator("div[class*='aaq-widget']").get_by_role("link")
-
     # Page content actions.
     def get_all_listed_article_titles(self) -> list[str]:
         """Returns a list of all the article titles displayed on the page."""
@@ -59,17 +52,3 @@ class ProductTopicPage(BasePage):
     def get_navbar_option_link(self, option_name: str) -> str:
         """Returns the href value of a particular navbar option."""
         return self._get_element_attribute_value(self.navbar_option(option_name),"href")
-
-    # AAQ section actions.
-    def get_aaq_widget_subheading_text(self) -> str:
-        """Returns the text of the subheading displayed on the AAQ widget."""
-        return self._get_text_of_element(self.still_need_help_subheading)
-
-    def click_on_aaq_button(self):
-        """Clicks on the 'Ask a question' button."""
-        self._click(self.aaq_button)
-
-    # Learn more section actions.
-    def click_on_learn_more_button(self):
-        """Clicks on the 'Learn More' button."""
-        self._click(self.learn_more_button)

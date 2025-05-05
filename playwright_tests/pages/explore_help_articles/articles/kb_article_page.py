@@ -18,7 +18,6 @@ class KBArticlePage(BasePage):
         self.kb_article_contributor = lambda username: page.locator(
             "div[class='document--contributors-list text-body-xs']").get_by_role(
             "link", name=f'{username}', exact=True)
-        self.learn_more_kb_article_option = page.get_by_role("link", name="Learn More")
 
         # Editing Tools options locators.
         self.editing_tools_article_option = page.get_by_role("link", name="Article",
@@ -111,9 +110,6 @@ class KBArticlePage(BasePage):
 
     def click_on_editing_tools_discussion_option(self):
         self._click(self.editing_tools_discussion_option)
-
-    def click_on_volunteer_learn_more_option(self):
-        self._click(self.learn_more_kb_article_option)
 
     def get_url(self) -> str:
         return self._get_current_page_url()

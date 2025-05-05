@@ -78,9 +78,6 @@ class AAQFormPage(BasePage):
         self.helpful_tip_section = page.locator(
             "aside[class='sumo-l-two-col--sidebar'] div[class='large-only']")
 
-        # Learn more button locators.
-        self.learn_more_button = page.locator("aside[class='sumo-l-two-col--sidebar'] a")
-
     def fill_contact_email_field(self, text: str):
         self._fill(self.loginless_contact_email_input_field, text)
 
@@ -156,9 +153,6 @@ class AAQFormPage(BasePage):
     def get_aaq_form_info_card_text(self) -> str:
         return self._get_text_of_element(self.aaq_page_info_card)
 
-    def get_learn_more_button_locator(self) -> Locator:
-        return self.learn_more_button
-
     def get_helpful_tip_locator(self) -> Locator:
         return self.helpful_tip_section
 
@@ -185,9 +179,6 @@ class AAQFormPage(BasePage):
     # Troubleshooting information actions.
     def add_text_to_troubleshooting_information_textarea(self, text: str):
         self._fill(self.troubleshooting_information_textarea, text)
-
-    def click_on_learn_more_button(self):
-        self._click(self.learn_more_button)
 
     def is_os_dropdown_menu_visible(self) -> bool:
         return self._is_element_visible(self.product_os_select_dropdown)

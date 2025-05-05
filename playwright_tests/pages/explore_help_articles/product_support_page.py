@@ -33,13 +33,6 @@ class ProductSupportPage(BasePage):
             "section[class='support-callouts mzp-l-content sumo-page-section--inner']"
         ).get_by_role("link")
 
-        # Join our community section locators.
-        self.join_our_community_section_header = page.locator(
-            "div[class='card card--callout is-full-width has-moz-headings'] h3.card--title")
-        self.join_our_community_section_paragraph_and_learn_more_option = page.locator(
-            "div[class='card card--callout is-full-width has-moz-headings']"
-        ).get_by_role("paragraph")
-
     def click_on_product_support_home_breadcrumb(self):
         """Click on the home breadcrumb link on the product support page."""
         self._click(self.home_breadcrumb)
@@ -95,17 +88,3 @@ class ProductSupportPage(BasePage):
     def click_still_need_help_widget_button(self):
         """Click on the still need help widget button."""
         self._click(self.ask_the_community_still_need_help_widget)
-
-    def get_join_our_community_header_text(self) -> str:
-        """Get the join our community section header text."""
-        return self._get_text_of_element(self.join_our_community_section_header)
-
-    def get_join_our_community_content_text(self) -> str:
-        """Get the join our community section content text."""
-        return self._get_text_of_elements(
-            self.join_our_community_section_paragraph_and_learn_more_option)[0]
-
-    def click_join_our_community_learn_more_link(self):
-        """Click on the learn more link in the join our community section."""
-        return (self._click_on_an_element_by_index(
-            self.join_our_community_section_paragraph_and_learn_more_option, 1))

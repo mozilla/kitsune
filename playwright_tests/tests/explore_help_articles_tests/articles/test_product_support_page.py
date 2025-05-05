@@ -40,17 +40,17 @@ def test_product_support_page_join_community_section(page: Page):
 
                 with check, allure.step("Verifying that the correct 'Join Our Community' "
                                         "section header is displayed"):
-                    assert (sumo_pages.product_support_page.get_join_our_community_header_text()
+                    assert (sumo_pages.common_web_elements.get_volunteer_learn_more_card_header()
                             ) == ProductSupportPageMessages.JOIN_OUR_COMMUNITY_SECTION_HEADER
 
                 with check, allure.step("Verifying that the correct 'Join Our Community "
                                         "section content is displayed'"):
-                    assert (sumo_pages.product_support_page.get_join_our_community_content_text()
+                    assert (sumo_pages.common_web_elements.get_volunteer_learn_more_card_text()
                             ) == ProductSupportPageMessages.JOIN_OUR_COMMUNITY_SECTION_CONTENT
 
                 with allure.step("Clicking on the 'Learn more' option from the 'Join Our "
                                  "Community' section"):
-                    sumo_pages.product_support_page.click_join_our_community_learn_more_link()
+                    sumo_pages.common_web_elements.click_on_volunteer_learn_more_link()
 
                 with allure.step("Verify that we are redirected to the contribute messages page"):
                     expect(page).to_have_url(ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL)

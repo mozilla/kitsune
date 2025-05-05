@@ -96,16 +96,16 @@ def test_ask_now_widget_redirect(page: Page):
             sumo_pages.contact_support_page.click_on_a_particular_card(freemium_product)
         with check, allure.step("verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
-            assert sumo_pages.product_solutions_page.get_aaq_product_solutions_subheading_text(
+            assert sumo_pages.common_web_elements.get_aaq_widget_text(
             ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-            assert sumo_pages.product_solutions_page.get_aaq_widget_button_name(
+            assert sumo_pages.common_web_elements.get_aaq_widget_button_name(
             ) == AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
 
         with allure.step("Clicking on the AAQ button and verifying that the auth page is "
                          "displayed"):
-            sumo_pages.product_solutions_page.click_ask_now_button()
+            sumo_pages.common_web_elements.click_on_aaq_button()
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(
                     username=utilities.user_special_chars,
@@ -141,16 +141,16 @@ def test_contact_support_widget_redirect(page: Page):
 
         with check, allure.step("Verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
-            assert sumo_pages.product_solutions_page.get_aaq_product_solutions_subheading_text(
+            assert sumo_pages.common_web_elements.get_aaq_widget_text(
             ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-            assert sumo_pages.product_solutions_page.get_aaq_widget_button_name(
+            assert sumo_pages.common_web_elements.get_aaq_widget_button_name(
             ) == AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
 
         with allure.step("Clicking on the AAQ button, verifying that the auth page is "
                          "displayed and signing in to SUMO"):
-            sumo_pages.product_solutions_page.click_ask_now_button()
+            sumo_pages.common_web_elements.click_on_aaq_button()
 
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(

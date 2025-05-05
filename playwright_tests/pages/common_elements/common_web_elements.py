@@ -1,6 +1,6 @@
 import random
 from typing import Literal
-from playwright.sync_api import Page
+from playwright.sync_api import Page, Locator
 from playwright_tests.core.basepage import BasePage
 
 
@@ -12,6 +12,18 @@ class CommonWebElements(BasePage):
         self.scam_banner = page.locator("div#id_scam_alert")
         self.scam_banner_text = page.locator("div#id_scam_alert p[class='heading']")
         self.learn_more_button = page.locator("div#id_scam_alert").get_by_role("link")
+
+        # Still need help widget locators.
+        self.aaq_button = page.locator("div[class*='aaq-widget']").get_by_role("link")
+        self.still_need_help_subheading = page.locator("div.aaq-widget p")
+
+        # Learn more card locators.
+        self.volunteer_learn_more_card_heading = page.locator(
+            "//div[@class='card--details']//a[text()='Learn More']//../../../h3")
+        self.volunteer_learn_more_card_text = page.locator(
+            "//div[@class='card--details']//a[text()='Learn More']//../../preceding-sibling::p")
+        self.volunteer_learn_more_link = page.locator(
+            "div[class='card--details']").get_by_role("link", name="Learn More")
 
         # Frequent Topics locators applicable to product & product solutions pages.
         self.frequent_topics_section_title = page.get_by_role(
@@ -39,6 +51,41 @@ class CommonWebElements(BasePage):
         """Returns the scam banner text."""
         return self._get_text_of_element(self.scam_banner_text)
 
+    # Actions against the Still Need Help Widget
+    def click_on_aaq_button(self):
+        """Click on the 'Still Need Help?' button."""
+        self._click(self.aaq_button)
+
+    def get_aaq_widget_text(self) -> str:
+        """Get the 'Still Need Help?' subheading text."""
+        return self._get_text_of_element(self.still_need_help_subheading)
+
+    def get_aaq_widget_button_name(self) -> str:
+        return self._get_text_of_element(self.aaq_button)
+
+    def get_still_need_help_locator(self) -> Locator:
+        return self.still_need_help_subheading
+
+    # Actions against the Learn More card
+    def get_learn_more_button_locator(self) -> Locator:
+        return self.learn_more_button
+
+    def click_on_volunteer_learn_more_link(self):
+        self._click(self.volunteer_learn_more_link)
+
+    def get_volunteer_learn_more_card_text(self) -> str:
+        """
+            Get the Volunteer learn more card details.
+        """
+        return self._get_text_of_element(self.volunteer_learn_more_card_text)
+
+    def get_volunteer_learn_more_card_header(self) -> str:
+        """
+            Get the Volunteer learn more card header.
+        """
+        return self._get_text_of_element(self.volunteer_learn_more_card_heading)
+
+    # Actions against the Frequent Topics Section.
     def is_frequent_topics_section_displayed(self) -> bool:
         """Check if the frequent topics section is displayed on the page."""
         return self._is_element_visible(self.frequent_topics_section_title)
