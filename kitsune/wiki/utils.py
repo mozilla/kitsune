@@ -187,12 +187,14 @@ def get_visible_document_or_404(
 
     slug = kwargs.get("slug")
 
-    # For cross-locale lookup
     if slug and look_for_translation_via_parent:
-        if locale == settings.WIKI_DEFAULT_LANGUAGE:
-            # Find documents with this slug in other locales
-            other_docs_qs = Document.objects.filter(slug=slug).exclude(locale=locale)
+        # Find documents with this slug in other locales
+        other_docs_qs = (
+            Document.objects.filter(slug=slug).exclude(locale=locale).select_related("parent")
+        )
 
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            # We're in default locale, look for translations in other locales
             for doc in other_docs_qs:
                 parent_doc = doc.parent or doc
 
@@ -205,9 +207,7 @@ def get_visible_document_or_404(
                 if translation:
                     return translation
         else:
-            # Looking for a non-default locale document by finding related documents
-            other_docs_qs = Document.objects.filter(slug=slug).exclude(locale=locale)
-
+            # Looking for a non-default locale document
             for doc in other_docs_qs:
                 # Only consider documents that are translations
                 if not doc.parent:
@@ -218,7 +218,6 @@ def get_visible_document_or_404(
                 if translation:
                     return translation
 
-    # If we shouldn't look for translation via parent or we're already in the default locale
     if not look_for_translation_via_parent or locale == settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
 
