@@ -66,7 +66,7 @@ def geoip_suggestion(request):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
-def handle403(request):
+def handle403(request, exception=None):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
     return render(request, "handlers/403.html", status=403)
 
