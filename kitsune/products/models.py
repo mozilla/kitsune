@@ -182,6 +182,12 @@ class Topic(BaseProductTopic):
                 cache_key = f"hierarchical_topics_{product.slug}"
                 cache.delete(cache_key)
 
+        # Ensure that the "metadata" field is a dict.
+        if self.metadata is None:
+            self.metadata = {}
+        elif not isinstance(self.metadata, dict):
+            raise ValueError('The "metadata" field must be a dict.')
+
         super().save(*args, **kwargs)
         self._topic_is_archived = self.is_archived
 

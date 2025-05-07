@@ -1,5 +1,6 @@
 from typing import Any
 
+from django import forms
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
@@ -12,6 +13,24 @@ from kitsune.products.models import (
     TopicSlugHistory,
     Version,
 )
+
+
+class DictOnlyJSONField(forms.JSONField):
+    def to_python(self, value):
+        if value in self.empty_values:
+            return {}  # Convert an empty input value into an empty dict.
+        result = super().to_python(value)
+        if not isinstance(result, dict):
+            raise forms.ValidationError("Value must be a JSON object (dict).")
+        return result
+
+
+class TopicAdminForm(forms.ModelForm):
+    metadata = DictOnlyJSONField(required=False)
+
+    class Meta:
+        model = Topic
+        fields = "__all__"
 
 
 class ArchivedFilter(admin.SimpleListFilter):
@@ -70,6 +89,8 @@ class TopicAdmin(admin.ModelAdmin):
 
     def get_products(obj):
         return ", ".join([p.title for p in obj.products.all()])
+
+    form = TopicAdminForm
 
     parent.short_description = "Parent"  # type: ignore
     get_products.short_description = "Products"  # type: ignore
