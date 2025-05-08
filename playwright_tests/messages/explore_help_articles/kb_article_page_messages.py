@@ -27,6 +27,9 @@ class KBArticlePageMessages:
     KB_ARTICLE_RESTRICTED_BANNER = "This document is restricted."
     KB_ARTICLE_NOT_READY_FOR_TRANSLATION_BANNER = ("Traduci un document în engleză care nu este "
                                                    "încă gata de localizare.")
+    KB_SURVEY_FEEDBACK = "Thanks for your feedback!"
+    KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS = ("Thanks for voting! Your additional feedback "
+                                                "wasn't submitted.")
 
     def get_template_error(self, article_title) -> str:
         return (f'Documents in the Template category must have titles that start with '

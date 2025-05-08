@@ -5,6 +5,7 @@ from playwright_tests.core.basepage import BasePage
 class KBArticlePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
+
         # General page locators.
         self.article_breadcrumb = lambda breadcrumb_name: page.locator(
             "ol#breadcrumbs").get_by_role("link", name=f"{breadcrumb_name}")
@@ -36,6 +37,18 @@ class KBArticlePage(BasePage):
                                                               exact=True)
         self.editing_tools_show_history_option = page.get_by_role("link", name="Show History",
                                                                   exact=True)
+
+        # Helpfulness widget
+        self.helpfulness_widget = page.locator("form[class='document-vote--form helpful']")
+        self.helpful_button = page.locator("button[class='btn helpful-button']")
+        self.unhelpful_button = page.locator("button[class='btn not-helpful-button']")
+        self.helpfulness_option = lambda option: page.locator(f'//label[text()="{option}"]')
+        self.comments_textarea_field = page.locator("//textarea[@name='comment']")
+        self.helpfulness_widget_cancel_button = page.locator(
+            "//div[@class='sumo-button-wrap align-full']/button[normalize-space(text())='Cancel']")
+        self.helpfulness_widget_submit_button = page.locator(
+            "//div[@class='sumo-button-wrap align-full']/button[normalize-space(text())='Submit']")
+        self.survey_message = page.locator("div[class='survey-message']")
 
     # KB Article page content actions.
     def click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
@@ -113,3 +126,28 @@ class KBArticlePage(BasePage):
 
     def get_url(self) -> str:
         return self._get_current_page_url()
+
+    # Helpfulness widget actions.
+    def is_helpfulness_widget_displayed(self) -> bool:
+        return self._is_element_visible(self.helpfulness_widget)
+
+    def click_on_helpful_button(self):
+        self._click(self.helpful_button)
+
+    def click_on_unhelpful_button(self):
+        self._click(self.unhelpful_button)
+
+    def click_on_helpfulness_option(self, option: str):
+        self._click(self.helpfulness_option(option))
+
+    def fill_helpfulness_textarea_field(self, text: str):
+        self._fill(self.comments_textarea_field, text)
+
+    def click_on_helpfulness_cancel_button(self):
+        self._click(self.helpfulness_widget_cancel_button)
+
+    def click_on_helpfulness_submit_button(self):
+        self._click(self.helpfulness_widget_submit_button)
+
+    def get_survey_message_text(self) -> str:
+        return self._get_text_of_element(self.survey_message)
