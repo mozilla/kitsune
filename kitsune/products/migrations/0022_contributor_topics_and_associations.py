@@ -12,7 +12,7 @@ def create_contributor_topics_and_associations(apps, schema_editor):
         defaults={
             'title': 'Contributors',
             'description': 'For contributor tools and resources',
-            'visible': True,
+            'visible': False,
             'display_order': 999,
         },
     )
