@@ -2,7 +2,7 @@ import allure
 from pytest_check import check
 import pytest
 import re
-from playwright.sync_api import expect, Page
+from playwright.sync_api import expect, Page, BrowserContext
 from slugify import slugify
 
 from playwright_tests.core.utilities import Utilities
@@ -1745,7 +1745,8 @@ def test_article_topic_and_product_change(page: Page):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
-# C2550394 C2877651 C2877652 C2877653 C2877654
+# C2550394 C2877651 C2877652 C2877653 C2877654 C2843760 C2843762 C2844267 C2844282 C2844332
+# C2844333
 @pytest.mark.kbArticleCreationAndAccess
 @pytest.mark.parametrize("vote_type", ["Article is accurate", "Article is easy to understand",
                                        "The visuals are helpful",
@@ -1812,7 +1813,75 @@ def test_article_helpfulness_votes(page: Page, vote_type):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
-# C2877656 C2877657 C2877658  C2877659 C2877660
+# C2877655 C2843760 C2843762 C2844267 C2844282 C2844332  C2844333
+@pytest.mark.kbArticleCreationAndAccess
+@pytest.mark.parametrize("vote_type", ["Article is accurate", "Article is easy to understand",
+                                       "The visuals are helpful",
+                                       "Article provided the information I needed", "Other"])
+def test_article_helpfulness_cancel_vote(page: Page, vote_type):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    events = {}
+    ga_events = utilities.ga4_data
+
+    with allure.step("Sign in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Create a new simple article"):
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
+        sumo_pages.kb_article_page.click_on_article_option()
+
+    with allure.step("Sign in with an normal account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+    with allure.step(f"Voting the article as {vote_type}"):
+        page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
+            msg)) is not None and msg.type == "log" else None)
+
+        sumo_pages.kb_article_page.click_on_helpful_button()
+        with check, allure.step("Verifying that the correct event is sent"):
+            check.is_true(events.items() <= ga_events['article_helpfulness'].items())
+
+        sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
+        with check, allure.step("Verifying that the correct survey open event is sent"):
+            check.is_true(events.items() <= ga_events['open_survey_helpful'].items())
+
+        sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
+
+        sumo_pages.kb_article_page.click_on_helpfulness_cancel_button()
+        with check, allure.step("Verifying that the correct cancel survey event is sent"):
+            check.is_true(events.items() <= ga_events['cancel_survey_helpful'].items())
+
+        with check, allure.step("Verifying that the correct widget is displayed"):
+            check.equal(
+                sumo_pages.kb_article_page.get_survey_message_text(),
+                KBArticlePageMessages.KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS
+            )
+
+        with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
+                                " displayed"):
+            utilities.wait_for_given_timeout(6000)
+            check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+
+        with check, allure.step("Refreshing the page and verifying that the widget is no longer "
+                                "displayed"):
+            page.reload()
+            check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+
+    with allure.step("Deleting the kb article"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2877656 C2877657 C2877658  C2877659 C2877660 C2844337 C2844339 C2844341 C2844342 C2844343
+# C2844345
 @pytest.mark.kbArticleCreationAndAccess
 @pytest.mark.parametrize("vote_type", ["Article is inaccurate", "Article is confusing",
                                        "Missing, unclear, or unhelpful visuals",
@@ -1873,6 +1942,180 @@ def test_article_unhelpfulness_votes(page: Page, vote_type):
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                             "displayed"):
         page.reload()
+        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+
+    with allure.step("Deleting the kb article"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2877661 C2844337 C2844339 C2844341 C2844342 C2844343 C2844345
+@pytest.mark.kbArticleCreationAndAccess
+@pytest.mark.parametrize("vote_type", ["Article is inaccurate", "Article is confusing",
+                                       "Missing, unclear, or unhelpful visuals",
+                                       "Article didn't provide the information I needed",
+                                       "Other"])
+def test_article_unhelpfulness_cancel_vote(page: Page, vote_type):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    events = {}
+    ga_events = utilities.ga4_data
+
+    with allure.step("Sign in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Create a new simple article"):
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
+        sumo_pages.kb_article_page.click_on_article_option()
+
+    with allure.step("Sign in with an normal account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+    with allure.step(f"Voting the article as {vote_type}"):
+        page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
+            msg)) is not None and msg.type == "log" else None)
+
+        sumo_pages.kb_article_page.click_on_unhelpful_button()
+        with check, allure.step("Verifying that the correct event is sent"):
+            check.is_true(events.items() <= ga_events['article_unhelpfulness'].items())
+
+        sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
+        with check, allure.step("Verifying that the correct survey open event is sent"):
+            check.is_true(events.items() <= ga_events['open_survey_unhelpful'].items())
+
+        sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
+
+        sumo_pages.kb_article_page.click_on_helpfulness_cancel_button()
+        with check, allure.step("Verifying that the correct survey submitted event is sent"):
+            check.is_true(events.items() <= ga_events['cancel_survey_unhelpful'].items())
+
+    with check, allure.step("Verifying that the correct widget is displayed"):
+        check.equal(
+            sumo_pages.kb_article_page.get_survey_message_text(),
+            KBArticlePageMessages.KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS
+        )
+
+    with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
+                            " displayed"):
+        utilities.wait_for_given_timeout(6000)
+        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+
+    with check, allure.step("Refreshing the page and verifying that the widget is no longer "
+                            "displayed"):
+        page.reload()
+        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+
+    with allure.step("Deleting the kb article"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2616585
+@pytest.mark.kbArticleCreationAndAccess
+def test_article_helpfulness_metadata_count(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Sign in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Create a new simple article"):
+        article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page,topic=374, approve_revision=True)
+        sumo_pages.kb_article_page.click_on_article_option()
+
+    with allure.step("Voting the article as helpful"):
+        sumo_pages.kb_article_page.click_on_helpful_button()
+        sumo_pages.kb_article_page.click_on_helpfulness_option("Article is accurate")
+        sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
+        sumo_pages.kb_article_page.click_on_helpfulness_submit_button()
+        utilities.refresh_page()
+
+    with check, allure.step("Verifying that the correct kb article metadata information is "
+                            "displayed"):
+        check.equal(
+            sumo_pages.kb_article_page.get_text_of_kb_article_helpfulness_count_metadata(),
+            "100%"
+        )
+
+    with allure.step("Signing in with a different user"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+    with allure.step("Voting the article as unhelpful"):
+        sumo_pages.kb_article_page.click_on_unhelpful_button()
+        sumo_pages.kb_article_page.click_on_helpfulness_option("Article is inaccurate")
+        sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
+        sumo_pages.kb_article_page.click_on_helpfulness_submit_button()
+        utilities.refresh_page()
+
+    with check, allure.step("Verifying that the correct kb article metadata information is "
+                            "displayed"):
+        check.equal(
+            sumo_pages.kb_article_page.get_text_of_kb_article_helpfulness_count_metadata(),
+            "50%"
+        )
+
+    with check, allure.step("Navigating to the topics page associated with this article and "
+                            "verifying that the helpfulness percentage metadata information is "
+                            "not displayed"):
+        utilities.navigate_to_link(utilities.general_test_data["product_topics"]["Firefox"])
+        check.is_false(
+            sumo_pages.product_topics_page.is_article_helpfulness_metadata_displayed(
+                article_info["article_title"])
+        )
+
+    with allure.step("Deleting the kb article"):
+        sumo_pages.product_topics_page.click_on_a_particular_article(article_info["article_title"])
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C2895037
+@pytest.mark.kbArticleCreationAndAccess
+def test_voting_the_same_article_twice_is_not_possible(page: Page, context: BrowserContext):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Sign in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Create a new simple article"):
+        article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, topic=374, approve_revision=True)
+        sumo_pages.kb_article_page.click_on_article_option()
+
+    with allure.step("Sign in with a different user"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+    with allure.step("Opening a new browser window, navigating to the newly created kb article "
+                     "and voting the article as helpful"):
+        new_page = context.new_page()
+        new_page.goto(article_info["article_url"])
+        sumo_pages2 = SumoPages(new_page)
+        sumo_pages2.kb_article_page.click_on_helpful_button()
+
+    with check, allure.step("Verifying that the helpfulness widget is no longer displayed inside"
+                            " first browser window"):
+        utilities.wait_for_given_timeout(1000)
         check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
 
     with allure.step("Deleting the kb article"):

@@ -20,6 +20,10 @@ class KBArticlePage(BasePage):
             "div[class='document--contributors-list text-body-xs']").get_by_role(
             "link", name=f'{username}', exact=True)
 
+        # Article metadata locators.
+        self.kb_article_helpfulness_count = page.locator(
+            "div#document_metadata span[class='helpful-count']")
+
         # Editing Tools options locators.
         self.editing_tools_article_option = page.get_by_role("link", name="Article",
                                                              exact=True)
@@ -56,6 +60,9 @@ class KBArticlePage(BasePage):
 
     def get_text_of_all_article_breadcrumbs(self) -> list[str]:
         return self._get_text_of_elements(self.kb_article_breadcrumbs_list)
+
+    def get_text_of_kb_article_helpfulness_count_metadata(self) -> str:
+        return self._get_text_of_element(self.kb_article_helpfulness_count)
 
     def get_text_of_article_title(self) -> str:
         return self._get_text_of_element(self.kb_article_heading)

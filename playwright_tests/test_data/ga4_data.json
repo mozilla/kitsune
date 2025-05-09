@@ -11,10 +11,16 @@
             "survey_type": "unhelpful"
         }
     },
-    "cancel_survey": {
+    "cancel_survey_helpful": {
         "event": "article_survey_closed",
         "parameters": {
             "survey_type": "helpful"
+        }
+    },
+    "cancel_survey_unhelpful": {
+        "event": "article_survey_closed",
+        "parameters": {
+            "survey_type": "unhelpful"
         }
     },
     "article_helpfulness": {

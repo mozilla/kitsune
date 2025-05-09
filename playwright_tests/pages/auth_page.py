@@ -18,7 +18,8 @@ class AuthPage(BasePage):
         self.user_logged_in_sign_in_button = page.get_by_role(
             "button", name="Sign in", exact=True)
         self.enter_your_email_input_field = page.locator("input[name='email']")
-        self.enter_your_email_submit_button = page.locator("button#submit-btn")
+        self.enter_your_email_submit_button = page.get_by_role(
+            "button", name='Sign up or sign in', exact=True)
         self.enter_your_password_input_field = page.locator("input[type='password']")
         self.enter_your_password_submit_button = page.get_by_role(
             "button", name="Sign in", exact=True)
