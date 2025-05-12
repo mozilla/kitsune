@@ -6,11 +6,8 @@ from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.db.models import Count, F, Q
 from django.db.models.functions import Now
+from elasticsearch_dsl import A
 
-if settings.ES_VERSION == 8:
-    from elasticsearch8.dsl import A
-else:
-    from elasticsearch_dsl import A
 from kitsune.products.models import Product
 from kitsune.search.documents import AnswerDocument, ProfileDocument
 from kitsune.users.models import ContributionAreas, User

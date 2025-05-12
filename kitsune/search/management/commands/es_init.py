@@ -1,10 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.conf import settings
-
-if settings.ES_VERSION == 8:
-    from elasticsearch8.dsl.exceptions import IllegalOperation
-else:
-    from elasticsearch_dsl.exceptions import IllegalOperation
+from elasticsearch_dsl.exceptions import IllegalOperation
 from datetime import datetime, timezone
 
 from kitsune.search.es_utils import get_doc_types, es_client
@@ -81,9 +76,6 @@ class Command(BaseCommand):
             index = dt.alias_points_at(dt.Index.write_alias)
             if kwargs["reload_search_analyzers"]:
                 print(f"Reloading search analyzers on {index}")
-                if settings.ES_VERSION >= 8:
-                    client.indices.reload_search_analyzers(index=[index])
-                else:
-                    client.indices.reload_search_analyzer(index)
+                client.indices.reload_search_analyzers(index)
 
             print("")  # print blank line to make console output easier to read

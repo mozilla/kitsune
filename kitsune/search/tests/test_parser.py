@@ -1,14 +1,8 @@
 from django.test import SimpleTestCase, TestCase
-from django.conf import settings
 from parameterized import parameterized
 from pyparsing import ParseException
-
-if settings.ES_VERSION == 8:
-    from elasticsearch8.dsl import Q
-    from elasticsearch8.dsl.query import SimpleQueryString as S, Bool as B
-else:
-    from elasticsearch_dsl import Q
-    from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
+from elasticsearch_dsl import Q
+from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
 
 from kitsune.search.parser import Parser
 
