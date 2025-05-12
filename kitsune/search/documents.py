@@ -1,10 +1,5 @@
 from django.db.models import Count, Prefetch, Q
-from django.conf import settings
-
-if settings.ES_VERSION == 8:
-    from elasticsearch8.dsl import InnerDoc, connections, field
-else:
-    from elasticsearch_dsl import InnerDoc, connections, field
+from elasticsearch_dsl import InnerDoc, connections, field
 
 from kitsune.forums.models import Post
 from kitsune.questions.models import Answer, Question

@@ -21,16 +21,7 @@ from django.dispatch import receiver
 from django.urls import is_valid_path
 from django.utils import translation
 from django.utils.translation import pgettext
-
-# Use correct Elasticsearch version
-if settings.ES_VERSION == 7:
-    from elasticsearch7 import ElasticsearchException
-
-    ESExceptionClass = ElasticsearchException
-else:
-    from elasticsearch8 import ApiError
-
-    ESExceptionClass = ApiError
+from elasticsearch import ElasticsearchException
 from product_details import product_details
 
 from kitsune.flagit.models import FlaggedObject
@@ -604,7 +595,7 @@ class Question(AAQBase):
                 for hit in search[:3].execute().hits
             ]
             cache.set(key, documents, settings.CACHE_LONG_TIMEOUT)
-        except ESExceptionClass:
+        except ElasticsearchException:
             log.exception("ES MLT related_documents")
             documents = []
 
@@ -650,7 +641,7 @@ class Question(AAQBase):
                 for hit in search[:3].execute().hits
             ]
             cache.set(key, questions, settings.CACHE_LONG_TIMEOUT)
-        except ESExceptionClass:
+        except ElasticsearchException:
             log.exception("ES MLT related_questions")
             questions = []
 

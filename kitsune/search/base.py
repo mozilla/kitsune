@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import datetime
-from typing import Self, Union, overload, cast
+from typing import Self, Union, overload
 
 from django.conf import settings
 from django.core.paginator import EmptyPage, PageNotAnInteger
@@ -10,19 +10,11 @@ from django.core.paginator import Paginator as DjPaginator
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from elasticsearch.exceptions import NotFoundError, RequestError
-
-if settings.ES_VERSION == 8:
-    from elasticsearch8.dsl import Document as DSLDocument
-    from elasticsearch8.dsl import InnerDoc, MetaField
-    from elasticsearch8.dsl import Search as DSLSearch
-    from elasticsearch8.dsl import field
-    from elasticsearch8.dsl.utils import AttrDict
-else:
-    from elasticsearch_dsl import Document as DSLDocument
-    from elasticsearch_dsl import InnerDoc, MetaField
-    from elasticsearch_dsl import Search as DSLSearch
-    from elasticsearch_dsl import field
-    from elasticsearch_dsl.utils import AttrDict
+from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import InnerDoc, MetaField
+from elasticsearch_dsl import Search as DSLSearch
+from elasticsearch_dsl import field
+from elasticsearch_dsl.utils import AttrDict
 from pyparsing import ParseException
 
 from kitsune.search.config import (
@@ -78,7 +70,7 @@ class SumoDocument(DSLDocument):
     @classmethod
     def search(cls, **kwargs):
         """
-        Create an `elasticsearch.dsl.Search` instance that will search over this `Document`.
+        Create an `elasticsearch_dsl.Search` instance that will search over this `Document`.
 
         If no `index` kwarg is supplied, use the Document's Index's `read_alias`.
         """
@@ -103,12 +95,11 @@ class SumoDocument(DSLDocument):
     def _update_alias(cls, alias, new_index):
         client = es_client()
         old_index = cls.alias_points_at(alias)
-
         if not old_index:
-            client.indices.put_alias(index=new_index, name=alias)
+            client.indices.put_alias(new_index, alias)
         else:
             client.indices.update_aliases(
-                body={
+                {
                     "actions": [
                         {"remove": {"index": old_index, "alias": alias}},
                         {"add": {"index": new_index, "alias": alias}},
@@ -211,12 +202,8 @@ class SumoDocument(DSLDocument):
 
         # If we are in a test environment, mark refresh=True so that
         # documents will be updated/added directly in the index.
-        # For ES8 we need to use the string value "true" instead of boolean
         if settings.TEST and not is_bulk:
-            if settings.ES_VERSION >= 8:
-                kwargs.update({"refresh": "true"})
-            else:
-                kwargs.update({"refresh": True})
+            kwargs.update({"refresh": True})
 
         if not action or action == "index":
             return payload if is_bulk else self.save(**kwargs)
@@ -241,12 +228,10 @@ class SumoDocument(DSLDocument):
         elif action == "delete":
             # if we have a bulk operation, drop the _source and mark the operation as deletion
             if is_bulk:
-                if "_source" in payload:
-                    del payload["_source"]
                 payload.update({"_op_type": "delete"})
+                del payload["_source"]
                 return payload
             # This is a single document op, delete it
-            # ES8 requires specific error handling for common delete errors
             kwargs.update({"ignore": [400, 404]})
             return self.delete(**kwargs)
 
@@ -331,8 +316,7 @@ class SumoSearch(SumoSearchInterface):
     """
 
     total: int = dfield(default=0, init=False)
-    # Use a single declaration with a type that works for both ES versions
-    hits: Union[list[AttrDict], AttrDict] = dfield(default_factory=list, init=False)
+    hits: list[AttrDict] = dfield(default_factory=list, init=False)
     results: list[dict] = dfield(default_factory=list, init=False)
     last_key: Union[int, slice, None] = dfield(default=None, init=False)
 
@@ -406,19 +390,10 @@ class SumoSearch(SumoSearchInterface):
                 return self.run(key)
             raise e
 
-        if settings.ES_VERSION >= 8:
-            self.hits = cast(AttrDict, result.hits)
-        else:
-            self.hits = result.hits
+        self.hits = result.hits
         self.last_key = key
 
-        # Handle total hits according to ES8 response format
-        # In ES8, total is always returned as an object with a 'value' property
-        if settings.ES_VERSION >= 8:
-            self.total = getattr(self.hits.total, "value", 0)
-            if isinstance(self.hits.total, dict):
-                self.total = self.hits.total.get("value", 0)
-
+        self.total = self.hits.total.value  # type: ignore
         self.results = [self.make_result(hit) for hit in self.hits]
 
         return self

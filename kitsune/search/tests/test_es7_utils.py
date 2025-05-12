@@ -1,4 +1,4 @@
-from kitsune.search.tests import ElasticTestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from django.test.utils import override_settings
 from kitsune.search.es_utils import index_objects_bulk
@@ -11,11 +11,9 @@ from kitsune.search.base import SumoDocument
 
 
 @override_settings(ES_LIVE_INDEXING=False)
-class IndexObjectsBulkTestCase(ElasticTestCase):
+class IndexObjectsBulkTestCase(Elastic7TestCase):
     def test_delete_not_found_not_raised(self):
         q_id = QuestionFactory(is_spam=True).id
-        # Force ES index refresh before testing to ensure consistency
-        QuestionDocument._index.refresh()
         index_objects_bulk("QuestionDocument", [q_id])
 
     @patch("kitsune.search.documents.QuestionDocument.to_action", autospec=True)

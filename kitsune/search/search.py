@@ -5,13 +5,8 @@ from typing import Optional
 
 import bleach
 from dateutil import parser
-from django.conf import settings
 from django.utils.text import slugify
-
-if settings.ES_VERSION == 8:
-    from elasticsearch8.dsl import Q as DSLQ
-else:
-    from elasticsearch_dsl import Q as DSLQ
+from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.products.models import Product
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
@@ -54,7 +49,7 @@ CATEGORY_EXACT_MAPPING = {
 def first_highlight(hit):
     highlight = getattr(hit.meta, "highlight", None)
     if highlight:
-        # `highlight` is of type AttrDict, which is internal to elasticsearch.dsl
+        # `highlight` is of type AttrDict, which is internal to elasticsearch_dsl
         # when converted to a dict, it's like:
         # `{ 'es_field_name' : ['highlight1', 'highlight2'], 'field2': ... }`
         # so here we're getting the first item in the first value in that dict:
