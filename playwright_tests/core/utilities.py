@@ -68,6 +68,10 @@ class Utilities:
         discussion_thread_data = json.load(discussion_thread_data_file)
     discussion_thread_data_file.close()
 
+    with open("test_data/ga4_data.json", "r") as ga4_data_file:
+        ga4_data = json.load(ga4_data_file)
+    ga4_data_file.close()
+
     # Fetching user secrets from GH.
     user_secrets_accounts = {
         "TEST_ACCOUNT_12": os.environ.get("TEST_ACCOUNT_12"),
@@ -662,3 +666,13 @@ class Utilities:
         """
         return self.page.evaluate("document.querySelector('input[name=csrfmiddlewaretoken]')"
                                   ".value")
+
+    def get_ga_logs(self, msg) -> dict:
+        """
+        This helper function fetches the GA logs from the console and formats them into a dict
+        """
+        message = msg.text.replace('\n', '')
+        if message.startswith('event:'):
+            return {"event": message.split(": ", 1)[1].rstrip(':')}
+        elif message.startswith('parameters:'):
+            return {"parameters": json.loads(message.split(": ", 1)[1])}

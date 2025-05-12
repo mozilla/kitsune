@@ -1,0 +1,104 @@
+{
+    "open_survey_helpful": {
+        "event": "article_survey_opened",
+        "parameters": {
+            "survey_type": "helpful"
+        }
+    },
+    "open_survey_unhelpful": {
+        "event": "article_survey_opened",
+        "parameters": {
+            "survey_type": "unhelpful"
+        }
+    },
+    "cancel_survey": {
+        "event": "article_survey_closed",
+        "parameters": {
+            "survey_type": "helpful"
+        }
+    },
+    "article_helpfulness": {
+        "event": "article_vote",
+        "parameters": {
+            "vote": "helpful"
+        }
+    },
+    "article-is-accurate": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "helpful",
+            "reason": "article-accurate"
+        }
+    },
+    "article-is-easy-to-understand": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "helpful",
+            "reason": "article-easy-to-understand"
+        }
+    },
+    "the-visuals-are-helpful": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "helpful",
+            "reason": "article-helpful-visuals"
+        }
+    },
+    "article-provided-the-information-i-needed": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "helpful",
+            "reason": "article-informative"
+        }
+    },
+    "other": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "helpful",
+            "reason": "other"
+        }
+    },
+    "article_unhelpfulness": {
+        "event": "article_vote",
+        "parameters": {
+            "vote": "not-helpful"
+        }
+    },
+    "article-is-inaccurate": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "unhelpful",
+            "reason": "article-inaccurate"
+        }
+    },
+    "article-is-confusing": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "unhelpful",
+            "reason": "article-confusing"
+        }
+    },
+    "missing-unclear-or-unhelpful-visuals": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "unhelpful",
+            "reason": "article-not-helpful-visuals"
+        }
+    },
+    "article-didn-t-provide-the-information-i-needed": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "unhelpful",
+            "reason": "article-not-informative"
+        }
+    },
+    "other-unhelpful": {
+        "event": "article_survey_submitted",
+        "parameters": {
+            "survey_type": "unhelpful",
+            "reason": "other"
+        }
+    }
+}
+
+
