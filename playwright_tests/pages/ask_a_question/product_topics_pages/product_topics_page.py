@@ -20,6 +20,11 @@ class ProductTopicPage(BasePage):
         self.navbar_option = lambda option_name: page.locator(
             "ul[class='sidebar-nav--list'] li").get_by_role("link").filter(has_text=option_name)
 
+        # Product topic page article metadata locators.
+        self.article_helpfulness_count = lambda article_name: page.locator(
+            f"//a[normalize-space(text())='{article_name}']/../../div[@id='document_metadata']//"
+            f"span[@class='helpful-count']")
+
     # Page content actions.
     def get_all_listed_article_titles(self) -> list[str]:
         """Returns a list of all the article titles displayed on the page."""
@@ -52,3 +57,7 @@ class ProductTopicPage(BasePage):
     def get_navbar_option_link(self, option_name: str) -> str:
         """Returns the href value of a particular navbar option."""
         return self._get_element_attribute_value(self.navbar_option(option_name),"href")
+
+    def is_article_helpfulness_metadata_displayed(self, article_title: str) -> bool:
+        """Checks if the article helpfulness metadata is displayed."""
+        return self._is_element_visible(self.article_helpfulness_count(article_title))
