@@ -1,5 +1,7 @@
 from elasticsearch.exceptions import NotFoundError
 
+from django.conf import settings
+
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.search.documents import WikiDocument
 from kitsune.search.tests import Elastic7TestCase
@@ -35,7 +37,10 @@ class WikiDocumentSignalsTests(Elastic7TestCase):
 
         self.document.products.remove(product)
 
-        self.assertEqual(None, self.get_doc().product_ids)
+        if hasattr(settings, "ES_VERSION") and settings.ES_VERSION < 8:
+            self.assertEqual(None, self.get_doc().product_ids)
+        else:
+            self.assertEqual([], self.get_doc().product_ids)
 
     def test_topics_change(self):
         topic = TopicFactory()
@@ -46,7 +51,10 @@ class WikiDocumentSignalsTests(Elastic7TestCase):
 
         self.document.topics.remove(topic)
 
-        self.assertEqual(None, self.get_doc().topic_ids)
+        if hasattr(settings, "ES_VERSION") and settings.ES_VERSION < 8:
+            self.assertEqual(None, self.get_doc().topic_ids)
+        else:
+            self.assertEqual([], self.get_doc().topic_ids)
 
     def test_document_delete(self):
         RevisionFactory(document=self.document, is_approved=True)
