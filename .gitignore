@@ -74,3 +74,4 @@ chromedriver.log
 .cursor-server
 .cursor
 .gk/
+gcloud/
