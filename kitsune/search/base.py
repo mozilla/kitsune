@@ -2,19 +2,18 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import datetime
-from typing import Self, Union, overload
+from typing import Self, Union, overload, Any, List, Mapping, Protocol, Optional
 
 from django.conf import settings
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.core.paginator import Paginator as DjPaginator
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from elasticsearch.exceptions import NotFoundError, RequestError
+from elasticsearch import ApiError, NotFoundError, RequestError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
-from elasticsearch_dsl.utils import AttrDict
 from pyparsing import ParseException
 
 from kitsune.search.config import (
@@ -96,15 +95,15 @@ class SumoDocument(DSLDocument):
         client = es_client()
         old_index = cls.alias_points_at(alias)
         if not old_index:
-            client.indices.put_alias(new_index, alias)
+            # Updated for ES8: put_alias signature changed
+            client.indices.put_alias(index=new_index, name=alias)
         else:
+            # Use the updated API for ES8
             client.indices.update_aliases(
-                {
-                    "actions": [
-                        {"remove": {"index": old_index, "alias": alias}},
-                        {"add": {"index": new_index, "alias": alias}},
-                    ]
-                }
+                actions=[
+                    {"remove": {"index": old_index, "alias": alias}},
+                    {"add": {"index": new_index, "alias": alias}},
+                ]
             )
 
     @classmethod
@@ -232,8 +231,16 @@ class SumoDocument(DSLDocument):
                 del payload["_source"]
                 return payload
             # This is a single document op, delete it
-            kwargs.update({"ignore": [400, 404]})
-            return self.delete(**kwargs)
+            # In ES8, we need to use the options() method to set ignore_status
+            # rather than passing it directly
+            es = es_client()
+            es = es.options(ignore_status=[400, 404])
+
+            # In test mode, pass refresh directly to the delete method
+            if settings.TEST:
+                return es.delete(index=self._get_index(), id=self.meta.id, refresh=True)
+            else:
+                return es.delete(index=self._get_index(), id=self.meta.id)
 
     @classmethod
     def get_queryset(cls):
@@ -305,6 +312,17 @@ class SumoSearchInterface(ABC):
         ...
 
 
+# Define a protocol for hits that works with both ES7/ES8 response structures
+class SearchHits(Protocol):
+    total: Union[int, Mapping[str, Any]]
+
+    def __iter__(self) -> Any:
+        pass
+
+    def __getitem__(self, key: Any) -> Any:
+        pass
+
+
 @dataclass
 class SumoSearch(SumoSearchInterface):
     """Base class for search classes.
@@ -316,8 +334,8 @@ class SumoSearch(SumoSearchInterface):
     """
 
     total: int = dfield(default=0, init=False)
-    hits: list[AttrDict] = dfield(default_factory=list, init=False)
-    results: list[dict] = dfield(default_factory=list, init=False)
+    hits: Optional[SearchHits] = dfield(default=None, init=False)
+    results: List[dict] = dfield(default_factory=list, init=False)
     last_key: Union[int, slice, None] = dfield(default=None, init=False)
 
     query: str = ""
@@ -383,7 +401,7 @@ class SumoSearch(SumoSearchInterface):
         # perform search
         try:
             result = search.execute()
-        except RequestError as e:
+        except (RequestError, ApiError) as e:
             if self.parse_query:
                 # try search again, but without parsing any advanced syntax
                 self.parse_query = False
@@ -393,8 +411,24 @@ class SumoSearch(SumoSearchInterface):
         self.hits = result.hits
         self.last_key = key
 
-        self.total = self.hits.total.value  # type: ignore
-        self.results = [self.make_result(hit) for hit in self.hits]
+        # In ES8, total is a dictionary with 'value' and 'relation' keys
+        # We need to handle both ES7 and ES8 response formats
+        if self.hits is not None:
+            if hasattr(self.hits.total, "value"):
+                self.total = self.hits.total.value  # ES7 response format
+            else:
+                # ES8 response format
+                total = self.hits.total
+                if isinstance(total, dict) or hasattr(total, "__getitem__"):
+                    # If it's a dict or any mapping/dict-like object
+                    self.total = int(total["value"])
+                else:
+                    # It should be an int already
+                    self.total = int(total)
+
+            self.results = [self.make_result(hit) for hit in self.hits]
+        else:
+            self.results = []
 
         return self
 

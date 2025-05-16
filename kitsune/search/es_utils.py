@@ -6,7 +6,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
-from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
+from elasticsearch_dsl import Document, analyzer, char_filter, token_filter
 
 from kitsune.search import config
 
@@ -44,10 +44,10 @@ def _create_synonym_graph_filter(synonym_file_name):
         filter_name,
         type="synonym_graph",
         synonyms_path=f"synonyms/{synonym_file_name}.txt",
-        # we must use "true" instead of True to work around an elastic-dsl bug
-        expand="true",
-        lenient="true",
-        updateable="true",
+        # Using expanded instead of expand for ES8 compatibility
+        expanded=True,
+        lenient=True,
+        updateable=True,
     )
 
 
@@ -94,9 +94,19 @@ def es_client(**kwargs):
     """Return an ES Elasticsearch client"""
     # prefer a cloud_id if available
     if es_cloud_id := settings.ES_CLOUD_ID:
-        kwargs.update({"cloud_id": es_cloud_id, "http_auth": settings.ES_HTTP_AUTH})
+        kwargs.update({"cloud_id": es_cloud_id})
+        if settings.ES_HTTP_AUTH:
+            # Changed from http_auth to basic_auth for ES8
+            kwargs.update({"basic_auth": settings.ES_HTTP_AUTH})
     else:
-        kwargs.update({"hosts": settings.ES_URLS})
+        # Ensure we have proper URLs with scheme for ES8
+        urls = []
+        for url in settings.ES_URLS:
+            # Add http:// prefix if the URL doesn't already have a scheme
+            if not url.startswith(("http://", "https://")):
+                url = f"http://{url}"
+            urls.append(url)
+        kwargs.update({"hosts": urls})
     return Elasticsearch(**kwargs)
 
 
@@ -163,16 +173,19 @@ def index_objects_bulk(
         action = "update"
         kwargs.update({"doc_as_upsert": True})
 
+    # ES8 client options are now set with options() instead of passing directly
+    client = es_client()
+    client = client.options(
+        request_timeout=timeout,  # Changed from timeout to request_timeout for ES8
+        retry_on_timeout=True,
+        max_retries=settings.ES_BULK_MAX_RETRIES,
+    )
+
     # if the request doesn't resolve within `timeout`,
     # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
     # before raising an exception:
     _, errors = es_bulk(
-        es_client(
-            timeout=timeout,
-            retry_on_timeout=True,
-            initial_backoff=timeout,
-            max_retries=settings.ES_BULK_MAX_RETRIES,
-        ),
+        client,
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
         chunk_size=elastic_chunk_size,
         raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
@@ -198,14 +211,19 @@ def remove_from_field(doc_type_name, field_name, field_value):
         f"}}"
     )
 
-    update = UpdateByQuery(using=es_client(), index=doc_type._index._name)
-    update = update.filter("term", **{field_name: field_value})
-    update = update.script(source=script, params={"value": field_value}, conflicts="proceed")
+    # Get a client directly to use the update_by_query API
+    es = es_client()
 
     # refresh index to ensure search fetches all matches
     doc_type._index.refresh()
 
-    update.execute()
+    # In ES8, we need to use the client directly and set conflicts parameter there
+    es.update_by_query(
+        index=doc_type._index._name,
+        query={"term": {field_name: field_value}},
+        script={"source": script, "params": {"value": field_value}},
+        conflicts="proceed",
+    )
 
     # If we are in a test environment, refresh so that
     # documents will be updated/added directly in the index.

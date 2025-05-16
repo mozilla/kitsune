@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
-from elasticsearch_dsl.exceptions import IllegalOperation
+from elasticsearch_dsl import IllegalOperation
 from datetime import datetime, timezone
+
 
 from kitsune.search.es_utils import get_doc_types, es_client
 
@@ -57,7 +58,24 @@ class Command(BaseCommand):
                     migrate_reads = True
                 else:
                     print("Updating index")
-                    dt.init(index=index)
+                    # In ES8, we need to close the index before updating analysis settings
+                    try:
+                        # Check if the index exists first
+                        if client.indices.exists(index=index):
+                            print(f"Closing index {index} for analysis updates...")
+                            client.indices.close(index=index)
+
+                            # Initialize the DocType (updates analysis settings)
+                            dt.init(index=index)
+
+                            # Reopen the index
+                            print(f"Reopening index {index}...")
+                            client.indices.open(index=index)
+                        else:
+                            # If index doesn't exist, just initialize it
+                            dt.init(index=index)
+                    except Exception as e:
+                        print(f"Error updating index: {e}")
 
             if migrate_writes:
                 try:
@@ -76,6 +94,6 @@ class Command(BaseCommand):
             index = dt.alias_points_at(dt.Index.write_alias)
             if kwargs["reload_search_analyzers"]:
                 print(f"Reloading search analyzers on {index}")
-                client.indices.reload_search_analyzers(index)
+                client.indices.reload_search_analyzers(index=index)  # Use keyword args for ES8
 
             print("")  # print blank line to make console output easier to read

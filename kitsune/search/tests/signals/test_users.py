@@ -3,7 +3,7 @@ from kitsune.users.tests import UserFactory, GroupFactory
 from kitsune.products.tests import ProductFactory
 
 from kitsune.search.documents import ProfileDocument
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch import NotFoundError
 
 
 class ProfileDocumentSignalsTests(Elastic7TestCase):
