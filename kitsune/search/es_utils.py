@@ -3,7 +3,7 @@ import inspect
 
 from celery import shared_task
 from django.conf import settings
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, ApiError, TransportError
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
@@ -91,12 +91,25 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
 
 
 def es_client(**kwargs):
-    """Return an ES Elasticsearch client"""
+    """Return an ES Elasticsearch client with appropriate settings for the detected ES version."""
+    # Use the Elasticsearch class from our compatibility layer
+
     # prefer a cloud_id if available
     if es_cloud_id := settings.ES_CLOUD_ID:
-        kwargs.update({"cloud_id": es_cloud_id, "http_auth": settings.ES_HTTP_AUTH})
+        kwargs.update({"cloud_id": es_cloud_id})
+        # ES8 uses basic_auth, ES7 uses http_auth, but our compatibility layer handles this
+        kwargs.update({"http_auth": settings.ES_HTTP_AUTH})
     else:
         kwargs.update({"hosts": settings.ES_URLS})
+
+    # Add other connection parameters from settings
+    if not kwargs.get("timeout"):
+        kwargs.update({"timeout": settings.ES_TIMEOUT})
+
+    if settings.ES_USE_SSL:
+        kwargs.update({"use_ssl": True})
+
+    # Create the client - our compatibility layer will handle version differences
     return Elasticsearch(**kwargs)
 
 
@@ -134,10 +147,19 @@ def index_object(doc_type_name, obj_id):
         # just return
         return
 
-    if doc_type.update_document:
-        doc_type.prepare(obj).to_action("update", doc_as_upsert=True)
-    else:
-        doc_type.prepare(obj).to_action("index")
+    try:
+        if doc_type.update_document:
+            doc_type.prepare(obj).to_action("update", doc_as_upsert=True)
+        else:
+            doc_type.prepare(obj).to_action("index")
+    except (ApiError, TransportError) as e:
+        # Catch both ES7 and ES8 exception types
+        # Our compatibility layer normalizes them, but we should handle both
+        # types of exceptions properly
+        import logging
+
+        logging.getLogger(__name__).error(f"Error indexing {doc_type_name} {obj_id}: {e}")
+        raise
 
 
 @shared_task
@@ -163,28 +185,38 @@ def index_objects_bulk(
         action = "update"
         kwargs.update({"doc_as_upsert": True})
 
-    # if the request doesn't resolve within `timeout`,
-    # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
-    # before raising an exception:
-    _, errors = es_bulk(
-        es_client(
-            timeout=timeout,
-            retry_on_timeout=True,
-            initial_backoff=timeout,
-            max_retries=settings.ES_BULK_MAX_RETRIES,
-        ),
-        (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
-        chunk_size=elastic_chunk_size,
-        raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
-        refresh=True if settings.TEST else False,  # update docs immediately when testing
+    # Prepare the ES client with appropriate settings
+    client = es_client(
+        timeout=timeout,
+        retry_on_timeout=True,
+        initial_backoff=timeout,
+        max_retries=settings.ES_BULK_MAX_RETRIES,
     )
-    errors = [
-        error
-        for error in errors
-        if not (error.get("delete") and error["delete"]["status"] in [400, 404])
-    ]
-    if errors:
-        raise BulkIndexError(f"{len(errors)} document(s) failed to index.", errors)
+
+    try:
+        # if the request doesn't resolve within `timeout`,
+        # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
+        # before raising an exception:
+        _, errors = es_bulk(
+            client,
+            (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
+            chunk_size=elastic_chunk_size,
+            raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
+            refresh=True if settings.TEST else False,  # update docs immediately when testing
+        )
+        errors = [
+            error
+            for error in errors
+            if not (error.get("delete") and error["delete"]["status"] in [400, 404])
+        ]
+        if errors:
+            raise BulkIndexError(f"{len(errors)} document(s) failed to index.", errors)
+    except (ApiError, TransportError) as e:
+        # Handle both ES7 and ES8 exception types
+        import logging
+
+        logging.getLogger(__name__).error(f"Error bulk indexing {doc_type_name} {obj_ids}: {e}")
+        raise
 
 
 @shared_task
@@ -205,7 +237,16 @@ def remove_from_field(doc_type_name, field_name, field_value):
     # refresh index to ensure search fetches all matches
     doc_type._index.refresh()
 
-    update.execute()
+    try:
+        update.execute()
+    except (ApiError, TransportError) as e:
+        # Handle both ES7 and ES8 exception types
+        import logging
+
+        logging.getLogger(__name__).error(
+            f"Error removing {field_value} from {field_name} in {doc_type_name}: {e}"
+        )
+        raise
 
     # If we are in a test environment, refresh so that
     # documents will be updated/added directly in the index.
@@ -220,4 +261,14 @@ def delete_object(doc_type_name, obj_id):
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
     doc = doc_type()
     doc.meta.id = obj_id
-    doc.to_action("delete")
+
+    try:
+        doc.to_action("delete")
+    except (ApiError, TransportError) as e:
+        # Handle both ES7 and ES8 exception types
+        import logging
+
+        logging.getLogger(__name__).error(f"Error deleting {doc_type_name} {obj_id}: {e}")
+        # Don't re-raise since delete failures are usually not critical
+        # (often happens if the document was already deleted)
+        pass

@@ -47,13 +47,29 @@ CATEGORY_EXACT_MAPPING = {
 
 
 def first_highlight(hit):
+    # Get the highlight attribute - this could be different in ES7 vs ES8
     highlight = getattr(hit.meta, "highlight", None)
+
     if highlight:
-        # `highlight` is of type AttrDict, which is internal to elasticsearch_dsl
-        # when converted to a dict, it's like:
-        # `{ 'es_field_name' : ['highlight1', 'highlight2'], 'field2': ... }`
-        # so here we're getting the first item in the first value in that dict:
-        return next(iter(highlight.to_dict().values()))[0]
+        # Handle different response types
+        if hasattr(highlight, "to_dict"):
+            # ES7 style response with AttrDict
+            highlight_dict = highlight.to_dict()
+        elif hasattr(highlight, "body"):
+            # ES8 style response with body property
+            highlight_dict = highlight.body
+        else:
+            # Already a dict or other format
+            highlight_dict = highlight
+
+        # Check if the dict has values
+        if highlight_dict and isinstance(highlight_dict, dict):
+            # Get the first item in the first value in the dict
+            try:
+                return next(iter(highlight_dict.values()))[0]
+            except (StopIteration, IndexError):
+                pass
+
     return None
 
 
