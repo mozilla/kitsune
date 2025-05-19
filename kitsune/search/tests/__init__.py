@@ -5,8 +5,8 @@ from kitsune.sumo.tests import TestCase
 
 
 @override_settings(ES_LIVE_INDEXING=True)
-class Elastic7TestCase(TestCase):
-    """Base class for Elastic Search 7 tests, providing some conveniences"""
+class ElasticTestCase(TestCase):
+    """Base class for Elastic Search tests, providing some conveniences"""
 
     def tearDown(self):
         """Delete all documents in each index."""
@@ -17,3 +17,7 @@ class Elastic7TestCase(TestCase):
             # the API refresh=True which only updates the shard that performed
             # the specific delete/update/save op
             doc_type._index.refresh()
+
+
+# Keep this for backwards compatibility
+Elastic7TestCase = ElasticTestCase

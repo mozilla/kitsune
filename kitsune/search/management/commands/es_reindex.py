@@ -78,7 +78,7 @@ class Command(BaseCommand):
         progress_msg = "Indexed {progress} out of {count}"
 
         for dt in doc_types:
-            self.stdout.write("Reindexing: {}".format(dt.__name__))
+            self.stdout.write(f"Reindexing: {dt.__name__}")
 
             model = dt.get_model()
 
@@ -101,14 +101,14 @@ class Command(BaseCommand):
 
             percentage = kwargs["percentage"]
             if count:
-                print("Indexing {} documents out of {}".format(count, total))
+                print(f"Indexing {count} documents out of {total}")
             else:
                 if percentage < 100:
                     count = int(total * percentage / 100)
                     qs = qs[:count]
                 else:
                     count = total
-                print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
+                print(f"Indexing {percentage}%, so {count} documents out of {total}")
 
             id_list = list(qs.values_list("pk", flat=True))
             sql_chunk_size = kwargs["sql_chunk_size"]
@@ -119,6 +119,7 @@ class Command(BaseCommand):
             for x in range(ceil(count / sql_chunk_size)):
                 start = x * sql_chunk_size
                 end = start + sql_chunk_size
+                # Make sure all parameters are passed as keyword arguments for ES8 compatibility
                 index_objects_bulk.delay(
                     dt.__name__,
                     id_list[start:end],
@@ -129,6 +130,6 @@ class Command(BaseCommand):
                     elastic_chunk_size=kwargs["elastic_chunk_size"],
                 )
                 if kwargs["print_sql_count"]:
-                    print("{} SQL queries executed".format(len(connection.queries)))
+                    print(f"{len(connection.queries)} SQL queries executed")
                     reset_queries()
                 print(progress_msg.format(progress=min(end, count), count=count))
