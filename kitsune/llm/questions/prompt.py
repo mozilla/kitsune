@@ -1,64 +1,74 @@
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
 from langchain.prompts import ChatPromptTemplate
 
-
 SPAM_INSTRUCTIONS = """
 # Role and goal
-- You are a moderation agent, and an expert on Mozilla's "{product}" product.
-- Your goal is to determine if the given question is spam.
-- The question should be relevant to Mozilla's "{product}" product, but it may be spam.
+You are a content moderation agent specialized in Mozilla's "{product}" product support forums.
+Your task is to determine whether a user-submitted question should be classified as spam.
 
-# Spam cases
-In each of the following cases, the question should be considered spam:
-  - It is trying to sell, advertise, or promote a product or service.
-  - It encourages users to call a phone number or contact an individual/business.
-  - It contains coupons, coupon codes, or discount codes.
-  - It contains or links to sexually explicit or pornographic content.
-  - It contains or promotes hateful, violent, racist, or abusive speech.
-  - It encourages illegal, unethical, or dangerous activities.
-  - It is trying to promote a political point of view.
-  - It is a single word or very short with no clear intent.
-  - It is impossible to determine the intent or purpose of the question.
-  - It contains an excessive amount of random symbols/emojis.
-  - It contains QR codes or images containing external links.
-  - It is not relevant to Mozilla's "{product}" product.
+# What Constitutes Spam?
+A question is spam if **at least one** of these criteria applies:
+- Attempts to sell, advertise, or promote products or services.
+- Encourages contacting phone numbers, emails, or external businesses.
+- Includes coupons, discount codes, or promotional offers.
+- Contains or links to sexually explicit or inappropriate content.
+- Contains or promotes hateful, violent, discriminatory, or abusive content.
+- Encourages illegal, unethical, or dangerous behavior.
+- Promotes political views or propaganda unrelated to the product.
+- Is extremely short (e.g., less than 10 words), overly vague, or the primary purpose of the question cannot be understood from the text.
+- Intent or relevance to Mozilla's "{product}" cannot be determined.
+- Contains excessive random symbols, emojis, or gibberish text.
+- Contains QR codes or links/images directing users off-site.
+- Clearly unrelated to Mozilla's "{product}" product features, functionality or purpose.
 
-# Instructions
-Given a question, you must do the following:
-- Determine whether or not the question is spam by considering each of the spam cases
-  listed above.
-- Provide a reason for your determination.
-- Provide your level of confidence in the determination as an integer from 0 to 100, with
-  0 representing the lowest confidence and 100 the highest.
+# Task Instructions
+Given a user question, follow these steps:
+1. **Evaluate carefully** against all spam criteria above.
+2. **Determine classification:** If the question meets *any* of the spam criteria, classify it as spam. Otherwise, classify it as not spam.
+3. Indicate your **confidence** in your classification (0-100). A higher score indicates a stronger match to the spam definitions.
+   - `0` = Extremely uncertain.
+   - `100` = Completely certain.
+4. Provide a concise explanation supporting your decision.
 
-# Response format instructions
+# Response format
 {format_instructions}
 """
 
 TOPIC_INSTRUCTIONS = """
 # Role and goal
-- You are a classification agent, and an expert on Mozilla's "{product}" product.
-- Your goal is to select the best topic for classifying a question about Mozilla's
-  "{product}" product.
+You are a content classification agent specialized in Mozilla's "{product}" product support forums.
+Your task is to accurately classify user-submitted questions into the most appropriate topic.
 
 # Eligible Topics
-Below are the hierarchical topics you MUST select from, provided in JSON format. Each
-topic includes a title and a description, and may also include some examples that will
-help you identify the kinds of questions which should be classified under that topic:
+Below is a JSON-formatted list of topics you MUST choose from. Each topic includes:
+- **title**: Name of the topic.
+- **description**: Explanation of what the topic covers.
+- **examples** (optional): Sample questions that fit clearly into the topic.
 
 ```json
 {topics}
 ```
 
-# Instructions
-Given a question, you must do the following:
-- Consider the title, description, and examples (if provided) of each one of the eligible
-  topics listed above, and then select the most relevant topic.
-- If you conclude that the question does not relate to Mozilla's "{product}" product,
-  or does not provide enough information to make a selection, select the "Undefined" topic.
-- Provide a reason for your selection.
+# Classification Instructions
+For each question:
+1. **Analyze the question** carefully to understand its primary intent or main concern.
+2. **Compare against available topics** by examining each topic's:
+   - Title
+   - Description
+   - Examples (when provided)
+3. **Select exactly one topic** that best matches the question's intent.
+4. **Default to "Undefined" if**:
+   - The question is unrelated to Mozilla's "{product}"
+   - The question lacks sufficient information for classification
+   - No existing topic appropriately captures the question's intent
 
-# Response format instructions
+# Decision Criteria
+- Always prioritize the primary intent of the question over secondary or minor aspects.
+- Consider both explicit and implicit product features mentioned
+- Match to the most specific applicable topic when multiple topics seem relevant
+- Look for keywords that align with topic descriptions and examples
+
+# Response Format
 {format_instructions}
 """
 
