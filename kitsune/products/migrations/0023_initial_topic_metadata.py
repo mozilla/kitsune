@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 TOPICS_WITH_METADATA = [
     {
         "title": "Accessibility",
@@ -2124,6 +2123,11 @@ def add_initial_topic_metadata(apps, schema_editor):
                 )
             except Topic.DoesNotExist:
                 print(f"""Skipped topic "{topic_data['title']}" because it does not exist.""")
+                continue
+            except Topic.MultipleObjectsReturned:
+                print(
+                    f"""Skipped topic "{topic_data['title']}" because it has multiple objects."""
+                )
                 continue
 
             topic.metadata = topic_data["metadata"]
