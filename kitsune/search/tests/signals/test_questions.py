@@ -1,7 +1,7 @@
 from unittest.mock import call, patch
 
 from django.test.utils import override_settings
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch import NotFoundError
 
 from kitsune.questions.tests import (
     AnswerFactory,
