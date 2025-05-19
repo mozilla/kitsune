@@ -1,15 +1,20 @@
 import json
 import logging
 import re
-from typing import Optional
+from typing import Any, Optional
 
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
 
+from kitsune.flagit.models import FlaggedObject
+from kitsune.llm.questions.classifiers import ModerationAction
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
-from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles, has_visited_kb
-
+from kitsune.users.models import Profile
+from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
+from kitsune.wiki.utils import has_visited_kb
 
 REGEX_NON_WINDOWS_HOME_DIR = re.compile(
     r"(?P<home_dir_parent>/(?:user|users|home)/)[^/]+", re.IGNORECASE
@@ -138,3 +143,63 @@ def get_ga_submit_event_parameters_as_json(
             data["topics"] = f"/{topic.slug}/"
 
     return json.dumps(data)
+
+
+def flag_question(
+    question: Question,
+    by_user: User,
+    notes: str,
+    status: int = FlaggedObject.FLAG_PENDING,
+    reason: str = FlaggedObject.REASON_CONTENT_MODERATION,
+) -> None:
+    content_type = ContentType.objects.get_for_model(question)
+    FlaggedObject.objects.create(
+        content_type=content_type,
+        object_id=question.id,
+        creator=by_user,
+        status=status,
+        reason=reason,
+        notes=notes,
+    )
+
+
+def process_classification_result(
+    question: Question,
+    result: dict[str, Any],
+) -> None:
+    """
+    Process the classification result from the LLM and take moderation action.
+    """
+    sumo_bot = Profile.get_sumo_bot()
+    action = result.get("action")
+    match action:
+        case ModerationAction.SPAM:
+            question.mark_as_spam(sumo_bot)
+        case ModerationAction.FLAG_REVIEW:
+            flag_question(
+                question,
+                by_user=sumo_bot,
+                notes=(
+                    "LLM flagged for manual review, for the following reason:\n"
+                    f"{result['spam_result']['reason']}"
+                ),
+                reason=FlaggedObject.REASON_SPAM,
+            )
+        case _:
+            if topic_title := result["topic_result"].get("topic"):
+                try:
+                    topic = Topic.objects.get(title=topic_title)
+                except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
+                    return
+                else:
+                    flag_question(
+                        question,
+                        by_user=sumo_bot,
+                        notes=(
+                            "LLM classified as {topic.title}, for the following reason:\n"
+                            f"{result['topic_result']['reason']}"
+                        ),
+                        status=FlaggedObject.FLAG_ACCEPTED,
+                    )
+                    question.topic = topic
+                    question.save()

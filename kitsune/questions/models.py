@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 
 import actstream
 import actstream.actions
-import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -25,6 +24,7 @@ from elasticsearch import ElasticsearchException
 from product_details import product_details
 
 from kitsune.flagit.models import FlaggedObject
+from kitsune.llm.tasks import question_classifier
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AAQConfigManager, AnswerManager, QuestionManager
@@ -203,17 +203,8 @@ class Question(AAQBase):
             # actstream
             # Authors should automatically follow their own questions.
             actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
-            if waffle.switch_is_active("flagit-spam-autoflag"):
-                # Add the question to the moderation queue to validate the topic
-                content_type = ContentType.objects.get_for_model(self)
-                FlaggedObject.objects.create(
-                    content_type=content_type,
-                    object_id=self.id,
-                    creator=self.creator,
-                    status=FlaggedObject.FLAG_PENDING,
-                    reason=FlaggedObject.REASON_CONTENT_MODERATION,
-                    notes="New question, review topic",
-                )
+            # Either automatically classify the question or add it to the moderation queue
+            question_classifier.delay(self.id)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.

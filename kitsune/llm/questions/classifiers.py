@@ -52,15 +52,16 @@ def classify_question(question: "Question") -> dict[str, Any]:
 
         if is_spam:
             match confidence:
-                case _ if confidence > HIGH_CONFIDENCE_THRESHOLD:
+                case _ if confidence >= HIGH_CONFIDENCE_THRESHOLD:
                     result["action"] = ModerationAction.SPAM
                 case _ if (
                     confidence > LOW_CONFIDENCE_THRESHOLD
                     and confidence < HIGH_CONFIDENCE_THRESHOLD
                 ):
                     result["action"] = ModerationAction.FLAG_REVIEW
-                case _:
-                    result["topic_result"] = topic_classification_chain.invoke(payload)
+
+        if result["action"] == ModerationAction.NOT_SPAM:
+            result["topic_result"] = topic_classification_chain.invoke(payload)
 
         return result
 
