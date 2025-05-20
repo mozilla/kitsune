@@ -676,6 +676,6 @@ class TestActions(TestCase):
     @mock.patch.object(waffle, "switch_is_active")
     def test_create_question_creates_flag(self, switch_is_active):
         """Creating a question also creates a flag."""
-        switch_is_active.return_value = True
+        switch_is_active.side_effect = lambda name: name == "flagit-spam-autoflag"
         QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
         self.assertEqual(1, FlaggedObject.objects.filter(reason="content_moderation").count())
