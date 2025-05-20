@@ -191,7 +191,7 @@ products:
     - title: Tracking protection
       description: Enable tracking protection to enhance your privacy.
       subtopics:
-      - title: Cookies
+      - title: Cookies as trackers
         description: Troubleshoot cookies issues.
   - title: Search, tag, and share
     description: Learn about search functionality and how to organize or share content
