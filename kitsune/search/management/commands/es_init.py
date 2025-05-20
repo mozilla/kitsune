@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from elasticsearch_dsl import IllegalOperation
+from elasticsearch.dsl import IllegalOperation
 from datetime import datetime, timezone
 
 
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                     migrate_reads = True
                 else:
                     print("Updating index")
-                    # In ES8, we need to close the index before updating analysis settings
+                    # Close the index before updating analysis settings
                     try:
                         # Check if the index exists first
                         if client.indices.exists(index=index):
@@ -94,6 +94,6 @@ class Command(BaseCommand):
             index = dt.alias_points_at(dt.Index.write_alias)
             if kwargs["reload_search_analyzers"]:
                 print(f"Reloading search analyzers on {index}")
-                client.indices.reload_search_analyzers(index=index)  # Use keyword args for ES8
+                client.indices.reload_search_analyzers(index=index)
 
             print("")  # print blank line to make console output easier to read

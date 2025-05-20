@@ -1547,14 +1547,14 @@ develop = ["aiohttp", "furo", "httpx", "opentelemetry-api", "opentelemetry-sdk",
 
 [[package]]
 name = "elasticsearch"
-version = "8.18.1"
+version = "9.0.1"
 description = "Python client for Elasticsearch"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "elasticsearch-8.18.1-py3-none-any.whl", hash = "sha256:1a8c8b5ec3ce5be88f96d2f898375671648e96272978bce0dee3137d9326aabb"},
-    {file = "elasticsearch-8.18.1.tar.gz", hash = "sha256:998035f17a8c1fba7ae26b183dca797dcf95db86da6a7ecba56d31afc40f07c7"},
+    {file = "elasticsearch-9.0.1-py3-none-any.whl", hash = "sha256:9fd110f9bb77310343709d9cccbd523a431a6e528d8441b01a26b97eef3238a3"},
+    {file = "elasticsearch-9.0.1.tar.gz", hash = "sha256:76f9b519cfd15a860f615a94ba90dcb9543b721306bc5144ecc15f0b4d5d2781"},
 ]
 
 [package.dependencies]
@@ -1570,28 +1570,6 @@ orjson = ["orjson (>=3)"]
 pyarrow = ["pyarrow (>=1)"]
 requests = ["requests (>=2.4.0,!=2.32.2,<3.0.0)"]
 vectorstore-mmr = ["numpy (>=1)", "simsimd (>=3)"]
-
-[[package]]
-name = "elasticsearch-dsl"
-version = "8.18.0"
-description = "Python client for Elasticsearch"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "elasticsearch_dsl-8.18.0-py3-none-any.whl", hash = "sha256:0522c5bb20c7abae69855109e650bf1166d486cbf706b5e1b29c28936a9102a3"},
-    {file = "elasticsearch_dsl-8.18.0.tar.gz", hash = "sha256:763465dba9eae166add10567e924c65730aa122819b08bfe9a077e91b13b30d1"},
-]
-
-[package.dependencies]
-elastic-transport = ">=8.0.0,<9.0.0"
-elasticsearch = ">=8.0.0,<9.0.0"
-python-dateutil = "*"
-typing-extensions = "*"
-
-[package.extras]
-async = ["elasticsearch[async] (>=8.0.0,<9.0.0)"]
-develop = ["coverage", "elasticsearch[async]", "jinja2", "mypy", "nltk", "pyright", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mock", "pytz", "sentence_transformers", "sphinx (>2)", "sphinx-rtd-theme (>0.5)", "tqdm", "types-python-dateutil", "types-pytz", "types-tqdm", "unasync"]
 
 [[package]]
 name = "execnet"
@@ -6650,4 +6628,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "fb2a30ff70904be8b455a11b742e7dd1417130686e4e8a146e377d041f0f26b0"
+content-hash = "c48406c4b5f8734fac690e827ee58f985c0a64c1caf2552299b8ae08318682d3"

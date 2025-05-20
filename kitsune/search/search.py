@@ -6,7 +6,7 @@ from typing import Optional
 import bleach
 from dateutil import parser
 from django.utils.text import slugify
-from elasticsearch_dsl import Q as DSLQ
+from elasticsearch.dsl import Q as DSLQ
 
 from kitsune.products.models import Product
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
