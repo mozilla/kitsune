@@ -6,7 +6,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
-from elasticsearch_dsl import Document, analyzer, char_filter, token_filter
+from elasticsearch.dsl import Document, analyzer, char_filter, token_filter
 
 from kitsune.search import config
 
@@ -44,7 +44,6 @@ def _create_synonym_graph_filter(synonym_file_name):
         filter_name,
         type="synonym_graph",
         synonyms_path=f"synonyms/{synonym_file_name}.txt",
-        # Using expanded instead of expand for ES8 compatibility
         expanded=True,
         lenient=True,
         updateable=True,
@@ -96,13 +95,10 @@ def es_client(**kwargs):
     if es_cloud_id := settings.ES_CLOUD_ID:
         kwargs.update({"cloud_id": es_cloud_id})
         if settings.ES_HTTP_AUTH:
-            # Changed from http_auth to basic_auth for ES8
             kwargs.update({"basic_auth": settings.ES_HTTP_AUTH})
     else:
-        # Ensure we have proper URLs with scheme for ES8
         urls = []
         for url in settings.ES_URLS:
-            # Add http:// prefix if the URL doesn't already have a scheme
             if not url.startswith(("http://", "https://")):
                 url = f"http://{url}"
             urls.append(url)
@@ -173,10 +169,10 @@ def index_objects_bulk(
         action = "update"
         kwargs.update({"doc_as_upsert": True})
 
-    # ES8 client options are now set with options() instead of passing directly
+    # ES client options are now set with options() instead of passing directly
     client = es_client()
     client = client.options(
-        request_timeout=timeout,  # Changed from timeout to request_timeout for ES8
+        request_timeout=timeout,
         retry_on_timeout=True,
         max_retries=settings.ES_BULK_MAX_RETRIES,
     )
@@ -217,7 +213,7 @@ def remove_from_field(doc_type_name, field_name, field_value):
     # refresh index to ensure search fetches all matches
     doc_type._index.refresh()
 
-    # In ES8, we need to use the client directly and set conflicts parameter there
+    # In ES8+, we need to use the client directly and set conflicts parameter there
     es.update_by_query(
         index=doc_type._index._name,
         query={"term": {field_name: field_value}},

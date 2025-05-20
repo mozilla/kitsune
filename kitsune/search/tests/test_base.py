@@ -33,7 +33,6 @@ class ToActionTests(ElasticTestCase):
 
     def test_update_empty_list(self):
         self.prepare().to_action("update")
-        # In ES8, empty fields are returned as empty lists instead of None
         self.assertEqual(self.doc.group_ids, [])
 
     def test_update_bulk_empty_list(self):
