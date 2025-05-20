@@ -111,8 +111,9 @@ def simple_search(request):
         per_page=settings.SEARCH_RESULTS_PER_PAGE,
         paginator_cls=SumoSearchPaginator,
     )
+    # Get total and results from the search object after pagination has executed it
     total = search.total
-    results = search.results
+    results = page.object_list
 
     # generate fallback results if necessary
     fallback_results = None

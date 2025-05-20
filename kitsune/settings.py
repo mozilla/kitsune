@@ -745,7 +745,6 @@ CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 ES_TIMEOUT = 5  # Timeout for querying requests
 ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
-ES_USE_SSL = config("ES_USE_SSL", default=False, cast=bool)
 ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
 ES_ENABLE_CONSOLE_LOGGING = config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
 # Pass parameters to the ES client
