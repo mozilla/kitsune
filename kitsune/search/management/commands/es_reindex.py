@@ -119,14 +119,11 @@ class Command(BaseCommand):
             for x in range(ceil(count / sql_chunk_size)):
                 start = x * sql_chunk_size
                 end = start + sql_chunk_size
-                # Make sure all parameters are passed as keyword arguments for ES8 compatibility
+                # Make sure all parameters are passed as keyword arguments
                 index_objects_bulk.delay(
                     dt.__name__,
                     id_list[start:end],
                     timeout=kwargs["timeout"],
-                    # elastic_chunk_size determines how many documents get sent to elastic
-                    # in each bulk request, the limiting factor here is the performance of
-                    # our elastic cluster
                     elastic_chunk_size=kwargs["elastic_chunk_size"],
                 )
                 if kwargs["print_sql_count"]:
