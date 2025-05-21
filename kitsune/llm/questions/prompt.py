@@ -72,6 +72,12 @@ For each question:
 {format_instructions}
 """
 
+USER_QUESTION = """
+# {subject}
+
+{question}
+"""
+
 
 spam_parser = StructuredOutputParser.from_response_schemas(
     (
@@ -117,7 +123,7 @@ topic_parser = StructuredOutputParser.from_response_schemas(
 spam_prompt = ChatPromptTemplate(
     (
         ("system", SPAM_INSTRUCTIONS),
-        ("human", "{question}"),
+        ("human", USER_QUESTION),
     )
 ).partial(format_instructions=spam_parser.get_format_instructions())
 
@@ -125,6 +131,6 @@ spam_prompt = ChatPromptTemplate(
 topic_prompt = ChatPromptTemplate(
     (
         ("system", TOPIC_INSTRUCTIONS),
-        ("human", "{question}"),
+        ("human", USER_QUESTION),
     )
 ).partial(format_instructions=topic_parser.get_format_instructions())

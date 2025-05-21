@@ -30,6 +30,7 @@ def classify_question(question: "Question") -> dict[str, Any]:
 
     product = question.product
     payload: dict[str, Any] = {
+        "subject": question.title,
         "question": question.content,
         "product": product,
         "topics": get_taxonomy(
