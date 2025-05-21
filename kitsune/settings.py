@@ -692,7 +692,6 @@ INSTALLED_APPS: tuple[str, ...] = (
     "django_user_agents",
     # Last so we can override admin templates.
     "django.contrib.admin",
-    "django_celery_beat",
 )
 
 
