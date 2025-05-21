@@ -188,7 +188,7 @@ def process_classification_result(
         case _:
             if topic_title := result["topic_result"].get("topic"):
                 try:
-                    topic = Topic.objects.get(title=topic_title)
+                    topic = Topic.active.get(title=topic_title, visible=True)
                 except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
                     return
                 else:
