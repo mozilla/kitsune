@@ -268,8 +268,8 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
                         subject=utilities.aaq_question_test_data["valid_firefox_question"]
                         ["subject"],
                         topic_name=topic,
-                        body=utilities.aaq_question_test_data["valid_firefox_question"]
-                        ["question_body"],
+                        body=f"I have a problem with {topic}. It doesn't seem to work whatever I"
+                             f" try to do... Can you please help me?",
                         attach_image=False,
                         expected_locator=sumo_pages.question_page.questions_header
                     )

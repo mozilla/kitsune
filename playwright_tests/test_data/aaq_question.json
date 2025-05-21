@@ -2,10 +2,10 @@
   "valid_firefox_question": {
     "subject": "Test Question ",
     "subject_updated": "Test Question Updated",
-    "topic_value": "Browse",
-    "question_body": "'''Lorem ipsum''' dolor ''sit amet'', consectetur [https://www.mediafax.ro adipiscing] elit, [[Stage test owl|sed]] do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante. Etiam non quam lacus suspendisse faucibus interdum posuere. Diam sollicitudin tempor id eu nisl nunc mi ipsum. Velit egestas dui id ornare arcu odio ut sem nulla. Risus nec feugiat in fermentum posuere urna nec tincidunt. Sed egestas egestas fringilla phasellus faucibus. Amet consectetur adipiscing elit duis tristique. Lorem mollis aliquam ut porttitor. Purus sit amet volutpat consequat mauris. Lobortis mattis aliquam faucibus purus in. Enim praesent elementum facilisis leo vel. Volutpat lacus laoreet non curabitur gravida arcu. Tempus iaculis urna id volutpat.",
+    "topic_value": "Accessibility",
+    "question_body": "'''I have a problem''' when I ''access'', the following link: [https://www.mediafax.ro adipiscing], the Firefox browser is not performing is unable to output the messages coming from the screen reader. I've tried reading the following article: [[Stage test owl|sed]] but it doesn't help me understand what is the root cause and how can I fixed the missing content. Can somebody please help me?",
     "body_updated": "Updated body",
-    "simple_body_text": "Body content test",
+    "simple_body_text": "Firefox doesn't work in combination with the NVDA screen reader",
     "image_name": "test.image.jpg",
     "image_path": "test_data/test-image.png",
     "question_reply": "Test reply to question",
