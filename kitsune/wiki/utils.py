@@ -174,64 +174,49 @@ def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAUL
 def get_visible_document_or_404(
     user, look_for_translation_via_parent=False, return_parent_if_no_translation=False, **kwargs
 ):
-    """
-    Get the document specified by the keyword arguments and visible to the given user, or 404.
-    """
     try:
         return Document.objects.get_visible(user, **kwargs)
     except Document.DoesNotExist:
         pass
 
-    if not (locale := kwargs.get("locale")):
+    locale = kwargs.get("locale")
+    if not locale:
         raise Http404
 
     slug = kwargs.get("slug")
 
-    if slug and look_for_translation_via_parent:
-        # Find documents with this slug in other locales
-        other_docs_qs = (
-            Document.objects.filter(slug=slug).exclude(locale=locale).select_related("parent")
-        )
+    if not (slug and look_for_translation_via_parent):
+        raise Http404
 
+    other_docs_qs = (
+        Document.objects.filter(slug=slug).exclude(locale=locale).select_related("parent")
+    )
+    for doc in other_docs_qs:
         if locale == settings.WIKI_DEFAULT_LANGUAGE:
-            # We're in default locale, look for translations in other locales
-            for doc in other_docs_qs:
-                parent_doc = doc.parent or doc
-
-                # If the parent is in the default locale, return it directly
-                if parent_doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
-                    return parent_doc
-
-                # Otherwise check if it has a translation in the requested locale
-                translation = parent_doc.translated_to(locale, visible_for_user=user)
-                if translation:
-                    return translation
+            parent_doc = doc.parent or doc
+            if parent_doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
+                return parent_doc
+            translation = parent_doc.translated_to(locale, visible_for_user=user)
+            if translation:
+                return translation
         else:
-            # Looking for a non-default locale document
-            for doc in other_docs_qs:
-                # Only consider documents that are translations
-                if not doc.parent:
-                    continue
+            if not doc.parent:
+                continue
+            translation = doc.parent.translated_to(locale, visible_for_user=user)
+            if translation:
+                return translation
 
-                # Check if this parent has a translation in our requested locale
-                translation = doc.parent.translated_to(locale, visible_for_user=user)
-                if translation:
-                    return translation
-
+    # Don't try final fallback if not looking for translations or in default language
     if not look_for_translation_via_parent or locale == settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
 
-    # Try to find a translation via the parent
-    kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+    kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
     parent = get_object_or_404(Document.objects.visible(user, **kwargs))
-
     translation = parent.translated_to(locale, visible_for_user=user)
     if translation:
         return translation
-
     if return_parent_if_no_translation:
         return parent
-
     raise Http404
 
 
