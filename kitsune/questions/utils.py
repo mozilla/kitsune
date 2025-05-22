@@ -153,14 +153,21 @@ def flag_question(
     reason: str = FlaggedObject.REASON_CONTENT_MODERATION,
 ) -> None:
     content_type = ContentType.objects.get_for_model(question)
-    FlaggedObject.objects.create(
+    flagged_object, created = FlaggedObject.objects.get_or_create(
         content_type=content_type,
         object_id=question.id,
         creator=by_user,
-        status=status,
-        reason=reason,
-        notes=notes,
+        defaults=dict(
+            reason=reason,
+            status=status,
+            notes=notes,
+        ),
     )
+    if not created:
+        flagged_object.reason = reason
+        flagged_object.status = status
+        flagged_object.notes = notes
+        flagged_object.save()
 
 
 def process_classification_result(
