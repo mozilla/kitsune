@@ -7,11 +7,14 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
+from django.db import transaction
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import ModerationAction
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
+
+# from kitsune.tags.models import SumoTag
 from kitsune.users.models import Profile
 from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
 from kitsune.wiki.utils import has_visited_kb
@@ -186,20 +189,28 @@ def process_classification_result(
                 reason=FlaggedObject.REASON_SPAM,
             )
         case _:
-            if topic_title := result["topic_result"].get("topic"):
-                try:
-                    topic = Topic.active.get(title=topic_title, visible=True)
-                except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
-                    return
-                else:
-                    flag_question(
-                        question,
-                        by_user=sumo_bot,
-                        notes=(
-                            "LLM classified as {topic.title}, for the following reason:\n"
-                            f"{result['topic_result']['reason']}"
-                        ),
-                        status=FlaggedObject.FLAG_ACCEPTED,
-                    )
+            if not (topic_title := result["topic_result"].get("topic")):
+                return
+
+            try:
+                topic = Topic.active.get(title=topic_title, visible=True)
+            except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
+                return
+
+            with transaction.atomic():
+                flag_question(
+                    question,
+                    by_user=sumo_bot,
+                    notes=(
+                        "LLM classified as {topic.title}, for the following reason:\n"
+                        f"{result['topic_result']['reason']}"
+                    ),
+                    status=FlaggedObject.FLAG_ACCEPTED,
+                )
+                if topic != question.topic:
+                    if question.topic:
+                        question.tags.remove(question.topic.slug)
                     question.topic = topic
                     question.save()
+                    question.tags.add(topic.slug)
+                    question.clear_cached_tags()
