@@ -1,7 +1,11 @@
 from copy import deepcopy
 
+from django.contrib.contenttypes.models import ContentType
 from parameterized import parameterized
 
+from kitsune.flagit.models import FlaggedObject
+from kitsune.llm.questions.classifiers import ModerationAction
+from kitsune.products.tests import TopicFactory
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.utils import (
@@ -10,10 +14,12 @@ from kitsune.questions.utils import (
     num_answers,
     num_questions,
     num_solutions,
+    process_classification_result,
     remove_pii,
     remove_home_dir_pii,
 )
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 
 
@@ -209,3 +215,172 @@ class PIIRemovalTests(TestCase):
         ] = "C:\\Users\\<USERNAME>\\AppData\\Local\\Mozilla\\Firefox"
         remove_pii(data)
         self.assertDictEqual(data, expected)
+
+
+class ProcessClassificationResultTests(TestCase):
+
+    def setUp(self):
+        self.topic1 = TopicFactory()
+        self.topic2 = TopicFactory()
+        self.sumo_bot = Profile.get_sumo_bot()
+
+    def test_spam_result(self):
+        question = QuestionFactory(topic=self.topic1)
+        classification_result = dict(
+            action=ModerationAction.SPAM,
+        )
+        self.assertFalse(question.is_spam)
+        self.assertIsNone(question.marked_as_spam)
+        self.assertIsNone(question.marked_as_spam_by)
+        self.assertEqual(question.topic, self.topic1)
+
+        process_classification_result(question, classification_result)
+
+        question.refresh_from_db()
+
+        self.assertTrue(question.is_spam)
+        self.assertIsNotNone(question.marked_as_spam)
+        self.assertEqual(question.marked_as_spam_by, self.sumo_bot)
+
+    def test_flagged_result(self):
+        question = QuestionFactory(topic=self.topic1)
+        classification_result = dict(
+            action=ModerationAction.FLAG_REVIEW,
+            spam_result=dict(reason="I think it is spam?"),
+        )
+
+        q_ct = ContentType.objects.get_for_model(question)
+
+        self.assertFalse(question.is_spam)
+        self.assertFalse(
+            FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
+        )
+        self.assertEqual(question.topic, self.topic1)
+
+        process_classification_result(question, classification_result)
+
+        question.refresh_from_db()
+
+        self.assertFalse(question.is_spam)
+        self.assertEqual(question.topic, self.topic1)
+        self.assertTrue(
+            FlaggedObject.objects.filter(
+                content_type=q_ct,
+                object_id=question.id,
+                creator=self.sumo_bot,
+                reason=FlaggedObject.REASON_SPAM,
+                status=FlaggedObject.FLAG_PENDING,
+                notes__contains="I think it is spam?",
+            ).exists()
+        )
+
+    def test_topic_result_with_change(self):
+        question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
+        classification_result = dict(
+            action=ModerationAction.NOT_SPAM,
+            topic_result=dict(
+                topic=self.topic2.title,
+                reason="Dude, it is so topic2.",
+            ),
+        )
+
+        q_ct = ContentType.objects.get_for_model(question)
+
+        self.assertFalse(question.is_spam)
+        self.assertFalse(
+            FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
+        )
+        self.assertEqual(question.topic, self.topic1)
+        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
+
+        process_classification_result(question, classification_result)
+
+        question.refresh_from_db()
+
+        self.assertFalse(question.is_spam)
+        self.assertEqual(question.topic, self.topic2)
+        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic2.slug})
+        self.assertTrue(
+            FlaggedObject.objects.filter(
+                content_type=q_ct,
+                object_id=question.id,
+                creator=self.sumo_bot,
+                status=FlaggedObject.FLAG_ACCEPTED,
+                reason=FlaggedObject.REASON_CONTENT_MODERATION,
+                notes__contains="Dude, it is so topic2.",
+            ).exists()
+        )
+
+    def test_topic_result_with_no_initial_topic(self):
+        question = QuestionFactory(topic=None)
+        classification_result = dict(
+            action=ModerationAction.NOT_SPAM,
+            topic_result=dict(
+                topic=self.topic2.title,
+                reason="Dude, it is so topic2.",
+            ),
+        )
+
+        q_ct = ContentType.objects.get_for_model(question)
+
+        self.assertFalse(question.is_spam)
+        self.assertFalse(
+            FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
+        )
+        self.assertIsNone(question.topic)
+        self.assertFalse(question.my_tags)
+
+        process_classification_result(question, classification_result)
+
+        question.refresh_from_db()
+
+        self.assertFalse(question.is_spam)
+        self.assertEqual(question.topic, self.topic2)
+        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic2.slug})
+        self.assertTrue(
+            FlaggedObject.objects.filter(
+                content_type=q_ct,
+                object_id=question.id,
+                creator=self.sumo_bot,
+                status=FlaggedObject.FLAG_ACCEPTED,
+                reason=FlaggedObject.REASON_CONTENT_MODERATION,
+                notes__contains="Dude, it is so topic2.",
+            ).exists()
+        )
+
+    def test_topic_result_with_no_change(self):
+        question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
+        classification_result = dict(
+            action=ModerationAction.NOT_SPAM,
+            topic_result=dict(
+                topic=self.topic1.title,
+                reason="Dude, it is so topic1.",
+            ),
+        )
+
+        q_ct = ContentType.objects.get_for_model(question)
+
+        self.assertFalse(question.is_spam)
+        self.assertFalse(
+            FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
+        )
+        self.assertEqual(question.topic, self.topic1)
+        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
+
+        process_classification_result(question, classification_result)
+
+        question.refresh_from_db()
+
+        self.assertFalse(question.is_spam)
+        self.assertEqual(question.topic, self.topic1)
+        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
+        self.assertTrue(
+            FlaggedObject.objects.filter(
+                content_type=q_ct,
+                object_id=question.id,
+                creator=self.sumo_bot,
+                status=FlaggedObject.FLAG_ACCEPTED,
+                reason=FlaggedObject.REASON_CONTENT_MODERATION,
+                notes__contains="Dude, it is so topic1.",
+            ).exists()
+        )

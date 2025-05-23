@@ -201,5 +201,9 @@ def process_classification_result(
                         ),
                         status=FlaggedObject.FLAG_ACCEPTED,
                     )
+                    if question.topic:
+                        question.tags.remove(question.topic.slug)
                     question.topic = topic
                     question.save()
+                    question.tags.add(topic.slug)
+                    question.clear_cached_tags()
