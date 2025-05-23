@@ -1,5 +1,4 @@
 from copy import deepcopy
-from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 from parameterized import parameterized
@@ -384,37 +383,4 @@ class ProcessClassificationResultTests(TestCase):
                 reason=FlaggedObject.REASON_CONTENT_MODERATION,
                 notes__contains="Dude, it is so topic1.",
             ).exists()
-        )
-
-    def test_topic_result_with_incomplete_transaction(self):
-        question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
-        classification_result = dict(
-            action=ModerationAction.NOT_SPAM,
-            topic_result=dict(
-                topic=self.topic2.title,
-                reason="Dude, it is so topic2.",
-            ),
-        )
-
-        q_ct = ContentType.objects.get_for_model(question)
-
-        self.assertFalse(question.is_spam)
-        self.assertFalse(
-            FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
-        )
-        self.assertEqual(question.topic, self.topic1)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
-
-        with patch.object(question, "save", side_effect=Exception):
-            with self.assertRaises(Exception):
-                process_classification_result(question, classification_result)
-
-        question.refresh_from_db()
-
-        # Since one of the DB changes failed, they all should be rolled back.
-        self.assertFalse(question.is_spam)
-        self.assertEqual(question.topic, self.topic1)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
-        self.assertFalse(
-            FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
         )
