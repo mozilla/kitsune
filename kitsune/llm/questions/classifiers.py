@@ -32,6 +32,7 @@ def classify_question(question: "Question") -> dict[str, Any]:
     payload: dict[str, Any] = {
         "subject": question.title,
         "question": question.content,
+        "image_urls": [image.get_absolute_url() for image in question.get_images()],
         "product": product,
         "topics": get_taxonomy(
             product, include_metadata=["description", "examples"], output_format="JSON"

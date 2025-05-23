@@ -1,5 +1,7 @@
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.schema import HumanMessage
+from langchain.schema.runnable import RunnableLambda
 
 SPAM_INSTRUCTIONS = """
 # Role and goal
@@ -120,17 +122,49 @@ topic_parser = StructuredOutputParser.from_response_schemas(
 )
 
 
-spam_prompt = ChatPromptTemplate(
+spam_prompt_template = ChatPromptTemplate(
     (
         ("system", SPAM_INSTRUCTIONS),
-        ("human", USER_QUESTION),
+        MessagesPlaceholder("human_message"),
     )
 ).partial(format_instructions=spam_parser.get_format_instructions())
 
 
-topic_prompt = ChatPromptTemplate(
+topic_prompt_template = ChatPromptTemplate(
     (
         ("system", TOPIC_INSTRUCTIONS),
-        ("human", USER_QUESTION),
+        MessagesPlaceholder("human_message"),
     )
 ).partial(format_instructions=topic_parser.get_format_instructions())
+
+
+def create_human_message(payload: dict) -> dict:
+    """
+    Creates the human message, with the image URL's if they're present, and
+    then adds it to the payload dict. Returns the modified payload dict.
+    """
+    content: list[dict] = [
+        {
+            "type": "text",
+            "text": USER_QUESTION.format(**payload),
+        },
+    ]
+
+    for image_url in payload.get("image_urls", ()):
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": image_url,
+                },
+            }
+        )
+
+    payload["human_message"] = [HumanMessage(content=content)]
+    return payload
+
+
+spam_prompt = RunnableLambda(create_human_message) | spam_prompt_template
+
+
+topic_prompt = RunnableLambda(create_human_message) | topic_prompt_template
