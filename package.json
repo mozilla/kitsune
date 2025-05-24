@@ -35,7 +35,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@alpinejs/csp": "^3.14.8",
-    "@babel/runtime": "^7.20.13",
+    "@babel/runtime": "^7.27.0",
     "@urql/svelte": "^3.0.3",
     "codemirror": "^5.65.11",
     "d3": "^3.5.17",
