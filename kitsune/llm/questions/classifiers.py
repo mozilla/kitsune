@@ -12,6 +12,9 @@ from kitsune.llm.questions.prompt import (
     topic_prompt,
 )
 from kitsune.llm.utils import get_llm
+
+# TODO:
+# from kitsune.products.utils import get_products, get_taxonomy
 from kitsune.products.utils import get_taxonomy
 
 DEFAULT_LLM_MODEL = "gemini-2.5-flash-preview-04-17"
@@ -60,9 +63,11 @@ def classify_question(question: "Question") -> dict[str, Any]:
             case _:
                 action = ModerationAction.NOT_SPAM
 
-        if action != ModerationAction.SPAM:
+        if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
             return {"action": action, "product_result": {}}
 
+        # TODO:
+        # payload["products"] = get_products(output_format="JSON")
         product_result = product_classification_chain.invoke(payload)
         new_product = product_result.get("product")
 
