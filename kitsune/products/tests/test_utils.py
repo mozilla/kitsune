@@ -1,5 +1,5 @@
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.products.utils import get_taxonomy
+from kitsune.products.utils import get_products, get_taxonomy
 from kitsune.sumo.tests import TestCase
 
 
@@ -408,3 +408,65 @@ class GetTaxonomyTests(TestCase):
             ),
             expected,
         )
+
+
+class GetProductsTests(TestCase):
+
+    def setUp(self):
+        ProductFactory(
+            title="product1", description="All about product1...", display_order=1, slug="p1"
+        )
+        ProductFactory(
+            title="product2", description="All about product2...", display_order=2, slug="p2"
+        )
+        ProductFactory(
+            title="product3",
+            description="All about product3...",
+            display_order=3,
+            slug="mozilla-account",
+            visible=False,
+        )
+        ProductFactory(
+            title="product4",
+            description="All about product4...",
+            display_order=4,
+            slug="p4",
+            visible=False,
+        )
+        ProductFactory(
+            title="product5",
+            description="All about product5...",
+            display_order=5,
+            slug="p5",
+            is_archived=True,
+        )
+
+    def test_get_products(self):
+        expected = """products:
+- title: product1
+  description: All about product1...
+- title: product2
+  description: All about product2...
+- title: product3
+  description: All about product3...
+"""
+        self.assertEqual(get_products(), expected)
+
+    def test_get_products_as_json(self):
+        expected = """{
+  "products": [
+    {
+      "title": "product1",
+      "description": "All about product1..."
+    },
+    {
+      "title": "product2",
+      "description": "All about product2..."
+    },
+    {
+      "title": "product3",
+      "description": "All about product3..."
+    }
+  ]
+}"""
+        self.assertEqual(get_products(output_format="JSON"), expected)
