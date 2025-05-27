@@ -34,6 +34,49 @@ Given a user question, follow these steps:
 {format_instructions}
 """
 
+PRODUCT_INSTRUCTIONS = """
+# Role and Goal
+You are a specialized product reclassification agent for Mozilla's support forums.
+Your task is to evaluate user-submitted questions previously flagged as spam and determine
+if they should instead be reassigned to a specific Mozilla product category.
+
+# Available Mozilla Products
+You MUST select exactly one product from the following JSON-formatted list if reassignment is appropriate:
+- **title**: Name of the product.
+- **description**: A short description of the product.
+
+```json
+{products}
+```
+
+# When to Reassign a Question
+Reassign a question to a specific product ONLY if **all** of these criteria apply:
+- The question explicitly mentions or clearly relates to the product's distinctive features or functionalities.
+- The question includes technical terms, error messages, or workflows unique to the specific product.
+- You are highly confident the original spam classification resulted from incorrect product selection.
+- The content represents a legitimate support request, not promotional or spam content.
+
+# When NOT to Reassign
+Do NOT reassign the question if **any** of these criteria apply:
+- The content is genuinely promotional, spam, inappropriate, or clearly unrelated to Mozilla products.
+- You cannot confidently determine the relevant Mozilla product.
+- The question equally involves multiple Mozilla products with no clear primary focus.
+- The original spam classification appears correct, regardless of product selection.
+
+# Task Instructions
+Given a user-submitted question previously flagged as spam, strictly follow these steps:
+1. **Carefully Evaluate** whether the question clearly relates to a specific Mozilla product.
+2. **Spam Verification** - Confirm explicitly that the content is not promotional or actual spam.
+3. **Determine Reassignment:** If the question meets **all** reassignment criteria, explicitly select the most appropriate product. Otherwise, do not reassign.
+4. Indicate your **confidence** in your decision (0-100), with higher scores indicating stronger certainty:
+   - `0` = Extremely uncertain.
+   - `100` = Completely certain.
+5. Provide a concise explanation (1–2 sentences) clearly supporting your decision.
+
+# Response Format
+{format_instructions}
+"""
+
 TOPIC_INSTRUCTIONS = """
 # Role and goal
 You are a content classification agent specialized in Mozilla's "{product}" product support forums.
@@ -119,6 +162,34 @@ topic_parser = StructuredOutputParser.from_response_schemas(
     )
 )
 
+product_parser = StructuredOutputParser.from_response_schemas(
+    (
+        ResponseSchema(
+            name="product",
+            type="str",
+            description=(
+                "The Mozilla product selected for reassignment or null if no reassignment"
+                " should be made."
+            ),
+        ),
+        ResponseSchema(
+            name="confidence",
+            type="int",
+            description=(
+                "An integer from 0 to 100 that indicates the level of confidence in the"
+                " product reassignment decision, with 0 representing the lowest confidence"
+                " and 100 the highest."
+            ),
+        ),
+        ResponseSchema(
+            name="reason",
+            type="str",
+            description="The reason for reassigning to the selected product "
+            " or for not reassigning.",
+        ),
+    )
+)
+
 
 spam_prompt = ChatPromptTemplate(
     (
@@ -134,3 +205,11 @@ topic_prompt = ChatPromptTemplate(
         ("human", USER_QUESTION),
     )
 ).partial(format_instructions=topic_parser.get_format_instructions())
+
+
+product_prompt = ChatPromptTemplate(
+    (
+        ("system", PRODUCT_INSTRUCTIONS),
+        ("human", USER_QUESTION),
+    )
+).partial(format_instructions=product_parser.get_format_instructions())
