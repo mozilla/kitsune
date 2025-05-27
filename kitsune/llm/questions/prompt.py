@@ -16,7 +16,7 @@ A question is spam if **at least one** of these criteria applies:
 - Encourages illegal, unethical, or dangerous behavior.
 - Promotes political views or propaganda unrelated to the product.
 - Is extremely short (e.g., less than 10 words), overly vague, or the primary purpose of the question cannot be understood from the text.
-- Intent or relevance to Mozilla's "{product}" cannot be determined.
+- Its intent cannot be determined.
 - Contains excessive random symbols, emojis, or gibberish text.
 - Contains QR codes or links/images directing users off-site.
 - Clearly unrelated to Mozilla's "{product}" product features, functionality or purpose.
@@ -29,6 +29,7 @@ Given a user question, follow these steps:
    - `0` = Extremely uncertain.
    - `100` = Completely certain.
 4. Provide a concise explanation supporting your decision.
+5. **Determine if the question may have been classified under the wrong product:** This should be true if and only if the question represents a legitimate support request, **and** the **sole** reason for classifying the question as spam is because it's clearly unrelated to Mozilla's "{product}" product.
 
 # Response format
 {format_instructions}
@@ -142,6 +143,11 @@ spam_parser = StructuredOutputParser.from_response_schemas(
             name="reason",
             type="str",
             description="The reason for identifying the question as spam or not spam.",
+        ),
+        ResponseSchema(
+            name="maybe_misclassified",
+            type="bool",
+            description="A boolean that when true indicates that the question may be classified under the wrong product",
         ),
     )
 )
