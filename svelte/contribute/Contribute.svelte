@@ -76,7 +76,7 @@
                         {
                             link: "/kb/how-contribute-support-forum",
                             text: gettext(
-                                "Learn more about forum contribution"
+                                "Learn more about forum contribution",
                             ),
                         },
                     ],
@@ -84,7 +84,7 @@
                 fact: {
                     number: gettext("1 → 1000"),
                     text: gettext(
-                        "Solving one issue helps up to 1000 users a day"
+                        "Solving one issue helps up to 1000 users a day",
                     ),
                 },
             }}
@@ -123,7 +123,7 @@
                         {
                             link: "/contributors/kb-overview",
                             text: gettext(
-                                "Explore the Knowledge Base Dashboard"
+                                "Explore the Knowledge Base Dashboard",
                             ),
                         },
                     ],
@@ -132,7 +132,7 @@
                         {
                             link: "",
                             text: gettext(
-                                "Check the Needs Update column and start editing articles!"
+                                "Check the Needs Update column and start editing articles!",
                             ),
                         },
                     ],
@@ -147,7 +147,7 @@
                 fact: {
                     number: gettext("400 → 70+"),
                     text: gettext(
-                        "One article can be viewed by 400 million users and translated into 70+ languages"
+                        "One article can be viewed by 400 million users and translated into 70+ languages",
                     ),
                 },
             }}
@@ -156,7 +156,7 @@
             <h2>{gettext("Share your wisdom with the world!")}</h2>
             <p>
                 {gettext(
-                    "If you like writing and teaching, then the Knowledge Base (KB) is the place for you. We need contributors that can write, edit or proofread articles in English. Thousands of people are accessing our Knowledge Base every week. Imagine how many will be helped by you!"
+                    "If you like writing and teaching, then the Knowledge Base (KB) is the place for you. We need contributors that can write, edit or proofread articles in English. Thousands of people are accessing our Knowledge Base every week. Imagine how many will be helped by you!",
                 )}
             </p>
         </Area>
@@ -180,7 +180,7 @@
                         {
                             link: "/kb/locales",
                             text: gettext(
-                                "Check if your locale is available and go to your localization dashboard"
+                                "Check if your locale is available and go to your localization dashboard",
                             ),
                         },
                     ],
@@ -196,7 +196,7 @@
                         {
                             link: "/kb/how-contribute-article-localization",
                             text: gettext(
-                                "Learn more about localization contribution"
+                                "Learn more about localization contribution",
                             ),
                         },
                     ],
@@ -204,7 +204,7 @@
                 fact: {
                     number: gettext("400 → 70+"),
                     text: gettext(
-                        "One article can be viewed by 400 million users and translated into 70+ languages"
+                        "One article can be viewed by 400 million users and translated into 70+ languages",
                     ),
                 },
             }}
@@ -215,125 +215,7 @@
             </h2>
             <p>
                 {gettext(
-                    "Help articles are not available in your language yet? You want to join the amazing team translating them? You will help millions of users in your language. Pretty heroic, right?"
-                )}
-            </p>
-        </Area>
-    </Route>
-    <Route path="social" let:location>
-        <Area
-            area={gettext("Social support")}
-            images={[imgDotsPng, imgDotsWebp, imgDots2xWebp]}
-            {location}
-            steps={{
-                steps: [
-                    [
-                        Linkable,
-                        {
-                            link: "/kb/social-support-guidelines",
-                            text: gettext("Learn the basic guidelines"),
-                        },
-                    ],
-                    [
-                        Linkable,
-                        {
-                            link: "https://bit.ly/conversocial-sign-up",
-                            text: gettext("Request access to Conversocial"),
-                        },
-                    ],
-                    [
-                        Linkable,
-                        {
-                            link: "",
-                            text: gettext(
-                                "Start replying from @FirefoxSupport!"
-                            ),
-                        },
-                    ],
-                    [
-                        Linkable,
-                        {
-                            link: "/kb/how-contribute-social-support",
-                            text: gettext(
-                                "Learn more about social support contribution"
-                            ),
-                        },
-                    ],
-                ],
-                fact: {
-                    number: gettext("1 → 300+"),
-                    text: gettext(
-                        "Help 300+ users who reach out for support on Twitter every month"
-                    ),
-                },
-            }}
-        >
-            <h1>{gettext("Support users on social media")}</h1>
-            <h2>
-                {gettext("Let’s help people so they can keep using Firefox!")}
-            </h2>
-            <p>
-                {gettext(
-                    "Many users ask support questions on social media. With social support, you can help them by reply to their questions from our official account, @FirefoxSupport. Pretty cool, right?"
-                )}
-            </p>
-        </Area>
-    </Route>
-    <Route path="store" let:location>
-        <Area
-            area={gettext("Mobile Store support")}
-            images={[imgHandsPng, imgHandsWebp, imgHands2xWebp]}
-            {location}
-            steps={{
-                steps: [
-                    [
-                        Linkable,
-                        {
-                            link: "/kb/get-started-mobile-support",
-                            text: gettext("Learn the basic guidelines"),
-                        },
-                    ],
-                    [
-                        Linkable,
-                        {
-                            link: "https://bit.ly/conversocial-sign-up",
-                            text: gettext("Request access to Conversocial"),
-                        },
-                    ],
-                    [
-                        Linkable,
-                        {
-                            link: "",
-                            text: gettext("Start replying to app reviews!"),
-                        },
-                    ],
-                    [
-                        Linkable,
-                        {
-                            link: "/kb/how-contribute-mobile-support-start-here",
-                            text: gettext(
-                                "Learn more about mobile store support contribution"
-                            ),
-                        },
-                    ],
-                ],
-                fact: {
-                    number: gettext("1 → 20k+"),
-                    text: gettext(
-                        "Help 20K+ users who leave reviews in mobile store every month"
-                    ),
-                },
-            }}
-        >
-            <h1>{gettext("Support Firefox users on mobile store")}</h1>
-            <h2>
-                {gettext(
-                    "Help us respond to app reviews for our mobile products!"
-                )}
-            </h2>
-            <p>
-                {gettext(
-                    "Smartphones are taking over the world. Nowdays, many people prefer to app reviews instead of going to the support forum. By joining, you can help them by replying to their reviews from the comfort of your desk. Pretty simple, right?"
+                    "Help articles are not available in your language yet? You want to join the amazing team translating them? You will help millions of users in your language. Pretty heroic, right?",
                 )}
             </p>
         </Area>
