@@ -12,10 +12,7 @@ from kitsune.llm.questions.prompt import (
     topic_prompt,
 )
 from kitsune.llm.utils import get_llm
-
-# TODO:
-# from kitsune.products.utils import get_products, get_taxonomy
-from kitsune.products.utils import get_taxonomy
+from kitsune.products.utils import get_products, get_taxonomy
 
 HIGH_CONFIDENCE_THRESHOLD = 75
 LOW_CONFIDENCE_THRESHOLD = 60
@@ -65,8 +62,7 @@ def classify_question(question: "Question") -> dict[str, Any]:
         if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
             return {"action": action, "product_result": {}}
 
-        # TODO:
-        # payload["products"] = get_products(output_format="JSON")
+        payload["products"] = get_products(output_format="JSON")
         product_result = product_classification_chain.invoke(payload)
         new_product = product_result.get("product")
 
@@ -107,5 +103,6 @@ def classify_question(question: "Question") -> dict[str, Any]:
     pipeline = RunnablePassthrough.assign(spam_result=spam_detection_chain) | RunnableLambda(
         decision_lambda
     )
+
     result: dict[str, Any] = pipeline.invoke(payload)
     return result

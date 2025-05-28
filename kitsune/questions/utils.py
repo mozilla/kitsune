@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
+from sentry_sdk import capture_exception
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import ModerationAction
@@ -170,15 +171,72 @@ def flag_question(
         flagged_object.save()
 
 
+def get_object_by_title(model, title, manager=None):
+    try:
+        obj = (manager or model.objects).get(title=title)
+    except (model.DoesNotExist, getattr(model, "MultipleObjectsReturned", Exception)) as exc:
+        capture_exception(exc)
+    else:
+        return obj
+
+
+def update_question_fields_from_classification(question, result, sumo_bot):
+    product_result = result.get("product_result", {})
+    topic_result = result.get("topic_result", {})
+    new_product_title = product_result.get("product")
+    new_topic_title = topic_result.get("topic")
+
+    update_fields = {}
+
+    if new_product_title and question.product.title != new_product_title:
+
+        if new_product := get_object_by_title(
+            Product,
+            new_product_title,
+            manager=Product.active,
+        ):
+            update_fields["product"] = new_product
+
+    if new_topic_title and (
+        topic := get_object_by_title(
+            Topic,
+            new_topic_title,
+            manager=Topic.active,
+        )
+    ):
+        update_fields["topic"] = topic
+
+    if update_fields:
+        for field, value in update_fields.items():
+            setattr(question, field, value)
+        question.save()
+        question.clear_cached_tags()
+        question.tags.clear()
+        question.auto_tag()
+
+        if topic := update_fields.get("topic"):
+            flag_question(
+                question,
+                by_user=sumo_bot,
+                notes=(
+                    f"LLM classified as {topic.title}, for the following reason:\n"
+                    f"{topic_result.get('reason', '')}"
+                ),
+                status=FlaggedObject.FLAG_ACCEPTED,
+            )
+
+
 def process_classification_result(
     question: Question,
     result: dict[str, Any],
 ) -> None:
     """
     Process the classification result from the LLM and take moderation action.
+    Handles spam, flag review, and updates to product and topic if suggested by the classifier.
     """
     sumo_bot = Profile.get_sumo_bot()
     action = result.get("action")
+
     match action:
         case ModerationAction.SPAM:
             question.mark_as_spam(sumo_bot)
@@ -188,29 +246,9 @@ def process_classification_result(
                 by_user=sumo_bot,
                 notes=(
                     "LLM flagged for manual review, for the following reason:\n"
-                    f"{result['spam_result']['reason']}"
+                    f"{result.get('spam_result', {}).get('reason', '')}"
                 ),
                 reason=FlaggedObject.REASON_SPAM,
             )
         case _:
-            if topic_title := result["topic_result"].get("topic"):
-                try:
-                    topic = Topic.active.get(title=topic_title, visible=True)
-                except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
-                    return
-                else:
-                    flag_question(
-                        question,
-                        by_user=sumo_bot,
-                        notes=(
-                            f"LLM classified as {topic.title}, for the following reason:\n"
-                            f"{result['topic_result']['reason']}"
-                        ),
-                        status=FlaggedObject.FLAG_ACCEPTED,
-                    )
-                    if question.topic:
-                        question.tags.remove(question.topic.slug)
-                    question.topic = topic
-                    question.save()
-                    question.tags.add(topic.slug)
-                    question.clear_cached_tags()
+            update_question_fields_from_classification(question, result, sumo_bot)

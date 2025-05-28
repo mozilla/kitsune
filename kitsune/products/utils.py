@@ -1,7 +1,7 @@
 import json
 
-from django.db.models import Prefetch, Q
 import yaml
+from django.db.models import Prefetch, Q
 
 from kitsune.products.models import Product, Topic
 
