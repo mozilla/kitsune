@@ -677,6 +677,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "kitsune.notifications",
     "kitsune.journal",
     "kitsune.tidings",
+    "kitsune.llm",
     "rest_framework",
     "statici18n",
     "watchman",
