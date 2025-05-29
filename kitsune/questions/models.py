@@ -212,7 +212,10 @@ class Question(AAQBase):
                 flag_question(
                     self,
                     by_user=Profile.get_sumo_bot(),
-                    notes="Automatically flagged for topic moderation: flagit-spam-autoflag is active",
+                    notes=(
+                        "Automatically flagged for topic moderation:"
+                        " flagit-spam-autoflag is active"
+                    ),
                 )
             else:
                 # Either automatically classify the question or add it to the moderation queue
