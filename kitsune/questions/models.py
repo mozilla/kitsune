@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 import actstream
 import actstream.actions
+import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -190,6 +191,7 @@ class Question(AAQBase):
 
     def save(self, update=False, *args, **kwargs):
         """Override save method to take care of updated if requested."""
+
         new = not self.id
 
         if not new:
@@ -203,8 +205,21 @@ class Question(AAQBase):
             # actstream
             # Authors should automatically follow their own questions.
             actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
-            # Either automatically classify the question or add it to the moderation queue
-            question_classifier.delay(self.id)
+            if waffle.switch_is_active("flagit-spam-autoflag"):
+                from kitsune.questions.utils import flag_question
+                from kitsune.users.models import Profile
+
+                flag_question(
+                    self,
+                    by_user=Profile.get_sumo_bot(),
+                    notes=(
+                        "Automatically flagged for topic moderation:"
+                        " flagit-spam-autoflag is active"
+                    ),
+                )
+            else:
+                # Either automatically classify the question or add it to the moderation queue
+                question_classifier.delay(self.id)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.
