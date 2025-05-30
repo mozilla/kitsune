@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.conf import settings
 
 
 class LLMConfig(AppConfig):
@@ -8,5 +9,6 @@ class LLMConfig(AppConfig):
     def ready(self):
         from kitsune.llm.utils import get_llm
 
-        # pre-warm the LLM cache
-        get_llm()
+        if settings.GOOGLE_CLOUD_PROJECT:
+            # pre-warm the LLM cache
+            get_llm()
