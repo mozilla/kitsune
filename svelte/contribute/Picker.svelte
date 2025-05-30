@@ -5,8 +5,6 @@
     import forumImg from "./img/Support Forum.svg";
     import kbImg from "./img/Support Articles.svg";
     import l10nImg from "./img/Localization.svg";
-    import socialImg from "./img/Social Support.svg";
-    import storeImg from "./img/Play Store.svg";
 
     export let location;
 </script>
@@ -34,16 +32,6 @@
             {#if location?.pathname != "/l10n"}
                 <Tile to="../l10n" img={l10nImg}>
                     {gettext("Localize support content")}
-                </Tile>
-            {/if}
-            {#if location?.pathname != "/social"}
-                <Tile to="../social" img={socialImg}>
-                    {gettext("Provide support on social channels")}
-                </Tile>
-            {/if}
-            {#if location?.pathname != "/store"}
-                <Tile to="../store" img={storeImg}>
-                    {gettext("Respond to mobile store reviews")}
                 </Tile>
             {/if}
         </ul>

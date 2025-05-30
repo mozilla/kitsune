@@ -50,20 +50,6 @@ Localize help articles to your local language
 {{ add_utm('https://support.mozilla.org/en-US/contribute/l10n', 'contribute', source='new-l10n-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
-{% trans %}
-Help users on social media
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/en-US/contribute/social', 'contribute', source='new-social-contributor') }}
-
-{% trans %}
-Respond to mobile store reviews
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/en-US/contribute/store', 'contribute', source='new-social-contributor') }}
-
-
-{#- L10n: This is an email.  Whitespace matters! -#}
 {{ _('Great! Now, how can I connect to other contributors?') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
