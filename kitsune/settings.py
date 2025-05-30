@@ -1337,8 +1337,6 @@ SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="Staff Content Team")
 
 USER_INACTIVITY_DAYS = config("USER_INACTIVITY_DAYS", default=1095, cast=int)
 
-if DEV:
-    GOOGLE_APPLICATION_CREDENTIALS = config("GOOGLE_APPLICATION_CREDENTIALS", default="")
 GOOGLE_CLOUD_PROJECT = config("GOOGLE_CLOUD_PROJECT", default="")
 
 # shell_plus conf
