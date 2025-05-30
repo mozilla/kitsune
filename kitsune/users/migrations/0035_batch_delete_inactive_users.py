@@ -79,10 +79,10 @@ def delete_inactive_users(apps, schema_editor):
         # Progress reporting every 1000 users
         if processed_count % 1000 == 0:
             elapsed_time = time.time() - start_time
-            progress_pct = (processed_count/total_users*100) if total_users > 0 else 0
-            avg_time = elapsed_time / processed_count if processed_count > 0 else 0
-            remaining_time = (total_users - processed_count) * avg_time if processed_count > 0 else 0
-            current_rate = processed_count / elapsed_time * 60 if elapsed_time > 0 else 0
+            progress_pct = processed_count / total_users * 100
+            avg_time = elapsed_time / processed_count
+            remaining_time = (total_users - processed_count) * avg_time
+            current_rate = processed_count / elapsed_time * 60
             
             print(
                 f"Progress: {processed_count:,}/{total_users:,} ({progress_pct:.1f}%) | "
@@ -118,10 +118,10 @@ def delete_inactive_users(apps, schema_editor):
         # Progress reporting every 1000 users
         if processed_count % 1000 == 0:
             elapsed_time = time.time() - start_time
-            progress_pct = (processed_count/total_users*100) if total_users > 0 else 0
-            avg_time = elapsed_time / processed_count if processed_count > 0 else 0
-            remaining_time = (total_users - processed_count) * avg_time if processed_count > 0 else 0
-            current_rate = processed_count / elapsed_time * 60 if elapsed_time > 0 else 0
+            progress_pct = processed_count / total_users * 100
+            avg_time = elapsed_time / processed_count
+            remaining_time = (total_users - processed_count) * avg_time
+            current_rate = processed_count / elapsed_time * 60
             
             print(
                 f"Progress: {processed_count:,}/{total_users:,} ({progress_pct:.1f}%) | "
