@@ -1337,9 +1337,11 @@ SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="Staff Content Team")
 
 USER_INACTIVITY_DAYS = config("USER_INACTIVITY_DAYS", default=1095, cast=int)
 
-if DEV:
-    GOOGLE_APPLICATION_CREDENTIALS = config("GOOGLE_APPLICATION_CREDENTIALS", default="")
+# GOOGLE_CLOUD_PROJECT is required for making LLM calls.
 GOOGLE_CLOUD_PROJECT = config("GOOGLE_CLOUD_PROJECT", default="")
+# GOOGLE_APPLICATION_CREDENTIALS is necessary only for making LLM calls during local
+# development. It should NEVER be defined for the dev, stage, and prod environments.
+GOOGLE_APPLICATION_CREDENTIALS = config("GOOGLE_APPLICATION_CREDENTIALS", default="")
 
 # shell_plus conf
 SHELL_PLUS_DONT_LOAD = ["silk"]
