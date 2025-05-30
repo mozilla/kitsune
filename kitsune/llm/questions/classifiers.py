@@ -7,6 +7,7 @@ from kitsune.llm.questions.prompt import spam_parser, spam_prompt, topic_parser,
 from kitsune.llm.utils import get_llm
 from kitsune.products.utils import get_taxonomy
 
+DEFAULT_LLM_MODEL = "gemini-2.5-flash-preview-04-17"
 HIGH_CONFIDENCE_THRESHOLD = 75
 LOW_CONFIDENCE_THRESHOLD = 60
 
@@ -25,7 +26,7 @@ def classify_question(question: "Question") -> dict[str, Any]:
     Analyze a question for spam and, if not spam or low confidence, classify the topic.
     Returns a dict with keys: action, spam_result, topic_result (optional).
     """
-    llm = get_llm()
+    llm = get_llm(model_name=DEFAULT_LLM_MODEL)
 
     product = question.product
     payload: dict[str, Any] = {
