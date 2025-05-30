@@ -1,13 +1,11 @@
-from functools import lru_cache
+from functools import cache
 
 from langchain.chat_models.base import BaseChatModel
 
-DEFAULT_LLM_MODEL = "gemini-2.5-flash-preview-04-17"
 
-
-@lru_cache(maxsize=1)
+@cache
 def get_llm(
-    model_name: str = DEFAULT_LLM_MODEL,
+    model_name: str,
     temperature: int = 1,
     max_tokens: int | None = None,
     max_retries: int = 2,
