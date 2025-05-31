@@ -176,41 +176,71 @@ def process_classification_result(
 ) -> None:
     """
     Process the classification result from the LLM and take moderation action.
+    Handles spam, flag review, and updates to product and topic if suggested by the classifier.
     """
     sumo_bot = Profile.get_sumo_bot()
     action = result.get("action")
-    match action:
-        case ModerationAction.SPAM:
-            question.mark_as_spam(sumo_bot)
-        case ModerationAction.FLAG_REVIEW:
+
+    if action == ModerationAction.SPAM:
+        question.mark_as_spam(sumo_bot)
+        return
+    elif action == ModerationAction.FLAG_REVIEW:
+        flag_question(
+            question,
+            by_user=sumo_bot,
+            notes=(
+                "LLM flagged for manual review, for the following reason:\n"
+                f"{result.get('spam_result', {}).get('reason', '')}"
+            ),
+            reason=FlaggedObject.REASON_SPAM,
+        )
+        return
+
+    product_result = result.get("product_result", {})
+    topic_result = result.get("topic_result", {})
+    new_product_title = product_result.get("product")
+    new_topic_title = topic_result.get("topic")
+
+    update_kwargs = {}
+
+    if (
+        new_product_title
+        and hasattr(question, "product")
+        and getattr(question.product, "title", None) != new_product_title
+    ):
+        from kitsune.products.models import Product
+
+        try:
+            new_product = Product.objects.get(title=new_product_title)
+        except Product.DoesNotExist:
+            log.warning(
+                f"LLM suggested product '{new_product_title}' does not exist. Skipping product update."
+            )
+        else:
+            update_kwargs["product"] = new_product
+
+    if new_topic_title:
+        try:
+            topic = Topic.active.get(title=new_topic_title, visible=True)
+        except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
+            log.warning(
+                f"LLM suggested topic '{new_topic_title}' is invalid. Skipping topic update."
+            )
+        else:
+            update_kwargs["topic"] = topic
+
+    if update_kwargs:
+        question.save(**update_kwargs)
+        question.clear_cached_tags()
+        question.auto_tag()
+
+        if update_kwargs.get("topic"):
             flag_question(
                 question,
                 by_user=sumo_bot,
                 notes=(
-                    "LLM flagged for manual review, for the following reason:\n"
-                    f"{result['spam_result']['reason']}"
+                    f"LLM classified as {topic.title}, for the following reason:\n"
+                    f"{topic_result.get('reason', '')}"
                 ),
-                reason=FlaggedObject.REASON_SPAM,
+                status=FlaggedObject.FLAG_ACCEPTED,
             )
-        case _:
-            if topic_title := result["topic_result"].get("topic"):
-                try:
-                    topic = Topic.active.get(title=topic_title, visible=True)
-                except (Topic.DoesNotExist, Topic.MultipleObjectsReturned):
-                    return
-                else:
-                    flag_question(
-                        question,
-                        by_user=sumo_bot,
-                        notes=(
-                            "LLM classified as {topic.title}, for the following reason:\n"
-                            f"{result['topic_result']['reason']}"
-                        ),
-                        status=FlaggedObject.FLAG_ACCEPTED,
-                    )
-                    if question.topic:
-                        question.tags.remove(question.topic.slug)
-                    question.topic = topic
-                    question.save()
-                    question.tags.add(topic.slug)
-                    question.clear_cached_tags()
