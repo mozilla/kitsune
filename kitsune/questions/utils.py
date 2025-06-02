@@ -203,7 +203,7 @@ def process_classification_result(
                         question,
                         by_user=sumo_bot,
                         notes=(
-                            "LLM classified as {topic.title}, for the following reason:\n"
+                            f"LLM classified as {topic.title}, for the following reason:\n"
                             f"{result['topic_result']['reason']}"
                         ),
                         status=FlaggedObject.FLAG_ACCEPTED,
