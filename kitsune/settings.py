@@ -746,7 +746,9 @@ ES_TIMEOUT = 5  # Timeout for querying requests
 ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
 ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
-ES_ENABLE_CONSOLE_LOGGING = config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
+ES_ENABLE_CONSOLE_LOGGING = (
+    True if DEV else config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
+)
 
 # Pass parameters to the ES client
 # like "search_type": "dfs_query_then_fetch"
