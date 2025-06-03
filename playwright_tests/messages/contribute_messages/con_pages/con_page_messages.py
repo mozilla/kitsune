@@ -17,8 +17,6 @@ class ContributePageMessages:
     ANSWER_QUESTIONS_CARD_TITLE = "Answer questions in the support forum"
     WRITE_ARTICLES_CARD_TITLE = "Write help articles"
     LOCALIZE_CONTENT_CARD_TITLE = "Localize support content"
-    PROVIDE_SUPPORT_ON_SOCIAL_CHANNELS_CARD_TITLE = "Provide support on social channels"
-    RESPOND_TO_MOBILE_STORE_REVIEWS_CARD_TITLE = "Respond to mobile store reviews"
     ABOUT_US_HEADER = "About us"
     ABOUT_US_CONTENT = (
         "Mozilla Support is a community of enthusiastic "

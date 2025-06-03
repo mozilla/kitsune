@@ -11,12 +11,8 @@ from playwright_tests.messages.contribute_messages.con_pages.con_help_articles_m
     ContributeHelpArticlesMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_localization_messages import (
     ContributeLocalizationMessages)
-from playwright_tests.messages.contribute_messages.con_pages.con_mobile_support_messages import (
-    ContributeMobileSupportMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
-from playwright_tests.messages.contribute_messages.con_pages.con_social_support_messages import (
-    ContributeSocialSupportMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -64,9 +60,7 @@ def test_contribute_localization_page_text(page: Page):
 
         other_ways_to_contribute_card_titles = [
             ContributeLocalizationMessages.ANSWER_QUESTIONS_IN_SUPPORT_FORUM_TITLE,
-            ContributeLocalizationMessages.WRITE_ARTICLES_CARD_TITLE,
-            ContributeLocalizationMessages.PROVIDE_SUPPORT_ON_SOCIAL_CHANNELS_CARD_TITLE,
-            ContributeLocalizationMessages.RESPOND_TO_MOBILE_STORE_REVIEWS_CARD_TITLE,
+            ContributeLocalizationMessages.WRITE_ARTICLES_CARD_TITLE
         ]
         assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_cards(
         ) == other_ways_to_contribute_card_titles
@@ -142,9 +136,7 @@ def test_contribute_localization_other_ways_to_contribute_redirect_to_the_correc
 
     ways_to_contribute_links = [
         ContributeForumMessages.STAGE_CONTRIBUTE_FORUM_PAGE_URL,
-        ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL,
-        ContributeSocialSupportMessages.STAGE_CONTRIBUTE_SOCIAL_SUPPORT_PAGE_URL,
-        ContributeMobileSupportMessages.STAGE_CONTRIBUTE_MOBILE_SUPPORT_PAGE_URL,
+        ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
     ]
 
     counter = 0

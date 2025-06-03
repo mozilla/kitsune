@@ -11,12 +11,8 @@ from playwright_tests.messages.contribute_messages.con_pages.con_help_articles_m
     ContributeHelpArticlesMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_localization_messages import (
     ContributeLocalizationMessages)
-from playwright_tests.messages.contribute_messages.con_pages.con_mobile_support_messages import (
-    ContributeMobileSupportMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
-from playwright_tests.messages.contribute_messages.con_pages.con_social_support_messages import (
-    ContributeSocialSupportMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -53,9 +49,7 @@ def test_contribute_page_text(page: Page):
     card_titles = [
         ContributePageMessages.ANSWER_QUESTIONS_CARD_TITLE,
         ContributePageMessages.WRITE_ARTICLES_CARD_TITLE,
-        ContributePageMessages.LOCALIZE_CONTENT_CARD_TITLE,
-        ContributePageMessages.PROVIDE_SUPPORT_ON_SOCIAL_CHANNELS_CARD_TITLE,
-        ContributePageMessages.RESPOND_TO_MOBILE_STORE_REVIEWS_CARD_TITLE,
+        ContributePageMessages.LOCALIZE_CONTENT_CARD_TITLE
     ]
 
     with check, allure.step("Verifying that the correct list of ways to contribute_messages "
@@ -117,9 +111,7 @@ def test_way_to_contribute_redirects_to_correct_page(page: Page):
     ways_to_contribute_links = [
         ContributeForumMessages.STAGE_CONTRIBUTE_FORUM_PAGE_URL,
         ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL,
-        ContributeLocalizationMessages.STAGE_CONTRIBUTE_LOCALIZATION_PAGE_URL,
-        ContributeSocialSupportMessages.STAGE_CONTRIBUTE_SOCIAL_SUPPORT_PAGE_URL,
-        ContributeMobileSupportMessages.STAGE_CONTRIBUTE_MOBILE_SUPPORT_PAGE_URL,
+        ContributeLocalizationMessages.STAGE_CONTRIBUTE_LOCALIZATION_PAGE_URL
     ]
 
     counter = 0

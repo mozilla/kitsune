@@ -26,5 +26,3 @@ class ContributeHelpArticlesMessages:
     OTHER_WAYS_TO_CONTRIBUTE_HEADER = "Other ways to contribute"
     ANSWER_QUESTIONS_IN_SUPPORT_FORUM_TITLE = "Answer questions in the support forum"
     LOCALIZE_CONTENT_CARD_TITLE = "Localize support content"
-    PROVIDE_SUPPORT_ON_SOCIAL_CHANNELS_CARD_TITLE = "Provide support on social channels"
-    RESPOND_TO_MOBILE_STORE_REVIEWS_CARD_TITLE = "Respond to mobile store reviews"
