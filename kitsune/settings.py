@@ -747,6 +747,7 @@ ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
 ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
 ES_ENABLE_CONSOLE_LOGGING = config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
+
 # Pass parameters to the ES client
 # like "search_type": "dfs_query_then_fetch"
 ES_SEARCH_PARAMS = {"request_timeout": ES_TIMEOUT}
@@ -1179,10 +1180,36 @@ REGEX_TIMEOUT = config("REGEX_TIMEOUT", default=5, cast=int)
 NANP_REGEX = re.compile(r"[0-9]{3}-?[a-zA-Z2-9][a-zA-Z0-9]{2}-?[a-zA-Z0-9]{4}")
 
 if ES_ENABLE_CONSOLE_LOGGING and DEV:
-    es_trace_logger = logging.getLogger("elasticsearch.trace")
-    es_trace_logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    es_trace_logger.addHandler(handler)
+    # Configure logging for Elasticsearch 9.x
+    es_logger = logging.getLogger("elasticsearch")
+    # Clear any existing handlers to prevent duplicates
+    es_logger.handlers.clear()
+    es_logger.setLevel(logging.DEBUG)
+    es_handler = logging.StreamHandler()
+    es_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("ES: %(message)s")
+    es_handler.setFormatter(formatter)
+    es_logger.addHandler(es_handler)
+    es_logger.propagate = False  # Prevent duplicate logging
+
+    # Configure transport logging for detailed request/response info including request bodies
+    transport_loggers = [
+        "elastic_transport",
+        "elastic_transport.transport",
+        "elastic_transport.node",
+        "elastic_transport.node_pool",
+    ]
+
+    for logger_name in transport_loggers:
+        transport_logger = logging.getLogger(logger_name)
+        transport_logger.handlers.clear()
+        transport_logger.setLevel(logging.DEBUG)  # Use DEBUG to see request bodies
+        transport_handler = logging.StreamHandler()
+        transport_handler.setLevel(logging.DEBUG)
+        transport_formatter = logging.Formatter(f"ES_TRANSPORT({logger_name}): %(message)s")
+        transport_handler.setFormatter(transport_formatter)
+        transport_logger.addHandler(transport_handler)
+        transport_logger.propagate = False  # Prevent duplicate logging
 
 # Zendesk Section
 ZENDESK_SUBDOMAIN = config("ZENDESK_SUBDOMAIN", default="")
