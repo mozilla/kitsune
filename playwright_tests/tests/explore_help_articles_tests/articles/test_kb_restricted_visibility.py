@@ -10,6 +10,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C2466509, C2483803, C2466510, C2466511, C2466512
+@pytest.mark.smokeTest
 @pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
 def test_kb_restrict_visibility(page: Page, is_template):
@@ -180,6 +181,7 @@ def test_kb_restrict_visibility(page: Page, is_template):
 
 
 # C2466516
+@pytest.mark.smokeTest
 @pytest.mark.kbRestrictedVisibility
 def test_restricted_visibility_in_search_results(page: Page):
     sumo_pages = SumoPages(page)

@@ -16,6 +16,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C954250
+@pytest.mark.smokeTest
 @pytest.mark.contributorDiscussionsThreads
 def test_new_thread_field_validations(page: Page):
     sumo_pages = SumoPages(page)

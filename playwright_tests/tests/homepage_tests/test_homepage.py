@@ -42,6 +42,7 @@ def test_join_our_community_card_has_the_correct_content(page: Page):
 
 
 # C876541
+@pytest.mark.smokeTest
 @pytest.mark.homePageTests
 def test_homepage_feature_articles_are_available_and_interactable(page: Page):
     sumo_pages = SumoPages(page)
@@ -70,6 +71,7 @@ def test_homepage_feature_articles_are_available_and_interactable(page: Page):
 
 
 # C873774
+@pytest.mark.smokeTest
 @pytest.mark.homePageTests
 def test_product_cards_are_functional_and_redirect_to_the_proper_support_page(page: Page):
     sumo_pages = SumoPages(page)

@@ -62,6 +62,7 @@ def test_learn_more_redirect(page: Page):
 
 
 # T5696738
+@pytest.mark.smokeTest
 @pytest.mark.productTopicsPage
 def test_aaq_redirect(page: Page):
     utilities = Utilities(page)

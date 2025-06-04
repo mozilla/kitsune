@@ -21,6 +21,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C891309, C2102170,  C2102168, C2489545, C910271
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleShowHistory
 def test_kb_article_removal(page: Page):
     utilities = Utilities(page)

@@ -13,6 +13,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C890363
+@pytest.mark.smokeTest
 @pytest.mark.contactSupportPage
 def test_contact_support_page_content(page: Page):
     sumo_pages = SumoPages(page)
@@ -41,6 +42,7 @@ def test_contact_support_page_content(page: Page):
 
 # C890368, C890387, C890388
 # T5696578, T5696592
+@pytest.mark.smokeTest
 @pytest.mark.contactSupportPage
 def test_contact_support_page_cards_redirect(page: Page):
     sumo_pages = SumoPages(page)
@@ -65,6 +67,7 @@ def test_contact_support_page_cards_redirect(page: Page):
 
 
 # T5696795
+@pytest.mark.smokeTest
 @pytest.mark.contactSupportPage
 def test_browse_all_product_forums_button_redirect(page: Page):
     sumo_pages = SumoPages(page)

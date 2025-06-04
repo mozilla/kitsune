@@ -201,6 +201,7 @@ def test_manage_firefox_account_redirects_to_firefox_account_settings_page(page:
 
 
 #  C1491461
+@pytest.mark.smokeTest
 @pytest.mark.editUserProfileTests
 def test_duplicate_usernames_are_not_allowed(page: Page):
     utilities = Utilities(page)
@@ -242,6 +243,7 @@ def test_duplicate_usernames_are_not_allowed(page: Page):
 
 
 #  C1491462
+@pytest.mark.smokeTest
 @pytest.mark.editUserProfileTests
 def test_profile_username_field_cannot_be_left_empty(page: Page):
     utilities = Utilities(page)
@@ -537,6 +539,7 @@ def test_profile_information(page: Page):
 
 
 # T5697906, T5697929
+@pytest.mark.smokeTest
 @pytest.mark.editUserProfileTests
 def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Page):
     utilities = Utilities(page)
@@ -589,6 +592,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
 
 
 # T5697928
+@pytest.mark.smokeTest
 @pytest.mark.editUserProfileTests
 def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: Page):
     utilities = Utilities(page)
@@ -656,6 +660,7 @@ def test_private_message_button_redirects_non_signed_in_users_to_the_fxa_login_f
 
 
 # C916055, C916054
+@pytest.mark.smokeTest
 @pytest.mark.editUserProfileTests
 def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: Page):
     utilities = Utilities(page)

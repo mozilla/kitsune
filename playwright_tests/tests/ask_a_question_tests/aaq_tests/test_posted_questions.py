@@ -62,6 +62,7 @@ def test_posted_question_details(page: Page, username):
 
 
 # T5696750, T5696753, C2103331
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 def test_edit_this_question_functionality_not_signed_in(page: Page):
     utilities = Utilities(page)
@@ -325,6 +326,7 @@ def test_delete_question_cancel_button(page: Page):
 
 # T5696750, T5696780, T5696781, T5696752
 # To add coverage for images as well
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("status", ['locked', 'archived'])
 def test_lock_and_archive_this_question(page: Page, status):
@@ -645,6 +647,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox):
 
 # To work on adding a check inside the moderate forum content page
 # T5696784, T5696750, T5696787,  T5696752
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 def test_mark_as_spam_functionality(page: Page):
     utilities = Utilities(page)
@@ -722,6 +725,7 @@ def test_mark_as_spam_functionality(page: Page):
 
 
 # T5696756, T5696758, T5696760
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['', 'TEST_ACCOUNT_13'])
 def test_question_topics(page: Page, username):
@@ -870,6 +874,7 @@ def test_email_updates_option_visibility(page: Page):
 
 
 # T5696771
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 def test_mark_reply_as_spam(page: Page):
     utilities = Utilities(page)
@@ -984,6 +989,7 @@ def test_mark_reply_as_spam(page: Page):
 # Need to expand this to contain additional text format.
 # C2191270, C2191259
 # T5696785
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_13', 'TEST_ACCOUNT_MODERATOR'])
 def test_edit_reply(page: Page, username):
@@ -1243,6 +1249,7 @@ def test_i_have_this_problem_too(page: Page):
 
 
 # T5696789
+@pytest.mark.smokeTest
 @pytest.mark.postedQuestions
 def test_solves_this_problem(page: Page):
     utilities = Utilities(page)

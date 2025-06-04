@@ -13,6 +13,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C891409
+@pytest.mark.smokeTest
 @pytest.mark.userProfile
 def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
     utilities = Utilities(page)
@@ -39,6 +40,7 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page):
 
 
 #  C891411, C891410
+@pytest.mark.smokeTest
 @pytest.mark.userProfile
 def test_my_profile_sign_out_button_functionality(page: Page):
     utilities = Utilities(page)

@@ -11,6 +11,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C2499112
+@pytest.mark.smokeTest
 @pytest.mark.recentRevisionsDashboard
 def test_recent_revisions_revision_availability(page: Page):
     utilities = Utilities(page)

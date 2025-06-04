@@ -129,6 +129,7 @@ def test_contributor_discussions_forums_title_redirect(page: Page):
             utilities.navigate_back()
 
 
+@pytest.mark.smokeTest
 @pytest.mark.contributorDiscussions
 @pytest.mark.parametrize("user", [None, 'simple_user', 'moderator'])
 def test_forum_moderators_availability(page: Page, user):
