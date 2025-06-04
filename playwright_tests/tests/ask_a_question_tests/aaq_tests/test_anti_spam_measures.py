@@ -59,6 +59,7 @@ def test_anti_spam_banner(page: Page, username):
 
 
 # C946274
+@pytest.mark.smokeTest
 @pytest.mark.antiSpamTests
 def test_valid_tld_in_question_comment(page: Page):
     sumo_pages = SumoPages(page)

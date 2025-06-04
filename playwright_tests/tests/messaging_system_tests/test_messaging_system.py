@@ -153,6 +153,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox):
 
 
 # C891419
+@pytest.mark.smokeTest
 @pytest.mark.messagingSystem
 def test_private_message_can_be_sent_via_new_message_page(page: Page):
     utilities = Utilities(page)
@@ -211,6 +212,7 @@ def test_private_message_can_be_sent_via_new_message_page(page: Page):
 
 
 # C891412, C891413
+@pytest.mark.smokeTest
 @pytest.mark.messagingSystem
 def test_navbar_options_redirect_to_the_correct_page_and_options_are_correctly_highlighted(
     page: Page
@@ -763,6 +765,7 @@ def test_messages_can_be_selected_and_deleted(page: Page):
 
 
 # C2566115, C2602253, C2602252
+@pytest.mark.smokeTest
 @pytest.mark.messagingSystem
 def test_group_messages_cannot_be_sent_by_non_staff_users(page: Page):
     utilities = Utilities(page)

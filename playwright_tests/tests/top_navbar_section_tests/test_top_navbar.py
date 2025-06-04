@@ -60,6 +60,7 @@ def test_number_of_options_signed_in(page: Page):
 
 
 # C2462866
+@pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
 def test_explore_by_product_redirects(page: Page):
     sumo_pages = SumoPages(page)
@@ -90,6 +91,7 @@ def test_explore_by_product_redirects(page: Page):
 
 
 # C2462867, C2663957
+@pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
 def test_explore_by_topic_redirects(page: Page):
     sumo_pages = SumoPages(page)
@@ -121,6 +123,7 @@ def test_explore_by_topic_redirects(page: Page):
 
 
 # C2462868
+@pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
 def test_browse_by_product_community_forum_redirect(page: Page):
     sumo_pages = SumoPages(page)
@@ -154,6 +157,7 @@ def test_browse_by_product_community_forum_redirect(page: Page):
 
 
 # C2462869
+@pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
 def test_browse_all_forum_threads_by_topic_redirect(page: Page):
     sumo_pages = SumoPages(page)
@@ -184,6 +188,7 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page):
 
 
 # T5696576, T5696591, C2663303
+@pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
 def test_ask_a_question_top_navbar_redirect(page: Page):
     sumo_pages = SumoPages(page)
@@ -215,6 +220,7 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
 
 
 # C2462871, C890957
+@pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
 def test_contribute_top_navbar_redirects(page: Page):
     sumo_pages = SumoPages(page)

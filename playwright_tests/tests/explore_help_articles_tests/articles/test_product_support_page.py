@@ -117,6 +117,7 @@ def test_product_support_page_info(page: Page):
 
 
 # C2903828 C2903829  C2903831
+@pytest.mark.smokeTest
 @pytest.mark.productSupportPage
 def test_product_support_frequent_topics_redirects(page: Page):
     utilities = Utilities(page)
@@ -147,6 +148,7 @@ def test_product_support_frequent_topics_redirects(page: Page):
 
 #  T5696580, C891335, C891336
 @pytest.mark.productSupportPage
+@pytest.mark.smokeTest
 def test_product_support_page_featured_articles_redirect(page: Page, is_chromium):
     if is_chromium:
         pytest.skip("Skipping this test for chromium browser")
@@ -197,6 +199,7 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
 
 
 # C890932
+@pytest.mark.smokeTest
 @pytest.mark.productSupportPage
 def test_still_need_help_button_redirect(page: Page):
     utilities = Utilities(page)

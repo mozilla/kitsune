@@ -139,6 +139,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
 
 
 # C2489548
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleTranslation
 def test_ready_for_localization_articles_dashboard_status(page: Page):
     utilities = Utilities(page)
@@ -222,6 +223,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
 
 
 # C2490043
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleTranslation
 def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(page: Page):
     utilities = Utilities(page)

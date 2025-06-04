@@ -15,6 +15,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C890940, C2243447
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', '', 'TEST_ACCOUNT_MODERATOR'])
 def test_kb_editing_tools_visibility(page: Page, username):
@@ -160,6 +161,7 @@ def test_non_admin_users_kb_article_submission(page: Page):
 
 
 # C2081446, C2081447, C2490049,  C2490051
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 def test_articles_revision_page_and_revision_approval(page: Page):
     utilities = Utilities(page)
@@ -483,6 +485,7 @@ def test_articles_discussions_not_allowed(page: Page):
 
 
 # C2091665
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 def test_kb_article_title_and_slug_validations(page: Page):
     utilities = Utilities(page)
@@ -920,6 +923,7 @@ def test_kb_article_keyword_and_summary_update(page: Page):
 
 
 # C2243447, C2243449
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 def test_edit_article_metadata_title(page: Page):
     utilities = Utilities(page)
@@ -985,6 +989,7 @@ def test_edit_article_metadata_title(page: Page):
 
 
 # C2243450, C2091589
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 def test_edit_article_metadata_slug(page: Page):
     utilities = Utilities(page)
@@ -1603,6 +1608,7 @@ def test_article_update_and_frequent_topics_cards(page: Page):
 
 
 # C2903948
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 def test_obsolete_articles_and_frequent_topics_cards(page: Page):
     utilities = Utilities(page)
@@ -1686,6 +1692,7 @@ def test_ignored_article_types_from_frequent_topics_cards(page: Page, category):
 
 
 # C2903871 C2903873 C2903874
+@pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
 def test_article_topic_and_product_change(page: Page):
     utilities = Utilities(page)

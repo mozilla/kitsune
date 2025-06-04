@@ -306,6 +306,7 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
 
 
 # C2266378, C2489548
+@pytest.mark.smokeTest
 @pytest.mark.kbDashboard
 def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
     utilities = Utilities(page)
@@ -338,6 +339,7 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
 
 
 # C2266378
+@pytest.mark.smokeTest
 @pytest.mark.kbDashboard
 def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
     utilities = Utilities(page)
@@ -380,6 +382,7 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
 
 
 # C2875533
+@pytest.mark.smokeTest
 @pytest.mark.kbDashboard
 def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
     utilities = Utilities(page)
@@ -512,6 +515,7 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
 
 
 # C2875537
+@pytest.mark.smokeTest
 @pytest.mark.kbDashboard
 def test_ready_for_l10n_status_update_via_history_page(page: Page):
     utilities = Utilities(page)

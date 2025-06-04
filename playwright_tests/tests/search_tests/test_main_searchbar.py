@@ -10,6 +10,7 @@ from pytest_check import check
 
 
 # C890369
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_product_solutions_page(page: Page):
     sumo_pages = SumoPages(page)
@@ -40,6 +41,7 @@ def test_searchbar_functionality_product_solutions_page(page: Page):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
 
 
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_product_support_page(page: Page):
     sumo_pages = SumoPages(page)
@@ -70,6 +72,7 @@ def test_searchbar_functionality_product_support_page(page: Page):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
 
 
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_explore_by_topic_page(page: Page):
     sumo_pages = SumoPages(page)
@@ -102,6 +105,7 @@ def test_searchbar_functionality_explore_by_topic_page(page: Page):
 
 
 # C891284
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_product_community_forum_page(page: Page):
     sumo_pages = SumoPages(page)
@@ -133,6 +137,7 @@ def test_searchbar_functionality_product_community_forum_page(page: Page):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
 
 
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Page):
     sumo_pages = SumoPages(page)
@@ -164,6 +169,7 @@ def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Pa
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
 
 
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_on_aaq_page(page: Page):
     sumo_pages = SumoPages(page)
@@ -211,6 +217,7 @@ def test_searchbar_functionality_on_aaq_page(page: Page):
 
 
 # C890835
+@pytest.mark.smokeTest
 @pytest.mark.searchTests
 def test_searchbar_functionality_on_article_page(page: Page):
     sumo_pages = SumoPages(page)

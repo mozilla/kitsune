@@ -12,6 +12,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 #  C890370, C890374, C890372
+@pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
 def test_featured_articles_redirect(page: Page, is_chromium):
     if is_chromium:
@@ -51,6 +52,7 @@ def test_featured_articles_redirect(page: Page, is_chromium):
 
 
 #  C2903828, C2903829, C2903831
+@pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
 def test_popular_topics_redirect(page: Page):
     utilities = Utilities(page)
@@ -83,6 +85,7 @@ def test_popular_topics_redirect(page: Page):
 
 
 # T5696588
+@pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
 def test_ask_now_widget_redirect(page: Page):
     utilities = Utilities(page)
@@ -127,6 +130,7 @@ def test_ask_now_widget_redirect(page: Page):
 
 
 # C890382
+@pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
 def test_contact_support_widget_redirect(page: Page):
     utilities = Utilities(page)
