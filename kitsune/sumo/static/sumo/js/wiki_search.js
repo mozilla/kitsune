@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
             };
           })
           .filter(item => item.id)
-          .filter(item => !currentDocId || item.id != currentDocId);
+          .filter(item => !currentDocId || String(item.id) !== String(currentDocId));
 
         callback(formattedResults);
       });
