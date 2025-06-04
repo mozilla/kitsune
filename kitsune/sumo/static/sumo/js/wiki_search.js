@@ -1,82 +1,116 @@
 import Search from "sumo/js/search_utils";
+import TomSelect from "tom-select";
 
 import "sumo/tpl/wiki-related-doc.njk";
 import "sumo/tpl/wiki-search-results.njk";
 import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
-(function($) {
-  var searchTimeout;
-  var locale = $('html').attr('lang');
+document.addEventListener("DOMContentLoaded", function() {
+  const locale = document.documentElement.lang;
+  const search = new Search(`/${locale}/search`, { w: 1, format: 'json' });
 
-  var $searchField = $('#search-related');
-  var $relatedDocsList = $('#related-docs-list');
-  var $resultsList;
+  const relatedDocsList = document.getElementById('related-docs-list');
+  const searchInput = document.getElementById('search-related');
 
-  // To search for only wiki articles we pass w=1
-  var search = new Search('/' + locale + '/search', {w: 1, format: 'json'});
+  if (!searchInput || !relatedDocsList) {
+    return;
+  }
 
-  function createResultsList() {
-    $resultsList = $('<div />').addClass('input-dropdown');
-    $searchField.after($resultsList);
-    $resultsList.css('width', $searchField.outerWidth());
-    $resultsList.show();
+  if (document.body.classList.contains('edit_metadata') || document.body.classList.contains('new')) {
+    relatedDocsList.style.display = 'none';
+  }
 
-    $resultsList.on('click', '[data-pk]', function() {
-      var $this = $(this);
+  let currentDocId = null;
+  const documentForm = document.querySelector('form[data-document-id]');
+  if (documentForm) {
+    currentDocId = documentForm.dataset.documentId;
+  }
 
-      $relatedDocsList.children('.empty-message').remove();
+  const tomSelect = new TomSelect(searchInput, {
+    valueField: 'id',
+    labelField: 'title',
+    searchField: 'title',
+    create: false,
+    closeAfterSelect: true,
+    maxItems: null, // Allow multiple selections
+    plugins: {
+      remove_button: {
+        title: 'Remove this document'
+      }
+    },
+    load: function(query, callback) {
+      if (!query.length) {
+        return callback();
+      }
 
-      if (!$relatedDocsList.children('[data-pk=' + $this.data('pk') + ']').length) {
-        var context = {
-          name: 'related_documents',
+      search.query(query, function(data) {
+        if (!data || !data.results) {
+          return callback();
+        }
+
+        const formattedResults = data.results
+          .filter(result => result.type === 'document')
+          .map(item => {
+            let id = item.id;
+            if (!id && item.url) {
+              const match = item.url.match(/\/(\d+)\//);
+              if (match) {
+                id = match[1];
+              }
+            }
+            return {
+              id: id,
+              title: item.title,
+              url: item.url
+            };
+          })
+          .filter(item => item.id)
+          .filter(item => !currentDocId || String(item.id) !== String(currentDocId));
+
+        callback(formattedResults);
+      });
+    },
+    onItemAdd: function(value, item) {
+      const emptyMessage = relatedDocsList.querySelector('.empty-message');
+      if (emptyMessage) {
+        emptyMessage.remove();
+      }
+      // Note: The actual list item is added in render.item
+    },
+    render: {
+      option: function(item, escape) {
+        return `<div>${escape(item.title)}</div>`;
+      },
+      // Renders the selected item in the input field and triggers adding the item visually to the list below.
+      item: function(item, escape) {
+        const context = {
+          name: 'related_documents', // Input field name prefix
           doc: {
-            id: $this.data('pk'),
-            title: $this.text()
+            id: item.id,
+            title: item.title
           }
         };
+        relatedDocsList.insertAdjacentHTML('beforeend', nunjucksEnv.render('wiki-related-doc.njk', context));
 
-        $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.njk', context));
+        // This div is what TomSelect displays in the input field for the selected item
+        return `<div>${escape(item.title)}</div>`;
+      },
+      no_results: function(data, escape) {
+        const noDocsFound = typeof gettext !== 'undefined' ? gettext('No documents found') : 'No documents found';
+        return `<div class="no-results">${noDocsFound}</div>`;
       }
-    });
-  }
-
-  function showResults(data) {
-    if (!$resultsList) {
-      createResultsList();
-    }
-    $resultsList.html(nunjucksEnv.render('wiki-search-results.njk', data));
-  }
-
-  function handleSearch() {
-    var $this = $(this);
-    if ($this.val().length === 0) {
-      window.clearTimeout(searchTimeout);
-      if ($resultsList) {
-        $resultsList.html('');
-        $resultsList.hide();
-      }
-    } else if ($this.val() !== search.lastQuery) {
-      window.clearTimeout(searchTimeout);
-      searchTimeout = window.setTimeout(function () {
-        search.query($this.val(), showResults);
-      }, 200);
-    }
-  }
-
-  $searchField.on('keyup', handleSearch);
-
-  $searchField.on('focus', function() {
-    if ($resultsList) {
-      $resultsList.show();
     }
   });
 
-  $searchField.on('blur', function() {
-    if ($resultsList) {
-      // We use a timeout to ensure that you can still click on the dropdown
-      window.setTimeout(function() {
-        $resultsList.hide();
-      }, 100);
+  tomSelect.on('item_remove', function(value) {
+    const itemToRemove = relatedDocsList.querySelector(`[data-pk="${value}"]`);
+    if (itemToRemove) {
+      itemToRemove.remove();
+    }
+
+    if (relatedDocsList.children.length === 0) {
+      const noRelatedDocs = typeof gettext !== 'undefined' ? gettext('No related documents.') : 'No related documents.';
+      relatedDocsList.innerHTML = `<div class="empty-message">${noRelatedDocs}</div>`;
     }
   });
-})(jQuery);
+});
