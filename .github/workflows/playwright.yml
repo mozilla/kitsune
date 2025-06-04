@@ -82,10 +82,6 @@ jobs:
       - name: Download NLTK Data
         run: |
           poetry run python -m nltk.downloader wordnet omw-1.4
-      - name: Ensure Playwright browsers are installed
-        run: |
-            pip3 install playwright
-            python -m playwright install
       - name: Set up browsers env
         if: "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
         run: |
@@ -99,6 +95,9 @@ jobs:
             elif [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
                 echo "BROWSER=${{inputs.Browsers}}" >> $GITHUB_ENV
             fi
+      - name: Ensure Playwright browsers are installed
+        run: |
+            poetry run playwright install ${{ env.BROWSER }}
       - name: Creating User Sessions for ${{ env.BROWSER }}
         id: create-sessions
         working-directory: playwright_tests

@@ -19,7 +19,7 @@ class SubmitKBArticlePage(BasePage):
         self.kb_article_allow_discussions_on_article = page.locator(
             "label[for='id_allow_discussion']")
         self.kb_article_allow_translations = page.locator("label[for='id_is_localizable']")
-        self.kb_article_search_for_related_documents = page.locator("input#search-related")
+        self.kb_article_search_for_related_documents = page.locator("search-related-ts-control")
         self.kb_article_keyword_input = page.locator("input#id_keywords")
         self.kb_article_search_result_summary_textarea = page.locator("textarea#id_summary")
 
