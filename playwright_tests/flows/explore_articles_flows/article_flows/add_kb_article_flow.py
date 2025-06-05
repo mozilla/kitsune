@@ -129,8 +129,9 @@ class AddKbArticleFlow:
                 .is_allow_discussion_on_article_checkbox_checked() is True):
             self.submit_kb_article_page.check_allow_discussion_on_article_checkbox()
 
-        self.submit_kb_article_page.add_text_to_related_documents_field(
-            kb_article_test_data["related_documents"])
+        # Removing this step until https://github.com/mozilla/sumo/issues/2359 is fixed
+        # self.submit_kb_article_page.add_text_to_related_documents_field(
+        #     kb_article_test_data["related_documents"])
 
         keyword = None
         if article_keyword is None:
