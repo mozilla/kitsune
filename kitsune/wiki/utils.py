@@ -203,17 +203,17 @@ def get_visible_document_or_404(
             translation = base_doc.translated_to(locale, visible_for_user=user)
             if translation:
                 return translation
-        else:
-            translation = base_doc.translated_to(locale, visible_for_user=user)
-            if translation:
-                return translation
 
     # Don't try final fallback if not looking for translations or in default language
     if not look_for_translation_via_parent or locale == settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
 
     kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
-    parent = get_object_or_404(Document.objects.visible(user, **kwargs))
+    try:
+        parent = Document.objects.get_visible(user, **kwargs)
+    except Document.DoesNotExist:
+        raise Http404
+
     translation = parent.translated_to(locale, visible_for_user=user)
     if translation:
         return translation
