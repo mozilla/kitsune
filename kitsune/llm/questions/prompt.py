@@ -16,7 +16,7 @@ A question is spam if **at least one** of these criteria applies:
 - Encourages illegal, unethical, or dangerous behavior.
 - Promotes political views or propaganda unrelated to the product.
 - Is extremely short (e.g., less than 10 words), overly vague, or the primary purpose of the question cannot be understood from the text.
-- Intent or relevance to Mozilla's "{product}" cannot be determined.
+- Its intent cannot be determined.
 - Contains excessive random symbols, emojis, or gibberish text.
 - Contains QR codes or links/images directing users off-site.
 - Clearly unrelated to Mozilla's "{product}" product features, functionality or purpose.
@@ -29,8 +29,53 @@ Given a user question, follow these steps:
    - `0` = Extremely uncertain.
    - `100` = Completely certain.
 4. Provide a concise explanation supporting your decision.
+5. **Determine if question was misclassified due to wrong product:** True only if this is a legitimate Mozilla support request that
+doesn't relate to "{product}" but clearly relates to another Mozilla product.
 
 # Response format
+{format_instructions}
+"""
+
+PRODUCT_INSTRUCTIONS = """
+# Role and Goal
+You are a specialized product reclassification agent for Mozilla's support forums.
+Your task is to evaluate user-submitted questions previously flagged as spam and determine
+if they should instead be reassigned to a specific Mozilla product category.
+
+# Available Mozilla Products
+You MUST select exactly one product from the following JSON-formatted list if reassignment is appropriate:
+- **title**: Name of the product.
+- **description**: A short description of the product.
+
+```json
+{products}
+```
+
+# When to Reassign a Question
+Reassign a question to a specific product ONLY if **all** of these criteria apply:
+- The question explicitly mentions or clearly relates to the product's distinctive features or functionalities.
+- The question includes technical terms, error messages, or workflows unique to the specific product.
+- You are highly confident the original spam classification resulted from incorrect product selection.
+- The content represents a legitimate support request, not promotional or spam content.
+
+# When NOT to Reassign
+Do NOT reassign the question if **any** of these criteria apply:
+- The content is genuinely promotional, spam, inappropriate, or clearly unrelated to Mozilla products.
+- You cannot confidently determine the relevant Mozilla product.
+- The question equally involves multiple Mozilla products with no clear primary focus.
+- The original spam classification appears correct, regardless of product selection.
+
+# Task Instructions
+Given a user-submitted question previously flagged as spam, strictly follow these steps:
+1. **Carefully Evaluate** whether the question clearly relates to a specific Mozilla product.
+2. **Spam Verification** - Confirm explicitly that the content is not promotional or actual spam.
+3. **Determine Reassignment:** If the question meets **all** reassignment criteria, explicitly select the most appropriate product. Otherwise, do not reassign.
+4. Indicate your **confidence** in your decision (0-100), with higher scores indicating stronger certainty:
+   - `0` = Extremely uncertain.
+   - `100` = Completely certain.
+5. Provide a concise explanation (1–2 sentences) clearly supporting your decision.
+
+# Response Format
 {format_instructions}
 """
 
@@ -100,6 +145,14 @@ spam_parser = StructuredOutputParser.from_response_schemas(
             type="str",
             description="The reason for identifying the question as spam or not spam.",
         ),
+        ResponseSchema(
+            name="maybe_misclassified",
+            type="bool",
+            description=(
+                "True if this appears to be a legitimate Mozilla support request"
+                " that was flagged as spam solely due to incorrect product categorization."
+            ),
+        ),
     )
 )
 
@@ -119,6 +172,34 @@ topic_parser = StructuredOutputParser.from_response_schemas(
     )
 )
 
+product_parser = StructuredOutputParser.from_response_schemas(
+    (
+        ResponseSchema(
+            name="product",
+            type="str",
+            description=(
+                "The Mozilla product selected for reassignment or null if no reassignment"
+                " should be made."
+            ),
+        ),
+        ResponseSchema(
+            name="confidence",
+            type="int",
+            description=(
+                "An integer from 0 to 100 that indicates the level of confidence in the"
+                " product reassignment decision, with 0 representing the lowest confidence"
+                " and 100 the highest."
+            ),
+        ),
+        ResponseSchema(
+            name="reason",
+            type="str",
+            description="The reason for reassigning to the selected product "
+            " or for not reassigning.",
+        ),
+    )
+)
+
 
 spam_prompt = ChatPromptTemplate(
     (
@@ -134,3 +215,11 @@ topic_prompt = ChatPromptTemplate(
         ("human", USER_QUESTION),
     )
 ).partial(format_instructions=topic_parser.get_format_instructions())
+
+
+product_prompt = ChatPromptTemplate(
+    (
+        ("system", PRODUCT_INSTRUCTIONS),
+        ("human", USER_QUESTION),
+    )
+).partial(format_instructions=product_parser.get_format_instructions())
