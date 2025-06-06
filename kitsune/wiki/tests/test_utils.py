@@ -821,6 +821,24 @@ class GetVisibleDocumentTests(TestCase):
                 self.user, locale="de", slug="doesnt-exist", look_for_translation_via_parent=True
             )
 
+    def test_parent_document_in_non_default_locale_no_english_version(self):
+        """Test that accessing English version of a non-default locale parent
+        document returns 404."""
+
+        ApprovedRevisionFactory(
+            document__locale="de",
+            document__slug="german-only-parent",
+            document__parent=None,
+        )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user,
+                locale="en-US",
+                slug="german-only-parent",
+                look_for_translation_via_parent=True,
+            )
+
     def test_unapproved_revision(self):
         """Test that users can't see documents without approved revisions."""
         unapproved_doc = RevisionFactory(
