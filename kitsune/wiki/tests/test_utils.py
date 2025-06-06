@@ -11,7 +11,7 @@ from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -852,3 +852,132 @@ class GetVisibleDocumentTests(TestCase):
         creator = unapproved_doc.revisions.first().creator
         doc = get_visible_document_or_404(creator, locale="en-US", slug="unapproved")
         self.assertEqual(doc, unapproved_doc)
+
+    def test_cross_locale_lookup_with_restricted_visibility(self):
+        g1 = GroupFactory(name="group1")
+
+        g1_user = UserFactory(groups=[g1])
+
+        en_doc = ApprovedRevisionFactory(
+            document__locale="en-US",
+            document__slug="restricted-test-document",
+            document__restrict_to_groups=[g1],
+            document__allow_discussion=False,
+            is_ready_for_localization=True,
+        ).document
+
+        de_doc = TranslatedRevisionFactory(
+            document__locale="de",
+            document__slug="restricted-test-document-de",
+            document__allow_discussion=False,
+            document__parent=en_doc,
+            based_on=en_doc.current_revision,
+        ).document
+
+        fr_doc = TranslatedRevisionFactory(
+            document__locale="fr",
+            document__slug="restricted-test-document-fr",
+            document__allow_discussion=False,
+            document__parent=en_doc,
+            based_on=en_doc.current_revision,
+        ).document
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user,
+                locale="en-US",
+                slug="restricted-test-document-de",
+                look_for_translation_via_parent=True,
+            )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user,
+                locale="en-US",
+                slug="restricted-test-document-fr",
+                look_for_translation_via_parent=True,
+            )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user,
+                locale="de",
+                slug="restricted-test-document",
+                look_for_translation_via_parent=True,
+            )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                self.user,
+                locale="de",
+                slug="restricted-test-document-fr",
+                look_for_translation_via_parent=True,
+            )
+
+        doc = get_visible_document_or_404(
+            g1_user,
+            locale="en-US",
+            slug="restricted-test-document-de",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, en_doc)
+
+        doc = get_visible_document_or_404(
+            g1_user,
+            locale="en-US",
+            slug="restricted-test-document-fr",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, en_doc)
+
+        doc = get_visible_document_or_404(
+            g1_user,
+            locale="de",
+            slug="restricted-test-document",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, de_doc)
+
+        doc = get_visible_document_or_404(
+            g1_user,
+            locale="de",
+            slug="restricted-test-document-fr",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, de_doc)
+
+        doc = get_visible_document_or_404(
+            g1_user,
+            locale="fr",
+            slug="restricted-test-document-de",
+            look_for_translation_via_parent=True,
+        )
+        self.assertEqual(doc, fr_doc)
+
+        # All of the kwargs should be respected.
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                g1_user,
+                locale="en-US",
+                slug="restricted-test-document-de",
+                allow_discussion=True,
+                look_for_translation_via_parent=True,
+            )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                g1_user,
+                locale="de",
+                slug="restricted-test-document",
+                allow_discussion=True,
+                look_for_translation_via_parent=True,
+            )
+
+        with self.assertRaises(Http404):
+            get_visible_document_or_404(
+                g1_user,
+                locale="de",
+                slug="restricted-test-document-fr",
+                allow_discussion=True,
+                look_for_translation_via_parent=True,
+            )
