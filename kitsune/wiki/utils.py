@@ -183,43 +183,31 @@ def get_visible_document_or_404(
     except Document.DoesNotExist:
         pass
 
-    if not (locale := kwargs.get("locale")):
+    if not (look_for_translation_via_parent and (locale := kwargs.get("locale"))):
         raise Http404
 
-    slug = kwargs.get("slug")
-
-    if not (slug and look_for_translation_via_parent):
-        raise Http404
-
-    other_docs_qs = (
-        Document.objects.filter(slug=slug).exclude(locale=locale).select_related("parent")
-    )
+    # Make the same query without the locale.
+    other_docs_qs = Document.objects.visible(
+        user, **{k: v for k, v in kwargs.items() if k != "locale"}
+    ).select_related("parent")
 
     for doc in other_docs_qs:
         base_doc = doc.parent or doc
-        if base_doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
-            if base_doc.locale == locale:
-                return base_doc
-            translation = base_doc.translated_to(locale, visible_for_user=user)
-            if translation:
-                return translation
+        if base_doc.locale == locale:
+            return base_doc
+        elif (base_doc.locale == settings.WIKI_DEFAULT_LANGUAGE) and (
+            translation := base_doc.translated_to(locale, visible_for_user=user)
+        ):
+            return translation
 
-    # Don't try final fallback if not looking for translations or in default language
-    if not look_for_translation_via_parent or locale == settings.WIKI_DEFAULT_LANGUAGE:
+    if not (return_parent_if_no_translation and (locale != settings.WIKI_DEFAULT_LANGUAGE)):
         raise Http404
 
     kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
     try:
-        parent = Document.objects.get_visible(user, **kwargs)
+        return Document.objects.get_visible(user, **kwargs)
     except Document.DoesNotExist:
         raise Http404
-
-    translation = parent.translated_to(locale, visible_for_user=user)
-    if translation:
-        return translation
-    if return_parent_if_no_translation:
-        return parent
-    raise Http404
 
 
 def get_visible_revision_or_404(user, **kwargs):
