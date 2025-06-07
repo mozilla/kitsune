@@ -1,6 +1,7 @@
 import waffle
 from celery import shared_task
 
+from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import classify_question
 from kitsune.users.models import Profile
 
@@ -25,6 +26,8 @@ def question_classifier(question_id):
     elif waffle.switch_is_active("flagit-spam-autoflag"):
         flag_question(
             question,
+            reason=FlaggedObject.REASON_CONTENT_MODERATION,
+            status=FlaggedObject.FLAG_PENDING,
             by_user=Profile.get_sumo_bot(),
             notes=(
                 "Automatically flagged for topic moderation:"
