@@ -81,15 +81,20 @@ def get_taxonomy(
     return yaml.dump(result, indent=2, sort_keys=False)
 
 
-def get_products(output_format: str = "YAML") -> str:
+def get_products(only_with_forums: bool = False, output_format: str = "YAML") -> str:
     """
     Returns the currently active products, each with their title and description,
     as a string in the output format requested (either "YAML" or "JSON").
     """
     products: list[dict[str, str]] = []
     result = dict(products=products)
+    products_qs = Product.active
 
-    for product in Product.active.filter(Q(visible=True) | Q(slug="mozilla-account")):
+    if only_with_forums:
+        products_qs = products_qs.with_question_forums()
+    products_qs = products_qs.filter(Q(visible=True) | Q(slug="mozilla-account"))
+
+    for product in products_qs:
         products.append(
             dict(
                 title=product.title,

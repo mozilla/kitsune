@@ -125,7 +125,7 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {"products": Product.active.with_question_forums(request)},
+        {"products": Product.active.with_question_forums(request.LANGUAGE_CODE)},
     )
 
 
@@ -170,7 +170,7 @@ def question_list(request, product_slug=None, topic_slug=None):
                 request, messages.WARNING, "You cannot list all questions at this time."
             )
             return HttpResponseRedirect("/")
-        products = Product.active.with_question_forums(request)
+        products = Product.active.with_question_forums(request.LANGUAGE_CODE)
 
     multiple = (len(products) > 1) or ("all" in product_slugs)
     product_with_aaq = False
@@ -450,7 +450,7 @@ def question_details(
 
     extra_kwargs.update(ans_)
 
-    products = Product.active.with_question_forums(request)
+    products = Product.active.with_question_forums(request.LANGUAGE_CODE)
     # Use get_hierarchical_topics instead of topics_for to match the moderate view
     topics = get_hierarchical_topics(question.product) if question.product else []
 
