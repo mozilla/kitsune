@@ -150,8 +150,8 @@ def flag_question(
     question: Question,
     by_user: User,
     notes: str,
-    status: int = FlaggedObject.FLAG_PENDING,
-    reason: str = FlaggedObject.REASON_CONTENT_MODERATION,
+    status: int = FlaggedObject.FLAG_ACCEPTED,
+    reason: str = FlaggedObject.REASON_SPAM,
 ) -> None:
     content_type = ContentType.objects.get_for_model(question)
     flagged_object, created = FlaggedObject.objects.get_or_create(
@@ -214,17 +214,6 @@ def update_question_fields_from_classification(question, result, sumo_bot):
         question.tags.clear()
         question.auto_tag()
 
-        if topic := update_fields.get("topic"):
-            flag_question(
-                question,
-                by_user=sumo_bot,
-                notes=(
-                    f"LLM classified as {topic.title}, for the following reason:\n"
-                    f"{topic_result.get('reason', '')}"
-                ),
-                status=FlaggedObject.FLAG_ACCEPTED,
-            )
-
 
 def process_classification_result(
     question: Question,
@@ -236,19 +225,44 @@ def process_classification_result(
     """
     sumo_bot = Profile.get_sumo_bot()
     action = result.get("action")
+    flag_kwargs = {
+        "by_user": sumo_bot,
+        "notes": "",
+        "question": question,
+    }
 
     match action:
         case ModerationAction.SPAM:
+            flag_kwargs.update(
+                {
+                    "notes": (
+                        f"LLM classified as spam, for the following reason:\n"
+                        f"{result.get('spam_result', {}).get('reason', '')}"
+                    ),
+                }
+            )
             question.mark_as_spam(sumo_bot)
         case ModerationAction.FLAG_REVIEW:
-            flag_question(
-                question,
-                by_user=sumo_bot,
-                notes=(
-                    "LLM flagged for manual review, for the following reason:\n"
-                    f"{result.get('spam_result', {}).get('reason', '')}"
-                ),
-                reason=FlaggedObject.REASON_SPAM,
+            flag_kwargs.update(
+                {
+                    "status": FlaggedObject.FLAG_PENDING,
+                    "notes": (
+                        f"LLM flagged for manual review, for the following reason:\n"
+                        f"{result.get('spam_result', {}).get('reason', '')}"
+                    ),
+                }
             )
         case _:
+            flag_kwargs.update(
+                {
+                    "reason": FlaggedObject.REASON_CONTENT_MODERATION,
+                    "notes": (
+                        f"LLM classified as {result.get('topic_result', {}).get('topic', '')}, "
+                        f"for the following reason:\n"
+                        f"{result.get('topic_result', {}).get('reason', '')}"
+                    ),
+                }
+            )
             update_question_fields_from_classification(question, result, sumo_bot)
+
+    flag_question(**flag_kwargs)
