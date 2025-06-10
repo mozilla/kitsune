@@ -62,7 +62,7 @@ def classify_question(question: "Question") -> dict[str, Any]:
         if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
             return {"action": action, "product_result": {}}
 
-        payload["products"] = get_products(output_format="JSON")
+        payload["products"] = get_products(only_with_forums=True, output_format="JSON")
         product_result = product_classification_chain.invoke(payload)
         new_product = product_result.get("product")
 
