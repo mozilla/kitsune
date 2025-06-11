@@ -1,10 +1,10 @@
 {
   "valid_firefox_question": {
-    "subject": "Test Question ",
-    "subject_updated": "Test Question Updated",
+    "subject": "NVDA does not work with Firefox ",
+    "subject_updated": "NVDA does not work with Firefox Updated",
     "topic_value": "Accessibility",
-    "question_body": "'''I have a problem''' when I ''access'', the following link: [https://www.mediafax.ro adipiscing], the Firefox browser is not performing is unable to output the messages coming from the screen reader. I've tried reading the following article: [[Stage test owl|sed]] but it doesn't help me understand what is the root cause and how can I fixed the missing content. Can somebody please help me?",
-    "body_updated": "Updated body",
+    "question_body": "'''I have a problem''' when I ''access'', the following link: [https://www.mediafax.ro adipiscing], the Firefox browser is unable to output the messages coming from the screen reader. I've tried reading the following article: [[Stage test owl|sed]] but it doesn't help me understand what is the root cause and how can I fix the missing content. Can somebody please help me with this accessibility issue?",
+    "body_updated": "I have a problem when I access, any links on the internet, the Firefox browser is unable to output the messages coming from the screen reader. I've tried reading an article but it doesn't help me understand what is the root cause and how can I fix the missing content. Can somebody please help me with this accessibility issue? Updated",
     "simple_body_text": "Firefox doesn't work in combination with the NVDA screen reader",
     "image_name": "test.image.jpg",
     "image_path": "test_data/test-image.png",
