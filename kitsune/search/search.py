@@ -139,16 +139,32 @@ class QuestionSearch(SumoSearch):
         )
 
     def make_result(self, hit):
+        print("=== QuestionSearch.make_result called ===")
+        print(f"Input hit object: {hit}")
+        print(f"Hit meta: {hit.meta}")
+        print(f"Hit question_id: {getattr(hit, 'question_id', 'N/A')}")
+        print(f"Hit question_title: {getattr(hit, 'question_title', 'N/A')}")
+        question_content_keys = (
+            getattr(hit, "question_content", {}).keys()
+            if hasattr(hit, "question_content")
+            else "N/A"
+        )
+        print(f"Hit question_content keys: {question_content_keys}")
+
         # generate a summary for search:
         summary = first_highlight(hit)
+        print(f"First highlight result: {summary}")
         if not summary:
             summary = hit.question_content[self.locale][:SNIPPET_LENGTH]
+            print(f"Using question_content summary: {summary[:100]}...")
         summary = strip_html(summary)
+        print(f"Summary after HTML stripping: {summary[:100]}...")
 
         # for questions that have no answers, set to None:
         answer_content = getattr(hit, "answer_content", None)
+        print(f"Answer content: {answer_content}")
 
-        return {
+        result = {
             "type": "question",
             "url": reverse("questions.details", kwargs={"question_id": hit.question_id}),
             "score": hit.meta.score,
@@ -159,6 +175,9 @@ class QuestionSearch(SumoSearch):
             "num_answers": len(answer_content[self.locale]) if answer_content else 0,
             "num_votes": hit.question_num_votes,
         }
+        print(f"Final QuestionSearch result: {result}")
+        print("=== QuestionSearch.make_result completed ===\n")
+        return result
 
 
 @dataclass
@@ -213,21 +232,37 @@ class WikiSearch(SumoSearch):
         return DSLQ("bool", filter=filters, must=self.build_query())
 
     def make_result(self, hit):
+        print("=== WikiSearch.make_result called ===")
+        print(f"Input hit object: {hit}")
+        print(f"Hit meta: {hit.meta}")
+        print(f"Hit slug: {getattr(hit, 'slug', 'N/A')}")
+        print(f"Hit title: {getattr(hit, 'title', 'N/A')}")
+        print(f"Hit summary: {getattr(hit, 'summary', 'N/A')}")
+        content_keys = getattr(hit, "content", {}).keys() if hasattr(hit, "content") else "N/A"
+        print(f"Hit content keys: {content_keys}")
+
         # generate a summary for search:
         summary = first_highlight(hit)
+        print(f"First highlight result: {summary}")
         if not summary and hasattr(hit, "summary"):
             summary = getattr(hit.summary, self.locale, None)
+            print(f"Using hit.summary for locale {self.locale}: {summary}")
         if not summary:
             summary = hit.content[self.locale][:SNIPPET_LENGTH]
+            print(f"Using content summary: {summary[:100]}...")
         summary = strip_html(summary)
+        print(f"Summary after HTML stripping: {summary[:100]}...")
 
-        return {
+        result = {
             "type": "document",
             "url": reverse("wiki.document", args=[hit.slug[self.locale]], locale=self.locale),
             "score": hit.meta.score,
             "title": hit.title[self.locale],
             "search_summary": summary,
         }
+        print(f"Final WikiSearch result: {result}")
+        print("=== WikiSearch.make_result completed ===\n")
+        return result
 
 
 @dataclass
@@ -257,13 +292,24 @@ class ProfileSearch(SumoSearch):
         )
 
     def make_result(self, hit):
-        return {
+        print("=== ProfileSearch.make_result called ===")
+        print(f"Input hit object: {hit}")
+        print(f"Hit meta: {hit.meta}")
+        print(f"Hit username: {getattr(hit, 'username', 'N/A')}")
+        print(f"Hit name: {getattr(hit, 'name', 'N/A')}")
+        print(f"Hit avatar: {getattr(hit, 'avatar', 'N/A')}")
+        print(f"Hit meta.id: {getattr(hit.meta, 'id', 'N/A')}")
+
+        result = {
             "type": "user",
             "avatar": getattr(hit, "avatar", None),
             "username": hit.username,
             "name": getattr(hit, "name", ""),
             "user_id": hit.meta.id,
         }
+        print(f"Final ProfileSearch result: {result}")
+        print("=== ProfileSearch.make_result completed ===\n")
+        return result
 
 
 @dataclass
@@ -305,17 +351,44 @@ class ForumSearch(SumoSearch):
         return DSLQ("bool", filter=filters, must=self.build_query())
 
     def make_result(self, hit):
-        return {
+        print("=== ForumSearch.make_result called ===")
+        print(f"Input hit object: {hit}")
+        print(f"Hit meta: {hit.meta}")
+        print(f"Hit thread_title: {getattr(hit, 'thread_title', 'N/A')}")
+        hit_content = getattr(hit, "content", "N/A")[:100] if hasattr(hit, "content") else "N/A"
+        print(f"Hit content: {hit_content}...")
+        print(f"Hit updated: {getattr(hit, 'updated', 'N/A')}")
+        print(f"Hit forum_slug: {getattr(hit, 'forum_slug', 'N/A')}")
+        print(f"Hit thread_id: {getattr(hit, 'thread_id', 'N/A')}")
+
+        # Process content for summary
+        raw_content = hit.content
+        print(f"Raw content: {raw_content[:100]}...")
+        html_content = wiki_to_html(raw_content)
+        print(f"HTML content after wiki_to_html: {html_content[:100]}...")
+        stripped_content = strip_html(html_content)
+        print(f"Stripped content: {stripped_content[:100]}...")
+        final_summary = stripped_content[:1000]
+        print(f"Final summary (first 1000 chars): {final_summary[:100]}...")
+
+        # Parse updated date
+        parsed_date = parser.parse(hit.updated)
+        print(f"Parsed updated date: {parsed_date}")
+
+        result = {
             "type": "thread",
             "title": hit.thread_title,
-            "search_summary": strip_html(wiki_to_html(hit.content))[:1000],
-            "last_updated": parser.parse(hit.updated),
+            "search_summary": final_summary,
+            "last_updated": parsed_date,
             "url": reverse(
                 "forums.posts",
                 kwargs={"forum_slug": hit.forum_slug, "thread_id": hit.thread_id},
             )
             + f"#post-{hit.meta.id}",
         }
+        print(f"Final ForumSearch result: {result}")
+        print("=== ForumSearch.make_result completed ===\n")
+        return result
 
 
 @dataclass
@@ -371,7 +444,26 @@ class CompoundSearch(SumoSearch):
         return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
 
     def make_result(self, hit):
+        print("=== CompoundSearch.make_result called ===")
+        print(f"Input hit object: {hit}")
+        print(f"Hit meta: {hit.meta}")
+        print(f"Hit meta.index: {getattr(hit.meta, 'index', 'N/A')}")
+        print(f"Number of children: {len(self._children)}")
+
         index = hit.meta.index
-        for child in self._children:
-            if same_base_index(index, child.get_index()):
-                return child.make_result(hit)
+        print(f"Looking for child that matches index: {index}")
+
+        for i, child in enumerate(self._children):
+            child_index = child.get_index()
+            print(f"Child {i}: {type(child).__name__}, index: {child_index}")
+            if same_base_index(index, child_index):
+                print(f"Found matching child {i}: {type(child).__name__}")
+                result = child.make_result(hit)
+                child_name = type(child).__name__
+                print(f"Final CompoundSearch result (delegated to {child_name}): {result}")
+                print("=== CompoundSearch.make_result completed ===\n")
+                return result
+
+        print(f"ERROR: No matching child found for index {index}")
+        print("=== CompoundSearch.make_result completed with ERROR ===\n")
+        return None
