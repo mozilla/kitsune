@@ -102,13 +102,36 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
+  // Process pre-existing selected options (for editing existing documents with related docs)
+  const preSelectedOptions = searchInput.querySelectorAll('option[selected]');
+  if (preSelectedOptions.length > 0) {
+
+    const emptyMessage = relatedDocsList.querySelector('.empty-message');
+    if (emptyMessage) {
+      emptyMessage.remove();
+    }
+    
+    preSelectedOptions.forEach(option => {
+      const docData = {
+        id: option.value,
+        title: option.textContent
+      };
+      
+      // Add the option to TomSelect's options and selected items
+      tomSelect.addOption(docData);
+      tomSelect.addItem(option.value, true); // true = silent, don't trigger events
+    });
+  }
+
   tomSelect.on('item_remove', function(value) {
     const itemToRemove = relatedDocsList.querySelector(`[data-pk="${value}"]`);
     if (itemToRemove) {
       itemToRemove.remove();
     }
 
-    if (relatedDocsList.children.length === 0) {
+    // Check if there are any document items left (li elements with data-pk attribute)
+    const remainingDocs = relatedDocsList.querySelectorAll('li[data-pk]');
+    if (remainingDocs.length === 0) {
       const noRelatedDocs = typeof gettext !== 'undefined' ? gettext('No related documents.') : 'No related documents.';
       relatedDocsList.innerHTML = `<div class="empty-message">${noRelatedDocs}</div>`;
     }
