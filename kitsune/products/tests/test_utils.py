@@ -414,14 +414,29 @@ class GetProductsTests(TestCase):
 
     def setUp(self):
         ProductFactory(
-            title="product1", description="All about product1...", display_order=1, slug="p1"
+            title="product1",
+            description="All about product1...",
+            metadata={
+                "description": "Detailed description of product1...",
+            },
+            display_order=1,
+            slug="p1",
         )
         ProductFactory(
-            title="product2", description="All about product2...", display_order=2, slug="p2"
+            title="product2",
+            description="All about product2...",
+            metadata={
+                "description": "Detailed description of product2...",
+            },
+            display_order=2,
+            slug="p2",
         )
         ProductFactory(
             title="product3",
             description="All about product3...",
+            metadata={
+                "description": "Detailed description of product3...",
+            },
             display_order=3,
             slug="mozilla-account",
             visible=False,
@@ -429,6 +444,9 @@ class GetProductsTests(TestCase):
         ProductFactory(
             title="product4",
             description="All about product4...",
+            metadata={
+                "description": "Detailed description of product4...",
+            },
             display_order=4,
             slug="p4",
             visible=False,
@@ -436,6 +454,9 @@ class GetProductsTests(TestCase):
         ProductFactory(
             title="product5",
             description="All about product5...",
+            metadata={
+                "description": "Detailed description of product5...",
+            },
             display_order=5,
             slug="p5",
             is_archived=True,
@@ -470,3 +491,35 @@ class GetProductsTests(TestCase):
   ]
 }"""
         self.assertEqual(get_products(output_format="JSON"), expected)
+
+    def test_get_products_with_metadata(self):
+        expected = """products:
+- title: product1
+  description: Detailed description of product1...
+- title: product2
+  description: Detailed description of product2...
+- title: product3
+  description: Detailed description of product3...
+"""
+        self.assertEqual(get_products(include_metadata=["description"]), expected)
+
+    def test_get_products_with_metadata_as_json(self):
+        expected = """{
+  "products": [
+    {
+      "title": "product1",
+      "description": "Detailed description of product1..."
+    },
+    {
+      "title": "product2",
+      "description": "Detailed description of product2..."
+    },
+    {
+      "title": "product3",
+      "description": "Detailed description of product3..."
+    }
+  ]
+}"""
+        self.assertEqual(
+            get_products(include_metadata=["description"], output_format="JSON"), expected
+        )
