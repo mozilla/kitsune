@@ -1373,3 +1373,30 @@ GOOGLE_APPLICATION_CREDENTIALS = config("GOOGLE_APPLICATION_CREDENTIALS", defaul
 
 # shell_plus conf
 SHELL_PLUS_DONT_LOAD = ["silk"]
+
+# Logging configuration for development: show all logs from kitsune.search at DEBUG level, others at INFO level
+if DEV:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "simple",
+            },
+        },
+        "formatters": {
+            "simple": {"format": "%(levelname)s %(name)s: %(message)s"},
+        },
+        "root": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        "loggers": {
+            "kitsune.search": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+        },
+    }
