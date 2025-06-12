@@ -23,6 +23,11 @@ class BaseProductTopic(ModelBase):
     is_archived = models.BooleanField(default=False)
     # Dictates the display order in lists
     display_order = models.IntegerField()
+    metadata = models.JSONField(
+        default=dict,
+        encoder=PrettyJSONEncoder,
+        help_text=_lazy("Data useful for things like LLM prompts."),
+    )
 
     class Meta:
         abstract = True
@@ -111,12 +116,6 @@ class Topic(BaseProductTopic):
     # Whether or not this topic is displayed in navigation menus
     in_nav = models.BooleanField(
         default=False, help_text=_lazy("Whether this topic is shown in navigation menus.")
-    )
-
-    metadata = models.JSONField(
-        default=dict,
-        encoder=PrettyJSONEncoder,
-        help_text=_lazy("Data useful for things like LLM prompts."),
     )
 
     class Meta(object):
