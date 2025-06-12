@@ -3,6 +3,8 @@ from typing import Any
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import AIMessage
 
+from kitsune.llm.l10n.config import L10N_PROTECTED_TERMS
+
 
 TRANSLATION_INSTRUCTIONS = """
 # Role and task
@@ -45,46 +47,9 @@ r"\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\]\[\x00-\x20\x7f]*)\s*(?P<de
 - **Strictly obey** all of these rules when freshly translating {{ source_language }} text.
 
 1. **Preserve unchanged** each of the following strings (each is wrapped with single backticks):
-    - `Anonym`
-    - `Bugzilla`
-    - `ESR`
-    - `Extended Support Release`
-    - `Firefox Beta`
-    - `Firefox Developer Edition`
-    - `Firefox for Android`
-    - `Firefox for iOS`
-    - `Firefox for Enterprise`
-    - `Firefox Focus`
-    - `Firefox Relay`
-    - `Firefox Nightly`
-    - `Firefox`
-    - `Klar`
-    - `MDN Web Docs`
-    - `MDN Plus`
-    - `MDN`
-    - `Mozilla account`
-    - `Mozilla accounts`
-    - `Mozilla Account`
-    - `Mozilla Accounts`
-    - `Mozilla Wordmark`
-    - `Mozilla Wordmark + Symbol`
-    - `Mozilla VPN`
-    - `Mozilla Monitor`
-    - `Mozilla`
-    - `Pocket`
-    - `Pontoon`
-    - `QMO`
-    - `Rapid Release`
-    - `SUMO`
-    - `Sync`
-    - `Thunderbird for Android`
-    - `Thunderbird`
-    - `{note}`
-    - `{/note}`
-    - `{warning}`
-    - `{/warning}`
-    - `{/for}`
-    - `__TOC__`
+{%- for term in protected_terms %}
+    - `{{ term }}`
+{%- endfor %}
 
 2. **Preserve unchanged** each string that case-sensitively matches the following regular expression:
 
@@ -180,4 +145,4 @@ translation_prompt = ChatPromptTemplate(
         ("human", SOURCE_ARTICLE),
     ),
     template_format="jinja2",
-)
+).partial(protected_terms=L10N_PROTECTED_TERMS)

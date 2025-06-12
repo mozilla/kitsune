@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING, Any
 
-from kitsune.llm.l10n.wiki.prompt import translation_parser, translation_prompt
-from kitsune.llm.l10n.wiki.utils import get_language_in_english
+from django.conf import settings
+
+from kitsune.llm.l10n.prompt import translation_parser, translation_prompt
+from kitsune.llm.l10n.config import L10N_LLM_MODEL
 from kitsune.llm.utils import get_llm
 
 if TYPE_CHECKING:
@@ -14,13 +16,13 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
     given document into the target locale. The given document must be a parent
     document.
     """
-    llm = get_llm("gemini-2.5-pro-preview-05-06")
+    llm = get_llm(model_name=L10N_LLM_MODEL)
 
     translation_chain = translation_prompt | llm | translation_parser
 
     payload: dict[str, Any] = dict(
-        source_language=get_language_in_english(doc.locale),
-        target_language=get_language_in_english(target_locale),
+        source_language=settings.LOCALES[doc.locale].english,
+        target_language=settings.LOCALES[target_locale].english,
     )
 
     result: dict[str, dict[str, Any]] = {}
