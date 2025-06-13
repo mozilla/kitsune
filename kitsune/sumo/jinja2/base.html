@@ -104,7 +104,7 @@
   {% call announcement_bar('geoip-suggestion', 'warning', close_memory="remember", close_type="remove") %}{% endcall %}
 
   {% for announ in get_announcements(request) %}
-      {% call announcement_bar(announ.id, 'warning') %}
+      {% call announcement_bar(announ.id, 'warning', close_memory="session") %}
           {{ announ.content | wiki_to_html }}
       {% endcall %}
   {% endfor %}
