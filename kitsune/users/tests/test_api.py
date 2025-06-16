@@ -1,7 +1,11 @@
 import json
 from datetime import datetime, timedelta
+from http.cookies import SimpleCookie
 from unittest import mock
 
+from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
+from django.test.utils import override_settings
 from rest_framework.test import APIClient
 
 from kitsune.questions.tests import (
@@ -14,7 +18,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users import api
-from kitsune.users.tests import ProfileFactory, UserFactory
+from kitsune.users.tests import GroupFactory, ProfileFactory, UserFactory
 
 
 class UsernamesTests(TestCase):
@@ -191,3 +195,151 @@ class TestUserView(TestCase):
         url = reverse("user-detail", args=[p.user.username])
         res = self.client.get(url)
         assert "is_active" in res.data
+
+
+class TestUserCreation(TestCase):
+    """Test the create_test_user API view."""
+
+    url = reverse("users.api.create_test_user", locale="en-US")
+
+    def setUp(self):
+        GroupFactory(name="Group1")
+        self.staff = GroupFactory(name="Staff")
+        self.beatles = GroupFactory(name="Beatles")
+        ct = ContentType.objects.get_for_model(User)
+        self.perm1 = Permission.objects.get_or_create(
+            name="p1", codename="perm1", content_type=ct
+        )[0]
+        self.perm2 = Permission.objects.get_or_create(
+            name="p2", codename="perm2", content_type=ct
+        )[0]
+        Permission.objects.get_or_create(name="p3", codename="perm3", content_type=ct)
+        ringo = UserFactory(username="ringo", groups=[self.staff, self.beatles])
+        self.client.logout()
+        self.client.login(username=ringo.username, password="testpass")
+
+    @override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True)
+    def test_create_test_user(self):
+        response = self.client.post(
+            self.url,
+            content_type="application/json",
+            data=dict(
+                username="mccartney",
+                groups=["Staff", "Beatles"],
+                permissions=["perm1", "perm2"],
+            ),
+        )
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["username"], "mccartney")
+        self.assertIn("cookies", result)
+        self.assertTrue(result["cookies"])
+        mccartney_session_cookie = result["cookies"][0]
+        for key in (
+            "name",
+            "value",
+            "max-age",
+            "path",
+            "domain",
+            "secure",
+            "httponly",
+            "samesite",
+        ):
+            self.assertIn(key, mccartney_session_cookie)
+
+        user = User.objects.get(username="mccartney")
+
+        self.assertEqual(set(g.name for g in user.groups.all()), set(["Staff", "Beatles"]))
+        self.assertEqual(
+            set(p.codename for p in user.user_permissions.all()), set(["perm1", "perm2"])
+        )
+
+        self.client.logout()
+
+        # Test McCartney's session cookie to ensure it's good.
+        cookie = SimpleCookie()
+        cookie[mccartney_session_cookie["name"]] = mccartney_session_cookie["value"]
+        morsel = cookie[mccartney_session_cookie["name"]]
+        for key in ("max-age", "path", "domain", "secure", "httponly", "samesite"):
+            morsel[key] = mccartney_session_cookie[key]
+        response = self.client.post(
+            self.url,
+            content_type="application/json",
+            headers={"cookie": cookie.output(header="").strip()},
+            data=dict(username="lennon", permissions=["perm1"], groups=["Beatles"]),
+        )
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["username"], "lennon")
+        self.assertIn("cookies", result)
+
+        user = User.objects.get(username="lennon")
+
+        self.assertEqual([g.name for g in user.groups.all()], ["Beatles"])
+        self.assertEqual([p.codename for p in user.user_permissions.all()], ["perm1"])
+
+    def test_create_test_user_404(self):
+        """
+        Test all of the 404 cases for the create-test-user endpoint.
+        """
+        with (
+            self.subTest("not enabled"),
+            override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=False),
+        ):
+            response = self.client.post(
+                self.url,
+                content_type="application/json",
+                data=dict(
+                    username="mccartney",
+                    groups=["Staff", "Beatles"],
+                    permissions=["perm1", "perm2"],
+                ),
+            )
+            self.assertEqual(response.status_code, 404)
+
+        with (
+            self.subTest("not authenticated"),
+            override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True),
+        ):
+            self.client.logout()
+            response = self.client.post(
+                self.url,
+                content_type="application/json",
+                data=dict(
+                    username="mccartney",
+                    groups=["Staff", "Beatles"],
+                    permissions=["perm1", "perm2"],
+                ),
+            )
+            self.assertEqual(response.status_code, 404)
+
+        with (
+            self.subTest("not staff"),
+            override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True),
+        ):
+            self.client.logout()
+            george = UserFactory(username="george", groups=[self.beatles])
+            self.client.login(username=george.username, password="testpass")
+            response = self.client.post(
+                self.url,
+                content_type="application/json",
+                data=dict(
+                    username="mccartney",
+                    groups=["Staff", "Beatles"],
+                    permissions=["perm1", "perm2"],
+                ),
+            )
+            self.assertEqual(response.status_code, 404)
+
+    @override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True)
+    def test_create_test_user_409(self):
+        """
+        Test when trying to create a user that already exists.
+        """
+        UserFactory(username="mccartney")
+        response = self.client.post(
+            self.url,
+            content_type="application/json",
+            data=dict(username="mccartney"),
+        )
+        self.assertEqual(response.status_code, 409)
