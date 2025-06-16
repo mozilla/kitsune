@@ -42,7 +42,7 @@ class KBArticlePage(BasePage):
         self.editing_tools_show_history_option = page.get_by_role("link", name="Show History",
                                                                   exact=True)
 
-        # Helpfulness widget
+        # Helpfulness widget section locators.
         self.helpfulness_widget = page.locator("form[class='document-vote--form helpful']")
         self.helpful_button = page.locator("button[class='btn helpful-button']")
         self.unhelpful_button = page.locator("button[class='btn not-helpful-button']")
@@ -53,6 +53,14 @@ class KBArticlePage(BasePage):
         self.helpfulness_widget_submit_button = page.locator(
             "//div[@class='sumo-button-wrap align-full']/button[normalize-space(text())='Submit']")
         self.survey_message = page.locator("div[class='survey-message']")
+
+        # Related Articles section locators.
+        self.related_articles_section = page.locator("section#related-documents")
+        self.related_article_cards = page.locator("section#related-documents h3.card--title a")
+        self.related_article = lambda article_title: page.locator(
+            f'//section[@id="related-documents"]//h3[@class="card--title"]/a[normalize-space('
+            f'text())="{article_title}"]'
+        )
 
     # KB Article page content actions.
     def click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
@@ -158,3 +166,13 @@ class KBArticlePage(BasePage):
 
     def get_survey_message_text(self) -> str:
         return self._get_text_of_element(self.survey_message)
+
+    def is_related_articles_section_displayed(self) -> bool:
+        return self._is_element_visible(self.related_articles_section)
+
+    def get_list_of_related_articles(self) -> list[str]:
+        return [article.strip() for article in self._get_text_of_elements(
+            self.related_article_cards)]
+
+    def click_on_related_article_card(self, article_title: str):
+        self._click(self.related_article(article_title))

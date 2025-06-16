@@ -24,6 +24,17 @@ class KBArticleEditMetadata(BasePage):
         self.allow_discussion_checkbox = page.locator("input#id_allow_discussion")
         self.needs_change_checkbox = page.locator("input#id_needs_change")
         self.needs_change_textarea = page.locator("textarea#id_needs_change_comment")
+        self.related_documents_field = page.locator("input#search-related-ts-control")
+        self.related_documents_search_result = lambda search_term : page.locator(
+            f'//div[@id="search-related-ts-dropdown"]/div[normalize-space(.)="{search_term}"]'
+        )
+        self.related_documents_search_results = page.locator(
+            "div#search-related-ts-dropdown div")
+        self.added_related_documents = page.locator("div.ts-control div.item")
+        self.remove_related_documents_button = lambda related_document: page.locator(
+            f'//div[@class="item" and text()="{related_document}"]/a')
+        self.no_results_found_related_documents_message = page.locator(
+            "div#search-related-ts-dropdown div.no-results")
         self.save_changes_button = page.get_by_role("button", name="Save", exact=True)
         self.delete_group = lambda chosen_group: page.locator(
             f"//input[@id='id_restrict_to_groups-selectized']/../div[text()='{chosen_group}']/a")
@@ -101,6 +112,25 @@ class KBArticleEditMetadata(BasePage):
 
     def fill_needs_change_textarea(self, text: str):
         self._fill(self.needs_change_textarea, text)
+
+    def add_related_documents(self, document_name: str, submit: bool = True):
+        self._fill(self.related_documents_field, document_name)
+        if submit:
+            self._wait_for_locator(self.related_documents_search_result(document_name), 5000)
+            self._click(self.related_documents_search_result(document_name))
+
+    def is_no_related_documents_displayed(self) -> bool:
+        return self._is_element_visible(self.no_results_found_related_documents_message)
+
+    def get_related_documents_search_options(self) -> list[str]:
+        return self._get_text_of_elements(self.related_documents_search_results)
+
+    def get_related_documents(self) -> list[str]:
+        return [text.replace("\n×", "").strip() for text in self._get_text_of_elements(
+            self.added_related_documents)]
+
+    def remove_related_document(self, document_name: str):
+        self._click(self.remove_related_documents_button(document_name))
 
     def click_on_save_changes_button(self):
         self._click(self.save_changes_button)

@@ -6,6 +6,8 @@ from playwright_tests.messages.explore_help_articles.kb_article_revision_page_me
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_meta import (
     KBArticleEditMetadata)
+from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
+    EditKBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import \
     SubmitKBArticlePage
 
@@ -17,6 +19,7 @@ class EditArticleMetaFlow:
         self.kb_article_edit_metadata_page = KBArticleEditMetadata(page)
         self.submit_kb_article_page = SubmitKBArticlePage(page)
         self.kb_article_page = KBArticlePage(page)
+        self.edit_kb_article_page = EditKBArticlePage(page)
 
     def edit_article_metadata(self, **kwargs):
         return self.utilities.re_call_function_on_error(
@@ -33,10 +36,14 @@ class EditArticleMetaFlow:
                                needs_change=False,
                                needs_change_comment=False,
                                restricted_to_groups: list[str] = None,
+                               related_documents: list[str] = None,
                                single_group=""):
 
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()
+
+        if self.edit_kb_article_page.is_edit_anyway_option_visible():
+            self.edit_kb_article_page.click_on_edit_anyway_option()
 
         if restricted_to_groups:
             for group in restricted_to_groups:
@@ -101,6 +108,10 @@ class EditArticleMetaFlow:
             if self.kb_article_edit_metadata_page.is_needs_change_checkbox():
                 self.kb_article_edit_metadata_page.click_needs_change_checkbox()
 
+        if related_documents:
+            for document in related_documents:
+                self.kb_article_edit_metadata_page.add_related_documents(document)
+
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
 
     def remove_a_restricted_visibility_group(self, **kwargs):
@@ -108,10 +119,12 @@ class EditArticleMetaFlow:
             lambda: self._remove_a_restricted_visibility_group(**kwargs)
         )
 
-    def _remove_a_restricted_visibility_group(self, group_name=''):
+    def _remove_a_restricted_visibility_group(self, group_name=""):
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()
 
+        if self.edit_kb_article_page.is_edit_anyway_option_visible():
+            self.edit_kb_article_page.click_on_edit_anyway_option()
         self.kb_article_edit_metadata_page.delete_a_restricted_visibility_group_metadata(
             group_name)
         self.kb_article_edit_metadata_page.click_on_save_changes_button()

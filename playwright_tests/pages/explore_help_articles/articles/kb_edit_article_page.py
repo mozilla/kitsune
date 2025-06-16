@@ -42,6 +42,9 @@ class EditKBArticlePage(BasePage):
     def click_on_edit_anyway_option(self):
         self._click(self.edit_by_another_user_edit_anyway_option)
 
+    def is_edit_anyway_option_visible(self) -> bool:
+        return self._is_element_visible(self.edit_by_another_user_edit_anyway_option)
+
     # Edit kb article page field actions.
     def get_edit_article_keywords_field_value(self) -> str:
         return self._get_element_input_value(self.edit_article_keywords_field)
