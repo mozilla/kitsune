@@ -2130,3 +2130,189 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C3065908 C3065909
+@pytest.mark.kbArticleCreationAndAccess
+def test_adding_and_removing_related_documents(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_articles_url = []
+    test_article_titles = []
+
+    with allure.step("Signing in with an admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating 3 test articles"):
+        counter = 1
+        while counter <= 3:
+            article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+                page=page, product="19", topic="507", approve_revision=True)
+            test_article_titles.append(article_info["article_title"])
+            test_articles_url.append(article_info["article_url"])
+            counter += 1
+
+    with allure.step("Wait for ~1 minute until the kb article is available in search"):
+        utilities.wait_for_given_timeout(90000)
+
+    with allure.step(f"Navigating to the f{test_article_titles[0]} and adding the rest as related "
+                     f"documents"):
+        utilities.navigate_to_link(test_articles_url[0])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=test_article_titles[1:]
+        )
+
+    with check, allure.step("Verifying that the related documents are successfully displayed "
+                            "inside the 'Related Articles' section"):
+        check.equal(
+            set(test_article_titles[1:]),
+            set(sumo_pages.kb_article_page.get_list_of_related_articles())
+        )
+
+    with check, allure.step(f"Clicking on the f{test_article_titles[1]} related document and "
+                            f"verifying that the article is listed inside the 'Related Articles' "
+                            f"section"):
+        sumo_pages.kb_article_page.click_on_related_article_card(test_article_titles[1])
+        check.is_in(
+            test_article_titles[0],
+            sumo_pages.kb_article_page.get_list_of_related_articles()
+        )
+
+    with allure.step(f"Navigating back to the f{test_article_titles[0]}, clicking on the "
+                     f"'Edit Article Metadata' and removing one of the related documents"):
+        sumo_pages.kb_article_page.click_on_related_article_card(test_article_titles[0])
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        sumo_pages.kb_article_edit_article_metadata_page.remove_related_document(
+            test_article_titles[1])
+        sumo_pages.kb_article_edit_article_metadata_page.click_on_save_changes_button()
+
+    with allure.step(f"Verifying that the f{test_article_titles[1]} is no longer listed inside "
+                     "'Related Articles' section"):
+        check.is_not_in(
+            test_article_titles[1],
+            sumo_pages.kb_article_page.get_list_of_related_articles()
+        )
+
+    with check, allure.step(f"Navigating to the f{test_article_titles[1]} page and verifying that "
+                            f"the f{test_article_titles[0]} is not listed inside the "
+                            f"'Related documents' section"):
+        utilities.navigate_to_link(test_articles_url[1])
+        check.is_false(
+            sumo_pages.kb_article_page.is_related_articles_section_displayed()
+        )
+
+    with allure.step("Deleting all test articles"):
+        for article in test_articles_url:
+            utilities.navigate_to_link(article)
+            sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+# C3059081
+@pytest.mark.kbArticleCreationAndAccess
+def test_same_article_cannot_be_added_as_related_article(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in with an admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new KB article"):
+        article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="19", topic="507", approve_revision=True)
+
+    with allure.step("Wait for ~1 minute until the kb article is available in search"):
+        utilities.wait_for_given_timeout(90000)
+
+    with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying that "
+                            "the same article cannot be added inside the 'Related documents' "
+                            "field"):
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
+            article_info["article_title"], submit=False)
+        utilities.wait_for_given_timeout(2000)
+        check.is_true(
+            sumo_pages.kb_article_edit_article_metadata_page.is_no_related_documents_displayed()
+        )
+
+    with allure.step("Deleting the KB article"):
+        utilities.navigate_to_link(article_info["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+#  C3065910
+@pytest.mark.kbArticleCreationAndAccess
+def test_restricted_visibility_related_document_in_article_page(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_articles_url = []
+    test_article_titles = []
+
+    with allure.step("Signing in with an admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating 3 new articles"):
+        counter = 1
+        while counter <= 3:
+            article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+                page=page, product="19", topic="507", approve_revision=True)
+            test_article_titles.append(article_info["article_title"])
+            test_articles_url.append(article_info["article_url"])
+            counter += 1
+
+    with allure.step("Wait for ~1 minute until the kb article is available in search"):
+        utilities.wait_for_given_timeout(90000)
+
+    with allure.step(f"Navigating to the article: f{test_article_titles[1]} and "
+                     f"restricting the visibility of the article to 'Mobile' group"):
+        utilities.navigate_to_link(test_articles_url[1])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(single_group="Mobile")
+
+    with allure.step(f"Navigating to the: f{test_article_titles[0]} article and adding the rest "
+                     f"of test articles as related documents"):
+        utilities.navigate_to_link(test_articles_url[0])
+        sumo_pages.kb_article_page.click_on_edit_article_metadata()
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            related_documents=test_article_titles[1:]
+        )
+
+    with allure.step("Signing in with a users that doesn't belong to the 'Mobile' group"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+    with check, allure.step("Verifying that the article is not displayed inside the 'Related "
+                            "Documents' section"):
+        utilities.navigate_to_link(test_articles_url[0])
+        check.is_not_in(
+            test_article_titles[1],
+            sumo_pages.kb_article_page.get_list_of_related_articles()
+        )
+
+    with check, allure.step(f"Signing in with the account that is part of the 'Mobile' group"
+                            f"group, navigating to the f{test_article_titles[0]} article and "
+                            f"verifying that the restricted visibility article is now visible in "
+                            f"the 'Related Documents' section"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
+        ))
+        utilities.navigate_to_link(test_articles_url[0])
+        check.is_in(
+            test_article_titles[1],
+            sumo_pages.kb_article_page.get_list_of_related_articles()
+        )
+
+    with allure.step("Deleting all test articles"):
+        with allure.step("Signing in with an admin account"):
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        for article in test_articles_url:
+            utilities.navigate_to_link(article)
+            sumo_pages.kb_article_deletion_flow.delete_kb_article()

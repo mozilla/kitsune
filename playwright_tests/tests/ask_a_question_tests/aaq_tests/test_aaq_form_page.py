@@ -265,11 +265,11 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page):
             for topic in sumo_pages.aaq_form_page.get_aaq_form_topic_options():
                 with allure.step(f"Submitting question for {product} product"):
                     question_info = sumo_pages.aaq_flow.submit_an_aaq_question(
-                        subject=utilities.aaq_question_test_data["valid_firefox_question"]
-                        ["subject"],
+                        subject=f"Issue related to the {topic} topic",
                         topic_name=topic,
-                        body=f"I have a problem with {topic}. It doesn't seem to work whatever I"
-                             f" try to do... Can you please help me?",
+                        body=f"I have a problem related to {topic}. But I don't know how to "
+                             f"explain it properly. I need some guidance in debugging this so "
+                             f"that I can provide more information.",
                         attach_image=False,
                         expected_locator=sumo_pages.question_page.questions_header
                     )
