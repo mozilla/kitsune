@@ -30,7 +30,7 @@ class SubmitKBArticlePage(BasePage):
         self.kb_article_insert_media_modal_insert_button = page.get_by_role(
             "button").filter(has_text="Insert Media")
         self.kb_article_toggle_syntax_highlighting = page.locator(
-            "//a[contains(text(), 'Toggle syntax highlight')]"
+            "//div[@id='editor_wrapper']/following-sibling::a"
         )
         self.kb_article_expiry_date = page.locator("input#id_expires")
         self.kb_article_preview_content_button = page.locator(

@@ -26,18 +26,10 @@ class EditArticleMetaFlow:
             lambda: self._edit_article_metadata(**kwargs)
         )
 
-    def _edit_article_metadata(self, title=None,
-                               slug=None,
-                               category=None,
-                               product=None,
-                               topics=None,
-                               obsolete=False,
-                               discussions=True,
-                               needs_change=False,
-                               needs_change_comment=False,
-                               restricted_to_groups: list[str] = None,
-                               related_documents: list[str] = None,
-                               single_group=""):
+    def _edit_article_metadata(self, title=None, slug=None, category=None, product=None,
+                               topics=None, obsolete=False, discussions=True, needs_change=False,
+                               needs_change_comment=False, restricted_to_groups: list[str] = None,
+                               related_documents: list[str] = None, single_group=""):
 
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()
@@ -45,13 +37,10 @@ class EditArticleMetaFlow:
         if self.edit_kb_article_page.is_edit_anyway_option_visible():
             self.edit_kb_article_page.click_on_edit_anyway_option()
 
-        if restricted_to_groups:
-            for group in restricted_to_groups:
-                (self.kb_article_edit_metadata_page
-                 .add_and_select_restrict_visibility_group_metadata(group))
-        if single_group != "":
-            self.kb_article_edit_metadata_page.add_and_select_restrict_visibility_group_metadata(
-                single_group)
+        if restricted_to_groups or single_group:
+            for group in (restricted_to_groups or []) + ([single_group] if single_group else []):
+                (self.kb_article_edit_metadata_page.
+                 add_and_select_restrict_visibility_group_metadata(group))
 
         if title:
             self.kb_article_edit_metadata_page.add_text_to_title_field(title)
@@ -76,37 +65,25 @@ class EditArticleMetaFlow:
                     topics
                 )
 
-        if obsolete:
-            if not self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked():
-                self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
-        else:
-            if self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked():
-                self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
+        if self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked() != obsolete:
+            self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
 
-        if discussions:
-            if not self.kb_article_edit_metadata_page.is_allow_discussion_checkbox_checked():
-                self.kb_article_edit_metadata_page.click_on_allow_discussion_on_article_checkbox()
-        else:
-            if self.kb_article_edit_metadata_page.is_allow_discussion_checkbox_checked():
-                self.kb_article_edit_metadata_page.click_on_allow_discussion_on_article_checkbox()
+        if self.kb_article_edit_metadata_page.is_allow_discussion_checkbox_checked() != \
+           discussions:
+            self.kb_article_edit_metadata_page.click_on_allow_discussion_on_article_checkbox()
 
-        # If it needs change we are going to ensure that the needs change checkbox is checked.
+        # Ensure the needs change checkbox and textarea are updated accordingly.
         if needs_change:
             if not self.kb_article_edit_metadata_page.is_needs_change_checkbox():
                 self.kb_article_edit_metadata_page.click_needs_change_checkbox()
-                # If it needs change with comment we are also adding the comment.
-            if needs_change_comment:
-                self.kb_article_edit_metadata_page.fill_needs_change_textarea(
-                    self.utilities.kb_revision_test_data['needs_change_message']
-                )
+            # If it needs change with comment we are also adding the comment.
             # If it doesn't need comment we are ensuring that the textarea field is empty.
-            else:
-                self.kb_article_edit_metadata_page.fill_needs_change_textarea('')
-
-        # If it doesn't need change we are ensuring that the checkbox is not checked.
-        else:
-            if self.kb_article_edit_metadata_page.is_needs_change_checkbox():
-                self.kb_article_edit_metadata_page.click_needs_change_checkbox()
+            self.kb_article_edit_metadata_page.fill_needs_change_textarea(
+                self.utilities.kb_revision_test_data[
+                    'needs_change_message'] if needs_change_comment else ''
+            )
+        elif self.kb_article_edit_metadata_page.is_needs_change_checkbox():
+            self.kb_article_edit_metadata_page.click_needs_change_checkbox()
 
         if related_documents:
             for document in related_documents:

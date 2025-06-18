@@ -1,3 +1,4 @@
+from slugify import slugify
 from playwright_tests.core.utilities import Utilities
 import pytest
 import allure
@@ -29,7 +30,6 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True
         )
-        parent_article_url = utilities.get_page_url()
 
     with allure.step("Clicking on the Translate Article Editing Tools option and selecting "
                      "the ro locale"):
@@ -109,7 +109,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
             translation['translation_title'])).to_be_hidden()
 
     with allure.step("Navigating to the parent article and marking it as ready for l10n"):
-        utilities.navigate_to_link(parent_article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
@@ -127,7 +127,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page):
         )
 
     with allure.step("Deleting the parent article"):
-        utilities.navigate_to_link(parent_article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
@@ -154,7 +154,6 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True
         )
-        parent_article_url = utilities.get_page_url()
 
     with check, allure.step("Navigating to the localization dashboard and verifying that the "
                             "correct status is displayed"):
@@ -211,7 +210,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page):
         )
 
     with allure.step("Deleting the parent article"):
-        utilities.navigate_to_link(parent_article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
@@ -237,7 +236,6 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True
         )
-    article_url = utilities.get_page_url()
 
     with allure.step("Signing in with a different account that has no permissions to mark a "
                      "revision as ready for l10n"):
@@ -280,7 +278,7 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
             utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        utilities.navigate_to_link(article_url)
+        utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
@@ -408,14 +406,12 @@ def test_topic_inheritance_from_parent(page: Page):
 
     with allure.step("Create a new simple article and approving it without marking it as "
                      "ready for localization"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
-        parent_article_url = utilities.get_page_url()
+        parent_article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
 
     with allure.step("Creating a new translation in the ro locale"):
-        sumo_pages.kb_article_page.click_on_translate_article_option()
-        sumo_pages.translate_article_page.click_on_locale_from_list("ro")
         translation = sumo_pages.submit_kb_translation_flow._add_article_translation(
-            approve_translation_revision=True)
+            approve_translation_revision=True, locale="ro")
 
     with check, allure.step("Navigating to the topic listing page and verifying that the "
                             "translation is successfully displayed"):
@@ -425,7 +421,7 @@ def test_topic_inheritance_from_parent(page: Page):
 
     with allure.step("Navigating to the parent article and editing it's metadata by adding a new "
                      "topic"):
-        utilities.navigate_to_link(parent_article_url)
+        utilities.navigate_to_link(parent_article_info["article_url"])
         sumo_pages.edit_article_metadata_flow._edit_article_metadata(
             topics=["Settings", "Customization"]
         )
@@ -443,7 +439,7 @@ def test_topic_inheritance_from_parent(page: Page):
             translation['translation_title'])).to_be_visible()
 
     with allure.step("Removing the old topic from the parent article"):
-        utilities.navigate_to_link(parent_article_url)
+        utilities.navigate_to_link(parent_article_info["article_url"])
         sumo_pages.edit_article_metadata_flow._edit_article_metadata(topics="Accounts")
 
     with check, allure.step("Navigating to the first topic listing page and verifying that the "
@@ -459,7 +455,7 @@ def test_topic_inheritance_from_parent(page: Page):
             translation['translation_title'])).to_be_visible()
 
     with allure.step("Deleting the parent article"):
-        utilities.navigate_to_link(parent_article_url)
+        utilities.navigate_to_link(parent_article_info["article_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     with allure.step("Verifying that the translation is not visible in both the original and new "
@@ -471,3 +467,134 @@ def test_topic_inheritance_from_parent(page: Page):
         utilities.navigate_to_link(new_topic_listing_page)
         expect(sumo_pages.product_topics_page.get_a_particular_article_locator(
             translation['translation_title'])).to_be_hidden()
+
+
+# C3059082
+@pytest.mark.kbArticleTranslation
+def test_article_translation_on_locale_switch(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    with allure.step("Signing in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article"):
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
+        sumo_pages.kb_article_page.click_on_article_option()
+        article_url = utilities.get_page_url()
+
+    with allure.step("Creating a new translation in the ro locale"):
+        ro_translation = sumo_pages.submit_kb_translation_flow._add_article_translation(
+            approve_translation_revision=True, locale="ro",
+            title=f"Articol de test {article_details['article_title']}",
+            slug=f"articol-de-test-{slugify(article_details['article_title'])}")
+
+    with allure.step("Navigating back to the english article"):
+        utilities.navigate_to_link(article_details['article_url'])
+
+    with allure.step("Creating a new translation in the de locale"):
+        de_translation = sumo_pages.submit_kb_translation_flow._add_article_translation(
+            approve_translation_revision=True, locale="de",
+            title=f"Testartikel {article_details['article_title']}",
+            slug=f"testartikel-{slugify(article_details['article_title'])}")
+
+    with allure.step("Navigating back to the english article and signing out from SUMO"):
+        utilities.navigate_to_link(article_url)
+        utilities.delete_cookies()
+
+    with check, allure.step("Switching the page locale to 'ro' and verifying that the translated "
+                            "version is successfully displayed"):
+        sumo_pages.footer_section.switch_to_a_locale("ro")
+        expect(page).to_have_url(
+            HomepageMessages.STAGE_HOMEPAGE_URL + "/ro/kb/" + ro_translation['translation_slug'])
+        check.equal(
+            sumo_pages.kb_article_page.get_text_of_article_title(),
+            ro_translation['translation_title']
+        )
+
+    with check, allure.step("Switch the page locale to 'de' and verifying that the translated "
+                            "version is successfully displayed"):
+        sumo_pages.footer_section.switch_to_a_locale("de")
+        expect(page).to_have_url(
+            HomepageMessages.STAGE_HOMEPAGE_URL + "/de/kb/" + de_translation['translation_slug'])
+        check.equal(
+            sumo_pages.kb_article_page.get_text_of_article_title(),
+            de_translation['translation_title']
+        )
+
+    with check, allure.step("Switching to the 'fr' locale and verifying that 404 is returned"):
+        with page.expect_response("**/kb/**") as response_info:
+            sumo_pages.footer_section.switch_to_a_locale("fr")
+        response = response_info.value
+        assert response.status == 404
+
+    with check, allure.step("Switching back to the 'en-US' locale and verifying that the article "
+                            "is displayed in the english form"):
+        sumo_pages.footer_section.switch_to_a_locale("en-US")
+        expect(page).to_have_url(
+            HomepageMessages.STAGE_HOMEPAGE_URL + "/en-US/kb/" + article_details['article_slug'])
+        check.equal(
+            sumo_pages.kb_article_page.get_text_of_article_title(),
+            article_details['article_title']
+        )
+
+    with check, allure.step("Switching to the 'fr' locale and verifying that the article is "
+                            "displayed in the english form"):
+        sumo_pages.footer_section.switch_to_a_locale("fr")
+        expect(page).to_have_url(
+            HomepageMessages.STAGE_HOMEPAGE_URL + "/fr/kb/" + article_details['article_slug'])
+        check.equal(
+            sumo_pages.kb_article_page.get_text_of_article_title(),
+            article_details['article_title']
+        )
+
+    with allure.step("Deleting the parent article"):
+        with allure.step("Signing in with an Admin account"):
+            utilities.start_existing_session(utilities.username_extraction_from_email(
+                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            ))
+
+        utilities.navigate_to_link(article_details['article_url'])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
+
+@pytest.mark.kbArticleTranslation
+def test_locale_redirect_from_article_without_en_us_parent(page: Page):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    with allure.step("Signing in with an Admin account"):
+        utilities.start_existing_session(utilities.username_extraction_from_email(
+            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+    with allure.step("Creating a new kb article directly inside the RO locale"):
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True, locale="ro", article_category="Depanare"
+        )
+        sumo_pages.kb_article_page.click_on_a_particular_breadcrumb(
+            article_details['article_title']
+        )
+        article_url = utilities.get_page_url()
+
+    with check, allure.step("Switching the page locale to en-US and verifying that 404 is "
+                            "returned"):
+        with page.expect_response("**/kb/**") as response_info:
+            sumo_pages.footer_section.switch_to_a_locale("en-US")
+        response = response_info.value
+        assert response.status == 404
+
+    with allure.step("Navigating back to the article"):
+        utilities.navigate_to_link(article_url)
+
+    with check, allure.step("Switching the locale to de and verifying that 404 is returned"):
+        with page.expect_response("**/kb/**") as response_info:
+            sumo_pages.footer_section.switch_to_a_locale("de")
+        response = response_info.value
+        assert response.status == 404
+
+    with allure.step("Deleting the article"):
+        utilities.navigate_to_link(article_details['article_url'])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()

@@ -37,12 +37,15 @@ class ContributorThreadFlow:
         """
         if "/new" not in self.utilities.get_page_url():
             self.forum_discussions_page.click_on_new_thread_button()
+
         self.new_thread_page.fill_title_input_field(thread_title)
         self.new_thread_page.fill_content_textarea_field(thread_body)
-        if cancel:
-            self.new_thread_page.click_on_cancel_button()
-        else:
-            self.new_thread_page.click_on_post_thread_button()
+
+        action = self.new_thread_page.click_on_cancel_button if cancel else (
+            self.new_thread_page.click_on_post_thread_button)
+        action()
+
+        if not cancel:
             return re.search(r'last=(\d+)', self.utilities.get_page_url()).group(1)
 
     def move_thread_to_a_different_forum(self, target_forum: str):

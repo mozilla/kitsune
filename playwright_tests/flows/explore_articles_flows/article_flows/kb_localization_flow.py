@@ -28,46 +28,28 @@ class KbArticleTranslationFlow:
             self.kb_article_page.click_on_translate_article_option()
             self.translate_article_page.click_on_locale_from_list(locale)
 
-        if title != '':
-            translation_title = title
-            self.translate_article_page.fill_translation_title_field(translation_title)
+        translation_title = title or (
+            self.utilities.kb_article_test_data['translated_title'] + self.utilities.
+            generate_random_number(1, 1000))
+        self.translate_article_page.fill_translation_title_field(translation_title)
 
-        else:
-            translation_title = (self.utilities.kb_article_test_data['translated_title'] + self.
-                                 utilities.generate_random_number(1, 1000))
-            self.translate_article_page.fill_translation_title_field(translation_title)
-
-        if slug != '':
-            translation_slug = slug
-            self.translate_article_page.fill_translation_slug_field(translation_slug)
-        else:
-            translation_slug = (self.utilities.kb_article_test_data['translated_slug'] + self.
-                                utilities.generate_random_number(1, 1000))
-            self.translate_article_page.fill_translation_slug_field(translation_slug)
+        translation_slug = slug or (
+            self.utilities.kb_article_test_data['translated_slug'] + self.
+            utilities.generate_random_number(1, 1000))
+        self.translate_article_page.fill_translation_slug_field(translation_slug)
 
         if not allow_discussions:
             self.translate_article_page.click_on_allow_translated_article_comments_checkbox()
 
-        if keyword != '':
-            translation_keyword = keyword
-            self.translate_article_page.fill_translated_article_keyword(translation_keyword)
-        else:
-            translation_keyword = self.utilities.kb_article_test_data['translated_keyword']
-            self.translate_article_page.fill_translated_article_keyword(translation_keyword)
+        translation_keyword = keyword or self.utilities.kb_article_test_data['translated_keyword']
+        self.translate_article_page.fill_translated_article_keyword(translation_keyword)
 
-        if summary != '':
-            translation_summary = summary
-            self.translate_article_page.fill_translated_article_summary(translation_summary)
-        else:
-            translation_summary = self.utilities.kb_article_test_data['translated_search_summary']
-            self.translate_article_page.fill_translated_article_summary(translation_summary)
+        translation_summary = summary or self.utilities.kb_article_test_data[
+            'translated_search_summary']
+        self.translate_article_page.fill_translated_article_summary(translation_summary)
 
-        if body != '':
-            translation_body = body
-            self.translate_article_page.fill_body_translation_field(translation_body)
-        else:
-            translation_body = self.utilities.kb_article_test_data['translated_body']
-            self.translate_article_page.fill_body_translation_field(translation_body)
+        translation_body = body or self.utilities.kb_article_test_data['translated_body']
+        self.translate_article_page.fill_body_translation_field(translation_body)
 
         if save_as_draft:
             self.translate_article_page.click_on_save_translation_as_draft_button()

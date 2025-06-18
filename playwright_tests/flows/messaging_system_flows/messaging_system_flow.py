@@ -11,11 +11,8 @@ class MessagingSystemFlows:
         self.inbox_page = InboxPage(page)
 
     # Send message form with data flow.
-    def complete_send_message_form_with_data(self,
-                                             recipient_username='',
-                                             message_body='',
-                                             submit_message=True,
-                                             expected_url=None):
+    def complete_send_message_form_with_data(self, recipient_username='', message_body='',
+                                             submit_message=True, expected_url=None):
         """Complete the send message form with data.
 
         Args:
@@ -25,13 +22,11 @@ class MessagingSystemFlows:
             expected_url (str): The expected URL after the click event.
         """
         if recipient_username:
-            if isinstance(recipient_username, list):
-                for recipient in recipient_username:
-                    self.new_message_page.type_into_new_message_to_input_field(recipient)
-                    self.new_message_page.click_on_a_searched_user(recipient)
-            else:
-                self.new_message_page.type_into_new_message_to_input_field(recipient_username)
-                self.new_message_page.click_on_a_searched_user(recipient_username)
+            recipients = recipient_username if isinstance(recipient_username, list) else [
+                recipient_username]
+            for recipient in recipients:
+                self.new_message_page.type_into_new_message_to_input_field(recipient)
+                self.new_message_page.click_on_a_searched_user(recipient)
 
         if message_body:
             self.new_message_page.fill_into_new_message_body_textarea(message_body)
@@ -40,13 +35,8 @@ class MessagingSystemFlows:
             self.new_message_page.click_on_new_message_send_button(
                 expected_url=expected_url)
 
-    def delete_message_flow(self, username='',
-                            excerpt='',
-                            delete_message=True,
-                            from_sent_list=False,
-                            from_inbox_list=False,
-                            expected_url=None
-                            ):
+    def delete_message_flow(self, username='', excerpt='', delete_message=True,
+                            from_sent_list=False, from_inbox_list=False, expected_url=None):
         """Delete a message flow.
 
         Args:
@@ -58,15 +48,15 @@ class MessagingSystemFlows:
             expected_url (str): The expected URL after the click event.
         """
         if from_sent_list:
-            if username:
-                self.sent_message_page.click_on_sent_message_delete_button_by_user(username)
-            elif excerpt:
-                self.sent_message_page.click_on_sent_message_delete_button_by_excerpt(excerpt)
+            if username or excerpt:
+                self.sent_message_page.click_on_sent_message_delete_button_by_user(
+                    username) if username else \
+                    self.sent_message_page.click_on_sent_message_delete_button_by_excerpt(excerpt)
 
-        if from_inbox_list:
+        if from_inbox_list and (username or excerpt):
             if username:
                 self.inbox_page.click_on_inbox_message_delete_button_by_username(username)
-            elif excerpt:
+            else:
                 self.inbox_page.click_on_inbox_message_delete_button_by_excerpt(excerpt)
 
         if delete_message:
