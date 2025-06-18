@@ -1,19 +1,25 @@
 from datetime import datetime, timedelta
+from importlib import import_module
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+import json
 
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY
+from django.contrib.auth.models import Group, Permission, User
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.db.models import Count, Q
 from django.db.models.functions import Now
+from django.http import Http404, JsonResponse
 from django.utils.encoding import force_str
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, permissions, serializers, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from kitsune.access.decorators import login_required
+from kitsune.access.decorators import group_required, login_required
 from kitsune.questions.models import Answer
 from kitsune.questions.utils import num_answers, num_questions, num_solutions
 from kitsune.sumo.api_utils import DateTimeUTCField, OrderingFilter, PermissionMod
@@ -292,3 +298,83 @@ class ProfileViewSet(
 
         result.sort(key=lambda u: u["weekly_solutions"], reverse=True)
         return Response(result)
+
+
+@group_required("Staff")
+@require_POST
+def create_test_user(request):
+    """
+    Creates a new test user and a session for that user, returning the test user's session cookie.
+    """
+    if not (settings.DEV and settings.ENABLE_TESTING_ENDPOINTS):
+        raise Http404
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"message": "Invalid JSON payload."}, status=400)
+
+    if not (username := data.get("username")):
+        return JsonResponse({"message": 'Invalid JSON payload (missing "username").'}, status=400)
+
+    try:
+        test_user = User.objects.create_user(username=username)
+    except IntegrityError:
+        return JsonResponse({"message": f'Username "{username}" already exists.'}, status=409)
+
+    if codenames := data.get("permissions"):
+        if not isinstance(codenames, list):
+            return JsonResponse(
+                {"message": 'Invalid JSON payload ("permissions" is not a list).'}, status=400
+            )
+
+        for codename in codenames:
+            try:
+                permission = Permission.objects.get(codename=codename)
+            except Permission.DoesNotExist:
+                return JsonResponse(
+                    {"message": f'Permission "{codename}" does not exist.'}, status=400
+                )
+            else:
+                test_user.user_permissions.add(permission)
+
+    if group_names := data.get("groups"):
+        if not isinstance(group_names, list):
+            return JsonResponse(
+                {"message": 'Invalid JSON payload ("groups" is not a list).'}, status=400
+            )
+
+        for name in group_names:
+            try:
+                group = Group.objects.get(name=name)
+            except Group.DoesNotExist:
+                return JsonResponse({"message": f'Group "{name}" does not exist.'}, status=400)
+            else:
+                test_user.groups.add(group)
+
+    Profile.objects.create(user=test_user, is_fxa_migrated=True)
+
+    engine = import_module(settings.SESSION_ENGINE)
+    session = engine.SessionStore()
+    session[SESSION_KEY] = str(test_user.pk)
+    session[BACKEND_SESSION_KEY] = "kitsune.users.auth.FXAAuthBackend"
+    session[HASH_SESSION_KEY] = test_user.get_session_auth_hash()
+    session.create()
+
+    return JsonResponse(
+        {
+            "username": test_user.username,
+            "cookies": [
+                {
+                    "name": settings.SESSION_COOKIE_NAME,
+                    "value": session.session_key,
+                    "max-age": 60 * 60,  # 1 hour
+                    "path": settings.SESSION_COOKIE_PATH,
+                    "domain": settings.SESSION_COOKIE_DOMAIN,
+                    "secure": settings.SESSION_COOKIE_SECURE,
+                    "httponly": settings.SESSION_COOKIE_HTTPONLY,
+                    "samesite": settings.SESSION_COOKIE_SAMESITE,
+                },
+            ],
+        }
+    )
