@@ -2,11 +2,11 @@ import json
 
 from pyquery import PyQuery as pq
 
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
-class TestSearchSEO(Elastic7TestCase):
+class TestSearchSEO(ElasticTestCase):
     """Test SEO-related aspects of the SUMO search view."""
 
     def test_simple_search(self):

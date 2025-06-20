@@ -742,9 +742,9 @@ STAFF_GROUP = "Staff"
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
-# Connection information for Elastic 7
+# Connection information for Elasticsearch 8
 ES_TIMEOUT = 5  # Timeout for querying requests
-ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
+ES_URLS = config("ES_URLS", cast=Csv(), default="http://elasticsearch:9200")
 ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
 ES_USE_SSL = config("ES_USE_SSL", default=False, cast=bool)
 ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())

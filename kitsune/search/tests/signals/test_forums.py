@@ -1,11 +1,11 @@
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.forums.tests import PostFactory
 from elasticsearch.exceptions import NotFoundError
 
 from kitsune.search.documents import ForumDocument
 
 
-class ForumDocumentSignalsTests(Elastic7TestCase):
+class ForumDocumentSignalsTests(ElasticTestCase):
     def setUp(self):
         self.post = PostFactory()
         self.post_id = self.post.id
