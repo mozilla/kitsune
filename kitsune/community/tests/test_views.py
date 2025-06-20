@@ -1,8 +1,8 @@
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
-class ContributorsMetricsTests(Elastic7TestCase):
+class ContributorsMetricsTests(ElasticTestCase):
     """Tests for the Community Hub user search page."""
 
     search_tests = True

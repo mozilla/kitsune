@@ -1,12 +1,12 @@
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch import NotFoundError
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.search.documents import WikiDocument
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
-class WikiDocumentSignalsTests(Elastic7TestCase):
+class WikiDocumentSignalsTests(ElasticTestCase):
     def setUp(self):
         self.document = DocumentFactory()
         self.document_id = self.document.id

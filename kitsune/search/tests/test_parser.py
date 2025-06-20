@@ -1,8 +1,8 @@
 from django.test import SimpleTestCase, TestCase
 from parameterized import parameterized
 from pyparsing import ParseException
-from elasticsearch_dsl import Q
-from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
+from elasticsearch.dsl import Q
+from elasticsearch.dsl.query import SimpleQueryString as S, Bool as B
 
 from kitsune.search.parser import Parser
 

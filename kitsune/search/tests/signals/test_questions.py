@@ -1,7 +1,7 @@
 from unittest.mock import call, patch
 
 from django.test.utils import override_settings
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch import NotFoundError
 
 from kitsune.questions.tests import (
     AnswerFactory,
@@ -10,13 +10,13 @@ from kitsune.questions.tests import (
     QuestionVoteFactory,
 )
 from kitsune.search.documents import AnswerDocument, QuestionDocument
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.tags.tests import TagFactory
 from kitsune.wiki.tests import DocumentFactory
 
 
 @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
-class QuestionDocumentSignalsTests(Elastic7TestCase):
+class QuestionDocumentSignalsTests(ElasticTestCase):
     def setUp(self):
         self.question = QuestionFactory()
         self.answer = AnswerFactory(question=self.question, content="answer 1")
@@ -92,7 +92,7 @@ class QuestionDocumentSignalsTests(Elastic7TestCase):
         self.assertNotIn(call("QuestionDocument", document.id), mock_index_object.call_args_list)
 
 
-class AnswerDocumentSignalsTests(Elastic7TestCase):
+class AnswerDocumentSignalsTests(ElasticTestCase):
     def setUp(self):
         self.answer = AnswerFactory()
         self.answer_id = self.answer.id
