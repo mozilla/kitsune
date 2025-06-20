@@ -2,14 +2,14 @@ from pyquery import PyQuery as pq
 
 from kitsune.forums.tests import ThreadFactory
 from kitsune.questions.tests import AnswerFactory
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import ContributorFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 
-class UserSearchTests(Elastic7TestCase):
+class UserSearchTests(ElasticTestCase):
     """Tests for the Community Hub user search page."""
 
     search_tests = True
@@ -39,7 +39,7 @@ class UserSearchTests(Elastic7TestCase):
         self.assertEqual(len(doc(".results-user")), 2)
 
 
-class LandingTests(Elastic7TestCase):
+class LandingTests(ElasticTestCase):
     """Tests for the Community Hub landing page."""
 
     search_tests = True
@@ -94,7 +94,7 @@ class LandingTests(Elastic7TestCase):
         assert "we are SUMO!" in doc("#recent-threads ul").html()
 
 
-class TopContributorsTests(Elastic7TestCase):
+class TopContributorsTests(ElasticTestCase):
     """Tests for the Community Hub top contributors page."""
 
     search_tests = True
