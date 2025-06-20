@@ -5,6 +5,12 @@ else
 DC = $(shell which docker) compose
 endif
 
+UNAME_S := $(shell uname -s)
+INIT_ARGS := ""
+ifeq ($(UNAME_S),Darwin)
+	INIT_ARGS := "--optipng-fix"
+endif
+
 default: help
 	@echo ""
 	@echo "You need to specify a subcommand."
@@ -45,10 +51,7 @@ start: .docker-build
 run: start
 
 init: .docker-build
-	${DC} run web bin/run-bootstrap.sh
-
-init-mac: .docker-build
-	${DC} run web bin/run-bootstrap.sh --optipng-fix
+	${DC} run web bin/run-bootstrap.sh $(INIT_ARGS)
 
 shell: .docker-build
 	${DC} run web bash
