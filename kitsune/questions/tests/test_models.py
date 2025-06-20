@@ -30,7 +30,7 @@ from kitsune.questions.tests import (
     QuestionVoteFactory,
     tags_eq,
 )
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.tags.models import SumoTag
@@ -542,7 +542,7 @@ class AddExistingTagTests(TestCase):
             add_existing_tag("nonexistent tag", self.untagged_question.tags)
 
 
-class OldQuestionsArchiveTest(Elastic7TestCase):
+class OldQuestionsArchiveTest(ElasticTestCase):
     search_tests = True
 
     def test_archive_old_questions(self):

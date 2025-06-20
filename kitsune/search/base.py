@@ -9,11 +9,11 @@ from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.core.paginator import Paginator as DjPaginator
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from elasticsearch.dsl import Document as DSLDocument
+from elasticsearch.dsl import InnerDoc, MetaField, field
+from elasticsearch.dsl import Search as DSLSearch
+from elasticsearch.dsl.utils import AttrDict
 from elasticsearch.exceptions import NotFoundError, RequestError
-from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import InnerDoc, MetaField, field
-from elasticsearch_dsl import Search as DSLSearch
-from elasticsearch_dsl.utils import AttrDict
 from pyparsing import ParseException
 
 from kitsune.search.config import (
@@ -81,21 +81,23 @@ class SumoDocument(DSLDocument):
     def migrate_writes(cls, timestamp=None):
         """Create a new index for this document, and point the write alias at it."""
         timestamp = timestamp or datetime.now(tz=timezone.utc)
-        name = f'{cls.Index.base_name}_{timestamp.strftime("%Y%m%d%H%M%S")}'
+        name = f"{cls.Index.base_name}_{timestamp.strftime('%Y%m%d%H%M%S')}"
         cls.init(index=name)
         cls._update_alias(cls.Index.write_alias, name)
 
     @classmethod
     def migrate_reads(cls):
         """Point the read alias at the same index as the write alias."""
-        cls._update_alias(cls.Index.read_alias, cls.alias_points_at(cls.Index.write_alias))
+        cls._update_alias(
+            cls.Index.read_alias, cls.alias_points_at(cls.Index.write_alias)
+        )
 
     @classmethod
     def _update_alias(cls, alias, new_index):
         client = es_client()
         old_index = cls.alias_points_at(alias)
         if not old_index:
-            client.indices.put_alias(new_index, alias)
+            client.indices.put_alias(index=new_index, name=alias)
         else:
             client.indices.update_aliases(
                 {
@@ -150,7 +152,10 @@ class SumoDocument(DSLDocument):
                 field_type = doc_mapping.resolve_field(f)
                 if isinstance(field_type, field.Object) and not (
                     isinstance(value, InnerDoc)
-                    or (isinstance(value, list) and isinstance((value or [None])[0], InnerDoc))
+                    or (
+                        isinstance(value, list)
+                        and isinstance((value or [None])[0], InnerDoc)
+                    )
                 ):
                     # if the field is an Object but the value isn't an InnerDoc
                     # or a list containing an InnerDoc then we're dealing with locales
@@ -363,7 +368,9 @@ class SumoSearch(SumoSearchInterface):
             }
         )
 
-    def run(self, key: int | slice = slice(0, settings.SEARCH_RESULTS_PER_PAGE)) -> Self:
+    def run(
+        self, key: int | slice = slice(0, settings.SEARCH_RESULTS_PER_PAGE)
+    ) -> Self:
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 

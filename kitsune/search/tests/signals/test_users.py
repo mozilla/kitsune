@@ -1,12 +1,12 @@
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch import NotFoundError
 
 from kitsune.products.tests import ProductFactory
 from kitsune.search.documents import ProfileDocument
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
-class ProfileDocumentSignalsTests(Elastic7TestCase):
+class ProfileDocumentSignalsTests(ElasticTestCase):
     def setUp(self):
         self.user = UserFactory()
         self.user_id = self.user.id

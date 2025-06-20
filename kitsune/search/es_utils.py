@@ -6,7 +6,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
-from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
+from elasticsearch.dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
 from kitsune.search import config
 
@@ -91,13 +91,27 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
 
 
 def es_client(**kwargs):
-    """Return an ES Elasticsearch client"""
+    """Return an Elasticsearch client configured for ES9"""
+    defaults = {"request_timeout": settings.ES_TIMEOUT, "retry_on_timeout": True, "max_retries": 3}
+
+    defaults.update(kwargs)
+
     # prefer a cloud_id if available
     if es_cloud_id := settings.ES_CLOUD_ID:
-        kwargs.update({"cloud_id": es_cloud_id, "http_auth": settings.ES_HTTP_AUTH})
+        defaults.update({"cloud_id": es_cloud_id})
+        if settings.ES_HTTP_AUTH:
+            if len(settings.ES_HTTP_AUTH) == 2:
+                defaults.update({"basic_auth": settings.ES_HTTP_AUTH})
+            else:
+                defaults.update({"api_key": settings.ES_HTTP_AUTH[0]})
     else:
-        kwargs.update({"hosts": settings.ES_URLS})
-    return Elasticsearch(**kwargs)
+        hosts = []
+        for url in settings.ES_URLS:
+            if not url.startswith(("http://", "https://")):
+                url = f"http://{url}"
+            hosts.append(url)
+        defaults.update({"hosts": hosts})
+    return Elasticsearch(**defaults)
 
 
 def get_doc_types(paths=None):
@@ -170,9 +184,8 @@ def index_objects_bulk(
     # before raising an exception:
     _, errors = es_bulk(
         es_client(
-            timeout=timeout,
+            request_timeout=timeout,
             retry_on_timeout=True,
-            initial_backoff=timeout,
             max_retries=settings.ES_BULK_MAX_RETRIES,
         ),
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
