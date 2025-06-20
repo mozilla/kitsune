@@ -9,12 +9,12 @@ from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.core.paginator import Paginator as DjPaginator
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from elasticsearch.dsl import Document as DSLDocument
+from elasticsearch.dsl import InnerDoc, MetaField
+from elasticsearch.dsl import Search as DSLSearch
+from elasticsearch.dsl import field
+from elasticsearch.dsl.utils import AttrDict
 from elasticsearch.exceptions import NotFoundError, RequestError
-from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import InnerDoc, MetaField
-from elasticsearch_dsl import Search as DSLSearch
-from elasticsearch_dsl import field
-from elasticsearch_dsl.utils import AttrDict
 from pyparsing import ParseException
 
 from kitsune.search.config import (
@@ -96,7 +96,7 @@ class SumoDocument(DSLDocument):
         client = es_client()
         old_index = cls.alias_points_at(alias)
         if not old_index:
-            client.indices.put_alias(new_index, alias)
+            client.indices.put_alias(index=new_index, name=alias)
         else:
             client.indices.update_aliases(
                 {

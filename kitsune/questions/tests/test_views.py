@@ -22,7 +22,7 @@ from kitsune.questions.tests import (
     QuestionLocaleFactory,
 )
 from kitsune.questions.views import parse_troubleshooting
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse
@@ -30,7 +30,7 @@ from kitsune.tidings.models import Watch
 from kitsune.users.tests import UserFactory, add_permission
 
 
-class AAQSearchTests(Elastic7TestCase):
+class AAQSearchTests(ElasticTestCase):
     search_tests = True
 
     def test_ratelimit(self):
