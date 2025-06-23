@@ -1184,10 +1184,36 @@ REGEX_TIMEOUT = config("REGEX_TIMEOUT", default=5, cast=int)
 NANP_REGEX = re.compile(r"[0-9]{3}-?[a-zA-Z2-9][a-zA-Z0-9]{2}-?[a-zA-Z0-9]{4}")
 
 if ES_ENABLE_CONSOLE_LOGGING and DEV:
-    es_trace_logger = logging.getLogger("elasticsearch.trace")
-    es_trace_logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    es_trace_logger.addHandler(handler)
+
+    def setup_logger(name, formatter_str, level=logging.DEBUG):
+        logger = logging.getLogger(name)
+        logger.handlers.clear()
+        logger.setLevel(level)
+        handler = logging.StreamHandler()
+        handler.setLevel(level)
+        handler.setFormatter(logging.Formatter(formatter_str))
+        logger.addHandler(handler)
+        logger.propagate = False
+        return logger
+
+    # Main Elasticsearch logger
+    setup_logger("elasticsearch", "ES: %(message)s", level=logging.DEBUG)
+
+    """
+    Transport loggers with per-logger levels:
+        elastic_transport: General transport logging
+        elastic_transport.transport: Transport-level logging
+        elastic_transport.node: Node-level logging
+        elastic_transport.node_pool: Node pool-level logging
+    """
+    transport_logger_levels = {
+        "elastic_transport": logging.DEBUG,
+        "elastic_transport.transport": logging.INFO,
+        "elastic_transport.node": logging.WARNING,
+        "elastic_transport.node_pool": logging.ERROR,
+    }
+    for logger_name, level in transport_logger_levels.items():
+        setup_logger(logger_name, f"ES_TRANSPORT({logger_name}): %(message)s", level=level)
 
 # Zendesk Section
 ZENDESK_SUBDOMAIN = config("ZENDESK_SUBDOMAIN", default="")
