@@ -99,12 +99,10 @@ class SumoDocument(DSLDocument):
             client.indices.put_alias(index=new_index, name=alias)
         else:
             client.indices.update_aliases(
-                {
-                    "actions": [
-                        {"remove": {"index": old_index, "alias": alias}},
-                        {"add": {"index": new_index, "alias": alias}},
-                    ]
-                }
+                actions=[
+                    {"remove": {"index": old_index, "alias": alias}},
+                    {"add": {"index": new_index, "alias": alias}},
+                ]
             )
 
     @classmethod

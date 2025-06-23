@@ -77,6 +77,6 @@ class Command(BaseCommand):
             index = dt.alias_points_at(dt.Index.write_alias)
             if kwargs["reload_search_analyzers"]:
                 print(f"Reloading search analyzers on {index}")
-                client.indices.reload_search_analyzers(index)
+                client.indices.reload_search_analyzers(index=index)
 
             print("")  # print blank line to make console output easier to read

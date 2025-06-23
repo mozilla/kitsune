@@ -213,7 +213,7 @@ def remove_from_field(doc_type_name, field_name, field_value):
 
     update = UpdateByQuery(using=es_client(), index=doc_type._index._name)
     update = update.filter("term", **{field_name: field_value})
-    update = update.script(source=script, params={"value": field_value}, conflicts="proceed")
+    update = update.script(source=script, params={"value": field_value})
 
     # refresh index to ensure search fetches all matches
     doc_type._index.refresh()
