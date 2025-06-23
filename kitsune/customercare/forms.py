@@ -52,10 +52,8 @@ class ZendeskForm(forms.Form):
         choices=OS_CHOICES,
         required=False,
     )
-    subject = forms.CharField(label=_lazy("Subject"), required=False)
-    description = forms.CharField(
-        label=_lazy("Tell us more"), widget=forms.Textarea(), required=False
-    )
+    subject = forms.CharField(label=_lazy("Subject"))
+    description = forms.CharField(label=_lazy("Tell us more"), widget=forms.Textarea())
     country = forms.CharField(widget=forms.HiddenInput, required=False)
 
     def __init__(self, *args, product, user=None, **kwargs):
