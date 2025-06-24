@@ -1,12 +1,12 @@
 <select id="search-related" class="tom-select-related-docs" placeholder="{{ _('Search for documents...') }}">
-  {% if related_documents.count() %}
-    {% for doc in related_documents.all() %}
+  {% if related_documents %}
+    {% for doc in related_documents %}
       <option value="{{ doc.pk }}" selected>{{ doc.title }}</option>
     {% endfor %}
   {% endif %}
 </select>
 <div id="related-docs-list">
-  {% if not related_documents.count() %}
+  {% if not related_documents %}
     <div class="empty-message">{{ _('No related documents.') }}</div>
   {% endif %}
 </div>
