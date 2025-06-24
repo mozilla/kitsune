@@ -25,8 +25,8 @@ class DictOnlyJSONField(forms.JSONField):
         return result
 
 
-class TopicAdminForm(forms.ModelForm):
-    metadata = DictOnlyJSONField(required=False)
+class MetadataForm(forms.ModelForm):
+    metadata = DictOnlyJSONField(required=False, initial=dict)
 
     class Meta:
         model = Topic
@@ -67,6 +67,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
     list_filter = (ArchivedFilter,)
+    form = MetadataForm
 
     def changelist_view(self, request, extra_context=None):
         if "is_archived" not in request.GET:
@@ -90,7 +91,7 @@ class TopicAdmin(admin.ModelAdmin):
     def get_products(obj):
         return ", ".join([p.title for p in obj.products.all()])
 
-    form = TopicAdminForm
+    form = MetadataForm
 
     parent.short_description = "Parent"  # type: ignore
     get_products.short_description = "Products"  # type: ignore
