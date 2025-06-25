@@ -35,7 +35,6 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.tags.models import BigVocabTaggableManager, SumoTag
-from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
 
@@ -276,16 +275,16 @@ class Question(AAQBase):
 
         return self._product_slug
 
-    def auto_tag(self):
-        """Apply tags to myself that are implied by my metadata.
-
-        You don't need to call save on the question after this.
-
+    def handle_metadata_tags(self, action):
         """
-        to_add = []
+        Add or remove tags that are implied by my metadata.
+        You don't need to call save on the question after this.
+        """
+        tags = []
+
         if product_config := self.product_config:
             for tag in product_config.associated_tags.all():
-                to_add.append(tag)
+                tags.append(tag)
 
         version = self.metadata.get("ff_version", "")
 
@@ -299,27 +298,43 @@ class Question(AAQBase):
             or version in product_details.firefox_history_stability_releases
             or version in product_details.firefox_history_major_releases
         ):
-            to_add.append("Firefox %s" % version)
+            tags.append("Firefox %s" % version)
             tenths = _tenths_version(version)
             if tenths:
-                to_add.append("Firefox %s" % tenths)
+                tags.append("Firefox %s" % tenths)
         elif _has_beta(version, dev_releases):
-            to_add.append("Firefox %s" % version)
-            to_add.append("beta")
+            tags.append("Firefox %s" % version)
+            tags.append("beta")
 
-        # Add a tag for the OS if it already exists as a tag:
+        # Add a tag for the OS but only if it already exists as a tag.
         if os := self.metadata.get("os"):
             try:
-                add_existing_tag(os, self.tags)
+                os_tag = SumoTag.objects.get(name__iexact=os)
             except SumoTag.DoesNotExist:
                 pass
+            else:
+                tags.append(os_tag)
+
         product_md = self.metadata.get("product")
         topic_md = self.metadata.get("category")
         if self.product and not product_md:
-            to_add.append(self.product.slug)
+            tags.append(self.product.slug)
         if self.topic and not topic_md:
-            to_add.append(self.topic.slug)
-        self.tags.add(*to_add)
+            tags.append(self.topic.slug)
+
+        getattr(self.tags, action)(*tags)
+
+    def auto_tag(self):
+        """
+        Add tags that are implied by my metadata.
+        """
+        self.handle_metadata_tags("add")
+
+    def remove_auto_tags(self):
+        """
+        Remove tags that are implied by my metadata.
+        """
+        self.handle_metadata_tags("remove")
 
     def get_absolute_url(self):
         # Note: If this function changes, we need to change it in
