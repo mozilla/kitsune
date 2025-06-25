@@ -275,7 +275,7 @@ class Question(AAQBase):
 
         return self._product_slug
 
-    def auto_tag(self, clear=False):
+    def handle_metadata_tags(self, action):
         """
         Add or remove tags that are implied by my metadata.
         You don't need to call save on the question after this.
@@ -322,7 +322,19 @@ class Question(AAQBase):
         if self.topic and not topic_md:
             tags.append(self.topic.slug)
 
-        getattr(self.tags, "remove" if clear else "add")(*tags)
+        getattr(self.tags, action)(*tags)
+
+    def auto_tag(self):
+        """
+        Add tags that are implied by my metadata.
+        """
+        self.handle_metadata_tags("add")
+
+    def remove_auto_tags(self):
+        """
+        Remove tags that are implied by my metadata.
+        """
+        self.handle_metadata_tags("remove")
 
     def get_absolute_url(self):
         # Note: If this function changes, we need to change it in

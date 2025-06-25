@@ -208,7 +208,7 @@ def update_question_fields_from_classification(question, result, sumo_bot):
 
     if update_fields:
         # Clear the existing auto tags.
-        question.auto_tag(clear=True)
+        question.remove_auto_tags()
         for field, value in update_fields.items():
             setattr(question, field, value)
         question.save(update_fields=update_fields.keys())
