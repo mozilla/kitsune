@@ -111,7 +111,7 @@ class QuestionSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self, is_simple_search: bool):
+    def get_filter(self):
         filters = [
             # restrict to the question index
             DSLQ("term", _index=self.get_index()),
@@ -126,7 +126,7 @@ class QuestionSearch(SumoSearch):
             ),
         ]
 
-        if is_simple_search:
+        if not self.parse_query:
             # Only exclude archived questions in simple search
             filters.append(DSLQ("term", question_is_archived=False))
 
@@ -203,7 +203,7 @@ class WikiSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self, is_simple_search: bool):
+    def get_filter(self):
         # Add default filters:
         filters = [
             # limit scope to the Wiki index
@@ -211,7 +211,7 @@ class WikiSearch(SumoSearch):
             DSLQ("exists", field=f"title.{self.locale}"),
         ]
 
-        if is_simple_search:
+        if not self.parse_query:
             # Only exclude archived documents in simple search
             filters.append(DSLQ("term", is_archived=False))
 
@@ -252,7 +252,7 @@ class ProfileSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return []
 
-    def get_filter(self, is_simple_search: bool):
+    def get_filter(self):
         # Note: Profile search doesn't seem to have an archived status
         return DSLQ(
             "boosting",
@@ -301,7 +301,7 @@ class ForumSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return []
 
-    def get_filter(self, is_simple_search: bool):
+    def get_filter(self):
         # Add default filters:
         filters = [
             # limit scope to the Forum index
@@ -374,12 +374,12 @@ class CompoundSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return self._from_children("get_highlight_fields_options")
 
-    def get_filter(self, is_simple_search: bool):
+    def get_filter(self):
         # `should` with `minimum_should_match=1` acts like an OR filter
         # Pass the flag down to children filters
         return DSLQ(
             "bool",
-            should=[child.get_filter(is_simple_search) for child in self._children],
+            should=[child.get_filter() for child in self._children],
             minimum_should_match=1,
         )
 
