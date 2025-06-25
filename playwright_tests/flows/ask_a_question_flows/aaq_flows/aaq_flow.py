@@ -18,14 +18,8 @@ class AAQFlow:
 
     # Submitting an aaq question for a product flow.
     # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
-    def _submit_an_aaq_question(self,
-                                subject: str,
-                                body: str,
-                                topic_name='',
-                                attach_image=False,
-                                is_premium=False,
-                                email="",
-                                is_loginless=False,
+    def _submit_an_aaq_question(self, subject: str, body: str, topic_name='', attach_image=False,
+                                is_premium=False, email="", is_loginless=False,
                                 expected_locator=None):
         question_subject = ''
         if is_premium:
@@ -33,11 +27,8 @@ class AAQFlow:
                                                                    email)
         else:
             question_subject = self.add__valid_data_to_all_aaq_fields_without_submitting(
-                subject,
-                topic_name,
-                body,
-                attach_image
-            )
+                subject, topic_name, body, attach_image)
+
         # Submitting the question.
         self.aaq_form_page.click_aaq_form_submit_button(expected_locator=expected_locator)
 
@@ -88,7 +79,9 @@ class AAQFlow:
                                                           is_loginless: bool, email: str):
         if is_loginless:
             self.aaq_form_page.fill_contact_email_field(email)
+
         self.aaq_form_page.select_random_topic_by_value()
+
         if self.aaq_form_page.is_os_dropdown_menu_visible():
             self.aaq_form_page.select_random_os_by_value()
         self.aaq_form_page.add_text_to_premium_aaq_form_subject_field(subject)
@@ -138,10 +131,8 @@ class AAQFlow:
         self.aaq_form_page.clear_the_question_body_textarea_field()
         self.aaq_form_page.add_text_to_aaq_textarea_field(reply_body)
 
-        if submit_reply:
-            self.aaq_form_page.click_on_update_answer_button()
-        else:
-            self.aaq_form_page.click_aaq_form_cancel_button()
+        self.aaq_form_page.click_on_update_answer_button() if submit_reply else (
+            self.aaq_form_page.click_aaq_form_cancel_button())
 
     def delete_question_reply(self, **kwargs):
         return self.utilities.re_call_function_on_error(
@@ -152,22 +143,17 @@ class AAQFlow:
         self.question_page.click_on_reply_more_options_button(answer_id)
         self.question_page.click_on_delete_this_post_for_a_certain_reply(answer_id)
 
-        if delete_reply:
-            self.question_page.click_delete_this_question_button()
-        else:
-            self.question_page.click_on_cancel_delete_button()
+        self.question_page.click_delete_this_question_button() if delete_reply else (
+            self.question_page.click_on_cancel_delete_button())
 
     def post_question_reply_flow(self, **kwargs):
         return self.utilities.re_call_function_on_error(
             lambda: self._post_question_reply_flow(**kwargs)
         )
 
-    def _post_question_reply_flow(self,
-                                  repliant_username: str,
-                                  reply='',
-                                  submit_reply=True,
-                                  quoted_reply=False,
-                                  reply_for_id='') -> str:
+    def _post_question_reply_flow(self, repliant_username: str, reply='', submit_reply=True,
+                                  quoted_reply=False, reply_for_id='') -> str:
+
         if quoted_reply:
             self.question_page.click_on_reply_more_options_button(reply_for_id)
             self.question_page.click_on_quote_for_a_certain_reply(reply_for_id)

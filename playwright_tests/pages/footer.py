@@ -1,5 +1,6 @@
 from playwright.sync_api import Page, ElementHandle
 from playwright_tests.core.basepage import BasePage
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class FooterSection(BasePage):
@@ -21,6 +22,20 @@ class FooterSection(BasePage):
         """Returns all footer locales."""
         return self._get_element_attribute_value(self.language_selector_options, "value")
 
-    def switch_to_a_locale(self, locale: str):
-        """Switches to a locale."""
-        self._select_option_by_value(self.language_selector, locale)
+    def switch_to_a_locale(self, locale: str, max_retries=3) -> None:
+        """Switches to a locale with a retry mechanism."""
+        print("Trying to switch the locale")
+        attempts = 0
+        while attempts < max_retries:
+            self._select_option_by_value(self.language_selector, locale)
+            try:
+                self.page.wait_for_url("**/" + locale + "/**", timeout=4000)
+                return
+            except PlaywrightTimeoutError:
+                print("Switching to locale failed, retrying...")
+                self.page.reload()
+                if locale in self.page.url:
+                    return
+            attempts += 1
+            raise PlaywrightTimeoutError(
+                f"Failed to switch to locale '{locale}' after {max_retries} attempts.")

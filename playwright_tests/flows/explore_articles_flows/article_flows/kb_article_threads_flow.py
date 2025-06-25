@@ -28,12 +28,9 @@ class KbThreads:
         self.kb_article_page.click_on_editing_tools_discussion_option()
         article_discussion_url = self.utilities.get_page_url()
         self.kb_article_discussion_page.click_on_post_a_new_thread_option()
-        if title == '':
-            thread_title = (self.utilities.kb_new_thread_test_data['new_thread_title'] + self
-                            .utilities.generate_random_number(0, 5000))
-        else:
-            thread_title = (title + self.utilities
-                            .generate_random_number(0, 5000))
+
+        thread_title = (title or self.utilities.kb_new_thread_test_data[
+            'new_thread_title']) + self.utilities.generate_random_number(0, 5000)
         thread_body = self.utilities.kb_new_thread_test_data['new_thread_body']
 
         # Adding text to the title field.
@@ -63,10 +60,10 @@ class KbThreads:
         self.kb_article_discussion_page.click_on_edit_this_thread_option()
         self.kb_article_discussion_page.add_text_to_edit_article_thread_title_field(thread_title)
 
-        if submit_edit:
-            self.kb_article_discussion_page.click_on_edit_article_thread_update_button()
-        else:
-            self.kb_article_discussion_page.click_on_edit_article_thread_cancel_button()
+        action = (self.kb_article_discussion_page.
+                  click_on_edit_article_thread_update_button) if submit_edit else (
+            self.kb_article_discussion_page.click_on_edit_article_thread_cancel_button)
+        action()
 
     def post_reply_to_thread(self, text: str, post_reply=True) -> dict[str, Any]:
         self.kb_article_discussion_page.fill_the_thread_post_a_reply_textarea(text)
