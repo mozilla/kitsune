@@ -49,6 +49,12 @@
 
   &-primary-logo {
     margin-bottom: p.$spacing-lg;
+    a {
+      background: url('sumo/img/wordmark-white.svg') no-repeat center;
+      background-color: rgb(255, 255, 255);
+      width: 100px;
+      height: 32px;
+    }
   }
 
   &-primary {
