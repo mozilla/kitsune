@@ -124,9 +124,11 @@ class QuestionSearch(SumoSearch):
                     "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
                 },
             ),
-            # exclude archived questions
-            DSLQ("term", question_is_archived=False),
         ]
+
+        if not self.parse_query:
+            # Only exclude archived questions in simple search
+            filters.append(DSLQ("term", question_is_archived=False))
 
         if self.product:
             filters.append(DSLQ("term", question_product_id=self.product.id))
@@ -208,6 +210,11 @@ class WikiSearch(SumoSearch):
             DSLQ("term", _index=self.get_index()),
             DSLQ("exists", field=f"title.{self.locale}"),
         ]
+
+        if not self.parse_query:
+            # Only exclude archived documents in simple search
+            filters.append(DSLQ("term", is_archived=False))
+
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
         return DSLQ("bool", filter=filters, must=self.build_query())
@@ -247,6 +254,7 @@ class ProfileSearch(SumoSearch):
         return []
 
     def get_filter(self):
+        # Note: Profile search doesn't seem to have an archived status
         return DSLQ(
             "boosting",
             positive=self.build_query(),
@@ -369,7 +377,12 @@ class CompoundSearch(SumoSearch):
 
     def get_filter(self):
         # `should` with `minimum_should_match=1` acts like an OR filter
-        return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
+        # Pass the flag down to children filters
+        return DSLQ(
+            "bool",
+            should=[child.get_filter() for child in self._children],
+            minimum_should_match=1,
+        )
 
     def make_result(self, hit):
         index = hit.meta.index
