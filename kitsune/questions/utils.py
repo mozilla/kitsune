@@ -11,6 +11,8 @@ from sentry_sdk import capture_exception
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import ModerationAction
+from kitsune.kbforums.models import Thread as KBForumThread, Post as KBForumPost
+from kitsune.forums.models import Thread, Post
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
 from kitsune.users.models import Profile
@@ -56,6 +58,20 @@ def mark_content_as_spam(user, by_user):
 
     for answer in Answer.objects.filter(creator=user):
         answer.mark_as_spam(by_user)
+
+    # We will delete kbforums posts and threads
+    for thread in KBForumThread.objects.filter(creator=user):
+        thread.delete()
+
+    for post in KBForumPost.objects.filter(creator=user):
+        post.delete()
+
+    # We will delete forum posts and threads
+    for thread in Thread.objects.filter(creator=user):
+        thread.delete()
+
+    for post in Post.objects.filter(author=user):
+        post.delete()
 
 
 def get_mobile_product_from_ua(user_agent):
