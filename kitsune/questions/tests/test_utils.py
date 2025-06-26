@@ -115,142 +115,91 @@ class FlagUserContentAsSpamTestCase(TestCase):
         self.assertEqual(0, Answer.objects.filter(is_spam=False, creator=u).count())
         self.assertEqual(3, Answer.objects.filter(is_spam=True, creator=u).count())
 
-    def test_mark_content_as_spam_deletes_kbforum_threads_and_posts(self):
-        # Create a user and some kbforum content
-        u = UserFactory()
-        another_user = UserFactory()
-
-        # Create kbforum threads and posts by the user
-        kbforum_thread1 = KBForumThreadFactory(creator=u)
-        kbforum_thread2 = KBForumThreadFactory(creator=u)
-        kbforum_post1 = KBForumPostFactory(creator=u)
-        kbforum_post2 = KBForumPostFactory(creator=u)
-
-        # Create some content by another user (should not be deleted)
-        other_kbforum_thread = KBForumThreadFactory(creator=another_user)
-        other_kbforum_post = KBForumPostFactory(creator=another_user)
-
-        # Store IDs for verification
-        thread_ids = [kbforum_thread1.id, kbforum_thread2.id]
-        post_ids = [kbforum_post1.id, kbforum_post2.id]
-        other_thread_id = other_kbforum_thread.id
-        other_post_id = other_kbforum_post.id
-
-        # Verify content exists before deletion
-        self.assertEqual(2, KBForumThread.objects.filter(creator=u).count())
-        self.assertEqual(2, KBForumPost.objects.filter(creator=u).count())
-        self.assertEqual(1, KBForumThread.objects.filter(creator=another_user).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=another_user).count())
-
-        # Mark content as spam
-        mark_content_as_spam(u, UserFactory())
-
-        # Verify user's kbforum content is deleted
-        self.assertEqual(0, KBForumThread.objects.filter(creator=u).count())
-        self.assertEqual(0, KBForumPost.objects.filter(creator=u).count())
-        self.assertFalse(KBForumThread.objects.filter(id__in=thread_ids).exists())
-        self.assertFalse(KBForumPost.objects.filter(id__in=post_ids).exists())
-
-        # Verify other user's content remains untouched
-        self.assertEqual(1, KBForumThread.objects.filter(creator=another_user).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=another_user).count())
-        self.assertTrue(KBForumThread.objects.filter(id=other_thread_id).exists())
-        self.assertTrue(KBForumPost.objects.filter(id=other_post_id).exists())
-
-    def test_mark_content_as_spam_deletes_forum_threads_and_posts(self):
-        # Create a user and some forum content
-        u = UserFactory()
-        another_user = UserFactory()
-
-        # Create forum threads explicitly (with posts=[] to prevent auto-post creation)
-        forum_thread1 = ForumThreadFactory(creator=u, posts=[])
-        forum_thread2 = ForumThreadFactory(creator=u, posts=[])
-
-        # Create forum posts on existing threads
-        forum_post1 = ForumPostFactory(author=u, thread=forum_thread1)
-        forum_post2 = ForumPostFactory(author=u, thread=forum_thread2)
-
-        # Create some content by another user (should not be deleted)
-        other_forum_thread = ForumThreadFactory(creator=another_user, posts=[])
-        other_forum_post = ForumPostFactory(author=another_user, thread=other_forum_thread)
-
-        # Store IDs for verification
-        thread_ids = [forum_thread1.id, forum_thread2.id]
-        post_ids = [forum_post1.id, forum_post2.id]
-        other_thread_id = other_forum_thread.id
-        other_post_id = other_forum_post.id
-
-        # Verify content exists before deletion
-        self.assertEqual(2, ForumThread.objects.filter(creator=u).count())
-        self.assertEqual(2, ForumPost.objects.filter(author=u).count())
-        self.assertEqual(1, ForumThread.objects.filter(creator=another_user).count())
-        self.assertEqual(1, ForumPost.objects.filter(author=another_user).count())
-
-        # Mark content as spam
-        mark_content_as_spam(u, UserFactory())
-
-        # Verify user's forum content is deleted
-        self.assertEqual(0, ForumThread.objects.filter(creator=u).count())
-        self.assertEqual(0, ForumPost.objects.filter(author=u).count())
-        self.assertFalse(ForumThread.objects.filter(id__in=thread_ids).exists())
-        self.assertFalse(ForumPost.objects.filter(id__in=post_ids).exists())
-
-        # Verify other user's content remains untouched
-        self.assertEqual(1, ForumThread.objects.filter(creator=another_user).count())
-        self.assertEqual(1, ForumPost.objects.filter(author=another_user).count())
-        self.assertTrue(ForumThread.objects.filter(id=other_thread_id).exists())
-        self.assertTrue(ForumPost.objects.filter(id=other_post_id).exists())
-
-    def test_mark_content_as_spam_comprehensive(self):
-        # Test that all content types are handled correctly in a single operation
-        u = UserFactory()
-        moderator = UserFactory()
-
-        # Create questions and answers
-        for _ in range(2):
-            QuestionFactory(creator=u)
-            AnswerFactory(creator=u)
+    def test_mark_content_as_spam_deletes_kbforum_content(self):
+        """Test that kbforum threads and posts are deleted when marking user as spam."""
+        user = UserFactory()
+        other_user = UserFactory()
 
         # Create kbforum content
-        kbforum_thread = KBForumThreadFactory(creator=u)
-        kbforum_post = KBForumPostFactory(creator=u)
+        for _ in range(2):
+            KBForumThreadFactory(creator=user)
+            KBForumPostFactory(creator=user)
+        other_thread = KBForumThreadFactory(creator=other_user)
+        other_post = KBForumPostFactory(creator=other_user)
+
+        mark_content_as_spam(user, UserFactory())
+
+        # User's content should be deleted
+        self.assertEqual(0, KBForumThread.objects.filter(creator=user).count())
+        self.assertEqual(0, KBForumPost.objects.filter(creator=user).count())
+
+        # Other user's content should be preserved
+        self.assertEqual(1, KBForumThread.objects.filter(creator=other_user).count())
+        self.assertEqual(1, KBForumPost.objects.filter(creator=other_user).count())
+        self.assertTrue(KBForumThread.objects.filter(id=other_thread.id).exists())
+        self.assertTrue(KBForumPost.objects.filter(id=other_post.id).exists())
+
+    def test_mark_content_as_spam_deletes_forum_content(self):
+        """Test that forum threads and posts are deleted when marking user as spam."""
+        user = UserFactory()
+        other_user = UserFactory()
 
         # Create forum content
-        forum_thread = ForumThreadFactory(creator=u, posts=[])
-        forum_post = ForumPostFactory(author=u, thread=forum_thread)
+        threads = [ForumThreadFactory(creator=user, posts=[]) for _ in range(2)]
+        for thread in threads:
+            ForumPostFactory(author=user, thread=thread)
+        other_thread = ForumThreadFactory(creator=other_user, posts=[])
+        other_post = ForumPostFactory(author=other_user, thread=other_thread)
 
-        # Store IDs for verification
-        kbforum_thread_id = kbforum_thread.id
-        kbforum_post_id = kbforum_post.id
-        forum_thread_id = forum_thread.id
-        forum_post_id = forum_post.id
+        mark_content_as_spam(user, UserFactory())
 
-        # Verify initial state
-        self.assertEqual(2, Question.objects.filter(creator=u, is_spam=False).count())
-        self.assertEqual(2, Answer.objects.filter(creator=u, is_spam=False).count())
-        self.assertEqual(1, KBForumThread.objects.filter(creator=u).count())
-        self.assertEqual(1, KBForumPost.objects.filter(creator=u).count())
-        self.assertEqual(1, ForumThread.objects.filter(creator=u).count())
-        self.assertEqual(1, ForumPost.objects.filter(author=u).count())
+        # User's content should be deleted
+        self.assertEqual(0, ForumThread.objects.filter(creator=user).count())
+        self.assertEqual(0, ForumPost.objects.filter(author=user).count())
 
-        # Mark content as spam
-        mark_content_as_spam(u, moderator)
+        # Other user's content should be preserved
+        self.assertEqual(1, ForumThread.objects.filter(creator=other_user).count())
+        self.assertEqual(1, ForumPost.objects.filter(author=other_user).count())
+        self.assertTrue(ForumThread.objects.filter(id=other_thread.id).exists())
+        self.assertTrue(ForumPost.objects.filter(id=other_post.id).exists())
 
-        # Verify questions and answers are marked as spam (not deleted)
-        self.assertEqual(0, Question.objects.filter(creator=u, is_spam=False).count())
-        self.assertEqual(2, Question.objects.filter(creator=u, is_spam=True).count())
-        self.assertEqual(0, Answer.objects.filter(creator=u, is_spam=False).count())
-        self.assertEqual(2, Answer.objects.filter(creator=u, is_spam=True).count())
+    def test_mark_content_as_spam_comprehensive(self):
+        """Test that all content types are handled correctly:
+        questions/answers marked as spam, forums deleted."""
+        user = UserFactory()
 
-        # Verify forum content is deleted
-        self.assertEqual(0, KBForumThread.objects.filter(creator=u).count())
-        self.assertEqual(0, KBForumPost.objects.filter(creator=u).count())
-        self.assertEqual(0, ForumThread.objects.filter(creator=u).count())
-        self.assertEqual(0, ForumPost.objects.filter(author=u).count())
-        self.assertFalse(KBForumThread.objects.filter(id=kbforum_thread_id).exists())
-        self.assertFalse(KBForumPost.objects.filter(id=kbforum_post_id).exists())
-        self.assertFalse(ForumThread.objects.filter(id=forum_thread_id).exists())
-        self.assertFalse(ForumPost.objects.filter(id=forum_post_id).exists())
+        # Create all content types
+        for _ in range(2):
+            QuestionFactory(creator=user)
+            AnswerFactory(creator=user)
+
+        # Create forum content
+        KBForumThreadFactory(creator=user)
+        KBForumPostFactory(creator=user)
+        forum_thread = ForumThreadFactory(creator=user, posts=[])
+        ForumPostFactory(author=user, thread=forum_thread)
+
+        # Verify initial counts
+        self.assertEqual(2, Question.objects.filter(creator=user, is_spam=False).count())
+        self.assertEqual(2, Answer.objects.filter(creator=user, is_spam=False).count())
+        self.assertEqual(1, KBForumThread.objects.filter(creator=user).count())
+        self.assertEqual(1, KBForumPost.objects.filter(creator=user).count())
+        self.assertEqual(1, ForumThread.objects.filter(creator=user).count())
+        self.assertEqual(1, ForumPost.objects.filter(author=user).count())
+
+        mark_content_as_spam(user, UserFactory())
+
+        # Questions/answers should be marked as spam, not deleted
+        self.assertEqual(0, Question.objects.filter(creator=user, is_spam=False).count())
+        self.assertEqual(2, Question.objects.filter(creator=user, is_spam=True).count())
+        self.assertEqual(0, Answer.objects.filter(creator=user, is_spam=False).count())
+        self.assertEqual(2, Answer.objects.filter(creator=user, is_spam=True).count())
+
+        # All forum content should be deleted
+        self.assertEqual(0, KBForumThread.objects.filter(creator=user).count())
+        self.assertEqual(0, KBForumPost.objects.filter(creator=user).count())
+        self.assertEqual(0, ForumThread.objects.filter(creator=user).count())
+        self.assertEqual(0, ForumPost.objects.filter(author=user).count())
 
 
 class GetMobileProductFromUATests(TestCase):
