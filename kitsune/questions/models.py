@@ -306,10 +306,10 @@ class Question(AAQBase):
             tags.append("Firefox %s" % version)
             tags.append("beta")
 
-        # Add a tag for the OS but only if it already exists as a tag.
+        # Add a tag for the OS but only if it already exists as a non-segmentation tag.
         if os := self.metadata.get("os"):
             try:
-                os_tag = SumoTag.objects.get(name__iexact=os)
+                os_tag = SumoTag.objects.non_segmentation_tags().filter(name__iexact=os).get()
             except SumoTag.DoesNotExist:
                 pass
             else:

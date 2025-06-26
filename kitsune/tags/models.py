@@ -8,6 +8,9 @@ class SumoTagManager(models.Manager):
     def segmentation_tags(self):
         return self.filter(is_archived=False, slug__startswith="seg-")
 
+    def non_segmentation_tags(self):
+        return self.exclude(slug__startswith="seg-").filter(is_archived=False)
+
     def active(self):
         return self.filter(is_archived=False)
 
