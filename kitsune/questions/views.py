@@ -13,8 +13,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
-from django.db.models import Q
-from django.db.models.functions import Now
+from django.db.models import IntegerField, Q, Value
+from django.db.models.functions import Coalesce, Now
 from django.http import (
     Http404,
     HttpRequest,
@@ -286,7 +286,20 @@ def question_list(request, product_slug=None, topic_slug=None):
     # Set the order.
     # Set a default value if a user requested a non existing order parameter
     order_by = ORDER_BY.get(order, ["updated"])[0]
-    question_qs = question_qs.order_by(order_by if sort == "asc" else "-%s" % order_by)
+
+    # Handle sorting by views specially to treat NULL visit counts as 0
+    if order == "views":
+        # Use COALESCE to treat NULL visits as 0
+        question_qs = question_qs.annotate(
+            visits_nulls_as_zero=Coalesce(
+                "questionvisits__visits", Value(0), output_field=IntegerField()
+            )
+        )
+        question_qs = question_qs.order_by(
+            "visits_nulls_as_zero" if sort == "asc" else "-visits_nulls_as_zero"
+        )
+    else:
+        question_qs = question_qs.order_by(order_by if sort == "asc" else "-%s" % order_by)
 
     try:
         questions_page = simple_paginate(request, question_qs, per_page=config.QUESTIONS_PER_PAGE)
