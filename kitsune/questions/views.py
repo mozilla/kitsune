@@ -289,7 +289,6 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # Handle sorting by views specially to treat NULL visit counts as 0
     if order == "views":
-        # Use COALESCE to treat NULL visits as 0
         question_qs = question_qs.annotate(
             visits_nulls_as_zero=Coalesce(
                 "questionvisits__visits", Value(0), output_field=IntegerField()
