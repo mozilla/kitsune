@@ -7,8 +7,8 @@ import RemoteTroubleshooting from "./remote";
 
 export default class AAQSystemInfo {
   static slugs = {
-    desktop: ["desktop", "firefox-enterprise"],
-    mobile: ["mobile", "ios", "focus"],
+    desktop: ["/firefox/", "/firefox-enterprise/"],
+    mobile: ["/mobile/", "/ios/", "/focus-firefox/"],
   };
 
   constructor(form) {
