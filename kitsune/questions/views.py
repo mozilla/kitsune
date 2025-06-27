@@ -13,7 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
-from django.db.models import Q
+from django.db.models import F, Q
 from django.db.models.functions import Now
 from django.http import (
     Http404,
@@ -286,7 +286,14 @@ def question_list(request, product_slug=None, topic_slug=None):
     # Set the order.
     # Set a default value if a user requested a non existing order parameter
     order_by = ORDER_BY.get(order, ["updated"])[0]
-    question_qs = question_qs.order_by(order_by if sort == "asc" else "-%s" % order_by)
+
+    # Use Django's built-in NULL sorting features
+    if sort == "asc":
+        order_by_expression = F(order_by).asc(nulls_first=True)
+    else:
+        order_by_expression = F(order_by).desc(nulls_last=True)
+
+    question_qs = question_qs.order_by(order_by_expression)
 
     try:
         questions_page = simple_paginate(request, question_qs, per_page=config.QUESTIONS_PER_PAGE)
