@@ -37,6 +37,8 @@ from sentry_sdk import capture_exception, capture_message
 
 from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
+from kitsune.forums.models import Thread, Post
+from kitsune.kbforums.models import Thread as KBForumThread, Post as KBForumPost
 from kitsune.kbadge.models import Award
 from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -169,6 +171,14 @@ def deactivate(request, mark_spam=False):
 
     if mark_spam:
         mark_content_as_spam(user, request.user)
+
+        # We will delete kbforums posts and threads
+        KBForumThread.objects.filter(creator=user).delete()
+        KBForumPost.objects.filter(creator=user).delete()
+
+        # We will delete forum posts and threads
+        Thread.objects.filter(creator=user).delete()
+        Post.objects.filter(author=user).delete()
 
     return HttpResponseRedirect(profile_url(user))
 
