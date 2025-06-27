@@ -894,14 +894,17 @@
   {% endcall %}
 #}
 {% macro announcement_bar(id, level, close_memory="", close_type="") -%}
-<div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}"
-  {% if close_memory %}data-close-initial="hidden"{% endif %}>
-  <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button"
-    {% if close_memory %}data-close-memory="{{ close_memory }}" {% endif %}
-    {% if close_type %}data-close-type="{{ close_type }}" {% endif %}>
-  </button>
-  <p>{{ caller() }}</p>
-</div>
+  {% set content = caller() %}
+  {% if content %}
+    <div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}"
+      {% if close_memory %}data-close-initial="hidden"{% endif %}>
+      <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button"
+        {% if close_memory %}data-close-memory="{{ close_memory }}" {% endif %}
+        {% if close_type %}data-close-type="{{ close_type }}" {% endif %}>
+      </button>
+      <p>{{ content }}</p>
+    </div>
+  {% endif %}
 {% endmacro %}
 
 {% macro favicon() %}
