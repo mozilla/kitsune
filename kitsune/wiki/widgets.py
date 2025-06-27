@@ -71,13 +71,38 @@ class ProductsWidget(forms.widgets.SelectMultiple):
 class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     """A widget to render the related documents list and search field."""
 
+    def __init__(self, attrs=None, locale_aware_related_docs=None):
+        super().__init__(attrs)
+        self.locale_aware_related_docs = locale_aware_related_docs or []
+
     def render(self, name, value, attrs=None, renderer=None):
         if isinstance(value, int):
-            related_documents = Document.objects.filter(id__in=[value])
+            value = [value]
         elif not isinstance(value, str) and isinstance(value, Iterable):
-            related_documents = Document.objects.filter(id__in=value)
+            value = list(value)
         else:
-            related_documents = Document.objects.none()
+            value = []
+
+        # Use locale-aware documents if available and matching the selected values
+        related_documents = []
+        if self.locale_aware_related_docs and value:
+            # Map the locale-aware documents by ID for quick lookup
+            locale_aware_by_id = {str(doc.id): doc for doc in self.locale_aware_related_docs}
+
+            for val in value:
+                val_str = str(val)
+                if val_str in locale_aware_by_id:
+                    related_documents.append(locale_aware_by_id[val_str])
+                else:
+                    # Fallback to database query if not in locale-aware list
+                    try:
+                        doc = Document.objects.get(id=val)
+                        related_documents.append(doc)
+                    except Document.DoesNotExist:
+                        pass
+        elif value:
+            # Fallback to original behavior if no locale-aware docs provided
+            related_documents = Document.objects.filter(id__in=value)
 
         return render_to_string(
             "wiki/includes/related_docs_widget.html",

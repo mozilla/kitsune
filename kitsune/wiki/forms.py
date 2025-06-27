@@ -260,6 +260,12 @@ class DocumentForm(forms.ModelForm):
                         locale_choices.append(choice)
 
             related_documents_field.choices = locale_choices
+
+            # Update the widget with locale-aware documents for proper rendering
+            if locale_aware_related_docs:
+                related_documents_field.widget = RelatedDocumentsWidget(
+                    locale_aware_related_docs=locale_aware_related_docs
+                )
         else:
             related_documents_field.choices = Document.objects.values_list("id", "title")
 
