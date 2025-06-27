@@ -20,14 +20,17 @@ detail_patterns = [
     re_path(r"^subscriptions$", views.subscribed_products, name="users.subscriptions"),
 ]
 
-if settings.DEV:
+if settings.DEV or settings.TEST:
     if settings.ENABLE_DEV_LOGIN:
         detail_patterns += [
             re_path(r"^become$", views.become, name="users.become"),
         ]
-    if settings.ENABLE_DELETE_ENDPOINT:
+    if settings.ENABLE_TESTING_ENDPOINTS:
         detail_patterns += [
             re_path(r"^trigger-delete$", views.trigger_delete, name="users.trigger_delete"),
+        ]
+        api_patterns += [
+            re_path(r"^create", api.create_test_user, name="users.api.create_test_user"),
         ]
 
 users_patterns = [
