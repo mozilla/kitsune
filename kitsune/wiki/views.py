@@ -1703,15 +1703,9 @@ def _get_locale_aware_related_documents(document, locale, user):
         elif related_doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
             if translation := related_doc.translated_to(locale, visible_for_user=user):
                 final_related_docs.append(translation)
-            else:
-                final_related_docs.append(related_doc)
         elif related_doc.parent and related_doc.parent.locale == settings.WIKI_DEFAULT_LANGUAGE:
             if translation := related_doc.parent.translated_to(locale, visible_for_user=user):
                 final_related_docs.append(translation)
-            else:
-                final_related_docs.append(related_doc)
-        else:
-            final_related_docs.append(related_doc)
 
     return final_related_docs
 
