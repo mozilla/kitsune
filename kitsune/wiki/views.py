@@ -314,6 +314,9 @@ def document(request, document_slug, document=None):
     )
 
     update_kb_visited(request.session, doc)
+    locale_aware_related_docs = _get_locale_aware_related_documents(
+        doc, request.LANGUAGE_CODE, request.user
+    )
 
     data = {
         "document": doc,
@@ -338,6 +341,7 @@ def document(request, document_slug, document=None):
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
         "product_titles": ", ".join(p.title for p in sorted(products, key=lambda p: p.title)),
+        "locale_aware_related_documents": locale_aware_related_docs,
     }
 
     return maybe_vary_on_accept_language(render(request, "wiki/document.html", data))
@@ -382,7 +386,9 @@ def new_document(request):
     """Create a new wiki document."""
     products = Product.active.filter(visible=True)
     if request.method == "GET":
-        doc_form = DocumentForm(initial_title=request.GET.get("title"))
+        doc_form = DocumentForm(
+            initial_title=request.GET.get("title"), locale=request.LANGUAGE_CODE
+        )
         rev_form = RevisionForm()
         return render(
             request,
@@ -396,7 +402,7 @@ def new_document(request):
 
     post_data = request.POST.copy()
     post_data.update({"locale": request.LANGUAGE_CODE})
-    doc_form = DocumentForm(post_data)
+    doc_form = DocumentForm(post_data, locale=request.LANGUAGE_CODE)
     rev_form = RevisionForm(post_data)
 
     if doc_form.is_valid() and rev_form.is_valid():
@@ -595,10 +601,16 @@ def edit_document_metadata(request, document_slug, revision_id=None):
     can_edit_needs_change = doc.allows(user, "edit_needs_change")
     can_archive = doc.allows(user, "archive")
 
+    locale_aware_related_docs = _get_locale_aware_related_documents(
+        doc, request.LANGUAGE_CODE, request.user
+    )
+
     doc_form = DocumentForm(
         initial=_document_form_initial(doc),
         can_archive=can_archive,
         can_edit_needs_change=can_edit_needs_change,
+        locale=request.LANGUAGE_CODE,
+        locale_aware_related_docs=locale_aware_related_docs,
     )
 
     if request.method == "POST":  # POST
@@ -612,6 +624,8 @@ def edit_document_metadata(request, document_slug, revision_id=None):
             instance=doc,
             can_archive=can_archive,
             can_edit_needs_change=can_edit_needs_change,
+            locale=request.LANGUAGE_CODE,
+            locale_aware_related_docs=locale_aware_related_docs,
         )
         if doc_form.is_valid():
             # Get the possibly new slug for the imminent redirection:
@@ -968,11 +982,20 @@ def translate(request, document_slug, revision_id=None):
     ).first()
 
     base_rev = doc_form = rev_form = None
+    locale_aware_related_docs = None
+    if doc:
+        locale_aware_related_docs = _get_locale_aware_related_documents(
+            doc, request.LANGUAGE_CODE, request.user
+        )
 
     if user_has_doc_perm:
         # Restore draft if draft is available and user requested to restore
         doc_initial = _document_form_initial(doc) if doc else {}
-        doc_form = DocumentForm(initial=doc_initial)
+        doc_form = DocumentForm(
+            initial=doc_initial,
+            locale=request.LANGUAGE_CODE,
+            locale_aware_related_docs=locale_aware_related_docs,
+        )
 
     if user_has_rev_perm:
         rev_initial = {"based_on": based_on_rev.id, "comment": ""}
@@ -1013,7 +1036,11 @@ def translate(request, document_slug, revision_id=None):
             # If we are here - we have a draft to restore
             if user_has_doc_perm:
                 doc_initial.update({"title": draft.title, "slug": draft.slug})
-                doc_form = DocumentForm(initial=doc_initial)
+                doc_form = DocumentForm(
+                    initial=doc_initial,
+                    locale=request.LANGUAGE_CODE,
+                    locale_aware_related_docs=locale_aware_related_docs,
+                )
             if user_has_rev_perm:
                 rev_initial.update(
                     {
@@ -1036,7 +1063,12 @@ def translate(request, document_slug, revision_id=None):
                 disclose_description = True
                 post_data = request.POST.copy()
                 post_data.update({"locale": request.LANGUAGE_CODE})
-                doc_form = DocumentForm(post_data, instance=doc)
+                doc_form = DocumentForm(
+                    post_data,
+                    instance=doc,
+                    locale=request.LANGUAGE_CODE,
+                    locale_aware_related_docs=locale_aware_related_docs,
+                )
                 doc_form.instance.locale = request.LANGUAGE_CODE
                 doc_form.instance.parent = parent_doc
                 if which_form == "both":
@@ -1653,6 +1685,29 @@ def show_translations(request, document_slug):
             "untranslated_locales": untranslated_locales,
         },
     )
+
+
+def _get_locale_aware_related_documents(document, locale, user):
+    """Return visible related documents prioritizing the given locale."""
+
+    # Get the original document (parent if this is a translation, or self if original)
+    original_document = document.parent or document
+
+    related_docs = original_document.related_documents.visible(user).select_related("parent")
+
+    final_related_docs = []
+
+    for related_doc in related_docs:
+        if related_doc.locale == locale:
+            final_related_docs.append(related_doc)
+        elif related_doc.locale == settings.WIKI_DEFAULT_LANGUAGE:
+            if translation := related_doc.translated_to(locale, visible_for_user=user):
+                final_related_docs.append(translation)
+        elif related_doc.parent and related_doc.parent.locale == settings.WIKI_DEFAULT_LANGUAGE:
+            if translation := related_doc.parent.translated_to(locale, visible_for_user=user):
+                final_related_docs.append(translation)
+
+    return final_related_docs
 
 
 def _document_form_initial(document):

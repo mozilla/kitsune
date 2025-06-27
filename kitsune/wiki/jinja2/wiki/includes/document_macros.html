@@ -406,17 +406,15 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro related_documents(document) %}
-  {% if document.related_documents.count() > 0 %}
-    {% set docs = document.related_documents.all() %}
+{% macro related_documents(locale_aware_related_documents) %}
+  {% if locale_aware_related_documents|length > 0 %}
     <section id="related-documents" class="sumo-page-section wiki-related-documents">
       <div class="text-center">
         <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
       </div>
       <div class="sumo-card-grid">
         <div class="scroll-wrap">
-          {% for related in docs %}
-            {% if related.is_unrestricted_for(user) %}
+          {% for related in locale_aware_related_documents %}
               <div class="card card--article">
                   <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
                   <div class="card--details">
@@ -434,7 +432,6 @@
                     </div>
                   </div>
               </div>
-            {% endif %}
           {% endfor %}
         </div>
       </div>

@@ -228,6 +228,8 @@ class DocumentForm(forms.ModelForm):
         can_archive = kwargs.pop("can_archive", False)
         can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
         initial_title = kwargs.pop("initial_title", "")
+        locale = kwargs.pop("locale", None)
+        locale_aware_related_docs = kwargs.pop("locale_aware_related_docs", None)
 
         super(DocumentForm, self).__init__(*args, **kwargs)
 
@@ -244,7 +246,28 @@ class DocumentForm(forms.ModelForm):
         products_field.choices = Product.active.values_list("id", "title")
 
         related_documents_field = self.fields["related_documents"]
-        related_documents_field.choices = Document.objects.values_list("id", "title")
+        if locale:
+            # Start with documents in the current locale for selection
+            locale_choices = list(
+                Document.objects.filter(locale=locale).values_list("id", "title")
+            )
+
+            # Add locale-aware related documents to ensure they can be selected/displayed
+            if locale_aware_related_docs:
+                for doc in locale_aware_related_docs:
+                    choice = (doc.id, doc.title)
+                    if choice not in locale_choices:
+                        locale_choices.append(choice)
+
+            related_documents_field.choices = locale_choices
+
+            # Update the widget with locale-aware documents for proper rendering
+            if locale_aware_related_docs:
+                related_documents_field.widget = RelatedDocumentsWidget(
+                    locale_aware_related_docs=locale_aware_related_docs
+                )
+        else:
+            related_documents_field.choices = Document.objects.values_list("id", "title")
 
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.
