@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
 from django.db import models
+from langchain.schema.output_parser import OutputParserException
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 
 from kitsune.llm.questions.prompt import (
@@ -44,7 +45,21 @@ def classify_question(question: "Question") -> dict[str, Any]:
         ),
     }
 
-    spam_detection_chain = spam_prompt | llm | spam_parser
+    def spam_detection(payload: dict[str, Any]) -> dict[str, Any]:
+        """Spam detection with error handling for incomplete LLM responses."""
+        try:
+            spam_chain = spam_prompt | llm | spam_parser
+        except OutputParserException:
+            return {
+                "is_spam": False,
+                "confidence": 0,
+                "reason": "Error in LLM response - defaulting to not spam",
+                "maybe_misclassified": False,
+            }
+        else:
+            return spam_chain.invoke(payload)
+
+    spam_detection_chain = RunnableLambda(spam_detection)
     product_classification_chain = product_prompt | llm | product_parser
     topic_classification_chain = topic_prompt | llm | topic_parser
 
