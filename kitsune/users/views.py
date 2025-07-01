@@ -616,9 +616,9 @@ class WebhookView(View):
 def trigger_delete(request, username=None):
     """
     Log in with only a username, for use in testing.
-    Set ENABLE_DELETE_ENDPOINT=True to enable.
+    Set ENABLE_TESTING_ENDPOINTS=True to enable.
     """
-    if not (settings.DEV and settings.ENABLE_DELETE_ENDPOINT):
+    if not (settings.DEV and settings.ENABLE_TESTING_ENDPOINTS):
         raise Http404
 
     try:
