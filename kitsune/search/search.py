@@ -376,10 +376,9 @@ class CompoundSearch(SumoSearch):
 
     def get_filter(self):
         # `should` with `minimum_should_match=1` acts like an OR filter
-        # Pass the flag down to children filters
         return DSLQ(
             "bool",
-            should=[child.get_filter() for child in self._children],
+            should=self._from_children("get_filter"),
             minimum_should_match=1,
         )
 
