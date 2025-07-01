@@ -29,8 +29,7 @@ Given a user question, follow these steps:
    - `0` = Extremely uncertain.
    - `100` = Completely certain.
 4. Provide a concise explanation supporting your decision.
-5. **Determine if question was misclassified due to wrong product:** True only if this is a legitimate Mozilla support request that
-doesn't relate to "{product}" but clearly relates to another Mozilla product.
+5. **Wrong product check:** Set to true only if this is a legitimate Mozilla support question for a different Mozilla product.
 
 # Response format
 {format_instructions}
@@ -148,10 +147,7 @@ spam_parser = StructuredOutputParser.from_response_schemas(
         ResponseSchema(
             name="maybe_misclassified",
             type="bool",
-            description=(
-                "True if this appears to be a legitimate Mozilla support request"
-                " that was flagged as spam solely due to incorrect product categorization."
-            ),
+            description="True if this is a legitimate Mozilla support question for a different Mozilla product.",
         ),
     )
 )

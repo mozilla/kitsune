@@ -8,7 +8,7 @@ DEFAULT_LLM_MODEL = "gemini-2.5-flash-preview-04-17"
 @lru_cache(maxsize=1)
 def get_llm(
     model_name: str = DEFAULT_LLM_MODEL,
-    temperature: int = 1,
+    temperature: float = 0.3,
     max_tokens: int | None = None,
     max_retries: int = 2,
 ) -> BaseChatModel:
