@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
 from django.db import models
-from langchain.schema.output_parser import OutputParserException
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 
 from kitsune.llm.questions.prompt import (
@@ -11,8 +10,11 @@ from kitsune.llm.questions.prompt import (
     spam_prompt,
     topic_parser,
     topic_prompt,
+    DEFAULT_SPAM_RESULT,
+    DEFAULT_TOPIC_RESULT,
+    DEFAULT_PRODUCT_RESULT,
 )
-from kitsune.llm.utils import get_llm
+from kitsune.llm.utils import build_chain_with_retry, get_llm
 from kitsune.products.utils import get_products, get_taxonomy
 
 HIGH_CONFIDENCE_THRESHOLD = 75
@@ -45,23 +47,15 @@ def classify_question(question: "Question") -> dict[str, Any]:
         ),
     }
 
-    def spam_detection(payload: dict[str, Any]) -> dict[str, Any]:
-        """Spam detection with error handling for incomplete LLM responses."""
-        try:
-            spam_chain = spam_prompt | llm | spam_parser
-        except OutputParserException:
-            return {
-                "is_spam": False,
-                "confidence": 0,
-                "reason": "Error in LLM response - defaulting to not spam",
-                "maybe_misclassified": False,
-            }
-        else:
-            return spam_chain.invoke(payload)
-
-    spam_detection_chain = RunnableLambda(spam_detection)
-    product_classification_chain = product_prompt | llm | product_parser
-    topic_classification_chain = topic_prompt | llm | topic_parser
+    spam_detection_chain = build_chain_with_retry(
+        spam_prompt, llm, spam_parser, default_result=DEFAULT_SPAM_RESULT
+    )
+    product_classification_chain = build_chain_with_retry(
+        product_prompt, llm, product_parser, default_result=DEFAULT_PRODUCT_RESULT
+    )
+    topic_classification_chain = build_chain_with_retry(
+        topic_prompt, llm, topic_parser, default_result=DEFAULT_TOPIC_RESULT
+    )
 
     def handle_spam(payload: dict[str, Any], spam_result: dict[str, Any]) -> dict[str, Any]:
         """Handle spam classification with potential product reclassification."""

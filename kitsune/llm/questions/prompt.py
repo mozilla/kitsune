@@ -1,5 +1,9 @@
-from langchain.output_parsers import ResponseSchema, StructuredOutputParser
+from typing import Any
+
+from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import ChatPromptTemplate
+from pydantic import BaseModel, Field
+
 
 SPAM_INSTRUCTIONS = """
 # Role and goal
@@ -122,79 +126,66 @@ USER_QUESTION = """
 {question}
 """
 
+ADDITIONAL_FORMAT_INSTRUCTIONS = """
 
-spam_parser = StructuredOutputParser.from_response_schemas(
-    (
-        ResponseSchema(
-            name="is_spam",
-            type="bool",
-            description="A boolean that when true indicates that the question is spam.",
-        ),
-        ResponseSchema(
-            name="confidence",
-            type="int",
-            description=(
-                "An integer from 0 to 100 that indicates the level of confidence in the"
-                " determination of whether or not the question is spam, with 0 representing"
-                " the lowest confidence and 100 the highest."
-            ),
-        ),
-        ResponseSchema(
-            name="reason",
-            type="str",
-            description="The reason for identifying the question as spam or not spam.",
-        ),
-        ResponseSchema(
-            name="maybe_misclassified",
-            type="bool",
-            description="True if this is a legitimate Mozilla support question for a different Mozilla product.",
-        ),
+**Important**:
+- All string values in the JSON **must** be valid JSON strings.
+- **Escape any special characters** to ensure the final output is a valid JSON object. This includes, but is not limited to, double quotes (`"`), backslashes (`\\`), and control characters (e.g., `\\n`, `\\t`).
+- For example, a raw string like `This is a "test".` must be formatted as `"This is a \"test\"."` or `"This is a 'test'."` in the final JSON string value.
+"""
+
+
+class SpamResult(BaseModel):
+    is_spam: bool = Field(
+        description="A boolean that when true indicates that the question is spam."
     )
-)
-
-
-topic_parser = StructuredOutputParser.from_response_schemas(
-    (
-        ResponseSchema(
-            name="topic",
-            type="str",
-            description="The title of the topic selected for the question.",
-        ),
-        ResponseSchema(
-            name="reason",
-            type="str",
-            description="The reason for selecting the topic.",
-        ),
+    confidence: int = Field(
+        description=(
+            "An integer from 0 to 100 that indicates the level of confidence in the"
+            " determination of whether or not the question is spam, with 0 representing"
+            " the lowest confidence and 100 the highest."
+        )
     )
-)
-
-product_parser = StructuredOutputParser.from_response_schemas(
-    (
-        ResponseSchema(
-            name="product",
-            type="str",
-            description=(
-                "The Mozilla product selected for reassignment or null if no reassignment"
-                " should be made."
-            ),
-        ),
-        ResponseSchema(
-            name="confidence",
-            type="int",
-            description=(
-                "An integer from 0 to 100 that indicates the level of confidence in the"
-                " product reassignment decision, with 0 representing the lowest confidence"
-                " and 100 the highest."
-            ),
-        ),
-        ResponseSchema(
-            name="reason",
-            type="str",
-            description="The reason for reassigning to the selected product "
-            " or for not reassigning.",
-        ),
+    reason: str = Field(description="The reason for identifying the question as spam or not spam.")
+    maybe_misclassified: bool = Field(
+        description=(
+            "True if this is a legitimate Mozilla support question for a different"
+            ' Mozilla product. This is the result of the "wrong product check".'
+        )
     )
-)
+
+
+class TopicResult(BaseModel):
+    topic: str = Field(description="The title of the topic or subtopic selected for the question.")
+    reason: str = Field(description="The reason for selecting the topic.")
+
+
+class ProductResult(BaseModel):
+    product: str | None = Field(
+        description=(
+            "The Mozilla product selected for reassignment or null if no reassignment"
+            " should be made."
+        )
+    )
+    confidence: int = Field(
+        description=(
+            "An integer from 0 to 100 that indicates the level of confidence in the"
+            " product reassignment decision, with 0 representing the lowest confidence"
+            " and 100 the highest."
+        )
+    )
+    reason: str = Field(
+        description="The reason for reassigning to the selected product or for not reassigning."
+    )
+
+
+spam_pydantic_parser = PydanticOutputParser(pydantic_object=SpamResult)
+
+
+topic_pydantic_parser = PydanticOutputParser(pydantic_object=TopicResult)
+
+
+product_pydantic_parser = PydanticOutputParser(pydantic_object=ProductResult)
 
 
 spam_prompt = ChatPromptTemplate(
@@ -202,7 +193,10 @@ spam_prompt = ChatPromptTemplate(
         ("system", SPAM_INSTRUCTIONS),
         ("human", USER_QUESTION),
     )
-).partial(format_instructions=spam_parser.get_format_instructions())
+).partial(
+    format_instructions=spam_pydantic_parser.get_format_instructions()
+    + ADDITIONAL_FORMAT_INSTRUCTIONS
+)
 
 
 topic_prompt = ChatPromptTemplate(
@@ -210,7 +204,10 @@ topic_prompt = ChatPromptTemplate(
         ("system", TOPIC_INSTRUCTIONS),
         ("human", USER_QUESTION),
     )
-).partial(format_instructions=topic_parser.get_format_instructions())
+).partial(
+    format_instructions=topic_pydantic_parser.get_format_instructions()
+    + ADDITIONAL_FORMAT_INSTRUCTIONS
+)
 
 
 product_prompt = ChatPromptTemplate(
@@ -218,4 +215,43 @@ product_prompt = ChatPromptTemplate(
         ("system", PRODUCT_INSTRUCTIONS),
         ("human", USER_QUESTION),
     )
-).partial(format_instructions=product_parser.get_format_instructions())
+).partial(
+    format_instructions=product_pydantic_parser.get_format_instructions()
+    + ADDITIONAL_FORMAT_INSTRUCTIONS
+)
+
+
+def model_to_dict(input: BaseModel) -> dict[str, Any]:
+    """
+    Convert a Pydantic BaseModel instance to a dict.
+    """
+    return input.model_dump()
+
+
+spam_parser = spam_pydantic_parser | model_to_dict
+
+
+topic_parser = topic_pydantic_parser | model_to_dict
+
+
+product_parser = product_pydantic_parser | model_to_dict
+
+
+DEFAULT_SPAM_RESULT = SpamResult(
+    is_spam=False,
+    confidence=0,
+    maybe_misclassified=False,
+    reason="Error in LLM response - defaulting to not spam",
+).model_dump()
+
+
+DEFAULT_TOPIC_RESULT = TopicResult(
+    topic="Undefined", reason="Error in LLM response - defaulting to 'Undefined' topic"
+).model_dump()
+
+
+DEFAULT_PRODUCT_RESULT = ProductResult(
+    product=None,
+    confidence=0,
+    reason="Error in LLM response - defaulting to no product reassignment",
+).model_dump()
