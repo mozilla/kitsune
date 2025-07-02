@@ -890,15 +890,23 @@ def reply(request, question_id):
     )
 
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
 
+    if not (
+        ((request.method == "GET") and (watch_secret := request.GET.get("watch", None)))
+        or (
+            (request.method == "POST")
+            and (request.user.is_authenticated and request.user.is_active)
+        )
+    ):
+        return HttpResponseForbidden()
+
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
-    # It is possible this was clicked from the email.
-    if not request.user.is_authenticated:
-        watch_secret = request.GET.get("watch", None)
+    if request.method == "GET":
+        # This was clicked from an email.
         try:
             watch = Watch.objects.get(
                 secret=watch_secret, event_type="question reply", user=question.creator
@@ -909,7 +917,7 @@ def solve(request, question_id, answer_id):
             watch.update(secret=new_secret)
             request.user = question.creator
         except Watch.DoesNotExist:
-            # This user is neither authenticated nor using the correct secret
+            # The provided watch secret is invalid.
             return HttpResponseForbidden()
 
     answer = get_object_or_404(Answer, pk=answer_id, is_spam=False)

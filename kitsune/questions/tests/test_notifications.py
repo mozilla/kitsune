@@ -35,10 +35,6 @@ https://testserver/{locale}questions/{question_id}?utm_campaign=\
 questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
-If this comment is helpful, vote on it:
-https://testserver/{locale}questions/{question_id}/vote/{answer_id}\
-?helpful=&utm_campaign=questions-reply&utm_source=notification&utm_medium=email
-
 Help other Firefox users by browsing for unsolved questions on testserver:
 https://testserver/questions?filter=unsolved
 
