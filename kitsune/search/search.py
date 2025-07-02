@@ -7,6 +7,7 @@ import bleach
 from dateutil import parser
 from django.utils.text import slugify
 from elasticsearch_dsl import Q as DSLQ
+from pyparsing import ParseException
 
 from kitsune.products.models import Product
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
@@ -16,6 +17,15 @@ from kitsune.search.documents import (
     ProfileDocument,
     QuestionDocument,
     WikiDocument,
+)
+from kitsune.search.parser import Parser
+from kitsune.search.parser.tokens import TermToken, RangeToken, ExactToken
+from kitsune.search.parser.operators import (
+    SpaceOperator,
+    FieldOperator,
+    AndOperator,
+    OrOperator,
+    NotOperator,
 )
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import CATEGORIES
@@ -104,6 +114,45 @@ class QuestionSearch(SumoSearch):
             ],
         }
 
+    def is_simple_search(self, token=None):
+        """Determine if the search query is simple (no advanced operators) or advanced.
+
+        Advanced searches are those containing:
+        - Field operators (field:value)
+        - Boolean operators (AND, OR, NOT)
+        - Range tokens (date ranges, numeric ranges)
+        - Exact tokens (quoted strings)
+
+        Simple searches contain only basic terms and space-separated phrases.
+        """
+        if token is None:
+            if not self.query or not self.query.strip():
+                return True
+
+            try:
+                parsed = Parser(self.query)
+                return self.is_simple_search(parsed.parsed)
+            except ParseException:
+                # If parsing fails, it's definitely a simple search
+                return True
+
+        # Advanced operators and tokens indicate an advanced search
+        if isinstance(
+            token, (FieldOperator, AndOperator, OrOperator, NotOperator, RangeToken, ExactToken)
+        ):
+            return False
+
+        # TermToken is always simple
+        if isinstance(token, TermToken):
+            return True
+
+        # SpaceOperator is simple only if all its arguments are simple
+        if isinstance(token, SpaceOperator):
+            return all(self.is_simple_search(arg) for arg in token.arguments)
+
+        # Any other token types are advanced by default
+        return False
+
     def get_highlight_fields_options(self):
         fields = [
             f"question_content.{self.locale}",
@@ -124,9 +173,10 @@ class QuestionSearch(SumoSearch):
                     "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
                 },
             ),
-            # exclude archived questions
-            DSLQ("term", question_is_archived=False),
         ]
+
+        if self.is_simple_search():
+            filters.append(DSLQ("term", question_is_archived=False))
 
         if self.product:
             filters.append(DSLQ("term", question_product_id=self.product.id))
