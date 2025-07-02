@@ -360,6 +360,65 @@ class TestMarkingSolved(TestCase):
         res = self.client.post(reverse("questions.solve", args=[self.question.id, self.answer.id]))
         self.assertEqual(res.status_code, 404)
 
+    def test_mark_as_solved_via_watch_secret(self):
+        self.client.logout()
+
+        watch = Watch.objects.create(
+            secret="abcdefghjk", event_type="question reply", user=self.question.creator
+        )
+
+        url = urlparams(
+            reverse("questions.solve", args=[self.question.id, self.answer.id]),
+            watch=watch.secret,
+        )
+
+        self.assertIsNone(self.question.solution)
+
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 302)
+        self.question.refresh_from_db()
+        self.assertEqual(self.question.solution, self.answer)
+        # Ensure that the secret has been changed.
+        watch.refresh_from_db()
+        self.assertNotEqual(watch.secret, "abcdefghjk")
+
+    def test_mark_as_solved_with_invalid_watch_secret(self):
+        self.client.logout()
+
+        watch = Watch.objects.create(
+            secret="abcdefghjk", event_type="question reply", user=self.question.creator
+        )
+
+        url = urlparams(
+            reverse("questions.solve", args=[self.question.id, self.answer.id]),
+            watch="PQRTUVWXYZ",
+        )
+
+        self.assertIsNone(self.question.solution)
+
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 403)
+        # Ensure that the question hasn't been solved and the watch secret hasn't changed.
+        self.question.refresh_from_db()
+        self.assertIsNone(self.question.solution)
+        watch.refresh_from_db()
+        self.assertEqual(watch.secret, "abcdefghjk")
+
+    def test_mark_as_solved_with_no_watch_secret(self):
+        self.client.logout()
+
+        url = reverse("questions.solve", args=[self.question.id, self.answer.id])
+
+        self.assertIsNone(self.question.solution)
+
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 403)
+        self.question.refresh_from_db()
+        self.assertIsNone(self.question.solution)
+
 
 class TestVoteAnswers(TestCase):
     def setUp(self):
