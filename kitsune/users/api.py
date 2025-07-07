@@ -12,6 +12,7 @@ from django.db.models import Count, Q
 from django.db.models.functions import Now
 from django.http import Http404, JsonResponse
 from django.utils.encoding import force_str
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, permissions, serializers, viewsets
@@ -302,6 +303,7 @@ class ProfileViewSet(
 
 @group_required("Staff")
 @require_POST
+@csrf_exempt
 def create_test_user(request):
     """
     Creates a new test user and a session for that user, returning the test user's session cookie.
