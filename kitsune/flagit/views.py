@@ -28,7 +28,20 @@ from kitsune.sumo.utils import paginate
 from kitsune.tags.models import SumoTag
 
 
-def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, product_slug=None):
+def get_assignees():
+    """Get list of users who can be assignees for flagged content."""
+    return sorted(
+        (user.username, user.get_full_name() or user.username)
+        for user in User.objects.filter(
+            is_active=True,
+            groups__name="Content Moderators",
+        ).distinct()
+    )
+
+
+def get_flagged_objects(
+    reason=None, exclude_reason=None, content_model=None, product_slug=None, assignee=None
+):
     """Retrieve pending flagged objects with optional filtering, eager loading related fields."""
     queryset = FlaggedObject.objects.pending().select_related("content_type", "creator")
 
@@ -47,6 +60,9 @@ def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, pr
                 matching_ids = matching_objects.values_list("id", flat=True)
 
                 queryset = queryset.filter(object_id__in=matching_ids)
+
+    if assignee:
+        queryset = queryset.filter(assignee__username=assignee)
 
     return queryset
 
@@ -120,10 +136,23 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
 def flagged_queue(request):
     """Display the flagged queue with optimized queries."""
     reason = request.GET.get("reason")
+    assignee = request.GET.get("assignee")
+
+    if (
+        assignee
+        and not User.objects.filter(
+            is_active=True, username=assignee, groups__name="Content Moderators"
+        ).exists()
+    ):
+        return HttpResponseNotFound()
 
     objects = (
-        get_flagged_objects(reason=reason, exclude_reason=FlaggedObject.REASON_CONTENT_MODERATION)
-        .select_related("content_type", "creator")
+        get_flagged_objects(
+            reason=reason,
+            exclude_reason=FlaggedObject.REASON_CONTENT_MODERATION,
+            assignee=assignee,
+        )
+        .select_related("content_type", "creator", "assignee")
         .prefetch_related("content_object")
     )
     objects = set_form_action_for_objects(objects, reason=reason)
@@ -136,6 +165,8 @@ def flagged_queue(request):
             "locale": request.LANGUAGE_CODE,
             "reasons": FlaggedObject.REASONS,
             "selected_reason": reason,
+            "assignees": get_assignees(),
+            "selected_assignee": assignee,
         },
     )
 
@@ -203,6 +234,7 @@ def moderate_content(request):
             reason=FlaggedObject.REASON_CONTENT_MODERATION,
             content_model=content_type,
             product_slug=product_slug,
+            assignee=assignee,
         )
         .select_related("content_type", "creator", "assignee")
         .prefetch_related("content_object__product", "content_object__tags")
@@ -225,9 +257,6 @@ def moderate_content(request):
         else:
             # Unassign all of the user's objects.
             objects.filter(assignee=request.user).update(assignee=None, assigned_timestamp=None)
-
-    if assignee:
-        objects = objects.filter(assignee__username=assignee)
 
     # It's essential that the objects are ordered for pagination. The
     # default ordering for flagged objects is by ascending created date.
@@ -266,13 +295,7 @@ def moderate_content(request):
                 for p in Product.active.filter(codename="", aaq_configs__is_active=True)
             ],
             "selected_product": product_slug,
-            "assignees": sorted(
-                (user.username, user.get_full_name() or user.username)
-                for user in User.objects.filter(
-                    is_active=True,
-                    groups__name="Content Moderators",
-                ).distinct()
-            ),
+            "assignees": get_assignees(),
             "selected_assignee": assignee,
             "current_username": request.user.username,
         },
