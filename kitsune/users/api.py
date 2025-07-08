@@ -6,6 +6,7 @@ import json
 from django.conf import settings
 from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY
 from django.contrib.auth.models import Group, Permission, User
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Count, Q
@@ -372,7 +373,7 @@ def create_test_user(request):
                     "value": session.session_key,
                     "max-age": 60 * 60,  # 1 hour
                     "path": settings.SESSION_COOKIE_PATH,
-                    "domain": settings.SESSION_COOKIE_DOMAIN,
+                    "domain": Site.objects.get_current().domain,
                     "secure": settings.SESSION_COOKIE_SECURE,
                     "httponly": settings.SESSION_COOKIE_HTTPONLY,
                     "samesite": settings.SESSION_COOKIE_SAMESITE,
