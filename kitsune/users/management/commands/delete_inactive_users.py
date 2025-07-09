@@ -94,9 +94,9 @@ class Command(BaseCommand):
         users_without_content = User.objects.filter(last_login__lt=cutoff_date).exclude(
             has_content_criteria
         )
-        total_users = users_with_content.count() + users_without_content.count()
         content_count = users_with_content.count()
         no_content_count = users_without_content.count()
+        total_users = content_count + no_content_count
 
         if total_users == 0:
             self.stdout.write("No inactive users found to delete")
@@ -114,11 +114,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("DRY RUN: No users were actually deleted"))
             return
 
-        self._delete_users(users_with_content, users_without_content, total_users, options)
-
-    def _delete_users(
-        self, users_with_content, users_without_content, total_users: int, options: dict
-    ):
         User = get_user_model()
         batch_size = options["batch_size"]
         progress_interval = options["progress_interval"]
