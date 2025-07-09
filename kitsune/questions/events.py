@@ -113,7 +113,7 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template = "questions/email/new_answer.ltxt"
                 html_template = "questions/email/new_answer.html"
 
-            for k in ["answer_url", "helpful_url", "solution_url"]:
+            for k in ["answer_url", "solution_url"]:
                 context[k] = add_utm(urlparams(context[k]), "questions-reply")
 
             mail = email_utils.make_mail(
@@ -129,7 +129,6 @@ class QuestionReplyEvent(QuestionEvent):
 
         for u, w in users_and_watches:
             c["answer_url"] = self.answer.get_absolute_url()
-            c["helpful_url"] = self.answer.get_helpful_answer_url()
             c["solution_url"] = self.answer.get_solution_url(watch=w[0])
 
             c["to_user"] = u

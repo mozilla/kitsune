@@ -986,13 +986,6 @@ class Answer(AAQBase):
 
         update_answer_pages.delay(question.id)
 
-    def get_helpful_answer_url(self):
-        url = reverse(
-            "questions.answer_vote",
-            kwargs={"question_id": self.question_id, "answer_id": self.id},
-        )
-        return "%s?%s" % (url, "helpful")
-
     def get_solution_url(self, watch):
         url = reverse(
             "questions.solve",
