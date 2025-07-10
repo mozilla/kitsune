@@ -22,8 +22,6 @@ env:
   GAR_LOCATION: us
   GCP_PROJECT_ID: moz-fx-sumo-prod
   GAR_REPOSITORY: sumo-prod
-  REF_ID: ${{ github.ref }}
-
 
 jobs:
   build:
@@ -35,12 +33,15 @@ jobs:
     if: github.repository == 'mozilla/kitsune'
 
     outputs:
-        deployment_env: ${{ env.DEPLOYMENT_ENV }}
-        deployment_realm: ${{ env.DEPLOYMENT_REALM }}
-        image_tag: ${{ env.TAG }}
-
+      deployment_env: ${{ env.DEPLOYMENT_ENV }}
+      deployment_realm: ${{ env.DEPLOYMENT_REALM }}
+      image_tag: ${{ env.TAG }}
 
     steps:
+      - id: set_ref_id
+        name: Set the REF_ID
+        run: echo "REF_ID=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref }}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
       - name: Create version.json
         run: |
@@ -56,41 +57,38 @@ jobs:
         name: checkout application repo
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
-            fetch-tags: true
-            ref: ${{ env.REF_ID }}
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ env.REF_ID }}
 
-      - id: dev_image_tag
-        name: Set Docker dev image tag for updates of the DEV branch
-        if: github.ref == 'refs/heads/dev'
+      - id: resolve_image_tag
+        name: Resolve Docker image tag
         run: |
 
-          echo TAG="dev-$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+          if [[ "$REF_ID" == "refs/heads/dev" ]]; then
+            echo TAG="dev-$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+            # Updates to the dev branch are deployed to dev.
+            echo DEPLOYMENT_ENV=dev >> "$GITHUB_ENV"
+            echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
-          # Updates to the main branch are deployed to stage.
-          echo DEPLOYMENT_ENV=dev >> "$GITHUB_ENV"
-          echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
+          elif [[ "$REF_ID" == "refs/heads/main" ]]; then
+            echo TAG="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+            # Updates to the main branch are deployed to stage.
+            echo DEPLOYMENT_ENV=stage >> "$GITHUB_ENV"
+            echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
 
-      - id: stage_image_tag
-        name: Set Docker stage image tag for updates of the main branch
-        if: github.ref == 'refs/heads/main'
-        run: |
+          elif [[ "$REF_ID" == refs/tags/* ]]; then
+            echo TAG="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
+            # Version tags are deployed to prod.
+            echo DEPLOYMENT_ENV=prod >> "$GITHUB_ENV"
+            echo DEPLOYMENT_REALM=prod >> "$GITHUB_ENV"
 
-          echo TAG="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
-
-          # Updates to the main branch are deployed to stage.
-          echo DEPLOYMENT_ENV=stage >> "$GITHUB_ENV"
-          echo DEPLOYMENT_REALM=nonprod >> "$GITHUB_ENV"
-
-      - id: prod_image_tag
-        name: Set Docker prod  image tag to the git tag for tagged builds
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-
-          echo TAG="$(git describe --tags --abbrev=7)" >> "$GITHUB_ENV"
-          # Version tags are deployed to prod.
-          echo DEPLOYMENT_ENV=prod >> "$GITHUB_ENV"
-          echo DEPLOYMENT_REALM=prod >> "$GITHUB_ENV"
+          else
+            # Everything else is just built but not deployed.
+            echo TAG="custom-$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+            echo DEPLOYMENT_ENV=none >> "$GITHUB_ENV"
+            echo DEPLOYMENT_REALM=none >> "$GITHUB_ENV"
+          fi
 
       - uses: docker/setup-buildx-action@v3
 
@@ -98,9 +96,9 @@ jobs:
         name: GCP authentication
         uses: google-github-actions/auth@v2
         with:
-            token_format: access_token
-            service_account:  artifact-writer@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
-            workload_identity_provider: ${{ vars.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
+          token_format: access_token
+          service_account: artifact-writer@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          workload_identity_provider: ${{ vars.GCPV2_GITHUB_WORKLOAD_IDENTITY_PROVIDER }}
 
       - id: docker_login
         name: Log in to the container registry
@@ -110,7 +108,6 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.gcp_auth.outputs.access_token }}
 
-
       - id: build_and_push
         name: Build and push image
         uses: docker/build-push-action@v5
@@ -118,13 +115,13 @@ jobs:
           context: .
           tags: |
             ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   upload-static-assets:
     name: upload static assets
+    if: needs.build.outputs.deployment_env != 'none'
     environment: ${{ needs.build.outputs.deployment_env }}
     runs-on: ubuntu-latest
     needs:
