@@ -31,6 +31,18 @@
         "editor.defaultFormatter": "svelte.svelte-vscode"
     },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    }
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "ruff.enable": true,
+    "ruff.organizeImports": true,
+    "ruff.fixAll": true,
+    "ruff.lint.enable": true,
+    "ruff.format.enable": true,
+    "python.formatting.provider": "none",
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true
 }
