@@ -22,20 +22,20 @@
             "django": true,
             "program": "${workspaceFolder}/manage.py",
             "args": [
-            "test"
+                "test"
             ]
-         },
-         {
+        },
+        {
             "name": "Kitsune Wiki Tests",
             "type": "debugpy",
             "request": "launch",
             "django": true,
             "program": "${workspaceFolder}/manage.py",
             "args": [
-            "test",
-            "kitsune.wiki.tests" 
+                "test",
+                "kitsune.wiki.tests"
             ]
-         },
+        },
         {
             "name": "Kitsune Messages Tests",
             "type": "debugpy",
@@ -43,16 +43,16 @@
             "django": true,
             "program": "${workspaceFolder}/manage.py",
             "args": [
-            "test",
-            "kitsune.messages.tests" 
+                "test",
+                "kitsune.messages.tests"
             ]
-         },
+        },
         {
             "name": "Kitsune (Gunicorn)",
             "type": "debugpy",
             "request": "launch",
             "django": true,
-            "program": "/venv/bin/gunicorn",
+            "program": "/app/.venv/bin/gunicorn",
             "env": {
                 "GEVENT_SUPPORT": "True"
             },

@@ -31,8 +31,6 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        # Add to the "additional_dependencies" list below any poetry
-        # dependencies or their stub packages that provide type hints.
         additional_dependencies:
           - boto3-stubs==1.38.8
           - types-redis==4.6.0.20240106

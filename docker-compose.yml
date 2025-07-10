@@ -7,6 +7,7 @@ services:
     env_file: .env
     volumes:
       - ./:/app:delegated
+      - /app/.venv
     user: ${UID:-kitsune}
     stdin_open: true
     tty: true
@@ -59,10 +60,11 @@ services:
     build:
       context: .
       target: base
-    command: celery -A kitsune worker -l info -n default@%h -Q celery,email
+    command: bash -c "source /app/.venv/bin/activate && python -m celery -A kitsune worker -l info -n default@%h -Q celery,email"
     env_file: .env
     volumes:
       - ./:/app:delegated
+      - /app/.venv
     user: ${UID:-kitsune}
     depends_on:
       - postgres
