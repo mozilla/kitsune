@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 
-from kitsune.llm.l10n.prompt import translation_parser, translation_prompt
 from kitsune.llm.l10n.config import L10N_LLM_MODEL
+from kitsune.llm.l10n.prompt import translation_parser, translation_prompt
 from kitsune.llm.utils import get_llm
 
 if TYPE_CHECKING:
@@ -20,10 +20,10 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
 
     translation_chain = translation_prompt | llm | translation_parser
 
-    payload: dict[str, Any] = dict(
-        source_language=settings.LOCALES[doc.locale].english,
-        target_language=settings.LOCALES[target_locale].english,
-    )
+    payload: dict[str, Any] = {
+        "source_language": settings.LOCALES[doc.locale].english,
+        "target_language": settings.LOCALES[target_locale].english,
+    }
 
     result: dict[str, dict[str, Any]] = {}
 
@@ -48,10 +48,10 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
             and (target_rev := target_doc.current_revision)
             and (source_rev := target_rev.based_on)
         ):
-            return dict(
-                source_text=getattr(source_rev, content_attribute),
-                target_text=getattr(target_rev, content_attribute),
-            )
+            return {
+                "source_text": getattr(source_rev, content_attribute),
+                "target_text": getattr(target_rev, content_attribute),
+            }
         return None
 
     for content_attribute in content_attributes:

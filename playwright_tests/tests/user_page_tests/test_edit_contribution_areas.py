@@ -1,13 +1,15 @@
 import allure
 import pytest
-from pytest_check import check
 from playwright.sync_api import Page
+from pytest_check import check
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.mess_system_pages_messages.edit_cont_areas_page_messages import (
-    EditContributionAreasPageMessages)
+    EditContributionAreasPageMessages,
+)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages)
+    MyProfileMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

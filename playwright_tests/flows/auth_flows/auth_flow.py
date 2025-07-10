@@ -1,6 +1,7 @@
+from playwright.sync_api import Page
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.auth_page import AuthPage
-from playwright.sync_api import Page
 
 
 class AuthFlowPage:

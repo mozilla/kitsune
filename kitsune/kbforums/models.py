@@ -107,7 +107,7 @@ class Post(ModelBase):
             self.created = now
         self.updated = now
 
-        super(Post, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if new:
             self.thread.replies = self.thread.post_set.count() - 1
@@ -122,7 +122,7 @@ class Post(ModelBase):
         thread.replies = thread.post_set.count() - 2
         thread.save()
 
-        super(Post, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
         # If I was the last post in the thread, delete the thread.
         if thread.last_post is None:
             thread.delete()
@@ -149,7 +149,7 @@ class Post(ModelBase):
                 "thread_id": self.thread.id,
             },
         )
-        return urlparams(url_, hash="post-%s" % self.id, **query)
+        return urlparams(url_, hash="post-{}".format(self.id), **query)
 
     @property
     def content_parsed(self):

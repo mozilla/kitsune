@@ -4,6 +4,7 @@ from datetime import date, timedelta
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
 from kitsune.kpi.models import (
     CONTRIBUTORS_CSAT_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE,
@@ -91,11 +92,9 @@ class Command(BaseCommand):
 
             page += 1
 
-        for code in csat:
+        for code, value in csat.items():
             metric_kind = MetricKind.objects.get_or_create(code=code)[0]
-            value = (
-                csat[code] // counts[code] if counts[code] else 50
-            )  # If no responses assume neutral
+            value = value // counts[code] if counts[code] else 50  # If no responses assume neutral
             Metric.objects.update_or_create(
                 kind=metric_kind,
                 start=startdate,

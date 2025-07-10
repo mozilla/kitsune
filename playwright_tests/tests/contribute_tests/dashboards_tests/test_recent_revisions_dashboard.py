@@ -1,12 +1,15 @@
 import allure
 import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
-    KBArticleRevision)
+    KBArticleRevision,
+)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages)
+    MyProfileMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

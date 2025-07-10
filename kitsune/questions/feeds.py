@@ -83,7 +83,7 @@ class TaggedQuestionsFeed(QuestionsFeed):
         return get_object_or_404(SumoTag, slug=tag_slug)
 
     def title(self, tag):
-        return _("Recently updated questions tagged %s" % tag.name)
+        return _("Recently updated questions tagged {}".format(tag.name))
 
     def link(self, tag):
         return urlparams(reverse("questions.list", args=["all"]), tagged=tag.slug)

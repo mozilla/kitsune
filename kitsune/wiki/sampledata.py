@@ -8,7 +8,7 @@ from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, Revisio
 
 def read_file(filename):
     data_dir = os.path.join(os.path.dirname(__file__), "data")
-    return open(os.path.join(data_dir, filename), "r").read()
+    return open(os.path.join(data_dir, filename)).read()
 
 
 FLASH_CONTENT = read_file("FlashCrashes.wiki")
@@ -86,7 +86,7 @@ def generate_sampledata(options):
     topics = list(Topic.active.all())
     for i in range(9):
         d = DocumentFactory(
-            title="Sample Article %s" % str(i + 1), slug="sample-article-%s" % str(i + 1)
+            title="Sample Article {}".format(str(i + 1)), slug="sample-article-{}".format(str(i + 1))
         )
         RevisionFactory(document=d, is_approved=True, reviewed=datetime.now())
         d.products.add(firefox)

@@ -21,12 +21,12 @@ class ForumModelTestCase(TestCase):
     def test_forum_absolute_url(self):
         f = ForumFactory()
 
-        self.assertEqual("/en-US/forums/%s/" % f.slug, f.get_absolute_url())
+        self.assertEqual("/en-US/forums/{}/".format(f.slug), f.get_absolute_url())
 
     def test_thread_absolute_url(self):
         t = ThreadFactory()
 
-        self.assertEqual("/en-US/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
+        self.assertEqual("/en-US/forums/{}/{}".format(t.forum.slug, t.id), t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = ThreadFactory(posts=[])
@@ -40,12 +40,12 @@ class ForumModelTestCase(TestCase):
         url = reverse(
             "forums.posts", kwargs={"forum_slug": p1.thread.forum.slug, "thread_id": p1.thread.id}
         )
-        self.assertEqual(urlparams(url, hash="post-%s" % p1.id), p1.get_absolute_url())
+        self.assertEqual(urlparams(url, hash="post-{}".format(p1.id)), p1.get_absolute_url())
 
         url = reverse(
             "forums.posts", kwargs={"forum_slug": p2.thread.forum.slug, "thread_id": p2.thread.id}
         )
-        exp_ = urlparams(url, hash="post-%s" % p2.id, page=2)
+        exp_ = urlparams(url, hash="post-{}".format(p2.id), page=2)
         self.assertEqual(exp_, p2.get_absolute_url())
 
     def test_post_page(self):
@@ -79,8 +79,8 @@ class ForumModelTestCase(TestCase):
         url = t.get_last_post_url()
         assert f.slug in url
         assert str(t.id) in url
-        assert "#post-%s" % lp.id in url
-        assert "last=%s" % lp.id in url
+        assert "#post-{}".format(lp.id) in url
+        assert "last={}".format(lp.id) in url
 
     def test_last_post_updated(self):
         # Adding/Deleting the last post in a thread and forum should
@@ -220,7 +220,7 @@ class SaveDateTestCase(TestCase):
     delta = timedelta(milliseconds=3000)
 
     def setUp(self):
-        super(SaveDateTestCase, self).setUp()
+        super().setUp()
 
         self.user = UserFactory()
         self.thread = ThreadFactory()
@@ -229,7 +229,7 @@ class SaveDateTestCase(TestCase):
     def assertDateTimeAlmostEqual(self, a, b, delta, msg=None):
         """Assert that two datetime objects are within `range` (a timedelta)."""
         diff = abs(a - b)
-        assert diff < abs(delta), msg or "%s ~= %s" % (a, b)
+        assert diff < abs(delta), msg or "{} ~= {}".format(a, b)
 
     def test_save_thread_no_created(self):
         """Saving a new thread should behave as if auto_add_now was set."""

@@ -15,11 +15,11 @@ TEST_IMG = "kitsune/upload/tests/media/test.jpg"
 
 class DeleteEditImageTests(TestCase):
     def setUp(self):
-        super(DeleteEditImageTests, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         Image.objects.all().delete()
-        super(DeleteEditImageTests, self).tearDown()
+        super().tearDown()
 
     def test_delete_image(self):
         """Deleting an uploaded image works."""
@@ -138,7 +138,7 @@ class ViewHelpersTests(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
         Video.objects.all().delete()
-        super(ViewHelpersTests, self).setUp()
+        super().setUp()
 
     def test_get_media_info_video(self):
         """Gets video and format info."""

@@ -9,7 +9,7 @@ from kitsune.wiki.tests import LocaleFactory
 
 class AnnouncementModelTests(TestCase):
     def setUp(self):
-        super(AnnouncementModelTests, self).setUp()
+        super().setUp()
         self.creator = UserFactory()
         self.group = GroupFactory()
         self.locale = LocaleFactory(locale="es")

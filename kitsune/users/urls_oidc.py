@@ -3,7 +3,6 @@ from django.views.decorators.cache import never_cache
 
 from kitsune.users import views
 
-
 urlpatterns = [
     path(
         "fxa/callback/",

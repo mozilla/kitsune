@@ -1,5 +1,7 @@
 import re
+
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
 """

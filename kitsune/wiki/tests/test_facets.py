@@ -16,7 +16,7 @@ from kitsune.wiki.tests import (
 
 class TestFacetHelpers(TestCase):
     def setUp(self):
-        super(TestFacetHelpers, self).setUp()
+        super().setUp()
         # Groups and users
         self.group1 = GroupFactory(name="group1")
         self.group2 = GroupFactory(name="group2")
@@ -153,21 +153,21 @@ class TestFacetHelpers(TestCase):
         """Verify topics_for() returns topics for passed products."""
         desktop_topics = topics_for(self.anonymous, product=self.desktop)
         self.assertEqual(
-            set(t.slug for t in desktop_topics),
-            set((self.general_d.slug, self.bookmarks_d.slug, self.sync_d.slug)),
+            {t.slug for t in desktop_topics},
+            {self.general_d.slug, self.bookmarks_d.slug, self.sync_d.slug},
         )
 
         mobile_topics = topics_for(self.anonymous, product=self.mobile)
         self.assertEqual(
-            set(t.slug for t in mobile_topics),
-            set((self.bookmarks_m.slug, self.sync_m.slug)),
+            {t.slug for t in mobile_topics},
+            {self.bookmarks_m.slug, self.sync_m.slug},
         )
 
         for user in (self.user1, self.user2, self.staff):
             mobile_topics = topics_for(user, product=self.mobile)
             self.assertEqual(
-                set(t.slug for t in mobile_topics),
-                set((self.general_m.slug, self.bookmarks_m.slug, self.sync_m.slug)),
+                {t.slug for t in mobile_topics},
+                {self.general_m.slug, self.bookmarks_m.slug, self.sync_m.slug},
             )
 
     def test_documents_for(self):

@@ -4,7 +4,6 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-
 SPAM_INSTRUCTIONS = """
 # Role and goal
 You are a content moderation agent specialized in Mozilla's "{product}" product support forums.

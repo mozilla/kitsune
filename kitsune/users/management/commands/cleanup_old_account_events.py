@@ -1,6 +1,8 @@
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import timedelta
+
 from kitsune.users.models import AccountEvent
 
 

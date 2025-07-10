@@ -13,7 +13,7 @@ def valid_date(s):
     try:
         return datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
-        msg = "Not a valid date: '{0}'.".format(s)
+        msg = "Not a valid date: '{}'.".format(s)
         raise argparse.ArgumentTypeError(msg)
 
 
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         # Loop through all locales.
         for locale in settings.SUMO_LANGUAGES:
             # Loop through all enabled products, including None (really All).
-            for product in [None] + list(Product.objects.filter(visible=True)):
+            for product in [None, *list(Product.objects.filter(visible=True))]:
                 num = num_active_contributors(
                     from_date=previous_first_of_month,
                     to_date=first_of_month,

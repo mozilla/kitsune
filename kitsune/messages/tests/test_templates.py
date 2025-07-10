@@ -9,7 +9,7 @@ from kitsune.users.tests import UserFactory
 
 class SendMessageTestCase(TestCase):
     def setUp(self):
-        super(SendMessageTestCase, self).setUp()
+        super().setUp()
         self.user1 = UserFactory()
         self.user2 = UserFactory()
         self.user3 = UserFactory()
@@ -52,7 +52,7 @@ class SendMessageTestCase(TestCase):
                 reverse("messages.new", locale="en-US"),
                 {
                     "to": to,
-                    "message": "hi there %s" % i,
+                    "message": "hi there {}".format(i),
                 },
             )
 
@@ -64,7 +64,7 @@ class MessagePreviewTests(TestCase):
     """Tests for preview."""
 
     def setUp(self):
-        super(MessagePreviewTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
 

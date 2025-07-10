@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from kitsune.questions.api import QuestionViewSet, AnswerViewSet
+from kitsune.questions.api import AnswerViewSet, QuestionViewSet
 
 router = routers.SimpleRouter()
 router.register(r"question", QuestionViewSet)

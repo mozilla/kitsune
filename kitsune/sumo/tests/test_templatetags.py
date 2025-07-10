@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from collections import namedtuple
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -131,9 +130,9 @@ class TestDateTimeFormat(TestCase):
         date_today = datetime.today()
         date_localize = date_today.replace(tzinfo=self.timezone)
         value_returned = str(datetimeformat(self.context, date_today))
-        value_expected = "Today at %s" % format_time(
+        value_expected = "Today at {}".format(format_time(
             date_localize, format="short", locale=self.locale, tzinfo=self.timezone
-        )
+        ))
         self.assertEqual(pq(value_returned)("time").text(), value_expected)
 
     def test_locale(self):

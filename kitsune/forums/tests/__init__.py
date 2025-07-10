@@ -26,11 +26,11 @@ class ThreadFactory(factory.django.DjangoModelFactory):
     title = FuzzyUnicode()
 
     @factory.post_generation
-    def posts(obj, create, extracted, **kwargs):
+    def posts(self, create, extracted, **kwargs):
         defaults = {
-            "created": obj.created,
-            "author": obj.creator,
-            "thread": obj,
+            "created": self.created,
+            "author": self.creator,
+            "thread": self,
         }
         defaults.update(**kwargs)
 
@@ -43,7 +43,7 @@ class ThreadFactory(factory.django.DjangoModelFactory):
                 posts.append(PostFactory(**args))
 
         for post in posts:
-            obj.post_set.add(post)
+            self.post_set.add(post)
 
 
 class ThreadFactoryTests(TestCase):

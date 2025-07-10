@@ -34,10 +34,10 @@ class Command(BaseCommand):
             sql = """
                 UPDATE questions_question
                 SET is_archived = TRUE
-                WHERE id IN (%s)
-                """ % ",".join(
+                WHERE id IN ({})
+                """.format(",".join(
                 map(str, q_ids)
-            )
+            ))
 
             with connection.cursor() as cursor:
                 cursor.execute(sql)

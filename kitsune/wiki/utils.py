@@ -1,7 +1,6 @@
 import random
 import time
 from itertools import chain, islice
-from typing import Optional
 
 import requests
 from django.conf import settings
@@ -19,7 +18,6 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, Revision
-
 
 KB_VISITED_DEFAULT_TTL = 60 * 60 * 24  # 24 hours
 
@@ -357,7 +355,7 @@ def update_kb_visited(
 def has_visited_kb(
     session: SessionBase,
     product: Product,
-    topic: Optional[Topic] = None,
+    topic: Topic | None = None,
     ttl: int = KB_VISITED_DEFAULT_TTL,
 ) -> bool:
     """
@@ -379,7 +377,7 @@ def has_visited_kb(
 def get_kb_visited(
     session: SessionBase,
     product: Product,
-    topic: Optional[Topic] = None,
+    topic: Topic | None = None,
     ttl: int = KB_VISITED_DEFAULT_TTL,
 ) -> list[str]:
     """

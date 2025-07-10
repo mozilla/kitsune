@@ -88,7 +88,7 @@ def import_from_setting(setting_name, fallback):
         try:
             return import_string(path)
         except ImportError:
-            raise ImproperlyConfigured("%s: No such path." % path)
+            raise ImproperlyConfigured("{}: No such path.".format(path))
     else:
         return fallback
 

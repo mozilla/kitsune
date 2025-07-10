@@ -29,23 +29,23 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
 
     @factory.post_generation
-    def metadata(q, create, extracted, **kwargs):
+    def metadata(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
-            q.add_metadata(**extracted)
+            self.add_metadata(**extracted)
 
     @factory.post_generation
-    def tags(q, create, extracted, **kwargs):
+    def tags(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for tag in extracted:
-                q.tags.add(tag)
+                self.tags.add(tag)
 
 
 class QuestionVoteFactory(factory.django.DjangoModelFactory):
@@ -71,24 +71,24 @@ class AAQConfigFactory(factory.django.DjangoModelFactory):
     is_active = True
 
     @factory.post_generation
-    def enabled_locales(obj, create, extracted, **kwargs):
+    def enabled_locales(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for locale in extracted:
-                obj.enabled_locales.add(locale)
+                self.enabled_locales.add(locale)
 
     @factory.post_generation
-    def associated_tags(obj, create, extracted, **kwargs):
+    def associated_tags(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for tag in extracted:
-                obj.associated_tags.add(tag)
+                self.associated_tags.add(tag)
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
@@ -103,9 +103,9 @@ class AnswerFactory(factory.django.DjangoModelFactory):
 
 class SolutionAnswerFactory(AnswerFactory):
     @factory.post_generation
-    def set_question_solution(obj, create, extracted, **kwargs):
-        obj.question.solution = obj
-        obj.save()
+    def set_question_solution(self, create, extracted, **kwargs):
+        self.question.solution = self
+        self.save()
 
 
 class AnswerVoteFactory(factory.django.DjangoModelFactory):

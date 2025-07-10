@@ -8,8 +8,8 @@ from django.utils.html import escape
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.upload.utils import _image_to_png, upload_media, check_file_size
 from kitsune.upload.tasks import _scale_dimensions
+from kitsune.upload.utils import _image_to_png, check_file_size, upload_media
 
 
 def create_image(files, user):
@@ -63,10 +63,10 @@ def check_media_permissions(media, user, perm_type):
 
     """
     media_type = media.__class__.__name__.lower()
-    perm_name = "gallery.%s_%s" % (perm_type, media_type)
+    perm_name = "gallery.{}_{}".format(perm_type, media_type)
     if user != media.creator and not user.has_perm(perm_name):
         raise PermissionDenied
 
 
 def get_draft_title(user):
-    return "Draft for user %s. Created at: %s" % (user.username, datetime.now())
+    return "Draft for user {}. Created at: {}".format(user.username, datetime.now())

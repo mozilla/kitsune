@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.db import models
 
 from kitsune.sumo.models import ModelBase
@@ -16,8 +16,8 @@ class TitleManager(models.Manager):
             current = set(title.users.all())
             users = set(users)
             # Remove users that lost the title, and add the new ones
-            title.users.remove(*[u for u in current - users])
-            title.users.add(*[u for u in users - current])
+            title.users.remove(*list(current - users))
+            title.users.add(*list(users - current))
         except Title.DoesNotExist:
             # Create the title and add the users
             title = Title(name=name, is_auto=True)

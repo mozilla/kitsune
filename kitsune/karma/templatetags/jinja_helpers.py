@@ -1,5 +1,4 @@
 from django.db.models import Q
-
 from django_jinja import library
 
 from kitsune.karma.models import Title

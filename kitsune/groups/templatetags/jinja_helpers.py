@@ -21,7 +21,7 @@ def group_link(group):
     try:
         profile = GroupProfile.objects.get(group=group)
         url = reverse("groups.profile", args=[profile.slug])
-        html = '<a href="%s">%s</a>' % (escape(url), escape(group.name))
+        html = '<a href="{}">{}</a>'.format(escape(url), escape(group.name))
         return Markup(html)
     except GroupProfile.DoesNotExist:
         return group.name

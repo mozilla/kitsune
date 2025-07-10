@@ -1,22 +1,28 @@
 import allure
-from pytest_check import check
 import pytest
-from playwright_tests.core.utilities import Utilities
-from playwright.sync_api import expect, Page
+from playwright.sync_api import Page, expect
+from pytest_check import check
 
-from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
-    QuestionPageMessages
+from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import (
+    QuestionPageMessages,
+)
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages)
+    KBArticlePageMessages,
+)
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
-    KBArticleRevision)
-from playwright_tests.messages.explore_help_articles.kb_article_show_history_page_messages import \
-    KBArticleShowHistoryPageMessages
+    KBArticleRevision,
+)
+from playwright_tests.messages.explore_help_articles.kb_article_show_history_page_messages import (
+    KBArticleShowHistoryPageMessages,
+)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages)
-from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import \
-    KBArticleShowHistoryPage
+    MyProfileMessages,
+)
+from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import (
+    KBArticleShowHistoryPage,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -648,12 +654,12 @@ def test_kb_article_revision_date_functionality(page: Page):
     with allure.step("Verifying that the 'Edit article based on this revision' is not "
                      "displayed"):
         expect(
-            (sumo_pages.kb_article_preview_revision_page
-             .get_edit_article_based_on_this_revision_link_locator())).to_be_hidden()
+            sumo_pages.kb_article_preview_revision_page
+             .get_edit_article_based_on_this_revision_link_locator()).to_be_hidden()
 
     with allure.step("Verifying that the 'Revision Source' section is hidden by default"):
-        expect((sumo_pages.kb_article_preview_revision_page
-                .get_preview_revision_source_textarea_locator())).to_be_hidden()
+        expect(sumo_pages.kb_article_preview_revision_page
+                .get_preview_revision_source_textarea_locator()).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Revision Source' foldout section option and "
                             "verifying that the 'Revision Source' textarea contains the "
@@ -692,8 +698,8 @@ def test_kb_article_revision_date_functionality(page: Page):
         ) == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with allure.step("Verifying that the reviewed by date is displayed"):
-        expect((sumo_pages.kb_article_preview_revision_page
-                .get_preview_revision_reviewed_date_locator())).to_be_visible()
+        expect(sumo_pages.kb_article_preview_revision_page
+                .get_preview_revision_reviewed_date_locator()).to_be_visible()
 
     with check, allure.step("Verifying that the correct 'Reviewed by' text is displayed"):
         assert sumo_pages.kb_article_preview_revision_page.get_reviewed_by_text() == main_user

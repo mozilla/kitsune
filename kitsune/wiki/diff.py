@@ -33,7 +33,7 @@ class BetterHtmlDiff(difflib.HtmlDiff):
         """
         try:
             linenum = "%d" % linenum
-            id = ' id="%s%s"' % (self._prefix[side], linenum)
+            id = ' id="{}{}"'.format(self._prefix[side], linenum)
         except TypeError:
             # handle blank lines where linenum is '>' or ''
             id = ""
@@ -43,4 +43,4 @@ class BetterHtmlDiff(difflib.HtmlDiff):
 
         text = text.replace("  ", "&nbsp; ").rstrip()
 
-        return '<td class="diff_header"%s>%s</td><td class="text">%s</td>' % (id, linenum, text)
+        return '<td class="diff_header"{}>{}</td><td class="text">{}</td>'.format(id, linenum, text)

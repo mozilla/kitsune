@@ -5,7 +5,6 @@ from langchain.schema import AIMessage
 
 from kitsune.llm.l10n.config import L10N_PROTECTED_TERMS
 
-
 TRANSLATION_INSTRUCTIONS = """
 # Role and task
 - You are an expert at translating technical documents written in Wiki syntax about Mozilla's products from {{ source_language }} to {{ target_language }}.
@@ -19,21 +18,21 @@ Remember the following definitions. You will use them to complete your task.
 A `wiki-hook` is a string that case-sensitively matches the regular expression pattern that follows:
 
 ```python
-r"\[\[(Image|Video|V|Button|UI|Include|I|Template|T):.*?\]\]"
+r"\\[\\[(Image|Video|V|Button|UI|Include|I|Template|T):.*?\\]\\]"
 ```
 
 ## Definition of `wiki-article-link`
 A `wiki-article-link` is a string that case-sensitively matches the regular expression pattern that follows:
 
 ```python
-r"\[\[(?!Image:|Video:|V:|Button:|UI:|Include:|I:|Template:|T:)[^|]+?(?:\|(?P<description>.+?))?\]\]"
+r"\\[\\[(?!Image:|Video:|V:|Button:|UI:|Include:|I:|Template:|T:)[^|]+?(?:\\|(?P<description>.+?))?\\]\\]"
 ```
 
 ## Definition of `wiki-external-link`
 A `wiki-external-link` is a string that case-sensitively matches the regular expression pattern that follows:
 
 ```python
-r"\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\]\[\x00-\x20\x7f]*)\s*(?P<description>.*?)\]"
+r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\x20\x7f]*)\\s*(?P<description>.*?)\\]"
 ```
 
 ## Definition of `prior-translation-wiki-map`
@@ -54,13 +53,13 @@ r"\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\]\[\x00-\x20\x7f]*)\s*(?P<de
 2. **Preserve unchanged** each string that case-sensitively matches the following regular expression:
 
     ```python
-    r"\{(for|key|filepath) .*?\}"
+    r"\\{(for|key|filepath) .*?\\}"
     ```
 
 3. For each string that case-sensitively matches the following regular expression:
 
     ```python
-    r"\{(?:button|menu|pref) (?P<description>.*?)\}"
+    r"\\{(?:button|menu|pref) (?P<description>.*?)\\}"
     ```
 
     - Translate only the text matched by the named group `description` (**remember to obey rule #1 above**), and **preserve the rest of the string unchanged**.

@@ -21,7 +21,7 @@ def showfor_data(products):
             }
         )
 
-    all_versions = dict((p.slug, p.versions.all()) for p in products)
+    all_versions = {p.slug: p.versions.all() for p in products}
     # data['versions'] = dict((p.slug, p.versions.all()) for p in products)
     for slug, versions in list(all_versions.items()):
         data["versions"][slug] = []

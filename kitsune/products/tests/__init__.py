@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import factory
 import factory.django
 import factory.fuzzy
@@ -38,14 +37,14 @@ class TopicFactory(factory.django.DjangoModelFactory):
     is_archived = False
 
     @factory.post_generation
-    def products(topic, create, extracted, **kwargs):
+    def products(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for t in extracted:
-                topic.products.add(t)
+                self.products.add(t)
 
 
 class VersionFactory(factory.django.DjangoModelFactory):

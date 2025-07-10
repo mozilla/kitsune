@@ -16,14 +16,14 @@ from kitsune.users.tests import UserFactory
 
 class UploadImageTestCase(TestCase):
     def setUp(self):
-        super(UploadImageTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory(username="berker")
         self.question = QuestionFactory(creator=self.user)
         self.client.login(username=self.user.username, password="testpass")
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()
-        super(UploadImageTestCase, self).tearDown()
+        super().tearDown()
 
     def test_model_not_whitelisted(self):
         """Specifying a model we don't allow returns 400."""
@@ -66,7 +66,7 @@ class UploadImageTestCase(TestCase):
         self.assertEqual(90, file["width"])
         self.assertEqual(120, file["height"])
         name = "098f6b.png"
-        message = 'Url "%s" does not contain "%s"' % (file["url"], name)
+        message = 'Url "{}" does not contain "{}"'.format(file["url"], name)
         assert name in file["url"], message
 
         self.assertEqual(1, ImageAttachment.objects.count())

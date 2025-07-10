@@ -1,4 +1,4 @@
-class ReadOnlyBackend(object):
+class ReadOnlyBackend:
     """Django auth backend for readonly mode
 
     The whole purpose of this is to reject everything.  It should

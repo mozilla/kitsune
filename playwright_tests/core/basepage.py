@@ -1,6 +1,6 @@
 import random
-from typing import Union
-from playwright.sync_api import Page, ElementHandle, Locator
+
+from playwright.sync_api import ElementHandle, Locator, Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
@@ -78,8 +78,7 @@ class BasePage:
         self.wait_for_dom_to_load()
         return locator.count()
 
-    def _get_element_attribute_value(self, element: Union[str, Locator, list[Locator],
-                                     ElementHandle], attribute: str) -> Union[str, list[str]]:
+    def _get_element_attribute_value(self, element: str | Locator | list[Locator] | ElementHandle, attribute: str) -> str | list[str]:
         """
         This helper function returns the given attribute of a given locator or web element.
         """
@@ -151,7 +150,7 @@ class BasePage:
                 else:
                     raise Exception("Max retries exceeded. Could not interact with the checkbox")
 
-    def _click(self, element: Union[str, Locator, ElementHandle], expected_locator=None,
+    def _click(self, element: str | Locator | ElementHandle, expected_locator=None,
                expected_url=None, with_force=False, retries=3, delay=2000):
         """
         This helper function clicks on a given element locator.

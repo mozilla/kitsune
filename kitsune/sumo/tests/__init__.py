@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import inspect
 from functools import wraps
 from smtplib import SMTPRecipientsRefused
@@ -20,7 +19,9 @@ def get(client, url, **kwargs):
     return client.get(reverse(url, **kwargs), follow=True)
 
 
-def post(client, url, data={}, **kwargs):
+def post(client, url, data=None, **kwargs):
+    if data is None:
+        data = {}
     return client.post(reverse(url, **kwargs), data, follow=True)
 
 
@@ -35,20 +36,20 @@ class TestCase(OriginalTestCase):
         trans_real.deactivate()
         trans_real._translations = {}  # Django fails to clear this cache.
         trans_real.activate(settings.LANGUAGE_CODE)
-        super(TestCase, self)._pre_setup()
+        super()._pre_setup()
 
     @classmethod
     def setUpClass(cls):
-        super(TestCase, cls).setUpClass()
+        super().setUpClass()
 
     def setUp(self):
         if self.skipme:
             raise SkipTest
 
-        super(TestCase, self).setUp()
+        super().setUp()
 
     def tearDown(self):
-        super(TestCase, self).tearDown()
+        super().tearDown()
 
 
 def attrs_eq(received, **expected):
@@ -59,7 +60,7 @@ def attrs_eq(received, **expected):
 
 def starts_with(text, substring):
     """Assert `text` starts with `substring`."""
-    assert text.startswith(substring), "%r doesn't start with %r" % (text, substring)
+    assert text.startswith(substring), "{!r} doesn't start with {!r}".format(text, substring)
 
 
 def send_mail_raise_smtp(messages):
@@ -74,7 +75,7 @@ def emailmessage_raise_smtp():
 
 def eq_msg(a, b, msg=None):
     """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'"""
-    assert a == b, (str(msg) or "") + " (%r != %r)" % (a, b)
+    assert a == b, (str(msg) or "") + " ({!r} != {!r})".format(a, b)
 
 
 class FuzzyUnicode(factory.fuzzy.FuzzyText):
@@ -82,10 +83,10 @@ class FuzzyUnicode(factory.fuzzy.FuzzyText):
 
     def __init__(self, prefix="", **kwargs):
         # prefix = "%sđ" % prefix
-        super(FuzzyUnicode, self).__init__(prefix=prefix, **kwargs)
+        super().__init__(prefix=prefix, **kwargs)
 
 
-class set_waffle_flag(object):
+class set_waffle_flag:
     """
     Decorator/context manager that sets a given waffle flag.
 

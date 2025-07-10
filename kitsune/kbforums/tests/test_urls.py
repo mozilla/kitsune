@@ -10,7 +10,7 @@ class KBBelongsTestCase(TestCase):
     """
 
     def setUp(self):
-        super(KBBelongsTestCase, self).setUp()
+        super().setUp()
         u = UserFactory()
         self.doc = DocumentFactory(title="spam")
         self.doc_2 = DocumentFactory(title="eggs")

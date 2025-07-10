@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Finds revisions from the Thunderbird migration that don't have based_on
@@ -24,7 +23,7 @@ def run():
         raise
 
 
-class Progress():
+class Progress:
 
     def __init__(self, total):
         self.current = 0

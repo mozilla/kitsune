@@ -20,7 +20,7 @@ class MessageForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # Grab the user
         self.user = kwargs.pop("user")
-        super(MessageForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # If the user is a member of the staff group, the placholder text needs to be updated.
         if self.user and self.user.profile.in_staff_group:

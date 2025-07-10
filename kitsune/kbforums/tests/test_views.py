@@ -92,7 +92,7 @@ class ThreadTests(TestCase):
         def check(url):
             response = get(self.client, url, args=[doc.slug])
             st = response.status_code
-            self.assertEqual(404, st, "%s was %s, not 404" % (url, st))
+            self.assertEqual(404, st, "{} was {}, not 404".format(url, st))
 
         check("wiki.discuss.threads")
         check("wiki.discuss.new_thread")
