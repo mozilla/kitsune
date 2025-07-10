@@ -1,5 +1,5 @@
 {
-    "python.defaultInterpreterPath": "/venv/bin/python",
+    "python.defaultInterpreterPath": "/app/.venv/bin/python",
     "python.autoComplete.extraPaths": [
         "/vendor"
     ],
