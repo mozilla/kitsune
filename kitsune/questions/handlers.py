@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 
@@ -104,6 +106,35 @@ class AAQChain(AbstractChain[AccountHandler]):
         anonymous_id = AnonymousIdentity().anonymous_id
         QuestionVote.objects.filter(creator=user).update(creator=None, anonymous_id=anonymous_id)
         AnswerVote.objects.filter(creator=user).update(creator=None, anonymous_id=anonymous_id)
+
+
+class OldSpamCleanupHandler:
+    """Handler for cleaning up old spam content."""
+
+    def __init__(self, cutoff_months: int = settings.SPAM_CLEANUP_CUTOFF_MONTHS):
+        """Initialize handler with cutoff period in months."""
+        if cutoff_months <= 0:
+            raise ValueError("cutoff_months must be a positive integer")
+        self.cutoff_months = cutoff_months
+
+    def cleanup_old_spam(self) -> dict:
+        """Delete Questions and Answers marked as spam older than cutoff period."""
+        cutoff_date = datetime.now() - timedelta(days=30 * self.cutoff_months)
+
+        questions = Question.objects.filter(is_spam=True, marked_as_spam__lt=cutoff_date)
+        answers = Answer.objects.filter(is_spam=True, marked_as_spam__lt=cutoff_date)
+
+        question_count = questions.count()
+        answer_count = answers.count()
+
+        questions.delete()
+        answers.delete()
+
+        return {
+            "questions_deleted": question_count,
+            "answers_deleted": answer_count,
+            "cutoff_date": cutoff_date,
+        }
 
 
 class AAQListener(UserDeletionListener):
