@@ -417,6 +417,22 @@ def job_cleanup_expired_users():
     call_command("cleanup_expired_users")
 
 
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="22",
+    minute="00",
+    day_of_week="0,2,4",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_CLEANUP_OLD_SPAM)
+def job_cleanup_old_spam():
+    call_command("cleanup_old_spam")
+
+
 # Every 4 hours, 15 minutes after the hour.
 @scheduled_job(
     "cron",

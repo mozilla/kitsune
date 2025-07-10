@@ -1129,6 +1129,7 @@ DMS_COHORT_ANALYSIS = config("DMS_COHORT_ANALYSIS", default=None)
 DMS_UPDATE_L10N_CONTRIBUTOR_METRICS = config("DMS_UPDATE_L10N_CONTRIBUTOR_METRICS", default=None)
 DMS_CLEANUP_EXPIRED_USERS = config("DMS_CLEANUP_EXPIRED_USERS", default=None)
 DMS_CLEANUP_OLD_ACCOUNT_EVENTS = config("DMS_CLEANUP_OLD_ACCOUNT_EVENTS", default=None)
+DMS_CLEANUP_OLD_SPAM = config("DMS_CLEANUP_OLD_SPAM", default=None)
 DMS_REPROCESS_FAILED_ACCOUNT_EVENTS = config("DMS_REPROCESS_FAILED_ACCOUNT_EVENTS", default=None)
 
 PROD_DETAILS_CACHE_NAME = "product-details"
@@ -1150,6 +1151,9 @@ BADGE_LIMIT_L10N_KB = config("BADGE_LIMIT_L10N_KB", default=10, cast=int)
 BADGE_LIMIT_SUPPORT_FORUM = config("BADGE_LIMIT_SUPPORT_FORUM", default=30, cast=int)
 BADGE_MAX_RECENT = config("BADGE_MAX_RECENT", default=15, cast=int)
 BADGE_PAGE_SIZE = config("BADGE_PAGE_SIZE", default=50, cast=int)
+
+# Spam cleanup configuration
+SPAM_CLEANUP_CUTOFF_MONTHS = config("SPAM_CLEANUP_CUTOFF_MONTHS", default=3, cast=int)
 
 # The canonical, production URL without a trailing slash
 CANONICAL_URL = "https://support.mozilla.org"
