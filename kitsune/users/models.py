@@ -145,7 +145,7 @@ class Profile(ModelBase):
 
     updated_column_name = "user__date_joined"
 
-    class Meta(object):
+    class Meta:
         indexes = [models.Index(Upper("name"), name="upper_name_idx")]
         permissions = (
             ("view_karma_points", "Can view karma points"),
@@ -287,11 +287,11 @@ class Setting(ModelBase):
     name = models.CharField(max_length=100)
     value = models.CharField(blank=True, max_length=60, verbose_name=_lazy("Value"))
 
-    class Meta(object):
+    class Meta:
         unique_together = (("user", "name"),)
 
     def __str__(self):
-        return "%s %s:%s" % (self.user, self.name, self.value or "[none]")
+        return "{} {}:{}".format(self.user, self.name, self.value or "[none]")
 
     @classmethod
     def get_for_user(cls, user, name):
@@ -331,7 +331,7 @@ class RegistrationProfile(models.Model):
         verbose_name_plural = _lazy("registration profiles")
 
     def __str__(self):
-        return "Registration information for %s" % self.user
+        return "Registration information for {}".format(self.user)
 
     def activation_key_expired(self):
         """
@@ -365,7 +365,7 @@ class EmailChange(models.Model):
     email = models.EmailField(db_index=True, null=True)
 
     def __str__(self):
-        return "Change email request to %s for %s" % (self.email, self.user)
+        return "Change email request to {} for {}".format(self.email, self.user)
 
 
 class Deactivation(models.Model):
@@ -383,7 +383,7 @@ class Deactivation(models.Model):
     date = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
-        return "%s was deactivated by %s on %s" % (self.user, self.moderator, self.date)
+        return "{} was deactivated by {} on {}".format(self.user, self.moderator, self.date)
 
 
 class AccountEvent(models.Model):
@@ -423,5 +423,5 @@ class AccountEvent(models.Model):
         Profile, on_delete=models.SET_NULL, related_name="account_events", null=True, blank=True
     )
 
-    class Meta(object):
+    class Meta:
         ordering = ["-last_modified"]

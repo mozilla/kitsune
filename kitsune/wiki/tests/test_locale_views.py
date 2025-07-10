@@ -47,7 +47,7 @@ class LocaleDetailsTests(TestCase):
 
 class AddRemoveLeaderTests(TestCase):
     def setUp(self):
-        super(AddRemoveLeaderTests, self).setUp()
+        super().setUp()
         self.locale = LocaleFactory(locale="es")
         self.user = UserFactory()
         add_permission(self.user, Locale, "change_locale")
@@ -74,7 +74,7 @@ class AddRemoveLeaderTests(TestCase):
 
 class AddRemoveReviewerTests(TestCase):
     def setUp(self):
-        super(AddRemoveReviewerTests, self).setUp()
+        super().setUp()
         self.locale = LocaleFactory(locale="es")
         self.user = UserFactory()
         self.locale.leaders.add(self.user)
@@ -101,7 +101,7 @@ class AddRemoveReviewerTests(TestCase):
 
 class AddRemoveEditorTests(TestCase):
     def setUp(self):
-        super(AddRemoveEditorTests, self).setUp()
+        super().setUp()
         self.locale = LocaleFactory(locale="es")
         self.user = UserFactory()
         self.locale.leaders.add(self.user)

@@ -1,6 +1,7 @@
 import difflib
 
 from django.core.management.base import BaseCommand
+
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import wiki_to_html
 

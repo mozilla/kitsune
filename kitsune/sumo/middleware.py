@@ -74,7 +74,7 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def __init__(self, get_response=None):
         if not settings.OIDC_ENABLE or settings.DEV:
             raise MiddlewareNotUsed
-        super(SUMORefreshIDTokenAdminMiddleware, self).__init__(get_response=get_response)
+        super().__init__(get_response=get_response)
 
     def process_request(self, request):
         """Only allow refresh and enforce OIDC auth on admin URLs"""
@@ -87,7 +87,7 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
                 messages.error(request, "OIDC login required for admin access")
                 return HttpResponseRedirect("/admin/login/")
 
-            return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
+            return super().process_request(request)
 
 
 class ValidateAccessTokenMiddleware(SessionRefresh):
@@ -96,7 +96,7 @@ class ValidateAccessTokenMiddleware(SessionRefresh):
     def __init__(self, get_response=None):
         if not settings.OIDC_ENABLE or settings.DEV:
             raise MiddlewareNotUsed
-        super(ValidateAccessTokenMiddleware, self).__init__(get_response=get_response)
+        super().__init__(get_response=get_response)
 
     def process_request(self, request):
         """Check the validity of the access_token.
@@ -218,7 +218,7 @@ class VaryNoCacheMiddleware(MiddlewareMixin):
     """
 
     def __init__(self, get_response=None):
-        super(VaryNoCacheMiddleware, self).__init__(get_response=get_response)
+        super().__init__(get_response=get_response)
         if not settings.ENABLE_VARY_NOCACHE_MIDDLEWARE:
             raise MiddlewareNotUsed
 
@@ -262,7 +262,7 @@ class PlusToSpaceMiddleware(MiddlewareMixin):
 
 class ReadOnlyMiddleware(MiddlewareMixin):
     def __init__(self, get_response=None):
-        super(ReadOnlyMiddleware, self).__init__(get_response=get_response)
+        super().__init__(get_response=get_response)
         if not settings.READ_ONLY:
             raise MiddlewareNotUsed
 
@@ -284,7 +284,7 @@ class RemoveSlashMiddleware(MiddlewareMixin):
     """
 
     def __init__(self, get_response):
-        super(RemoveSlashMiddleware, self).__init__(get_response)
+        super().__init__(get_response)
 
     def process_response(self, request, response):
         if (
@@ -292,7 +292,7 @@ class RemoveSlashMiddleware(MiddlewareMixin):
             and request.path_info.endswith("/")
             and not is_valid_path(request.path_info)
             and (
-                is_valid_path((new_url := request.path_info[:-1]))
+                is_valid_path(new_url := request.path_info[:-1])
                 or is_valid_path(f"/{request.LANGUAGE_CODE}{new_url}")
             )
         ):
@@ -304,7 +304,7 @@ class RemoveSlashMiddleware(MiddlewareMixin):
 
 class HostnameMiddleware(MiddlewareMixin):
     def __init__(self, get_response=None):
-        super(HostnameMiddleware, self).__init__(get_response=get_response)
+        super().__init__(get_response=get_response)
         if getattr(settings, "DISABLE_HOSTNAME_MIDDLEWARE", False):
             raise MiddlewareNotUsed()
 
@@ -320,7 +320,7 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
     """Looks at user agent and decides whether the device is allowed on the site."""
 
     def __init__(self, get_response=None):
-        super(FilterByUserAgentMiddleware, self).__init__(get_response=get_response)
+        super().__init__(get_response=get_response)
         if not settings.USER_AGENT_FILTERS:
             raise MiddlewareNotUsed()
 

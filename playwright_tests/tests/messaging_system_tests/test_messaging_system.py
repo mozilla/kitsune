@@ -1,17 +1,21 @@
 import allure
 import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.mess_system_pages_messages.inbox_page_messages import (
-    InboxPageMessages)
+    InboxPageMessages,
+)
 from playwright_tests.messages.mess_system_pages_messages.new_message_page_messages import (
-    NewMessagePageMessages)
+    NewMessagePageMessages,
+)
 from playwright_tests.messages.mess_system_pages_messages.sent_messages_page_messages import (
-    SentMessagesPageMessages)
+    SentMessagesPageMessages,
+)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages)
+    MyProfileMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -940,7 +944,7 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page):
 
     with allure.step("Sending out a message to a test group + user"):
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
-            recipient_username=targeted_user + [targeted_test_group],
+            recipient_username=[*targeted_user, targeted_test_group],
             message_body=message_body,
             expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
         )

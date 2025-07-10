@@ -1,9 +1,9 @@
-from kitsune.search.tests import Elastic7TestCase
-from kitsune.users.tests import UserFactory, GroupFactory
-from kitsune.products.tests import ProductFactory
-
-from kitsune.search.documents import ProfileDocument
 from elasticsearch.exceptions import NotFoundError
+
+from kitsune.products.tests import ProductFactory
+from kitsune.search.documents import ProfileDocument
+from kitsune.search.tests import Elastic7TestCase
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class ProfileDocumentSignalsTests(Elastic7TestCase):

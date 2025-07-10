@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -127,7 +126,7 @@ class TopUnhelpfulArticlesTests(TestCase):
 
 class TopUnhelpfulArticlesCommandTests(TestCase):
     def setUp(self):
-        super(TopUnhelpfulArticlesCommandTests, self).setUp()
+        super().setUp()
         self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         try:
             self.redis = redis_client("helpfulvotes")
@@ -140,7 +139,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
             self.redis.flushdb()
         except (KeyError, AttributeError):
             raise SkipTest
-        super(TopUnhelpfulArticlesCommandTests, self).tearDown()
+        super().tearDown()
 
     def test_no_articles(self):
         """No articles returns no unhelpful articles."""

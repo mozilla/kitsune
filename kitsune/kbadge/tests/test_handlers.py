@@ -1,7 +1,7 @@
 from django.conf import settings
 
-from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.kbadge.handlers import AwardListener, BadgeListener
+from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory

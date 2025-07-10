@@ -380,7 +380,7 @@ class TestQuestionViewSet(TestCase):
         q1 = QuestionFactory(product=p1)
         QuestionFactory(product=p2)
 
-        querystring = "?product={0}".format(p1.slug)
+        querystring = "?product={}".format(p1.slug)
         res = self.client.get(reverse("question-list") + querystring)
         self.assertEqual(len(res.data["results"]), 1)
         self.assertEqual(res.data["results"][0]["id"], q1.id)
@@ -389,7 +389,7 @@ class TestQuestionViewSet(TestCase):
         q1 = QuestionFactory()
         QuestionFactory()
 
-        querystring = "?creator={0}".format(q1.creator.username)
+        querystring = "?creator={}".format(q1.creator.username)
         res = self.client.get(reverse("question-list") + querystring)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data["results"]), 1)
@@ -400,13 +400,13 @@ class TestQuestionViewSet(TestCase):
         a1 = AnswerFactory(question=q1)
         q2 = QuestionFactory(creator=a1.creator)
 
-        querystring = "?involved={0}".format(q1.creator.username)
+        querystring = "?involved={}".format(q1.creator.username)
         res = self.client.get(reverse("question-list") + querystring)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data["results"]), 1)
         self.assertEqual(res.data["results"][0]["id"], q1.id)
 
-        querystring = "?involved={0}".format(q2.creator.username)
+        querystring = "?involved={}".format(q2.creator.username)
         res = self.client.get(reverse("question-list") + querystring)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data["results"]), 2)

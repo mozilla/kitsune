@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 class TopicField(serializers.SlugRelatedField):
     def __init__(self, slug_field="slug", product_field="product", **kwargs):
-        super(TopicField, self).__init__(slug_field=slug_field, **kwargs)
+        super().__init__(slug_field=slug_field, **kwargs)
         self.product_field = product_field
         self.error_messages["missing_product"] = "A product must be specified to select a topic."
 

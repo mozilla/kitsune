@@ -52,7 +52,7 @@ class Forum(NotificationsMixin, ModelBase):
     # Can only users/groups with permission post to this forum?
     restrict_posting = models.BooleanField(default=False, db_index=True)
 
-    class Meta(object):
+    class Meta:
         ordering = ["display_order", "id"]
         permissions = (
             ("view_in_forum", "Can view restricted forums"),
@@ -120,7 +120,7 @@ class Thread(NotificationsMixin, ModelBase):
                 self._old_forum = self.forum
             except ObjectDoesNotExist:
                 pass
-        super(Thread, self).__setattr__(attr, val)
+        super().__setattr__(attr, val)
 
     @property
     def last_page(self):
@@ -137,7 +137,7 @@ class Thread(NotificationsMixin, ModelBase):
             forum.update_last_post(exclude_thread=self)
             forum.save()
 
-        super(Thread, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     def new_post(self, author, content):
         """Create a new post, if the thread is unlocked."""
@@ -155,10 +155,10 @@ class Thread(NotificationsMixin, ModelBase):
         if page > 1:
             query["page"] = page
         url = reverse("forums.posts", args=[self.forum.slug, self.id])
-        return urlparams(url, hash="post-%s" % self.last_post_id, **query)
+        return urlparams(url, hash="post-{}".format(self.last_post_id), **query)
 
     def save(self, *args, **kwargs):
-        super(Thread, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         old_forum = getattr(self, "_old_forum", None)
         new_forum = self.forum
         if old_forum and old_forum != new_forum:
@@ -205,7 +205,7 @@ class Post(ModelBase):
         if not new:
             self.updated = datetime.datetime.now()
 
-        super(Post, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if new:
             self.thread.replies = self.thread.post_set.count() - 1
@@ -228,7 +228,7 @@ class Post(ModelBase):
             forum.update_last_post(exclude_post=self)
             forum.save()
 
-        super(Post, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
         # If I was the last post in the thread, delete the thread.
         if thread.last_post is None:
             thread.delete()
@@ -248,7 +248,7 @@ class Post(ModelBase):
             query = {"page": self.page}
 
         url_ = self.thread.get_absolute_url()
-        return urlparams(url_, hash="post-%s" % self.id, **query)
+        return urlparams(url_, hash="post-{}".format(self.id), **query)
 
     @property
     def content_parsed(self):

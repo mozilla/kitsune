@@ -3,11 +3,11 @@
 
 from django import forms
 from django.contrib import admin
-from django.urls import reverse
 from django.db import models
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from kitsune.kbadge.models import Badge, Award
+from kitsune.kbadge.models import Award, Badge
 
 
 def show_image(obj):
@@ -15,8 +15,7 @@ def show_image(obj):
         return "None"
     img_url = obj.image.url
     return mark_safe(
-        '<a href="%s" target="_new"><img src="%s" width="48" height="48" /></a>'
-        % (img_url, img_url)
+        '<a href="{}" target="_new"><img src="{}" width="48" height="48" /></a>'.format(img_url, img_url)
     )
 
 
@@ -24,17 +23,17 @@ show_image.short_description = "Image"  # type: ignore
 
 
 def build_related_link(self, model_name, name_single, name_plural, qs):
-    link = "%s?%s" % (
-        reverse("admin:kbadge_%s_changelist" % model_name, args=[]),
-        "badge__exact=%s" % (self.id),
+    link = "{}?{}".format(
+        reverse("admin:kbadge_{}_changelist".format(model_name), args=[]),
+        "badge__exact={}".format(self.id),
     )
-    new_link = "%s?%s" % (
-        reverse("admin:kbadge_%s_add" % model_name, args=[]),
-        "badge=%s" % (self.id),
+    new_link = "{}?{}".format(
+        reverse("admin:kbadge_{}_add".format(model_name), args=[]),
+        "badge={}".format(self.id),
     )
     count = qs.count()
-    what = (count == 1) and name_single or name_plural
-    return '<a href="%s">%s %s</a> (<a href="%s">new</a>)' % (link, count, what, new_link)
+    what = ((count == 1) and name_single) or name_plural
+    return '<a href="{}">{} {}</a> (<a href="{}">new</a>)'.format(link, count, what, new_link)
 
 
 def related_awards_link(self):
@@ -77,7 +76,7 @@ class BadgeAdmin(admin.ModelAdmin):
 
 def badge_link(self):
     url = reverse("admin:kbadge_badge_change", args=[self.badge.id])
-    return mark_safe('<a href="%s">%s</a>' % (url, self.badge))
+    return mark_safe('<a href="{}">{}</a>'.format(url, self.badge))
 
 
 badge_link.short_description = "Badge"  # type: ignore
@@ -107,7 +106,7 @@ class AwardAdmin(admin.ModelAdmin):
 
 def award_link(self):
     url = reverse("admin:kbadge_award_change", args=[self.award.id])
-    return mark_safe('<a href="%s">%s</a>' % (url, self.award))
+    return mark_safe('<a href="{}">{}</a>'.format(url, self.award))
 
 
 award_link.short_description = "award"  # type: ignore

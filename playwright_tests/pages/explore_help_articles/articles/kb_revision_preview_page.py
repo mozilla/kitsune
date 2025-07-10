@@ -1,5 +1,6 @@
+from playwright.sync_api import Locator, Page
+
 from playwright_tests.core.basepage import BasePage
-from playwright.sync_api import Page, Locator
 
 
 class KBArticleRevisionsPreviewPage(BasePage):

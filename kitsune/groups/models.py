@@ -41,4 +41,4 @@ class GroupProfile(ModelBase):
 
         self.information_html = wiki_to_html(self.information)
 
-        super(GroupProfile, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

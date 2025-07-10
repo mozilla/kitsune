@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from unittest import mock
 
 from django.contrib.sessions.backends.base import SessionBase
+from django.http import Http404
 from django.test.utils import override_settings
 from requests.exceptions import HTTPError
 
@@ -31,12 +32,11 @@ from kitsune.wiki.utils import (
     remove_expired_from_kb_visited,
     update_kb_visited,
 )
-from django.http import Http404
 
 
 class ActiveContributorsTestCase(TestCase):
     def setUp(self):
-        super(ActiveContributorsTestCase, self).setUp()
+        super().setUp()
 
         start_date = date.today() - timedelta(days=10)
         self.start_date = start_date
@@ -221,26 +221,26 @@ class FeaturedArticlesTestCase(TestCase):
             featured = get_featured_articles()
             self.assertEqual(len(featured), 4)
             self.assertEqual(
-                set(d.id for d in featured),
-                set([self.d1.id, self.d2.id, self.de1.parent.id, self.de2.parent.id]),
+                {d.id for d in featured},
+                {self.d1.id, self.d2.id, self.de1.parent.id, self.de2.parent.id},
             )
 
         with self.subTest("with product"):
             featured = get_featured_articles(product=self.product1)
             self.assertEqual(len(featured), 3)
             self.assertEqual(
-                set(d.id for d in featured), set([self.d1.id, self.d2.id, self.de1.parent.id])
+                {d.id for d in featured}, {self.d1.id, self.d2.id, self.de1.parent.id}
             )
 
         with self.subTest("with product and topic"):
             featured = get_featured_articles(product=self.product1, topics=[self.topic2])
             self.assertEqual(len(featured), 2)
-            self.assertEqual(set(d.id for d in featured), set([self.d2.id, self.de1.parent.id]))
+            self.assertEqual({d.id for d in featured}, {self.d2.id, self.de1.parent.id})
 
         with self.subTest("with locale"):
             featured = get_featured_articles(locale="de")
             self.assertEqual(len(featured), 2)
-            self.assertEqual(set(d.id for d in featured), set([self.de1.id, self.de2.id]))
+            self.assertEqual({d.id for d in featured}, {self.de1.id, self.de2.id})
 
         with self.subTest("with locale and product"):
             featured = get_featured_articles(locale="de", product=self.product2)
@@ -264,10 +264,10 @@ class RemoveExpiredFromKBVisitedTests(TestCase):
             remove_expired_from_kb_visited(None)
         except Exception as err:
             self.fail(
-                (
+
                     "remove_expired_from_kb_visited() raised an "
                     f"exception with a session of None: {err}"
-                )
+
             )
 
     def test_session_without_kb_visited(self):
@@ -406,7 +406,7 @@ class UpdateKBVisitedTests(TestCase):
         self.assertEqual(list(self.session["kb-visited"].keys()), [key])
         self.assertEqual(
             set(self.session["kb-visited"][key].keys()),
-            set(["/en-US/kb/valid", self.doc1.get_absolute_url()]),
+            {"/en-US/kb/valid", self.doc1.get_absolute_url()},
         )
         self.assertTrue(self.session.modified)
 
@@ -456,7 +456,7 @@ class GetKBVisitedTests(TestCase):
         self.session.modified = False
         visits = get_kb_visited(self.session, self.product1, ttl=10)
         self.assertEqual(
-            set(visits), set([self.doc1.get_absolute_url(), self.doc3.get_absolute_url()])
+            set(visits), {self.doc1.get_absolute_url(), self.doc3.get_absolute_url()}
         )
         self.assertEqual(
             self.session["kb-visited"],

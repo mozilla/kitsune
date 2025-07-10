@@ -12,7 +12,7 @@ from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 
 class EditGroupProfileTests(TestCase):
     def setUp(self):
-        super(EditGroupProfileTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.group_profile = GroupProfileFactory()
         self.client.login(username=self.user.username, password="testpass")
@@ -52,7 +52,7 @@ class EditGroupProfileTests(TestCase):
 
 class EditAvatarTests(TestCase):
     def setUp(self):
-        super(EditAvatarTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         add_permission(self.user, GroupProfile, "change_groupprofile")
         self.group_profile = GroupProfileFactory()
@@ -61,7 +61,7 @@ class EditAvatarTests(TestCase):
     def tearDown(self):
         if self.group_profile.avatar:
             self.group_profile.avatar.delete()
-        super(EditAvatarTests, self).tearDown()
+        super().tearDown()
 
     def test_upload_avatar(self):
         """Upload a group avatar."""
@@ -97,7 +97,7 @@ class EditAvatarTests(TestCase):
 
 class AddRemoveMemberTests(TestCase):
     def setUp(self):
-        super(AddRemoveMemberTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.member = UserFactory()
         add_permission(self.user, GroupProfile, "change_groupprofile")
@@ -126,7 +126,7 @@ class AddRemoveMemberTests(TestCase):
 
 class AddRemoveLeaderTests(TestCase):
     def setUp(self):
-        super(AddRemoveLeaderTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         add_permission(self.user, GroupProfile, "change_groupprofile")
         self.leader = UserFactory()
@@ -155,7 +155,7 @@ class AddRemoveLeaderTests(TestCase):
 
 class JoinContributorsTests(TestCase):
     def setUp(self):
-        super(JoinContributorsTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
         GroupFactory(name="Contributors")

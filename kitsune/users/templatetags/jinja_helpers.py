@@ -50,12 +50,12 @@ def display_name(user):
 @library.filter
 def public_email(email):
     """Email address -> publicly displayable email."""
-    return Markup('<span class="email">%s</span>' % unicode_to_html(email))
+    return Markup('<span class="email">{}</span>'.format(unicode_to_html(email)))
 
 
 def unicode_to_html(text):
     """Turns all unicode into html entities, e.g. &#69; -> E."""
-    return "".join(["&#%s;" % ord(i) for i in text])
+    return "".join(["&#{};".format(ord(i)) for i in text])
 
 
 @library.global_function
@@ -77,7 +77,7 @@ def private_message(user):
     url = urlparams(reverse("messages.new"), to=user.username)
     msg = _("Private message")
     return Markup(
-        '<p class="pm"><a class="sumo-button primary-button button-lg" href="{url}">{msg}</a></p>'.format(  # noqa
+        '<p class="pm"><a class="sumo-button primary-button button-lg" href="{url}">{msg}</a></p>'.format(
             url=url, msg=msg
         )
     )
@@ -88,7 +88,7 @@ def private_message_link(user):
     """Return a link to private message the user."""
     url = urlparams(reverse("messages.new"), to=user.username)
     msg = _("Private message")
-    return Markup('<a href="{url}">{msg}</a>'.format(url=url, msg=msg))  # noqa
+    return Markup('<a href="{url}">{msg}</a>'.format(url=url, msg=msg))
 
 
 @library.global_function

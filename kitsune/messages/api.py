@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from django.contrib.auth.models import Group, User
 from django.db.models import Q
 from django.views.decorators.http import require_GET

@@ -12,13 +12,13 @@ from kitsune.users.tests import UserFactory, add_permission
 
 class CheckPermissionsTestCase(TestCase):
     def setUp(self):
-        super(CheckPermissionsTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
 
     def tearDown(self):
         Image.objects.all().delete()
         Video.objects.all().delete()
-        super(CheckPermissionsTestCase, self).tearDown()
+        super().tearDown()
 
     def test_check_own_object(self):
         """tagger can edit a video s/he doesn't own."""
@@ -42,12 +42,12 @@ class CheckPermissionsTestCase(TestCase):
 
 class CreateImageTestCase(TestCase):
     def setUp(self):
-        super(CreateImageTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
 
     def tearDown(self):
         Image.objects.all().delete()
-        super(CreateImageTestCase, self).tearDown()
+        super().tearDown()
 
     def test_create_image(self):
         """

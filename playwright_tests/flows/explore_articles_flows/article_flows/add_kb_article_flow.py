@@ -1,22 +1,28 @@
-from playwright.sync_api import Page
 from typing import Any
 
+from playwright.sync_api import Page
 from slugify import slugify
 
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import \
-    AddKbMediaFlow
+from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import (
+    AddKbMediaFlow,
+)
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages)
+    KBArticlePageMessages,
+)
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
-from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
-    KBArticleReviewRevisionPage
-from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import \
-    KBArticleShowHistoryPage
-from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
-    EditKBArticlePage
+from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import (
+    KBArticleReviewRevisionPage,
+)
+from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import (
+    KBArticleShowHistoryPage,
+)
+from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import (
+    EditKBArticlePage,
+)
 from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import (
-    SubmitKBArticlePage)
+    SubmitKBArticlePage,
+)
 
 
 class AddKbArticleFlow:

@@ -10,14 +10,14 @@ from kitsune.users.tests import UserFactory
 
 class ImageAttachmentTestCase(TestCase):
     def setUp(self):
-        super(ImageAttachmentTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.obj = QuestionFactory()
         self.ct = ContentType.objects.get_for_model(self.obj)
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()
-        super(ImageAttachmentTestCase, self).tearDown()
+        super().tearDown()
 
     def test_thumbnail_if_set(self):
         """thumbnail_if_set() returns self.thumbnail if set, or else returns

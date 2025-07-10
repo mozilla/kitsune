@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from django.forms.widgets import Widget, Select, URLInput
+from django.forms.widgets import Select, URLInput, Widget
 from django.utils.dates import MONTHS
 from django.utils.safestring import mark_safe
 
@@ -49,13 +49,13 @@ class MonthYearWidget(Widget):
         if "id" in self.attrs:
             id_ = self.attrs["id"]
         else:
-            id_ = "id_%s" % name
+            id_ = "id_{}".format(name)
 
         month_choices = list(MONTHS.items())
         if not (self.required and value):
             month_choices.append(self.none_value)
         month_choices.sort()
-        local_attrs = self.build_attrs(dict(id=self.month_field % id_))
+        local_attrs = self.build_attrs({"id": self.month_field % id_})
         s = Select(choices=month_choices)
         select_html = s.render(self.month_field % name, month_val, local_attrs)
         output.append(select_html)
@@ -80,7 +80,7 @@ class MonthYearWidget(Widget):
         try:
             return datetime.date(int(y), int(m), 1)
         except (TypeError, ValueError):
-            return "%s-%s-%s" % (y, m, 1)
+            return "{}-{}-{}".format(y, m, 1)
 
 
 class PatternURLWidget(URLInput):
@@ -88,4 +88,4 @@ class PatternURLWidget(URLInput):
 
     def render(self, *args, **kwargs):
         self.attrs["pattern"] = self.pattern
-        return super(PatternURLWidget, self).render(*args, **kwargs)
+        return super().render(*args, **kwargs)

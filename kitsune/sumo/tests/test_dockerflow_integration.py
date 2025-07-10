@@ -1,7 +1,9 @@
 import json
+
+from testfixtures import LogCapture
+
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from testfixtures import LogCapture
 
 
 class TestDockerflowIntegration(TestCase):

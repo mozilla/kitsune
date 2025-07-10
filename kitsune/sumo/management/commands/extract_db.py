@@ -1,9 +1,8 @@
 import os
 
+from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.apps import apps
-
 
 HEADER = """\
 #######################################################################
@@ -81,7 +80,7 @@ class Command(BaseCommand):
                             continue
                         msg = {
                             "id": item[i],
-                            "context": "DB: %s.%s.%s" % (app, model, attrs[i]),
+                            "context": "DB: {}.{}.{}".format(app, model, attrs[i]),
                             "comments": params.get("comments"),
                         }
                         strings.append(msg)

@@ -21,7 +21,7 @@ class WikiDocumentVisits(ModelBase):
     visits = models.IntegerField(db_index=True)
     period = models.IntegerField(choices=PERIODS)  # indexed by unique_together
 
-    class Meta(object):
+    class Meta:
         unique_together = ("period", "document")
 
     @classmethod
@@ -128,7 +128,7 @@ class WikiMetric(ModelBase):
     date = models.DateField()
     value = models.FloatField()
 
-    class Meta(object):
+    class Meta:
         unique_together = ("code", "product", "locale", "date")
         ordering = ["-date"]
 

@@ -3,14 +3,17 @@ import datetime
 import allure
 import pytest
 import pytz
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import (
-    EditMyProfilePageMessages)
+    EditMyProfilePageMessages,
+)
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages)
+    MyProfileMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

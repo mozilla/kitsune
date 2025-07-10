@@ -6,9 +6,11 @@ from playwright.sync_api import Page
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
-    AAQWidgetMessages)
+    AAQWidgetMessages,
+)
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
-    ContactSupportMessages)
+    ContactSupportMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 troubleshooting_topic_url = "https://support.allizom.org/en-US/topics/browse"

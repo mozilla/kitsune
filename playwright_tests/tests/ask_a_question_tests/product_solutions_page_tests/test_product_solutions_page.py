@@ -1,13 +1,17 @@
 import random
+
 import allure
 import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
-    AAQWidgetMessages)
+    AAQWidgetMessages,
+)
 from playwright_tests.messages.ask_a_question_messages.product_solutions_messages import (
-    ProductSolutionsMessages)
+    ProductSolutionsMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

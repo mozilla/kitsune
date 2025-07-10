@@ -91,10 +91,10 @@ class TestDocumentViews(TestCase):
         self.assertEqual(result["count"], 2)
         self.assertEqual(len(result["results"]), 2)
         self.assertEqual(
-            set(d["slug"] for d in result["results"]), set((self.doc2.slug, self.doc4.slug))
+            {d["slug"] for d in result["results"]}, {self.doc2.slug, self.doc4.slug}
         )
         self.assertEqual(
-            set(d["title"] for d in result["results"]), set((self.doc2.title, self.doc4.title))
+            {d["title"] for d in result["results"]}, {self.doc2.title, self.doc4.title}
         )
 
         self.client.login(username=self.staff.username, password="testpass")
@@ -105,10 +105,10 @@ class TestDocumentViews(TestCase):
         self.assertEqual(result["count"], 4)
         self.assertEqual(len(result["results"]), 4)
         self.assertEqual(
-            set(d["slug"] for d in result["results"]),
-            set((self.doc1.slug, self.doc2.slug, self.doc3.slug, self.doc4.slug)),
+            {d["slug"] for d in result["results"]},
+            {self.doc1.slug, self.doc2.slug, self.doc3.slug, self.doc4.slug},
         )
         self.assertEqual(
-            set(d["title"] for d in result["results"]),
-            set((self.doc1.title, self.doc2.title, self.doc3.title, self.doc4.title)),
+            {d["title"] for d in result["results"]},
+            {self.doc1.title, self.doc2.title, self.doc3.title, self.doc4.title},
         )

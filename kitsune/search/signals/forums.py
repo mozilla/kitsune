@@ -1,7 +1,8 @@
-from django.db.models.signals import post_save, post_delete
-from kitsune.search.es_utils import index_object, delete_object, index_objects_bulk
+from django.db.models.signals import post_delete, post_save
+
+from kitsune.forums.models import Post, Thread
 from kitsune.search.decorators import search_receiver
-from kitsune.forums.models import Thread, Post
+from kitsune.search.es_utils import delete_object, index_object, index_objects_bulk
 
 
 @search_receiver(post_save, Thread)

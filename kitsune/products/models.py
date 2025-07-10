@@ -62,11 +62,11 @@ class Product(BaseProductTopic):
     objects = models.Manager()
     active = ProductManager()
 
-    class Meta(object):
+    class Meta:
         ordering = ["display_order"]
 
     def __str__(self):
-        return "%s" % self.title
+        return "{}".format(self.title)
 
     @property
     def image_url(self):
@@ -118,7 +118,7 @@ class Topic(BaseProductTopic):
         default=False, help_text=_lazy("Whether this topic is shown in navigation menus.")
     )
 
-    class Meta(object):
+    class Meta:
         ordering = ["title", "display_order"]
 
     # Override default manager
@@ -144,7 +144,7 @@ class Topic(BaseProductTopic):
         cur = self
         while cur.parent:
             cur = cur.parent
-            path = [cur.slug] + path
+            path = [cur.slug, *path]
         return path
 
     def documents(self, user=None, **kwargs):
@@ -209,7 +209,7 @@ class TopicSlugHistory(ModelBase):
     slug = models.SlugField(max_length=255, unique=True)
     created = models.DateTimeField(auto_now_add=True)
 
-    class Meta(object):
+    class Meta:
         ordering = ["-created"]
         verbose_name_plural = "Topic slug history"
 
@@ -232,7 +232,7 @@ class Version(ModelBase):
     visible = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
 
-    class Meta(object):
+    class Meta:
         ordering = ["-max_version"]
 
 
@@ -245,4 +245,4 @@ class Platform(ModelBase):
     display_order = models.IntegerField()
 
     def __str__(self):
-        return "%s" % self.name
+        return "{}".format(self.name)

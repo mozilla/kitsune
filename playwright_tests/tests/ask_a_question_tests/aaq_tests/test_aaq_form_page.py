@@ -1,17 +1,21 @@
 import allure
 import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
 
-from playwright.sync_api import expect, Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_form_page_messages import (
-    AAQFormMessages)
-from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
-    QuestionPageMessages
+    AAQFormMessages,
+)
+from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import (
+    QuestionPageMessages,
+)
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
-    ContactSupportMessages)
+    ContactSupportMessages,
+)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
-    ContributePageMessages)
+    ContributePageMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

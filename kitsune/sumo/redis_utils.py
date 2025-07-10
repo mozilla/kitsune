@@ -1,6 +1,6 @@
-from functools import cached_property
 import random
 import time
+from functools import cached_property
 
 from django.conf import settings
 from redis import ConnectionError, Redis
@@ -39,7 +39,7 @@ class RateLimit:
     Simple multi-process rate limiting class that uses Redis.
     """
 
-    ALLOWED_PERIODS = dict(sec=1, min=60, hour=3600, day=86400)
+    ALLOWED_PERIODS = {"sec": 1, "min": 60, "hour": 3600, "day": 86400}
 
     def __init__(
         self,

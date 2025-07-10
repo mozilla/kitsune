@@ -1,8 +1,9 @@
+from datetime import UTC, datetime
+
 from django.core.management.base import BaseCommand
 from elasticsearch_dsl.exceptions import IllegalOperation
-from datetime import datetime, timezone
 
-from kitsune.search.es_utils import get_doc_types, es_client
+from kitsune.search.es_utils import es_client, get_doc_types
 
 
 class Command(BaseCommand):
@@ -41,7 +42,7 @@ class Command(BaseCommand):
         if limit:
             doc_types = [dt for dt in doc_types if dt.__name__ in limit]
 
-        timestamp = datetime.now(tz=timezone.utc)
+        timestamp = datetime.now(tz=UTC)
 
         for dt in doc_types:
             print(f"Initializing: {dt.__name__}")

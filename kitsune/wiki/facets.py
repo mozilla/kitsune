@@ -73,9 +73,9 @@ def documents_for(user, locale, topics=None, products=None, current_document=Non
             topics=topics,
         )
         # Exclude the English versions of the translated documents we've already found.
-        exclude_en_document_ids = set(
+        exclude_en_document_ids = {
             d["document_parent_id"] for d in documents if "document_parent_id" in d
-        )
+        }
         if exclude_current_document:
             # Exclude the current document if it's in English, or its parent if it's not.
             exclude_en_document_ids.add(
@@ -175,17 +175,17 @@ def _documents_for(user, locale, topics=None, products=None):
     doc_dicts = []
     for d in qs:
         doc_dicts.append(
-            dict(
-                id=d.id,
-                document_title=d.title,
-                url=d.get_absolute_url(),
-                document_parent_id=d.parent_id,
-                created=d.current_revision.created,
-                product_titles=d.product_titles,
-                document_summary=d.current_revision.summary,
-                display_order=d.original.display_order,
-                helpful_votes=votes_dict.get(d.current_revision_id, 0),
-            )
+            {
+                "id": d.id,
+                "document_title": d.title,
+                "url": d.get_absolute_url(),
+                "document_parent_id": d.parent_id,
+                "created": d.current_revision.created,
+                "product_titles": d.product_titles,
+                "document_summary": d.current_revision.summary,
+                "display_order": d.original.display_order,
+                "helpful_votes": votes_dict.get(d.current_revision_id, 0),
+            }
         )
 
     # sort the results by ascending display_order and descending votes

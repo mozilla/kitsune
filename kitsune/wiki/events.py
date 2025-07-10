@@ -5,8 +5,8 @@ from bleach import clean
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import reverse as django_reverse
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
 
 from kitsune.sumo import email_utils
@@ -20,8 +20,8 @@ log = logging.getLogger("k.wiki.events")
 
 
 def get_diff_for(doc, old_rev, new_rev):
-    fromfile = "[%s] %s #%s" % (doc.locale, doc.title, old_rev.id)
-    tofile = "[%s] %s #%s" % (doc.locale, doc.title, new_rev.id)
+    fromfile = "[{}] {} #{}".format(doc.locale, doc.title, old_rev.id)
+    tofile = "[{}] {} #{}".format(doc.locale, doc.title, new_rev.id)
 
     # Get diff
     diff_parts = difflib.unified_diff(
@@ -87,7 +87,7 @@ class EditDocumentEvent(InstanceEvent):
     content_type = Document
 
     def __init__(self, revision):
-        super(EditDocumentEvent, self).__init__(revision.document)
+        super().__init__(revision.document)
         self.revision = revision
 
     def _users_watching(self, **kwargs):
@@ -97,7 +97,7 @@ class EditDocumentEvent(InstanceEvent):
     def _mails(self, users_and_watches):
         revision = self.revision
         document = revision.document
-        log.debug("Sending edited notification email for document (id=%s)" % document.id)
+        log.debug("Sending edited notification email for document (id={})".format(document.id))
 
         subject = _lazy("{title} was edited by {creator}")
         url = reverse("wiki.document_revisions", locale=document.locale, args=[document.slug])
@@ -241,7 +241,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFil
     def _mails(self, users_and_watches):
         revision = self.revision
         document = revision.document
-        log.debug("Sending ready for review email for revision (id=%s)" % revision.id)
+        log.debug("Sending ready for review email for revision (id={})".format(revision.id))
         subject = _lazy("{title} is ready for review ({creator})")
         url = reverse(
             "wiki.review_revision",
@@ -293,7 +293,7 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
         """Send readiness mails."""
         revision = self.revision
         document = revision.document
-        log.debug("Sending ready notifications for revision (id=%s)" % revision.id)
+        log.debug("Sending ready notifications for revision (id={})".format(revision.id))
 
         subject = _lazy("{title} has a revision ready for localization")
 
@@ -361,7 +361,7 @@ class ApprovedOrReadyUnion(EventUnion):
         events = [ApproveRevisionInLocaleEvent(revision)]
         if revision.is_ready_for_localization:
             events.append(ReadyRevisionEvent(revision))
-        super(ApprovedOrReadyUnion, self).__init__(*events)
+        super().__init__(*events)
 
     def _mails(self, users_and_watches):
         """Send approval or readiness mails, as appropriate.
@@ -374,7 +374,7 @@ class ApprovedOrReadyUnion(EventUnion):
         revision = self.revision
         document = revision.document
         is_ready = revision.is_ready_for_localization
-        log.debug("Sending approved/ready notifications for revision (id=%s)" % revision.id)
+        log.debug("Sending approved/ready notifications for revision (id={})".format(revision.id))
 
         # Localize the subject and message with the appropriate
         # context. If there is an error, fall back to English.

@@ -1,9 +1,8 @@
+import waffle
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.http import HttpResponseRedirect, Http404
+from django.http import Http404, HttpResponseRedirect
 from django.views.decorators.cache import cache_page
-
-import waffle
 
 from kitsune.inproduct.models import Redirect
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -104,13 +103,13 @@ def redirect(request, product, version, platform, locale, topic=None):
             params["utm_source"] = "inproduct"
         if hasattr(request, "eu_build"):
             params["eu"] = 1
-        target = "/%s/%s" % (locale, destination.target.lstrip("/"))
+        target = "/{}/{}".format(locale, destination.target.lstrip("/"))
         target = urlparams(target, query_dict=request.GET, **params)
 
         # Switch over to HTTPS if we DEBUG=False and sample is active.
         if not settings.DEBUG and waffle.sample_is_active("inproduct-https"):
             domain = Site.objects.get_current().domain
-            target = "https://%s%s" % (domain, target)
+            target = "https://{}{}".format(domain, target)
 
     # 302 because these can change over time.
     return HttpResponseRedirect(target)

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils.translation.trans_real import translation
 
 # MONKEYPATCH! WOO HOO! LULZ
-from kitsune.sumo.monkeypatch import patch  # noqa
+from kitsune.sumo.monkeypatch import patch
 
 patch()
 

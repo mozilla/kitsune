@@ -1,13 +1,15 @@
 import allure
 import pytest
-from playwright.sync_api import expect, Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages)
+    KBArticlePageMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
-with open('test_data/test_article', 'r') as file:
+with open('test_data/test_article') as file:
     article_url = file.read()
 
 

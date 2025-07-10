@@ -130,7 +130,7 @@ class TestQuestionUpdates(TestCase):
     date_format = "%Y%M%d%H%m%S"
 
     def setUp(self):
-        super(TestQuestionUpdates, self).setUp()
+        super().setUp()
         self.u = UserFactory(is_superuser=True)
         self.client.login(username=self.u.username, password="testpass")
 
@@ -146,7 +146,9 @@ class TestQuestionUpdates(TestCase):
         self.u.delete()
         self.q.delete()
 
-    def _request_and_no_update(self, url, req_type="POST", data={}):
+    def _request_and_no_update(self, url, req_type="POST", data=None):
+        if data is None:
+            data = {}
         updated = self.q.updated
 
         if req_type == "POST":
@@ -285,7 +287,7 @@ class TestQuestionList(TestCase):
             eq_msg(
                 len(doc("article[id^=question]")),
                 len(titles),
-                "Wrong number of results for {0}".format(locale),
+                "Wrong number of results for {}".format(locale),
             )
             for substr in titles:
                 assert substr in doc(".forum--question-item-heading a").text()
@@ -610,7 +612,7 @@ class TestRateLimiting(TestCase):
         q = QuestionFactory()
         url = reverse("questions.watch", args=[q.id], locale="en-US")
         for i in range(15):
-            self.client.post(url, dict(event_type="solution", email=f"ringo{i}@beatles.com"))
+            self.client.post(url, {"event_type": "solution", "email": f"ringo{i}@beatles.com"})
 
         self.assertEqual(Watch.objects.filter(object_id=q.id).count(), 10)
 

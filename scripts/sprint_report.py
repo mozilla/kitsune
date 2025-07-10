@@ -4,7 +4,6 @@ import sys
 import textwrap
 import xmlrpc.client
 
-
 USAGE = 'Usage: sprint_report.py <SPRINT>'
 HEADER = 'sprint_report.py: your friendly report view of the sprint!'
 
@@ -136,7 +135,7 @@ class BugzillaAPI(xmlrpc.client.ServerProxy):
         except xmlrpc.client.Fault:
             log.exception('Problem getting history for bug ids: %s', bug_ids)
             return {}
-        return dict((h['id'], h['history']) for h in history)
+        return {h['id']: h['history'] for h in history}
 
     def get_comments(self, bug_ids):
         log.debug('Getting comments for bugs: %s', bug_ids)
@@ -148,7 +147,7 @@ class BugzillaAPI(xmlrpc.client.ServerProxy):
         except xmlrpc.client.Fault:
             log.exception('Problem getting comments for bug ids: %s', bug_ids)
             return {}
-        return dict((int(bid), cids) for bid, cids in comments.items())
+        return {int(bid): cids for bid, cids in comments.items()}
 
 
 def wrap(text, indent='    '):
@@ -198,9 +197,9 @@ def get_history(bugs, sprint):
                 added = parse_whiteboard(change['added'])
                 removed = parse_whiteboard(change['removed'])
 
-                if ((change['field_name'] == 'status_whiteboard'
+                if (change['field_name'] == 'status_whiteboard'
                      and removed['s'] != sprint
-                     and added['s'] == sprint)):
+                     and added['s'] == sprint):
 
                     history.append((
                             item['when'],
@@ -239,8 +238,8 @@ def sprint_timeline(bugs, sprint):
 
     timeline.sort(key=lambda item: item[0])
     for mem in timeline:
-        print('%s: %s: %s' % (mem[0], mem[1], mem[2]))
-        print('    %s -> %s' % (mem[3] if mem[3] else 'unassigned', mem[4]))
+        print('{}: {}: {}'.format(mem[0], mem[1], mem[2]))
+        print('    {} -> {}'.format(mem[3] if mem[3] else 'unassigned', mem[4]))
         print(wrap(mem[5]))
         print('')
 
@@ -264,7 +263,7 @@ def main(argv):
     print(HEADER)
 
     print('')
-    print('Working on %s' % sprint)
+    print('Working on {}'.format(sprint))
     print('')
 
     bugzilla = BugzillaAPI(

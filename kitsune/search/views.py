@@ -35,7 +35,7 @@ def cache_control(resp, cache_period):
 @cache_page(60 * 60 * 168)  # 1 week.
 def opensearch_plugin(request):
     """Render an OpenSearch Plugin."""
-    host = "%s://%s" % ("https" if request.is_secure() else "http", request.get_host())
+    host = "{}://{}".format("https" if request.is_secure() else "http", request.get_host())
 
     response = render(
         request,

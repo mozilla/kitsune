@@ -10,5 +10,5 @@ class EditMyProfilePageMessages:
     PROFILE_ACCESS_DENIED_HEADING = "Access denied"
     PROFILE_ACCESS_DENIED_SUBHEADING = "You do not have permission to access this page."
 
-    def get_url_of_other_profile_edit_page(username: str) -> str:
-        return f"https://support.allizom.org/en-US/user/{username}/edit"
+    def get_url_of_other_profile_edit_page(self: str) -> str:
+        return f"https://support.allizom.org/en-US/user/{self}/edit"

@@ -9,7 +9,7 @@ class Signature(ModelBase):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "<%s> %s" % (self.signature, self.document.title)
+        return "<{}> {}".format(self.signature, self.document.title)
 
     def get_absolute_url(self):
         doc = self.document.get_absolute_url().lstrip("/")

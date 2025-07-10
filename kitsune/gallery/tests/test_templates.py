@@ -11,7 +11,7 @@ from kitsune.users.tests import UserFactory
 class GalleryPageCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
-        super(GalleryPageCase, self).tearDown()
+        super().tearDown()
 
     def test_gallery_images(self):
         """Test that all images show up on images gallery page.
@@ -48,7 +48,7 @@ class GalleryPageCase(TestCase):
 class GalleryAsyncCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
-        super(GalleryAsyncCase, self).tearDown()
+        super().tearDown()
 
     def test_gallery_image_list(self):
         """Test for ajax endpoint without search parameter."""
@@ -82,7 +82,7 @@ class GalleryAsyncCase(TestCase):
 
 class GalleryUploadTestCase(TestCase):
     def setUp(self):
-        super(GalleryUploadTestCase, self).setUp()
+        super().setUp()
 
         self.u = UserFactory()
         self.client.login(username=self.u.username, password="testpass")
@@ -90,7 +90,7 @@ class GalleryUploadTestCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
         Video.objects.all().delete()
-        super(GalleryUploadTestCase, self).tearDown()
+        super().tearDown()
 
     def test_image_draft_shows(self):
         """The image draft is loaded for this user."""
@@ -135,7 +135,7 @@ class GalleryUploadTestCase(TestCase):
 class MediaPageCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
-        super(MediaPageCase, self).tearDown()
+        super().tearDown()
 
     def test_image_media_page(self):
         """Test the media page."""

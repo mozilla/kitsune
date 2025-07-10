@@ -1,13 +1,13 @@
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
-from django.utils.html import strip_tags, escape
+from django.utils.html import escape, strip_tags
 from django.utils.translation import gettext as _
 
 from kitsune import forums as constants
 from kitsune.kbforums.models import Thread
-from kitsune.wiki.models import Document
 from kitsune.sumo.feeds import Feed
+from kitsune.wiki.models import Document
 
 
 class ThreadsFeed(Feed):

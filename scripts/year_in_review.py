@@ -6,7 +6,6 @@ import sys
 import textwrap
 import xmlrpc.client
 
-
 USAGE = 'Usage: year_in_review.py [--json] <YEAR>'
 
 
@@ -150,7 +149,7 @@ class BugzillaAPI(xmlrpc.client.ServerProxy):
         except xmlrpc.client.Fault:
             log.exception('Problem getting history for bug ids: %s', bug_ids)
             return {}
-        return dict((h['id'], h['history']) for h in history)
+        return {h['id']: h['history'] for h in history}
 
     def get_comments(self, bug_ids):
         log.debug('Getting comments for bugs: %s', bug_ids)
@@ -162,7 +161,7 @@ class BugzillaAPI(xmlrpc.client.ServerProxy):
         except xmlrpc.client.Fault:
             log.exception('Problem getting comments for bug ids: %s', bug_ids)
             return {}
-        return dict((int(bid), cids) for bid, cids in comments.items())
+        return {int(bid): cids for bid, cids in comments.items()}
 
 
 def wrap(text, indent='    '):
@@ -205,7 +204,7 @@ def bugzilla_stats(year):
     # -------------------------------------------
     bugs = bugzilla.get_bugs(
         product=PRODUCTS,
-        creation_time='%s-01-01' % year,
+        creation_time='{}-01-01'.format(year),
         include_fields=['id', 'creator', 'creation_time'],
         history=False,
         comments=False)
@@ -235,7 +234,7 @@ def bugzilla_stats(year):
     # -------------------------------------------
     bugs = bugzilla.get_bugs(
         product=PRODUCTS,
-        last_change_time='%s-01-01' % year,
+        last_change_time='{}-01-01'.format(year),
         include_fields=['id', 'summary', 'assigned_to', 'last_change_time', 'resolution'],
         status=['RESOLVED', 'VERIFIED', 'CLOSED'],
         history=True,
@@ -280,7 +279,7 @@ def bugzilla_stats(year):
                 # doing triage and so whoever changed the resolution
                 # should get "credit".
                 if (change['added'] == 'FIXED'
-                    and not 'nobody' in bug['assigned_to']):
+                    and 'nobody' not in bug['assigned_to']):
                     person = bug['assigned_to']
                 else:
                     person = hist['who']
@@ -342,7 +341,7 @@ def git_stats(year):
     # Get the shas for all the commits we're going to look at.
     all_commits = subprocess.check_output([
         'git', 'log',
-        '--after=%s-01-01' % year,
+        '--after={}-01-01'.format(year),
         '--before=%s-01-01' % (int(year) + 1),
         '--format=%H'
     ])
@@ -357,7 +356,7 @@ def git_stats(year):
 
     for commit in all_commits:
         author = git('git', 'log', '--format=%an',
-                     '{0}~..{1}'.format(commit, commit))
+                     '{}~..{}'.format(commit, commit))
 
         author = author.strip()
         # FIXME - this is lame. what's going on is that there are
@@ -369,7 +368,7 @@ def git_stats(year):
         committers[author] = committers.get(author, 0) + 1
 
         diff_data = git('git', 'diff', '--numstat', '--find-copies-harder',
-                        '{0}~..{1}'.format(commit, commit))
+                        '{}~..{}'.format(commit, commit))
         total_added = 0
         total_deleted = 0
         total_files = 0

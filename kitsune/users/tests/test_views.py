@@ -6,17 +6,20 @@ from unittest import mock
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import HttpResponse
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-from django.http import HttpResponse
 from josepy import jwa, jwk, jws
 from pyquery import PyQuery as pq
 
 from kitsune.forums.models import Post, Thread
 from kitsune.forums.tests import PostFactory, ThreadFactory
-from kitsune.kbforums.models import Post as KBForumPost, Thread as KBForumThread
+from kitsune.kbforums.models import Post as KBForumPost
+from kitsune.kbforums.models import Thread as KBForumThread
 from kitsune.kbforums.tests import (
     PostFactory as KBForumPostFactory,
+)
+from kitsune.kbforums.tests import (
     ThreadFactory as KBForumThreadFactory,
 )
 from kitsune.messages.models import InboxMessage, OutboxMessage
@@ -35,7 +38,7 @@ class UserSettingsTests(TestCase):
         self.user = UserFactory()
         self.profile = self.user.profile
         self.client.login(username=self.user.username, password="testpass")
-        super(UserSettingsTests, self).setUp()
+        super().setUp()
 
     def test_create_setting(self):
         url = reverse("users.edit_settings", locale="en-US")
@@ -52,7 +55,7 @@ class UserProfileTests(TestCase):
         self.user = UserFactory()
         self.profile = self.user.profile
         self.userrl = reverse("users.profile", args=[self.user.username], locale="en-US")
-        super(UserProfileTests, self).setUp()
+        super().setUp()
 
     def test_ProfileFactory(self):
         res = self.client.get(self.userrl)
@@ -645,7 +648,7 @@ class UserCloseAccountTests(TestCase):
         for sender in self.other_users:
             send_message({"users": [self.user]}, text="foo", sender=sender)
         send_message({"users": self.other_users}, text="bar", sender=self.user)
-        super(UserCloseAccountTests, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         User.objects.all().delete()

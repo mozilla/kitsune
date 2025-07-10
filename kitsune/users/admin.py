@@ -10,7 +10,7 @@ from kitsune.users.models import AccountEvent, Profile
 
 
 class SumoUserAdmin(UserAdmin):
-    list_display = UserAdmin.list_display + ("last_login",)
+    list_display = (*UserAdmin.list_display, "last_login")
 
 
 class ProfileAdminForm(forms.ModelForm):
@@ -27,7 +27,7 @@ class ProfileAdminForm(forms.ModelForm):
         required=False, help_text=("Check to remove the user's avatar.")
     )
 
-    class Meta(object):
+    class Meta:
         model = Profile
         exclude = ()
 
@@ -96,7 +96,7 @@ class ProfileAdmin(admin.ModelAdmin):
 
     def full_user(self, obj):
         if obj.name:
-            return "%s <%s>" % (obj.user.username, obj.name)
+            return "{} <{}>".format(obj.user.username, obj.name)
         else:
             return obj.user.username
 

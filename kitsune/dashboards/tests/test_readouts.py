@@ -43,7 +43,7 @@ from kitsune.wiki.tests import (
 )
 
 
-class MockRequest(object):
+class MockRequest:
     LANGUAGE_CODE = "de"  # Same locale as translated_revision uses by default
 
 

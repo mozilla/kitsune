@@ -24,6 +24,6 @@ class ApiTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         self.assertEqual(
-            "https://example.com/kb/%s" % sig.document.slug, response.content.decode()
+            "https://example.com/kb/{}".format(sig.document.slug), response.content.decode()
         )
         self.assertEqual("text/plain", response["content-type"])

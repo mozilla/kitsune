@@ -5,7 +5,6 @@ from django.db import connection
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.wiki.models import Document
 
-
 HELPFUL_AGGREGATE = "SUM(CASE WHEN limitedvotes.helpful THEN 1 ELSE 0 END)"
 UNHELPFUL_AGGREGATE = "SUM(CASE WHEN limitedvotes.helpful THEN 0 ELSE 1 END)"
 SQL_UNHELPFUL = f"""
@@ -132,8 +131,7 @@ class Command(BaseCommand):
             redis.rpush(
                 REDIS_KEY,
                 (
-                    "%s::%s::%s::%s::%s::%s::%s"
-                    % (
+                    "{}::{}::{}::{}::{}::{}::{}".format(
                         entry[0],  # Document ID
                         entry[1],  # Total Votes
                         entry[2],  # Current Percentage

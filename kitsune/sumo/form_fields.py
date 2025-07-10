@@ -22,25 +22,25 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
         """Override: don't raise validation error in parent, if coerce_only."""
         if self.coerce_only:
             return True
-        return super(TypedMultipleChoiceField, self).valid_value(val)
+        return super().valid_value(val)
 
     def __init__(self, coerce_only=False, *args, **kwargs):
         self.coerce = kwargs.pop("coerce", lambda val: val)
         self.empty_value = kwargs.pop("empty_value", [])
         self.coerce_only = coerce_only
-        super(TypedMultipleChoiceField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def to_python(self, value):
         """
         Validates that the values are in self.choices and can be coerced to the
         right type.
         """
-        value = super(TypedMultipleChoiceField, self).to_python(value)
-        super(TypedMultipleChoiceField, self).validate(value)
+        value = super().to_python(value)
+        super().validate(value)
         if value == self.empty_value or value in validators.EMPTY_VALUES:
             return self.empty_value
         new_value = []
-        is_valid = super(TypedMultipleChoiceField, self).valid_value
+        is_valid = super().valid_value
         for choice in value:
             if self.coerce_only and not is_valid(choice):
                 continue
@@ -138,7 +138,7 @@ class ImagePlusField(forms.ImageField):
 
     default_validators = [
         validators.FileExtensionValidator(
-            allowed_extensions=validators.get_available_image_extensions() + ["svg"]
+            allowed_extensions=[*validators.get_available_image_extensions(), "svg"]
         )
     ]
 

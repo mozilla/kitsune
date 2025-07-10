@@ -13,7 +13,7 @@ class FlaggedQueueTestCase(TestCaseBase):
     """Test the flagit queue."""
 
     def setUp(self):
-        super(FlaggedQueueTestCase, self).setUp()
+        super().setUp()
         self.answer = AnswerFactory()
         self.flagger = UserFactory()
 
@@ -23,7 +23,7 @@ class FlaggedQueueTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
 
     def tearDown(self):
-        super(FlaggedQueueTestCase, self).tearDown()
+        super().tearDown()
         self.client.logout()
 
     def test_queue(self):

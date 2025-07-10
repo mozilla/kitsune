@@ -1,18 +1,22 @@
 import os
 import time
+
 import allure
 import pytest
+from playwright.sync_api import Page, TimeoutError, expect
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
-from playwright.sync_api import expect, TimeoutError, Page
-from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
-    ModerateForumContentPageMessages)
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import (
-    QuestionPageMessages)
-from playwright_tests.messages.auth_pages_messages.fxa_page_messages import (
-    FxAPageMessages)
+    QuestionPageMessages,
+)
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
-    ContactSupportMessages)
+    ContactSupportMessages,
+)
+from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
+from playwright_tests.messages.contribute_messages.con_tools.moderate_forum_messages import (
+    ModerateForumContentPageMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

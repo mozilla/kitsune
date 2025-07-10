@@ -127,7 +127,7 @@ class ReviewMailTestCase(TestCase):
 
         # Two emails will be sent, one each for the reviewer and the reviewed.
         self.assertEqual(2, len(mail.outbox))
-        self.assertEqual("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
+        self.assertEqual("Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject)
         self.assertEqual([rev.creator.email], mail.outbox[0].to)
         self.assertEqual(
             REVIEWED_EMAIL_CONTENT % (self.user.profile.name, doc.title, msg, doc.slug),
@@ -157,7 +157,7 @@ class ReviewMailTestCase(TestCase):
 
         # Two emails will be sent, one each for the reviewer and the reviewed.
         self.assertEqual(2, len(mail.outbox))
-        self.assertEqual("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
+        self.assertEqual("Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject)
 
     @mock.patch.object(Site.objects, "get_current")
     def test_escaping(self, get_current):
@@ -171,7 +171,7 @@ class ReviewMailTestCase(TestCase):
 
         # Two emails will be sent, one each for the reviewer and the reviewed.
         self.assertEqual(2, len(mail.outbox))
-        self.assertEqual("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
+        self.assertEqual("Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject)
         assert "&quot;" not in mail.outbox[0].body
         assert '"All about quotes"' in mail.outbox[0].body
         assert 'foo & "bar"' in mail.outbox[0].body

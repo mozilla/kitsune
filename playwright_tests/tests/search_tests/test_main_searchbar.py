@@ -3,10 +3,11 @@ import time
 import allure
 import pytest
 from playwright.sync_api import Page
+from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
-from pytest_check import check
 
 
 # C890369
@@ -277,8 +278,7 @@ def test_popular_searches_homepage(page: Page):
                 assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
             with check, allure.step("Verifying that search results contain the correct keyword"):
                 if not sumo_pages.search_page.get_all_search_results_article_titles():
-                    assert False, (f"Search results contains 0 results for the {popular_search} "
-                                   f"search term")
+                    raise AssertionError(f"Search results contains 0 results for the {popular_search} " f"search term")
                 for title in sumo_pages.search_page.get_all_search_results_article_titles():
                     content = sumo_pages.search_page.get_all_search_results_article_bolded_content(
                         title
@@ -310,9 +310,7 @@ def test_popular_searches_products(page: Page):
                     assert sumo_pages.search_page.get_the_highlighted_side_nav_item(
                     ) == product.strip()
                     if not sumo_pages.search_page.get_all_search_results_article_titles():
-                        assert False, (f"Search results contains 0 results for the"
-                                       f" {popular_search} search term on the {product}"
-                                       f" product!")
+                        raise AssertionError(f"Search results contains 0 results for the" f" {popular_search} search term on the {product}" f" product!")
 
                 for title in sumo_pages.search_page.get_all_search_results_article_titles():
                     content = sumo_pages.search_page.get_all_search_results_article_bolded_content(

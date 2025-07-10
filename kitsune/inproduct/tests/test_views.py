@@ -48,7 +48,7 @@ class RedirectTestCase(TestCase):
     )
 
     def setUp(self):
-        super(RedirectTestCase, self).setUp()
+        super().setUp()
 
         # Create redirects to test with.
         RedirectFactory(target="kb/Applications", topic="prefs-applications")

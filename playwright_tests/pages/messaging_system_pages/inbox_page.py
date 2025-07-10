@@ -1,4 +1,5 @@
-from playwright.sync_api import Page, Locator, ElementHandle
+from playwright.sync_api import ElementHandle, Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 

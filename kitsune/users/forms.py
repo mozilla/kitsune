@@ -5,8 +5,8 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.cache import cache
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.users.models import ContributionAreas, Profile
 from kitsune.users.utils import add_to_contributors
@@ -137,7 +137,7 @@ class ProfileForm(forms.ModelForm):
         widget=MonthYearWidget(years=list(range(1998, datetime.today().year + 1)), required=False),
     )
 
-    class Meta(object):
+    class Meta:
         model = Profile
         fields = (
             "name",
@@ -156,7 +156,7 @@ class ProfileForm(forms.ModelForm):
         )
 
     def __init__(self, *args, **kwargs):
-        super(ProfileForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         for field in list(self.fields.values()):
             if isinstance(field, forms.CharField):
@@ -170,7 +170,7 @@ def username_allowed(username):
         return False
     blacklist = cache.get(USERNAME_CACHE_KEY)
     if blacklist is None:
-        f = open(settings.USERNAME_BLACKLIST, "r")
+        f = open(settings.USERNAME_BLACKLIST)
         blacklist = [w.strip() for w in f.readlines()]
         cache.set(USERNAME_CACHE_KEY, blacklist, settings.CACHE_SHORT_TIMEOUT)  # 1 hour
     # Lowercase

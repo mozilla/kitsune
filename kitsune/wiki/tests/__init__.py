@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 
 import factory
@@ -29,44 +28,44 @@ class DocumentFactory(factory.django.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
 
     @factory.post_generation
-    def products(doc, create, extracted, **kwargs):
+    def products(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for p in extracted:
-                doc.products.add(p)
+                self.products.add(p)
 
     @factory.post_generation
-    def topics(doc, create, extracted, **kwargs):
+    def topics(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for t in extracted:
-                doc.topics.add(t)
+                self.topics.add(t)
 
     @factory.post_generation
-    def tags(doc, create, extracted, **kwargs):
+    def tags(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for t in extracted:
-                doc.tags.add(t)
+                self.tags.add(t)
 
     @factory.post_generation
-    def restrict_to_groups(doc, create, extracted, **kwargs):
+    def restrict_to_groups(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing
             return
 
         if extracted is not None:
             for p in extracted:
-                doc.restrict_to_groups.add(p)
+                self.restrict_to_groups.add(p)
 
 
 class TemplateDocumentFactory(DocumentFactory):
@@ -87,10 +86,10 @@ class RevisionFactory(factory.django.DjangoModelFactory):
     is_approved = False
 
     @factory.post_generation
-    def set_current_revision(obj, create, extracted, **kwargs):
-        if obj.is_approved:
-            obj.document.current_revision = obj
-            obj.document.save()
+    def set_current_revision(self, create, extracted, **kwargs):
+        if self.is_approved:
+            self.document.current_revision = self
+            self.document.save()
 
 
 class ApprovedRevisionFactory(RevisionFactory):
