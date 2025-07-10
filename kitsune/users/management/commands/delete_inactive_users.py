@@ -64,6 +64,15 @@ class Command(BaseCommand):
 
     def _find_and_delete_users(self, cutoff_date, options: dict, dry_run: bool = False):
         User = get_user_model()
+        processed_count = 0
+        pipeline_count = 0
+        direct_count = 0
+        error_count = 0
+        batch_size = options["batch_size"]
+        progress_interval = options["progress_interval"]
+
+        start_time = time.time()
+
         has_content_criteria = (
             Q(answer_votes__isnull=False)
             | Q(answers__isnull=False)
@@ -113,16 +122,6 @@ class Command(BaseCommand):
         if dry_run:
             self.stdout.write(self.style.SUCCESS("DRY RUN: No users were actually deleted"))
             return
-
-        User = get_user_model()
-        batch_size = options["batch_size"]
-        progress_interval = options["progress_interval"]
-
-        start_time = time.time()
-        processed_count = 0
-        pipeline_count = 0
-        direct_count = 0
-        error_count = 0
 
         self.stdout.write(
             self.style.SUCCESS(f"Starting deletion of {total_users:,} inactive users")
