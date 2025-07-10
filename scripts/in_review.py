@@ -3,10 +3,11 @@ import datetime
 import subprocess
 import sys
 import textwrap
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import requests
-
 
 BUGZILLA_API_URL = 'https://bugzilla.mozilla.org/rest/'
 BUGZILLA_PRODUCT = 'support.mozilla.org'
@@ -86,8 +87,8 @@ def print_bugzilla_stats(from_date, to_date):
         creators[creator] = creators.get(creator, 0) + 1
         all_people.add(creator)
 
-    print('Bugs created: %s' % creation_count)
-    print('Creators: %s' % len(creators))
+    print('Bugs created: {}'.format(creation_count))
+    print('Creators: {}'.format(len(creators)))
     print('')
     creators = sorted(list(creators.items()), reverse=True, key=lambda item: item[1])
     for person, count in creators:
@@ -171,7 +172,7 @@ def print_bugzilla_stats(from_date, to_date):
             commenters[commenter] = commenters.get(commenter, 0) + 1
             all_people.add(commenter)
 
-    print('Bugs resolved: %s' % resolved_count)
+    print('Bugs resolved: {}'.format(resolved_count))
     print('')
     for resolution, count in list(resolved_map.items()):
         print(' %34s : %s' % (resolution, count))
@@ -183,21 +184,21 @@ def print_bugzilla_stats(from_date, to_date):
         print(' %34s : %s' % (title, count))
 
     print('')
-    print('Research bugs: %s' % len(research_bugs))
+    print('Research bugs: {}'.format(len(research_bugs)))
     print('')
     for bug in research_bugs:
-        print(wrap('%s: %s' % (bug['id'], bug['summary']),
+        print(wrap('{}: {}'.format(bug['id'], bug['summary']),
                    subsequent='        '))
 
     print('')
-    print('Tracker bugs: %s' % len(tracker_bugs))
+    print('Tracker bugs: {}'.format(len(tracker_bugs)))
     print('')
     for bug in tracker_bugs:
-        print(wrap('%s: %s' % (bug['id'], bug['summary']),
+        print(wrap('{}: {}'.format(bug['id'], bug['summary']),
                    subsequent='        '))
 
     print('')
-    print('Resolvers: %s' % len(resolvers))
+    print('Resolvers: {}'.format(len(resolvers)))
     print('')
     resolvers = sorted(list(resolvers.items()), reverse=True,
                        key=lambda item: item[1])
@@ -205,7 +206,7 @@ def print_bugzilla_stats(from_date, to_date):
         print(' %34s : %s' % (person[:30].encode('utf-8'), count))
 
     print('')
-    print('Commenters: %s' % len(commenters))
+    print('Commenters: {}'.format(len(commenters)))
     print('')
     commenters = sorted(list(commenters.items()), reverse=True,
                         key=lambda item: item[1])
@@ -294,7 +295,7 @@ def print_all_people():
     people = sorted(all_people, key=lambda a: a.lower())
 
     for person in people:
-        print('    %s' % person.encode('utf-8'))
+        print('    {}'.format(person.encode('utf-8')))
 
 
 def print_header(text):
@@ -322,7 +323,7 @@ def main(argv):
         from_date = datetime.date(year, 1, 1)
         to_date = datetime.date(year, 12, 31)
 
-        print_header('Year %s (%s -> %s)' % (year, from_date, to_date))
+        print_header('Year {} ({} -> {})'.format(year, from_date, to_date))
 
     else:
         quarter = int(argv[1])
@@ -333,7 +334,7 @@ def main(argv):
         to_date = datetime.date(
             year, quarter_dates[1][0], quarter_dates[1][1])
 
-        print_header('Quarter %sq%s (%s -> %s)' % (
+        print_header('Quarter {}q{} ({} -> {})'.format(
             year, quarter, from_date, to_date))
 
     # Add 1 day because we do less-than.

@@ -22,13 +22,13 @@ class Media(ModelBase):
     locale = LocaleField(default=settings.GALLERY_DEFAULT_LANGUAGE, db_index=True)
     is_draft = models.BooleanField(default=None, null=True, editable=False)
 
-    class Meta(object):
+    class Meta:
         abstract = True
         ordering = ["-created"]
         unique_together = (("locale", "title"), ("is_draft", "creator"))
 
     def __str__(self):
-        return "[%s] %s" % (self.locale, self.title)
+        return "[{}] {}".format(self.locale, self.title)
 
 
 @auto_delete_files

@@ -1,7 +1,6 @@
-from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass
 from dataclasses import field as dfield
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 import bleach
 from dateutil import parser
@@ -19,14 +18,14 @@ from kitsune.search.documents import (
     WikiDocument,
 )
 from kitsune.search.parser import Parser
-from kitsune.search.parser.tokens import TermToken, RangeToken, ExactToken
 from kitsune.search.parser.operators import (
-    SpaceOperator,
-    FieldOperator,
     AndOperator,
-    OrOperator,
+    FieldOperator,
     NotOperator,
+    OrOperator,
+    SpaceOperator,
 )
+from kitsune.search.parser.tokens import ExactToken, RangeToken, TermToken
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.parser import wiki_to_html
@@ -85,7 +84,7 @@ class QuestionSearch(SumoSearch):
     """Search over questions."""
 
     locale: str = "en-US"
-    product: Optional[Product] = None
+    product: Product | None = None
 
     def get_index(self):
         return QuestionDocument.Index.read_alias
@@ -138,7 +137,7 @@ class QuestionSearch(SumoSearch):
 
         # Advanced operators and tokens indicate an advanced search
         if isinstance(
-            token, (FieldOperator, AndOperator, OrOperator, NotOperator, RangeToken, ExactToken)
+            token, FieldOperator | AndOperator | OrOperator | NotOperator | RangeToken | ExactToken
         ):
             return False
 
@@ -170,7 +169,7 @@ class QuestionSearch(SumoSearch):
             DSLQ(
                 "range",
                 question_created={
-                    "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
+                    "gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)
                 },
             ),
         ]
@@ -216,7 +215,7 @@ class WikiSearch(SumoSearch):
     """Search over Knowledge Base articles."""
 
     locale: str = "en-US"
-    product: Optional[Product] = None
+    product: Product | None = None
 
     def get_index(self):
         return WikiDocument.Index.read_alias
@@ -321,7 +320,7 @@ class ProfileSearch(SumoSearch):
 class ForumSearch(SumoSearch):
     """Search over User Profiles."""
 
-    thread_forum_id: Optional[int] = None
+    thread_forum_id: int | None = None
 
     def get_index(self):
         return ForumDocument.Index.read_alias

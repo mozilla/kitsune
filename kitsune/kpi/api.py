@@ -1,37 +1,36 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from functools import reduce
 from operator import itemgetter
 
+import django_filters
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
 from django.db.models.functions import Now
-
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, viewsets
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from kitsune.kpi.models import (
-    Cohort,
-    Metric,
-    MetricKind,
-    RetentionMetric,
+    EXIT_SURVEY_DONT_KNOW_CODE,
+    EXIT_SURVEY_NO_CODE,
+    EXIT_SURVEY_YES_CODE,
     KB_ENUS_CONTRIBUTORS_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE,
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
     VISITORS_METRIC_CODE,
-    EXIT_SURVEY_YES_CODE,
-    EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE,
+    Cohort,
+    Metric,
+    MetricKind,
+    RetentionMetric,
 )
-from kitsune.questions.models import Question, Answer, AnswerVote
+from kitsune.questions.models import Answer, AnswerVote, Question
 from kitsune.sumo.api_utils import OrderingFilter
 from kitsune.wiki.models import HelpfulVote
-from functools import reduce
 
 
 class CachedAPIView(APIView):
@@ -43,7 +42,7 @@ class CachedAPIView(APIView):
     def _cache_key(self, request):
         params = []
         for key, value in list(request.GET.items()):
-            params.append("%s=%s" % (key, value))
+            params.append("{}={}".format(key, value))
         return "{viewname}:{params}".format(
             viewname=self.__class__.__name__, params=":".join(sorted(params))
         )
@@ -70,11 +69,11 @@ class SearchClickthroughMetricList(CachedAPIView):
 
     @property
     def searches_kind(self):
-        return "search clickthroughs:%s:searches" % self.engine
+        return "search clickthroughs:{}:searches".format(self.engine)
 
     @property
     def clicks_kind(self):
-        return "search clickthroughs:%s:clicks" % self.engine
+        return "search clickthroughs:{}:clicks".format(self.engine)
 
     def get_objects(self, request):
         """Return all the ratios.
@@ -110,7 +109,7 @@ class SearchClickthroughMetricList(CachedAPIView):
         if min_start:
             args.append(min_start)
         cursor.execute(query, args)
-        return [dict(start=s, clicks=n, searches=d) for s, n, d in reversed(cursor.fetchall())]
+        return [{"start": s, "clicks": n, "searches": d} for s, n, d in reversed(cursor.fetchall())]
 
 
 class QuestionsMetricList(CachedAPIView):
@@ -268,7 +267,7 @@ class VisitorsMetricList(CachedAPIView):
         kind = MetricKind.objects.get(code=VISITORS_METRIC_CODE)
         qs = Metric.objects.filter(kind=kind).order_by("-start")
 
-        return [dict(date=m.start, visitors=m.value) for m in qs]
+        return [{"date": m.start, "visitors": m.value} for m in qs]
 
 
 class L10nCoverageMetricList(CachedAPIView):
@@ -279,7 +278,7 @@ class L10nCoverageMetricList(CachedAPIView):
         kind = MetricKind.objects.get(code=L10N_METRIC_CODE)
         qs = Metric.objects.filter(kind=kind).order_by("-start")
 
-        return [dict(date=m.start, coverage=m.value) for m in qs]
+        return [{"date": m.start, "coverage": m.value} for m in qs]
 
 
 class ExitSurveyMetricList(CachedAPIView):
@@ -419,10 +418,10 @@ def _merge_results(x, y):
     To:
         [{"date": "2011-10-01", "votes": 3, "helpful": 7},...]
     """
-    return dict(
-        (s, dict(list(x.get(s, {}).items()) + list(y.get(s, {}).items())))
+    return {
+        s: dict(list(x.get(s, {}).items()) + list(y.get(s, {}).items()))
         for s in set(list(x.keys()) + list(y.keys()))
-    )
+    }
 
 
 def _cursor():

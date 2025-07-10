@@ -1,13 +1,14 @@
 from django.test import SimpleTestCase, TestCase
+from elasticsearch_dsl import Q
+from elasticsearch_dsl.query import Bool as B
+from elasticsearch_dsl.query import SimpleQueryString as S
 from parameterized import parameterized
 from pyparsing import ParseException
-from elasticsearch_dsl import Q
-from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
 
 from kitsune.search.parser import Parser
 
 
-class ElasticQueryContainsMixin(object):
+class ElasticQueryContainsMixin:
     def assertNestedDictContains(self, superset, subset):
         assert type(superset) is type(subset)
         if isinstance(superset, dict):
@@ -23,7 +24,7 @@ class ElasticQueryContainsMixin(object):
             except TypeError:
                 sorted_superset = superset
                 sorted_subset = subset
-            for super_value, value in zip(sorted_superset, sorted_subset):
+            for super_value, value in zip(sorted_superset, sorted_subset, strict=False):
                 self.assertNestedDictContains(super_value, value)
         else:
             self.assertEqual(superset, subset)

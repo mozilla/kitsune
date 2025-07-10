@@ -137,6 +137,8 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 99
+
+[tool.ruff.lint]
 extend-select = ["E", "W", "F", "I", "B", "C4", "UP", "N", "PL", "RUF"]
 ignore = [
     "E501",  # Line too long - already ignored
@@ -172,7 +174,6 @@ ignore = [
     "PLW2901", # for loop variable overwritten by assignment target
     "UP031",  # Use format arguments
     "UP032",  # Use f-string instead of format call
-    "UP027",  # Replace unpacked list comprehension with generator expression
     "UP028",  # Replace yield over for loop with yield from
     "E721",   # Do not compare types, use isinstance()
     "E741",   # Ambiguous variable name

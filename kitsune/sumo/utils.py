@@ -71,7 +71,7 @@ def build_paged_url(request):
 
     qsa = urlencode(items)
 
-    return "%s?%s" % (base, qsa)
+    return "{}?{}".format(base, qsa)
 
 
 # By Ned Batchelder.
@@ -184,7 +184,7 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
 
 
-class Progress(object):
+class Progress:
     """A widget to show progress during interactive CLI scripts.
 
     Example:

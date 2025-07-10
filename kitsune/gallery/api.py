@@ -15,7 +15,7 @@ from kitsune.sumo.i18n import normalize_language
 class ImageShortSerializer(serializers.ModelSerializer):
     url = ImageUrlField(source="file")
 
-    class Meta(object):
+    class Meta:
         model = Image
         fields: tuple[str, ...] = ("id", "title", "url", "locale", "width", "height")
 
@@ -26,14 +26,7 @@ class ImageDetailSerializer(ImageShortSerializer):
     updated_by = serializers.SlugRelatedField(slug_field="username", queryset=User.objects.all())
 
     class Meta(ImageShortSerializer.Meta):
-        fields = ImageShortSerializer.Meta.fields + (
-            "created",
-            "updated",
-            "updated_by",
-            "description",
-            "is_draft",
-            "creator",
-        )
+        fields = (*ImageShortSerializer.Meta.fields, "created", "updated", "updated_by", "description", "is_draft", "creator")
 
 
 class ImageList(LocaleNegotiationMixin, generics.ListAPIView):

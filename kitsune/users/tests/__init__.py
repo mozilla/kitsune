@@ -22,16 +22,16 @@ class UserFactory(factory.django.DjangoModelFactory):
     profile = factory.RelatedFactory("kitsune.users.tests.ProfileFactory", "user")
 
     @factory.post_generation
-    def groups(user, created, extracted, **kwargs):
+    def groups(self, created, extracted, **kwargs):
         groups = extracted or []
         for group in groups:
-            user.groups.add(group)
+            self.groups.add(group)
 
 
 class ContributorFactory(UserFactory):
     @factory.post_generation
-    def add_contributor_group(user, *args, **kwargs):
-        user.groups.add(
+    def add_contributor_group(self, *args, **kwargs):
+        self.groups.add(
             GroupFactory(name=factory.fuzzy.FuzzyChoice(ContributionAreas.get_groups()))
         )
 

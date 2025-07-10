@@ -429,7 +429,7 @@ def _document_lock_check(document_id):
         key = _document_lock_key.format(id=document_id)
         return redis.get(key)
     except RedisError as e:
-        log.error("Redis error: %s" % e)
+        log.error("Redis error: {}".format(e))
         return None
 
 
@@ -446,7 +446,7 @@ def _document_lock_steal(document_id, user_name, expire_time=60 * 15):
         redis.expire(key, expire_time)
         return it_worked
     except RedisError as e:
-        log.error("Redis error: %s" % e)
+        log.error("Redis error: {}".format(e))
         return False
 
 
@@ -470,7 +470,7 @@ def _document_lock_clear(document_id, user_name):
         else:
             return False
     except RedisError as e:
-        log.error("Redis error: %s" % e)
+        log.error("Redis error: {}".format(e))
         return False
 
 
@@ -1510,7 +1510,7 @@ def delete_revision(request, document_slug, revision_id):
     if only_revision:
         return HttpResponseBadRequest()
 
-    log.warning("User %s is deleting revision with id=%s" % (request.user, revision.id))
+    log.warning("User {} is deleting revision with id={}".format(request.user, revision.id))
     revision.delete()
     return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document.slug]))
 
@@ -1561,7 +1561,7 @@ def delete_document(request, document_slug):
 
     # Handle confirm delete form POST
     log.warning(
-        "User %s is deleting document: %s (id=%s)" % (request.user, document.title, document.id)
+        "User {} is deleting document: {} (id={})".format(request.user, document.title, document.id)
     )
     document.delete()
 

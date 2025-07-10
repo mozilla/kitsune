@@ -6,7 +6,7 @@ from kitsune.kbadge.tests import BadgeFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.badges import WIKI_BADGES
-from kitsune.wiki.tests import ApprovedRevisionFactory, RevisionFactory, DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 
 class TestWikiBadges(TestCase):

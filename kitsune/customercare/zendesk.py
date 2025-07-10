@@ -9,7 +9,7 @@ NO_RESPONSE = _lazy("No response provided.")
 LOGINLESS_TAG = "loginless_ticket"
 
 
-class ZendeskClient(object):
+class ZendeskClient:
     """Client to connect to Zendesk API."""
 
     def __init__(self, **kwargs):

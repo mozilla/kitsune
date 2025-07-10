@@ -58,7 +58,7 @@ class Command(BaseCommand):
             try:
                 leaders = Locale.objects.get(locale=loc).leaders.all()
                 reviewers = Locale.objects.get(locale=loc).reviewers.all()
-                users = set(user for user in chain(leaders, reviewers) if user.is_active)
+                users = {user for user in chain(leaders, reviewers) if user.is_active}
             except ObjectDoesNotExist:
                 # Locale does not exist, so skip to the next locale
                 continue
@@ -72,10 +72,10 @@ class Command(BaseCommand):
                     )
                     if product_docs:
                         docs_list.append(
-                            dict(
-                                product=pgettext("DB: products.Product.title", product.title),
-                                docs=product_docs,
-                            )
+                            {
+                                'product': pgettext("DB: products.Product.title", product.title),
+                                'docs': product_docs,
+                            }
                         )
 
                 product_docs = docs.filter(
@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 )
 
                 if product_docs:
-                    docs_list.append(dict(product=_("Other products"), docs=product_docs))
+                    docs_list.append({'product': _("Other products"), 'docs': product_docs})
 
                 messages.append(
                     _make_digest_mail(

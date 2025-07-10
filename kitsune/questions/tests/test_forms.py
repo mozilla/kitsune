@@ -39,7 +39,7 @@ class TestNewQuestionForm(TestCase):
     """Tests for the NewQuestionForm"""
 
     def setUp(self):
-        super(TestNewQuestionForm, self).setUp()
+        super().setUp()
         self.locale = QuestionLocaleFactory(locale=settings.LANGUAGE_CODE)
         self.product = ProductFactory(slug="firefox")
         self.aaq_config = AAQConfigFactory(

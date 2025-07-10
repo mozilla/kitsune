@@ -223,11 +223,11 @@ class TestUserCreation(TestCase):
         response = self.client.post(
             self.url,
             content_type="application/json",
-            data=dict(
-                username="mccartney",
-                groups=["Staff", "Beatles"],
-                permissions=["perm1", "perm2"],
-            ),
+            data={
+                "username": "mccartney",
+                "groups": ["Staff", "Beatles"],
+                "permissions": ["perm1", "perm2"],
+            },
         )
         self.assertEqual(response.status_code, 200)
         result = response.json()
@@ -249,9 +249,9 @@ class TestUserCreation(TestCase):
 
         user = User.objects.get(username="mccartney")
 
-        self.assertEqual(set(g.name for g in user.groups.all()), set(["Staff", "Beatles"]))
+        self.assertEqual({g.name for g in user.groups.all()}, {"Staff", "Beatles"})
         self.assertEqual(
-            set(p.codename for p in user.user_permissions.all()), set(["perm1", "perm2"])
+            {p.codename for p in user.user_permissions.all()}, {"perm1", "perm2"}
         )
 
         self.client.logout()
@@ -266,7 +266,7 @@ class TestUserCreation(TestCase):
             self.url,
             content_type="application/json",
             headers={"cookie": cookie.output(header="").strip()},
-            data=dict(username="lennon", permissions=["perm1"], groups=["Beatles"]),
+            data={"username": "lennon", "permissions": ["perm1"], "groups": ["Beatles"]},
         )
         self.assertEqual(response.status_code, 200)
         result = response.json()
@@ -289,11 +289,11 @@ class TestUserCreation(TestCase):
             response = self.client.post(
                 self.url,
                 content_type="application/json",
-                data=dict(
-                    username="mccartney",
-                    groups=["Staff", "Beatles"],
-                    permissions=["perm1", "perm2"],
-                ),
+                data={
+                    "username": "mccartney",
+                    "groups": ["Staff", "Beatles"],
+                    "permissions": ["perm1", "perm2"],
+                },
             )
             self.assertEqual(response.status_code, 404)
 
@@ -305,11 +305,11 @@ class TestUserCreation(TestCase):
             response = self.client.post(
                 self.url,
                 content_type="application/json",
-                data=dict(
-                    username="mccartney",
-                    groups=["Staff", "Beatles"],
-                    permissions=["perm1", "perm2"],
-                ),
+                data={
+                    "username": "mccartney",
+                    "groups": ["Staff", "Beatles"],
+                    "permissions": ["perm1", "perm2"],
+                },
             )
             self.assertEqual(response.status_code, 404)
 
@@ -323,11 +323,11 @@ class TestUserCreation(TestCase):
             response = self.client.post(
                 self.url,
                 content_type="application/json",
-                data=dict(
-                    username="mccartney",
-                    groups=["Staff", "Beatles"],
-                    permissions=["perm1", "perm2"],
-                ),
+                data={
+                    "username": "mccartney",
+                    "groups": ["Staff", "Beatles"],
+                    "permissions": ["perm1", "perm2"],
+                },
             )
             self.assertEqual(response.status_code, 404)
 
@@ -340,6 +340,6 @@ class TestUserCreation(TestCase):
         response = self.client.post(
             self.url,
             content_type="application/json",
-            data=dict(username="mccartney"),
+            data={"username": "mccartney"},
         )
         self.assertEqual(response.status_code, 409)

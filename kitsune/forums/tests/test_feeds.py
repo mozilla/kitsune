@@ -13,13 +13,12 @@ from kitsune.forums.tests import (
 from kitsune.sumo.tests import TestCase, get
 from kitsune.users.tests import UserFactory
 
-
 YESTERDAY = datetime.now() - timedelta(days=1)
 
 
 class ForumTestFeeds(TestCase):
     def setUp(self):
-        super(ForumTestFeeds, self).setUp()
+        super().setUp()
 
     def test_threads_sort(self):
         """Ensure that threads are being sorted properly by date/time."""

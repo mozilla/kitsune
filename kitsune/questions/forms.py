@@ -72,7 +72,7 @@ class EditQuestionForm(forms.ModelForm):
         We are adding fields here and not declaratively because the
         form fields to include depend on the selected product/category.
         """
-        super(EditQuestionForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         #  Extra fields required by product/category selected
         extra_fields = []
@@ -179,7 +179,7 @@ class NewQuestionForm(EditQuestionForm):
 
     def __init__(self, product=None, *args, **kwargs):
         """Add fields particular to new questions."""
-        super(NewQuestionForm, self).__init__(product=product, *args, **kwargs)
+        super().__init__(product=product, *args, **kwargs)
 
         if product:
             topics = Topic.active.filter(products=product, in_aaq=True)
@@ -194,7 +194,7 @@ class NewQuestionForm(EditQuestionForm):
         if category:
             self.instance.topic = category
 
-        question = super(NewQuestionForm, self).save(*args, **kwargs)
+        question = super().save(*args, **kwargs)
 
         if self.cleaned_data.get("notifications", False):
             QuestionReplyEvent.notify(question.creator, question)
@@ -230,7 +230,7 @@ class AnswerForm(KitsuneBaseForumForm):
 
     def clean(self, *args, **kwargs):
         """Override clean method to exempt question owner from spam filtering."""
-        cdata = super(AnswerForm, self).clean(*args, **kwargs)
+        cdata = super().clean(*args, **kwargs)
         # if there is a reply from the owner, remove the spam flag
         if self.user and self.question and self.user == self.question.creator:
             cdata.pop("is_spam", None)
@@ -254,7 +254,7 @@ class WatchQuestionForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         # Initialize with logged in user's email.
         self.user = user
-        super(WatchQuestionForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean_email(self):
         if not self.user.is_authenticated and not self.cleaned_data["email"]:

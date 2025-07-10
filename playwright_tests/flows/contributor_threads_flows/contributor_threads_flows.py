@@ -1,5 +1,7 @@
 import re
+
 from playwright.sync_api import Page
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     delete_thread_post_page import DeleteThreadPostPage
@@ -7,12 +9,14 @@ from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.
     edit_thread_post_page import EditThreadPostPage
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.\
     edit_thread_title_page import EditThreadTitle
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.forum_thread_page import (
+    ForumThreadPage,
+)
+from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.new_thread_page import (
+    NewThreadPage,
+)
 from playwright_tests.pages.contribute.contribute_pages.contributor_discussions\
     .forum_discussions_page import ForumDiscussionsPage
-from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.forum_thread_page \
-    import ForumThreadPage
-from playwright_tests.pages.contribute.contribute_pages.contributor_discussions.new_thread_page \
-    import NewThreadPage
 
 
 class ContributorThreadFlow:

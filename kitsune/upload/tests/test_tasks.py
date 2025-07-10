@@ -87,7 +87,7 @@ class CreateThumbnailTestCase(TestCase):
 
 class GenerateThumbnail(TestCase):
     def setUp(self):
-        super(GenerateThumbnail, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.obj = QuestionFactory()
 
@@ -149,7 +149,7 @@ class GenerateThumbnail(TestCase):
 
 class CompressImageTestCase(TestCase):
     def setUp(self):
-        super(CompressImageTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.obj = QuestionFactory()
 

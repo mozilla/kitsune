@@ -1,7 +1,7 @@
+import json
 from datetime import datetime, timedelta
 from importlib import import_module
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import json
 
 from django.conf import settings
 from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY
@@ -95,13 +95,7 @@ def usernames(request):
                 .select_related("profile")
                 .get()
             )
-            autocomplete_list = [
-                {
-                    "username": exact_match.username,
-                    "display_name": display_name_or_none(exact_match),
-                    "avatar": profile_avatar(exact_match, 24),
-                }
-            ] + autocomplete_list
+            autocomplete_list = [{"username": exact_match.username, "display_name": display_name_or_none(exact_match), "avatar": profile_avatar(exact_match, 24)}, *autocomplete_list]
         except User.DoesNotExist:
             pass
 
@@ -148,7 +142,7 @@ class OnlySelfEdits(OnlySelf):
         if request.method in permissions.SAFE_METHODS:
             return True
         else:
-            return super(OnlySelfEdits, self).has_object_permission(request, view, obj)
+            return super().has_object_permission(request, view, obj)
 
 
 class UserSettingSerializer(serializers.ModelSerializer):

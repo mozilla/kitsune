@@ -1,4 +1,5 @@
-from playwright.sync_api import Page, Locator, ElementHandle
+from playwright.sync_api import ElementHandle, Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -162,8 +163,8 @@ class SentMessagePage(BasePage):
         Args:
             excerpt (str): The excerpt of the message.
         """
-        return [element for element in self._get_element_handles(
-            self.sent_message_by_subject(excerpt))]
+        return list(self._get_element_handles(
+            self.sent_message_by_subject(excerpt)))
 
     def sent_messages_to_group(self, group: str, excerpt: str) -> Locator:
         """Get the locator of the sent message by the group name of the recipient and the excerpt

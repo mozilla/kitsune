@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from kitsune.sumo.templatetags.jinja_helpers import reverse
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.templatetags.jinja_helpers import reverse
 from kitsune.sumo.utils import auto_delete_files
 
 

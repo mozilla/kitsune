@@ -1,7 +1,6 @@
-from django.db.models import CharField, DateField, ForeignKey, PositiveIntegerField, CASCADE
+from django.db.models import CASCADE, CharField, DateField, ForeignKey, PositiveIntegerField
 
 from kitsune.sumo.models import ModelBase
-
 
 VISITORS_METRIC_CODE = "general keymetrics:visitors"
 L10N_METRIC_CODE = "general l10n:coverage"
@@ -64,11 +63,11 @@ class Metric(ModelBase):
     # numerator, one for denominator.
     value = PositiveIntegerField()
 
-    class Meta(object):
+    class Meta:
         unique_together = [("kind", "start", "end")]
 
     def __str__(self):
-        return "%s (%s thru %s): %s" % (self.kind, self.start, self.end, self.value)
+        return "{} ({} thru {}): {}".format(self.kind, self.start, self.end, self.value)
 
 
 class CohortKind(ModelBase):
@@ -88,11 +87,11 @@ class Cohort(ModelBase):
     end = DateField()
     size = PositiveIntegerField(default=0)
 
-    class Meta(object):
+    class Meta:
         unique_together = [("kind", "start", "end")]
 
     def __str__(self):
-        return "%s (%s thru %s): %s" % (self.kind, self.start, self.end, self.size)
+        return "{} ({} thru {}): {}".format(self.kind, self.start, self.end, self.size)
 
 
 class RetentionMetric(ModelBase):
@@ -103,5 +102,5 @@ class RetentionMetric(ModelBase):
     end = DateField()
     size = PositiveIntegerField(default=0)
 
-    class Meta(object):
+    class Meta:
         unique_together = [("cohort", "start", "end")]

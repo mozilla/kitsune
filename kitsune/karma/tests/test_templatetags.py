@@ -6,7 +6,7 @@ from kitsune.users.tests import GroupFactory, UserFactory
 
 class KarmaTitleHelperTests(TestCase):
     def setUp(self):
-        super(KarmaTitleHelperTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.group = GroupFactory(name="group")
         self.user.groups.add(self.group)

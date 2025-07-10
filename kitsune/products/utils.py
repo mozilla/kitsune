@@ -40,7 +40,7 @@ def get_taxonomy(
         )
 
     # Get all of the topics and organize them by parent.
-    topics_by_parent: dict[None | int, list[Topic]] = dict()
+    topics_by_parent: dict[None | int, list[Topic]] = {}
     for topic in qs_topics.only(
         "id", "title", "parent", "metadata" if include_metadata else "description"
     ).order_by("title"):
@@ -53,7 +53,7 @@ def get_taxonomy(
         result = []
 
         for topic in topics_by_parent.get(parent.id if parent else None, ()):
-            item = dict(title=topic.title)
+            item = {"title": topic.title}
 
             if include_metadata:
                 if not topic.metadata:
@@ -91,7 +91,7 @@ def get_products(
     as a string in the output format requested (either "YAML" or "JSON").
     """
     products: list[dict[str, str]] = []
-    result = dict(products=products)
+    result = {"products": products}
     products_qs = Product.active
 
     if only_with_forums:
@@ -100,7 +100,7 @@ def get_products(
 
     for product in products_qs:
 
-        item = dict(title=product.title)
+        item = {"title": product.title}
 
         if include_metadata:
             for name in include_metadata:

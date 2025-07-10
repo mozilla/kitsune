@@ -119,14 +119,14 @@ def row_to_dict_with_out_of_dateness(
         status_url = reverse("wiki.translate", args=[slug], locale=readout_locale)
         status_class = "untranslated"
 
-    return dict(
-        title=title,
-        url=reverse("wiki.document", args=[slug], locale=locale),
-        visits=visits,
-        status=status,
-        status_class=status_class,
-        status_url=status_url,
-    )
+    return {
+        "title": title,
+        "url": reverse("wiki.document", args=[slug], locale=locale),
+        "visits": visits,
+        "status": status,
+        "status_class": status_class,
+        "status_url": status_url,
+    }
 
 
 def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, category=None):
@@ -229,7 +229,7 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
         if d.num_visits and max_visits:
             data["visits_ratio"] = float(d.num_visits) / max_visits
 
-        if "expiry_date" in data and data["expiry_date"]:
+        if data.get("expiry_date"):
             data["stale"] = data["expiry_date"] < datetime.now()
 
         if d.unapproved_revision_comment is None:
@@ -258,7 +258,7 @@ def l10n_overview_rows(locale, product=None, user=None):
     # don't shoehorn it in.
 
     def percent_or_100(num, denom):
-        return int(round(num / float(denom) * 100)) if denom else 100
+        return round(num / float(denom) * 100) if denom else 100
 
     ignore_categories = [
         ADMINISTRATION_CATEGORY,
@@ -430,7 +430,7 @@ def l10n_overview_rows(locale, product=None, user=None):
     }
 
 
-class Readout(object):
+class Readout:
     """Abstract class representing one table on the Localization Dashboard
 
     Describing these as atoms gives us the whole-page details views for free.
@@ -486,7 +486,7 @@ class Readout(object):
             r["percent"] = (
                 0
                 if visits is None or not max_visits
-                else int(round(visits / float(max_visits) * 100))
+                else round(visits / float(max_visits) * 100)
             )
 
         # Render:
@@ -535,7 +535,7 @@ class Readout(object):
                 "dashboards.contributors_detail", kwargs={"readout_slug": self.slug}, locale=locale
             )
         else:
-            raise KeyError("This Readout was not found: %s" % self.slug)
+            raise KeyError("This Readout was not found: {}".format(self.slug))
 
         if product:
             return urlparams(url, product=product.slug)
@@ -555,7 +555,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
     default_mode = LAST_30_DAYS
 
     def get_queryset(self, max=None):
-        if self.mode in set(m[0] for m in self.modes):
+        if self.mode in {m[0] for m in self.modes}:
             period = self.mode
         else:
             period = self.default_mode
@@ -603,13 +603,13 @@ class MostVisitedDefaultLanguageReadout(Readout):
     def row_to_dict(self, row):
         (slug, title, visits, needs_review) = row
         status, view_name, dummy = REVIEW_STATUSES[needs_review]
-        return dict(
-            title=title,
-            url=reverse("wiki.document", args=[slug], locale=self.locale),
-            visits=visits,
-            status=status,
-            status_url=reverse(view_name, args=[slug], locale=self.locale) if view_name else "",
-        )
+        return {
+            "title": title,
+            "url": reverse("wiki.document", args=[slug], locale=self.locale),
+            "visits": visits,
+            "status": status,
+            "status_url": reverse(view_name, args=[slug], locale=self.locale) if view_name else "",
+        }
 
 
 class CategoryReadout(Readout):
@@ -619,10 +619,10 @@ class CategoryReadout(Readout):
     column3_label = _lazy("Visits")
     modes = []
     default_mode = None
-    filter_kwargs: dict[str, bool | int] = dict()
+    filter_kwargs: dict[str, bool | int] = {}
 
     def get_queryset(self, max=None):
-        if self.mode in set(m[0] for m in self.modes):
+        if self.mode in {m[0] for m in self.modes}:
             period = self.mode
         else:
             period = self.default_mode
@@ -679,34 +679,34 @@ class CategoryReadout(Readout):
         else:
             status, view_name, _ = REVIEW_STATUSES[0]
 
-        return dict(
-            title=title,
-            url=reverse("wiki.document", args=[slug], locale=self.locale),
-            visits=visits,
-            status=status,
-            status_url=reverse(view_name, args=[slug], locale=self.locale) if view_name else "",
-        )
+        return {
+            "title": title,
+            "url": reverse("wiki.document", args=[slug], locale=self.locale),
+            "visits": visits,
+            "status": status,
+            "status_url": reverse(view_name, args=[slug], locale=self.locale) if view_name else "",
+        }
 
 
 class TemplateReadout(CategoryReadout):
     title = _lazy("Templates")
     slug = "templates"
     details_link_text = _lazy("All templates...")
-    filter_kwargs = dict(is_template=True)
+    filter_kwargs = {"is_template": True}
 
 
 class HowToContributeReadout(CategoryReadout):
     title = _lazy("How To Contribute")
     slug = "how-to-contribute"
     details_link_text = _lazy("All How To Contribute articles...")
-    filter_kwargs = dict(category=HOW_TO_CONTRIBUTE_CATEGORY)
+    filter_kwargs = {"category": HOW_TO_CONTRIBUTE_CATEGORY}
 
 
 class AdministrationReadout(CategoryReadout):
     title = _lazy("Administration")
     slug = "administration"
     details_link_text = _lazy("All Administration articles...")
-    filter_kwargs = dict(category=ADMINISTRATION_CATEGORY)
+    filter_kwargs = {"category": ADMINISTRATION_CATEGORY}
 
 
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
@@ -725,7 +725,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     details_link_text = _lazy("All translations...")
 
     def get_queryset(self, max=None):
-        if self.mode in set(m[0] for m in self.modes):
+        if self.mode in {m[0] for m in self.modes}:
             period = self.mode
         else:
             period = self.default_mode
@@ -825,7 +825,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             rows = [x for x in rows if x["status_class"] != "ok"]
             rows = rows[:max_rows]
 
-        return super(MostVisitedTranslationsReadout, self).render(rows=rows)
+        return super().render(rows=rows)
 
 
 class TemplateTranslationsReadout(Readout):
@@ -977,13 +977,13 @@ class UnreviewedReadout(Readout):
 
     def row_to_dict(self, row):
         (slug, title, changed, users, visits) = row
-        return dict(
-            title=title,
-            url=reverse("wiki.document_revisions", args=[slug], locale=self.locale),
-            visits=visits,
-            updated=changed,
-            users=users,
-        )
+        return {
+            "title": title,
+            "url": reverse("wiki.document_revisions", args=[slug], locale=self.locale),
+            "visits": visits,
+            "updated": changed,
+            "users": users,
+        }
 
 
 class UnhelpfulReadout(Readout):
@@ -1002,7 +1002,7 @@ class UnhelpfulReadout(Readout):
     try:
         hide_readout = redis_client("helpfulvotes").llen(key) == 0
     except RedisError as e:
-        log.error("Redis error: %s" % e)
+        log.error("Redis error: {}".format(e))
         hide_readout = True
 
     def rows(self, max=None):
@@ -1013,7 +1013,7 @@ class UnhelpfulReadout(Readout):
             max_get = max or length
             output = redis.lrange(REDIS_KEY, 0, max_get)
         except RedisError as e:
-            log.error("Redis error: %s" % e)
+            log.error("Redis error: {}".format(e))
             output = []
 
         data = []
@@ -1034,16 +1034,15 @@ class UnhelpfulReadout(Readout):
                 return None
 
         helpfulness = Markup(
-            '<span title="%+.1f%%">%.1f%%</span>'
-            % (float(result[3]) * 100, float(result[2]) * 100)
+            '<span title="{:+.1f}%">{:.1f}%</span>'.format(float(result[3]) * 100, float(result[2]) * 100)
         )
-        return dict(
-            title=str(result[6]),
-            url=reverse("wiki.document_revisions", args=[result[5]], locale=self.locale),
-            visits=int(float(result[1])),
-            custom=True,
-            column4_data=helpfulness,
-        )
+        return {
+            "title": str(result[6]),
+            "url": reverse("wiki.document_revisions", args=[result[5]], locale=self.locale),
+            "visits": int(float(result[1])),
+            "custom": True,
+            "column4_data": helpfulness,
+        }
 
 
 class UnreadyForLocalizationReadout(Readout):
@@ -1113,14 +1112,14 @@ class UnreadyForLocalizationReadout(Readout):
 
     def row_to_dict(self, row):
         (slug, title, reviewed, visits) = row
-        return dict(
-            title=title,
-            url=reverse(
+        return {
+            "title": title,
+            "url": reverse(
                 "wiki.document_revisions", args=[slug], locale=settings.WIKI_DEFAULT_LANGUAGE
             ),
-            visits=visits,
-            updated=reviewed,
-        )
+            "visits": visits,
+            "updated": reviewed,
+        }
 
 
 class NeedsChangesReadout(Readout):
@@ -1158,15 +1157,15 @@ class NeedsChangesReadout(Readout):
 
     def row_to_dict(self, row):
         (slug, title, comment, visits) = row
-        return dict(
-            title=title,
-            url=reverse(
+        return {
+            "title": title,
+            "url": reverse(
                 "wiki.document_revisions", args=[slug], locale=settings.WIKI_DEFAULT_LANGUAGE
             ),
-            visits=visits,
-            custom=True,
-            column4_data=comment,
-        )
+            "visits": visits,
+            "custom": True,
+            "column4_data": comment,
+        }
 
 
 class CannedResponsesReadout(Readout):

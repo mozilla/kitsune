@@ -1,12 +1,11 @@
 from io import BytesIO
 
-from babel.messages.extract import extract_javascript
 import django
+from babel.messages.extract import extract_javascript
 from django.conf import settings
 from jinja2.ext import babel_extract
 
-
-SVELTE_SPECIAL_TAG_PREFIXES = set([b"{#", b"{:", b"{/", b"{@"])
+SVELTE_SPECIAL_TAG_PREFIXES = {b"{#", b"{:", b"{/", b"{@"}
 
 
 def generate_option(value):
@@ -19,7 +18,7 @@ def generate_option(value):
     """
     if isinstance(value, bool):
         return str(value).lower()
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return ",".join(value)
     return value
 

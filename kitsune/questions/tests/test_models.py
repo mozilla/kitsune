@@ -138,7 +138,7 @@ class TestAnswer(TestCase):
         a1.save()
         a2.delete()
         a3 = Answer.objects.filter(question=a1.question)[0]
-        assert a3.page == 1, "Page was %s" % a3.page
+        assert a3.page == 1, "Page was {}".format(a3.page)
 
     def test_creator_num_answers(self):
         a = AnswerFactory()
@@ -163,9 +163,9 @@ class TestAnswer(TestCase):
             is_approved=True, document__title="Un mejor títuolo", document__locale="es"
         )
 
-        a = AnswerFactory(question__locale="es", content="[[%s]]" % rev.document.title)
+        a = AnswerFactory(question__locale="es", content="[[{}]]".format(rev.document.title))
 
-        assert "es/kb/%s" % rev.document.slug in a.content_parsed
+        assert "es/kb/{}".format(rev.document.slug) in a.content_parsed
 
     def test_creator_follows(self):
         a = AnswerFactory()
@@ -185,7 +185,7 @@ class TestQuestionMetadata(TestCase):
     """Tests handling question metadata"""
 
     def setUp(self):
-        super(TestQuestionMetadata, self).setUp()
+        super().setUp()
 
         # add a new Question to test with
         self.question = QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
@@ -195,7 +195,7 @@ class TestQuestionMetadata(TestCase):
         metadata = {"version": "3.6.3", "os": "Windows 7"}
         self.question.add_metadata(**metadata)
         saved = QuestionMetaData.objects.filter(question=self.question)
-        self.assertEqual(dict((x.name, x.value) for x in saved), metadata)
+        self.assertEqual({x.name: x.value for x in saved}, metadata)
 
     def test_metadata_property(self):
         """Test the metadata property on Question model."""
@@ -223,12 +223,12 @@ class TestQuestionMetadata(TestCase):
         md = q.metadata
         assert "crash_id" not in md, "clear_mutable_metadata() didn't clear the cached metadata."
         self.assertEqual(
-            dict(
-                product="desktop",
-                category="fix-problems",
-                useragent="Fyerfocks",
-                kb_visits_prior='["/en-US/kb/stuff", "/en-US/kb/nonsense"]',
-            ),
+            {
+                "product": "desktop",
+                "category": "fix-problems",
+                "useragent": "Fyerfocks",
+                "kb_visits_prior": '["/en-US/kb/stuff", "/en-US/kb/nonsense"]',
+            },
             md,
         )
 
@@ -370,8 +370,8 @@ class QuestionTests(TestCase):
         """Verify question returned from valid URL."""
         q = QuestionFactory()
 
-        self.assertEqual(q, Question.from_url("/en-US/questions/%s" % q.id))
-        self.assertEqual(q, Question.from_url("/es/questions/%s" % q.id))
+        self.assertEqual(q, Question.from_url("/en-US/questions/{}".format(q.id)))
+        self.assertEqual(q, Question.from_url("/es/questions/{}".format(q.id)))
 
     def test_from_url_id_only(self):
         """Verify question returned from URL."""
@@ -384,9 +384,9 @@ class QuestionTests(TestCase):
         """Verify question returned from valid URL."""
         q = QuestionFactory()
 
-        self.assertEqual(None, Question.from_url("/questions/%s" % q.id))
-        self.assertEqual(None, Question.from_url("/en-US/questions/%s/edit" % q.id))
-        self.assertEqual(None, Question.from_url("/en-US/kb/%s" % q.id))
+        self.assertEqual(None, Question.from_url("/questions/{}".format(q.id)))
+        self.assertEqual(None, Question.from_url("/en-US/questions/{}/edit".format(q.id)))
+        self.assertEqual(None, Question.from_url("/en-US/kb/{}".format(q.id)))
         self.assertEqual(None, Question.from_url("/random/url"))
         self.assertEqual(None, Question.from_url("/en-US/questions/dashboard/metrics"))
 
@@ -413,8 +413,8 @@ class QuestionTests(TestCase):
         # This test relies on datetime.now() being called in the age
         # property, so this delta check makes it less likely to fail
         # randomly.
-        assert abs(q1.age - 10 * 24 * 60 * 60) < 2, "q1.age (%s) != 10 days" % q1.age
-        assert abs(q2.age - 30) < 2, "q2.age (%s) != 30 seconds" % q2.age
+        assert abs(q1.age - 10 * 24 * 60 * 60) < 2, "q1.age ({}) != 10 days".format(q1.age)
+        assert abs(q2.age - 30) < 2, "q2.age ({}) != 30 seconds".format(q2.age)
 
     def test_is_taken(self):
         q = QuestionFactory()
@@ -508,7 +508,7 @@ class QuestionTests(TestCase):
         AnswerVoteFactory(answer=answer4, helpful=True)
         AnswerVoteFactory(answer=answer4, helpful=True)
         with self.subTest("limit to two most helpful answers"):
-            self.assertEqual(set(question.helpful_replies), set([answer3, answer4]))
+            self.assertEqual(set(question.helpful_replies), {answer3, answer4})
         question.solution = answer4
         question.save()
         with self.subTest("ignore the solution"):
@@ -519,7 +519,7 @@ class AddExistingTagTests(TestCase):
     """Tests for the add_existing_tag helper function."""
 
     def setUp(self):
-        super(AddExistingTagTests, self).setUp()
+        super().setUp()
         self.untagged_question = QuestionFactory()
 
     def test_tags_manager(self):

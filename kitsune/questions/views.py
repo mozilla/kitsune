@@ -3,7 +3,6 @@ import logging
 import random
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
-from typing import List, Optional, Tuple, Union
 
 import requests
 from django.conf import settings
@@ -423,11 +422,11 @@ def parse_troubleshooting(troubleshooting_json):
     # TODO: If the UI for this gets better, we can include these prefs
     # and just make them collapsible.
 
-    parsed["modifiedPreferences"] = dict(
-        (key, val)
+    parsed["modifiedPreferences"] = {
+        key: val
         for (key, val) in list(parsed["modifiedPreferences"].items())
         if not key.startswith("print")
-    )
+    }
 
     return parsed
 
@@ -1238,7 +1237,7 @@ def delete_question(request, question_id):
     product = question.product_slug
 
     # Handle confirm delete form POST
-    log.warning("User %s is deleting question with id=%s" % (request.user, question.id))
+    log.warning("User {} is deleting question with id={}".format(request.user, question.id))
     question.delete()
 
     return HttpResponseRedirect(reverse("questions.list", args=[product]))
@@ -1257,7 +1256,7 @@ def delete_answer(request, question_id, answer_id):
         return render(request, "questions/confirm_answer_delete.html", {"answer": answer})
 
     # Handle confirm delete form POST
-    log.warning("User %s is deleting answer with id=%s" % (request.user, answer.id))
+    log.warning("User {} is deleting answer with id={}".format(request.user, answer.id))
     answer.delete()
 
     return HttpResponseRedirect(reverse("questions.details", args=[question_id]))
@@ -1274,8 +1273,7 @@ def lock_question(request, question_id):
 
     question.is_locked = not question.is_locked
     log.info(
-        "User %s set is_locked=%s on question with id=%s "
-        % (request.user, question.is_locked, question.id)
+        "User {} set is_locked={} on question with id={} ".format(request.user, question.is_locked, question.id)
     )
     question.save()
 
@@ -1293,8 +1291,7 @@ def archive_question(request, question_id):
 
     question.is_archived = not question.is_archived
     log.info(
-        "User %s set is_archived=%s on question with id=%s "
-        % (request.user, question.is_archived, question.id)
+        "User {} set is_archived={} on question with id={} ".format(request.user, question.is_archived, question.id)
     )
     question.save()
 
@@ -1323,7 +1320,7 @@ def edit_answer(request, question_id, answer_id):
             answer.updated = datetime.now()
             answer_preview = answer
         else:
-            log.warning("User %s is editing answer with id=%s" % (request.user, answer.id))
+            log.warning("User {} is editing answer with id={}".format(request.user, answer.id))
 
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, answer)
@@ -1519,8 +1516,8 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
 
 
 def _add_tag(
-    request: HttpRequest, question_id: int, tag_ids: Optional[List[int]] = None
-) -> Tuple[Optional[Question], Union[List[str], str, None]]:
+    request: HttpRequest, question_id: int, tag_ids: list[int] | None = None
+) -> tuple[Question | None, list[str] | str | None]:
     """Add tags to a question by tag IDs or tag name.
 
     If tag_ids is provided, adds tags with those IDs to the question.

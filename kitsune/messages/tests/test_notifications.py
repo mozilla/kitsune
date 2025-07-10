@@ -1,9 +1,9 @@
+from unittest import mock
+
 from django.contrib.sites.models import Site
 from django.core import mail
 
-from unittest import mock
-
-from kitsune.sumo.tests import TestCase, post, attrs_eq, starts_with
+from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 
@@ -14,7 +14,7 @@ class NotificationsTests(TestCase):
     """Test that notifications get sent."""
 
     def setUp(self):
-        super(NotificationsTests, self).setUp()
+        super().setUp()
 
         self.sender = UserFactory()
         self.to = UserFactory()

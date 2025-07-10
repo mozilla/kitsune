@@ -13,7 +13,7 @@ class KitsuneBaseForumForm(forms.Form):
         """Override init method to get the user if possible."""
         self.user = kwargs.pop("user", None)
         self.question = kwargs.pop("question", None)
-        super(KitsuneBaseForumForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
         """Generic clean method used by all forms in the question app.
@@ -26,7 +26,7 @@ class KitsuneBaseForumForm(forms.Form):
 
         cdata = self.cleaned_data.get("content")
         if not cdata:
-            return super(KitsuneBaseForumForm, self).clean(*args, **kwargs)
+            return super().clean(*args, **kwargs)
 
         if not self.user:
             raise forms.ValidationError("Something went terribly wrong. Please try again")

@@ -8,7 +8,7 @@ class FlagitTestPermissions(TestCaseBase):
     """Test our new permission required decorator."""
 
     def setUp(self):
-        super(FlagitTestPermissions, self).setUp()
+        super().setUp()
         self.user = UserFactory()
 
     def test_permission_required(self):

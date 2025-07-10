@@ -13,7 +13,7 @@ from kitsune.upload.utils import FileTooLargeError, check_file_size
 class GroupProfileForm(forms.ModelForm):
     """The form for editing the group's profile."""
 
-    class Meta(object):
+    class Meta:
         model = GroupProfile
         fields = ["information"]
 
@@ -25,7 +25,7 @@ class GroupAvatarForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request", None)
-        super(GroupAvatarForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["avatar"].help_text = _("Your avatar will be resized to {size}x{size}").format(
             size=settings.AVATAR_SIZE
         )

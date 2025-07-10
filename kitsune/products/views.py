@@ -6,13 +6,13 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
+from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.utils import build_topics_data, get_featured_articles
-from kitsune.flagit.views import get_hierarchical_topics
 
 
 @check_simple_wiki_locale

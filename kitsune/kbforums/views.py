@@ -8,23 +8,22 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
 from kitsune import kbforums
-from kitsune.access.decorators import permission_required, login_required
+from kitsune.access.decorators import login_required, permission_required
 from kitsune.kbforums.events import (
     NewPostEvent,
-    NewThreadEvent,
     NewPostInLocaleEvent,
+    NewThreadEvent,
     NewThreadInLocaleEvent,
 )
-from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
-from kitsune.kbforums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
-from kitsune.kbforums.models import Thread, Post
+from kitsune.kbforums.feeds import PostsFeed, ThreadsFeed
+from kitsune.kbforums.forms import EditPostForm, EditThreadForm, NewThreadForm, ReplyForm
+from kitsune.kbforums.models import Post, Thread
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, get_next_url, is_ratelimited
+from kitsune.sumo.utils import get_next_url, is_ratelimited, paginate
 from kitsune.users.models import Setting
 from kitsune.wiki.models import Document
 from kitsune.wiki.views import get_visible_document_or_404
-
 
 log = logging.getLogger("k.kbforums")
 
@@ -231,8 +230,7 @@ def lock_thread(request, document_slug, thread_id):
     thread = get_object_or_404(Thread, pk=thread_id, document=doc)
     thread.is_locked = not thread.is_locked
     log.info(
-        "User %s set is_locked=%s on KB thread with id=%s "
-        % (request.user, thread.is_locked, thread.id)
+        "User {} set is_locked={} on KB thread with id={} ".format(request.user, thread.is_locked, thread.id)
     )
     thread.save()
 
@@ -247,8 +245,7 @@ def sticky_thread(request, document_slug, thread_id):
     thread = get_object_or_404(Thread, pk=thread_id, document=doc)
     thread.is_sticky = not thread.is_sticky
     log.info(
-        "User %s set is_sticky=%s on KB thread with id=%s "
-        % (request.user, thread.is_sticky, thread.id)
+        "User {} set is_sticky={} on KB thread with id={} ".format(request.user, thread.is_sticky, thread.id)
     )
     thread.save()
 
@@ -274,7 +271,7 @@ def edit_thread(request, document_slug, thread_id):
     form = EditThreadForm(request.POST)
 
     if form.is_valid():
-        log.warning("User %s is editing KB thread with id=%s" % (request.user, thread.id))
+        log.warning("User {} is editing KB thread with id={}".format(request.user, thread.id))
         thread.title = form.cleaned_data["title"]
         thread.save()
 
@@ -299,7 +296,7 @@ def delete_thread(request, document_slug, thread_id):
         )
 
     # Handle confirm delete form POST
-    log.warning("User %s is deleting KB thread with id=%s" % (request.user, thread.id))
+    log.warning("User {} is deleting KB thread with id={}".format(request.user, thread.id))
     thread.delete()
 
     return HttpResponseRedirect(reverse("wiki.discuss.threads", args=[document_slug]))
@@ -333,7 +330,7 @@ def edit_post(request, document_slug, thread_id, post_id):
             post.updated = datetime.now()
             post_preview = post
         else:
-            log.warning("User %s is editing KB post with id=%s" % (request.user, post.id))
+            log.warning("User {} is editing KB post with id={}".format(request.user, post.id))
             post.save()
             return HttpResponseRedirect(post.get_absolute_url())
 
@@ -366,7 +363,7 @@ def delete_post(request, document_slug, thread_id, post_id):
         )
 
     # Handle confirm delete form POST
-    log.warning("User %s is deleting KB post with id=%s" % (request.user, post.id))
+    log.warning("User {} is deleting KB post with id={}".format(request.user, post.id))
     post.delete()
 
     try:

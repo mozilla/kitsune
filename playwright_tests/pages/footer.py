@@ -1,6 +1,7 @@
-from playwright.sync_api import Page, ElementHandle
-from playwright_tests.core.basepage import BasePage
+from playwright.sync_api import ElementHandle, Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+
+from playwright_tests.core.basepage import BasePage
 
 
 class FooterSection(BasePage):

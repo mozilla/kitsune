@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+
 from playwright_tests.pages.messaging_system_pages.inbox_page import InboxPage
 from playwright_tests.pages.messaging_system_pages.new_message import NewMessagePage
 from playwright_tests.pages.messaging_system_pages.sent_messages import SentMessagePage

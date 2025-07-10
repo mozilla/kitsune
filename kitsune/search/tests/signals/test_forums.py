@@ -1,8 +1,8 @@
-from kitsune.search.tests import Elastic7TestCase
-from kitsune.forums.tests import PostFactory
 from elasticsearch.exceptions import NotFoundError
 
+from kitsune.forums.tests import PostFactory
 from kitsune.search.documents import ForumDocument
+from kitsune.search.tests import Elastic7TestCase
 
 
 class ForumDocumentSignalsTests(Elastic7TestCase):

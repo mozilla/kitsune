@@ -1,11 +1,10 @@
 # ported from https://github.com/willkg/django-eadred
 
 import imp
+from importlib import import_module
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from importlib import import_module
 
 
 class Command(BaseCommand):
@@ -46,9 +45,9 @@ class Command(BaseCommand):
             except ImportError:
                 continue
 
-            module = import_module("%s.sampledata" % app)
+            module = import_module("{}.sampledata".format(app))
             if hasattr(module, "generate_sampledata"):
-                self.stdout.write("Generating sample data from %s...\n" % app)
+                self.stdout.write("Generating sample data from {}...\n".format(app))
                 module.generate_sampledata(options)
 
         self.stdout.write("Done!\n")

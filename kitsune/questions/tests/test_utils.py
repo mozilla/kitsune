@@ -15,8 +15,8 @@ from kitsune.questions.utils import (
     num_questions,
     num_solutions,
     process_classification_result,
-    remove_pii,
     remove_home_dir_pii,
+    remove_pii,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
@@ -114,7 +114,7 @@ class GetMobileProductFromUATests(TestCase):
             ("Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0", "mobile"),
             ("Mozilla/5.0 (Android 4.4; Tablet; rv:41.0) Gecko/41.0 Firefox/41.0", "mobile"),
             (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/7.0.4 Mobile/16B91 Safari/605.1.15",  # noqa: E501
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/7.0.4 Mobile/16B91 Safari/605.1.15",
                 "ios",
             ),
             (
@@ -122,11 +122,11 @@ class GetMobileProductFromUATests(TestCase):
                 "mobile",
             ),
             (
-                "Mozilla/5.0 (Linux; Android 8.1.0; Redmi 6A Build/O11019; rv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Rocket/1.9.2(13715) Chrome/76.0.3809.132 Mobile Safari/537.36",  # noqa: E501
+                "Mozilla/5.0 (Linux; Android 8.1.0; Redmi 6A Build/O11019; rv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Rocket/1.9.2(13715) Chrome/76.0.3809.132 Mobile Safari/537.36",
                 "firefox-lite",
             ),
             (  # Chrome on Android:
-                "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36",  # noqa: E501
+                "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36",
                 None,
             ),
         ]
@@ -226,9 +226,9 @@ class ProcessClassificationResultTests(TestCase):
 
     def test_spam_result(self):
         question = QuestionFactory(topic=self.topic1)
-        classification_result = dict(
-            action=ModerationAction.SPAM,
-        )
+        classification_result = {
+            "action": ModerationAction.SPAM,
+        }
         self.assertFalse(question.is_spam)
         self.assertIsNone(question.marked_as_spam)
         self.assertIsNone(question.marked_as_spam_by)
@@ -244,10 +244,10 @@ class ProcessClassificationResultTests(TestCase):
 
     def test_flagged_result(self):
         question = QuestionFactory(topic=self.topic1)
-        classification_result = dict(
-            action=ModerationAction.FLAG_REVIEW,
-            spam_result=dict(reason="I think it is spam?"),
-        )
+        classification_result = {
+            "action": ModerationAction.FLAG_REVIEW,
+            "spam_result": {"reason": "I think it is spam?"},
+        }
 
         q_ct = ContentType.objects.get_for_model(question)
 
@@ -276,13 +276,13 @@ class ProcessClassificationResultTests(TestCase):
 
     def test_topic_result_with_change(self):
         question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
-        classification_result = dict(
-            action=ModerationAction.NOT_SPAM,
-            topic_result=dict(
-                topic=self.topic2.title,
-                reason="Dude, it is so topic2.",
-            ),
-        )
+        classification_result = {
+            "action": ModerationAction.NOT_SPAM,
+            "topic_result": {
+                "topic": self.topic2.title,
+                "reason": "Dude, it is so topic2.",
+            },
+        }
 
         q_ct = ContentType.objects.get_for_model(question)
 
@@ -291,7 +291,7 @@ class ProcessClassificationResultTests(TestCase):
             FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
         )
         self.assertEqual(question.topic, self.topic1)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
+        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic1.slug})
 
         process_classification_result(question, classification_result)
 
@@ -299,7 +299,7 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic2)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic2.slug})
+        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic2.slug})
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,
@@ -313,13 +313,13 @@ class ProcessClassificationResultTests(TestCase):
 
     def test_topic_result_with_no_initial_topic(self):
         question = QuestionFactory(topic=None)
-        classification_result = dict(
-            action=ModerationAction.NOT_SPAM,
-            topic_result=dict(
-                topic=self.topic2.title,
-                reason="Dude, it is so topic2.",
-            ),
-        )
+        classification_result = {
+            "action": ModerationAction.NOT_SPAM,
+            "topic_result": {
+                "topic": self.topic2.title,
+                "reason": "Dude, it is so topic2.",
+            },
+        }
 
         q_ct = ContentType.objects.get_for_model(question)
 
@@ -336,7 +336,7 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic2)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic2.slug})
+        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic2.slug})
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,
@@ -350,13 +350,13 @@ class ProcessClassificationResultTests(TestCase):
 
     def test_topic_result_with_no_change(self):
         question = QuestionFactory(topic=self.topic1, tags=[self.topic1.slug])
-        classification_result = dict(
-            action=ModerationAction.NOT_SPAM,
-            topic_result=dict(
-                topic=self.topic1.title,
-                reason="Dude, it is so topic1.",
-            ),
-        )
+        classification_result = {
+            "action": ModerationAction.NOT_SPAM,
+            "topic_result": {
+                "topic": self.topic1.title,
+                "reason": "Dude, it is so topic1.",
+            },
+        }
 
         q_ct = ContentType.objects.get_for_model(question)
 
@@ -365,7 +365,7 @@ class ProcessClassificationResultTests(TestCase):
             FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
         )
         self.assertEqual(question.topic, self.topic1)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
+        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic1.slug})
 
         process_classification_result(question, classification_result)
 
@@ -373,7 +373,7 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic1)
-        self.assertEqual(set(tag.name for tag in question.my_tags), {self.topic1.slug})
+        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic1.slug})
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,

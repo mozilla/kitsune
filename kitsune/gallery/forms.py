@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _lazy, gettext as _
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.gallery.models import Image
 from kitsune.lib.sumo_locales import LOCALES
@@ -64,7 +65,7 @@ class MediaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.is_ajax = kwargs.pop("is_ajax", True)
-        super(MediaForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not self.is_ajax:
             self.fields["locale"].required = True
             self.fields["title"].required = True
@@ -85,7 +86,7 @@ class ImageForm(MediaForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ImageForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         msg = _(
             "Accepted formats include: PNG, JPEG, GIF. "
             '<a target="_blank" href="{learn_more}">Learn more...</a>'

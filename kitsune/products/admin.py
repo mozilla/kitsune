@@ -85,11 +85,11 @@ class ProductTopicInline(admin.TabularInline):
 
 
 class TopicAdmin(admin.ModelAdmin):
-    def parent(obj):
-        return obj.parent
+    def parent(self):
+        return self.parent
 
-    def get_products(obj):
-        return ", ".join([p.title for p in obj.products.all()])
+    def get_products(self):
+        return ", ".join([p.title for p in self.products.all()])
 
     form = MetadataForm
 

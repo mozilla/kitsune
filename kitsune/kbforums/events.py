@@ -64,7 +64,7 @@ class NewPostEvent(InstanceEvent):
     content_type = Thread
 
     def __init__(self, reply):
-        super(NewPostEvent, self).__init__(reply.thread)
+        super().__init__(reply.thread)
         # Need to store the reply for _mails
         self.reply = reply
 
@@ -102,7 +102,7 @@ class NewThreadEvent(InstanceEvent):
     content_type = Document
 
     def __init__(self, post):
-        super(NewThreadEvent, self).__init__(post.thread.document)
+        super().__init__(post.thread.document)
         # Need to store the post for _mails
         self.post = post
 
@@ -131,7 +131,7 @@ class _NewActivityInLocaleEvent(Event):
     filters = {"locale"}
 
     def __init__(self, document):
-        super(_NewActivityInLocaleEvent, self).__init__()
+        super().__init__()
         self.document = document
         self.locale = document.locale
 
@@ -146,7 +146,7 @@ class NewPostInLocaleEvent(_NewActivityInLocaleEvent):
     event_type = "kbthread reply in locale"
 
     def __init__(self, reply):
-        super(NewPostInLocaleEvent, self).__init__(reply.thread.document)
+        super().__init__(reply.thread.document)
         # Need to store the reply for _mails
         self.reply = reply
 
@@ -173,7 +173,7 @@ class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
     event_type = "kbforum thread in locale"
 
     def __init__(self, post):
-        super(NewThreadInLocaleEvent, self).__init__(post.thread.document)
+        super().__init__(post.thread.document)
         # Need to store the post for _mails
         self.post = post
 

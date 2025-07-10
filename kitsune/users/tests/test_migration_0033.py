@@ -1,18 +1,18 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
 from django.db.models import Q
+from django.test import TestCase
 
+from kitsune.forums.tests import PostFactory, ThreadFactory
+from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.questions.tests import (
     AnswerFactory,
+    AnswerVoteFactory,
     QuestionFactory,
     QuestionVoteFactory,
-    AnswerVoteFactory,
 )
 from kitsune.users.tests import ProfileFactory
 from kitsune.wiki.tests import RevisionFactory
-from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.gallery.tests import ImageFactory, VideoFactory
-from kitsune.forums.tests import ThreadFactory, PostFactory
 
 
 class TestDeleteNonMigratedUsersMigrationQuery(TestCase):

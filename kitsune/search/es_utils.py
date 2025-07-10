@@ -100,9 +100,11 @@ def es_client(**kwargs):
     return Elasticsearch(**kwargs)
 
 
-def get_doc_types(paths=["kitsune.search.documents"]):
+def get_doc_types(paths=None):
     """Return all registered document types"""
 
+    if paths is None:
+        paths = ["kitsune.search.documents"]
     doc_types = []
     modules = [importlib.import_module(path) for path in paths]
 

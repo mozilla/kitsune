@@ -1,15 +1,18 @@
-from slugify import slugify
-from playwright_tests.core.utilities import Utilities
-import pytest
 import allure
+import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
+from slugify import slugify
+
+from kitsune.settings import FALLBACK_LANGUAGES, NON_SUPPORTED_LOCALES, SUMO_LANGUAGES
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages)
-from playwright_tests.messages.explore_help_articles.kb_translation_messages import \
-    KbTranslationMessages
+    KBArticlePageMessages,
+)
+from playwright_tests.messages.explore_help_articles.kb_translation_messages import (
+    KbTranslationMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from kitsune.settings import SUMO_LANGUAGES, FALLBACK_LANGUAGES, NON_SUPPORTED_LOCALES
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

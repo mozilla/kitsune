@@ -246,7 +246,7 @@ class ThreadsTemplateTests(TestCase):
         doc = pq(response.content)
         last_post_link = doc(".threads .last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
-        self.assertEqual(href.split("#")[1], "post-%s" % last.id)
+        self.assertEqual(href.split("#")[1], "post-{}".format(last.id))
 
     def test_empty_thread_errors(self):
         """Posting an empty thread shows errors."""
@@ -339,7 +339,7 @@ class ThreadsTemplateTests(TestCase):
 
         response = get(self.client, "forums.threads", args=[f.slug])
         self.assertEqual(
-            "%s/en-US/forums/%s/" % (settings.CANONICAL_URL, f.slug),
+            "{}/en-US/forums/{}/".format(settings.CANONICAL_URL, f.slug),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
 
@@ -370,7 +370,7 @@ class ForumsTemplateTests(TestCase):
         doc = pq(response.content)
         last_post_link = doc(".forums .last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
-        self.assertEqual(href.split("#")[1], "post-%s" % p.id)
+        self.assertEqual(href.split("#")[1], "post-{}".format(p.id))
 
     def test_restricted_is_invisible(self):
         """Forums with restricted view_in permission shouldn't show up."""

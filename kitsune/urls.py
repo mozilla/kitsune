@@ -16,7 +16,7 @@ from kitsune.sumo.monkeypatch import patch
 
 patch()
 
-from django.contrib import admin  # noqa
+from django.contrib import admin
 
 admin.autodiscover()
 
@@ -84,7 +84,7 @@ if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip("/").rstrip("/")
     urlpatterns += [
         re_path(
-            r"^%s/(?P<path>.*)$" % media_url,
+            r"^{}/(?P<path>.*)$".format(media_url),
             sumo_views.serve_cors,
             {"document_root": settings.MEDIA_ROOT},
         ),

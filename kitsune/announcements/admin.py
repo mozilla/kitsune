@@ -22,7 +22,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
     def is_visible(self, obj):
         visible = obj.is_visible()
         if visible and obj.show_until:
-            return "Yes (until %s)" % obj.show_until
+            return "Yes (until {})".format(obj.show_until)
         elif visible:
             return "Yes (always)"
         return ""

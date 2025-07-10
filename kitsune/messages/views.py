@@ -101,7 +101,7 @@ def new_message(request):
             text=form.cleaned_data["message"],
             sender=request.user,
         )
-        if "in_reply_to" in form.cleaned_data and form.cleaned_data["in_reply_to"]:
+        if form.cleaned_data.get("in_reply_to"):
             InboxMessage.objects.filter(
                 pk=form.cleaned_data["in_reply_to"], to=request.user
             ).update(replied=True)
@@ -123,17 +123,16 @@ def bulk_action(request, msgtype="inbox"):
         contrib_messages.add_message(
             request, contrib_messages.ERROR, _("No messages selected. Please try again.")
         )
-    else:
-        if "delete" in request.POST:
-            return delete(request, msgtype=msgtype)
-        elif "mark_read" in request.POST and msgtype == "inbox":
-            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
-            messages.update(read=True)
-        elif "mark_unread" in request.POST and msgtype == "inbox":
-            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
-            messages.update(read=False)
+    elif "delete" in request.POST:
+        return delete(request, msgtype=msgtype)
+    elif "mark_read" in request.POST and msgtype == "inbox":
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+        messages.update(read=True)
+    elif "mark_unread" in request.POST and msgtype == "inbox":
+        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+        messages.update(read=False)
 
-    return redirect("messages.%s" % msgtype)
+    return redirect("messages.{}".format(msgtype))
 
 
 @login_required
