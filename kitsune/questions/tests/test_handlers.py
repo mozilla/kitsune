@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta
+
 from django.conf import settings
 
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.handlers import AAQChain
+from kitsune.questions.handlers import AAQChain, OldSpamCleanupHandler
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import (
     AnswerFactory,
@@ -175,3 +177,85 @@ class TestAAQChain(TestCase):
         self.assertNotIn(
             "locked because the original author has deleted their account", last_answer.content
         )
+
+
+class TestOldSpamCleanupHandler(TestCase):
+    def setUp(self):
+        self.handler = OldSpamCleanupHandler()
+        self.user = UserFactory()
+
+    def test_cleanup_old_spam_questions_and_answers(self):
+        """Test that old spam questions and answers are deleted."""
+        old_date = datetime.now() - timedelta(days=100)
+        old_spam_q = QuestionFactory(creator=self.user, is_spam=True, marked_as_spam=old_date)
+        old_spam_a = AnswerFactory(creator=self.user, is_spam=True, marked_as_spam=old_date)
+
+        recent_spam_q = QuestionFactory(
+            creator=self.user, is_spam=True, marked_as_spam=datetime.now()
+        )
+        recent_spam_a = AnswerFactory(
+            creator=self.user, is_spam=True, marked_as_spam=datetime.now()
+        )
+
+        normal_q = QuestionFactory(creator=self.user, is_spam=False)
+        normal_a = AnswerFactory(creator=self.user, is_spam=False)
+
+        result = self.handler.cleanup_old_spam()
+
+        self.assertFalse(Question.objects.filter(id=old_spam_q.id).exists())
+        self.assertFalse(Answer.objects.filter(id=old_spam_a.id).exists())
+
+        self.assertTrue(Question.objects.filter(id=recent_spam_q.id).exists())
+        self.assertTrue(Answer.objects.filter(id=recent_spam_a.id).exists())
+
+        self.assertTrue(Question.objects.filter(id=normal_q.id).exists())
+        self.assertTrue(Answer.objects.filter(id=normal_a.id).exists())
+
+        self.assertEqual(result["questions_deleted"], 1)
+        self.assertEqual(result["answers_deleted"], 1)
+        self.assertIsInstance(result["cutoff_date"], datetime)
+
+    def test_cleanup_with_custom_cutoff(self):
+        """Test cleanup with custom cutoff period."""
+        handler = OldSpamCleanupHandler(cutoff_months=1)
+
+        # Create spam content older than 1 month
+        old_date = datetime.now() - timedelta(days=35)
+        old_spam_q = QuestionFactory(creator=self.user, is_spam=True, marked_as_spam=old_date)
+
+        # Create spam content newer than 1 month
+        recent_date = datetime.now() - timedelta(days=25)
+        recent_spam_q = QuestionFactory(
+            creator=self.user, is_spam=True, marked_as_spam=recent_date
+        )
+
+        result = handler.cleanup_old_spam()
+
+        # Only the older spam should be deleted
+        self.assertFalse(Question.objects.filter(id=old_spam_q.id).exists())
+        self.assertTrue(Question.objects.filter(id=recent_spam_q.id).exists())
+
+        self.assertEqual(result["questions_deleted"], 1)
+        self.assertEqual(result["answers_deleted"], 0)
+
+    def test_cleanup_empty_result(self):
+        """Test cleanup when no old spam exists."""
+        # Create only recent spam
+        recent_spam_q = QuestionFactory(
+            creator=self.user, is_spam=True, marked_as_spam=datetime.now()
+        )
+
+        result = self.handler.cleanup_old_spam()
+
+        # Nothing should be deleted
+        self.assertTrue(Question.objects.filter(id=recent_spam_q.id).exists())
+        self.assertEqual(result["questions_deleted"], 0)
+        self.assertEqual(result["answers_deleted"], 0)
+
+    def test_cleanup_with_invalid_cutoff_months(self):
+        """Test that invalid cutoff_months raises ValueError."""
+        with self.assertRaises(ValueError):
+            OldSpamCleanupHandler(cutoff_months=0)
+
+        with self.assertRaises(ValueError):
+            OldSpamCleanupHandler(cutoff_months=-1)
