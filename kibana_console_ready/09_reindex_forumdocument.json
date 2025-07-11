@@ -1,0 +1,15 @@
+POST _reindex?wait_for_completion=false
+{
+  "source": {
+    "remote": {
+      "host": "https://sumo-nonprod-stage.es.us-west1.gcp.cloud.es.io:9243",
+      "headers": {
+        "Authorization": "ApiKey SFdHdng1Y0JvNVlzTWpVdkx1Y3U6MUhKaG9aV1ZRYXU5Y0t2dUt2NlJSUQ=="
+      }
+    },
+    "index": "sumo_stage_forumdocument_20221128102837"
+  },
+  "dest": {
+    "index": "sumo_stage_forumdocument_20221128102837"
+  }
+}
