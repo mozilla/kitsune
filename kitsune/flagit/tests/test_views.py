@@ -12,14 +12,14 @@ class FlagTestCase(TestCaseBase):
     """Test the flag view."""
 
     def setUp(self):
-        super(FlagTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.question = QuestionFactory(creator=self.user)
 
         self.client.login(username=self.user.username, password="testpass")
 
     def tearDown(self):
-        super(FlagTestCase, self).tearDown()
+        super().tearDown()
         self.client.logout()
 
     def test_flag(self):

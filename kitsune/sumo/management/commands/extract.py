@@ -4,8 +4,8 @@ import re
 import subprocess
 from pathlib import Path
 
-from django.core.management.base import BaseCommand, CommandError
 from babel.messages.frontend import CommandLineInterface
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):

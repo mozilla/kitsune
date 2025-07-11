@@ -1,12 +1,14 @@
 import allure
 import pytest
 from playwright.sync_api import Page
+from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
-    QuestionPageMessages
+from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import (
+    QuestionPageMessages,
+)
 from playwright_tests.messages.common_elements_messages import CommonElementsMessages
 from playwright_tests.pages.sumo_pages import SumoPages
-from pytest_check import check
 
 
 # C946237

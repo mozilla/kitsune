@@ -2,22 +2,30 @@ import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.contribute_messages.con_discussions.forum_moderators import \
-    ForumModerators
-from playwright_tests.messages.contribute_messages.con_discussions.con_discussions_messages import\
-    ConDiscussionsMessages
-from playwright_tests.messages.contribute_messages.con_discussions.localization_discussions \
-    import LocalizationDiscussionsMessages
-from playwright_tests.messages.contribute_messages.con_discussions.mobile_support import \
-    MobileSupportForumMessages
-from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
-    OffTopicForumMessages
-from playwright_tests.messages.contribute_messages.con_discussions.social_support import \
-    SocialSupportForumMessages
+from playwright_tests.messages.contribute_messages.con_discussions.con_discussions_messages import (
+    ConDiscussionsMessages,
+)
+from playwright_tests.messages.contribute_messages.con_discussions.forum_moderators import (
+    ForumModerators,
+)
+from playwright_tests.messages.contribute_messages.con_discussions.localization_discussions import (
+    LocalizationDiscussionsMessages,
+)
+from playwright_tests.messages.contribute_messages.con_discussions.mobile_support import (
+    MobileSupportForumMessages,
+)
+from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
+    OffTopicForumMessages,
+)
+from playwright_tests.messages.contribute_messages.con_discussions.social_support import (
+    SocialSupportForumMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import \
-    MyProfileMessages
+from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
+    MyProfileMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

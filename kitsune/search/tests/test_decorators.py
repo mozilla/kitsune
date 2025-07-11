@@ -1,16 +1,17 @@
-from kitsune.search.tests import Elastic7TestCase
-from kitsune.search.decorators import search_receiver
 from django.db.models.signals import m2m_changed
-from kitsune.questions.tests import QuestionFactory
-from kitsune.questions.models import Question
 from django.test.utils import override_settings
+
+from kitsune.questions.models import Question
+from kitsune.questions.tests import QuestionFactory
+from kitsune.search.decorators import search_receiver
+from kitsune.search.tests import Elastic7TestCase
 
 
 class SearchReceiverTestCase(Elastic7TestCase):
     def setUp(self):
         @search_receiver(m2m_changed, Question.tags.through)
         def receiver(instance, **kwargs):
-            assert False, f"function was called with action {kwargs['action']}"
+            raise AssertionError(f"function was called with action {kwargs['action']}")
 
         self.receiver = receiver
 

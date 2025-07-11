@@ -43,7 +43,7 @@ class InboxMessage(ModelBase):
 
     def __str__(self):
         s = self.message[0:30]
-        return "to:%s from:%s %s" % (self.to, self.sender, s)
+        return "to:{} from:{} {}".format(self.to, self.sender, s)
 
     @property
     def content_parsed(self):
@@ -65,7 +65,7 @@ class OutboxMessage(ModelBase):
     def __str__(self):
         to = ", ".join([u.username for u in self.to.all()])
         to_group = ", ".join([g.name for g in self.to_group.all()]) or None
-        return "from:%s to:%s groups:%s %s" % (self.sender, to, to_group, self.message[0:30])
+        return "from:{} to:{} groups:{} {}".format(self.sender, to, to_group, self.message[0:30])
 
     @property
     def content_parsed(self):

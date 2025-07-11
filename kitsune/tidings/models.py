@@ -27,7 +27,7 @@ def multi_raw(query, params, models, model_to_fields):
     for row in rows:
         row_iter = iter(row)
         yield [
-            model_class(**dict((a, next(row_iter)) for a in model_to_fields[model_class]))
+            model_class(**{a: next(row_iter) for a in model_to_fields[model_class]})
             for model_class in models
         ]
 
@@ -66,7 +66,7 @@ class Watch(ModelBase):
         # TODO: Trace event_type back to find the Event subclass, and ask it
         # how to describe me in English.
         rest = self.content_object or self.content_type or self.object_id
-        return "id=%s, type=%s, content_object=%s" % (
+        return "id={}, type={}, content_object={}".format(
             self.pk,
             self.event_type,
             str(rest),
@@ -83,11 +83,11 @@ class Watch(ModelBase):
 
     def unsubscribe_url(self):
         """Return the absolute URL to visit to delete me."""
-        server_relative = "%s?s=%s" % (
+        server_relative = "{}?s={}".format(
             reverse("tidings.unsubscribe", args=[self.pk]),
             self.secret,
         )
-        return "https://%s%s" % (Site.objects.get_current().domain, server_relative)
+        return "https://{}{}".format(Site.objects.get_current().domain, server_relative)
 
 
 class WatchFilter(ModelBase):
@@ -102,7 +102,7 @@ class WatchFilter(ModelBase):
     #: small.
     value = models.PositiveBigIntegerField()
 
-    class Meta(object):
+    class Meta:
         # There's no particular reason we couldn't allow multiple values for
         # one name to be ORed together, but the API needs a little work
         # (accepting lists passed to notify()) to support that.
@@ -111,7 +111,7 @@ class WatchFilter(ModelBase):
         unique_together = ("name", "watch")
 
     def __str__(self):
-        return "WatchFilter %s: %s=%s" % (self.pk, self.name, self.value)
+        return "WatchFilter {}: {}={}".format(self.pk, self.name, self.value)
 
 
 class NotificationsMixin(models.Model):
@@ -123,7 +123,7 @@ class NotificationsMixin(models.Model):
 
     watches = GenericRelation(Watch)
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
 
@@ -138,7 +138,7 @@ class EmailUser(AnonymousUser):
         self.email = email
 
     def __str__(self):
-        return "Anonymous user <%s>" % self.email
+        return "Anonymous user <{}>".format(self.email)
 
     __repr__ = AnonymousUser.__str__
 

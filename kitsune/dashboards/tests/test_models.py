@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from unittest.mock import patch
 
 from kitsune.dashboards import LAST_7_DAYS

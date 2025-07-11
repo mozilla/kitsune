@@ -12,7 +12,7 @@ from kitsune.upload.tasks import generate_thumbnail
 class ImageTestCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
-        super(ImageTestCase, self).tearDown()
+        super().tearDown()
 
     def test_thumbnail_url_if_set(self, create_thumbnail_mock):
         """thumbnail_url_if_set() returns self.thumbnail if set, or else

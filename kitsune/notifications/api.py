@@ -1,20 +1,19 @@
-from django import forms
-from django.db.models import Q
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
-
 import django_filters
 from actstream.models import Action
-from rest_framework import serializers, viewsets, permissions, mixins, status
+from django import forms
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.notifications.models import (
-    PushNotificationRegistration,
     Notification,
+    PushNotificationRegistration,
     RealtimeRegistration,
 )
-from kitsune.sumo.api_utils import OnlyCreatorEdits, DateTimeUTCField, GenericRelatedField
+from kitsune.sumo.api_utils import DateTimeUTCField, GenericRelatedField, OnlyCreatorEdits
 
 
 class OnlyOwner(permissions.BasePermission):
@@ -56,7 +55,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class NotificationFilter(django_filters.FilterSet):
     is_read = django_filters.BooleanFilter(method="filter_is_read", widget=forms.TextInput)
 
-    class Meta(object):
+    class Meta:
         model = Notification
         fields = [
             "is_read",
@@ -81,7 +80,7 @@ class NotificationViewSet(
     pagination_class = None
 
     def get_queryset(self, *args, **kwargs):
-        qs = super(NotificationViewSet, self).get_queryset(*args, **kwargs)
+        qs = super().get_queryset(*args, **kwargs)
         return qs.filter(owner=self.request.user)
 
     @action(detail=True, methods=["post"])
@@ -116,7 +115,7 @@ class PushNotificationRegistrationSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        authed_user = getattr(self.context.get("request"), "user")
+        authed_user = self.context.get("request").user
         creator = data.get("creator")
 
         if creator is None:
@@ -161,8 +160,8 @@ class RealtimeRegistrationSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        data = super(RealtimeRegistrationSerializer, self).validate(data)
-        authed_user = getattr(self.context.get("request"), "user")
+        data = super().validate(data)
+        authed_user = self.context.get("request").user
         creator = data.get("creator")
 
         if creator is None:

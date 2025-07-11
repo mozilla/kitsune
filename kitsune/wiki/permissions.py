@@ -2,21 +2,20 @@ import logging
 
 from django.conf import settings
 
-
 log = logging.getLogger("k.wiki")
 
 
 # Why is this a mixin if it can only be used for the Document model?
 # Good question! My only good reason is to keep the permission related
 # code organized and contained in one place.
-class DocumentPermissionMixin(object):
+class DocumentPermissionMixin:
     """Adds of permission checking methods to the Document model."""
 
     def allows(self, user, action):
         """Check if the user has the permission on the document."""
 
         # If this is kicking up a KeyError it's probably because you typoed!
-        return getattr(self, "_allows_%s" % action)(user)
+        return getattr(self, "_allows_{}".format(action))(user)
 
     def _allows_create_revision(self, user):
         """Can the user create a revision for the document?"""

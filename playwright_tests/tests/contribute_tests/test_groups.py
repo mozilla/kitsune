@@ -1,8 +1,10 @@
 import os
+
 import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.user_groups_messages import UserGroupMessages
 from playwright_tests.pages.sumo_pages import SumoPages

@@ -116,7 +116,7 @@ def _key_split(matchobj):
 
     """
     keys = [k.strip() for k in matchobj.group(1).split("+")]
-    return r" + ".join(['<span class="key">%s</span>' % key for key in keys])
+    return r" + ".join(['<span class="key">{}</span>'.format(key) for key in keys])
 
 
 PATTERNS = [
@@ -141,7 +141,7 @@ def parse_simple_syntax(text):
     return text
 
 
-class ForParser(object):
+class ForParser:
     """HTML 5 parser which finds <for> tags and translates them into spans and
     divs having the proper data- elements and classes.
 
@@ -213,7 +213,7 @@ class ForParser(object):
         html = serializer.render(stream)[container_len : -container_len - 1]
         return bleach.clean(
             html,
-            tags=kwargs.get("tags") or (ALLOWED_TAGS + ["for"]),
+            tags=kwargs.get("tags") or ([*ALLOWED_TAGS, "for"]),
             attributes=kwargs.get("attributes") or ALLOWED_ATTRIBUTES,
             css_sanitizer=CSSSanitizer(
                 allowed_css_properties=kwargs.get("styles") or ALLOWED_STYLES
@@ -391,7 +391,7 @@ class WikiParser(sumo_parser.WikiParser):
             rather than after the first round of recursion.
 
         """
-        super(WikiParser, self).__init__(base_url)
+        super().__init__(base_url)
 
         # Stack of document IDs to prevent Include or Template recursion:
         self.inclusions = [doc_id] if doc_id else []
@@ -412,7 +412,7 @@ class WikiParser(sumo_parser.WikiParser):
         text = parse_simple_syntax(text)
 
         # Run the formatter:
-        html = super(WikiParser, self).parse(
+        html = super().parse(
             text, youtube_embeds=False, ui_component_embeds=False, **kwargs
         )
 
@@ -492,7 +492,7 @@ class WhatLinksHereParser(WikiParser):
 
     def __init__(self, doc_id, **kwargs):
         self.current_doc = Document.objects.get(pk=doc_id)
-        super(WhatLinksHereParser, self).__init__(doc_id=doc_id, **kwargs)
+        super().__init__(doc_id=doc_id, **kwargs)
 
     def _hook_internal_link(self, parser, space, name):
         """Records links between documents, and then calls super()."""
@@ -506,7 +506,7 @@ class WhatLinksHereParser(WikiParser):
         linked_doc = get_object_fallback(Document, title, locale)
         if linked_doc is not None:
             self.current_doc.add_link_to(linked_doc, "link")
-        return super(WhatLinksHereParser, self)._hook_internal_link(parser, space, name)
+        return super()._hook_internal_link(parser, space, name)
 
     def _hook_template(self, parser, space, name):
         """Record a template link between documents, and then call super()."""
@@ -519,7 +519,7 @@ class WhatLinksHereParser(WikiParser):
         if template:
             self.current_doc.add_link_to(template, "template")
 
-        return super(WhatLinksHereParser, self)._hook_template(parser, space, name)
+        return super()._hook_template(parser, space, name)
 
     def _hook_include(self, parser, space, name):
         """Record an include link between documents, and then call super()."""
@@ -528,7 +528,7 @@ class WhatLinksHereParser(WikiParser):
         if include:
             self.current_doc.add_link_to(include, "include")
 
-        return super(WhatLinksHereParser, self)._hook_include(parser, space, name)
+        return super()._hook_include(parser, space, name)
 
     def _hook_image_tag(self, parser, space, name):
         """Record an image is included in a document, then call super()."""
@@ -538,4 +538,4 @@ class WhatLinksHereParser(WikiParser):
         if image:
             self.current_doc.add_image(image)
 
-        return super(WhatLinksHereParser, self)._hook_image_tag(parser, space, name)
+        return super()._hook_image_tag(parser, space, name)

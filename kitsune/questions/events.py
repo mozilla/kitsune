@@ -18,7 +18,7 @@ class QuestionEvent(InstanceEvent):
     content_type = Question
 
     def __init__(self, answer):
-        super(QuestionEvent, self).__init__(answer.question)
+        super().__init__(answer.question)
         self.answer = answer
 
     @classmethod
@@ -103,13 +103,12 @@ class QuestionReplyEvent(QuestionEvent):
             is_asker = asker_id == user.id
             if is_asker:
                 subject = _(
-                    '%s posted an answer to your question "%s"'
-                    % (display_name(self.answer.creator), self.instance.title)
+                    '{} posted an answer to your question "{}"'.format(display_name(self.answer.creator), self.instance.title)
                 )
                 text_template = "questions/email/new_answer_to_asker.ltxt"
                 html_template = "questions/email/new_answer_to_asker.html"
             else:
-                subject = _("Re: %s" % self.instance.title)
+                subject = _("Re: {}".format(self.instance.title))
                 text_template = "questions/email/new_answer.ltxt"
                 html_template = "questions/email/new_answer.html"
 

@@ -1,11 +1,14 @@
 from typing import Any
 
-from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.explore_help_articles.kb_article_page_messages import \
-    KBArticlePageMessages
-from playwright_tests.pages.explore_help_articles.articles.kb_article_discussion_page import \
-    KBArticleDiscussionPage
 from playwright.sync_api import Page
+
+from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
+    KBArticlePageMessages,
+)
+from playwright_tests.pages.explore_help_articles.articles.kb_article_discussion_page import (
+    KBArticleDiscussionPage,
+)
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 
 

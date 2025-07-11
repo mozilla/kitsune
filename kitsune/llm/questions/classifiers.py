@@ -4,15 +4,15 @@ from django.db import models
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 
 from kitsune.llm.questions.prompt import (
+    DEFAULT_PRODUCT_RESULT,
+    DEFAULT_SPAM_RESULT,
+    DEFAULT_TOPIC_RESULT,
     product_parser,
     product_prompt,
     spam_parser,
     spam_prompt,
     topic_parser,
     topic_prompt,
-    DEFAULT_SPAM_RESULT,
-    DEFAULT_TOPIC_RESULT,
-    DEFAULT_PRODUCT_RESULT,
 )
 from kitsune.llm.utils import build_chain_with_retry, get_llm
 from kitsune.products.utils import get_products, get_taxonomy

@@ -118,7 +118,7 @@ class DocumentTests(TestCase):
     """Tests for the Document template"""
 
     def setUp(self):
-        super(DocumentTests, self).setUp()
+        super().setUp()
         ProductFactory()
 
     def test_document_view(self):
@@ -504,7 +504,7 @@ class RevisionTests(TestCase):
     """Tests for the Revision template"""
 
     def setUp(self):
-        super(RevisionTests, self).setUp()
+        super().setUp()
         self.client.logout()
 
     def test_revision_view(self):
@@ -519,7 +519,7 @@ class RevisionTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual("Revision id: %s" % r.id, doc("div.revision-info li").first().text())
+        self.assertEqual("Revision id: {}".format(r.id), doc("div.revision-info li").first().text())
         self.assertEqual(d.title, doc("h1.sumo-page-heading").text())
         self.assertEqual(pq(r.content_parsed)("div").text(), doc("#doc-content div").text())
         self.assertEqual(
@@ -639,7 +639,7 @@ class NewDocumentTests(TestCase):
     """Tests for the New Document template"""
 
     def setUp(self):
-        super(NewDocumentTests, self).setUp()
+        super().setUp()
 
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
@@ -672,7 +672,7 @@ class NewDocumentTests(TestCase):
         data = new_document_data()
         response = self.client.post(reverse("wiki.new_document"), data, follow=True)
         d = Document.objects.get(title=data["title"])
-        self.assertEqual([("/en-US/kb/%s/history" % d.slug, 302)], response.redirect_chain)
+        self.assertEqual([("/en-US/kb/{}/history".format(d.slug), 302)], response.redirect_chain)
         self.assertEqual(settings.WIKI_DEFAULT_LANGUAGE, d.locale)
         self.assertEqual(data["category"], d.category)
         r = d.revisions.all()[0]
@@ -801,7 +801,7 @@ class NewRevisionTests(TestCase):
     """Tests for the New Revision template"""
 
     def setUp(self):
-        super(NewRevisionTests, self).setUp()
+        super().setUp()
         rev = ApprovedRevisionFactory(document__topics=[])
         self.d = rev.document
 
@@ -901,7 +901,7 @@ class NewRevisionTests(TestCase):
         self.assertEqual(2, len(mail.outbox))
         attrs_eq(
             mail.outbox[0],
-            subject="%s is ready for review (%s)" % (self.d.title, new_rev.creator),
+            subject="{} is ready for review ({})".format(self.d.title, new_rev.creator),
             body=READY_FOR_REVIEW_EMAIL_CONTENT
             % {
                 "user": self.user.profile.name,
@@ -917,7 +917,7 @@ class NewRevisionTests(TestCase):
         )
         attrs_eq(
             mail.outbox[1],
-            subject="%s was edited by %s" % (self.d.title, new_rev.creator),
+            subject="{} was edited by {}".format(self.d.title, new_rev.creator),
             body=DOCUMENT_EDITED_EMAIL_CONTENT
             % {
                 "user": self.user.profile.name,
@@ -1204,7 +1204,7 @@ class HistoryTests(TestCase):
     """Test the history listing of a document."""
 
     def setUp(self):
-        super(HistoryTests, self).setUp()
+        super().setUp()
         self.client.login(username="admin", password="testpass")
 
     def test_history_noindex(self):
@@ -1256,7 +1256,7 @@ class DocumentEditTests(TestCase):
     """Test the editing of document level fields."""
 
     def setUp(self):
-        super(DocumentEditTests, self).setUp()
+        super().setUp()
         self.d = _create_document()
 
         u = UserFactory()
@@ -1358,7 +1358,7 @@ class DocumentListTests(TestCase):
     """Tests for the All and Category template"""
 
     def setUp(self):
-        super(DocumentListTests, self).setUp()
+        super().setUp()
         self.locale = settings.WIKI_DEFAULT_LANGUAGE
         self.doc = _create_document(locale=self.locale)
         _create_document(locale=self.locale, title="Another one")
@@ -1475,7 +1475,7 @@ class ReviewRevisionTests(TestCase):
     """Tests for Review Revisions and Translations"""
 
     def setUp(self):
-        super(ReviewRevisionTests, self).setUp()
+        super().setUp()
         self.document = _create_document()
         user_ = UserFactory()
         self.revision = Revision(
@@ -1584,7 +1584,7 @@ class ReviewRevisionTests(TestCase):
         attrs_eq(
             mail.outbox[0],
             subject=(
-                "{0} ({1}) has a new approved revision ({2})".format(
+                "{} ({}) has a new approved revision ({})".format(
                     self.document.title, self.document.locale, self.user.username
                 )
             ),
@@ -1718,7 +1718,7 @@ class ReviewRevisionTests(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{0}{1}?next=/en-US/kb/test-document/review/{2}".format(
+            "/{}{}?next=/en-US/kb/test-document/review/{}".format(
                 settings.LANGUAGE_CODE, settings.LOGIN_URL, str(self.revision.id)
             ),
             redirect[0],
@@ -1927,7 +1927,7 @@ class ReviewRevisionTests(TestCase):
         d = self.document
         # Create 7 Revisions in the Document
         revs = [
-            RevisionFactory(document=d, is_approved=False, comment="test-{0}".format(i))
+            RevisionFactory(document=d, is_approved=False, comment="test-{}".format(i))
             for i in range(7)
         ]
         # Create a user with Review permission and login with the user
@@ -1993,7 +1993,7 @@ class CompareRevisionTests(TestCase):
     """Tests for Review Revisions"""
 
     def setUp(self):
-        super(CompareRevisionTests, self).setUp()
+        super().setUp()
         self.document = _create_document()
         self.revision1 = self.document.current_revision
         u = UserFactory()
@@ -2052,7 +2052,7 @@ class TranslateTests(TestCase):
     """Tests for the Translate page"""
 
     def setUp(self):
-        super(TranslateTests, self).setUp()
+        super().setUp()
         self.d = _create_document()
 
         self.user = UserFactory()
@@ -2290,7 +2290,7 @@ class TranslateTests(TestCase):
         self.assertEqual(200, response.status_code)
         # Get the link to the rev on the right side of the diff:
         to_link = pq(response.content)(".revision-diff h3 a")[1].attrib["href"]
-        assert to_link.endswith("/%s" % ready.pk)
+        assert to_link.endswith("/{}".format(ready.pk))
 
     def test_translate_no_update_based_on(self):
         """Test translating based on a non-current revision."""
@@ -2395,7 +2395,7 @@ class DocumentWatchTests(TestCase):
     """Tests for un/subscribing to document edit notifications."""
 
     def setUp(self):
-        super(DocumentWatchTests, self).setUp()
+        super().setUp()
         self.document = _create_document()
         ProductFactory()
 
@@ -2430,7 +2430,7 @@ class LocaleWatchTests(TestCase):
     """Tests for un/subscribing to a locale's ready for review emails."""
 
     def setUp(self):
-        super(LocaleWatchTests, self).setUp()
+        super().setUp()
 
         self.user = UserFactory()
         self.client.login(username=self.user, password="testpass")
@@ -2477,7 +2477,7 @@ class ArticlePreviewTests(TestCase):
     """Tests for preview view and template."""
 
     def setUp(self):
-        super(ArticlePreviewTests, self).setUp()
+        super().setUp()
 
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
@@ -2527,7 +2527,7 @@ class ArticlePreviewTests(TestCase):
 
 class HelpfulVoteTests(TestCase):
     def setUp(self):
-        super(HelpfulVoteTests, self).setUp()
+        super().setUp()
 
         self.document = _create_document()
         ProductFactory()
@@ -2556,7 +2556,7 @@ class HelpfulVoteTests(TestCase):
         assert votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
         self.assertEqual(2, len(metadata))
-        metadata_dict = dict((k, v) for (k, v) in metadata)
+        metadata_dict = dict(metadata)
         self.assertEqual(referrer, metadata_dict["referrer"])
         self.assertEqual(query, metadata_dict["query"])
 
@@ -2584,7 +2584,7 @@ class HelpfulVoteTests(TestCase):
         assert not votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
         self.assertEqual(1, len(metadata))
-        metadata_dict = dict((k, v) for (k, v) in metadata)
+        metadata_dict = dict(metadata)
         self.assertEqual(referrer, metadata_dict["referrer"])
 
     def test_vote_anonymous(self):
@@ -2610,7 +2610,7 @@ class HelpfulVoteTests(TestCase):
         assert votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
         self.assertEqual(2, len(metadata))
-        metadata_dict = dict((k, v) for (k, v) in metadata)
+        metadata_dict = dict(metadata)
         self.assertEqual(referrer, metadata_dict["referrer"])
         self.assertEqual(query, metadata_dict["query"])
 
@@ -2692,7 +2692,7 @@ class SelectLocaleTests(TestCase):
     """Test the locale selection page"""
 
     def setUp(self):
-        super(SelectLocaleTests, self).setUp()
+        super().setUp()
         self.d = _create_document()
 
         u = UserFactory()
@@ -2730,8 +2730,7 @@ class RevisionDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/kb/%s/revision/%s/delete"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
+            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0],
         )
 
@@ -2739,8 +2738,7 @@ class RevisionDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/kb/%s/revision/%s/delete"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
+            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0],
         )
 
@@ -2823,7 +2821,7 @@ class ApprovedWatchTests(TestCase):
     """Tests for un/subscribing to revision approvals."""
 
     def setUp(self):
-        super(ApprovedWatchTests, self).setUp()
+        super().setUp()
 
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
@@ -2857,7 +2855,7 @@ class DocumentDeleteTestCase(TestCase):
     """Tests for document delete."""
 
     def setUp(self):
-        super(DocumentDeleteTestCase, self).setUp()
+        super().setUp()
         self.document = DocumentFactory()
         self.user = UserFactory(username="testuser")
 
@@ -2877,8 +2875,7 @@ class DocumentDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/kb/%s/delete"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
+            "/{}{}?next=/en-US/kb/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
             redirect[0],
         )
 
@@ -2886,8 +2883,7 @@ class DocumentDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/kb/%s/delete"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
+            "/{}{}?next=/en-US/kb/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
             redirect[0],
         )
 
@@ -3044,9 +3040,13 @@ def _create_document(
     title="Test Document",
     parent=None,
     locale=settings.WIKI_DEFAULT_LANGUAGE,
-    doc_kwargs={},
-    rev_kwargs={},
+    doc_kwargs=None,
+    rev_kwargs=None,
 ):
+    if rev_kwargs is None:
+        rev_kwargs = {}
+    if doc_kwargs is None:
+        doc_kwargs = {}
     d = DocumentFactory(
         title=title,
         html="<div>Lorem Ipsum</div>",

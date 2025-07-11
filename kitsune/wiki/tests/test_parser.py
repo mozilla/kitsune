@@ -11,10 +11,9 @@ from kitsune.gallery.tests import ImageFactory, VideoFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
 from kitsune.wiki.models import Document
-from kitsune.wiki.parser import PATTERNS, RECURSION_MESSAGE, ForParser, WikiParser
+from kitsune.wiki.parser import PATTERNS, RECURSION_MESSAGE, ForParser, WikiParser, _key_split
 from kitsune.wiki.parser import _build_template_params as _btp
 from kitsune.wiki.parser import _format_template_content as _ftc
-from kitsune.wiki.parser import _key_split
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -141,7 +140,7 @@ class SimpleSyntaxTestCase(TestCase):
         p = WikiParser()
         tags = ["menu", "button", "filepath", "pref"]
         for tag in tags:
-            doc = pq(p.parse("{%s this is a %s}" % (tag, tag)))
+            doc = pq(p.parse("{{{} this is a {}}}".format(tag, tag)))
             self.assertEqual("this is a " + tag, doc("span." + tag).text())
 
     def test_general_warning_note_inline_custom(self):
@@ -191,12 +190,12 @@ class SimpleSyntaxTestCase(TestCase):
 
         # Both internal links should link to the same article
         self.assertEqual(
-            p.parse("[[%s]]" % doc.title),
-            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title),
+            p.parse("[[{}]]".format(doc.title)),
+            '<p><a href="/en-US/kb/{}">{}</a>\n</p>'.format(doc.slug, doc.title),
         )
         self.assertEqual(
-            p.parse("[[%s]]" % redirect.title),
-            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title),
+            p.parse("[[{}]]".format(redirect.title)),
+            '<p><a href="/en-US/kb/{}">{}</a>\n</p>'.format(doc.slug, doc.title),
         )
 
 
@@ -368,7 +367,7 @@ class TestWikiTemplate(TestCase):
         )
 
         recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + "Boo")
-        expected = "<p>Fine %s Fellows\n</p>" % recursion_message
+        expected = "<p>Fine {} Fellows\n</p>".format(recursion_message)
         self.assertEqual(expected, d.content_parsed)
 
     def test_indirect_recursion(self):
@@ -383,7 +382,7 @@ class TestWikiTemplate(TestCase):
         )
         recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + "Boo")
         self.assertEqual(
-            "<p>Paper Wooden %s Bats\n Cups\n</p>" % recursion_message, boo.content_parsed
+            "<p>Paper Wooden {} Bats\n Cups\n</p>".format(recursion_message), boo.content_parsed
         )
 
 
@@ -438,7 +437,7 @@ class TestWikiInclude(TestCase):
         # boo.content_parsed is something like <p>Paper </p><p>Wooden
         # [Recursive inclusion of "Boo"] Bats\n</p> Cups\n<p></p>.
         self.assertEqual(
-            "Paper Wooden %s Bats Cups" % recursion_message,
+            "Paper Wooden {} Bats Cups".format(recursion_message),
             re.sub(r"</?p>|\n", "", boo.content_parsed),
         )
 
@@ -448,12 +447,12 @@ class TestWikiVideo(TestCase):
 
     def tearDown(self):
         Video.objects.all().delete()
-        super(TestWikiVideo, self).tearDown()
+        super().tearDown()
 
     def test_video_english(self):
         """Video is created and found in English."""
         v = VideoFactory()
-        d = ApprovedRevisionFactory(content="[[V:%s]]" % v.title).document
+        d = ApprovedRevisionFactory(content="[[V:{}]]".format(v.title)).document
         doc = pq(d.html)
         self.assertEqual("video", doc("div.video").attr("class"))
 
@@ -469,14 +468,14 @@ class TestWikiVideo(TestCase):
         assert doc("video").html() in [
             # This was the original expected test output.
             (
-                '<source src="{0}" '
-                'type="video/webm"><source src="{1}" type="video/ogg"/>'
+                '<source src="{}" '
+                'type="video/webm"><source src="{}" type="video/ogg"/>'
                 "</source>".format(v.webm.url, v.ogv.url)
             ),
             # This is the version that Mike and I get.
             (
-                '\n          <source src="{0}" type="video/webm">'
-                '\n          <source src="{1}" type="video/ogg">'
+                '\n          <source src="{}" type="video/webm">'
+                '\n          <source src="{}" type="video/ogg">'
                 "\n      </source></source>".format(v.webm.url, v.ogv.url)
             ),
         ]
@@ -490,7 +489,7 @@ class TestWikiVideo(TestCase):
         """English video is found in French."""
         p = WikiParser()
         v = VideoFactory()
-        doc = pq(p.parse("[[V:%s]]" % v.title, locale="fr"))
+        doc = pq(p.parse("[[V:{}]]".format(v.title), locale="fr"))
         self.assertEqual("video", doc("div.video").attr("class"))
         self.assertEqual(1, len(doc("video")))
         self.assertEqual(2, len(doc("source")))
@@ -506,8 +505,8 @@ class TestWikiVideo(TestCase):
     def test_video_modal(self):
         """Video modal defaults for plcaeholder and text."""
         v = VideoFactory()
-        replacement = '<img class="video-thumbnail" src="%s"/>' % v.thumbnail_url_if_set()
-        d = ApprovedRevisionFactory(content="[[V:%s|modal]]" % v.title).document
+        replacement = '<img class="video-thumbnail" src="{}"/>'.format(v.thumbnail_url_if_set())
+        d = ApprovedRevisionFactory(content="[[V:{}|modal]]".format(v.title)).document
         doc = pq(d.html)
         self.assertEqual(v.title, doc(".video-modal")[0].attrib["title"])
         self.assertEqual(1, doc(".video video").length)
@@ -518,7 +517,7 @@ class TestWikiVideo(TestCase):
         """Video modal can change title and placeholder text."""
         v = VideoFactory()
         r = ApprovedRevisionFactory(
-            content="[[V:%s|modal|placeholder=Place<b>holder</b>|title=WOOT]]" % v.title
+            content="[[V:{}|modal|placeholder=Place<b>holder</b>|title=WOOT]]".format(v.title)
         )
         d = r.document
         doc = pq(d.html)
@@ -529,7 +528,7 @@ class TestWikiVideo(TestCase):
     def test_video_cdn(self):
         """Video URLs can link to the CDN if a CDN setting is set."""
         v = VideoFactory()
-        d = ApprovedRevisionFactory(content="[[V:%s]]" % v.title).document
+        d = ApprovedRevisionFactory(content="[[V:{}]]".format(v.title)).document
         doc = pq(d.html)
         assert settings.GALLERY_VIDEO_URL in doc("source").eq(1).attr("src")
         assert settings.GALLERY_VIDEO_URL in doc("video").attr("data-fallback")
@@ -547,7 +546,7 @@ class TestWikiVideo(TestCase):
 
         for url in urls:
             with self.subTest(url):
-                doc = pq(parser.parse("[[V:%s]]" % url))
+                doc = pq(parser.parse("[[V:{}]]".format(url)))
                 assert (
                     doc("iframe")[0]
                     .attrib["src"]

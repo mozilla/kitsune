@@ -16,10 +16,10 @@ class ThreadFactory(factory.django.DjangoModelFactory):
     document = factory.SubFactory(DocumentFactory)
 
     @factory.post_generation
-    def add_approved_revision_to_document(obj, create, extracted, **kwargs):
+    def add_approved_revision_to_document(self, create, extracted, **kwargs):
         # Ensure the document has approved content, or else it'll be invisible
         # to users without special permission.
-        ApprovedRevisionFactory(document=obj.document)
+        ApprovedRevisionFactory(document=self.document)
 
 
 class PostFactory(factory.django.DjangoModelFactory):

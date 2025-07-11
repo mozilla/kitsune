@@ -6,7 +6,7 @@ from kitsune.users.tests import UserFactory
 
 class ReadMessageTests(TestCase):
     def setUp(self):
-        super(ReadMessageTests, self).setUp()
+        super().setUp()
         self.user1 = UserFactory()
         self.user2 = UserFactory()
         self.client.login(username=self.user1.username, password="testpass")
@@ -59,7 +59,7 @@ class ReadMessageTests(TestCase):
 
 class DeleteMessageTests(TestCase):
     def setUp(self):
-        super(DeleteMessageTests, self).setUp()
+        super().setUp()
         self.user1 = UserFactory()
         self.user2 = UserFactory()
         self.client.login(username=self.user1.username, password="testpass")
@@ -107,7 +107,7 @@ class DeleteMessageTests(TestCase):
 
 class OutboxTests(TestCase):
     def setUp(self):
-        super(OutboxTests, self).setUp()
+        super().setUp()
         self.user1 = UserFactory()
         self.user2 = UserFactory()
         self.client.login(username=self.user1.username, password="testpass")

@@ -36,14 +36,14 @@ class GenericAPIException(APIException):
             setattr(self, key, val)
 
 
-class LocaleNegotiationMixin(object):
+class LocaleNegotiationMixin:
     """A mixin for CBV to select a locale based on Accept-Language headers."""
 
     def get_locale(self):
         return translation.get_language_from_request(self.request)
 
     def get_serializer_context(self):
-        context = super(LocaleNegotiationMixin, self).get_serializer_context()
+        context = super().get_serializer_context()
         context["locale"] = normalize_language(self.get_locale())
         return context
 
@@ -76,10 +76,10 @@ class LocalizedCharField(fields.CharField):
 
     def __init__(self, l10n_context=None, **kwargs):
         self.l10n_context = l10n_context
-        super(LocalizedCharField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_native(self, value):
-        value = super(LocalizedCharField, self).from_native(value)
+        value = super().from_native(value)
         locale = self.context.get("locale")
 
         if locale is None:
@@ -117,7 +117,7 @@ class SplitSourceField(fields.Field):
             raise ValueError("Use read_source and write_source with SplitSourceField.")
         self.read_source = read_source
         self.write_source = write_source
-        super(SplitSourceField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_value(self, dictionary):
         """
@@ -166,7 +166,7 @@ class GenericRelatedField(fields.ReadOnlyField):
 
     def __init__(self, serializer_type="fk", **kwargs):
         self.serializer_type = serializer_type
-        super(GenericRelatedField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_representation(self, value):
         content_type = ContentType.objects.get_for_model(value)
@@ -266,7 +266,7 @@ def PermissionMod(field, permissions):
 
         def get_attribute(self, instance):
             if self.check_permissions(instance):
-                return super(Modded, self).get_attribute(instance)
+                return super().get_attribute(instance)
             else:
                 raise fields.SkipField()
 
@@ -320,7 +320,7 @@ class InactiveSessionAuthentication(SessionAuthentication):
         reason = CSRFCheck(get_response).process_view(request, None, (), {})
         if reason:
             # CSRF failed, bail with explicit error message
-            raise AuthenticationFailed("CSRF Failed: %s" % reason)
+            raise AuthenticationFailed("CSRF Failed: {}".format(reason))
 
 
 class ImageUrlField(fields.ImageField):
@@ -339,7 +339,7 @@ class ImageUrlField(fields.ImageField):
 
 class JSONRenderer(DRFJSONRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        json = super(JSONRenderer, self).render(data, accepted_media_type, renderer_context)
+        json = super().render(data, accepted_media_type, renderer_context)
 
         # In HTML (such as in <script> tags), "</" is an illegal sequence in a
         # <script> tag. In JSON, "\/" is a legal representation of the "/"

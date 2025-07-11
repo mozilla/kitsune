@@ -12,7 +12,7 @@ class Feed(DjFeed):
     """
 
     def __call__(self, request, *args, **kwargs):
-        response = super(Feed, self).__call__(request, *args, **kwargs)
+        response = super().__call__(request, *args, **kwargs)
         # this squashes the response._container list to a single item
         response.content = response.content
         return response

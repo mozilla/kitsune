@@ -23,9 +23,9 @@ site.addsitedir(os.path.join(SCRIPTS_DIR, '..', 'vendor'))
 
 
 import sys  # noqa
-from collections import defaultdict  # noqa
+from collections import defaultdict
 
-import polib  # noqa
+import polib
 
 
 USAGE = 'usage: localestats.py <locales-dir>'
@@ -43,7 +43,7 @@ def main(argv):
 
     try:
         pofile = polib.pofile(fn)
-    except IOError as ioe:
+    except OSError as ioe:
         print('Error opening file: {fn}'.format(fn=fn))
         print(ioe.message)
         return 1
@@ -59,7 +59,7 @@ def main(argv):
                 app_string_count['vendor/' + path[2]] += 1
 
     for key, val in sorted(list(app_string_count.items()), key=lambda item: item[1]):
-        print('{0:22}: {1}'.format(key, val))
+        print('{:22}: {}'.format(key, val))
 
 
 if __name__ == '__main__':

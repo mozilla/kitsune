@@ -1,13 +1,14 @@
 from django.core.paginator import (
-    Paginator as DjPaginator,
     EmptyPage,
     InvalidPage,
     Page,
     PageNotAnInteger,
 )
+from django.core.paginator import (
+    Paginator as DjPaginator,
+)
 
-
-__all__ = ["Paginator", "EmptyPage", "InvalidPage"]
+__all__ = ["EmptyPage", "InvalidPage", "Paginator"]
 
 
 class Paginator(DjPaginator):
@@ -15,7 +16,7 @@ class Paginator(DjPaginator):
     expensive, uncacheable `SELECT COUNT` query."""
 
     def __init__(self, object_list, per_page, orphans=0, allow_empty_first_page=True, count=None):
-        super(Paginator, self).__init__(
+        super().__init__(
             object_list, per_page, orphans=orphans, allow_empty_first_page=allow_empty_first_page
         )
         if count:

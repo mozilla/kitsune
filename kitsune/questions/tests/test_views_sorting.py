@@ -2,12 +2,12 @@
 Unit test for question sorting by views with null handling.
 """
 
-from django.test import TestCase
 from django.contrib.auth.models import User
 from django.db.models import F
+from django.test import TestCase
 
-from kitsune.questions.models import Question, QuestionVisits
 from kitsune.products.models import Product
+from kitsune.questions.models import Question, QuestionVisits
 
 
 class QuestionViewsSortingTestCase(TestCase):

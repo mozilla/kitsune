@@ -13,7 +13,6 @@ from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.tests import UserFactory
 
-
 ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
 testserver:
 
@@ -127,20 +126,20 @@ class NotificationsTests(TestCase):
         # Make sure 'before' values are the reverse.
         if turn_on:
             assert not event_cls.is_notifying(user, q), (
-                "%s should not be notifying." % event_cls.__name__
+                "{} should not be notifying.".format(event_cls.__name__)
             )
         else:
-            assert event_cls.is_notifying(user, q), "%s should be notifying." % event_cls.__name__
+            assert event_cls.is_notifying(user, q), "{} should be notifying.".format(event_cls.__name__)
 
         url = "questions.watch" if turn_on else "questions.unwatch"
         data = {"event_type": event_type} if turn_on else {}
         post(self.client, url, data, args=[q.id])
 
         if turn_on:
-            assert event_cls.is_notifying(user, q), "%s should be notifying." % event_cls.__name__
+            assert event_cls.is_notifying(user, q), "{} should be notifying.".format(event_cls.__name__)
         else:
             assert not event_cls.is_notifying(user, q), (
-                "%s should not be notifying." % event_cls.__name__
+                "{} should not be notifying.".format(event_cls.__name__)
             )
         return q
 
@@ -269,14 +268,14 @@ class TestAnswerNotifications(TestCase):
     asker."""
 
     def setUp(self):
-        super(TestAnswerNotifications, self).setUp()
+        super().setUp()
         self._get_current_mock = mock.patch.object(Site.objects, "get_current")
         self._get_current_mock.start().return_value.domain = "testserver"
         self.question = QuestionFactory()
         QuestionReplyEvent.notify(self.question.creator, self.question)
 
     def tearDown(self):
-        super(TestAnswerNotifications, self).tearDown()
+        super().tearDown()
         self._get_current_mock.stop()
 
     def makeAnswer(self):
@@ -305,7 +304,7 @@ class TestAnswerNotifications(TestCase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
 
         self.assertEqual([ANON_EMAIL], notification.to)
-        self.assertEqual("Re: {0}".format(self.question.title), notification.subject)
+        self.assertEqual("Re: {}".format(self.question.title), notification.subject)
 
         body = re.sub(r"auth=[a-zA-Z0-9%_-]+", "auth=AUTH", notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS.format(**self.format_args()))
@@ -321,7 +320,7 @@ class TestAnswerNotifications(TestCase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
 
         self.assertEqual([watcher.email], notification.to)
-        self.assertEqual("Re: {0}".format(self.question.title), notification.subject)
+        self.assertEqual("Re: {}".format(self.question.title), notification.subject)
 
         body = re.sub(r"auth=[a-zA-Z0-9%_-]+", "auth=AUTH", notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
@@ -335,7 +334,7 @@ class TestAnswerNotifications(TestCase):
 
         self.assertEqual([self.question.creator.email], notification.to)
         self.assertEqual(
-            '{0} posted an answer to your question "{1}"'.format(
+            '{} posted an answer to your question "{}"'.format(
                 display_name(self.answer.creator), self.question.title
             ),
             notification.subject,
@@ -354,7 +353,7 @@ class TestAnswerNotifications(TestCase):
 
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
         # Headers should be compared case-insensitively.
-        headers = dict((k.lower(), v) for k, v in list(notification.extra_headers.items()))
+        headers = {k.lower(): v for k, v in list(notification.extra_headers.items())}
         self.assertEqual("replyto@example.com", headers["reply-to"])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL="replyto@example.com")
@@ -368,7 +367,7 @@ class TestAnswerNotifications(TestCase):
 
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
         # Headers should be compared case-insensitively.
-        headers = dict((k.lower(), v) for k, v in list(notification.extra_headers.items()))
+        headers = {k.lower(): v for k, v in list(notification.extra_headers.items())}
         self.assertEqual("replyto@example.com", headers["reply-to"])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL="replyto@example.com")
@@ -378,5 +377,5 @@ class TestAnswerNotifications(TestCase):
         """
         self.makeAnswer()
         # Headers should be compared case-insensitively.
-        headers = dict((k.lower(), v) for k, v in list(mail.outbox[0].extra_headers.items()))
+        headers = {k.lower(): v for k, v in list(mail.outbox[0].extra_headers.items())}
         self.assertEqual("replyto@example.com", headers["reply-to"])

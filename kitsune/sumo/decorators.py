@@ -62,9 +62,11 @@ def json_view(f):
     return _wrapped
 
 
-def cors_enabled(origin, methods=["GET"]):
+def cors_enabled(origin, methods=None):
     """A simple decorator to enable CORS."""
 
+    if methods is None:
+        methods = ["GET"]
     def decorator(f):
         @wraps(f)
         def decorated_func(request, *args, **kwargs):

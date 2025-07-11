@@ -10,7 +10,7 @@ class TestAnonymousMiddleware(TestCase):
     """Tests for the anonymous middleware."""
 
     def setUp(self):
-        super(TestAnonymousMiddleware, self).setUp()
+        super().setUp()
         self.get_response = lambda *args, **kwargs: HttpResponse()
         self.middleware = AnonymousIdentityMiddleware(self.get_response)
 

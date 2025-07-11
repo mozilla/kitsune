@@ -5,12 +5,12 @@ Run this script like `./manage.py runscript get_media`.
 """
 
 import os
-
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from kitsune.gallery.models import Image
 from kitsune.sumo.utils import Progress
-
 
 BASE_URL = 'https://support.cdn.mozilla.net'
 

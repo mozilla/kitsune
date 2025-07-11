@@ -1,13 +1,15 @@
 import allure
 import pytest
+from playwright.sync_api import Error, Page, TimeoutError, expect
 from pytest_check import check
 
-from playwright.sync_api import TimeoutError, expect, Error, Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
-    AAQWidgetMessages)
+    AAQWidgetMessages,
+)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
-    ContributePageMessages)
+    ContributePageMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 

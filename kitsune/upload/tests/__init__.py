@@ -54,13 +54,13 @@ class CheckFileSizeTestCase(TestCase):
 
 class CreateImageAttachmentTestCase(TestCase):
     def setUp(self):
-        super(CreateImageAttachmentTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.obj = QuestionFactory()
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()
-        super(CreateImageAttachmentTestCase, self).tearDown()
+        super().tearDown()
 
     def test_create_imageattachment(self):
         """
@@ -108,7 +108,7 @@ class CreateImageAttachmentTestCase(TestCase):
 
 class FileNameTestCase(TestCase):
     def _match_file_name(self, name, name_end):
-        assert name.endswith(name_end), '"%s" does not end with "%s"' % (name, name_end)
+        assert name.endswith(name_end), '"{}" does not end with "{}"'.format(name, name_end)
 
     def test_empty_file_name(self):
         self._match_file_name("", "")

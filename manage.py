@@ -11,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kitsune.settings')
 # Need this so we patch before running Django-specific commands which
 # then result in a circular import.
 try:
-    from kitsune.sumo.monkeypatch import patch  # noqa
+    from kitsune.sumo.monkeypatch import patch
     patch()
 except ImportError:
     print('OH NOES! There was an import error:')

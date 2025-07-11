@@ -1,6 +1,5 @@
 import logging
 from datetime import date
-from typing import Dict, List
 
 import waffle
 from celery import shared_task
@@ -46,10 +45,10 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
         return
 
     if revision.reviewer == revision.creator:
-        log.debug("Revision (id=%s) reviewed by creator, skipping email" % revision.id)
+        log.debug("Revision (id={}) reviewed by creator, skipping email".format(revision.id))
         return
 
-    log.debug("Sending reviewed email for revision (id=%s)" % revision.id)
+    log.debug("Sending reviewed email for revision (id={})".format(revision.id))
 
     url = reverse("wiki.document_revisions", locale=document.locale, args=[document.slug])
 
@@ -96,7 +95,7 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
 
 @shared_task
 def send_contributor_notification(
-    based_on_ids: List[int], revision_id: int, document_id: int, message: str
+    based_on_ids: list[int], revision_id: int, document_id: int, message: str
 ):
     """Send notification of review to the contributors of revisions."""
 
@@ -179,7 +178,7 @@ def schedule_rebuild_kb():
 @skip_if_read_only_mode
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
-    base_url = "https://{0}%s".format(Site.objects.get_current().domain)
+    base_url = "https://{}%s".format(Site.objects.get_current().domain)
     docs = Document.objects.filter(id__in=doc_ids)
     try:
         for doc in docs:
@@ -221,7 +220,7 @@ def _rebuild_kb_chunk(data):
     redirects won't be auto-pruned when they're 404s.
 
     """
-    log.info("Rebuilding %s documents." % len(data))
+    log.info("Rebuilding {} documents.".format(len(data)))
 
     messages = []
     for pk in data:
@@ -258,7 +257,7 @@ def _rebuild_kb_chunk(data):
             messages.append(message)
 
     if messages:
-        subject = "[%s] Exceptions raised in _rebuild_kb_chunk()" % settings.PLATFORM_NAME
+        subject = "[{}] Exceptions raised in _rebuild_kb_chunk()".format(settings.PLATFORM_NAME)
         mail_admins(subject=subject, message="\n".join(messages))
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
@@ -266,7 +265,7 @@ def _rebuild_kb_chunk(data):
 
 @shared_task
 @skip_if_read_only_mode
-def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
+def maybe_award_badge(badge_template: dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
     try:
         user = User.objects.get(id=user_id)

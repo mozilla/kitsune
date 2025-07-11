@@ -1,6 +1,7 @@
+from playwright.sync_api import Page
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.contribute.groups_page import GroupsPage
-from playwright.sync_api import Page
 
 
 class UserGroupFlow:

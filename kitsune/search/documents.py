@@ -58,7 +58,7 @@ class WikiDocument(SumoDocument):
         ):
             instance.es_discard_doc = "unindex_me"
 
-        return super(WikiDocument, cls).prepare(instance, parent_id=instance.parent_id)
+        return super().prepare(instance, parent_id=instance.parent_id)
 
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, "created", None)
@@ -155,7 +155,7 @@ class QuestionDocument(SumoDocument):
         if isinstance(instance, Question) and any([instance.is_spam, instance.num_answers == 0]):
             instance.es_discard_doc = "unindex_me"
 
-        return super(QuestionDocument, cls).prepare(instance)
+        return super().prepare(instance)
 
     def prepare_question_tag_ids(self, instance):
         return [tag.id for tag in instance.tags.all()]
@@ -336,7 +336,7 @@ class ProfileDocument(SumoDocument):
         if not instance.user.is_active or instance.is_system_account:
             instance.es_discard_doc = "unindex_me"
 
-        return super(ProfileDocument, cls).prepare(instance)
+        return super().prepare(instance)
 
     def prepare_username(self, instance):
         return instance.user.username

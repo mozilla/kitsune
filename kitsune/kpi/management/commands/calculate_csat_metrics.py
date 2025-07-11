@@ -4,6 +4,7 @@ from datetime import date, timedelta
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
 from kitsune.kpi.models import (
     CONTRIBUTORS_CSAT_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE,

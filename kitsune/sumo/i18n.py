@@ -1,18 +1,17 @@
 import re
 
+import django.urls
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import translation
-import django.urls
-
 
 LANGUAGES_WITH_FALLBACKS_REGEX = re.compile(
     rf"^/(?P<language>{'|'.join(settings.NON_SUPPORTED_LOCALES.keys())})(?P<slash>/|$)",
     re.IGNORECASE,
 )
-FALLBACK_LANGUAGE_URL_MAP = dict(
-    (k.lower(), v if v else "en-US") for k, v in settings.NON_SUPPORTED_LOCALES.items()
-)
+FALLBACK_LANGUAGE_URL_MAP = {
+    k.lower(): v if v else "en-US" for k, v in settings.NON_SUPPORTED_LOCALES.items()
+}
 MAP_TO_TRADITIONAL_CHINESE = frozenset(("zh-hant", "zh-hk", "zh-mo"))
 
 

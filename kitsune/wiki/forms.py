@@ -154,7 +154,7 @@ class DocumentForm(forms.ModelForm):
         return slug
 
     def clean(self):
-        cdata = super(DocumentForm, self).clean()
+        cdata = super().clean()
         locale = cdata.get("locale")
 
         # Products are required for en-US
@@ -193,7 +193,7 @@ class DocumentForm(forms.ModelForm):
                     f"{'topics' if invalid_items is invalid_products else 'products'}: %(items)s"
                 ),
                 (
-                    f"The following {'products' if invalid_items is invalid_products else 'topics'} "  # noqa
+                    f"The following {'products' if invalid_items is invalid_products else 'topics'} "
                     f"are not associated with all selected "
                     f"{'topics' if invalid_items is invalid_products else 'products'}: %(items)s"
                 ),
@@ -229,7 +229,7 @@ class DocumentForm(forms.ModelForm):
         can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
         initial_title = kwargs.pop("initial_title", "")
 
-        super(DocumentForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         title_field = self.fields["title"]
         title_field.initial = initial_title
@@ -259,7 +259,7 @@ class DocumentForm(forms.ModelForm):
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
-        doc = super(DocumentForm, self).save(commit=False, **kwargs)
+        doc = super().save(commit=False, **kwargs)
         doc.parent = parent_doc
 
         # If document doesn't need change, clear out the comment.
@@ -277,9 +277,9 @@ class DocumentForm(forms.ModelForm):
 
         if parent_doc:
             # Products are not set on translations.
-            doc.products.remove(*[p for p in doc.products.all()])
+            doc.products.remove(*list(doc.products.all()))
             # A child always inherits parent topics.
-            doc.topics.add(*[t for t in parent_doc.topics.all()])
+            doc.topics.add(*list(parent_doc.topics.all()))
 
         return doc
 
@@ -322,12 +322,12 @@ class RevisionForm(forms.ModelForm):
 
     comment = forms.CharField(required=False, label=_lazy("Comment:"))
 
-    class Meta(object):
+    class Meta:
         model = Revision
         fields = ("keywords", "summary", "content", "comment", "based_on", "expires")
 
     def __init__(self, *args, **kwargs):
-        super(RevisionForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["based_on"].widget = forms.HiddenInput()
         self.fields["comment"].widget = forms.TextInput(
             attrs={"maxlength": MAX_REVISION_COMMENT_LENGTH}
@@ -341,7 +341,7 @@ class RevisionForm(forms.ModelForm):
 
         """
         # Throws a TypeError if somebody passes in a commit kwarg:
-        new_rev = super(RevisionForm, self).save(commit=False, **kwargs)
+        new_rev = super().save(commit=False, **kwargs)
 
         new_rev.document = document
         new_rev.creator = creator
@@ -359,7 +359,7 @@ class RevisionForm(forms.ModelForm):
 
 
 class DraftRevisionForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = DraftRevision
         fields = ("keywords", "summary", "content", "slug", "title", "based_on")
 

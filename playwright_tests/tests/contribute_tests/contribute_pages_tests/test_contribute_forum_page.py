@@ -1,18 +1,22 @@
 import allure
 import pytest
+import requests
 from playwright.sync_api import Page
 from pytest_check import check
-import requests
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_forum_messages import (
-    ContributeForumMessages)
+    ContributeForumMessages,
+)
 from playwright_tests.messages.contribute_messages.con_pages.con_help_articles_messages import (
-    ContributeHelpArticlesMessages)
+    ContributeHelpArticlesMessages,
+)
 from playwright_tests.messages.contribute_messages.con_pages.con_localization_messages import (
-    ContributeLocalizationMessages)
+    ContributeLocalizationMessages,
+)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
-    ContributePageMessages)
+    ContributePageMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 

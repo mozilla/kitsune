@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from django.contrib.auth.models import AnonymousUser, User
 from markupsafe import Markup
@@ -16,11 +15,11 @@ from kitsune.users.tests import UserFactory
 
 class HelperTestCase(TestCase):
     def setUp(self):
-        super(HelperTestCase, self).setUp()
+        super().setUp()
         self.u = UserFactory()
 
     def test_profile_url(self):
-        self.assertEqual("/en-US/user/%s/" % self.u.username, profile_url(self.u))
+        self.assertEqual("/en-US/user/{}/".format(self.u.username), profile_url(self.u))
 
     def test_public_email(self):
         self.assertEqual(

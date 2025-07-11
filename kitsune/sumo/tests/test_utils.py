@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 import json
 from unittest.mock import Mock, patch
 
@@ -47,7 +46,7 @@ class SmartIntTestCase(TestCase):
 
 class GetNextUrlTests(TestCase):
     def setUp(self):
-        super(GetNextUrlTests, self).setUp()
+        super().setUp()
         self.r = RequestFactory()
         self.patcher = patch("django.contrib.sites.models.Site.objects")
         mock = self.patcher.start()
@@ -55,7 +54,7 @@ class GetNextUrlTests(TestCase):
 
     def tearDown(self):
         self.patcher.stop()
-        super(GetNextUrlTests, self).tearDown()
+        super().tearDown()
 
     def test_query_string(self):
         """Query-strings remain intact."""

@@ -2,7 +2,6 @@ from datetime import datetime
 
 from django.db import models
 
-
 RECORD_INFO = "info"
 RECORD_ERROR = "error"
 

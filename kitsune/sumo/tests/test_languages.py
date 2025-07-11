@@ -1,6 +1,6 @@
+from django.apps.config import AppConfig
 from django.test import SimpleTestCase, modify_settings, override_settings
 from django.utils.translation import activate, deactivate, gettext
-from django.apps.config import AppConfig
 
 
 @modify_settings(INSTALLED_APPS={"append": "kitsune.sumo.tests"})

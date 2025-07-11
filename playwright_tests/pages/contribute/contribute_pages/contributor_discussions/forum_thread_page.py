@@ -1,5 +1,6 @@
-from datetime import datetime
 import re
+from datetime import datetime
+
 from playwright_tests.core.basepage import BasePage
 from playwright_tests.core.utilities import Utilities
 

@@ -2,7 +2,7 @@ import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kitsune.settings")
 
-from celery import Celery  # noqa
+from celery import Celery
 from django.conf import settings  # noqa
 
 app = Celery("kitsune")

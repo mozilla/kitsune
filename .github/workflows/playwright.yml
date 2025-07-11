@@ -77,11 +77,12 @@ jobs:
         if: success() || failure()
         run: |
           sudo apt-get update
-          pip3 install --user poetry
-          poetry install
+          pip3 install --user uv
+          uv venv
+          uv sync --extra dev
       - name: Download NLTK Data
         run: |
-          poetry run python -m nltk.downloader wordnet omw-1.4
+          source .venv/bin/activate && python -m nltk.downloader wordnet omw-1.4
       - name: Set up browsers env
         if: "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
         run: |
@@ -97,48 +98,49 @@ jobs:
             fi
       - name: Ensure Playwright browsers are installed
         run: |
-            poetry run playwright install ${{ env.BROWSER }}
+            source .venv/bin/activate && playwright install ${{ env.BROWSER }}
       - name: Creating User Sessions for ${{ env.BROWSER }}
         id: create-sessions
         working-directory: playwright_tests
         run: |
-         poetry run pytest -m loginSessions --browser ${{ env.BROWSER }} --reruns 1 -v
+         source ../.venv/bin/activate && pytest -m loginSessions --browser ${{ env.BROWSER }} --reruns 1 -v
       - name: Run ${{inputs.TestSuite}} Playwright Tests
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
+            source ../.venv/bin/activate
             declare dispatch_test_suite="${{inputs.TestSuite}}"
             declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "messagingSystemCleanup" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "userGroupsTests" "antiSpamTests" "contributorDiscussions" "contributorDiscussionsThreads")
             if [ "$dispatch_test_suite" == "All" ] || [ "${{ github.event_name}}" == "schedule" ] ; then
                 for test in "${all_test_suites[@]}"; do
-                    if ! poetry run pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "User Pages" ]; then
                 for test in "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions"; do
-                    if ! poetry run pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "AAQ" ]; then
                 for test in "aaqPage" "postedQuestions"; do
-                    if ! poetry run pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "KB Articles" ]; then
                 for test in "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory"; do
-                    if ! poetry run pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "KB Article Translation" ]; then
-                if ! poetry run pytest -m kbArticleTranslation --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                if ! pytest -m kbArticleTranslation --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                     any_failures=true
                 fi
             else
-                if ! poetry run pytest -m $dispatch_test_suite --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                if ! pytest -m $dispatch_test_suite --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                         any_failures=true
                 fi
             fi

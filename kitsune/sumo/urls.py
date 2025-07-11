@@ -3,7 +3,6 @@ from watchman import views as watchman_views
 
 from kitsune.sumo import views
 
-
 urlpatterns = [
     path("robots.txt", views.robots, name="robots.txt"),
     path("healthz/", watchman_views.ping, name="sumo.liveness"),

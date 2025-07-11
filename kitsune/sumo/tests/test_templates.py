@@ -22,7 +22,7 @@ class MockRequestTests(TestCase):
     """Base class for tests that need a mock request"""
 
     def setUp(self):
-        super(MockRequestTests, self).setUp()
+        super().setUp()
         request = RequestFactory()
         request.GET = {}
         request.LANGUAGE_CODE = "en-US"
@@ -34,7 +34,7 @@ class BaseTemplateTests(MockRequestTests):
     """Tests for base.html"""
 
     def setUp(self):
-        super(BaseTemplateTests, self).setUp()
+        super().setUp()
         self.template = "base.html"
 
     def test_dir_ltr(self):
@@ -96,7 +96,7 @@ class ErrorListTests(MockRequestTests):
     def test_escaping(self):
         """Make sure we escape HTML entities, lest we court XSS errors."""
 
-        class MockForm(object):
+        class MockForm:
             errors = True
             auto_id = "id_"
 

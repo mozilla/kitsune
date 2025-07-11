@@ -1,4 +1,4 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from langchain.schema.output_parser import OutputParserException
 
@@ -17,7 +17,7 @@ class BuildChainWithRetryTestCase(TestCase):
         self.llm.__or__ = Mock(return_value=self.parser)
 
     def test_build_chain_with_retry(self, coerce_mock):
-        expected_result = dict(is_something=True, reason="Because")
+        expected_result = {"is_something": True, "reason": "Because"}
         self.parser.invoke.side_effect = [OutputParserException("error"), expected_result]
         chain = build_chain_with_retry(self.prompt, self.llm, self.parser)
         self.assertEqual(chain.invoke({}), expected_result)
@@ -35,14 +35,14 @@ class BuildChainWithRetryTestCase(TestCase):
             OutputParserException("first error"),
             OutputParserException("second error"),
         ]
-        default_result = dict(default=True)
+        default_result = {"default": True}
         chain = build_chain_with_retry(
             self.prompt, self.llm, self.parser, default_result=default_result
         )
         self.assertEqual(chain.invoke({}), default_result)
 
     def test_build_chain_with_retry_when_max_retries_adjusted(self, coerce_mock):
-        expected_result = dict(is_something=True, reason="Because")
+        expected_result = {"is_something": True, "reason": "Because"}
         self.parser.invoke.side_effect = [
             OutputParserException("first error"),
             OutputParserException("second error"),

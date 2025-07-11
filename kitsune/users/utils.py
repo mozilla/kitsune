@@ -70,7 +70,7 @@ def normalize_username(username):
 def suggest_username(email):
     username = normalize_username(email.split("@", 1)[0])
 
-    username_regex = r"^{0}[0-9]*$".format(escape(username))
+    username_regex = r"^{}[0-9]*$".format(escape(username))
     users = User.objects.filter(username__iregex=username_regex)
 
     if users.count() > 0:
@@ -95,7 +95,7 @@ def suggest_username(email):
                 if suggested_number != ids[index + 1] and suggested_number not in ids:
                     break
 
-        username = "{0}{1}".format(username, i + 1)
+        username = "{}{}".format(username, i + 1)
 
     return username
 

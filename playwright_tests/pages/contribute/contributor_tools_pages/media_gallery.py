@@ -1,5 +1,6 @@
-from playwright_tests.core.basepage import BasePage
 from playwright.sync_api import Page
+
+from playwright_tests.core.basepage import BasePage
 
 
 class MediaGallery(BasePage):

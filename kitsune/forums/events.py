@@ -18,7 +18,7 @@ class NewPostEvent(InstanceEvent):
     content_type = Thread
 
     def __init__(self, reply):
-        super(NewPostEvent, self).__init__(reply.thread)
+        super().__init__(reply.thread)
         # Need to store the reply for _mails
         self.reply = reply
 
@@ -64,7 +64,7 @@ class NewThreadEvent(InstanceEvent):
     content_type = Forum
 
     def __init__(self, post):
-        super(NewThreadEvent, self).__init__(post.thread.forum)
+        super().__init__(post.thread.forum)
         # Need to store the post for _mails
         self.post = post
 

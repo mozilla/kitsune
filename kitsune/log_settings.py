@@ -4,13 +4,12 @@ import logging.handlers
 
 from django.conf import settings
 
-
 config = {
     "version": 1,
     "disable_existing_loggers": True,
     "formatters": {
         "default": {
-            "format": "{0}: %(asctime)s %(name)s:%(levelname)s %(message)s: "
+            "format": "{}: %(asctime)s %(name)s:%(levelname)s %(message)s: "
             "%(pathname)s:%(lineno)s".format(settings.SYSLOG_TAG),
         },
         "json": {

@@ -5,7 +5,8 @@ from pytest_check import check
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.my_profile_pages_messages.edit_settings_page_messages import (
-    EditSettingsPageMessages)
+    EditSettingsPageMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

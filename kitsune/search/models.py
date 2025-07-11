@@ -5,7 +5,7 @@ import logging
 log = logging.getLogger("k.search.es")
 
 
-class SearchMixin(object):
+class SearchMixin:
     """A mixin which adds ES indexing support for the model
 
     When using this mixin, make sure to implement:
@@ -35,7 +35,7 @@ class SearchMixin(object):
         return
 
 
-class SearchMappingType(object):
+class SearchMappingType:
     """Contains helpers on top of what ElasticUtils provides
 
     Subclasses should implement the following:

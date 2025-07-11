@@ -1,12 +1,10 @@
 import json
 from datetime import timedelta
 
+import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-
-import requests
-
 
 SURVEYS = {
     "general": {  # This is for users browsing the KB and navigation pages.
@@ -129,7 +127,7 @@ def add_email_to_campaign(survey, email):
             timeout=30,
         )
     except requests.exceptions.Timeout:
-        print("Timedout adding: %s" % email)
+        print("Timedout adding: {}".format(email))
 
 
 def get_exit_survey_results(survey, date):

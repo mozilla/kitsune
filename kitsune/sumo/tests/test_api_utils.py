@@ -70,7 +70,7 @@ class TestPermissionMod(TestCase):
         allow = True
         allow_obj = True
 
-        class MockPermission(object):
+        class MockPermission:
             def has_permission(self, *args):
                 return allow
 

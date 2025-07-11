@@ -1,17 +1,22 @@
 from urllib.parse import urlsplit
+
 import allure
 import pytest
 from playwright.sync_api import Page, expect
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
-from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
-    OffTopicForumMessages
+from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
+    OffTopicForumMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.mess_system_pages_messages.inbox_page_messages import \
-    InboxPageMessages
-from playwright_tests.messages.mess_system_pages_messages.sent_messages_page_messages import \
-    SentMessagesPageMessages
+from playwright_tests.messages.mess_system_pages_messages.inbox_page_messages import (
+    InboxPageMessages,
+)
+from playwright_tests.messages.mess_system_pages_messages.sent_messages_page_messages import (
+    SentMessagesPageMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

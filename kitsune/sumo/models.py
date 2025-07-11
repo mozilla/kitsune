@@ -48,6 +48,6 @@ class LocaleField(models.CharField):
         *args,
         **kwargs,
     ):
-        return super(LocaleField, self).__init__(
+        return super().__init__(
             max_length=max_length, default=default, choices=choices, *args, **kwargs
         )

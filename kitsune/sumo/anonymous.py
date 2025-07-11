@@ -39,7 +39,7 @@ else:
 MAX_ANONYMOUS_ID = 18446744073709551616  # 2 << 63
 
 
-class AnonymousIdentity(object):
+class AnonymousIdentity:
     """Used to generate an id for anonymous users."""
 
     def __init__(self, anonymous_id=None):
@@ -72,8 +72,7 @@ class AnonymousIdentity(object):
         md5 = hashlib.md5()
         md5.update(
             (
-                "%s%s%s%s"
-                % (randrange(0, MAX_ANONYMOUS_ID), pid, time.time(), settings.SECRET_KEY)
+                "{}{}{}{}".format(randrange(0, MAX_ANONYMOUS_ID), pid, time.time(), settings.SECRET_KEY)
             ).encode()
         )
         return md5.hexdigest()

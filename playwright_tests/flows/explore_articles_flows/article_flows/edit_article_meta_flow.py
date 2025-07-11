@@ -1,15 +1,19 @@
-from playwright_tests.core.utilities import Utilities
 from playwright.sync_api import Page
 
-from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import \
-    KBArticleRevision
+from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
+    KBArticleRevision,
+)
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_meta import (
-    KBArticleEditMetadata)
-from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
-    EditKBArticlePage
-from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import \
-    SubmitKBArticlePage
+    KBArticleEditMetadata,
+)
+from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import (
+    EditKBArticlePage,
+)
+from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import (
+    SubmitKBArticlePage,
+)
 
 
 class EditArticleMetaFlow:

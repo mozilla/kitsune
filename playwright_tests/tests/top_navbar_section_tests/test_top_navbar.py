@@ -2,17 +2,20 @@ import re
 
 import allure
 import pytest
+import requests
 from playwright.sync_api import Page
 from pytest_check import check
-import requests
 
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.ask_a_question_messages.contact_support_messages import \
-    ContactSupportMessages
-from playwright_tests.messages.ask_a_question_messages.community_forums_messages import \
-    SupportForumsPageMessages
-from playwright_tests.messages.explore_help_articles.products_page_messages import \
-    ProductsPageMessages
+from playwright_tests.messages.ask_a_question_messages.community_forums_messages import (
+    SupportForumsPageMessages,
+)
+from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
+    ContactSupportMessages,
+)
+from playwright_tests.messages.explore_help_articles.products_page_messages import (
+    ProductsPageMessages,
+)
 from playwright_tests.messages.top_navbar_messages import TopNavbarMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 

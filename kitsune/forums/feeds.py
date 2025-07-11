@@ -2,7 +2,7 @@ from django.db.models import F
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
-from django.utils.html import strip_tags, escape
+from django.utils.html import escape, strip_tags
 from django.utils.translation import gettext as _
 
 from kitsune import forums as constants

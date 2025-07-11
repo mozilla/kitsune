@@ -1,12 +1,13 @@
 from unittest.mock import patch
-from kitsune.sumo.tests import TestCase
+
 from kitsune.questions.tests import (
-    QuestionFactory,
-    QuestionVoteFactory,
     AnswerFactory,
     AnswerVoteFactory,
+    QuestionFactory,
+    QuestionVoteFactory,
 )
-from kitsune.search.documents import QuestionDocument, AnswerDocument
+from kitsune.search.documents import AnswerDocument, QuestionDocument
+from kitsune.sumo.tests import TestCase
 
 
 class QuestionDocumentTests(TestCase):

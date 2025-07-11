@@ -33,7 +33,7 @@ def user_access_decorator(
                 # Redirect back here afterwards?
                 if redirect_field:
                     path = quote(request.get_full_path())
-                    redirect_url = "%s?%s=%s" % (redirect_url, redirect_field, path)
+                    redirect_url = "{}?{}={}".format(redirect_url, redirect_field, path)
 
                 return HttpResponseRedirect(redirect_url)
             elif (redirect and (request.headers.get("x-requested-with") == "XMLHttpRequest")) or (
@@ -54,7 +54,7 @@ def logout_required(redirect):
     def redirect_func(user):
         return user.is_authenticated
 
-    if hasattr(redirect, "__call__"):
+    if callable(redirect):
         return user_access_decorator(
             redirect_func, redirect_field=None, redirect_url_func=lambda: reverse("home")
         )(redirect)
@@ -116,9 +116,8 @@ def group_required(group_name, only_active=True):
                     request.user.is_active and request.user.groups.filter(name=group_name).exists()
                 ):
                     raise Http404
-            else:
-                if not request.user.groups.filter(name=group_name).exists():
-                    raise Http404
+            elif not request.user.groups.filter(name=group_name).exists():
+                raise Http404
 
             return view_func(request, *args, **kwargs)
 

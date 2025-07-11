@@ -17,8 +17,7 @@ from google.analytics.data_v1beta.types import (
 from google.api_core.retry import Retry
 from google.oauth2 import service_account
 
-from kitsune.dashboards import LAST_30_DAYS, LAST_7_DAYS, LAST_90_DAYS, LAST_YEAR
-
+from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEAR
 
 log = logging.getLogger("k.googleanalytics")
 

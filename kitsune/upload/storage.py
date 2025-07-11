@@ -5,7 +5,6 @@ import time
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage, Storage
-
 from storages.backends.gcloud import GoogleCloudStorage
 from storages.backends.s3boto3 import S3Boto3Storage
 
@@ -37,6 +36,6 @@ class RenameFileStorage(DjangoStorage):
         count = itertools.count(1)
         while self.exists(name):
             # file_ext includes the dot.
-            name = os.path.join(dir_name, "%s_%s%s" % (file_root, next(count), file_ext))
+            name = os.path.join(dir_name, "{}_{}{}".format(file_root, next(count), file_ext))
 
         return name

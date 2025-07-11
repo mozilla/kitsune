@@ -30,7 +30,7 @@ def locales(request):
     """The locale switcher page."""
     template = "sumo/locales.html"
 
-    return render(request, template, dict(next_url=get_next_url(request) or reverse("home")))
+    return render(request, template, {"next_url": get_next_url(request) or reverse("home")})
 
 
 @never_cache
@@ -104,12 +104,11 @@ def robots(request):
     """Generate a robots.txt."""
     if not settings.ENGAGE_ROBOTS:
         template = "User-Agent: *\nDisallow: /"
+    elif request.get_host() != "support.mozilla.org":
+        # We will differentiate this for tests with a comment
+        template = "# Non-canoncial\nUser-Agent: *\nDisallow: /"
     else:
-        if request.get_host() != "support.mozilla.org":
-            # We will differentiate this for tests with a comment
-            template = "# Non-canoncial\nUser-Agent: *\nDisallow: /"
-        else:
-            template = render(request, "sumo/robots.html")
+        template = render(request, "sumo/robots.html")
 
     return HttpResponse(template, content_type="text/plain")
 
@@ -142,7 +141,7 @@ def test_memcached(host, port):
         s.connect((host, port))
         return True
     except Exception as exc:
-        log.critical("Failed to connect to memcached (%r): %s" % ((host, port), exc))
+        log.critical("Failed to connect to memcached ({!r}): {}".format((host, port), exc))
         return False
     finally:
         s.close()

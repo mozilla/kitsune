@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.admin import DocumentAdmin

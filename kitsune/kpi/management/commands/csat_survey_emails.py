@@ -42,7 +42,7 @@ class Command(BaseCommand):
                         timeout=30,
                     )
                 except requests.exceptions.Timeout:
-                    print("Timed out adding: %s" % u.email)
+                    print("Timed out adding: {}".format(u.email))
                 else:
                     p.csat_email_sent = datetime.now()
                     p.save()

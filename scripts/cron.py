@@ -14,10 +14,10 @@ schedule = BlockingScheduler()
 
 
 def call_command(command):
-    check_call("python {0} {1}".format(MANAGE, command), shell=True)
+    check_call("python {} {}".format(MANAGE, command), shell=True)
 
 
-class scheduled_job(object):
+class scheduled_job:
     """Decorator for scheduled jobs. Takes same args as apscheduler.schedule_job."""
 
     def __init__(self, *args, **kwargs):
