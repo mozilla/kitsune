@@ -77,7 +77,7 @@ def _unique_by_email(users_and_watches):
         yield ensure_user_has_email(favorite_user, cluster_email), watches
 
 
-class Event(object):
+class Event:
     """Abstract base class for events
 
     An :class:`Event` represents, simply, something that occurs. A
@@ -169,7 +169,7 @@ class Event(object):
         for k in iter(filters.keys()):
             if k not in cls.filters:
                 # Mirror "unexpected keyword argument" message:
-                raise TypeError("%s got an unsupported filter type '%s'" % (cls.__name__, k))
+                raise TypeError("{} got an unsupported filter type '{}'".format(cls.__name__, k))
 
     def _users_watching_by_filter(self, object_id=None, exclude=None, **filters):
         """Return an iterable of (``User``/:class:`~tidings.models.EmailUser`,
@@ -248,7 +248,7 @@ class Event(object):
             if not all(e.id for e in exclude):
                 raise ValueError("Can't exclude an unsaved User.")
 
-            wheres.append("(u.id IS NULL OR u.id NOT IN (%s))" % ", ".join("%s" for e in exclude))
+            wheres.append("(u.id IS NULL OR u.id NOT IN ({}))".format(", ".join("%s" for e in exclude)))
             params.extend(e.id for e in exclude)
 
         def get_fields(model):
@@ -260,11 +260,11 @@ class Event(object):
                 return model._meta.fields
 
         User = get_user_model()
-        model_to_fields = dict(
-            (m, [f.get_attname() for f in get_fields(m)]) for m in [User, Watch]
-        )
-        query_fields = ["u.{0}".format(field) for field in model_to_fields[User]]
-        query_fields.extend(["w.{0}".format(field) for field in model_to_fields[Watch]])
+        model_to_fields = {
+            m: [f.get_attname() for f in get_fields(m)] for m in [User, Watch]
+        }
+        query_fields = ["u.{}".format(field) for field in model_to_fields[User]]
+        query_fields.extend(["w.{}".format(field) for field in model_to_fields[Watch]])
 
         query = (
             "SELECT {fields} "
@@ -537,7 +537,7 @@ class EventUnion(Event):
 
     def __init__(self, *events):
         """:arg events: the events of which to take the union"""
-        super(EventUnion, self).__init__()
+        super().__init__()
         self.events = events
 
     def _mails(self, users_and_watches):
@@ -584,24 +584,24 @@ class InstanceEvent(Event):
         :arg instance: the instance someone would have to be watching in
           order to be notified when this event is fired.
         """
-        super(InstanceEvent, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.instance = instance
 
     @classmethod
     def notify(cls, user_or_email, instance):
         """Create, save, and return a watch which fires when something
         happens to ``instance``."""
-        return super(InstanceEvent, cls).notify(user_or_email, object_id=instance.pk)
+        return super().notify(user_or_email, object_id=instance.pk)
 
     @classmethod
     def stop_notifying(cls, user_or_email, instance):
         """Delete the watch created by notify."""
-        super(InstanceEvent, cls).stop_notifying(user_or_email, object_id=instance.pk)
+        super().stop_notifying(user_or_email, object_id=instance.pk)
 
     @classmethod
     def is_notifying(cls, user_or_email, instance):
         """Check if the watch created by notify exists."""
-        return super(InstanceEvent, cls).is_notifying(user_or_email, object_id=instance.pk)
+        return super().is_notifying(user_or_email, object_id=instance.pk)
 
     def _users_watching(self, **kwargs):
         """Return users watching this instance."""

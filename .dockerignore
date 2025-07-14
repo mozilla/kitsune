@@ -1,4 +1,5 @@
 venv
+.venv
 .git
 *.pyc
 *.poc

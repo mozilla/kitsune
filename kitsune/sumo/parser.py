@@ -76,7 +76,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
     """
     try:
         return cls.objects.get(title=title, locale=locale, **kwargs)
-    except (cls.DoesNotExist, IOError):
+    except (OSError, cls.DoesNotExist):
         pass
 
     # Fallback
@@ -108,7 +108,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
         # Return the English item:
         return default_lang_doc
     # Okay, all else failed
-    except (cls.DoesNotExist, IOError):
+    except (OSError, cls.DoesNotExist):
         return default
 
 
@@ -146,12 +146,16 @@ def _get_wiki_link(title, locale):
     }
 
 
-def build_hook_params(string, locale, allowed_params=[], allowed_param_values={}):
+def build_hook_params(string, locale, allowed_params=None, allowed_param_values=None):
     """Parses a string of the form 'some-title|opt1|opt2=arg2|opt3...'
 
     Builds a list of items and returns relevant parameters in a dict.
 
     """
+    if allowed_param_values is None:
+        allowed_param_values = {}
+    if allowed_params is None:
+        allowed_params = []
     if "|" not in string:  # No params? Simple and easy.
         string = string.strip()
         return (string, {"alt": string})
@@ -205,7 +209,7 @@ class WikiParser(Parser):
     image_template = "wikiparser/hook_image.html"
 
     def __init__(self, base_url=None):
-        super(WikiParser, self).__init__(base_url)
+        super().__init__(base_url)
 
         # Register default hooks
         self.registerInternalLinkHook(None, self._hook_internal_link)
@@ -347,7 +351,7 @@ class WikiParser(Parser):
         if title == "" and hash != "":
             if not text:
                 text = hash.replace("_", " ")
-            return '<a href="%s">%s</a>' % (hash, text)
+            return '<a href="{}">{}</a>'.format(hash, text)
 
         link = _get_wiki_link(title, self.locale)
         extra_a_attr = ""
@@ -432,8 +436,10 @@ class WikiParser(Parser):
         return UI_COMPONENT_PLACEHOLDER % name
 
 
-def generate_video(v, params=[]):
+def generate_video(v, params=None):
     """Takes a video object and returns HTML markup for embedding it."""
+    if params is None:
+        params = []
     sources = []
     if v.webm:
         sources.append({"src": _get_video_url(v.webm), "type": "webm"})

@@ -7,11 +7,13 @@ class ImageWidget(forms.FileInput):
     A ImageField Widget that shows a thumbnail.
     """
 
-    def __init__(self, attrs={}):
-        super(ImageWidget, self).__init__(attrs)
+    def __init__(self, attrs=None):
+        if attrs is None:
+            attrs = {}
+        super().__init__(attrs)
 
     def render(self, name, value, attrs=None, renderer=None):
-        output = super(ImageWidget, self).render(name, value, attrs, renderer=renderer)
+        output = super().render(name, value, attrs, renderer=renderer)
         if value and hasattr(value, "url"):
-            output = '<div class="val-wrap"><img src="%s" alt="" />%s</div>' % (value.url, output)
+            output = '<div class="val-wrap"><img src="{}" alt="" />{}</div>'.format(value.url, output)
         return output

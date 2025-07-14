@@ -8,7 +8,7 @@ class TitleAdmin(admin.ModelAdmin):
     exclude = ("is_auto",)
 
     def queryset(self, request):
-        qs = super(TitleAdmin, self).queryset(request)
+        qs = super().queryset(request)
         return qs.filter(is_auto=False)
 
 

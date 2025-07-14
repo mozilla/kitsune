@@ -37,10 +37,10 @@ class EditProfileTests(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
         profile = Profile.objects.get(user=user)
-        for key in data:
+        for key, value in data.items():
             if key not in ["timezone", "username"]:
-                assert data[key] == getattr(profile, key), "%r != %r (for key '%s')" % (
-                    data[key],
+                assert value == getattr(profile, key), "{!r} != {!r} (for key '{}')".format(
+                    value,
                     getattr(profile, key),
                     key,
                 )
@@ -94,10 +94,10 @@ class EditProfileTests(TestCase):
         resp = self.client.post(url, data)
         self.assertEqual(302, resp.status_code)
         profile = Profile.objects.get(user=user1)
-        for key in data:
+        for key, value in data.items():
             if key not in ["timezone", "username"]:
-                assert data[key] == getattr(profile, key), "%r != %r (for key '%s')" % (
-                    data[key],
+                assert value == getattr(profile, key), "{!r} != {!r} (for key '{}')".format(
+                    value,
                     getattr(profile, key),
                     key,
                 )
@@ -121,7 +121,7 @@ class ViewProfileTests(TestCase):
         self.assertEqual(0, doc(".contact").length)
         # Check canonical url
         self.assertEqual(
-            "%s/en-US/user/%s/" % (settings.CANONICAL_URL, self.u.username),
+            "{}/en-US/user/{}/".format(settings.CANONICAL_URL, self.u.username),
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
 
@@ -251,6 +251,6 @@ class EditWatchListTests(TestCase):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
         self.assertEqual(w.is_active, False)
 
-        self.client.post(reverse("users.edit_watch_list"), {"watch_%s" % w.id: "1"})
+        self.client.post(reverse("users.edit_watch_list"), {"watch_{}".format(w.id): "1"})
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
         self.assertEqual(w.is_active, True)

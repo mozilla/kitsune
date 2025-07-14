@@ -7,7 +7,6 @@ from django.test import RequestFactory, TestCase
 
 from kitsune.sumo.decorators import json_view, skip_if_read_only_mode
 
-
 rf = RequestFactory()
 JSON = "application/json"
 

@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Any, Optional
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -128,15 +128,15 @@ def remove_pii(data: dict) -> None:
 
 
 def get_ga_submit_event_parameters_as_json(
-    session: Optional[SessionBase] = None,
-    product: Optional[Product] = None,
-    topic: Optional[Topic] = None,
+    session: SessionBase | None = None,
+    product: Product | None = None,
+    topic: Topic | None = None,
 ) -> str:
     """
     Returns a JSON string of the event parameters for the GA4 "question_submit"
     event, given the session, product, and/or topic.
     """
-    data = dict(is_failed_deflection="false")
+    data = {"is_failed_deflection": "false"}
 
     if session and product:
         data["is_failed_deflection"] = str(has_visited_kb(session, product, topic=topic)).lower()
@@ -158,11 +158,11 @@ def flag_question(
         content_type=content_type,
         object_id=question.id,
         creator=by_user,
-        defaults=dict(
-            reason=reason,
-            status=status,
-            notes=notes,
-        ),
+        defaults={
+            "reason": reason,
+            "status": status,
+            "notes": notes,
+        },
     )
     if not created:
         flagged_object.reason = reason

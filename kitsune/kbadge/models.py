@@ -4,14 +4,13 @@
 import re
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import User
 from django.urls import reverse
 
-from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
+from kitsune.kbadge.signals import badge_was_awarded, badge_will_be_awarded
 from kitsune.sumo.utils import in_staff_group
-
 
 IMG_MAX_SIZE = getattr(settings, "BADGER_IMG_MAX_SIZE", (256, 256))
 
@@ -29,7 +28,7 @@ def _document_django_model(cls):
         doc = doc + "\n\n"
 
     for f in fields:
-        doc = doc + "    :arg {0}:\n".format(f.name)
+        doc = doc + "    :arg {}:\n".format(f.name)
 
     cls.__doc__ = doc
     return cls
@@ -66,11 +65,11 @@ def get_permissions_for(self, user):
     pre = "allows_"
     pre_len = len(pre)
     methods = (m for m in dir(self) if m.startswith(pre))
-    perms = dict((m[pre_len:], getattr(self, m)(user)) for m in methods)
+    perms = {m[pre_len:]: getattr(self, m)(user) for m in methods}
     return perms
 
 
-class SearchManagerMixin(object):
+class SearchManagerMixin:
     """Quick & dirty manager mixin for search"""
 
     # See: http://www.julienphalip.com/blog/2008/08/16/adding-search-django-site-snap/
@@ -104,7 +103,7 @@ class SearchManagerMixin(object):
         for term in terms:
             or_query = None  # Query to search for a given term in each field
             for field_name in search_fields:
-                q = Q(**{"%s__icontains" % field_name: term})
+                q = Q(**{"{}__icontains".format(field_name): term})
                 if or_query is None:
                     or_query = q
                 else:
@@ -232,12 +231,12 @@ class Badge(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
 
-        super(Badge, self).save(**kwargs)
+        super().save(**kwargs)
 
     def delete(self, **kwargs):
         """Make sure deletes cascade to awards"""
         self.award_set.all().delete()
-        super(Badge, self).delete(**kwargs)
+        super().delete(**kwargs)
 
     def allows_detail_by(self, user):
         # TODO: Need some logic here, someday.
@@ -316,7 +315,7 @@ class Badge(models.Model):
 
 class AwardManager(models.Manager):
     def get_query_set(self):
-        return super(AwardManager, self).get_query_set().exclude(hidden=True)
+        return super().get_query_set().exclude(hidden=True)
 
 
 @_document_django_model
@@ -346,15 +345,15 @@ class Award(models.Model):
         ordering = ["-modified", "-created"]
 
     def __str__(self):
-        by = self.creator and (" by %s" % self.creator) or ""
-        return "Award of %s to %s%s" % (self.badge, self.user, by)
+        by = (self.creator and (" by {}".format(self.creator))) or ""
+        return "Award of {} to {}{}".format(self.badge, self.user, by)
 
     def get_absolute_url(self):
         return reverse("kbadge.award_detail", args=(self.badge.slug, self.pk))
 
     def get_upload_meta(self):
         u = self.user.username
-        return ("award/%s/%s/%s" % (u[0], u[1], u), self.badge.slug)
+        return ("award/{}/{}/{}".format(u[0], u[1], u), self.badge.slug)
 
     def allows_detail_by(self, user):
         # TODO: Need some logic here, someday.
@@ -383,7 +382,7 @@ class Award(models.Model):
             # Only fire will-be-awarded signal on a new award.
             badge_will_be_awarded.send(sender=self.__class__, award=self)
 
-        super(Award, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if is_new:
             # Only fire was-awarded signal on a new award.
@@ -391,4 +390,4 @@ class Award(models.Model):
             badge_was_awarded.send(sender=self.__class__, award=self)
 
     def delete(self):
-        super(Award, self).delete()
+        super().delete()

@@ -4,7 +4,6 @@ import sys
 
 import requests
 
-
 API_KEY = os.getenv('DMS_API_KEY')
 TAGS = os.getenv('DMS_TAGS')
 ENVIRONMENT = os.getenv('DMS_ENVIRONMENT')

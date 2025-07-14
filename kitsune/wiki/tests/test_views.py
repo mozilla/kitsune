@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import json
 from unittest import mock
@@ -342,7 +341,7 @@ class PreviewRevisionVisibilityTests(TestCase):
         self.client.login(username=user.username, password="testpass")
         response = self.client.post(
             reverse("wiki.preview"),
-            data=dict(slug=rev.document.slug, locale=rev.document.locale),
+            data={"slug": rev.document.slug, "locale": rev.document.locale},
         )
         self.assertEqual(404, response.status_code)
 
@@ -373,7 +372,7 @@ class PreviewRevisionVisibilityTests(TestCase):
                 rev = RevisionFactory(is_approved=False)
                 response = self.client.post(
                     reverse("wiki.preview"),
-                    data=dict(slug=rev.document.slug, locale=rev.document.locale),
+                    data={"slug": rev.document.slug, "locale": rev.document.locale},
                 )
                 self.assertEqual(response.status_code, 200)
                 self.client.logout()
@@ -387,7 +386,7 @@ class PreviewRevisionVisibilityTests(TestCase):
         self.client.login(username=creator.username, password="testpass")
         response = self.client.post(
             reverse("wiki.preview"),
-            data=dict(slug=rev.document.slug, locale=rev.document.locale),
+            data={"slug": rev.document.slug, "locale": rev.document.locale},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -938,7 +937,7 @@ class AddContributorVisibilityTests(TestCase):
         self.client.login(username=user.username, password="testpass")
         rev = RevisionFactory(is_approved=False)
         contributors = UserFactory.create_batch(2)
-        data = dict(users=",".join(u.username for u in contributors))
+        data = {"users": ",".join(u.username for u in contributors)}
         response = self.client.post(
             reverse("wiki.add_contributor", args=[rev.document.slug]), data=data
         )
@@ -970,7 +969,7 @@ class AddContributorVisibilityTests(TestCase):
                 self.client.login(username=user.username, password="testpass")
                 rev = RevisionFactory(is_approved=False)
                 contributors = UserFactory.create_batch(2)
-                data = dict(users=",".join(u.username for u in contributors))
+                data = {"users": ",".join(u.username for u in contributors)}
                 response = self.client.post(
                     reverse("wiki.add_contributor", args=[rev.document.slug]), data=data
                 )
@@ -985,7 +984,7 @@ class AddContributorVisibilityTests(TestCase):
         self.client.login(username=creator.username, password="testpass")
         rev = RevisionFactory(is_approved=False, creator=creator)
         contributors = UserFactory.create_batch(2)
-        data = dict(users=",".join(u.username for u in contributors))
+        data = {"users": ",".join(u.username for u in contributors)}
         response = self.client.post(
             reverse("wiki.add_contributor", args=[rev.document.slug]), data=data
         )
@@ -1431,7 +1430,7 @@ class RedirectTests(TestCase):
     """Tests for the REDIRECT wiki directive"""
 
     def setUp(self):
-        super(RedirectTests, self).setUp()
+        super().setUp()
         ProductFactory()
 
     def test_redirect_suppression(self):
@@ -1448,7 +1447,7 @@ class LocaleRedirectTests(TestCase):
     # Some of these may fail or be invalid if your WIKI_DEFAULT_LANGUAGE is de.
 
     def setUp(self):
-        super(LocaleRedirectTests, self).setUp()
+        super().setUp()
         ProductFactory()
         en = settings.WIKI_DEFAULT_LANGUAGE
         self.en_doc = ApprovedRevisionFactory(
@@ -1476,7 +1475,7 @@ class LocaleRedirectTests(TestCase):
 
 class JsonViewTests(TestCase):
     def setUp(self):
-        super(JsonViewTests, self).setUp()
+        super().setUp()
 
         d = DocumentFactory(title="an article title", slug="article-title")
         RevisionFactory(document=d, is_approved=True)
@@ -1566,7 +1565,7 @@ class DocumentEditingTests(TestCase):
     """Tests for the document-editing view"""
 
     def setUp(self):
-        super(DocumentEditingTests, self).setUp()
+        super().setUp()
         self.u = UserFactory()
         # The "delete_document" permission is one of the ways to allow
         # a user to "see" documents that have no approved content.
@@ -1897,7 +1896,7 @@ class DocumentEditingTests(TestCase):
 
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
-        super(AddRemoveContributorTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.contributor = UserFactory()
         # The "delete_document" permission is one of the ways to allow
@@ -1981,7 +1980,7 @@ class VoteTests(TestCase):
 
 class TestDocumentLocking(TestCase):
     def setUp(self):
-        super(TestDocumentLocking, self).setUp()
+        super().setUp()
         try:
             self.redis = redis_client("default")
             self.redis.flushdb()
@@ -2094,14 +2093,14 @@ class FallbackSystem(TestCase):
     """Check that fallback locales on article level are working correctly."""
 
     def setUp(self):
-        super(FallbackSystem, self).setUp()
+        super().setUp()
         ProductFactory()
 
     def create_documents(self, locale):
         """Create a document in English and a translated document for the locale"""
         en = settings.WIKI_DEFAULT_LANGUAGE
         en_content = "This article is in English"
-        trans_content = "This article is translated into %slocale" % locale
+        trans_content = "This article is translated into {}locale".format(locale)
         # Create an English article and a translation for the locale
         en_doc = DocumentFactory(locale=en)
         ApprovedRevisionFactory(

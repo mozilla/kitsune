@@ -1,5 +1,5 @@
 import hashlib
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -88,7 +88,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
         if user is None:
             continue
         last_activity = datetime.fromisoformat(bucket.latest.hits.hits[0]._source.created)
-        days_since_last_activity = (datetime.now(tz=timezone.utc) - last_activity).days
+        days_since_last_activity = (datetime.now(tz=UTC) - last_activity).days
         top_contributors.append(
             {
                 "count": bucket.doc_count,

@@ -30,7 +30,7 @@ class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
         if request and not request.path == django_reverse("oidc_authentication_callback"):
             return None
 
-        return super(SumoOIDCAuthBackend, self).authenticate(request, **kwargs)
+        return super().authenticate(request, **kwargs)
 
 
 class FXAAuthBackend(OIDCAuthenticationBackend):
@@ -88,7 +88,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
 
-        user = super(FXAAuthBackend, self).create_user(claims)
+        user = super().create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Mozilla accounts
         profile, created = Profile.objects.get_or_create(user=user)
@@ -160,13 +160,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if not users:
             # We did not match any users so far. Let's call the super method
             # which will try to match users based on email
-            users = super(FXAAuthBackend, self).filter_users_by_claims(claims)
+            users = super().filter_users_by_claims(claims)
         return users
 
     def get_userinfo(self, access_token, id_token, payload):
         """Return user details and subscription information dictionary."""
 
-        user_info = super(FXAAuthBackend, self).get_userinfo(access_token, id_token, payload)
+        user_info = super().get_userinfo(access_token, id_token, payload)
 
         if not settings.FXA_OP_SUBSCRIPTION_ENDPOINT:
             return user_info
@@ -175,7 +175,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         try:
             sub_response = requests.get(
                 settings.FXA_OP_SUBSCRIPTION_ENDPOINT,
-                headers={"Authorization": "Bearer {0}".format(access_token)},
+                headers={"Authorization": "Bearer {}".format(access_token)},
                 verify=self.get_settings("OIDC_VERIFY_SSL", True),
             )
             sub_response.raise_for_status()
@@ -266,4 +266,4 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if request and request.path == django_reverse("oidc_authentication_callback"):
             return None
 
-        return super(FXAAuthBackend, self).authenticate(request, **kwargs)
+        return super().authenticate(request, **kwargs)

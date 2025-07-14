@@ -125,8 +125,8 @@ def _count_contributors_in_range(querysets, users, date_range):
 
     for queryset, fields in querysets:
         for field in fields:
-            filters = {"%s__in" % field: users, "created__gte": start, "created__lt": end}
-            retained_users |= set(getattr(o, field) for o in queryset.filter(**filters))
+            filters = {"{}__in".format(field): users, "created__gte": start, "created__lt": end}
+            retained_users |= {getattr(o, field) for o in queryset.filter(**filters)}
 
     return len(retained_users)
 
@@ -140,7 +140,7 @@ def _get_cohort(querysets, date_range):
         potential_users = set()
 
         for field in fields:
-            potential_users |= set(getattr(cont, field) for cont in contributions_in_range)
+            potential_users |= {getattr(cont, field) for cont in contributions_in_range}
 
         def is_in_cohort(u):
             qs = [Q(**{field: u}) for field in fields]

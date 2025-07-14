@@ -1,16 +1,19 @@
-import allure
-from pytest_check import check
-import pytest
 import re
-from playwright.sync_api import expect, Page, BrowserContext
+
+import allure
+import pytest
+from playwright.sync_api import BrowserContext, Page, expect
+from pytest_check import check
 from slugify import slugify
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages)
+    KBArticlePageMessages,
+)
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
-    KBArticleRevision)
+    KBArticleRevision,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

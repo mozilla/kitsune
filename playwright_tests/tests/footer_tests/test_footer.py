@@ -1,9 +1,11 @@
 import re
+from urllib.parse import urljoin
+
 import allure
 import pytest
+from playwright.sync_api import Page, expect
 from pytest_check import check
-from playwright.sync_api import expect, Page
-from urllib.parse import urljoin
+
 from playwright_tests.pages.sumo_pages import SumoPages
 
 

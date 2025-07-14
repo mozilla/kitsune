@@ -486,8 +486,8 @@ class RestrictedVisibilityTests(TestCase):
         NewPostEvent(post1).fire(exclude=[post1.creator])
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
-            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
-            set((self.user1.email, self.user2.email)),
+            {mail.outbox[0].to[0], mail.outbox[1].to[0]},
+            {self.user1.email, self.user2.email},
         )
 
         doc.restrict_to_groups.add(self.group)
@@ -514,8 +514,8 @@ class RestrictedVisibilityTests(TestCase):
         NewThreadEvent(post1).fire(exclude=[post1.creator])
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
-            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
-            set((self.user1.email, self.user2.email)),
+            {mail.outbox[0].to[0], mail.outbox[1].to[0]},
+            {self.user1.email, self.user2.email},
         )
 
         doc.restrict_to_groups.add(self.group)
@@ -543,8 +543,8 @@ class RestrictedVisibilityTests(TestCase):
         NewPostInLocaleEvent(post1).fire(exclude=[post1.creator])
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
-            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
-            set((self.user1.email, self.user2.email)),
+            {mail.outbox[0].to[0], mail.outbox[1].to[0]},
+            {self.user1.email, self.user2.email},
         )
 
         doc.restrict_to_groups.add(self.group)
@@ -571,8 +571,8 @@ class RestrictedVisibilityTests(TestCase):
         NewThreadInLocaleEvent(post1).fire(exclude=[post1.creator])
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(
-            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
-            set((self.user1.email, self.user2.email)),
+            {mail.outbox[0].to[0], mail.outbox[1].to[0]},
+            {self.user1.email, self.user2.email},
         )
 
         doc.restrict_to_groups.add(self.group)

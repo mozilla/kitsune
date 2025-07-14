@@ -1,3 +1,100 @@
+[project]
+name = "kitsune"
+version = "0.1.0"
+description = "Mozilla Support Platform"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.11, <3.12"
+license = "BSD-3-Clause"
+dependencies = [
+    "APScheduler>=3.10.4,<4",
+    "Django>=4.2.22,<5",
+    "babis>=0.2.4,<0.3",
+    "Pillow>=11.0.0,<12",
+    "bleach[css]>=6.1.0,<7",
+    "boto3>=1.34.17,<2",
+    "celery==5.4.0",
+    "dennis>=1.1.0,<2",
+    "mozilla-django-oidc==4.0.0",
+    "dj-database-url>=1.3.0,<2",
+    "django-jinja>=2.11.0,<3",
+    "lxml>=4.9.4,<5",
+    "elasticsearch>=7.17.9,<8",
+    "elasticsearch-dsl>=7.4.1,<8",
+    "gunicorn>=22.0.0,<23",
+    "gevent>=23.9.1,<24",
+    "newrelic>=9.5.0,<10",
+    "django-waffle>=3.0.0,<4",
+    "python-decouple~=3.8",
+    "sentry-sdk>=2.8.0,<3",
+    "whitenoise>=6.6.0,<7",
+    "zenpy>=2.0.47,<3",
+    "idna~=3.7",
+    "django-allow-cidr>=0.6.0,<0.7",
+    "html5lib~=1.1",
+    "py-wikimarkup>=2.3.0,<3",
+    "python-dateutil>=2.8.2,<3",
+    "python-memcached~=1.61",
+    "redis>=4.6.0,<5",
+    "django-cors-headers>=3.14.0,<4",
+    "django-enforce-host>=1.1.0,<2",
+    "django-cache-url>=3.4.5,<4",
+    "django-extensions>=3.2.3,<4",
+    "django-filter~=23.5",
+    "django-redis>=5.4.0,<6",
+    "factory-boy>=3.3.0,<4",
+    "Faker>=16.9.0,<17",
+    "simplejson>=3.19.2,<4",
+    "twython>=3.9.1,<4",
+    "translate-toolkit>=3.12.1,<4",
+    "django-ratelimit>=4.1.0,<5",
+    "django-storages[google]>=1.14.2,<2",
+    "django-taggit>=6.1.0,<7",
+    "django-user-agents>=0.4.0,<0.5",
+    "django-watchman==1.3.0",
+    "premailer>=3.10.0,<4",
+    "pyquery>=2.0.0,<3",
+    "parameterized>=0.8.1,<0.9",
+    "Werkzeug==3.0.6",
+    "commonware>=0.6.0,<0.7",
+    "django-statici18n>=2.4.0,<3",
+    "django-timezone-field~=5.1",
+    "djangorestframework>=3.15.2,<4",
+    "django-activity-stream>=1.4.2,<2",
+    "django-jsonfield-compat>=0.4.4,<0.5",
+    "django-jsonfield-backport>=1.0.5,<2",
+    "cffi>=1.16.0,<2",
+    "django-mozilla-product-details>=1.0.3,<2",
+    "django-csp==3.8rc",
+    "oauthlib>=3.2.2,<4",
+    "protobuf>=4.25.8,<5",
+    "Babel>=2.14.0,<3",
+    "Jinja2>=3.1.6,<4",
+    "google-auth>=2.26.2,<3",
+    "graphene-django>=3.2.0,<4",
+    "django-guardian>=2.4.0,<3",
+    "pyOpenSSL>=25.1.0",
+    "mkdocs>=1.5.3,<2",
+    "mkdocs-material>=9.5.3,<10",
+    "dockerflow>=2022.8.0,<2023",
+    "google-analytics-data==0.18.7",
+    "pyparsing==3.1.2",
+    "django-silk>=5.1.0,<6",
+    "requests>=2.32.4,<3",
+    "fuzzywuzzy>=0.18.0,<0.19",
+    "django-ses==4.4.0",
+    "django-post-office==3.9.1",
+    "langchain==0.3.25",
+    "langchain-google-vertexai==2.0.23",
+]
+
+[project.optional-dependencies]
+dev = [
+    "psycopg2-binary>=2.9.9,<3"
+]
+prod = [
+    "psycopg2>=2.9.9,<3"
+]
+
 [tool.black]
 line-length = 99
 # NB: this can only be updated once black supports the target python version,
@@ -6,129 +103,85 @@ line-length = 99
 target-version = ['py311']
 exclude = "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
 
-[tool.poetry]
-name = "kitsune"
-version = "0.1.0"
-description = "Mozilla Support Platform"
-authors = ["Your Name <you@example.com>"]
-license = "BSD 3-Clause"
+[dependency-groups]
+dev = [
+    "ipdb>=0.13.11,<0.14",
+    "ruff>=0.4.0,<1",
+    "appnope>=0.1.3,<0.2",
+    "argparse>=1.4.0,<2",
+    "django-cache-panel>=0.1,<0.2",
+    "jsonschema>=4.20.0,<5",
+    "pre-commit>=3.6.0,<4",
+    "q~=2.7",
+    "debugpy>=1.8.0,<2",
+    "urlwait~=1.0",
+    "testfixtures>=7.2.2,<8",
+    "sphinx-rtd-theme>=1.3.0,<2",
+    "sphinx>=5.3.0,<6",
+    "recommonmark>=0.7.1,<0.8",
+    "sphinxcontrib-httpdomain>=1.8.1,<2",
+    "tabulate>=0.9.0,<0.10",
+    "rope>=1.11.0,<2",
+    "pytest-html>=3.2.0,<4",
+    "docker>=6.1.3,<7",
+    "nltk>=3.9.1,<4",
+    "pytest-xdist>=3.6.1,<4",
+    "pytest-playwright>=0.7.0,<0.8",
+    "playwright>=1.51.0,<2",
+    "pytest-rerunfailures~=15.0",
+    "pytest-check>=2.5.3,<3",
+    "allure-pytest>=2.14.0,<3",
+    "pytest>=8.3.5,<9",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-APScheduler = "^3.10.4"
-Django = "^4.2.22"
-babis = "^0.2.4"
-Pillow = "^11.0.0"
-bleach = {version = "^6.1.0", extras = ["css"]}
-boto3 = "^1.34.17"
-celery = "5.4.0"
-dennis = "^1.1.0"
-mozilla-django-oidc = "4.0.0"
-dj-database-url = "^1.3.0"
-django-jinja = "^2.11.0"
-lxml = "^4.9.4"
-elasticsearch = "^7.17.9"
-elasticsearch-dsl = "^7.4.1"
-gunicorn = "^22.0.0"
-gevent = "^23.9.1"
-newrelic = "^9.5.0"
-django-waffle = "^3.0.0"
-python-decouple = "^3.8"
-sentry-sdk = "^2.8.0"
-whitenoise = "^6.6.0"
-zenpy = "^2.0.47"
-idna = "^3.7"
-django-allow-cidr = "^0.6.0"
-html5lib = "^1.1"
-py-wikimarkup = "^2.3.0"
-python-dateutil = "^2.8.2"
-python-memcached = "^1.61"
-redis = "^4.6.0"
-django-cors-headers = "^3.14.0"
-django-enforce-host = "^1.1.0"
-django-cache-url = "^3.4.5"
-django-extensions = "^3.2.3"
-django-filter = "^23.5"
-django-redis = "^5.4.0"
-factory-boy = "^3.3.0"
-Faker = "^16.9.0"
-simplejson = "^3.19.2"
-twython = "^3.9.1"
-translate-toolkit = "^3.12.1"
-django-ratelimit = "^4.1.0"
-django-storages = {version = "^1.14.2", extras = ["google"]}
-django-taggit = "^6.1.0"
-django-user-agents = "^0.4.0"
-django-watchman = "1.3.0"
-premailer = "^3.10.0"
-pyquery = "^2.0.0"
-parameterized = "^0.8.1"
-Werkzeug = "3.0.6"
-commonware = "^0.6.0"
-django-statici18n = "^2.4.0"
-django-timezone-field = "^5.1"
-djangorestframework = "^3.15.2"
-django-activity-stream = "^1.4.2"
-django-jsonfield-compat = "^0.4.4"
-django-jsonfield-backport = "^1.0.5"
-cffi = "^1.16.0"
-django-mozilla-product-details = "^1.0.3"
-django-csp = "3.8rc"
-oauthlib = "^3.2.2"
-protobuf = "^4.25.8"
-Babel = "^2.14.0"
-Jinja2 = "^3.1.6"
-google-auth = "^2.26.2"
-graphene-django = "^3.2.0"
-django-guardian = "^2.4.0"
-psycopg2 = "^2.9.9"
-mkdocs = "^1.5.3"
-mkdocs-material = "^9.5.3"
-dockerflow = "^2022.8.0"
-google-analytics-data = "0.18.7"
-pyparsing = "3.1.2"
-django-silk = "^5.1.0"
-requests = "^2.32.4"
-fuzzywuzzy = "^0.18.0"
-django-ses = "4.4.0"
-django-post-office = "3.9.1"
-langchain = "0.3.25"
-langchain-google-vertexai = "2.0.23"
+[tool.ruff]
+target-version = "py311"
+line-length = 99
 
-[tool.poetry.group.dev.dependencies]
-ipdb = "^0.13.11"
-isort = "^5.13.2"
-pep8 = "^1.7.1"
-appnope = "^0.1.3"
-argparse = "^1.4.0"
-django-cache-panel = "^0.1"
-jsonschema = "^4.20.0"
-pre-commit = "^3.6.0"
-q = "^2.7"
-pylint = "^2.17.7"
-debugpy = "^1.8.0"
-urlwait = "^1.0"
-testfixtures = "^7.2.2"
-sphinx-rtd-theme = "^1.3.0"
-sphinx = "^5.3.0"
-recommonmark = "^0.7.1"
-sphinxcontrib-httpdomain = "^1.8.1"
-tabulate = "^0.9.0"
-pylint-django = "^2.5.5"
-rope = "^1.11.0"
-black = "^24.10.0"
-pytest-html = "^3.2.0"
-docker = "^6.1.3"
-flake8 = "^7.1.1"
-nltk = "^3.9.1"
-pytest-xdist = "^3.6.1"
-pytest-playwright = "^0.7.0"
-playwright = "^1.51.0"
-pytest-rerunfailures = "^15.0"
-pytest-check = "^2.5.3"
-allure-pytest = "^2.14.0"
-pytest = "^8.3.5"
+[tool.ruff.lint]
+extend-select = ["E", "W", "F", "I", "B", "C4", "UP", "N", "PL", "RUF"]
+ignore = [
+    "E501",  # Line too long - already ignored
+    "RUF012",  # Mutable class attributes should be annotated with typing.ClassVar
+    "RUF015",  # Prefer next(iter(...)) over single element slice
+    "RUF007",  # Prefer itertools.pairwise() over zip() when iterating over successive pairs
+    "N813",   # Camelcase imported as lowercase
+    "N814",   # Camelcase imported as constant
+    "N817",   # CamelCase imported as acronym
+    "PLR0913", # Too many arguments in function definition
+    "PLR2004", # Magic value used in comparison
+    "PLR1714", # Consider merging multiple comparisons
+    "B904",   # Within an except clause, raise exceptions with raise ... from err
+    "B008",   # Do not perform function call in argument defaults
+    "N802",   # Function name should be lowercase
+    "N806",   # Variable in function should be lowercase
+    "N803",   # Argument name should be lowercase
+    "N801",   # Class name should use CapWords convention
+    "N818",   # Exception name should be named with an Error suffix
+    "PLC0415", # Import should be top level of a file
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
+    "PLR0911", # Too many return statements
+    "B023",   # Function definition does not bind loop variable
+    "B034",   # re.sub should pass count and flags as keyword arguments
+    "B026",   # Star-arg unpacking after a keyword argument
+    "B027",   # Empty method in abstract base class
+    "B007",   # Loop control variable not used within loop body
+    "B018",   # Found useless expression
+    "C400",   # Unnecessary generator (rewrite as a list comprehension)
+    "PLE0101", # Explicit return in __init__
+    "PLW0603", # Using the global statement
+    "PLW2901", # for loop variable overwritten by assignment target
+    "UP031",  # Use format arguments
+    "UP032",  # Use f-string instead of format call
+    "UP028",  # Replace yield over for loop with yield from
+    "E721",   # Do not compare types, use isinstance()
+    "E741",   # Ambiguous variable name
+    "E402",   # Module level import not at top of file
+    "RUF001", # String contains ambiguous characters
+]
+exclude = ["**/migrations/**", "kitsune/sumo/db_strings.py"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

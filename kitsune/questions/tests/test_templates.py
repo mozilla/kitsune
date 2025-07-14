@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import random
 from datetime import datetime, timedelta
@@ -29,7 +28,7 @@ class AnswersTemplateTestCase(TestCase):
     """Test the Answers template."""
 
     def setUp(self):
-        super(AnswersTemplateTestCase, self).setUp()
+        super().setUp()
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
         self.question = AnswerFactory().question
@@ -54,7 +53,7 @@ class AnswersTemplateTestCase(TestCase):
         # Check canonical url
         doc = pq(response.content)
         self.assertEqual(
-            "%s/en-US/questions/%s" % (settings.CANONICAL_URL, self.question.id),
+            "{}/en-US/questions/{}".format(settings.CANONICAL_URL, self.question.id),
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
 
@@ -82,7 +81,7 @@ class AnswersTemplateTestCase(TestCase):
         self.assertEqual(1, new_answer.images.count())
         image = new_answer.images.all()[0]
         name = "098f6b.png"
-        message = 'File name "%s" does not contain "%s"' % (image.file.name, name)
+        message = 'File name "{}" does not contain "{}"'.format(image.file.name, name)
         assert name in image.file.name, message
         self.assertEqual(self.user.username, image.creator.username)
 
@@ -103,7 +102,7 @@ class AnswersTemplateTestCase(TestCase):
         doc = pq(response.content)
         self.assertEqual(1, len(doc("div.solution")))
         div = doc("h3.is-solution")[0].getparent().getparent()
-        self.assertEqual("answer-%s" % ans.id, div.attrib["id"])
+        self.assertEqual("answer-{}".format(ans.id), div.attrib["id"])
         q = Question.objects.get(pk=self.question.id)
         self.assertEqual(q.solution, ans)
         self.assertEqual(q.solver, self.question.creator)
@@ -242,7 +241,7 @@ class AnswersTemplateTestCase(TestCase):
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
 
-        self.assertEqual(1, len(doc("#answer-%s span.is-helpful" % self.answer.id)))
+        self.assertEqual(1, len(doc("#answer-{} span.is-helpful".format(self.answer.id))))
         self.assertEqual(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -308,8 +307,7 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/questions/%s/delete"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
+            "/{}{}?next=/en-US/questions/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
             redirect[0],
         )
 
@@ -317,8 +315,7 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/questions/%s/delete"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
+            "/{}{}?next=/en-US/questions/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
             redirect[0],
         )
 
@@ -353,8 +350,7 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/questions/%s/delete/%s"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
+            "/{}{}?next=/en-US/questions/{}/delete/{}".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
             redirect[0],
         )
 
@@ -362,8 +358,7 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/questions/%s/delete/%s"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
+            "/{}{}?next=/en-US/questions/{}/delete/{}".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
             redirect[0],
         )
 
@@ -446,7 +441,7 @@ class AnswersTemplateTestCase(TestCase):
         doc = pq(response.content)
         self.assertEqual(1, len(doc("li.edit")))
         new_answer = self.question.answers.order_by("-id")[0]
-        self.assertEqual(1, len(doc("#answer-%s li.edit" % new_answer.id)))
+        self.assertEqual(1, len(doc("#answer-{} li.edit".format(new_answer.id))))
 
         # Make sure it can be edited
         content = "New content for answer"
@@ -485,8 +480,7 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/%s%s?next=/en-US/questions/%s/lock"
-            % (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id),
+            "/{}{}?next=/en-US/questions/{}/lock".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id),
             redirect[0],
         )
 
@@ -818,7 +812,7 @@ class TaggingViewTestsAsTagger(TestCase):
     """
 
     def setUp(self):
-        super(TaggingViewTestsAsTagger, self).setUp()
+        super().setUp()
 
         u = UserFactory()
         add_permission(u, Question, "tag_question")
@@ -961,7 +955,7 @@ class TaggingViewTestsAsAdmin(TestCase):
     """Tests for views that create new tags, logged in as someone who can"""
 
     def setUp(self):
-        super(TaggingViewTestsAsAdmin, self).setUp()
+        super().setUp()
 
         u = UserFactory()
         add_permission(u, Question, "tag_question")
@@ -1047,7 +1041,7 @@ class QuestionsTemplateTestCase(TestCase):
         doc = pq(response.content)
         self.assertEqual(1, len(doc(".forum--question-item")))
         self.assertEqual(
-            "%s/en-US/questions/all?tagged=mobile&show=all" % settings.CANONICAL_URL,
+            "{}/en-US/questions/all?tagged=mobile&show=all".format(settings.CANONICAL_URL),
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
 
@@ -1095,7 +1089,7 @@ class QuestionsTemplateTestCase(TestCase):
             self.assertEqual(len(expected), len(doc(".forum--question-item")))
 
             for q in expected:
-                self.assertEqual(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
+                self.assertEqual(1, len(doc(".forum--question-item[id=question-{}]".format(q.id))))
 
         # No filtering -> All questions.
         check("all", [q1, q2, q3])
@@ -1106,11 +1100,11 @@ class QuestionsTemplateTestCase(TestCase):
         # Filter on p3 -> No results
         check(p3.slug, [])
         # Filter on p1,p2
-        check("%s,%s" % (p1.slug, p2.slug), [q2, q3])
+        check("{},{}".format(p1.slug, p2.slug), [q2, q3])
         # Filter on p1,p3
-        check("%s,%s" % (p1.slug, p3.slug), [q2])
+        check("{},{}".format(p1.slug, p3.slug), [q2])
         # Filter on p2,p3
-        check("%s,%s" % (p2.slug, p3.slug), [q3])
+        check("{},{}".format(p2.slug, p3.slug), [q3])
 
     def test_topic_filter(self):
         p = ProductFactory()
@@ -1137,7 +1131,7 @@ class QuestionsTemplateTestCase(TestCase):
             # self.assertEqual(len(expected), len(doc('.forum--question-item')))
 
             for q in expected:
-                self.assertEqual(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
+                self.assertEqual(1, len(doc(".forum--question-item[id=question-{}]".format(q.id))))
 
         # No filtering -> All questions.
         check({}, [q1, q2, q3])
@@ -1170,7 +1164,7 @@ class QuestionsTemplateTestCase(TestCase):
     def test_truncated_text_is_stripped(self):
         """Verify we strip html from truncated text."""
         long_str = "".join(random.choice(ascii_letters) for x in range(170))
-        QuestionFactory(content="<p>%s</p>" % long_str)
+        QuestionFactory(content="<p>{}</p>".format(long_str))
         response = self.client.get(reverse("questions.list", args=["all"]))
 
         # Verify that the <p> was stripped
@@ -1215,7 +1209,7 @@ class QuestionEditingTests(TestCase):
     """Tests for the question-editing view and templates"""
 
     def setUp(self):
-        super(QuestionEditingTests, self).setUp()
+        super().setUp()
 
         self.user = UserFactory()
         add_permission(self.user, Question, "change_question")
@@ -1234,8 +1228,8 @@ class QuestionEditingTests(TestCase):
         q = Question.objects.get(pk=question_id)
         extra_fields = q.product_config.extra_fields
         for field in extra_fields:
-            assert doc("input[name=%s]" % field) or doc("textarea[name=%s]" % field), (
-                "The %s field is missing from the edit page." % field
+            assert doc("input[name={}]".format(field)) or doc("textarea[name={}]".format(field)), (
+                "The {} field is missing from the edit page.".format(field)
             )
 
     def test_no_extra_fields(self):
@@ -1312,7 +1306,7 @@ class AAQTemplateTestCase(TestCase):
     }
 
     def setUp(self):
-        super(AAQTemplateTestCase, self).setUp()
+        super().setUp()
 
         self.user = UserFactory()
         self.product = ProductFactory(title="Firefox", slug="firefox")
@@ -1355,7 +1349,7 @@ class AAQTemplateTestCase(TestCase):
         # Make sure question is in questions list
         response = self.client.get(reverse("questions.list", args=["all"]))
         doc = pq(response.content)
-        self.assertEqual(1, len(doc("#question-%s" % question.id)))
+        self.assertEqual(1, len(doc("#question-{}".format(question.id))))
         # And no email was sent
         self.assertEqual(0, len(mail.outbox))
 

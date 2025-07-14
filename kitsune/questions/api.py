@@ -128,7 +128,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         return [{"name": tag.name, "slug": tag.slug} for tag in obj.tags.all()]
 
     def validate(self, data):
-        user = getattr(self.context.get("request"), "user")
+        user = self.context.get("request").user
         if user and not user.is_anonymous and data.get("creator") is None:
             data["creator"] = user
         return data
@@ -156,7 +156,7 @@ class QuestionFilter(django_filters.FilterSet):
     updated = django_filters.IsoDateTimeFilter()
     created = django_filters.IsoDateTimeFilter()
 
-    class Meta(object):
+    class Meta:
         model = Question
         fields = {
             "creator": ["exact"],
@@ -453,7 +453,7 @@ class AnswerSerializer(serializers.ModelSerializer):
         return ProfileFKSerializer(updated_by).data if updated_by else None
 
     def validate(self, data):
-        user = getattr(self.context.get("request"), "user")
+        user = self.context.get("request").user
         if user and not user.is_anonymous and data.get("creator") is None:
             data["creator"] = user
         return data
@@ -475,7 +475,7 @@ class AnswerFilter(django_filters.FilterSet):
     updated = django_filters.IsoDateTimeFilter()
     created = django_filters.IsoDateTimeFilter()
 
-    class Meta(object):
+    class Meta:
         model = Answer
         fields = {
             "question": ["exact"],

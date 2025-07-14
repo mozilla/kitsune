@@ -3,7 +3,7 @@ from guardian.shortcuts import assign_perm
 from kitsune.access.utils import has_perm
 from kitsune.forums.tests import ForumFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class HasPermTests(TestCase):

@@ -2,8 +2,9 @@ from playwright.sync_api import Page
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
-from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import \
-    KBArticleShowHistoryPage
+from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import (
+    KBArticleShowHistoryPage,
+)
 
 
 class DeleteKbArticleFlow:

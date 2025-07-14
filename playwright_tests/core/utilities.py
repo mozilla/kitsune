@@ -1,26 +1,25 @@
-import os
-import warnings
-import requests
-import time
-import re
 import json
+import os
 import random
-from PIL import Image
-from PIL import ImageChops
-from typing import Any, Union
+import re
+import time
+import warnings
 from datetime import datetime
+from typing import Any
 
+import requests
 from dateutil import parser
 from dateutil.tz import tz
 from nltk import SnowballStemmer, WordNetLemmatizer
-from playwright.sync_api import Page, Locator
+from PIL import Image, ImageChops
+from playwright.sync_api import Locator, Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from requests.exceptions import HTTPError
 
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.test_data.search_synonym import SearchSynonyms
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class Utilities:
@@ -28,47 +27,47 @@ class Utilities:
         self.page = page
 
     # Fetching test data from json files.
-    with open("test_data/profile_edit.json", "r", encoding="utf-8") as edit_test_data_file:
+    with open("test_data/profile_edit.json", encoding="utf-8") as edit_test_data_file:
         profile_edit_test_data = json.load(edit_test_data_file)
     edit_test_data_file.close()
 
-    with open("test_data/question_reply.json", "r") as question_test_data_file:
+    with open("test_data/question_reply.json") as question_test_data_file:
         question_test_data = json.load(question_test_data_file)
     question_test_data_file.close()
 
-    with open("test_data/aaq_question.json", "r") as aaq_question_test_data_file:
+    with open("test_data/aaq_question.json") as aaq_question_test_data_file:
         aaq_question_test_data = json.load(aaq_question_test_data_file)
     aaq_question_test_data_file.close()
 
-    with open("test_data/add_kb_article.json", "r") as kb_article_test_data_file:
+    with open("test_data/add_kb_article.json") as kb_article_test_data_file:
         kb_article_test_data = json.load(kb_article_test_data_file)
     kb_article_test_data_file.close()
 
-    with open("test_data/kb_new_thread.json", "r") as kb_new_thread_test_data_file:
+    with open("test_data/kb_new_thread.json") as kb_new_thread_test_data_file:
         kb_new_thread_test_data = json.load(kb_new_thread_test_data_file)
     kb_article_test_data_file.close()
 
-    with open("test_data/kb_revision.json", "r") as kb_revision_test_data_file:
+    with open("test_data/kb_revision.json") as kb_revision_test_data_file:
         kb_revision_test_data = json.load(kb_revision_test_data_file)
     kb_revision_test_data_file.close()
 
-    with open("test_data/user_message.json", "r") as user_message_test_data_file:
+    with open("test_data/user_message.json") as user_message_test_data_file:
         user_message_test_data = json.load(user_message_test_data_file)
     user_message_test_data_file.close()
 
-    with open("test_data/general_data.json", "r") as general_test_data_file:
+    with open("test_data/general_data.json") as general_test_data_file:
         general_test_data = json.load(general_test_data_file)
     general_test_data_file.close()
 
-    with open("test_data/different_endpoints.json", "r") as different_endpoints_file:
+    with open("test_data/different_endpoints.json") as different_endpoints_file:
         different_endpoints = json.load(different_endpoints_file)
     different_endpoints_file.close()
 
-    with open("test_data/discussion_thread_data.json", "r") as discussion_thread_data_file:
+    with open("test_data/discussion_thread_data.json") as discussion_thread_data_file:
         discussion_thread_data = json.load(discussion_thread_data_file)
     discussion_thread_data_file.close()
 
-    with open("test_data/ga4_data.json", "r") as ga4_data_file:
+    with open("test_data/ga4_data.json") as ga4_data_file:
         ga4_data = json.load(ga4_data_file)
     ga4_data_file.close()
 
@@ -348,7 +347,7 @@ class Utilities:
         top_navbar = TopNavbar(self.page)
         if not tried_once:
             self.delete_cookies()
-        with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
+        with open(f"core/sessions/.auth/{session_file_name}.json") as file:
             cookies_data = json.load(file)
         self.page.context.add_cookies(cookies=cookies_data['cookies'])
         # A SUMO action needs to be done in order to have the page refreshed with the correct
@@ -546,7 +545,7 @@ class Utilities:
         print("Search result not found!")
         return False
 
-    def _contains_synonym(self, search_result_lower, search_term: Union[str, list[str]],
+    def _contains_synonym(self, search_result_lower, search_term: str | list[str],
                           search_term_split) -> [bool, Any]:
         """
         This helper function checks if any synonyms of a given search term or its components

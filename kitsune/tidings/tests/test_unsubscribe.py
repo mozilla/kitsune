@@ -17,7 +17,7 @@ class UnsubscribeTests(TestCase):
         watch = WatchFactory(secret="ou812")
 
         url = reverse("tidings.unsubscribe", args=(watch.id,), locale="en-US")
-        resp = self.client.post(url + "?s={0}".format(watch.secret))
+        resp = self.client.post(url + "?s={}".format(watch.secret))
 
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed("tidings/unsubscribe_success.html")

@@ -1,18 +1,18 @@
 from pyparsing import (
+    Literal,
+    Regex,
+    White,
     Word,
     alphas,
-    Literal,
-    White,
-    Regex,
+    dblQuotedString,
     infixNotation,
     opAssoc,
-    stringEnd,
-    dblQuotedString,
     removeQuotes,
+    stringEnd,
 )
 
-from .operators import FieldOperator, NotOperator, AndOperator, OrOperator, SpaceOperator
-from .tokens import TermToken, RangeToken, ExactToken
+from .operators import AndOperator, FieldOperator, NotOperator, OrOperator, SpaceOperator
+from .tokens import ExactToken, RangeToken, TermToken
 
 # convenience:
 # DRY things up
@@ -58,7 +58,7 @@ search_expression = (
 )
 
 
-class Parser(object):
+class Parser:
     def __init__(self, query):
         self.parsed = search_expression.parseString(query)[0]
 

@@ -6,7 +6,7 @@ from kitsune.sumo.urlresolvers import reverse
 
 def _activate_users(admin, request, qs):
     num = qs.update(is_active=True)
-    msg = "%s users activated." % num if num != 1 else "One user activated."
+    msg = "{} users activated.".format(num) if num != 1 else "One user activated."
     admin.message_user(request, msg)
 
 
@@ -15,7 +15,7 @@ _activate_users.short_description = "Activate selected users"  # type: ignore
 
 def _deactivate_users(admin, request, qs):
     num = qs.update(is_active=False)
-    msg = "%s users deactivated." % num if num != 1 else "One user deactivated."
+    msg = "{} users deactivated.".format(num) if num != 1 else "One user deactivated."
     admin.message_user(request, msg)
 
 

@@ -92,7 +92,7 @@ class RootTopicSerializer(TopicShortSerializer):
 
     @property
     def data(self):
-        topics = super(RootTopicSerializer, self).data
+        topics = super().data
         return {
             "subtopics": topics,
             "documents": [],

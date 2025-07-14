@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Groups users into monthly cohorts, and analyzes drop off rate for each group.
@@ -30,7 +29,7 @@ def run_():
         first_day_of_previous_month = (boundaries[-1] - timedelta(days=1)).replace(day=1)
         boundaries.append(first_day_of_previous_month)
     boundaries.reverse()
-    ranges = list(zip(boundaries[:-1], boundaries[1:]))
+    ranges = list(zip(boundaries[:-1], boundaries[1:], strict=False))
 
     reports = [
         ('L10n', Revision.objects.exclude(document__locale='en-US')),
@@ -48,15 +47,15 @@ def run_():
 def count_contributors_in_range(queryset, users, date_range):
     """Of the group ``users``, count how many made a contribution in ``date_range``."""
     start, end = date_range
-    users = set(o.creator for o in
-                queryset.filter(creator__in=users, created__gte=start, created__lt=end))
+    users = {o.creator for o in
+                queryset.filter(creator__in=users, created__gte=start, created__lt=end)}
     return len(users)
 
 
 def get_cohort(queryset, date_range):
     start, end = date_range
     contributions_in_range = queryset.filter(created__gte=start, created__lt=end)
-    potential_users = set(cont.creator for cont in contributions_in_range)
+    potential_users = {cont.creator for cont in contributions_in_range}
 
     def is_in_cohort(u):
         first_contrib = queryset.filter(creator=u).order_by('id')[0]

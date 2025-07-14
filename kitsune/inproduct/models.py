@@ -23,4 +23,4 @@ class Redirect(ModelBase):
             self.topic or "",
             self.target,
         )
-        return "%s/%s/%s/%s/%s -> %s" % parts
+        return "{}/{}/{}/{}/{} -> {}".format(*parts)

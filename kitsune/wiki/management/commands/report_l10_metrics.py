@@ -2,17 +2,16 @@ from datetime import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.utils.termcolors import make_style
 from django.db.models import Count, F
+from django.utils.termcolors import make_style
 
 from kitsune.wiki.models import Document
-
 
 SUPPORTED_LOCALES = [loc for loc in settings.SUMO_LANGUAGES if loc not in ("en-US", "xx")]
 
 CORE_LOCALES = ["de", "es", "fr", "it", "zh-CN"]
 
-MOST_REQUESTED_LOCALES = CORE_LOCALES + ["ja", "ru", "pt-BR", "pl", "nl"]
+MOST_REQUESTED_LOCALES = [*CORE_LOCALES, "ja", "ru", "pt-BR", "pl", "nl"]
 
 
 def get_number_fully_localized_in(locales, all_up_to_date=False):

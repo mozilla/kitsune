@@ -14,9 +14,9 @@ def get_or_create_badge(badge_template, year=None):
     in the dict.
     """
     if year is not None:
-        badge_template = dict(
-            (key, value.format(year=year)) for (key, value) in list(badge_template.items())
-        )
+        badge_template = {
+            key: value.format(year=year) for (key, value) in list(badge_template.items())
+        }
 
     slug = badge_template.pop("slug")
 

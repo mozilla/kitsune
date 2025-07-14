@@ -1,10 +1,9 @@
-from pathlib import Path
 import subprocess
 import textwrap
+from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-
 
 INDENT = " " * 3
 CHECKMARK = "\u2713"

@@ -39,7 +39,7 @@ class SimpleSearchForm(BaseSearchForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super(SimpleSearchForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         product_field = self.fields["product"]
         product_field.choices = Product.active.values_list("slug", "title")

@@ -1,6 +1,8 @@
-from playwright.sync_api import Page, Locator
-from playwright_tests.core.basepage import BasePage
 import re
+
+from playwright.sync_api import Locator, Page
+
+from playwright_tests.core.basepage import BasePage
 
 
 class KBArticleDiscussionPage(BasePage):

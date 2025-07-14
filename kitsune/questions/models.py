@@ -197,7 +197,7 @@ class Question(AAQBase):
             if update:
                 self.updated = datetime.now()
 
-        super(Question, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if new:
             # actstream
@@ -242,7 +242,7 @@ class Question(AAQBase):
 
         """
         if not hasattr(self, "_metadata") or self._metadata is None:
-            self._metadata = dict((m.name, m.value) for m in self.metadata_set.all())
+            self._metadata = {m.name: m.value for m in self.metadata_set.all()}
         return self._metadata
 
     @property
@@ -298,12 +298,12 @@ class Question(AAQBase):
             or version in product_details.firefox_history_stability_releases
             or version in product_details.firefox_history_major_releases
         ):
-            tags.append("Firefox %s" % version)
+            tags.append("Firefox {}".format(version))
             tenths = _tenths_version(version)
             if tenths:
-                tags.append("Firefox %s" % tenths)
+                tags.append("Firefox {}".format(tenths))
         elif _has_beta(version, dev_releases):
-            tags.append("Firefox %s" % version)
+            tags.append("Firefox {}".format(version))
             tags.append("beta")
 
         # Add a tag for the OS but only if it already exists as a non-segmentation tag.
@@ -565,7 +565,7 @@ class Question(AAQBase):
             return []
 
         # First try to get the results from the cache
-        key = "questions_question:related_docs:%s" % self.id
+        key = "questions_question:related_docs:{}".format(self.id)
         documents = cache.get(key)
         if documents is not None:
             log.debug(
@@ -616,7 +616,7 @@ class Question(AAQBase):
             return []
 
         # First try to get the results from the cache
-        key = "questions_question:related_questions:%s" % self.id
+        key = "questions_question:related_questions:{}".format(self.id)
         questions = cache.get(key)
         if questions is not None:
             log.debug(
@@ -763,7 +763,7 @@ class QuestionMetaData(ModelBase):
         unique_together = ("question", "name")
 
     def __str__(self):
-        return "%s: %s" % (self.name, self.value[:50])
+        return "{}: {}".format(self.name, self.value[:50])
 
 
 class QuestionVisits(ModelBase):
@@ -913,7 +913,7 @@ class Answer(AAQBase):
         permissions = (("bypass_answer_ratelimit", "Can bypass answering ratelimit"),)
 
     def __str__(self):
-        return "%s: %s" % (self.question.title, self.content[:50])
+        return "{}: {}".format(self.question.title, self.content[:50])
 
     @property
     def content_parsed(self):
@@ -934,7 +934,7 @@ class Answer(AAQBase):
             self.updated = datetime.now()
             self.clear_cached_html()
 
-        super(Answer, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         self.question.num_answers = Answer.objects.filter(
             question=self.question, is_spam=False
@@ -982,7 +982,7 @@ class Answer(AAQBase):
         question.num_answers = answers.count() - 1
         question.save()
 
-        super(Answer, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
         question.clear_cached_contributors()
 
         update_answer_pages.delay(question.id)
@@ -1000,7 +1000,7 @@ class Answer(AAQBase):
             query = {"page": self.page}
 
         url = reverse("questions.details", kwargs={"question_id": self.question_id})
-        return urlparams(url, hash="answer-%s" % self.id, **query)
+        return urlparams(url, hash="answer-{}".format(self.id), **query)
 
     @property
     def num_votes(self):

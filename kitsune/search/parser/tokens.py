@@ -26,7 +26,7 @@ class TermToken(BaseToken):
             self.term = tokens.term
 
     def __repr__(self):
-        return rf"t{repr(self.term)}"
+        return rf"t{self.term!r}"
 
     def __iadd__(self, other):
         if type(other) is not type(self):

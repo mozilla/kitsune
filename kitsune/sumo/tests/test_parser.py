@@ -226,7 +226,7 @@ class TestWikiParser(TestCase):
 
         for url in urls:
             with self.subTest(url):
-                doc = pq(self.p.parse("[[V:%s]]" % url))
+                doc = pq(self.p.parse("[[V:{}]]".format(url)))
                 assert (
                     doc("iframe")[0]
                     .attrib["src"]
@@ -569,7 +569,7 @@ class TestWikiImageTags(TestCase):
             ("single'\"double", "single'&quot;double"),
         )
         for alt_sent, alt_expected in unsafe_vals:
-            with self.subTest(f"case: {repr(alt_sent)}"):
+            with self.subTest(f"case: {alt_sent!r}"):
                 img = pq_img(self.p, f"[[Image:test.jpg|alt={alt_sent}]]")
                 self.assertIn(f'alt="{alt_expected}"', str(img))
 

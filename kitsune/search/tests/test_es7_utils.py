@@ -1,13 +1,15 @@
-from kitsune.search.tests import Elastic7TestCase
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
-from django.test.utils import override_settings
-from kitsune.search.es_utils import index_objects_bulk
-from elasticsearch.helpers.errors import BulkIndexError
-from elasticsearch.exceptions import NotFoundError
-from kitsune.search.documents import QuestionDocument
-from kitsune.questions.models import Question
 from unittest.mock import patch
+
+from django.test.utils import override_settings
+from elasticsearch.exceptions import NotFoundError
+from elasticsearch.helpers.errors import BulkIndexError
+
+from kitsune.questions.models import Question
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.search.base import SumoDocument
+from kitsune.search.documents import QuestionDocument
+from kitsune.search.es_utils import index_objects_bulk
+from kitsune.search.tests import Elastic7TestCase
 
 
 @override_settings(ES_LIVE_INDEXING=False)

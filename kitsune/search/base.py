@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import datetime
-from typing import Self, Union, overload
+from typing import Self, overload
 
 from django.conf import settings
 from django.core.paginator import EmptyPage, PageNotAnInteger
@@ -11,9 +11,8 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from elasticsearch.exceptions import NotFoundError, RequestError
 from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import InnerDoc, MetaField
+from elasticsearch_dsl import InnerDoc, MetaField, field
 from elasticsearch_dsl import Search as DSLSearch
-from elasticsearch_dsl import field
 from elasticsearch_dsl.utils import AttrDict
 from pyparsing import ParseException
 
@@ -133,7 +132,7 @@ class SumoDocument(DSLDocument):
         obj = cls()
 
         doc_mapping = obj._doc_type.mapping
-        fields = [f for f in doc_mapping]
+        fields = list(doc_mapping)
         fields.remove("indexed_on")
         # Loop through the fields of each object and set the right values
 
@@ -252,7 +251,7 @@ class SumoDocument(DSLDocument):
 
     def prepare_locale(self, instance):
         """Return the locale of an object if exists."""
-        if getattr(instance, "locale"):
+        if instance.locale:
             return instance.locale
         return ""
 
@@ -318,7 +317,7 @@ class SumoSearch(SumoSearchInterface):
     total: int = dfield(default=0, init=False)
     hits: list[AttrDict] = dfield(default_factory=list, init=False)
     results: list[dict] = dfield(default_factory=list, init=False)
-    last_key: Union[int, slice, None] = dfield(default=None, init=False)
+    last_key: int | slice | None = dfield(default=None, init=False)
 
     query: str = ""
     default_operator: str = "AND"
@@ -364,7 +363,7 @@ class SumoSearch(SumoSearchInterface):
             }
         )
 
-    def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)) -> Self:
+    def run(self, key: int | slice = slice(0, settings.SEARCH_RESULTS_PER_PAGE)) -> Self:
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 

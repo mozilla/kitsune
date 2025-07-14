@@ -138,7 +138,7 @@ def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofoll
         wiki_markup,
         locale=locale,
         nofollow=nofollow,
-        tags=wikimarkup.parser.ALLOWED_TAGS + ["abbr"],
+        tags=[*wikimarkup.parser.ALLOWED_TAGS, "abbr"],
         attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES | {"abbr": ["title"]},
     )
     return Markup(
@@ -165,7 +165,7 @@ def truncate_question(text, length, longtext=None):
     return text
 
 
-class Paginator(object):
+class Paginator:
     def __init__(self, pager):
         self.pager = pager
 
@@ -200,11 +200,13 @@ class Paginator(object):
 
 @jinja2.pass_context
 @library.global_function
-def breadcrumbs(context, items=list(), add_default=True, id=None):
+def breadcrumbs(context, items=None, add_default=True, id=None):
     """
     Show a list of breadcrumbs. If url is None, it won't be a link.
     Accepts: [(url, label)]
     """
+    if items is None:
+        items = []
     if add_default:
         first_crumb = "Home"
 
@@ -282,12 +284,11 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
         kwargs = {"format": "short", "tzinfo": convert_tzinfo, "locale": locale}
         if convert_value.toordinal() == today:
             formatted = _lazy("Today at %s") % format_time(convert_value, **kwargs)
+        elif format == "shortdatetime":
+            formatted = format_datetime(convert_value, **kwargs)
         else:
-            if format == "shortdatetime":
-                formatted = format_datetime(convert_value, **kwargs)
-            else:
-                del kwargs["tzinfo"]
-                formatted = format_date(convert_value, **kwargs)
+            del kwargs["tzinfo"]
+            formatted = format_date(convert_value, **kwargs)
     elif format == "longdatetime":
         formatted = format_datetime(
             convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
@@ -306,7 +307,7 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
         # Unknown format
         raise DateTimeFormatError
 
-    return Markup('<time datetime="%s">%s</time>' % (convert_value.isoformat(), formatted))
+    return Markup('<time datetime="{}">{}</time>'.format(convert_value.isoformat(), formatted))
 
 
 _whitespace_then_break = re.compile(r"[\r\n\t ]+[\r\n]+")
@@ -466,7 +467,7 @@ def static(path):
     try:
         return django_static(path)
     except ValueError as err:
-        log.error("Static helper error: %s" % err)
+        log.error("Static helper error: {}".format(err))
         return ""
 
 
@@ -509,8 +510,8 @@ def fe(format_string, *args, **kwargs):
 
     args = [escape(smart_str(v)) for v in args]
 
-    for k in kwargs:
-        kwargs[k] = escape(smart_str(kwargs[k]))
+    for k, v in kwargs.items():
+        kwargs[k] = escape(smart_str(v))
 
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.

@@ -173,7 +173,7 @@ def delete_media(request, media_id, media_type="image"):
         )
 
     # Handle confirm delete form POST
-    log.warning("User %s is deleting %s with id=%s" % (request.user, media_type, media.id))
+    log.warning("User {} is deleting {} with id={}".format(request.user, media_type, media.id))
     media.delete()
     # Rebuild KB
     schedule_rebuild_kb()

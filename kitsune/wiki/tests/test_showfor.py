@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from kitsune.products.tests import ProductFactory, VersionFactory
 from kitsune.sumo.tests import TestCase

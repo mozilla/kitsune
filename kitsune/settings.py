@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Django settings for kitsune project."""
 
 import datetime
@@ -221,10 +220,10 @@ LANGUAGE_CHOICES = tuple([(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGE
 LANGUAGE_CHOICES_ENGLISH = tuple(
     [(lang, LOCALES[lang].english) for lang in SUMO_LANGUAGES if lang != "xx"]
 )
-LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
+LANGUAGES_DICT = {i.lower(): LOCALES[i].native for i in SUMO_LANGUAGES}
 LANGUAGES = list(LANGUAGES_DICT.items())
 
-LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
+LANGUAGE_URL_MAP = {i.lower(): i for i in SUMO_LANGUAGES}
 
 # Locales that are known but unsupported. Keys are the locale, values
 # are an optional fallback locale, or None, to use the LANGUAGE_CODE.
@@ -627,7 +626,7 @@ ACCOUNT_ACTIVATION_DAYS = 30
 
 USERNAME_BLACKLIST = path("kitsune", "configs", "username-blacklist.txt")
 
-ROOT_URLCONF = "%s.urls" % PROJECT_MODULE
+ROOT_URLCONF = "{}.urls".format(PROJECT_MODULE)
 
 # TODO: Figure out why changing the order of apps (for example, moving
 # taggit higher in the list) breaks tests.
@@ -1017,9 +1016,9 @@ def show_debug_callback(*args):
 SHOW_DEBUG_INFO = show_debug_callback()
 
 if SHOW_DEBUG_INFO:
-    INSTALLED_APPS = INSTALLED_APPS + ("silk",)
+    INSTALLED_APPS = (*INSTALLED_APPS, "silk")
 
-    MIDDLEWARE = ("silk.middleware.SilkyMiddleware",) + MIDDLEWARE
+    MIDDLEWARE = ("silk.middleware.SilkyMiddleware", *MIDDLEWARE)
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
 ATOMIC_REQUESTS = config("ATOMIC_REQUESTS", default=True, cast=bool)
@@ -1028,7 +1027,7 @@ ATOMIC_REQUESTS = config("ATOMIC_REQUESTS", default=True, cast=bool)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = re.compile(
     "|".join(
-        "({0})".format(r)
+        "({})".format(r)
         for r in [
             r"^/api/1/gallery/.*$",
             r"^/api/1/kb/.*$",
@@ -1333,7 +1332,7 @@ MOZILLA_ACCOUNT_ARTICLES = [
 
 MOZILLA_LOCATION_SERVICE = config(
     "MOZILLA_LOCATION_SERVICE",
-    default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",  # noqa
+    default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",
 )
 
 SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")

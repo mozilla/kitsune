@@ -36,10 +36,10 @@ def detail(request, slug):
     return render(
         request,
         "badger/badge_detail.html",
-        dict(
-            badge=badge,
-            award_list=awards,
-        ),
+        {
+            "badge": badge,
+            "award_list": awards,
+        },
     )
 
 
@@ -61,7 +61,7 @@ class AwardsListView(ListView):
         return qs
 
     def get_context_data(self, **kwargs):
-        context = super(AwardsListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.kwargs.get("slug", None) is None:
             context["badge"] = None
         else:
@@ -81,10 +81,10 @@ def award_detail(request, slug, id):
     return render(
         request,
         "badger/award_detail.html",
-        dict(
-            badge=badge,
-            award=award,
-        ),
+        {
+            "badge": badge,
+            "award": award,
+        },
     )
 
 
@@ -96,10 +96,10 @@ def awards_by_user(request, username):
     return render(
         request,
         "badger/awards_by_user.html",
-        dict(
-            user=user,
-            award_list=awards,
-        ),
+        {
+            "user": user,
+            "award_list": awards,
+        },
     )
 
 
@@ -111,10 +111,10 @@ def awards_by_badge(request, slug):
     return render(
         request,
         "badger/awards_by_badge.html",
-        dict(
-            badge=badge,
-            awards=awards,
-        ),
+        {
+            "badge": badge,
+            "awards": awards,
+        },
     )
 
 
@@ -126,8 +126,8 @@ def badges_by_user(request, username):
     return render(
         request,
         "badger/badges_by_user.html",
-        dict(
-            user=user,
-            badge_list=badges,
-        ),
+        {
+            "user": user,
+            "badge_list": badges,
+        },
     )

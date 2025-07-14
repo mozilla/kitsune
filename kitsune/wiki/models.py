@@ -171,7 +171,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
     # TODO: Rethink indexes once controller code is near complete. Depending on
     # how PostgreSQL uses indexes, we probably don't need individual indexes on
     # title and locale as well as a combined (title, locale) one.
-    class Meta(object):
+    class Meta:
         ordering = ["display_order", "id"]
         unique_together = (("parent", "locale"), ("title", "locale"), ("slug", "locale"))
         permissions = [
@@ -220,14 +220,14 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         # Can't save this translation if parent not localizable
         if self.parent and not self.parent.is_localizable:
             raise ValidationError(
-                '"%s": parent "%s" is not localizable.' % (str(self), str(self.parent))
+                '"{}": parent "{}" is not localizable.'.format(str(self), str(self.parent))
             )
 
         # Can't make not localizable if it has translations
         # This only applies to documents that already exist, hence self.pk
         if self.pk and not self.is_localizable and self.translations.exists():
             raise ValidationError(
-                '"{0}": document has {1} translations but is not localizable.'.format(
+                '"{}": document has {} translations but is not localizable.'.format(
                     str(self), self.translations.count()
                 )
             )
@@ -244,10 +244,9 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             # versa, because we do not expose an Archived checkbox in the
             # translation UI.
             setattr(self, attr, getattr(self.parent, attr))
-        else:  # An article cannot have both a parent and children.
-            # Make my children the same as me:
-            if self.id:
-                self.translations.all().update(**{attr: getattr(self, attr)})
+        # Make my children the same as me:
+        elif self.id:
+            self.translations.all().update(**{attr: getattr(self, attr)})
 
     def _clean_category(self):
         """Make sure a doc's category is valid."""
@@ -301,7 +300,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             # "My God, it's full of race conditions!"
             i = 1
             while True:
-                new_value = template % dict(old=getattr(self, attr), number=i)
+                new_value = template % {"old": getattr(self, attr), "number": i}
                 if not self._collides(attr, new_value):
                     return new_value
                 i += 1
@@ -345,7 +344,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             # Clear out the share link so it gets regenerated.
             self.share_link = ""
 
-        super(Document, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         # Make redirects if there's an approved revision and title or slug
         # changed. Allowing redirects for unapproved docs would (1) be of
@@ -409,7 +408,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
                 elif value == getattr(self, old_name):
                     # They changed the attr back to its original value.
                     delattr(self, old_name)
-        super(Document, self).__setattr__(name, value)
+        super().__setattr__(name, value)
 
     @property
     def content_parsed(self):
@@ -517,7 +516,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             return self.from_url(url)
 
     def __str__(self):
-        return "[%s] %s" % (self.locale, self.title)
+        return "[{}] {}".format(self.locale, self.title)
 
     def allows_vote(self, request):
         """Return whether we should render the vote form for the document."""
@@ -852,7 +851,7 @@ class Revision(ModelBase, AbstractRevision):
 
     objects = RevisionManager()
 
-    class Meta(object):
+    class Meta:
         indexes = [models.Index(fields=["created"])]
         permissions = [
             ("review_revision", "Can review a revision"),
@@ -898,7 +897,7 @@ class Revision(ModelBase, AbstractRevision):
                         "A revision must be based on the English article. "
                         "Revision ID %(id)s does not fit this criterion."
                     )
-                    % dict(id=old.id)
+                    % {"id": old.id}
                 )
 
         if not self.can_be_readied_for_localization():
@@ -914,7 +913,7 @@ class Revision(ModelBase, AbstractRevision):
                 "language document."
             )
 
-        super(Revision, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         # When a revision is approved, re-cache the document's html content
         # and update document contributors
@@ -986,7 +985,7 @@ class Revision(ModelBase, AbstractRevision):
             # trigger post_save signals
             document.save(update_fields=["latest_localizable_revision"])
 
-        super(Revision, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     def has_voted(self, request):
         """Did the user already vote for this revision?"""
@@ -1001,7 +1000,7 @@ class Revision(ModelBase, AbstractRevision):
         return qs.exists()
 
     def __str__(self):
-        return "[%s] %s #%s: %s" % (
+        return "[{}] {} #{}: {}".format(
             self.document.locale,
             self.document.title,
             self.id,
@@ -1129,7 +1128,7 @@ class DocumentLink(ModelBase):
         unique_together = ("linked_from", "linked_to", "kind")
 
     def __str__(self):
-        return "<DocumentLink: %s from %s to %s>" % (self.kind, self.linked_from, self.linked_to)
+        return "<DocumentLink: {} from {} to {}>".format(self.kind, self.linked_from, self.linked_to)
 
 
 class DocumentImage(ModelBase):

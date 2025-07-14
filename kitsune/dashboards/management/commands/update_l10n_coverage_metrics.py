@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 continue
 
             # Loop through all enabled products, including None (really All).
-            for product in [None] + list(Product.objects.filter(visible=True)):
+            for product in [None, *list(Product.objects.filter(visible=True))]:
                 # (Ab)use the l10n_overview_rows helper from the readouts.
                 rows = l10n_overview_rows(locale=locale, product=product)
 

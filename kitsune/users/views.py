@@ -37,9 +37,10 @@ from sentry_sdk import capture_exception, capture_message
 
 from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
-from kitsune.forums.models import Thread, Post
-from kitsune.kbforums.models import Thread as KBForumThread, Post as KBForumPost
+from kitsune.forums.models import Post, Thread
 from kitsune.kbadge.models import Award
+from kitsune.kbforums.models import Post as KBForumPost
+from kitsune.kbforums.models import Thread as KBForumThread
 from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -275,7 +276,7 @@ def edit_settings(request):
 
     # Pass the current user's settings as the initial values.
     values = list(request.user.settings.values())
-    initial = dict()
+    initial = {}
     for val in values:
         try:
             # Uses ast.literal_eval to convert 'False' => False etc.
@@ -426,7 +427,7 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
 
         request.session["login_locale"] = getattr(request, "LANGUAGE_CODE", settings.LANGUAGE_CODE)
 
-        return super(FXAAuthenticateView, self).get(request)
+        return super().get(request)
 
 
 class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
