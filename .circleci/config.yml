@@ -2,13 +2,16 @@ version: 2.1
 jobs:
   lint:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.11-node
     steps:
       - checkout
       - run:
+          name: Install Node.js dependencies
+          command: npm ci
+      - run:
           name: Lint with pre-commit
           command: |
-            pip install --upgrade pre-commit==3.6.0
+            pip install pre-commit==4.2.0
             pre-commit run --all-files
   test-and-build:
     docker:
