@@ -12,9 +12,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C2083482
 @pytest.mark.userGroupsTests
-def test_edit_groups_details_visibility(page: Page):
+def test_edit_groups_details_visibility(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory()
+
     with check, allure.step("Navigating to the general groups page and verifying that the 'edit "
                             "groups details' button is not visible while signed out"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
@@ -22,32 +24,38 @@ def test_edit_groups_details_visibility(page: Page):
 
     with check, allure.step("Signing in with a non-admin account and verifying that the 'edit "
                             "groups details' button is not visible"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_13']
-        ))
+        utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         assert not sumo_pages.user_groups.is_add_group_profile_button_visible()
 
-    with check, allure.step("Signing in with an admin account and verifying that the 'edit group "
-                            "details' button is visible"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-        ))
+    with check, allure.step("Signing in with a staff user account and verifying that the "
+                            "'add group profile' button is visible"):
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         assert sumo_pages.user_groups.is_add_group_profile_button_visible()
 
 
 # C2083482, C2083483, C2715808, C2715807, C2799838
 @pytest.mark.userGroupsTests
-def test_group_edit_buttons_visibility(page: Page):
+def test_group_edit_buttons_visibility(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["TestGroup2"])
+    test_user_four = create_user_factory()
 
-    with check, allure.step("Navigating to a test group and verifying that the edit buttons are "
-                            "not available for signed out users"):
+    with allure.step("Adding a user as the group leader"):
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups.click_on_a_particular_group(
             utilities.user_message_test_data['test_groups'][1])
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user_four["username"], is_leader=True)
+
+    with check, allure.step("Navigating to a test group and verifying that the edit buttons are "
+                            "not available for signed out users"):
+        utilities.delete_cookies()
 
         assert not sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
@@ -57,9 +65,7 @@ def test_group_edit_buttons_visibility(page: Page):
 
     with check, allure.step("Signing in with a non-admin and a non group member and verifying "
                             "that the edit buttons are not available"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_13']
-        ))
+        utilities.start_existing_session(cookies=test_user)
         assert not sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
@@ -68,9 +74,7 @@ def test_group_edit_buttons_visibility(page: Page):
 
     with check, allure.step("Signing in with a group member and verifying that the edit buttons "
                             "are not available"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_3']
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
         assert not sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
@@ -79,9 +83,7 @@ def test_group_edit_buttons_visibility(page: Page):
 
     with check, allure.step("Signing in with the group leader and verifying that only the 'edit "
                             "in admin' and 'edit group leaders' buttons are available"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_4']
-        ))
+        utilities.start_existing_session(cookies=test_user_four)
         assert sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert sumo_pages.user_groups.is_edit_group_profile_button_visible()
@@ -90,9 +92,8 @@ def test_group_edit_buttons_visibility(page: Page):
 
     with check, allure.step("Signing in with an admin account and verifying that all edit options "
                             "are available"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-        ))
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
         assert sumo_pages.user_groups.is_change_avatar_button_visible()
         assert sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert sumo_pages.user_groups.is_edit_group_profile_button_visible()
@@ -102,20 +103,25 @@ def test_group_edit_buttons_visibility(page: Page):
 
 # C2783730, C2715807
 @pytest.mark.userGroupsTests
-def test_change_group_avatar(page: Page):
+def test_change_group_avatar(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     targeted_group = utilities.user_message_test_data['test_groups'][0]
     displayed_image = os.path.abspath("test_data/visual_testing/displayed_group_image.png")
     first_uploaded_image = os.path.abspath("test_data/test-image.png")
     second_uploaded_image = os.path.abspath("test_data/test-image2.png")
+    test_user = create_user_factory()
+
+    with allure.step("Adding a user as the group leader"):
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
+        utilities.navigate_to_link(utilities.general_test_data['groups'])
+        sumo_pages.user_groups.click_on_a_particular_group(
+            utilities.user_message_test_data['test_groups'][0])
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user["username"], is_leader=True)
 
     with allure.step("Signing in with a group leader and accessing the test group"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MESSAGE_2']
-        ))
-        utilities.navigate_to_link(utilities.general_test_data['groups'])
-        sumo_pages.user_groups.click_on_a_particular_group(targeted_group)
+        utilities.start_existing_session(cookies=test_user)
         group_url = utilities.get_page_url()
         utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
                                          displayed_image)
@@ -208,35 +214,33 @@ def test_change_group_avatar(page: Page):
 # C2799839
 @pytest.mark.smokeTest
 @pytest.mark.userGroupsTests
-def test_add_new_group_leader(page: Page):
+def test_add_new_group_leader(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = "manualtest4"
-
+    test_user = create_user_factory()
     test_group = utilities.user_message_test_data['test_groups'][2]
 
     with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
 
     utilities.navigate_to_link(utilities.general_test_data['groups'])
     sumo_pages.user_groups.click_on_a_particular_group(test_group)
 
     with allure.step("Adding a new group leader"):
-        sumo_pages.user_group_flow.add_a_user_to_group(test_user, is_leader=True)
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user["username"], is_leader=True)
 
     with allure.step("Verifying that the user was added in both group leaders and group members "
                      "list"):
-        assert test_user in sumo_pages.user_groups.get_all_leaders_name()
-        assert test_user in sumo_pages.user_groups.get_all_members_name()
+        assert test_user["username"] in sumo_pages.user_groups.get_all_leaders_name()
+        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
 
     with allure.step("Verifying that the correct banner is displayed"):
         assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_added_success_message(test_user, to_leaders=True))
+                get_user_added_success_message(test_user["username"], to_leaders=True))
 
     with allure.step("Clicking on the added user"):
-        sumo_pages.user_groups.click_on_a_listed_group_leader(test_user)
+        sumo_pages.user_groups.click_on_a_listed_group_leader(test_user["username"])
 
     with allure.step("Verifying that the group is listed inside the users profile group list"):
         assert test_group in sumo_pages.my_profile_page.get_my_profile_groups_items_text()
@@ -247,62 +251,62 @@ def test_add_new_group_leader(page: Page):
     with check, allure.step("Clicking on the 'Delete' button for the newly added user and "
                             "verifying that the correct page header is displayed"):
         sumo_pages.user_groups.click_on_edit_group_leaders_option()
-        sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user,
+        sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user["username"],
                                                                         from_leaders=True)
         assert (sumo_pages.user_groups.get_remove_leader_page_header() == UserGroupMessages.
-                get_delete_user_header(test_user, test_group, delete_leader=True))
+                get_delete_user_header(test_user["username"], test_group, delete_leader=True))
 
     with check, allure.step("Clicking on the 'Cancel' button and verifying that the user was not "
                             "removed from the leaders and members list"):
         sumo_pages.user_groups.click_on_remove_member_cancel_button()
-        assert test_user in sumo_pages.user_groups.get_all_leaders_name()
-        assert test_user in sumo_pages.user_groups.get_all_members_name()
+        assert test_user["username"] in sumo_pages.user_groups.get_all_leaders_name()
+        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
 
     with check, allure.step("Deleting the user and verifying that the user was removed from the "
                             "leaders list but not from the members list"):
-        sumo_pages.user_group_flow.remove_a_user_from_group(test_user, is_leader=True)
-        assert test_user not in sumo_pages.user_groups.get_all_leaders_name()
-        assert test_user in sumo_pages.user_groups.get_all_members_name()
+        sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"], is_leader=True)
+        assert test_user["username"] not in sumo_pages.user_groups.get_all_leaders_name()
+        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
 
     with check, allure.step("Verifying that the correct banner is displayed"):
         assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_removed_success_message(test_user, from_leaders=True))
+                get_user_removed_success_message(test_user["username"], from_leaders=True))
 
     with allure.step("Deleting the user from the members list"):
-        sumo_pages.user_group_flow.remove_a_user_from_group(test_user)
+        sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"])
 
 
 # C2083499, C2715807, C891410
 @pytest.mark.smokeTest
 @pytest.mark.userGroupsTests
-@pytest.mark.parametrize("user", ['TEST_ACCOUNT_MESSAGE_2', 'TEST_ACCOUNT_MODERATOR'])
-def test_add_group_members(page: Page, user):
+@pytest.mark.parametrize("user_type", ['Group leader', 'Staff user'])
+def test_add_group_members(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = utilities.username_extraction_from_email(
-        utilities.user_secrets_accounts[
-            "TEST_ACCOUNT_12" if user == 'TEST_ACCOUNT_MESSAGE_2' else "TEST_ACCOUNT_13"]
-    )
-
+    test_user = create_user_factory()
+    test_user_two = create_user_factory()
     test_group = utilities.user_message_test_data['test_groups'][0]
 
     with allure.step("Signing in and accessing the test group"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts[user]
-        ))
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
 
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups.click_on_a_particular_group(test_group)
 
+    if user_type == "Group leader":
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user_two["username"], is_leader=True)
+        utilities.start_existing_session(cookies=test_user_two)
+
     with allure.step("Adding a new group member"):
-        sumo_pages.user_group_flow.add_a_user_to_group(test_user)
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user["username"])
 
     with allure.step("Verifying that the correct banner is displayed"):
         assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_added_success_message(test_user))
+                get_user_added_success_message(test_user["username"]))
 
     with allure.step("Clicking on the added user"):
-        sumo_pages.user_groups.click_on_a_listed_group_user(test_user)
+        sumo_pages.user_groups.click_on_a_listed_group_user(test_user["username"])
 
     with allure.step("Verifying that the group is listed inside the users profile group list"):
         assert test_group in sumo_pages.my_profile_page.get_my_profile_groups_items_text()
@@ -313,41 +317,43 @@ def test_add_group_members(page: Page, user):
     with check, allure.step("Clicking on the 'Delete' button for the newly added user and "
                             "verifying that the correct page header is displayed"):
         sumo_pages.user_groups.click_on_edit_group_members()
-        sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user)
+        sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user["username"])
         assert (sumo_pages.user_groups.get_remove_user_page_header() == UserGroupMessages.
-                get_delete_user_header(test_user, test_group))
+                get_delete_user_header(test_user["username"], test_group))
 
     with check, allure.step("Clicking on the 'Cancel' button and verifying that the user was not "
                             "removed"):
         sumo_pages.user_groups.click_on_remove_member_cancel_button()
-        assert test_user in sumo_pages.user_groups.get_all_members_name()
+        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
 
     with check, allure.step("Deleting the user and verifying that the user was removed"):
-        sumo_pages.user_group_flow.remove_a_user_from_group(test_user)
-        assert test_user not in sumo_pages.user_groups.get_all_members_name()
+        sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"])
+        assert test_user["username"] not in sumo_pages.user_groups.get_all_members_name()
 
     with check, allure.step("Verifying that the correct banner is displayed"):
         assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_removed_success_message(test_user))
+                get_user_removed_success_message(test_user["username"]))
 
 
 # C2784450
 @pytest.mark.userGroupsTests
-@pytest.mark.parametrize("user", ['TEST_ACCOUNT_MESSAGE_2', 'TEST_ACCOUNT_MODERATOR'])
-def test_edit_group_profile(page: Page, user):
+@pytest.mark.parametrize("user_type", ['Group Leader', 'Staff user'])
+def test_edit_group_profile(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_group = (utilities.user_message_test_data['test_groups']
-                  [0] if user == 'TEST_ACCOUNT_MESSAGE_2' else utilities.
-                  user_message_test_data['test_groups'][1])
+    test_user = create_user_factory()
+
+    test_group = utilities.user_message_test_data['test_groups'][1]
 
     with allure.step("Signing in and accessing the test group"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts[user]
-        ))
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
 
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups.click_on_a_particular_group(test_group)
+
+    if user_type == "Group Leader":
+        sumo_pages.user_group_flow.add_a_user_to_group(test_user["username"], is_leader=True)
 
     group_profile_info = sumo_pages.user_groups.get_profile_information()
 
@@ -376,9 +382,11 @@ def test_edit_group_profile(page: Page, user):
         assert (sumo_pages.user_groups.get_profile_information() == group_profile_info + " v2")
 
     with allure.step("Signing back in and reverting the profile information change"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts[user]
-        ))
+        if user_type == "Group Leader":
+            utilities.start_existing_session(cookies=test_user)
+        else:
+            utilities.start_existing_session(
+                session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
         sumo_pages.user_groups.click_on_edit_group_profile_button()
         sumo_pages.user_groups.type_into_edit_group_profile_textarea(group_profile_info)
         sumo_pages.user_groups.click_on_edit_group_profile_save_button()

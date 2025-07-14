@@ -1,22 +1,17 @@
 import allure
 import pytest
-import requests
 from playwright.sync_api import Page
 from pytest_check import check
-
+import requests
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_forum_messages import (
-    ContributeForumMessages,
-)
+    ContributeForumMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_help_articles_messages import (
-    ContributeHelpArticlesMessages,
-)
+    ContributeHelpArticlesMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_localization_messages import (
-    ContributeLocalizationMessages,
-)
+    ContributeLocalizationMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
-    ContributePageMessages,
-)
+    ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -32,8 +27,7 @@ def test_contribute_page_text(page: Page):
         assert sumo_pages.contribute_page._get_page_hero_main_header_text(
         ) == ContributePageMessages.HERO_MAIN_PAGE_TITLE
 
-    with check, allure.step("Verifying that the correct page hero need help subtext is "
-                            "displayed"):
+    with check, allure.step("Verifying that the correct page hero need help subtext is displayed"):
         assert sumo_pages.contribute_page._get_page_hero_main_subtext(
         ) == ContributePageMessages.HERO_HELP_MILLION_OF_USERS_TEXT
 
@@ -45,8 +39,8 @@ def test_contribute_page_text(page: Page):
         assert sumo_pages.contribute_page._get_page_hero_need_help_subtext(
         ) == ContributePageMessages.HERO_NEED_YOUR_HELP_PARAGRAPH
 
-    with check, allure.step("Verifying that the correct get way to contribute_messages "
-                            "header is displayed"):
+    with check, allure.step("Verifying that the correct get way to contribute_messages header is "
+                            "displayed"):
         assert sumo_pages.contribute_page._get_way_to_contribute_header_text(
         ) == ContributePageMessages.PICK_A_WAY_TO_CONTRIBUTE_HEADER
 
@@ -56,15 +50,15 @@ def test_contribute_page_text(page: Page):
         ContributePageMessages.LOCALIZE_CONTENT_CARD_TITLE
     ]
 
-    with check, allure.step("Verifying that the correct list of ways to contribute_messages "
-                            "card titles is displayed"):
+    with check, allure.step("Verifying that the correct list of ways to contribute_messages card"
+                            " titles is displayed"):
         assert card_titles == sumo_pages.contribute_page._get_way_to_contribute_cards()
 
     with check, allure.step("Verifying that the correct about us header text is displayed"):
         assert sumo_pages.contribute_page._get_about_us_header_text(
         ) == ContributePageMessages.ABOUT_US_HEADER
 
-    with check, allure.step("Verifying that the correct about us subtext is displayed"):
+    with allure.step("Verifying that the correct about us subtext is displayed"):
         assert sumo_pages.contribute_page._get_about_us_subtext(
         ) == ContributePageMessages.ABOUT_US_CONTENT
 
@@ -79,7 +73,7 @@ def test_contribute_page_images_are_not_broken(page: Page):
     for link in sumo_pages.contribute_page._get_all_page_links():
         image_link = link.get_attribute("src")
         response = requests.get(image_link, stream=True)
-        with check, allure.step(f"Verifying that the {image_link} image is not broken"):
+        with allure.step(f"Verifying that the {image_link} image is not broken"):
             assert response.status_code < 400
 
 
@@ -96,7 +90,7 @@ def test_contribute_page_breadcrumbs(page: Page):
         ContributePageMessages.SECOND_BREADCRUMB,
     ]
 
-    with check, allure.step("Verifying that the correct breadcrumbs are displayed"):
+    with allure.step("Verifying that the correct breadcrumbs are displayed"):
         assert sumo_pages.contribute_page._get_breadcrumbs_text() == breadcrumbs
 
     with allure.step("Verifying that the home breadcrumb redirects to the homepage"):
@@ -122,8 +116,8 @@ def test_way_to_contribute_redirects_to_correct_page(page: Page):
     for element in sumo_pages.contribute_page._get_list_of_contribute_cards():
         card = sumo_pages.contribute_page._get_list_of_contribute_cards()[counter]
         sumo_pages.contribute_page._click_on_way_to_contribute_card(card)
-        with check, allure.step("Verifying that the 'way to contribute_messages' cards are "
-                                "redirecting to the correct SUMO page"):
+        with allure.step("Verifying that the 'way to contribute_messages' cards are redirecting"
+                         " to the correct SUMO page"):
             assert ways_to_contribute_links[counter] == utilities.get_page_url()
         utilities.navigate_back()
         counter += 1

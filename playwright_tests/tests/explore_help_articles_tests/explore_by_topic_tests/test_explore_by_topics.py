@@ -1,9 +1,7 @@
 import time
-
 import allure
 import pytest
 from playwright.sync_api import Page
-
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
     AAQWidgetMessages,
@@ -54,14 +52,13 @@ def test_explore_by_topic_product_filter(page: Page):
 
 # C2462867
 @pytest.mark.exploreByTopics
-def test_explore_by_topic_aaq_widget_text(page: Page):
+def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory()
 
-    with allure.step("Signing in to SUMO"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the /topics/  Browse  page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
@@ -94,14 +91,13 @@ def test_explore_by_topic_aaq_widget_text(page: Page):
 
 # C2663960
 @pytest.mark.exploreByTopics
-def test_explore_by_topic_aaq_widget_redirect(page: Page):
+def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory()
 
-    with allure.step("Signing in to SUMO"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the /topics/  Browse  page"):
         utilities.navigate_to_link(troubleshooting_topic_url)

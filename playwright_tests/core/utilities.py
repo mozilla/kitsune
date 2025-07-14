@@ -1,25 +1,24 @@
-import json
 import os
-import random
-import re
-import time
 import warnings
-from datetime import datetime
-from typing import Any
-
 import requests
+import time
+import re
+import json
+import random
+from PIL import Image
+from PIL import ImageChops
+from typing import Any, Union
+from datetime import datetime
 from dateutil import parser
 from dateutil.tz import tz
 from nltk import SnowballStemmer, WordNetLemmatizer
-from PIL import Image, ImageChops
-from playwright.sync_api import Locator, Page
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-from requests.exceptions import HTTPError
-
+from playwright.sync_api import Page, Locator
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.test_data.search_synonym import SearchSynonyms
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class Utilities:
@@ -27,65 +26,49 @@ class Utilities:
         self.page = page
 
     # Fetching test data from json files.
-    with open("test_data/profile_edit.json", encoding="utf-8") as edit_test_data_file:
+    with open("test_data/profile_edit.json", "r", encoding="utf-8") as edit_test_data_file:
         profile_edit_test_data = json.load(edit_test_data_file)
-    edit_test_data_file.close()
 
-    with open("test_data/question_reply.json") as question_test_data_file:
+    with open("test_data/question_reply.json", "r") as question_test_data_file:
         question_test_data = json.load(question_test_data_file)
-    question_test_data_file.close()
 
-    with open("test_data/aaq_question.json") as aaq_question_test_data_file:
+    with open("test_data/aaq_question.json", "r") as aaq_question_test_data_file:
         aaq_question_test_data = json.load(aaq_question_test_data_file)
-    aaq_question_test_data_file.close()
 
-    with open("test_data/add_kb_article.json") as kb_article_test_data_file:
+    with open("test_data/add_kb_article.json", "r") as kb_article_test_data_file:
         kb_article_test_data = json.load(kb_article_test_data_file)
-    kb_article_test_data_file.close()
 
-    with open("test_data/kb_new_thread.json") as kb_new_thread_test_data_file:
+    with open("test_data/kb_new_thread.json", "r") as kb_new_thread_test_data_file:
         kb_new_thread_test_data = json.load(kb_new_thread_test_data_file)
-    kb_article_test_data_file.close()
 
-    with open("test_data/kb_revision.json") as kb_revision_test_data_file:
+    with open("test_data/kb_revision.json", "r") as kb_revision_test_data_file:
         kb_revision_test_data = json.load(kb_revision_test_data_file)
-    kb_revision_test_data_file.close()
 
-    with open("test_data/user_message.json") as user_message_test_data_file:
+    with open("test_data/user_message.json", "r") as user_message_test_data_file:
         user_message_test_data = json.load(user_message_test_data_file)
-    user_message_test_data_file.close()
 
-    with open("test_data/general_data.json") as general_test_data_file:
+    with open("test_data/general_data.json", "r") as general_test_data_file:
         general_test_data = json.load(general_test_data_file)
-    general_test_data_file.close()
 
-    with open("test_data/different_endpoints.json") as different_endpoints_file:
+    with open("test_data/different_endpoints.json", "r") as different_endpoints_file:
         different_endpoints = json.load(different_endpoints_file)
-    different_endpoints_file.close()
 
-    with open("test_data/discussion_thread_data.json") as discussion_thread_data_file:
+    with open("test_data/discussion_thread_data.json", "r") as discussion_thread_data_file:
         discussion_thread_data = json.load(discussion_thread_data_file)
-    discussion_thread_data_file.close()
 
-    with open("test_data/ga4_data.json") as ga4_data_file:
+    with open("test_data/ga4_data.json", "r") as ga4_data_file:
         ga4_data = json.load(ga4_data_file)
-    ga4_data_file.close()
 
     # Fetching user secrets from GH.
-    user_secrets_accounts = {
-        "TEST_ACCOUNT_12": os.environ.get("TEST_ACCOUNT_12"),
-        "TEST_ACCOUNT_13": os.environ.get("TEST_ACCOUNT_13"),
-        "TEST_ACCOUNT_MESSAGE_1": os.environ.get("TEST_ACCOUNT_MESSAGE_1"),
-        "TEST_ACCOUNT_MESSAGE_2": os.environ.get("TEST_ACCOUNT_MESSAGE_2"),
-        "TEST_ACCOUNT_MESSAGE_3": os.environ.get("TEST_ACCOUNT_MESSAGE_3"),
-        "TEST_ACCOUNT_MESSAGE_4": os.environ.get("TEST_ACCOUNT_MESSAGE_4"),
-        "TEST_ACCOUNT_MESSAGE_5": os.environ.get("TEST_ACCOUNT_MESSAGE_5"),
-        "TEST_ACCOUNT_MESSAGE_6": os.environ.get("TEST_ACCOUNT_MESSAGE_6"),
-        "TEST_ACCOUNT_MODERATOR": os.environ.get("TEST_ACCOUNT_MODERATOR")
-    }
-    user_special_chars = os.environ.get("TEST_ACCOUNT_SPECIAL_CHARS")
+    staff_user = os.environ.get("TEST_ACCOUNT_MODERATOR")
     user_secrets_pass = os.environ.get("TEST_ACCOUNTS_PS")
     user_agent = os.environ.get("PLAYWRIGHT_USER_AGENT")
+
+    def get_session_id(self, username: str) -> dict:
+        with open(f"core/sessions/.auth/{username}.json", 'r') as staff_cookies:
+            staff_user_session = json.load(staff_cookies)
+            return [cookie['value'] for cookie in staff_user_session['cookies'] if cookie[
+                'name'] == 'session_id'][0]
 
     def clear_fxa_email(self, fxa_username: str):
         """
@@ -335,30 +318,35 @@ class Utilities:
         if not top_navbar.is_sign_in_up_button_displayed and not tried_once:
             self.delete_cookies(tried_once=True)
 
-    def start_existing_session(self, session_file_name: str, tried_once=False) -> str:
+    def start_existing_session(self, cookies: dict = None, session_file_name: str = None,
+                               tried_once=False):
         """
         This helper function starts an existing session by applying the session cookies saved in
         the /sessions/ folder.
 
         Args:
             session_file_name (str): The session file name
+            cookies (dict): The cookies to be applied
             tried_once (bool): If the session was tried once
         """
         top_navbar = TopNavbar(self.page)
         if not tried_once:
             self.delete_cookies()
-        with open(f"core/sessions/.auth/{session_file_name}.json") as file:
-            cookies_data = json.load(file)
-        self.page.context.add_cookies(cookies=cookies_data['cookies'])
+
+        if session_file_name is not None:
+            with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
+                cookies_data = json.load(file)
+            self.page.context.add_cookies(cookies=cookies_data['cookies'])
+            if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
+                self.start_existing_session(session_file_name=session_file_name, tried_once=True)
+        elif cookies is not None:
+            self.page.context.add_cookies(cookies=cookies['cookies'])
+            if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
+                self.start_existing_session(cookies=cookies, tried_once=True)
+
         # A SUMO action needs to be done in order to have the page refreshed with the correct
         # session
         self.refresh_page()
-
-        # In order to avoid test flakiness we are trying to re-apply the session cookies again if
-        # the sign-in/up button is still displayed instead of the session username.
-        if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
-            self.start_existing_session(session_file_name, tried_once=True)
-        return session_file_name
 
     def refresh_page(self):
         """
@@ -545,7 +533,7 @@ class Utilities:
         print("Search result not found!")
         return False
 
-    def _contains_synonym(self, search_result_lower, search_term: str | list[str],
+    def _contains_synonym(self, search_result_lower, search_term: Union[str, list[str]],
                           search_term_split) -> [bool, Any]:
         """
         This helper function checks if any synonyms of a given search term or its components

@@ -69,25 +69,27 @@ class EditArticleMetaFlow:
                     topics
                 )
 
-        if self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked() != obsolete:
-            self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
+        if self.kb_article_edit_metadata_page.is_obsolete_checkbox_displayed():
+            if self.kb_article_edit_metadata_page.is_obsolete_checkbox_checked() != obsolete:
+                self.kb_article_edit_metadata_page.click_on_obsolete_checkbox()
 
         if self.kb_article_edit_metadata_page.is_allow_discussion_checkbox_checked() != \
            discussions:
             self.kb_article_edit_metadata_page.click_on_allow_discussion_on_article_checkbox()
 
         # Ensure the needs change checkbox and textarea are updated accordingly.
-        if needs_change:
-            if not self.kb_article_edit_metadata_page.is_needs_change_checkbox():
+        if self.kb_article_edit_metadata_page.is_needs_change_checkbox_displayed():
+            if needs_change:
+                if not self.kb_article_edit_metadata_page.is_needs_change_checkbox():
+                    self.kb_article_edit_metadata_page.click_needs_change_checkbox()
+                # If it needs change with comment we are also adding the comment.
+                # If it doesn't need comment we are ensuring that the textarea field is empty.
+                self.kb_article_edit_metadata_page.fill_needs_change_textarea(
+                    self.utilities.kb_revision_test_data[
+                        'needs_change_message'] if needs_change_comment else ''
+                )
+            elif self.kb_article_edit_metadata_page.is_needs_change_checkbox():
                 self.kb_article_edit_metadata_page.click_needs_change_checkbox()
-            # If it needs change with comment we are also adding the comment.
-            # If it doesn't need comment we are ensuring that the textarea field is empty.
-            self.kb_article_edit_metadata_page.fill_needs_change_textarea(
-                self.utilities.kb_revision_test_data[
-                    'needs_change_message'] if needs_change_comment else ''
-            )
-        elif self.kb_article_edit_metadata_page.is_needs_change_checkbox():
-            self.kb_article_edit_metadata_page.click_needs_change_checkbox()
 
         if related_documents:
             for document in related_documents:

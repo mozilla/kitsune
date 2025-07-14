@@ -96,6 +96,9 @@ class KBArticleEditMetadata(BasePage):
     def is_obsolete_checkbox_checked(self) -> bool:
         return self._is_checkbox_checked(self.obsolete_checkbox)
 
+    def is_obsolete_checkbox_displayed(self) -> bool:
+        return self._is_element_visible(self.obsolete_checkbox)
+
     def click_on_obsolete_checkbox(self):
         self._click(self.obsolete_checkbox)
 
@@ -107,6 +110,9 @@ class KBArticleEditMetadata(BasePage):
 
     def is_needs_change_checkbox(self) -> bool:
         return self._is_checkbox_checked(self.needs_change_checkbox)
+
+    def is_needs_change_checkbox_displayed(self) -> bool:
+        return self._is_element_visible(self.needs_change_checkbox)
 
     def click_needs_change_checkbox(self):
         self._click(self.needs_change_checkbox)

@@ -30,14 +30,13 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 @pytest.mark.contributorDiscussions
-def test_contributor_discussions_forums_description(page: Page):
+def test_contributor_discussions_forums_description(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
 
     with allure.step("Signing in with an contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigate to the Contributor Discussions page"):
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -46,22 +45,19 @@ def test_contributor_discussions_forums_description(page: Page):
                             "available forum"):
         for forum in (sumo_pages.contributor_discussions_page.
                       get_contributor_discussions_forums_titles()):
-            check.equal(
-                ConDiscussionsMessages.FORUM_DESCRIPTIONS[forum],
-                sumo_pages.contributor_discussions_page.get_forum_description(forum)
-            )
+            assert (ConDiscussionsMessages.FORUM_DESCRIPTIONS[forum] == sumo_pages.
+                    contributor_discussions_page.get_forum_description(forum))
 
 
 # C890970
 @pytest.mark.contributorDiscussions
-def test_contributor_discussions_side_nav_redirect(page: Page):
+def test_contributor_discussions_side_nav_redirect(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
 
     with allure.step("Signing in with an contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigate to the Contributor Discussions page"):
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -73,12 +69,8 @@ def test_contributor_discussions_side_nav_redirect(page: Page):
                                 "the correct forum page is opened"):
             (sumo_pages.contributor_discussions_page.
              click_on_contributor_discussions_side_navbar_item(option))
-
-            check.equal(
-                sumo_pages.forum_discussions_page.get_forum_discussions_side_nav_selected_option(
-                ).lower(),
-                option.lower()
-            )
+            assert (sumo_pages.forum_discussions_page.
+                    get_forum_discussions_side_nav_selected_option().lower() == option.lower())
 
             if option == "Forum moderator discussions":
                 option = "Forum Moderators"
@@ -91,22 +83,19 @@ def test_contributor_discussions_side_nav_redirect(page: Page):
             elif option == "Lost thread discussions":
                 option = "Lost Threads"
 
-            check.equal(
-                sumo_pages.forum_discussions_page.get_forum_discussions_page_title().lower(),
-                option.lower()
-            )
+            assert (sumo_pages.forum_discussions_page.
+                    get_forum_discussions_page_title().lower() == option.lower())
 
 
 # C3002113
 @pytest.mark.contributorDiscussions
-def test_contributor_discussions_forums_title_redirect(page: Page):
+def test_contributor_discussions_forums_title_redirect(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
 
     with allure.step("Signing in with an contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigate to the Contributor Discussions page"):
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -117,10 +106,10 @@ def test_contributor_discussions_forums_title_redirect(page: Page):
         for forum in (sumo_pages.contributor_discussions_page.
                       get_contributor_discussions_forums_titles()):
             sumo_pages.contributor_discussions_page.click_on_an_available_contributor_forum(forum)
-            check.equal(
-                sumo_pages.forum_discussions_page.get_forum_discussions_page_title().lower(),
-                forum.lower()
-            )
+
+            assert (sumo_pages.forum_discussions_page.
+                    get_forum_discussions_page_title().lower() == forum.lower())
+
             if forum == "Forum Moderators":
                 forum = "forum moderator discussions"
             elif forum == "Off Topic":
@@ -129,45 +118,36 @@ def test_contributor_discussions_forums_title_redirect(page: Page):
                 forum = "Mobile support discussions"
             elif forum == "Lost Threads":
                 forum = "Lost thread discussions"
-            check.equal(
-                sumo_pages.forum_discussions_page.get_forum_discussions_side_nav_selected_option(
-                ).lower(),
-                forum.lower()
-            )
+
+            assert (sumo_pages.forum_discussions_page.
+                    get_forum_discussions_side_nav_selected_option().lower() == forum.lower())
+
             utilities.navigate_back()
 
 
 @pytest.mark.smokeTest
 @pytest.mark.contributorDiscussions
 @pytest.mark.parametrize("user", [None, 'simple_user', 'moderator'])
-def test_forum_moderators_availability(page: Page, user):
+def test_forum_moderators_availability(page: Page, user, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["forum-contributors", "Forum Moderators"])
 
     if user == 'simple_user':
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
-        ))
+        utilities.start_existing_session(cookies=test_user)
     elif user == 'moderator':
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Navigating to the Contributor Discussions forum"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
 
     if user == 'simple_user' or user is None:
         with check, allure.step("Verifying that the 'Forum Moderators' forum is not available"):
-            check.is_not_in(
-                ForumModerators.PAGE_TITLE,
-                (sumo_pages.contributor_discussions_page.
-                 get_contributor_discussions_forums_titles())
-            )
-            check.is_not_in(
-                "Forum moderator discussions",
-                (sumo_pages.contributor_discussions_page.
-                 get_contributor_discussions_side_navbar_items())
-            )
+            assert (ForumModerators.PAGE_TITLE not in sumo_pages.contributor_discussions_page.
+                    get_contributor_discussions_forums_titles())
+            assert ("Forum moderator discussions" not in sumo_pages.contributor_discussions_page.
+                    get_contributor_discussions_side_navbar_items())
 
         with check, allure.step("Navigating to the 'Forum Moderators' forum directly and "
                                 "verifying that a 404 is returned"):
@@ -177,16 +157,10 @@ def test_forum_moderators_availability(page: Page, user):
             assert response.status == 404
     else:
         with check, allure.step("Verifying that the 'Forum Moderators' forum is available"):
-            check.is_in(
-                ForumModerators.PAGE_TITLE,
-                (sumo_pages.contributor_discussions_page.
-                 get_contributor_discussions_forums_titles())
-            )
-            check.is_in(
-                "Forum moderator discussions",
-                (sumo_pages.contributor_discussions_page.
-                 get_contributor_discussions_side_navbar_items())
-            )
+            assert (ForumModerators.PAGE_TITLE in sumo_pages.contributor_discussions_page.
+                    get_contributor_discussions_forums_titles())
+            assert ("Forum moderator discussions" in sumo_pages.contributor_discussions_page.
+                    get_contributor_discussions_side_navbar_items())
 
         with check, allure.step("Navigating to the 'Forum Moderators' forum directly and "
                                 "verifying that a 404 is not returned"):
@@ -198,15 +172,15 @@ def test_forum_moderators_availability(page: Page, user):
 
 # C2254016
 @pytest.mark.contributorDiscussions
-def test_threads_number_and_last_post_details(page: Page):
+def test_threads_number_and_last_post_details(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     target_topic = OffTopicForumMessages.PAGE_TITLE
+    test_user = create_user_factory(groups=["forum-contributors"],
+                                    permissions=["delete_forum_thread"])
 
     with allure.step("Signing in with an moderator account"):
-        username = utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Contributor Discussions' page and fetching the number of "
                      "threads posted for the 'Off Topic' forum"):
@@ -237,10 +211,8 @@ def test_threads_number_and_last_post_details(page: Page):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         thread_count += 1
 
-        check.equal(
-            thread_count,
-            sumo_pages.contributor_discussions_page.get_forum_thread_count(target_topic)
-        )
+        assert (thread_count == sumo_pages.contributor_discussions_page.
+                get_forum_thread_count(target_topic))
 
     with check, allure.step("Verifying that the last post time reflects the newly created "
                             "thread"):
@@ -249,9 +221,8 @@ def test_threads_number_and_last_post_details(page: Page):
 
     with check, allure.step("Verifying that the correct username is displayed inside the last post"
                             "section"):
-        assert username == sumo_pages.contributor_discussions_page.get_forum_last_post_by(
-            OffTopicForumMessages.PAGE_TITLE
-        )
+        assert (test_user["username"] == sumo_pages.contributor_discussions_page.
+                get_forum_last_post_by(OffTopicForumMessages.PAGE_TITLE))
 
     with allure.step("Deleting the newly posted thread"):
         utilities.navigate_to_link(thread_link)
@@ -272,24 +243,24 @@ def test_threads_number_and_last_post_details(page: Page):
 
     with check, allure.step("Verifying that username is no longer displayed inside the last post"
                             "section"):
-        assert username != sumo_pages.contributor_discussions_page.get_forum_last_post_by(
-            OffTopicForumMessages.PAGE_TITLE
-        )
+        assert (test_user["username"] != sumo_pages.contributor_discussions_page.
+                get_forum_last_post_by(OffTopicForumMessages.PAGE_TITLE))
 
 
 # C2254016
 @pytest.mark.contributorDiscussions
-def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(page: Page):
+def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(page: Page,
+                                                                              create_user_factory):
+
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-
     original_forum = LocalizationDiscussionsMessages.PAGE_TITLE
     target_forum = MobileSupportForumMessages.PAGE_TITLE
+    test_user = create_user_factory(groups=["forum-contributors"],
+                                    permissions=["move_forum_thread"])
 
     with allure.step("Signing in with an moderator account"):
-        username = utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Contributor Discussions' page and fetching the number of "
                      "threads posted for the 'Localization Discussions' and for the Mobile Support"
@@ -322,10 +293,8 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
                      "the contributor threads"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         original_forum_count += 1
-        check.equal(
-            original_forum_count,
-            sumo_pages.contributor_discussions_page.get_forum_thread_count(original_forum)
-        )
+        assert (original_forum_count == sumo_pages.contributor_discussions_page.
+                get_forum_thread_count(original_forum))
 
     with check, allure.step("Verifying that the last post time reflects the newly created "
                             "thread"):
@@ -334,8 +303,8 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
 
     with check, allure.step("Verifying that the correct username is displayed inside the last post"
                             "section"):
-        assert username == sumo_pages.contributor_discussions_page.get_forum_last_post_by(
-            original_forum)
+        assert (test_user["username"] == sumo_pages.contributor_discussions_page.
+                get_forum_last_post_by(original_forum))
 
     with allure.step("Moving the thread to the 'Mobile Support forum discussions' forum"):
         utilities.navigate_to_link(thread_link)
@@ -345,15 +314,12 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
                      "the original topic and incremented inside the target topic"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         original_forum_count -= 1
-        check.equal(
-            original_forum_count,
-            sumo_pages.contributor_discussions_page.get_forum_thread_count(original_forum)
-        )
+        assert (original_forum_count == sumo_pages.contributor_discussions_page.
+                get_forum_thread_count(original_forum))
+
         target_forum_count += 1
-        check.equal(
-            target_forum_count,
-            sumo_pages.contributor_discussions_page.get_forum_thread_count(target_forum)
-        )
+        assert (target_forum_count == sumo_pages.contributor_discussions_page.
+                get_forum_thread_count(target_forum))
 
     with check, allure.step("Verifying that the last post time reflects the newly moved thread"):
         assert "Today at " + post_time.strftime("%#I:%M %p").replace("\u202f", " ") == (
@@ -361,8 +327,8 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
 
     with check, allure.step("Verifying that the correct username is displayed inside the last "
                             "post"):
-        assert username == sumo_pages.contributor_discussions_page.get_forum_last_post_by(
-            target_forum)
+        assert (test_user["username"] == sumo_pages.contributor_discussions_page.
+                get_forum_last_post_by(target_forum))
 
     with check, allure.step("Verifying that the last post time is no longer displayed inside "
                             "the original forum"):
@@ -371,12 +337,8 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
 
     with check, allure.step("Verifying that the username is no longer displayed inside the "
                             "original forum section"):
-        assert username != sumo_pages.contributor_discussions_page.get_forum_last_post_by(
-            original_forum)
-
-    with allure.step("Deleting the newly posted thread"):
-        utilities.navigate_to_link(thread_link)
-        sumo_pages.contributor_thread_flow.delete_thread()
+        assert (test_user["username"] != sumo_pages.contributor_discussions_page.
+                get_forum_last_post_by(original_forum))
 
 
 # C890958
@@ -390,30 +352,25 @@ def test_contributor_discussions_breadcrumb_redirect(page: Page):
 
     with check, allure.step("Verifying that the 'Contributor Discussions' breadcrumb is as the "
                             "current one"):
-        check.equal(
-            sumo_pages.contributor_discussions_page.get_contributor_discussions_breadcrumbs()[1],
-            ConDiscussionsMessages.PAGE_TITLE
-        )
+        assert (sumo_pages.contributor_discussions_page.
+                get_contributor_discussions_breadcrumbs()[1] == ConDiscussionsMessages.PAGE_TITLE)
 
     with allure.step("Clicking on the 'Home' breadcrumb and verifying that the user is redirected "
                      "to the homepage successfully"):
         sumo_pages.contributor_discussions_page.click_on_first_breadcrumb()
-        check.equal(
-            utilities.get_page_url(),
-            HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
-        )
+        assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
 
 
 # C890959,  C2254024
 @pytest.mark.contributorDiscussions
-def test_contributor_discussions_last_post_redirects(page: Page):
+def test_contributor_discussions_last_post_redirects(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+    test_user_two = create_user_factory()
 
     with allure.step("Signing in with an contributor account"):
-        thread_owner = utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Social Support' forum and posting a new thread"):
         utilities.navigate_to_link(SocialSupportForumMessages.PAGE_URL)
@@ -436,7 +393,7 @@ def test_contributor_discussions_last_post_redirects(page: Page):
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
             SocialSupportForumMessages.PAGE_TITLE
         )
-        check.is_true(sumo_pages.forum_thread_page.is_thread_post_visible(post_id))
+        assert sumo_pages.forum_thread_page.is_thread_post_visible(post_id)
 
     with check, allure.step("Navigating back to the Contributor Discussions page and clicking on "
                             "the last post by link and verifying that the user is redirected to "
@@ -445,16 +402,11 @@ def test_contributor_discussions_last_post_redirects(page: Page):
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
             SocialSupportForumMessages.PAGE_TITLE
         )
-        check.is_in(
-            thread_owner,
-            MyProfileMessages.get_my_profile_stage_url(username=thread_owner)
-        )
+        assert (test_user["username"] in MyProfileMessages.
+                get_my_profile_stage_url(username=test_user["username"]))
 
     with allure.step("Signing in with a different user and leaving a reply to the posted thread"):
-        second_username = utilities.start_existing_session(
-            utilities.username_extraction_from_email(
-                utilities.user_secrets_accounts['TEST_ACCOUNT_12']
-            ))
+        utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(thread_link)
 
         reply_id = sumo_pages.contributor_thread_flow.post_thread_reply(
@@ -472,7 +424,7 @@ def test_contributor_discussions_last_post_redirects(page: Page):
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
             SocialSupportForumMessages.PAGE_TITLE
         )
-        check.is_true(sumo_pages.forum_thread_page.is_thread_post_visible(reply_id))
+        assert sumo_pages.forum_thread_page.is_thread_post_visible(reply_id)
 
     utilities.navigate_back()
 
@@ -481,15 +433,5 @@ def test_contributor_discussions_last_post_redirects(page: Page):
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
             SocialSupportForumMessages.PAGE_TITLE
         )
-        check.is_in(
-            second_username,
-            MyProfileMessages.get_my_profile_stage_url(username=second_username)
-        )
-
-    with allure.step("Deleting the newly posted thread"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_MODERATOR'])
-        )
-
-        utilities.navigate_to_link(thread_link)
-        sumo_pages.contributor_thread_flow.delete_thread()
+        assert (test_user_two["username"] in MyProfileMessages.
+                get_my_profile_stage_url(username=test_user_two["username"]))

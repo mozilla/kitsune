@@ -1,15 +1,12 @@
 import allure
 import pytest
-from playwright.sync_api import Error, Page, TimeoutError, expect
 from pytest_check import check
-
+from playwright.sync_api import TimeoutError, expect, Error, Page
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
-    AAQWidgetMessages,
-)
+    AAQWidgetMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
-    ContributePageMessages,
-)
+    ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -40,7 +37,7 @@ def test_popular_topics_navbar(page: Page):
                 with check, allure.step("Verifying that the correct option is displayed"):
                     assert sumo_pages.product_topics_page.get_page_title() == option
 
-                with check, allure.step("Verifying that the correct nav option is selected"):
+                with allure.step("Verifying that the correct nav option is selected"):
                     assert sumo_pages.product_topics_page.get_selected_navbar_option() == option
 
 
@@ -76,8 +73,8 @@ def test_aaq_redirect(page: Page):
             utilities.navigate_to_link(topic_url)
             utilities.wait_for_url_to_be(topic_url)
 
-            with check, allure.step(f"Verifying that the correct subheading page for "
-                                    f"{product_topic} is displayed"):
+            with check, allure.step(f"Verifying that the correct subheading page for"
+                                    f" {product_topic} is displayed"):
                 if product_topic in utilities.general_test_data["premium_products"]:
                     assert sumo_pages.common_web_elements.get_aaq_widget_text(
                     ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
@@ -92,7 +89,7 @@ def test_aaq_redirect(page: Page):
                              "form page"):
                 if count == 0:
                     sumo_pages.auth_flow_page.sign_in_flow(
-                        username=utilities.user_special_chars,
+                        username=utilities.staff_user,
                         account_password=utilities.user_secrets_pass
                     )
                     count += 1

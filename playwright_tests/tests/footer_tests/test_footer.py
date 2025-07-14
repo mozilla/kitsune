@@ -1,11 +1,8 @@
 import re
-from urllib.parse import urljoin
-
 import allure
 import pytest
-from playwright.sync_api import Page, expect
-from pytest_check import check
-
+from playwright.sync_api import expect, Page
+from urllib.parse import urljoin
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -33,7 +30,7 @@ def test_all_footer_links_are_working(page: Page):
 
         # Some links are returning status code 429.
         # We are currently treating them as pass cases.
-        with check, allure.step(f"Verifying that {url} is not broken"):
+        with allure.step(f"Verifying that {url} is not broken"):
             assert response.status in set(range(400)) | {403, 429}
 
 
