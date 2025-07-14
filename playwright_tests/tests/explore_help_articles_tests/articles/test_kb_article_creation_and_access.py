@@ -1,33 +1,30 @@
-import re
-
 import allure
 import pytest
-from playwright.sync_api import BrowserContext, Page, expect
-from pytest_check import check
+import re
+from playwright.sync_api import expect, Page, BrowserContext
 from slugify import slugify
-
+from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.explore_help_articles.kb_article_page_messages import (
-    KBArticlePageMessages,
-)
+    KBArticlePageMessages)
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
-    KBArticleRevision,
-)
+    KBArticleRevision)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C890940, C2243447
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-@pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', '', 'TEST_ACCOUNT_MODERATOR'])
-def test_kb_editing_tools_visibility(page: Page, username):
+@pytest.mark.parametrize("user_type", ['Simple user', '', 'Knowledge Base Reviewer'])
+def test_kb_editing_tools_visibility(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article and approving it"):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
@@ -35,86 +32,55 @@ def test_kb_editing_tools_visibility(page: Page, username):
     with allure.step("Navigating to the Article page"):
         sumo_pages.kb_article_page.click_on_article_option()
 
-    if username == 'TEST_ACCOUNT_13':
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
+    if user_type == 'Simple user':
+        utilities.start_existing_session(cookies=test_user_two)
         with allure.step("Verifying that only some editing tools options are displayed"):
             expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
                    ).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_show_translations_option_locator()
                    ).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_what_links_here_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_visible()
-    elif username == '':
+    elif user_type == '':
         utilities.delete_cookies()
         with allure.step("Verifying that all the editing tools options are not displayed"):
             expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
                    ).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_show_translations_option_locator()
                    ).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_what_links_here_locator()).to_be_hidden()
-
             expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_hidden()
     else:
         with (allure.step("Verifying that all the editing tools options are displayed")):
             expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
                    ).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_show_translations_option_locator()
                    ).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_what_links_here_locator()).to_be_visible()
-
             expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_visible()
-
-    if username != 'TEST_ACCOUNT_MODERATOR':
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-
-    with allure.step("Deleting the created article"):
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C891308, C2081444
 @pytest.mark.kbArticleCreationAndAccess
-def test_non_admin_users_kb_article_submission(page: Page):
+def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
@@ -127,65 +93,58 @@ def test_non_admin_users_kb_article_submission(page: Page):
             KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details
             ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT)
 
-    with check, allure.step("Verifying that the revision contains the correct status"):
+    with allure.step("Verifying that the revision contains the correct status"):
         status = sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         )
         assert KBArticlePageMessages.UNREVIEWED_REVISION_STATUS == status
 
-    with check, allure.step("Clicking on the 'Article' navbar menu and verifying that the "
-                            "doc content contains the correct string"):
+    with allure.step("Clicking on the 'Article' navbar menu and verifying that the doc content"
+                     " contains the correct string"):
         sumo_pages.kb_article_page.click_on_article_option()
         assert sumo_pages.kb_article_page.get_text_of_kb_article_content(
         ) == KBArticlePageMessages.KB_ARTICLE_NOT_APPROVED_CONTENT
 
-    with check, allure.step("Deleting user session and verifying that the 404 page is "
-                            "received"):
+    with allure.step("Deleting user session and verifying that the 404 page is received"):
         with page.expect_navigation() as navigation_info:
             utilities.delete_cookies()
             response = navigation_info.value
             assert response.status == 404
 
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
-    with check, allure.step("Clicking on the 'Show History' option and verifying that the "
-                            "revision contains the correct status"):
+    with allure.step("Clicking on the 'Show History' option and verifying that the revision"
+                     " contains the correct status"):
         sumo_pages.kb_article_page.click_on_show_history_option()
         status = (
             sumo_pages.kb_article_show_history_page.get_status_of_reviewable_revision(
                 article_details['first_revision_id']))
         assert KBArticlePageMessages.REVIEW_REVISION_STATUS == status
 
-    with allure.step("Deleting the created article"):
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2081446, C2081447, C2490049,  C2490051
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-def test_articles_revision_page_and_revision_approval(page: Page):
+def test_articles_revision_page_and_revision_approval(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_revision = KBArticleRevision()
-    with allure.step("Signing in with a non-admin account"):
-        username = utilities.start_existing_session(
-            utilities.username_extraction_from_email(
-                utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-            ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_three = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
-    with check, allure.step("Clicking on the first review and verifying that the correct "
-                            "revision header is displayed"):
+    with check, allure.step("Clicking on the first review and verifying that the correct revision"
+                            " header is displayed"):
         sumo_pages.kb_article_show_history_page.click_on_review_revision(
             article_details['first_revision_id']
         )
@@ -196,7 +155,7 @@ def test_articles_revision_page_and_revision_approval(page: Page):
         assert (sumo_pages.kb_article_review_revision_page.get_reviewing_revision_text()
                 .replace("\n", "").strip() == kb_revision.get_kb_article_revision_details(
             revision_id=re.findall(r'\d+', article_details['first_revision_id'])[0],
-            username=username,
+            username=test_user["username"],
             revision_comment=article_details['article_review_description']
         ).strip())
 
@@ -246,7 +205,7 @@ def test_articles_revision_page_and_revision_approval(page: Page):
         sumo_pages.kb_article_review_revision_page.click_on_approve_revision_button()
         sumo_pages.kb_article_review_revision_page.click_accept_revision_accept_button()
 
-    with check, allure.step("Verifying that the review status updates to 'Current'"):
+    with allure.step("Verifying that the review status updates to 'Current'"):
         assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
@@ -264,22 +223,18 @@ def test_articles_revision_page_and_revision_approval(page: Page):
         assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
         ) == article_details['article_content_html']
 
-    with check, allure.step("Signing in with a non admin account and verifying if the "
-                            "correct content is displayed"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
+    with check, allure.step(f"Signing in with {test_user_three['username']} user account and "
+                            f"verifying if the correct content is displayed"):
+        utilities.start_existing_session(cookies=test_user_three)
         assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
         ) == article_details['article_content_html']
 
-    with allure.step("Signing in with an admin account and creating a new revision"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} user account and creating a "
+                     f"new revision"):
+        utilities.start_existing_session(cookies=test_user_two)
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
-    with check, allure.step("Verifying that the first approved revision is marked as the "
-                            "current"):
+    with allure.step("Verifying that the first approved revision is marked as the current"):
         assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
@@ -288,8 +243,8 @@ def test_articles_revision_page_and_revision_approval(page: Page):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=second_revision['revision_id'])
 
-    with check, allure.step("Verifying that the first revision status is 'Approved', and the"
-                            "second is 'Current'"):
+    with allure.step("Verifying that the first revision status is 'Approved', and the second is "
+                     "'Current'"):
         assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.PREVIOUS_APPROVED_REVISION_STATUS
@@ -298,19 +253,17 @@ def test_articles_revision_page_and_revision_approval(page: Page):
             second_revision['revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
 
-    with allure.step("Signing in with an admin account and deleting the article"):
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2091580, C954321
 @pytest.mark.kbArticleCreationAndAccess
-def test_articles_discussions_allowed(page: Page):
+def test_articles_discussions_allowed(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with {} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
@@ -338,10 +291,8 @@ def test_articles_discussions_allowed(page: Page):
         utilities.navigate_to_link(article_url)
         expect(page).to_have_url(article_url)
 
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Approving the article revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -380,9 +331,10 @@ def test_articles_discussions_allowed(page: Page):
     with allure.step("Signing in with a different account and posting a new kb article "
                      "discussion thread"):
         sumo_pages.auth_flow_page.sign_in_flow(
-            username=utilities.user_special_chars,
+            username=utilities.staff_user,
             account_password=utilities.user_secrets_pass,
         )
+        utilities.wait_for_page_to_load()
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
 
     with allure.step("Manually navigating to the discuss endpoint and verifying that the "
@@ -396,23 +348,17 @@ def test_articles_discussions_allowed(page: Page):
             )
         ).to_be_visible()
 
-    with allure.step("Signing in with an admin account and deleting the article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2091581
 @pytest.mark.kbArticleCreationAndAccess
-def test_articles_discussions_not_allowed(page: Page):
+def test_articles_discussions_not_allowed(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -436,12 +382,11 @@ def test_articles_discussions_not_allowed(page: Page):
         response = navigation_info.value
         assert response.status == 404
 
-    with allure.step("Navigating back to the article page and signing in with admin"):
+    with allure.step(f"Navigating back to the article page and signing in with"
+                     f" {test_user_two['username']}"):
         utilities.navigate_to_link(article_url)
         expect(page).to_have_url(article_url)
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Approving the revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -478,25 +423,17 @@ def test_articles_discussions_not_allowed(page: Page):
         response = navigation_info.value
         assert response.status == 404
 
-    with allure.step("Navigating back to the article page and deleting the article"):
-        utilities.navigate_to_link(article_url)
-        expect(page).to_have_url(article_url)
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2091665
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-def test_kb_article_title_and_slug_validations(page: Page):
+def test_kb_article_title_and_slug_validations(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
@@ -542,15 +479,11 @@ def test_kb_article_title_and_slug_validations(page: Page):
 
     # Currently fails due to https://github.com/mozilla/sumo/issues/1641
     # self.logger.info("Verifying that the correct errors are displayed")
-    # check.equal(
-    #     self.sumo_pages.submit_kb_article_flow.get_kb_title_error_text(),
-    #     KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[0]
-    # )
+    # assert  (self.sumo_pages.submit_kb_article_flow.
+    # get_kb_title_error_text() == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[0])
     #
-    # check.equal(
-    #     self.sumo_pages.submit_kb_article_flow.get_kb_slug_error_text(),
-    #     KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
-    # )
+    # assert (self.sumo_pages.submit_kb_article_flow.
+    # get_kb_slug_error_text() == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1])
 
     with check, allure.step("Submitting the form and verifying that both title and slug "
                             "errors are displayed"):
@@ -621,21 +554,15 @@ def test_kb_article_title_and_slug_validations(page: Page):
         assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
         )[0] == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
 
-    with allure.step("Deleting the created article"):
-        utilities.navigate_to_link(
-            KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details
-            ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT)
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 @pytest.mark.kbArticleCreationAndAccess
-def test_kb_article_product_validations(page: Page):
+def test_kb_article_product_validations(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article and verifying that we are on the same page"):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(selected_product=False)
@@ -648,13 +575,13 @@ def test_kb_article_product_validations(page: Page):
 
 # C2091665, C2243453
 @pytest.mark.kbArticleCreationAndAccess
-def test_kb_article_topic_validation(page: Page):
+def test_kb_article_topic_validation(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article and verifying that we are on the same page"):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(selected_topics=False)
@@ -667,13 +594,13 @@ def test_kb_article_topic_validation(page: Page):
 
 # C2091665
 @pytest.mark.kbArticleCreationAndAccess
-def test_kb_article_summary_and_content_validation(page: Page):
+def test_kb_article_summary_and_content_validation(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article by leaving out the search summary"):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(search_summary="")
@@ -690,14 +617,15 @@ def test_kb_article_summary_and_content_validation(page: Page):
 
 # C2091583, C2091584
 @pytest.mark.kbArticleCreationAndAccess
-@pytest.mark.parametrize("username", ['admin', 'simple_user', 'no_user'])
-def test_kb_article_keywords_and_summary(page: Page, username):
+@pytest.mark.parametrize("user_type", ['Knowledge Base Reviewer', 'Simple user', ''])
+def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with an {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article and approving the revision"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -710,12 +638,10 @@ def test_kb_article_keywords_and_summary(page: Page, username):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.wait_for_given_timeout(65000)
 
-    if username == 'simple_user':
-        with allure.step("Signing in with a non-admin account"):
-            utilities.start_existing_session(utilities.username_extraction_from_email(
-                utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-            ))
-    elif username == "no_user":
+    if user_type == 'Simple user':
+        with allure.step(f"Signing in with {test_user['username']} user account"):
+            utilities.start_existing_session(cookies=test_user)
+    elif user_type == "":
         with allure.step("Deleting user session"):
             utilities.delete_cookies()
 
@@ -756,23 +682,16 @@ def test_kb_article_keywords_and_summary(page: Page, username):
         assert sumo_pages.kb_article_page.get_text_of_article_title(
         ) == article_details['article_title']
 
-    with allure.step("Deleting the created article"):
-        if username != 'admin':
-            utilities.start_existing_session(utilities.username_extraction_from_email(
-                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-            ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2081445
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_non_approved_articles(page: Page):
+def test_edit_non_approved_articles(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    test_user = create_user_factory()
+
+    with allure.step(f"Signing in with a {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a simple kb article without approving it"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
@@ -792,33 +711,26 @@ def test_edit_non_approved_articles(page: Page):
             )
         ).to_be_visible()
 
-    with allure.step("Deleting the article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C966833, C2102177, C2091592
 @pytest.mark.kbArticleCreationAndAccess
-def test_kb_article_keyword_and_summary_update(page: Page):
+def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_revision = KBArticleRevision()
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with an {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True
         )
 
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Navigating to the 'Edit Article' form and verifying that the "
                             "edit keyword field is not displayed"):
@@ -828,23 +740,16 @@ def test_kb_article_keyword_and_summary_update(page: Page):
     with allure.step("Navigating back to the article"):
         sumo_pages.kb_article_page.click_on_article_option()
 
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step("Signing in with user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with check, allure.step("Clicking on the 'Edit Article' option and verifying that the "
                             "correct notification banner is displayed stating that another "
                             "user is also working on an edit"):
         sumo_pages.kb_article_page.click_on_edit_article_option()
-        check.equal(
-            sumo_pages.kb_edit_article_page.get_edit_article_warning_message(),
-            kb_revision.get_article_warning_message(
-                utilities.username_extraction_from_email(
-                    utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
-                )
-            )
-        )
+        assert (sumo_pages.kb_edit_article_page.get_edit_article_warning_message() == kb_revision.
+                get_article_warning_message(test_user['username']))
+
         sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
 
     with allure.step("Creating a new revision for the kb article and approving it"):
@@ -879,11 +784,11 @@ def test_kb_article_keyword_and_summary_update(page: Page):
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        check.equal(
-            sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
-                article_details['article_title']
-            ),
-            utilities.kb_article_test_data['updated_search_result_summary']
+        assert (
+            sumo_pages.search_page.
+            get_search_result_summary_text_of_a_particular_article(article_details['article_title']
+                                                                   ) == utilities.
+            kb_article_test_data['updated_search_result_summary']
         )
 
     with allure.step("Clearing the searchbar"):
@@ -903,48 +808,38 @@ def test_kb_article_keyword_and_summary_update(page: Page):
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        check.equal(
-            sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
-                article_details['article_title']
-            ),
-            utilities.kb_article_test_data['updated_search_result_summary']
-        )
+        assert (
+            sumo_pages.search_page.
+            get_search_result_summary_text_of_a_particular_article(article_details['article_title']
+                                                                   ) == utilities.
+            kb_article_test_data['updated_search_result_summary'])
 
     with check, allure.step("Clicking on the article and verifying that the user is "
                             "redirected to the kb article"):
         sumo_pages.search_page.click_on_a_particular_article(article_details['article_title'])
-        check.equal(
-            sumo_pages.kb_article_page.get_text_of_article_title(),
-            article_details['article_title']
-        )
-
-    with allure.step("Deleting the created article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert (sumo_pages.kb_article_page.
+                get_text_of_article_title() == article_details['article_title'])
 
 
 # C2243447, C2243449
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_article_metadata_title(page: Page):
+def test_edit_article_metadata_title(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True
         )
 
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Clicking on the Article option"):
         sumo_pages.kb_article_page.click_on_article_option()
@@ -961,10 +856,8 @@ def test_edit_article_metadata_title(page: Page):
         response = navigation_info.value
         assert response.status == 403
 
-    with allure.step("Signing in back with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in back with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(article_url + KBArticleRevision.KB_EDIT_METADATA)
 
     with allure.step("Changing the article title"):
@@ -976,31 +869,24 @@ def test_edit_article_metadata_title(page: Page):
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
                             "that the updated title and original slug is displayed"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
-        check.equal(
-            (sumo_pages.kb_article_edit_article_metadata_page.get_text_of_title_input_field()),
-            utilities.kb_article_test_data['updated_kb_article_title'] + article_details
-            ['article_title']
-        )
-
-        check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page.get_slug_input_field(),
-            article_details['article_slug']
-        )
-
-    with allure.step("Deleting the article"):
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert (sumo_pages.kb_article_edit_article_metadata_page.
+                get_text_of_title_input_field() == utilities.
+                kb_article_test_data['updated_kb_article_title'] + article_details['article_title']
+                )
+        assert (sumo_pages.kb_article_edit_article_metadata_page.
+                get_slug_input_field() == article_details['article_slug'])
 
 
 # C2243450, C2091589
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_article_metadata_slug(page: Page):
+def test_edit_article_metadata_slug(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1011,10 +897,9 @@ def test_edit_article_metadata_slug(page: Page):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(slug="donotdelete")
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
-            KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
-        )
+        assert (sumo_pages.
+                kb_article_edit_article_metadata_page.get_error_message() == KBArticlePageMessages.
+                KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1])
 
     with allure.step("Changing the article slug"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
@@ -1022,34 +907,25 @@ def test_edit_article_metadata_slug(page: Page):
         )
 
     with check, allure.step("Verifying that the article url has updated with the new slug"):
-        check.is_in(
-            article_details['article_slug'] + "1",
-            utilities.get_page_url()
-        )
+        assert article_details['article_slug'] + "1" in utilities.get_page_url()
 
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
                             "that the slug was updated"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
-
-        check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page.get_slug_input_field(),
-            article_details['article_slug'] + "1"
-        )
-
-    with allure.step("Deleting the article"):
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert (sumo_pages.kb_article_edit_article_metadata_page.
+                get_slug_input_field() == article_details['article_slug'] + "1")
 
 
 # C2243451
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_article_metadata_category(page: Page):
+def test_edit_article_metadata_category(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_article_messages = KBArticlePageMessages()
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1062,10 +938,9 @@ def test_edit_article_metadata_category(page: Page):
         )
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
-            kb_article_messages.get_template_error(article_details['article_title'])
-        )
+        assert (sumo_pages.kb_article_edit_article_metadata_page.
+                get_error_message() == kb_article_messages.
+                get_template_error(article_details['article_title']))
 
     with allure.step("Selecting a different category"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(category="Navigation")
@@ -1121,20 +996,16 @@ def test_edit_article_metadata_category(page: Page):
             )
         ).to_be_visible()
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details['article_url'])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2243452, C2243453
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_article_metadata_product_and_topic(page: Page):
+def test_edit_article_metadata_product_and_topic(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1146,10 +1017,8 @@ def test_edit_article_metadata_product_and_topic(page: Page):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
             product=article_details['article_product']
         )
-        check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
-            KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR
-        )
+        assert (sumo_pages.kb_article_edit_article_metadata_page.
+                get_error_message() == KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR)
 
     with check, allure.step("Selecting a different product, deselecting the topics "
                             "option and verifying that the correct error message is "
@@ -1157,10 +1026,8 @@ def test_edit_article_metadata_product_and_topic(page: Page):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
             product="Firefox for Android", topics=article_details['article_topic'][0]
         )
-        check.equal(
-            sumo_pages.kb_article_edit_article_metadata_page.get_error_message(),
-            KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR
-        )
+        assert (sumo_pages.kb_article_edit_article_metadata_page.
+                get_error_message() == KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR)
 
     with allure.step("Selecting a different topic relevant to the product group"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
@@ -1168,24 +1035,19 @@ def test_edit_article_metadata_product_and_topic(page: Page):
         )
 
     with check, allure.step("Verifying that the correct breadcrumb is displayed"):
-        check.is_in(
-            "Browse",
-            sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
-        )
-
-    with allure.step("Deleting the article"):
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert "Browse" in sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
 
 
 # C2243455
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_metadata_article_discussions(page: Page):
+def test_edit_metadata_article_discussions(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1195,20 +1057,16 @@ def test_edit_metadata_article_discussions(page: Page):
     with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
         expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
-    with allure.step("Signing in with a non-admin user and verifying that the discussion "
+    with allure.step(f"Signing in with {test_user['username']} and verifying that the discussion "
                      "options is visible"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
         expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
-    with allure.step("Signing in with an admin account and disabling article discussions via "
-                     "edit article metadata form"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} and disabling article "
+                     f"discussions via edit article metadata form"):
+        utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=False)
 
     with check, allure.step("Verifying that 'Discussion' is not displayed for admin users"):
@@ -1226,9 +1084,7 @@ def test_edit_metadata_article_discussions(page: Page):
     with check, allure.step("Verifying that the discussion option is not displayed for "
                             "non-admin users"):
         utilities.navigate_to_link(article_details['article_url'])
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
         expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
@@ -1240,40 +1096,32 @@ def test_edit_metadata_article_discussions(page: Page):
         response = navigation_info.value
         assert response.status == 404
 
-    with allure.step("Signing in with an admin account and enabling the discussion option "
-                     "via the edit article metadata page"):
+    with allure.step(f"Signing in with {test_user_two['username']} and enabling the discussion "
+                     f"option via the edit article metadata page"):
         utilities.navigate_to_link(article_details['article_url'])
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=True)
 
     with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
         expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
-    with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with check, allure.step(f"Verifying that the 'Discussion' is visible for"
+                            f" {test_user['username']}"):
+        utilities.start_existing_session(cookies=test_user)
         expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
-
-    with allure.step("Deleting the article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2244014
 @pytest.mark.kbArticleCreationAndAccess
-def test_edit_metadata_article_multiple_users(page: Page):
+def test_edit_metadata_article_multiple_users(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_revision = KBArticleRevision()
-    with allure.step("Signing in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
@@ -1281,48 +1129,35 @@ def test_edit_metadata_article_multiple_users(page: Page):
     with allure.step("Clicking on the 'Edit Article Metadata' option"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
-    with allure.step("Navigating back to the article page and signing in with a non-admin "
-                     "user account"):
+    with allure.step(f"Navigating back to the article page and signing in with"
+                     f" {test_user['username']}"):
         sumo_pages.kb_article_page.click_on_article_option()
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Clicking on the 'Edit Article Metadata' option"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        check.equal(
-            sumo_pages.kb_edit_article_page.get_edit_article_warning_message(),
-            kb_revision.get_article_warning_message(
-                utilities.username_extraction_from_email(
-                    utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-                )
-            )
-        )
+        assert (sumo_pages.kb_edit_article_page.
+                get_edit_article_warning_message() == kb_revision.
+                get_article_warning_message(test_user_two['username']))
 
     with allure.step("Clicking on the 'Edit Anyway' option and verifying that the warning "
                      "banner is no longer displayed"):
         sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
         expect(sumo_pages.kb_edit_article_page.get_warning_banner_locator()).to_be_hidden()
 
-    with allure.step("Deleting the article"):
-        sumo_pages.kb_article_page.click_on_article_option()
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2271119, C2243454
 @pytest.mark.kbArticleCreationAndAccess
-def test_archived_kb_article_edit(page: Page):
+def test_archived_kb_article_edit(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Creating a simple kb article and approving it"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1332,10 +1167,8 @@ def test_archived_kb_article_edit(page: Page):
     with allure.step("Marking the article as Obsolete via the 'Edit Article Metadata' page"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
 
-    with allure.step("Signing in with a non-admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_13']
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Verifying that the 'Edit Article' navbar option is not displayed"):
         expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_hidden()
@@ -1368,22 +1201,16 @@ def test_archived_kb_article_edit(page: Page):
         second_revision = sumo_pages.kb_article_show_history_page.get_last_revision_id()
         assert (article_details['first_revision_id'] != second_revision)
 
-    with allure.step("Deleting the article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2490052
 @pytest.mark.kbArticleCreationAndAccess
-def test_revision_significance(page: Page):
+def test_revision_significance(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a simple kb article and approving the first revision"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1391,12 +1218,8 @@ def test_revision_significance(page: Page):
         )
 
     with check, allure.step("Verifying that the significance is the correct one"):
-        check.equal(
-            sumo_pages.kb_article_show_history_page.get_revision_significance(
-                article_details['first_revision_id']
-            ),
-            KBArticlePageMessages.MAJOR_SIGNIFICANCE
-        )
+        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
+            article_details['first_revision_id']) == KBArticlePageMessages.MAJOR_SIGNIFICANCE)
 
     with check, allure.step("Creating a new revision, approving it wih minor significance "
                             "and verifying that the correct significance is displayed"):
@@ -1405,12 +1228,8 @@ def test_revision_significance(page: Page):
             revision_id=second_revision['revision_id'],
             significance_type='minor'
         )
-        check.equal(
-            sumo_pages.kb_article_show_history_page.get_revision_significance(
-                second_revision['revision_id']
-            ),
-            KBArticlePageMessages.MINOR_SIGNIFICANCE
-        )
+        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
+            second_revision['revision_id']) == KBArticlePageMessages.MINOR_SIGNIFICANCE)
 
     with check, allure.step("Creating a new revision and approving it with normal "
                             "significance which is the default one and verifying that the "
@@ -1418,12 +1237,8 @@ def test_revision_significance(page: Page):
         third_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
             approve_revision=True
         )
-        check.equal(
-            sumo_pages.kb_article_show_history_page.get_revision_significance(
-                third_revision['revision_id']
-            ),
-            KBArticlePageMessages.NORMAL_SIGNIFICANCE
-        )
+        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
+            third_revision['revision_id']) == KBArticlePageMessages.NORMAL_SIGNIFICANCE)
 
     with check, allure.step("Creating a new revision, approving it with major significance "
                             "and verifying that the correct significance is displayed"):
@@ -1432,31 +1247,21 @@ def test_revision_significance(page: Page):
             revision_id=forth_revision['revision_id'],
             significance_type='major'
         )
-        check.equal(
-            sumo_pages.kb_article_show_history_page.get_revision_significance(
-                forth_revision['revision_id']
-            ),
-            KBArticlePageMessages.MAJOR_SIGNIFICANCE
-        )
-
-    with allure.step("Deleting the article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
+            forth_revision['revision_id']) == KBArticlePageMessages.MAJOR_SIGNIFICANCE)
 
 
 # C2903832  C2903833 C2903945  C2903946
 @pytest.mark.kbArticleCreationAndAccess
-def test_article_creation_and_frequent_topics_cards(page: Page):
+def test_article_creation_and_frequent_topics_cards(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"],
+                                    permissions=["delete_document"])
     test_topic_card = utilities.general_test_data["test_topics"]["Firefox"]["topic_name"]
 
-    with allure.step("Signing in with a contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Ensuring that the 'Test topic is empty'"):
         utilities.navigate_to_link(utilities.general_test_data["test_topics"]["Firefox"]["link"])
@@ -1468,13 +1273,12 @@ def test_article_creation_and_frequent_topics_cards(page: Page):
             utilities.navigate_to_link(
                 utilities.general_test_data["test_topics"]["Firefox"]["link"])
 
-    with check, allure.step("Verifying that the topic card is not displayed"):
+    with (check, allure.step("Verifying that the topic card is not displayed")):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            check.is_false(
-                sumo_pages.common_web_elements.is_frequent_topic_card_displayed(test_topic_card)
-            )
+            assert not (sumo_pages.common_web_elements.
+                        is_frequent_topic_card_displayed(test_topic_card))
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -1485,19 +1289,13 @@ def test_article_creation_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            check.is_in(
-                test_topic_card, sumo_pages.common_web_elements.get_frequent_topic_card_titles()
-            )
-            check.is_in(
-                article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
-            )
-            check.equal(
-                1,
-                utilities.number_extraction_from_string(
-                    sumo_pages.common_web_elements.
-                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
-                ))
+            assert (test_topic_card in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_titles())
+            assert (article_details["article_title"] in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(test_topic_card))
+            assert (1 == utilities.number_extraction_from_string(
+                sumo_pages.common_web_elements.
+                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
 
     with allure.step("Creating a new kb article and not approving the revision"):
         second_article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -1509,16 +1307,11 @@ def test_article_creation_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            check.is_not_in(
-                second_article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
-            )
-            check.equal(
-                1,
-                utilities.number_extraction_from_string(
-                    sumo_pages.common_web_elements.
-                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
-                ))
+            assert (second_article_details["article_title"] not in sumo_pages.
+                    common_web_elements.get_frequent_topic_card_articles(test_topic_card))
+            assert (1 == utilities.number_extraction_from_string(
+                sumo_pages.common_web_elements.
+                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
 
     with check, allure.step("Approving the first revision for the second article and verifying "
                             "that the article is now listed inside the topic card list and the"
@@ -1529,17 +1322,11 @@ def test_article_creation_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            check.is_in(
-                second_article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
-            )
-            check.equal(
-                2,
-                utilities.number_extraction_from_string(
-                    sumo_pages.common_web_elements.
-                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
-                )
-            )
+            assert (second_article_details["article_title"] in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(test_topic_card))
+            assert (2 == utilities.number_extraction_from_string(
+                sumo_pages.common_web_elements.
+                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
 
     with allure.step("Deleting the second article"):
         utilities.navigate_to_link(second_article_details["article_url"])
@@ -1550,17 +1337,11 @@ def test_article_creation_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            check.is_not_in(
-                second_article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(test_topic_card)
-            )
-            check.equal(
-                1,
-                utilities.number_extraction_from_string(
-                    sumo_pages.common_web_elements.
-                    get_frequent_topic_card_view_all_articles_link_text(test_topic_card)
-                )
-            )
+            assert (second_article_details["article_title"] not in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(test_topic_card))
+            assert (1 == utilities.number_extraction_from_string(
+                sumo_pages.common_web_elements.
+                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
 
     with allure.step("Deleting the first article"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -1570,25 +1351,23 @@ def test_article_creation_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            check.is_false(
-                sumo_pages.common_web_elements.is_frequent_topic_card_displayed(test_topic_card)
-            )
+            assert not (sumo_pages.common_web_elements.
+                        is_frequent_topic_card_displayed(test_topic_card))
 
 
 # C2903878
 @pytest.mark.kbArticleCreationAndAccess
-def test_article_update_and_frequent_topics_cards(page: Page):
+def test_article_update_and_frequent_topics_cards(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     new_article_name = "This title has been updated"
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with a contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
-        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
             page=page, product="8", topic="505", approve_revision=True)
 
     with allure.step("Updating the title of the article"):
@@ -1598,29 +1377,22 @@ def test_article_update_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Thunderbird"])
-            check.is_in(
-                new_article_name,
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]
-                )
-            )
-
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            assert (
+                new_article_name in sumo_pages.common_web_elements.
+                get_frequent_topic_card_articles(utilities.general_test_data["test_topics"]
+                                                 ["Thunderbird"]["topic_name"]))
 
 
 # C2903948
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-def test_obsolete_articles_and_frequent_topics_cards(page: Page):
+def test_obsolete_articles_and_frequent_topics_cards(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with a contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -1634,12 +1406,9 @@ def test_obsolete_articles_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Thunderbird"])
-            check.is_not_in(
-                article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]
-                )
-            )
+            assert (article_details["article_title"] not in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]))
 
     with allure.step("Unmarking the article as Obsolete via the 'Edit Article Metadata' page"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -1649,29 +1418,23 @@ def test_obsolete_articles_and_frequent_topics_cards(page: Page):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Thunderbird"])
-            check.is_in(
-                article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]
-                )
-            )
-
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            assert (
+                article_details["article_title"] in sumo_pages.common_web_elements.
+                get_frequent_topic_card_articles(utilities.general_test_data["test_topics"]
+                                                 ["Thunderbird"]["topic_name"]))
 
 
 # C2904497
 @pytest.mark.parametrize("category", ["60", "70", "50", "40"])
 @pytest.mark.kbArticleCreationAndAccess
-def test_ignored_article_types_from_frequent_topics_cards(page: Page, category):
+def test_ignored_article_types_from_frequent_topics_cards(page: Page, category,
+                                                          create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with a contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article of 'Canned Responses' type, under the Test Topic "
                      "and approving the revision"):
@@ -1682,29 +1445,21 @@ def test_ignored_article_types_from_frequent_topics_cards(page: Page, category):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Pocket"])
-            check.is_not_in(
-                article["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]
-                )
-            )
-
-    with allure.step("Deleting the articles"):
-        utilities.navigate_to_link(article["article_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            assert (article["article_title"] not in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]))
 
 
 # C2903871 C2903873 C2903874
 @pytest.mark.smokeTest
 @pytest.mark.kbArticleCreationAndAccess
-def test_article_topic_and_product_change(page: Page):
+def test_article_topic_and_product_change(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with a contributor account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -1720,12 +1475,9 @@ def test_article_topic_and_product_change(page: Page):
         for product in ["MDN Plus", "Pocket"]:
             for link in ["product_support", "product_solutions"]:
                 utilities.navigate_to_link(utilities.general_test_data[link][product])
-                check.is_in(
-                    article_details["article_title"],
-                    sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                        utilities.general_test_data["test_topics"][product]["topic_name"]
-                    )
-                )
+                assert (article_details["article_title"] in sumo_pages.common_web_elements.
+                        get_frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"][product]["topic_name"]))
 
     with check, allure.step("Removing the article from the Pocket product & topic"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -1737,22 +1489,12 @@ def test_article_topic_and_product_change(page: Page):
                             "topic"):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(utilities.general_test_data[link]["Pocket"])
-            check.is_not_in(
-                article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]
-                )
-            )
-            check.is_not_in(
-                article_details["article_title"],
-                sumo_pages.common_web_elements.get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]
-                )
-            )
-
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            assert (article_details["article_title"] not in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]))
+            assert (article_details["article_title"] not in sumo_pages.common_web_elements.
+                    get_frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]))
 
 
 # C2550394 C2877651 C2877652 C2877653 C2877654 C2843760 C2843762 C2844267 C2844282 C2844332
@@ -1761,26 +1503,24 @@ def test_article_topic_and_product_change(page: Page):
 @pytest.mark.parametrize("vote_type", ["Article is accurate", "Article is easy to understand",
                                        "The visuals are helpful",
                                        "Article provided the information I needed", "Other"])
-def test_article_helpfulness_votes(page: Page, vote_type):
+def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     events = {}
     ga_events = utilities.ga4_data
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Sign in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Sign in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
             page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
-    with allure.step("Sign in with an normal account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Sign in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
         page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
@@ -1788,39 +1528,33 @@ def test_article_helpfulness_votes(page: Page, vote_type):
 
         sumo_pages.kb_article_page.click_on_helpful_button()
         with check, allure.step("Verifying that the correct event is sent"):
-            check.is_true(events.items() <= ga_events['article_helpfulness'].items())
+            assert events.items() <= ga_events['article_helpfulness'].items()
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
         with check, allure.step("Verifying that the correct survey open event is sent"):
-            check.is_true(events.items() <= ga_events['open_survey_helpful'].items())
+            assert events.items() <= ga_events['open_survey_helpful'].items()
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
-
         sumo_pages.kb_article_page.click_on_helpfulness_submit_button()
+
         with check, allure.step("Verifying that the correct survey submitted event is sent"):
-            check.is_true(events.items() <= ga_events[f'{slugify(vote_type).lower()}'].items())
+            assert events.items() <= ga_events[f'{slugify(vote_type).lower()}'].items()
 
         with check, allure.step("Verifying that the correct widget is displayed"):
-            check.equal(
-                sumo_pages.kb_article_page.get_survey_message_text(),
-                KBArticlePageMessages.KB_SURVEY_FEEDBACK
+            assert (
+                sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
+                KB_SURVEY_FEEDBACK
             )
 
         with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
                                 " displayed"):
             utilities.wait_for_given_timeout(6000)
-            check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
         with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                                 "displayed"):
             page.reload()
-            check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
-
-    with allure.step("Deleting the kb article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
 
 # C2877655 C2843760 C2843762 C2844267 C2844282 C2844332  C2844333
@@ -1828,26 +1562,24 @@ def test_article_helpfulness_votes(page: Page, vote_type):
 @pytest.mark.parametrize("vote_type", ["Article is accurate", "Article is easy to understand",
                                        "The visuals are helpful",
                                        "Article provided the information I needed", "Other"])
-def test_article_helpfulness_cancel_vote(page: Page, vote_type):
+def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     events = {}
     ga_events = utilities.ga4_data
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Sign in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Sign in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
             page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
-    with allure.step("Sign in with an normal account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Sign in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
         page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
@@ -1855,39 +1587,31 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type):
 
         sumo_pages.kb_article_page.click_on_helpful_button()
         with check, allure.step("Verifying that the correct event is sent"):
-            check.is_true(events.items() <= ga_events['article_helpfulness'].items())
+            assert events.items() <= ga_events['article_helpfulness'].items()
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
         with check, allure.step("Verifying that the correct survey open event is sent"):
-            check.is_true(events.items() <= ga_events['open_survey_helpful'].items())
+            assert events.items() <= ga_events['open_survey_helpful'].items()
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
-
         sumo_pages.kb_article_page.click_on_helpfulness_cancel_button()
+
         with check, allure.step("Verifying that the correct cancel survey event is sent"):
-            check.is_true(events.items() <= ga_events['cancel_survey_helpful'].items())
+            assert events.items() <= ga_events['cancel_survey_helpful'].items()
 
         with check, allure.step("Verifying that the correct widget is displayed"):
-            check.equal(
-                sumo_pages.kb_article_page.get_survey_message_text(),
-                KBArticlePageMessages.KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS
-            )
+            assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
+                    KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
 
         with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
                                 " displayed"):
             utilities.wait_for_given_timeout(6000)
-            check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
         with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                                 "displayed"):
             page.reload()
-            check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
-
-    with allure.step("Deleting the kb article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
 
 # C2877656 C2877657 C2877658  C2877659 C2877660 C2844337 C2844339 C2844341 C2844342 C2844343
@@ -1897,26 +1621,24 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type):
                                        "Missing, unclear, or unhelpful visuals",
                                        "Article didn't provide the information I needed",
                                        "Other"])
-def test_article_unhelpfulness_votes(page: Page, vote_type):
+def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     events = {}
     ga_events = utilities.ga4_data
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Sign in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Sign in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
             page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
-    with allure.step("Sign in with an normal account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Sign in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
         page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
@@ -1924,41 +1646,35 @@ def test_article_unhelpfulness_votes(page: Page, vote_type):
 
         sumo_pages.kb_article_page.click_on_unhelpful_button()
         with check, allure.step("Verifying that the correct event is sent"):
-            check.is_true(events.items() <= ga_events['article_unhelpfulness'].items())
+            assert events.items() <= ga_events['article_unhelpfulness'].items()
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
         with check, allure.step("Verifying that the correct survey open event is sent"):
-            check.is_true(events.items() <= ga_events['open_survey_unhelpful'].items())
+            assert events.items() <= ga_events['open_survey_unhelpful'].items()
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
-
         sumo_pages.kb_article_page.click_on_helpfulness_submit_button()
-        with check, allure.step("Verifying that the correct survey submitted event is sent"):
-            check.is_true(events.items() <= ga_events[
-                f'{slugify(vote_type).lower() if vote_type != "Other" else "other-unhelpful"}'
-            ].items())
 
+        with check, allure.step("Verifying that the correct survey submitted event is sent"):
+            assert (
+                events.items()
+                <= ga_events[
+                    f'{slugify(vote_type).lower() if vote_type != "Other" else "other-unhelpful"}'
+                ].items()
+            )
     with check, allure.step("Verifying that the correct widget is displayed"):
-        check.equal(
-            sumo_pages.kb_article_page.get_survey_message_text(),
-            KBArticlePageMessages.KB_SURVEY_FEEDBACK
-        )
+        assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
+                KB_SURVEY_FEEDBACK)
 
     with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
                             " displayed"):
         utilities.wait_for_given_timeout(6000)
-        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                             "displayed"):
         page.reload()
-        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
-
-    with allure.step("Deleting the kb article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
 
 # C2877661 C2844337 C2844339 C2844341 C2844342 C2844343 C2844345
@@ -1967,26 +1683,24 @@ def test_article_unhelpfulness_votes(page: Page, vote_type):
                                        "Missing, unclear, or unhelpful visuals",
                                        "Article didn't provide the information I needed",
                                        "Other"])
-def test_article_unhelpfulness_cancel_vote(page: Page, vote_type):
+def test_article_unhelpfulness_cancel_vote(page: Page, vote_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     events = {}
     ga_events = utilities.ga4_data
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Sign in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Sign in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
             page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
-    with allure.step("Sign in with an normal account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+    with allure.step(f"Sign in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step(f"Voting the article as {vote_type}"):
         page.on("console", lambda msg: events.update(log) if (log := utilities.get_ga_logs(
@@ -1994,51 +1708,43 @@ def test_article_unhelpfulness_cancel_vote(page: Page, vote_type):
 
         sumo_pages.kb_article_page.click_on_unhelpful_button()
         with check, allure.step("Verifying that the correct event is sent"):
-            check.is_true(events.items() <= ga_events['article_unhelpfulness'].items())
+            assert events.items() <= ga_events['article_unhelpfulness'].items()
 
         sumo_pages.kb_article_page.click_on_helpfulness_option(vote_type)
         with check, allure.step("Verifying that the correct survey open event is sent"):
-            check.is_true(events.items() <= ga_events['open_survey_unhelpful'].items())
+            assert events.items() <= ga_events['open_survey_unhelpful'].items()
 
         sumo_pages.kb_article_page.fill_helpfulness_textarea_field("Playwright vote test")
-
         sumo_pages.kb_article_page.click_on_helpfulness_cancel_button()
+
         with check, allure.step("Verifying that the correct survey submitted event is sent"):
-            check.is_true(events.items() <= ga_events['cancel_survey_unhelpful'].items())
+            assert events.items() <= ga_events['cancel_survey_unhelpful'].items()
 
     with check, allure.step("Verifying that the correct widget is displayed"):
-        check.equal(
-            sumo_pages.kb_article_page.get_survey_message_text(),
-            KBArticlePageMessages.KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS
-        )
+        assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
+                KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
 
     with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
                             " displayed"):
         utilities.wait_for_given_timeout(6000)
-        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
+        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                             "displayed"):
         page.reload()
-        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
-
-    with allure.step("Deleting the kb article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
 
 # C2616585
 @pytest.mark.kbArticleCreationAndAccess
-def test_article_helpfulness_metadata_count(page: Page):
+def test_article_helpfulness_metadata_count(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Sign in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Sign in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -2054,15 +1760,11 @@ def test_article_helpfulness_metadata_count(page: Page):
 
     with check, allure.step("Verifying that the correct kb article metadata information is "
                             "displayed"):
-        check.equal(
-            sumo_pages.kb_article_page.get_text_of_kb_article_helpfulness_count_metadata(),
-            "100%"
-        )
+        assert (sumo_pages.kb_article_page.
+                get_text_of_kb_article_helpfulness_count_metadata() == "100%")
 
     with allure.step("Signing in with a different user"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Voting the article as unhelpful"):
         sumo_pages.kb_article_page.click_on_unhelpful_button()
@@ -2073,38 +1775,28 @@ def test_article_helpfulness_metadata_count(page: Page):
 
     with check, allure.step("Verifying that the correct kb article metadata information is "
                             "displayed"):
-        check.equal(
-            sumo_pages.kb_article_page.get_text_of_kb_article_helpfulness_count_metadata(),
-            "50%"
-        )
+        assert (sumo_pages.kb_article_page.
+                get_text_of_kb_article_helpfulness_count_metadata() == "50%")
 
     with check, allure.step("Navigating to the topics page associated with this article and "
                             "verifying that the helpfulness percentage metadata information is "
                             "not displayed"):
         utilities.navigate_to_link(utilities.general_test_data["product_topics"]["Firefox"])
-        check.is_false(
-            sumo_pages.product_topics_page.is_article_helpfulness_metadata_displayed(
-                article_info["article_title"])
-        )
-
-    with allure.step("Deleting the kb article"):
-        sumo_pages.product_topics_page.click_on_a_particular_article(article_info["article_title"])
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert not (sumo_pages.product_topics_page.is_article_helpfulness_metadata_displayed(
+            article_info["article_title"]))
 
 
 # C2895037
 @pytest.mark.kbArticleCreationAndAccess
-def test_voting_the_same_article_twice_is_not_possible(page: Page, context: BrowserContext):
+def test_voting_the_same_article_twice_is_not_possible(page: Page, context: BrowserContext,
+                                                       create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Sign in with an Admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Sign in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
         article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -2112,9 +1804,7 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step("Sign in with a different user"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Opening a new browser window, navigating to the newly created kb article "
                      "and voting the article as helpful"):
@@ -2126,27 +1816,20 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
     with check, allure.step("Verifying that the helpfulness widget is no longer displayed inside"
                             " first browser window"):
         utilities.wait_for_given_timeout(1000)
-        check.is_false(sumo_pages.kb_article_page.is_helpfulness_widget_displayed())
-
-    with allure.step("Deleting the kb article"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
 
 # C3065908 C3065909
 @pytest.mark.kbArticleCreationAndAccess
-def test_adding_and_removing_related_documents(page: Page):
+def test_adding_and_removing_related_documents(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_articles_url = []
     test_article_titles = []
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Creating 3 test articles"):
         counter = 1
@@ -2169,19 +1852,14 @@ def test_adding_and_removing_related_documents(page: Page):
 
     with check, allure.step("Verifying that the related documents are successfully displayed "
                             "inside the 'Related Articles' section"):
-        check.equal(
-            set(test_article_titles[1:]),
-            set(sumo_pages.kb_article_page.get_list_of_related_articles())
-        )
+        assert (set(test_article_titles[1:]) == set(
+            sumo_pages.kb_article_page.get_list_of_related_articles()))
 
     with check, allure.step(f"Clicking on the f{test_article_titles[1]} related document and "
                             f"verifying that the article is listed inside the 'Related Articles' "
                             f"section"):
         sumo_pages.kb_article_page.click_on_related_article_card(test_article_titles[1])
-        check.is_in(
-            test_article_titles[0],
-            sumo_pages.kb_article_page.get_list_of_related_articles()
-        )
+        assert test_article_titles[0] in sumo_pages.kb_article_page.get_list_of_related_articles()
 
     with allure.step(f"Navigating back to the f{test_article_titles[0]}, clicking on the "
                      f"'Edit Article Metadata' and removing one of the related documents"):
@@ -2193,35 +1871,25 @@ def test_adding_and_removing_related_documents(page: Page):
 
     with allure.step(f"Verifying that the f{test_article_titles[1]} is no longer listed inside "
                      "'Related Articles' section"):
-        check.is_not_in(
-            test_article_titles[1],
-            sumo_pages.kb_article_page.get_list_of_related_articles()
-        )
+        assert (test_article_titles[1] not in sumo_pages.kb_article_page.
+                get_list_of_related_articles())
 
     with check, allure.step(f"Navigating to the f{test_article_titles[1]} page and verifying that "
                             f"the f{test_article_titles[0]} is not listed inside the "
                             f"'Related documents' section"):
         utilities.navigate_to_link(test_articles_url[1])
-        check.is_false(
-            sumo_pages.kb_article_page.is_related_articles_section_displayed()
-        )
-
-    with allure.step("Deleting all test articles"):
-        for article in test_articles_url:
-            utilities.navigate_to_link(article)
-            sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert not sumo_pages.kb_article_page.is_related_articles_section_displayed()
 
 
 # C3059081
 @pytest.mark.kbArticleCreationAndAccess
-def test_same_article_cannot_be_added_as_related_article(page: Page):
+def test_same_article_cannot_be_added_as_related_article(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new KB article"):
         article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -2237,27 +1905,23 @@ def test_same_article_cannot_be_added_as_related_article(page: Page):
         sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
             article_info["article_title"], submit=False)
         utilities.wait_for_given_timeout(2000)
-        check.is_true(
-            sumo_pages.kb_article_edit_article_metadata_page.is_no_related_documents_displayed()
-        )
-
-    with allure.step("Deleting the KB article"):
-        utilities.navigate_to_link(article_info["article_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert sumo_pages.kb_article_edit_article_metadata_page.is_no_related_documents_displayed()
 
 
 #  C3065910
 @pytest.mark.kbArticleCreationAndAccess
-def test_restricted_visibility_related_document_in_article_page(page: Page):
+def test_restricted_visibility_related_document_in_article_page(page: Page,
+                                                                create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_articles_url = []
     test_article_titles = []
+    test_user = create_user_factory()
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers", "Staff"])
+    test_user_three = create_user_factory(groups=["Mobile"])
 
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Creating 3 new articles"):
         counter = 1
@@ -2285,37 +1949,18 @@ def test_restricted_visibility_related_document_in_article_page(page: Page):
         )
 
     with allure.step("Signing in with a users that doesn't belong to the 'Mobile' group"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Verifying that the article is not displayed inside the 'Related "
                             "Documents' section"):
         utilities.navigate_to_link(test_articles_url[0])
-        check.is_not_in(
-            test_article_titles[1],
-            sumo_pages.kb_article_page.get_list_of_related_articles()
-        )
+        assert (test_article_titles[1] not in sumo_pages.kb_article_page.
+                get_list_of_related_articles())
 
     with check, allure.step(f"Signing in with the account that is part of the 'Mobile' group"
                             f"group, navigating to the f{test_article_titles[0]} article and "
                             f"verifying that the restricted visibility article is now visible in "
                             f"the 'Related Documents' section"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
+        utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(test_articles_url[0])
-        check.is_in(
-            test_article_titles[1],
-            sumo_pages.kb_article_page.get_list_of_related_articles()
-        )
-
-    with allure.step("Deleting all test articles"):
-        with allure.step("Signing in with an admin account"):
-            utilities.start_existing_session(utilities.username_extraction_from_email(
-                utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-            ))
-
-        for article in test_articles_url:
-            utilities.navigate_to_link(article)
-            sumo_pages.kb_article_deletion_flow.delete_kb_article()
+        assert test_article_titles[1] in sumo_pages.kb_article_page.get_list_of_related_articles()

@@ -29,8 +29,8 @@ def test_featured_articles_redirect(page: Page, is_chromium):
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.contact_support_page.get_all_product_card_titles():
-            with check, allure.step(f"Clicking on the {card} and verifying that the correct "
-                                    f"product solutions page header is displayed"):
+            with check, allure.step(f"Clicking on the {card} and verifying that the correct"
+                                    f" product solutions page header is displayed"):
                 sumo_pages.contact_support_page.click_on_a_particular_card(card)
                 assert sumo_pages.product_solutions_page.get_product_solutions_heading(
                 ) == card + ProductSolutionsMessages.PAGE_HEADER
@@ -40,9 +40,9 @@ def test_featured_articles_redirect(page: Page, is_chromium):
                                               .get_all_featured_articles_titles()):
                     sumo_pages.product_solutions_page.click_on_a_featured_article_card(
                         featured_article_card.strip())
-                    with check, allure.step(f"Clicking on the {featured_article_card} and "
-                                            f"verifying that the correct article page title "
-                                            f"is displayed"):
+                    with check, allure.step(f"Clicking on the {featured_article_card} and"
+                                            f" verifying that the correct article page title is"
+                                            f" displayed"):
                         with page.context.expect_page() as tab:
                             feature_article_page = tab.value
                             article_text = (feature_article_page.
@@ -115,7 +115,7 @@ def test_ask_now_widget_redirect(page: Page):
             sumo_pages.common_web_elements.click_on_aaq_button()
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(
-                    username=utilities.user_special_chars,
+                    username=utilities.staff_user,
                     account_password=utilities.user_secrets_pass,
                 )
                 count += 1
@@ -162,7 +162,7 @@ def test_contact_support_widget_redirect(page: Page):
 
             if count == 0:
                 sumo_pages.auth_flow_page.sign_in_flow(
-                    username=utilities.user_special_chars,
+                    username=utilities.staff_user,
                     account_password=utilities.user_secrets_pass,
                 )
                 count += 1

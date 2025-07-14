@@ -46,6 +46,8 @@ class MyProfileEdit(BasePage):
             has_text="Update My Profile")
         self.close_account_and_delete_all_profile_information_link = page.locator(
             "p.delete-account-link a")
+        self.close_account_username_modal = page.locator("input#delete-profile-username-input")
+        self.close_account_delete_button = page.locator("input#delete-profile-button")
         self.all_input_edit_profile_input_fields = page.locator(
             "//form[not(contains(@action, '/en-US/users/close_account'))]/div[@class='field']/"
             "input[not(contains(@id, 'id_username'))]"
@@ -256,6 +258,14 @@ class MyProfileEdit(BasePage):
     def click_close_account_option(self):
         """Click the close account and delete all profile information link"""
         self._click(self.close_account_and_delete_all_profile_information_link)
+
+    def add_username_to_close_account_modal(self, username: str):
+        """Add the username to the close account modal"""
+        self._fill(self.close_account_username_modal, username)
+
+    def click_close_account_button(self):
+        """Click the close account button in the close account modal"""
+        self._click(self.close_account_delete_button)
 
     def click_manage_firefox_account_button(self):
         """Click the manage firefox account button"""

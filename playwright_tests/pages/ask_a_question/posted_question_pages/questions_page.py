@@ -83,14 +83,12 @@ class QuestionPage(BasePage):
         self.add_a_tag_input_field = page.locator("input[id*='tag-select']")
         self.tag_by_name = lambda tag_name:page.locator("li[class='tag']").get_by_role(
             "link", name=tag_name, exact=True)
-        self.remove_tag_button = lambda tag_name: page.locator(
-            f"//div[@class='ts-control']/div[normalize-space(text())='{tag_name}']/a"
-            f"[@class='remove']")
         self.tag = lambda tag_name: page.locator(
-            f"//div[@class='ts-control']/div[@class='item' and normalize-space("
-            f"text())='{tag_name}']")
+            f"//a[@class='tag-name' and normalize-space(text())='{tag_name}']"
+        )
         self.delete_tag = lambda tag_name: page.locator(
-            f"//div[@class='item' and normalize-space(text())='{tag_name}']/a[@class='remove']")
+            "//a[@class='tag-name' and normalize-space(text())='test']/following-sibling::"
+            "a[@class='remove']")
 
         # Post a reply section locators.
         self.post_a_reply_section_heading = page.locator("h3[class='sumo-card-heading']")
@@ -359,7 +357,7 @@ class QuestionPage(BasePage):
             .question_tags_options_for_non_moderators)]
 
     def get_remove_tag_button_locator(self, tag_name: str) -> Locator:
-        return self.remove_tag_button(tag_name)
+        return self.delete_tag(tag_name)
 
     def add_text_to_add_a_tag_input_field(self, text: str):
         self._fill(self.add_a_tag_input_field, text)

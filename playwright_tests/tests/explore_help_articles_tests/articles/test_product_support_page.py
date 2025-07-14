@@ -21,9 +21,11 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C890926, C890931, C2091563
 @pytest.mark.productSupportPage
-def test_product_support_page_join_community_section(page: Page):
+def test_product_support_page_join_community_section(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
@@ -36,9 +38,7 @@ def test_product_support_page_join_community_section(page: Page):
                     sumo_pages.products_page.click_on_a_particular_product_support_card(card)
                 else:
                     with allure.step("Signing in with an contributor account"):
-                        utilities.start_existing_session(utilities.username_extraction_from_email(
-                            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-                        ))
+                        utilities.start_existing_session(cookies=test_user)
 
                     with allure.step("Navigating to the 'Contributors Support' product page"):
                         sumo_pages.top_navbar.click_on_guides_option()
@@ -72,9 +72,10 @@ def test_product_support_page_join_community_section(page: Page):
 
 # C890929, C891335, C891336
 @pytest.mark.productSupportPage
-def test_product_support_page_info(page: Page):
+def test_product_support_page_info(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
 
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
@@ -88,9 +89,7 @@ def test_product_support_page_info(page: Page):
                     sumo_pages.products_page.click_on_a_particular_product_support_card(card)
                 else:
                     with allure.step("Signing in with an contributor account"):
-                        utilities.start_existing_session(utilities.username_extraction_from_email(
-                            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-                        ))
+                        utilities.start_existing_session(cookies=test_user)
 
                     with allure.step("Navigating to the 'Contributors Support' product page"):
                         sumo_pages.top_navbar.click_on_guides_option()
@@ -154,11 +153,14 @@ def test_product_support_frequent_topics_redirects(page: Page):
 #  T5696580, C891335, C891336
 @pytest.mark.productSupportPage
 @pytest.mark.smokeTest
-def test_product_support_page_featured_articles_redirect(page: Page, is_chromium):
+def test_product_support_page_featured_articles_redirect(page: Page, is_chromium,
+                                                         create_user_factory):
     if is_chromium:
         pytest.skip("Skipping this test for chromium browser")
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
@@ -171,9 +173,7 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
                     sumo_pages.products_page.click_on_a_particular_product_support_card(card)
                 else:
                     with allure.step("Signing in with an contributor account"):
-                        utilities.start_existing_session(utilities.username_extraction_from_email(
-                            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-                        ))
+                        utilities.start_existing_session(cookies=test_user)
 
                     with allure.step("Navigating to the 'Contributors Support' product page"):
                         sumo_pages.top_navbar.click_on_guides_option()
@@ -206,9 +206,11 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
 # C890932
 @pytest.mark.smokeTest
 @pytest.mark.productSupportPage
-def test_still_need_help_button_redirect(page: Page):
+def test_still_need_help_button_redirect(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+
     with allure.step("Navigating to products page via top-navbar"):
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
 
@@ -274,9 +276,7 @@ def test_still_need_help_button_redirect(page: Page):
                         ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
                 else:
                     with allure.step("Signing in with an contributor account"):
-                        utilities.start_existing_session(utilities.username_extraction_from_email(
-                            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-                        ))
+                        utilities.start_existing_session(cookies=test_user)
 
                     with allure.step("Navigating to the 'Contributors Support' product page"):
                         sumo_pages.top_navbar.click_on_guides_option()

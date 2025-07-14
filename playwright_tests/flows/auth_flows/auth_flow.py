@@ -32,7 +32,8 @@ class AuthFlowPage:
         self.auth_page.click_on_enter_your_email_submit_button()
 
         self.auth_page.add_data_to_password_input_field(password)
-        self.auth_page.click_on_enter_your_password_submit_button()
+        with self.utilities.page.expect_navigation():
+            self.auth_page.click_on_enter_your_password_submit_button()
 
     def login_with_existing_session(self):
         """Login with an existing session."""
