@@ -468,6 +468,7 @@ class Question(AAQBase):
         qs = cls.objects.filter(
             num_answers=0,
             created__range=(start, Now()),
+            is_spam=False,
             is_locked=False,
             is_archived=False,
             creator__is_active=1,
