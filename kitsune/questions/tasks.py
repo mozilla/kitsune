@@ -12,7 +12,6 @@ from sentry_sdk import capture_exception
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 
-
 log = logging.getLogger("k.task")
 
 
@@ -106,3 +105,26 @@ def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     if qs.count() >= settings.BADGE_LIMIT_SUPPORT_FORUM:
         badge.award_to(user)
         return True
+
+
+@shared_task
+def cleanup_old_spam():
+    """Clean up spam Questions and Answers older than the configured cutoff period."""
+    from kitsune.questions.handlers import OldSpamCleanupHandler
+
+    log.info("Starting cleanup of old spam content.")
+    handler = OldSpamCleanupHandler()
+
+    try:
+        result = handler.cleanup_old_spam()
+    except Exception as err:
+        capture_exception(err)
+    else:
+        log.info(
+            "Spam cleanup completed: deleted %d questions and %d answers marked as spam before %s",
+            result["questions_deleted"],
+            result["answers_deleted"],
+            result["cutoff_date"],
+        )
+
+        return result
