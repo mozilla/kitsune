@@ -278,7 +278,12 @@ def visitors_by_locale(start_date, end_date, verbose=False):
     results = {}
     for row in run_report(date_range, create_visitors_by_locale_report_request, verbose=verbose):
         locale = row.dimension_values[0].value
-        total_users = int(row.metric_values[0].value)
+        if locale not in VALID_LOCALES:
+            continue
+        try:
+            total_users = int(row.metric_values[0].value)
+        except ValueError:
+            continue
         results[locale] = total_users
     return results
 
