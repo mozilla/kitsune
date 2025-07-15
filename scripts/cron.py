@@ -205,6 +205,21 @@ def job_update_l10n_coverage_metrics():
     "cron",
     month="*",
     day="*",
+    hour="02",
+    minute="00",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_PROCESS_STALE_MODERATION_QUEUE)
+def job_process_stale_moderation_queue():
+    call_command("process_moderation_queue")
+
+
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
     hour="01",
     minute="11",
     max_instances=1,
