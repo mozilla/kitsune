@@ -4,10 +4,10 @@ from django.test.utils import override_settings
 from kitsune.questions.models import Question
 from kitsune.questions.tests import QuestionFactory
 from kitsune.search.decorators import search_receiver
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 
 
-class SearchReceiverTestCase(Elastic7TestCase):
+class SearchReceiverTestCase(ElasticTestCase):
     def setUp(self):
         @search_receiver(m2m_changed, Question.tags.through)
         def receiver(instance, **kwargs):
