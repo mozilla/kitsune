@@ -1,4 +1,4 @@
-L10N_LLM_MODEL = "gemini-2.5-pro-preview-05-06"
+L10N_LLM_MODEL = "gemini-2.5-pro"
 
 # These are do-not-translate (DNT) strings, or strings that should be preserved unchanged
 # when translating. Place shorter strings after any longer strings that contain them. So

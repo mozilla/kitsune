@@ -6,7 +6,7 @@ from langchain.schema.output_parser import OutputParserException
 from langchain.schema.runnable import Runnable, RunnableLambda
 from langchain.schema.runnable.base import RunnableLike, coerce_to_runnable
 
-DEFAULT_LLM_MODEL = "gemini-2.5-flash-preview-04-17"
+DEFAULT_LLM_MODEL = "gemini-2.5-flash"
 
 
 @lru_cache(maxsize=1)
