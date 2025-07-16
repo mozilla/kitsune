@@ -56,7 +56,7 @@ def test_private_messages_can_be_sent_via_user_profiles(page: Page, is_firefox,
 
     with allure.step("Navigating to the profile page for user two"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
-            username=test_user_two["username"]))
+            test_user_two["username"]))
 
     with allure.step("Clicking on the 'Private Message button'"):
         sumo_pages.my_profile_page.click_on_private_message_button(

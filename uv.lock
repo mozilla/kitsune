@@ -1856,7 +1856,7 @@ dev = [
     { name = "ipdb", specifier = ">=0.13.11,<0.14" },
     { name = "jsonschema", specifier = ">=4.20.0,<5" },
     { name = "nltk", specifier = ">=3.9.1,<4" },
-    { name = "playwright", specifier = ">=1.51.0,<2" },
+    { name = "playwright", specifier = ">=1.53.0" },
     { name = "pre-commit", specifier = ">=3.6.0,<4" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
     { name = "pytest-check", specifier = ">=2.5.3,<3" },
