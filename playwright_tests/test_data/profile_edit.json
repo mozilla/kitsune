@@ -18,7 +18,7 @@
     "involved_from_year": "2017"
   },
   "valid_user_edit_with_symbols":{
-    "username_with_valid_symbols_firefox": "5Testing@and.with+and-and_",
+    "username_with_valid_symbols_firefox": "5Testing@and.with-and_",
     "username_with_non_ascii_japanese_chars": "こんにちは"
   },
   "invalid_username_with_symbols": {

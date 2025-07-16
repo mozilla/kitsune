@@ -1,21 +1,16 @@
 import re
-
 import allure
 import pytest
-import requests
 from playwright.sync_api import Page
 from pytest_check import check
-
+import requests
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.ask_a_question_messages.community_forums_messages import (
-    SupportForumsPageMessages,
-)
-from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
-    ContactSupportMessages,
-)
-from playwright_tests.messages.explore_help_articles.products_page_messages import (
-    ProductsPageMessages,
-)
+from playwright_tests.messages.ask_a_question_messages.contact_support_messages import \
+    ContactSupportMessages
+from playwright_tests.messages.ask_a_question_messages.community_forums_messages import \
+    SupportForumsPageMessages
+from playwright_tests.messages.explore_help_articles.products_page_messages import \
+    ProductsPageMessages
 from playwright_tests.messages.top_navbar_messages import TopNavbarMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -40,13 +35,13 @@ def test_number_of_options_not_signed_in(page: Page):
 
 # C876539
 @pytest.mark.topNavbarTests
-def test_number_of_options_signed_in(page: Page):
+def test_number_of_options_signed_in(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+
     with allure.step("Signing in using a non-admin user"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts['TEST_ACCOUNT_12']
-        ))
+        utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Verifying that the SUMO logo is successfully displayed"):
         image = sumo_pages.top_navbar.get_sumo_nav_logo()
@@ -114,13 +109,13 @@ def test_explore_by_topic_redirects(page: Page):
             assert (current_option == sumo_pages.explore_by_topic_page
                     .get_explore_by_topic_page_header())
 
-            with allure.step("Verifying that the correct option is selected inside the 'All "
-                             "Topics' side navbar"):
+            with check, allure.step("Verifying that the correct option is selected inside the"
+                                    " 'All Topics' side navbar"):
                 assert (current_option == sumo_pages.explore_by_topic_page
                         .get_selected_topic_side_navbar_option())
 
-            with allure.step("Verifying that the 'All Products' option is displayed inside the "
-                             "'Filter by product' dropdown"):
+            with check, allure.step("Verifying that the 'All Products' option is displayed inside"
+                                    " the 'Filter by product' dropdown"):
                 assert (sumo_pages.explore_by_topic_page
                         .get_current_product_filter_dropdown_option()) == 'All Products'
 
@@ -128,12 +123,13 @@ def test_explore_by_topic_redirects(page: Page):
 # C2462868
 @pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
-def test_browse_by_product_community_forum_redirect(page: Page):
+def test_browse_by_product_community_forum_redirect(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-    utilities.start_existing_session(utilities.username_extraction_from_email(
-        utilities.user_secrets_accounts['TEST_ACCOUNT_12']
-    ))
+    test_user = create_user_factory()
+
+    utilities.start_existing_session(cookies=test_user)
+
     with allure.step("Clicking on all options from the 'Browse by product' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar
@@ -162,12 +158,12 @@ def test_browse_by_product_community_forum_redirect(page: Page):
 # C2462869
 @pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
-def test_browse_all_forum_threads_by_topic_redirect(page: Page):
+def test_browse_all_forum_threads_by_topic_redirect(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-    utilities.start_existing_session(utilities.username_extraction_from_email(
-        utilities.user_secrets_accounts['TEST_ACCOUNT_12']
-    ))
+    test_user = create_user_factory()
+
+    utilities.start_existing_session(cookies=test_user)
     with allure.step("Clicking on all options from the 'Browse all forum threads by topic' and "
                      "verifying the redirect"):
         for index, option in enumerate(sumo_pages.top_navbar
@@ -225,12 +221,12 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
 # C2462871, C890957
 @pytest.mark.smokeTest
 @pytest.mark.topNavbarTests
-def test_contribute_top_navbar_redirects(page: Page):
+def test_contribute_top_navbar_redirects(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-    utilities.start_existing_session(utilities.username_extraction_from_email(
-        utilities.user_secrets_accounts['TEST_ACCOUNT_13']
-    ))
+    test_user = create_user_factory(groups=["forum-contributors"])
+
+    utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar option and verifying "
                      "the redirect"):

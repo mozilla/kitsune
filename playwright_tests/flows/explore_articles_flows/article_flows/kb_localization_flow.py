@@ -69,6 +69,7 @@ class KbArticleTranslationFlow:
             self.approve_kb_translation(revision_id=first_revision_id)
 
         return {
+            "translation_url": self.utilities.get_page_url().removesuffix("/history"),
             "translation_title": translation_title,
             "translation_slug": translation_slug,
             "translation_keyword": translation_keyword,

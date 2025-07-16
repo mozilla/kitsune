@@ -12,14 +12,16 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C891357
 @pytest.mark.kbDashboard
-def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
+def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["forum-contributors"])
+    test_user_two = create_user_factory(groups=["forum-contributors"])
+    test_user_three = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a simple user account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page)
@@ -51,9 +53,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
     with allure.step("Navigating to the homepage and performing the sign in step since the "
                      "kb overview takes quite a bit to refresh/load"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Navigating to the kb overview verifying that the article is not "
                      "displayed since it is not live yet"):
@@ -64,11 +64,9 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
             )
         ).to_be_hidden()
 
-    with allure.step("Signing in with an admin account"):
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user_three)
 
     with allure.step("Navigating to the kb overview page and clicking on the article title"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
@@ -98,9 +96,7 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
 
     with allure.step("Signing in with a non-admin user"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Navigating to the kb overview and verifying that the article is "
                      "visible"):
@@ -112,27 +108,17 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page):
             )
         ).to_be_visible()
 
-    with allure.step("Signing back with an admin account and deleting the article"):
-        sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-        utilities.navigate_to_link(
-            utilities.general_test_data['dashboard_links']['kb_overview'])
-        sumo_pages.kb_dashboard_page.click_on_article_title(article_details['article_title'])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2266376
 @pytest.mark.kbDashboard
-def test_kb_dashboard_articles_status(page: Page):
+def test_kb_dashboard_articles_status(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -165,21 +151,17 @@ def test_kb_dashboard_articles_status(page: Page):
             article_details['article_title']
         ).strip() == kb_dashboard_page_messages.KB_LIVE_STATUS
 
-    with allure.step("Clicking on the article title and deleting it"):
-        sumo_pages.kb_dashboard_page.click_on_article_title(article_details['article_title'])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2496647
 @pytest.mark.kbDashboard
-def test_kb_dashboard_revision_deferred_status(page: Page):
+def test_kb_dashboard_revision_deferred_status(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -213,20 +195,16 @@ def test_kb_dashboard_revision_deferred_status(page: Page):
             article_details['article_title']
         ) == kb_dashboard_page_messages.KB_LIVE_STATUS
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_show_history_url)
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2496646
 @pytest.mark.kbDashboard
-def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page):
+def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with an admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewers account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -245,21 +223,17 @@ def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page):
             article_details['article_title']
         ).strip() == utilities.kb_revision_test_data['needs_change_message']
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2266377, C2243456, C2496646
 @pytest.mark.kbDashboard
-def test_kb_dashboard_needs_update_edit_metadata(page: Page):
+def test_kb_dashboard_needs_update_edit_metadata(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -302,22 +276,18 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page):
             article_details['article_title']
         )
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2266378, C2489548
 @pytest.mark.smokeTest
 @pytest.mark.kbDashboard
-def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
+def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
@@ -335,22 +305,18 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page):
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2266378
 @pytest.mark.smokeTest
 @pytest.mark.kbDashboard
-def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
+def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -378,23 +344,18 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page):
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
-    with allure.step("Navigating to the article and deleting it"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2875533
 @pytest.mark.smokeTest
 @pytest.mark.kbDashboard
-def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
+def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article and approving the first revision without marking "
                      "it as ready for l10n"):
@@ -511,23 +472,18 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page):
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2875537
 @pytest.mark.smokeTest
 @pytest.mark.kbDashboard
-def test_ready_for_l10n_status_update_via_history_page(page: Page):
+def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article and approving the first revision without marking "
                      "it as ready for l10n"):
@@ -602,22 +558,18 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page):
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2875536
 @pytest.mark.kbDashboard
-def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page):
+def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page,
+                                                                     create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article and approving the first revision without marking "
                      "it as ready for l10n"):
@@ -661,29 +613,23 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page)
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_POSITIVE_STATUS
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2266378
 @pytest.mark.kbDashboard
-def test_article_translation_not_allowed_kb_dashboard(page: Page):
+def test_article_translation_not_allowed_kb_dashboard(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new simple article & unchecking the allow translations"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             allow_translations=False,
             approve_first_revision=True
         )
-
-    article_url = utilities.get_page_url()
 
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):
@@ -692,21 +638,17 @@ def test_article_translation_not_allowed_kb_dashboard(page: Page):
             article_details['article_title']
         ) == kb_dashboard_page_messages.GENERAL_NEGATIVE_STATUS
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 # C2266379, C2266380
 @pytest.mark.kbDashboard
-def test_article_stale_kb_dashboard(page: Page):
+def test_article_stale_kb_dashboard(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_dashboard_page_messages = KBDashboardPageMessages()
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Create a new simple article & adding an old expiry date"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -746,19 +688,15 @@ def test_article_stale_kb_dashboard(page: Page):
             article_details['article_title']
         ) == utilities.convert_string_to_datetime(utilities.kb_article_test_data['expiry_date'])
 
-    with allure.step("Deleting the article"):
-        utilities.navigate_to_link(article_url)
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 @pytest.mark.kbDashboard
-def test_article_title_update(page: Page):
+def test_article_title_update(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Signing in with the admin account"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    with allure.step("Signing in with a Knowledge Base Reviewer account"):
+        utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article"):
         article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
@@ -785,7 +723,3 @@ def test_article_title_update(page: Page):
         expect(sumo_pages.kb_dashboard_page.get_a_particular_article_title_locator(
             new_article_title)
         ).to_be_visible()
-
-    with allure.step("Deleting the kb article"):
-        utilities.navigate_to_link(article_details["article_show_history_url"])
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()

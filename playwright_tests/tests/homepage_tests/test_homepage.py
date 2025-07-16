@@ -1,16 +1,12 @@
 import allure
 import pytest
 from playwright.sync_api import Page
-from pytest_check import check
-
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
-    ContributePageMessages,
-)
-from playwright_tests.messages.explore_help_articles.support_page_messages import (
-    SupportPageMessages,
-)
+    ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from playwright_tests.messages.explore_help_articles.support_page_messages import (
+    SupportPageMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -50,9 +46,8 @@ def test_join_our_community_card_has_the_correct_content(page: Page):
 def test_homepage_feature_articles_are_available_and_interactable(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-    with check, allure.step(
-        "Verifying if the correct number of featured articles are present on the homepage"
-    ):
+    with allure.step("Verifying if the correct number of featured articles are present on the"
+                     " homepage"):
         assert sumo_pages.homepage.get_number_of_featured_articles(
         ) is HomepageMessages.EXPECTED_FEATURED_ARTICLES_COUNT
 

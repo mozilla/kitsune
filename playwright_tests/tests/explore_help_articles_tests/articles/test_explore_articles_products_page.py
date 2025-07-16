@@ -1,21 +1,18 @@
 import allure
+from playwright.sync_api import expect, Page
 import pytest
-from playwright.sync_api import Page, expect
-from pytest_check import check
-
 from playwright_tests.core.utilities import Utilities
-from playwright_tests.messages.explore_help_articles.products_page_messages import (
-    ProductsPageMessages,
-)
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from playwright_tests.messages.explore_help_articles.products_page_messages import (
+    ProductsPageMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C890834, C890833
 @pytest.mark.kbProductsPage
 def test_products_page_content(page: Page):
-    with check, allure.step("Navigating to products page via top-navbar and verifying that "
-                            "the correct page header is displayed"):
+    with allure.step("Navigating to products page via top-navbar and verifying that the correct "
+                     "page header is displayed"):
         sumo_pages = SumoPages(page)
         utilities = Utilities(page)
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
@@ -30,8 +27,7 @@ def test_products_page_content(page: Page):
         utilities.navigate_back()
 
     for card in sumo_pages.products_page.get_all_product_support_titles():
-        with check, allure.step(f"Verifying that the {card} card contains the correct "
-                                f"subheading"):
+        with allure.step(f"Verifying that the {card} card contains the correct subheading"):
             if card in ProductsPageMessages.PRODUCT_CARDS_SUBHEADING:
                 assert sumo_pages.products_page.get_subheading_of_card(
                     card) == ProductsPageMessages.PRODUCT_CARDS_SUBHEADING[card]

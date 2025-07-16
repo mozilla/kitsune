@@ -1,5 +1,7 @@
+import random
+import string
 import warnings
-
+import requests
 import allure
 import pytest
 from playwright.sync_api import Page
@@ -7,6 +9,8 @@ from slugify import slugify
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import \
+    MyProfileMessages
 
 
 @pytest.fixture(autouse=True)
@@ -80,3 +84,61 @@ def browser_context_args(browser_context_args, tmpdir_factory: pytest.TempdirFac
         **browser_context_args,
         "record_video_dir": tmpdir_factory.mktemp('videos')
     }
+
+
+@pytest.fixture()
+def create_user_factory(page: Page, request):
+    created_users = []
+    utilities = Utilities(page)
+    session_id = utilities.get_session_id(utilities.username_extraction_from_email(
+        utilities.staff_user))
+
+    def _create_user(username: str = None, groups: [str] = None, permissions: [str] = None):
+        """
+        This helper function which creates a test user account.
+
+        Args:
+            page (Page): The page object
+            username (str): The username of the test user account
+            groups (list[str]): The groups to which the user belongs
+            permissions (list[str]): The permissions of the user
+        """
+        if username is None:
+            username = ''.join(random.choice(
+                string.ascii_lowercase + string.digits) for _ in range(10))
+        endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "users/api/create"
+
+        request_body = {
+            "username": username,
+            "groups": groups if groups else [],
+            "permissions": permissions if permissions else [],
+        }
+        print(request_body)
+
+        additional_headers = {
+            "Content-Type": "application/json",
+            "Cookie": f"session_id={session_id}",
+            "User-Agent": Utilities.user_agent
+        }
+
+        response = requests.post(url=endpoint, json=request_body, headers=additional_headers)
+
+        created_users.append(username)
+        print(response.json())
+        return response.json()
+
+    def _cleanup():
+        for username in created_users:
+            print("Deleting created users")
+            additional_headers = {
+                "Cookie": f"session_id={session_id}",
+                "User-Agent": Utilities.user_agent
+            }
+
+            requests.get(
+                url=MyProfileMessages.get_my_profile_stage_url(username) + "trigger-delete",
+                headers=additional_headers
+            )
+
+    request.addfinalizer(_cleanup)
+    return _create_user

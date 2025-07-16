@@ -13,15 +13,15 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C946237
 @pytest.mark.antiSpamTests
-@pytest.mark.parametrize("username", ['', 'TEST_ACCOUNT_12'])
-def test_anti_spam_banner(page: Page, username):
+@pytest.mark.parametrize("user_type", ['', 'Simple user'])
+def test_anti_spam_banner(page: Page, user_type, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+    test_user_two = create_user_factory()
 
-    with allure.step("Signing in with an admin account and creating an AAQ question"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step("Signing in with a Forum Moderator account and creating an AAQ question"):
+        utilities.start_existing_session(cookies=test_user)
 
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         question_info_one = sumo_pages.aaq_flow.submit_an_aaq_question(
@@ -33,10 +33,8 @@ def test_anti_spam_banner(page: Page, username):
             expected_locator=sumo_pages.question_page.questions_header
         )
 
-    if username != '':
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts[username]
-        ))
+    if user_type != '':
+        utilities.start_existing_session(cookies=test_user_two)
     else:
         utilities.delete_cookies()
 
@@ -53,26 +51,20 @@ def test_anti_spam_banner(page: Page, username):
         assert sumo_pages.common_web_elements.get_scam_banner_text() == (CommonElementsMessages.
                                                                          AVOID_SCAM_BANNER_TEXT)
 
-    utilities.start_existing_session(utilities.username_extraction_from_email(
-        utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-    ))
-    with allure.step("Deleting the posted question"):
-        sumo_pages.aaq_flow.deleting_question_flow()
-
 
 # C946274
 @pytest.mark.smokeTest
 @pytest.mark.antiSpamTests
-def test_valid_tld_in_question_comment(page: Page):
+def test_valid_tld_in_question_comment(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     invalid_tld = "dom.ipc.processCount"
     valid_tld = "layout.display-list.retain.chrome"
+    test_user = create_user_factory(groups=["Forum Moderators"])
+    test_user_two = create_user_factory()
 
-    with allure.step("Signing in with an admin account and creating an AAQ question"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+    with allure.step("Signing in with a Forum Moderator account and creating an AAQ question"):
+        utilities.start_existing_session(cookies=test_user)
 
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         sumo_pages.aaq_flow.submit_an_aaq_question(
@@ -86,13 +78,11 @@ def test_valid_tld_in_question_comment(page: Page):
 
     with allure.step("Signing in with an account that doesn't have the bypass ratelimit "
                      "permission"):
-        username = utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
-        ))
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Leaving a comment with an invalid TLD"):
         reply_one = sumo_pages.aaq_flow.post_question_reply_flow(
-            repliant_username=username,
+            repliant_username=test_user_two["username"],
             reply=invalid_tld
         )
 
@@ -103,7 +93,7 @@ def test_valid_tld_in_question_comment(page: Page):
 
     with allure.step("Leaving a comment with a valid TLD"):
         sumo_pages.aaq_flow.post_question_reply_flow(
-            repliant_username=username,
+            repliant_username=test_user_two["username"],
             reply=valid_tld
         )
 
@@ -119,10 +109,5 @@ def test_valid_tld_in_question_comment(page: Page):
 
     with check, allure.step("Signing in with an admin account and verifying that the Marked as"
                             "spam reply is visible"):
-        utilities.start_existing_session(utilities.username_extraction_from_email(
-            utilities.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
+        utilities.start_existing_session(cookies=test_user)
         assert sumo_pages.question_page.is_reply_with_content_displayed(valid_tld)
-
-    with allure.step("Deleting the question"):
-        sumo_pages.aaq_flow.deleting_question_flow()
