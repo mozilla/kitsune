@@ -4,9 +4,9 @@ import inspect
 from celery import shared_task
 from django.conf import settings
 from elasticsearch import Elasticsearch
+from elasticsearch.dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
-from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
 from kitsune.search import config
 
@@ -29,7 +29,7 @@ def _insert_custom_filters(analyzer_name, filter_list, char=False):
                 # to avoid defining the same filter for each locale
                 prefix = config.ES_DEFAULT_ANALYZER_NAME
                 position = default_filters.index(filter)
-            name = f'{prefix}_{position}_{filter["type"]}'
+            name = f"{prefix}_{position}_{filter['type']}"
             if char:
                 return char_filter(name, **filter)
             return token_filter(name, **filter)
@@ -91,13 +91,27 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
 
 
 def es_client(**kwargs):
-    """Return an ES Elasticsearch client"""
+    """Return an Elasticsearch client configured for ES9"""
+    defaults = {"request_timeout": settings.ES_TIMEOUT, "retry_on_timeout": True, "max_retries": 3}
+
+    defaults.update(kwargs)
+
     # prefer a cloud_id if available
     if es_cloud_id := settings.ES_CLOUD_ID:
-        kwargs.update({"cloud_id": es_cloud_id, "http_auth": settings.ES_HTTP_AUTH})
+        defaults.update({"cloud_id": es_cloud_id})
+        if settings.ES_HTTP_AUTH:
+            if len(settings.ES_HTTP_AUTH) == 2:
+                defaults.update({"basic_auth": settings.ES_HTTP_AUTH})
+            else:
+                defaults.update({"api_key": settings.ES_HTTP_AUTH[0]})
     else:
-        kwargs.update({"hosts": settings.ES_URLS})
-    return Elasticsearch(**kwargs)
+        hosts = []
+        for url in settings.ES_URLS:
+            if not url.startswith(("http://", "https://")):
+                url = f"http://{url}"
+            hosts.append(url)
+        defaults.update({"hosts": hosts})
+    return Elasticsearch(**defaults)
 
 
 def get_doc_types(paths=None):
@@ -170,9 +184,8 @@ def index_objects_bulk(
     # before raising an exception:
     _, errors = es_bulk(
         es_client(
-            timeout=timeout,
+            request_timeout=timeout,
             retry_on_timeout=True,
-            initial_backoff=timeout,
             max_retries=settings.ES_BULK_MAX_RETRIES,
         ),
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
@@ -202,7 +215,7 @@ def remove_from_field(doc_type_name, field_name, field_value):
 
     update = UpdateByQuery(using=es_client(), index=doc_type._index._name)
     update = update.filter("term", **{field_name: field_value})
-    update = update.script(source=script, params={"value": field_value}, conflicts="proceed")
+    update = update.script(source=script, params={"value": field_value})
 
     # refresh index to ensure search fetches all matches
     doc_type._index.refresh()

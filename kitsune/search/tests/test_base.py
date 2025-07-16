@@ -3,12 +3,12 @@ from elasticsearch.helpers import bulk as es_bulk
 
 from kitsune.search.documents import ProfileDocument
 from kitsune.search.es_utils import es_client
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.users.tests import GroupFactory, ProfileFactory
 
 
 @override_settings(ES_LIVE_INDEXING=False)
-class ToActionTests(Elastic7TestCase):
+class ToActionTests(ElasticTestCase):
     def setUp(self):
         self.profile = ProfileFactory()
         group = GroupFactory()
@@ -34,7 +34,7 @@ class ToActionTests(Elastic7TestCase):
 
     def test_update_empty_list(self):
         self.prepare().to_action("update")
-        self.assertEqual(self.doc.group_ids, None)
+        self.assertEqual(self.doc.group_ids, [])
 
     def test_update_bulk_empty_list(self):
         payload = self.prepare().to_action("update", is_bulk=True)

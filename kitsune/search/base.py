@@ -9,11 +9,11 @@ from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.core.paginator import Paginator as DjPaginator
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from elasticsearch.exceptions import NotFoundError, RequestError
-from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import InnerDoc, MetaField, field
-from elasticsearch_dsl import Search as DSLSearch
-from elasticsearch_dsl.utils import AttrDict
+from elasticsearch import NotFoundError, RequestError
+from elasticsearch.dsl import Document as DSLDocument
+from elasticsearch.dsl import InnerDoc, MetaField, field
+from elasticsearch.dsl import Search as DSLSearch
+from elasticsearch.dsl.utils import AttrDict
 from pyparsing import ParseException
 
 from kitsune.search.config import (
@@ -81,7 +81,7 @@ class SumoDocument(DSLDocument):
     def migrate_writes(cls, timestamp=None):
         """Create a new index for this document, and point the write alias at it."""
         timestamp = timestamp or datetime.now(tz=timezone.utc)
-        name = f'{cls.Index.base_name}_{timestamp.strftime("%Y%m%d%H%M%S")}'
+        name = f"{cls.Index.base_name}_{timestamp.strftime('%Y%m%d%H%M%S')}"
         cls.init(index=name)
         cls._update_alias(cls.Index.write_alias, name)
 
@@ -95,15 +95,13 @@ class SumoDocument(DSLDocument):
         client = es_client()
         old_index = cls.alias_points_at(alias)
         if not old_index:
-            client.indices.put_alias(new_index, alias)
+            client.indices.put_alias(index=new_index, name=alias)
         else:
             client.indices.update_aliases(
-                {
-                    "actions": [
-                        {"remove": {"index": old_index, "alias": alias}},
-                        {"add": {"index": new_index, "alias": alias}},
-                    ]
-                }
+                actions=[
+                    {"remove": {"index": old_index, "alias": alias}},
+                    {"add": {"index": new_index, "alias": alias}},
+                ]
             )
 
     @classmethod

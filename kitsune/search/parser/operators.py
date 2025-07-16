@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Q as DSLQ
+from elasticsearch.dsl import Q as DSLQ
 
 from .tokens import BaseToken
 

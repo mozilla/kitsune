@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from django.core.management.base import BaseCommand
-from elasticsearch_dsl.exceptions import IllegalOperation
+from elasticsearch import ApiError
 
 from kitsune.search.es_utils import es_client, get_doc_types
 
@@ -64,19 +64,19 @@ class Command(BaseCommand):
                 try:
                     print("Migrating writes: creating new index and pointing write alias at it")
                     dt.migrate_writes(timestamp=timestamp)
-                except IllegalOperation as e:
+                except ApiError as e:
                     print(e)
 
             if migrate_reads:
                 try:
                     print("Migrating reads: pointing read alias where write alias points")
                     dt.migrate_reads()
-                except IllegalOperation as e:
+                except ApiError as e:
                     print(e)
 
             index = dt.alias_points_at(dt.Index.write_alias)
             if kwargs["reload_search_analyzers"]:
                 print(f"Reloading search analyzers on {index}")
-                client.indices.reload_search_analyzers(index)
+                client.indices.reload_search_analyzers(index=index)
 
             print("")  # print blank line to make console output easier to read

@@ -1,7 +1,7 @@
 from django.test import SimpleTestCase, TestCase
-from elasticsearch_dsl import Q
-from elasticsearch_dsl.query import Bool as B
-from elasticsearch_dsl.query import SimpleQueryString as S
+from elasticsearch.dsl import Q
+from elasticsearch.dsl.query import Bool as B
+from elasticsearch.dsl.query import SimpleQueryString as S
 from parameterized import parameterized
 from pyparsing import ParseException
 

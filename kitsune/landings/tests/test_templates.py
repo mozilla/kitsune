@@ -1,11 +1,11 @@
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
-from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
-class HomeTestCase(Elastic7TestCase):
+class HomeTestCase(ElasticTestCase):
     search_tests = True
 
     def test_home(self):
