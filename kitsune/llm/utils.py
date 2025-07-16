@@ -7,7 +7,7 @@ from langchain.schema.runnable import Runnable, RunnableLambda
 from langchain.schema.runnable.base import coerce_to_runnable, RunnableLike
 
 
-DEFAULT_LLM_MODEL = "gemini-2.5-flash-preview-04-17"
+DEFAULT_LLM_MODEL = "gemini-2.5-flash"
 
 
 @lru_cache(maxsize=1)
