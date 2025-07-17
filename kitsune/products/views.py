@@ -14,6 +14,11 @@ from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.utils import build_topics_data, get_featured_articles
 
+PRODUCT_SLUG_REDIRECTS = {
+    "firefox-accounts": "mozilla-account",
+    "firefox-private-network-vpn": "mozilla-vpn",
+}
+
 
 @check_simple_wiki_locale
 def product_list(request):
@@ -37,8 +42,8 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
     Raises:
         Http404: If product not found
     """
-    if slug == "firefox-accounts":
-        return redirect(product_landing, slug="mozilla-account", permanent=True)
+    if slug in PRODUCT_SLUG_REDIRECTS:
+        return redirect(product_landing, slug=PRODUCT_SLUG_REDIRECTS[slug], permanent=True)
 
     product = get_object_or_404(Product, slug=slug)
 
