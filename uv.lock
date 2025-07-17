@@ -725,15 +725,15 @@ wheels = [
 
 [[package]]
 name = "django-post-office"
-version = "3.9.1"
+version = "3.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleach", extra = ["css"] },
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/de/e9/7369fb453269ded8d2fff58299fe653033702bd15a427bf35353d4606df3/django-post_office-3.9.1.tar.gz", hash = "sha256:3d8f502f7829e4cf83e830d9efd6909bb44690af6bc41c7e4fc5a85d7b04df10", size = 76624, upload-time = "2024-11-22T02:05:45.957Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/55/7a/42031aabb51602a51e652d5966f78bde7e6ed1cea2a623afa2ca5d1cf58a/django_post_office-3.10.0.tar.gz", hash = "sha256:95047f8d12e6544629a3ff979d527fdc3b538fa418c3fa4a0af8b5e665fb029e", size = 52883, upload-time = "2025-07-15T14:00:43.887Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/58/12/19fdf17fb1a0d5e4418798cf9ed66b8aee39da564e875ec025627e08abdf/django_post_office-3.9.1-py3-none-any.whl", hash = "sha256:0082c4dd17854f66077ef457cf868c9bc5b6247de99d5755c45ddea1c518ed6f", size = 85671, upload-time = "2024-11-22T02:05:43.908Z" },
+    { url = "https://files.pythonhosted.org/packages/24/95/b73e6b68b3525d3b9bb724ffa4dc8838008d0609a5d5bfa07ea25b1e6944/django_post_office-3.10.0-py3-none-any.whl", hash = "sha256:bc0d3e40305486b729c4b7a79eafdeb468a245b9e9a3acaa12014ef84af1ac8b", size = 75725, upload-time = "2025-07-15T14:00:42.452Z" },
 ]
 
 [[package]]
@@ -1784,7 +1784,7 @@ requires-dist = [
     { name = "django-jsonfield-backport", specifier = ">=1.0.5,<2" },
     { name = "django-jsonfield-compat", specifier = ">=0.4.4,<0.5" },
     { name = "django-mozilla-product-details", specifier = ">=1.0.3,<2" },
-    { name = "django-post-office", specifier = "==3.9.1" },
+    { name = "django-post-office", specifier = "==3.10.0" },
     { name = "django-ratelimit", specifier = ">=4.1.0,<5" },
     { name = "django-redis", specifier = ">=5.4.0,<6" },
     { name = "django-ses", specifier = "==4.4.0" },
