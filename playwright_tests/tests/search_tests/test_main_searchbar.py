@@ -2,8 +2,6 @@ import time
 import allure
 import pytest
 from playwright.sync_api import Page
-from pytest_check import check
-
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages

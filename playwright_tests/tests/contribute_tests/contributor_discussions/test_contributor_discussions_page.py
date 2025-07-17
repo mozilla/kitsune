@@ -403,7 +403,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
             SocialSupportForumMessages.PAGE_TITLE
         )
         assert (test_user["username"] in MyProfileMessages.
-                get_my_profile_stage_url(username=test_user["username"]))
+                get_my_profile_stage_url(test_user["username"]))
 
     with allure.step("Signing in with a different user and leaving a reply to the posted thread"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -434,4 +434,4 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
             SocialSupportForumMessages.PAGE_TITLE
         )
         assert (test_user_two["username"] in MyProfileMessages.
-                get_my_profile_stage_url(username=test_user_two["username"]))
+                get_my_profile_stage_url(test_user_two["username"]))

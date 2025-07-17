@@ -27,8 +27,7 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page, create_user_
     with allure.step("Accessing the 'My profile' page and verifying that we are redirected "
                      "to the correct profile"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(
-            username=test_user["username"]))
+        expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(test_user["username"]))
 
     with check, allure.step("Verifying that the page header is the expected one"):
         assert (sumo_pages.my_profile_page.get_my_profile_page_header() == MyProfileMessages.
