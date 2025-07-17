@@ -1811,7 +1811,7 @@ requires-dist = [
     { name = "idna", specifier = "~=3.7" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "langchain", specifier = "==0.3.25" },
-    { name = "langchain-google-vertexai", specifier = "==2.0.23" },
+    { name = "langchain-google-vertexai", specifier = "==2.0.27" },
     { name = "lxml", specifier = ">=4.9.4,<5" },
     { name = "mkdocs", specifier = ">=1.5.3,<2" },
     { name = "mkdocs-material", specifier = ">=9.5.3,<10" },
@@ -1927,7 +1927,7 @@ wheels = [
 
 [[package]]
 name = "langchain-google-vertexai"
-version = "2.0.23"
+version = "2.0.27"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bottleneck" },
@@ -1941,9 +1941,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "validators" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/86/10f5f1564704f64d629135f16b0569d39598078c53e5c4ecc21781704164/langchain_google_vertexai-2.0.23.tar.gz", hash = "sha256:1e08eb57a4a7ed03bd807a06d1a57f3cad490774162f41ff9ab3bfae982528ef", size = 84154, upload-time = "2025-05-08T16:39:28.889Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/6f/98f856718d8565f8caaa4b314c139b2af17e42d92ea43db09d8a84b8f6f4/langchain_google_vertexai-2.0.27.tar.gz", hash = "sha256:7e8f7e8ef6d321b64d37fc1c9324a13a34b26882ec02f92c0a86329f18895fd9", size = 85232, upload-time = "2025-06-30T20:32:51.533Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/48/58579b25234ad6d077a43aef9fe0a61b070cd5d7d32110b2b0f603a5ecf8/langchain_google_vertexai-2.0.23-py3-none-any.whl", hash = "sha256:cd621345aee1e1b045f30245c914c679fe66f9a62ebf274e629c080e006a32fa", size = 99974, upload-time = "2025-05-08T16:39:27.833Z" },
+    { url = "https://files.pythonhosted.org/packages/07/34/0235af453fc44d6474634da50302cd0a0a38c545a71e4c2a3458b2619746/langchain_google_vertexai-2.0.27-py3-none-any.whl", hash = "sha256:4637d64aea1803ecefbcf411587fce358afac52ff8e88cfe89615fcd92c3701d", size = 101007, upload-time = "2025-06-30T20:32:50.292Z" },
 ]
 
 [[package]]
