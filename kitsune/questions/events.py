@@ -103,7 +103,9 @@ class QuestionReplyEvent(QuestionEvent):
             is_asker = asker_id == user.id
             if is_asker:
                 subject = _(
-                    '{} posted an answer to your question "{}"'.format(display_name(self.answer.creator), self.instance.title)
+                    '{} posted an answer to your question "{}"'.format(
+                        display_name(self.answer.creator), self.instance.title
+                    )
                 )
                 text_template = "questions/email/new_answer_to_asker.ltxt"
                 html_template = "questions/email/new_answer_to_asker.html"
@@ -112,7 +114,7 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template = "questions/email/new_answer.ltxt"
                 html_template = "questions/email/new_answer.html"
 
-            for k in ["answer_url", "solution_url"]:
+            for k in ["question_url", "answer_url", "solution_url"]:
                 context[k] = add_utm(urlparams(context[k]), "questions-reply")
 
             mail = email_utils.make_mail(
@@ -120,13 +122,14 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template=text_template,
                 html_template=html_template,
                 context_vars=context,
-                from_email="Mozilla Support Forum " "<no-reply@support.mozilla.org>",
+                from_email="Mozilla Support Forum <no-reply@support.mozilla.org>",
                 to_email=user.email,
             )
 
             return mail
 
         for u, w in users_and_watches:
+            c["question_url"] = self.instance.get_absolute_url()
             c["answer_url"] = self.answer.get_absolute_url()
             c["solution_url"] = self.answer.get_solution_url(watch=w[0])
 
