@@ -91,6 +91,7 @@ Below is a JSON-formatted list of topics you MUST choose from. Each topic includ
 - **title**: Name of the topic.
 - **description**: Explanation of what the topic covers.
 - **examples** (optional): Sample questions that fit clearly into the topic.
+- **subtopics**: The lower-level topics, if any, of the topic.
 
 ```json
 {topics}
@@ -103,17 +104,19 @@ For each question:
    - Title
    - Description
    - Examples (when provided)
-3. **Select exactly one topic** that best matches the question's intent.
+3. **Select exactly one topic** that best matches the question's intent, following this rule:
+   - **Always prefer the most specific (lowest-level) topic that best matches the question's intent**.
+   - Only select a broader (higher-level) topic if none of its lower-level topics best matches the question's intent.
 4. **Default to "Undefined" if**:
-   - The question is unrelated to Mozilla's "{product}"
-   - The question lacks sufficient information for classification
-   - No existing topic appropriately captures the question's intent
+   - The question is unrelated to Mozilla's "{product}".
+   - The question lacks sufficient information for classification.
+   - No existing topic appropriately captures the question's intent.
 
 # Decision Criteria
 - Always prioritize the primary intent of the question over secondary or minor aspects.
-- Consider both explicit and implicit product features mentioned
-- Match to the most specific applicable topic when multiple topics seem relevant
-- Look for keywords that align with topic descriptions and examples
+- Consider both explicit and implicit product features mentioned.
+- Match to the most specific applicable topic when multiple topics seem relevant.
+- Look for keywords that align with topic descriptions and examples.
 
 # Response Format
 {format_instructions}
@@ -155,7 +158,12 @@ class SpamResult(BaseModel):
 
 
 class TopicResult(BaseModel):
-    topic: str = Field(description="The title of the topic or subtopic selected for the question.")
+    topic: str = Field(
+        description=(
+            "The title of the selected topic or subtopic. If a subtopic is selected, include"
+            " only its own title — do not include the titles of any of its parent topics."
+        )
+    )
     reason: str = Field(description="The reason for selecting the topic.")
 
 
