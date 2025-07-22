@@ -9,9 +9,7 @@
 {# L10n: This is an email. Whitespace matters! -#}
 {{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=display_name(answerer), host=host) }}
 
-{{ question_title }}
-
-https://{{ host }}{{ answer_url }}
+{{ question_title }} (https://{{ host }}{{ question_url }})
 
 {# L10n: This is in an email. -#}
 {{ _('{answerer} wrote:')|f(answerer=display_name(answerer)) }}
