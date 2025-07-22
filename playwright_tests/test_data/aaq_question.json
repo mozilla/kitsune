@@ -21,14 +21,17 @@
   },
   "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
   "troubleshooting_information": "Test Troubleshooting data",
-  "troubleshoot_product_and_os_versions": ["Test os", "Test product version"],
+  "troubleshoot_product_and_os_versions": [
+    "Test os",
+    "Test product version"
+  ],
   "products_aaq_url": {
     "Firefox": "https://support.allizom.org/en-US/questions/new/firefox/form",
     "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile/form",
     "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios/form",
     "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise/form",
     "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus/form",
-    "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/firefox-private-network-vpn/form",
+    "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/mozilla-vpn/form",
     "Mozilla Monitor": "https://support.allizom.org/en-US/questions/new/monitor/form",
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay/form",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket/form",
@@ -37,7 +40,7 @@
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus-firefox/form",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account/form"
   },
-  "product_without_aaq_url" : "https://support.allizom.org/en-US/kb/get-community-support?exit_aaq=1",
+  "product_without_aaq_url": "https://support.allizom.org/en-US/kb/get-community-support?exit_aaq=1",
   "aaq_topic_tags": {
     "Firefox": {
       "Accessibility": "accessibility",
@@ -52,7 +55,7 @@
       "Search, tag, and share": "search-tag-and-share",
       "Settings": "settings",
       "default_slug": "firefox"
-      },
+    },
     "Firefox for Android": {
       "Accessibility": "accessibility",
       "Accounts": "accounts",

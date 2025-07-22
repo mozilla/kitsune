@@ -81,7 +81,7 @@ ZENDESK_TAGS = [
     ("win10", "seg-win10"),
     ("win11", "seg-win11"),
     ("firefox_accounts", "seg-firefox-accounts"),
-    ("firefox-private-network-vpn", "seg-firefox-private-network-vpn"),
+    ("mozilla-vpn", "seg-mozilla-vpn"),
     ("hubs", "seg-hubs"),
     ("mdn-plus", "seg-mdn-plus"),
     ("monitor", "seg-monitor"),

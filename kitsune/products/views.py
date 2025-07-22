@@ -7,17 +7,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.flagit.views import get_hierarchical_topics
+from kitsune.products import PRODUCT_SLUG_ALIASES
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.utils import build_topics_data, get_featured_articles
-
-PRODUCT_SLUG_REDIRECTS = {
-    "firefox-accounts": "mozilla-account",
-    "firefox-private-network-vpn": "mozilla-vpn",
-}
 
 
 @check_simple_wiki_locale
@@ -42,8 +38,8 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
     Raises:
         Http404: If product not found
     """
-    if slug in PRODUCT_SLUG_REDIRECTS:
-        return redirect(product_landing, slug=PRODUCT_SLUG_REDIRECTS[slug], permanent=True)
+    if slug in PRODUCT_SLUG_ALIASES:
+        return redirect(product_landing, slug=PRODUCT_SLUG_ALIASES[slug], permanent=True)
 
     product = get_object_or_404(Product, slug=slug)
 

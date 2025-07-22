@@ -3,8 +3,9 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.customercare.zendesk import ZendeskClient
+from kitsune.products import PRODUCT_SLUG_ALIASES
 
-PRODUCTS_WITH_OS = ["firefox-private-network-vpn"]
+PRODUCTS_WITH_OS = ["mozilla-vpn"]
 
 # See docs/zendesk.md for details about getting the valid choice values for each field:
 CATEGORY_CHOICES = [
@@ -34,13 +35,14 @@ OS_CHOICES = [
     ("other", _lazy("Other")),
 ]
 
+ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
+
 
 class ZendeskForm(forms.Form):
     """Form for submitting a ticket to Zendesk."""
 
     required_css_class = "required"
 
-    product = forms.CharField(disabled=True, widget=forms.HiddenInput)
     email = forms.EmailField(
         label=_lazy("Contact e-mail"), required=True, widget=forms.HiddenInput
     )
@@ -57,7 +59,6 @@ class ZendeskForm(forms.Form):
     country = forms.CharField(widget=forms.HiddenInput, required=False)
 
     def __init__(self, *args, product, user=None, **kwargs):
-        kwargs.update({"initial": {"product": product.slug}})
         super().__init__(*args, **kwargs)
         if product.slug in settings.LOGIN_EXCEPTIONS and not user.is_authenticated:
             self.fields["email"].widget = forms.EmailInput()
@@ -66,8 +67,15 @@ class ZendeskForm(forms.Form):
             self.fields["email"].initial = user.email
         self.label_suffix = ""
         if product.slug not in PRODUCTS_WITH_OS:
-            del self.fields["os"]
+            self.fields["os"].widget = forms.HiddenInput()
 
     def send(self, user, product):
         client = ZendeskClient()
-        return client.create_ticket(user, self.cleaned_data, product)
+        zendesk_product = (
+            ZENDESK_PRODUCT_SLUGS.get(product.slug, product.slug)
+            if product.slug == "mozilla-vpn"
+            else product.slug
+        )
+        self.cleaned_data["product"] = zendesk_product
+        self.cleaned_data["product_title"] = product.title
+        return client.create_ticket(user, self.cleaned_data)
