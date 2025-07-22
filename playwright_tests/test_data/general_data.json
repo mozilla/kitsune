@@ -31,7 +31,7 @@
     "Firefox for iOS": "https://support.allizom.org/en-US/products/ios/browse",
     "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise/installation-and-updates",
     "MDN Plus": "https://support.allizom.org/en-US/products/mdn-plus/getting-started",
-    "Mozilla VPN": "https://support.allizom.org/en-US/products/firefox-private-network-vpn/accounts",
+    "Mozilla VPN": "https://support.allizom.org/en-US/products/mozilla-vpn/accounts",
     "Firefox Relay": "https://support.allizom.org/en-US/products/relay/technical",
     "Pocket": "https://support.allizom.org/en-US/products/pocket/pocket-for-ios",
     "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird/settings",
@@ -40,32 +40,32 @@
     "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
   },
   "test_topics": {
-      "Thunderbird for Android": {
-            "topic_name": "Thunderbird for Android test topic",
-            "link": "https://support.allizom.org/en-US/products/thunderbird-android/test-topic-tha"
-      },
-      "Thunderbird": {
-            "topic_name": "Thunderbird test topic",
-            "link": "https://support.allizom.org/en-US/products/thunderbird/test-topic-th"
-      },
-      "Firefox": {
-            "topic_name": "Firefox test topic",
-            "link": "https://support.allizom.org/en-US/products/firefox/test-topic-firefox"
-        },
-      "Pocket": {
-            "topic_name": "Pocket test topic",
-            "link": "https://support.allizom.org/en-US/products/pocket/test-topic-pocket"
-      },
-      "MDN Plus": {
-            "topic_name": "MDN test topic",
-            "link": "https://support.allizom.org/en-US/products/mdn-plus/test-topic-mdn"
-      }
-      },
+    "Thunderbird for Android": {
+      "topic_name": "Thunderbird for Android test topic",
+      "link": "https://support.allizom.org/en-US/products/thunderbird-android/test-topic-tha"
+    },
+    "Thunderbird": {
+      "topic_name": "Thunderbird test topic",
+      "link": "https://support.allizom.org/en-US/products/thunderbird/test-topic-th"
+    },
+    "Firefox": {
+      "topic_name": "Firefox test topic",
+      "link": "https://support.allizom.org/en-US/products/firefox/test-topic-firefox"
+    },
+    "Pocket": {
+      "topic_name": "Pocket test topic",
+      "link": "https://support.allizom.org/en-US/products/pocket/test-topic-pocket"
+    },
+    "MDN Plus": {
+      "topic_name": "MDN test topic",
+      "link": "https://support.allizom.org/en-US/products/mdn-plus/test-topic-mdn"
+    }
+  },
   "product_support": {
     "Firefox": "https://support.allizom.org/en-US/products/firefox",
     "Firefox for Android": "https://support.allizom.org/en-US/products/mobile",
     "Firefox for iOS": "https://support.allizom.org/en-US/products/ios",
-    "Mozilla VPN": "https://support.allizom.org/en-US/products/firefox-private-network-vpn",
+    "Mozilla VPN": "https://support.allizom.org/en-US/products/mozilla-vpn",
     "Firefox Relay": "https://support.allizom.org/en-US/products/relay",
     "Mozilla Monitor": "https://support.allizom.org/en-US/products/monitor",
     "Pocket": "https://support.allizom.org/en-US/products/pocket",
@@ -81,7 +81,7 @@
     "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios",
     "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise",
     "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus",
-    "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/firefox-private-network-vpn",
+    "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/mozilla-vpn",
     "Mozilla Monitor": "https://support.allizom.org/en-US/questions/new/monitor",
     "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay",
     "Pocket": "https://support.allizom.org/en-US/questions/new/pocket",
@@ -90,14 +90,14 @@
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus-firefox",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
   },
-  "product_forums" :{
-      "Firefox": "https://support.allizom.org/en-US/questions/firefox",
-      "Firefox for Android": "https://support.allizom.org/en-US/questions/mobile",
-      "Firefox for iOS": "https://support.allizom.org/en-US/questions/ios",
-      "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/firefox-enterprise",
-      "Firefox Focus": "https://support.allizom.org/en-US/questions/focus-firefox",
-      "Thunderbird": "https://support.allizom.org/en-US/questions/thunderbird",
-      "Thunderbird for Android": "https://support.allizom.org/en-US/questions/thunderbird-android"
+  "product_forums": {
+    "Firefox": "https://support.allizom.org/en-US/questions/firefox",
+    "Firefox for Android": "https://support.allizom.org/en-US/questions/mobile",
+    "Firefox for iOS": "https://support.allizom.org/en-US/questions/ios",
+    "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/firefox-enterprise",
+    "Firefox Focus": "https://support.allizom.org/en-US/questions/focus-firefox",
+    "Thunderbird": "https://support.allizom.org/en-US/questions/thunderbird",
+    "Thunderbird for Android": "https://support.allizom.org/en-US/questions/thunderbird-android"
   },
   "dashboard_links": {
     "recent_revisions": "https://support.allizom.org/en-US/kb/revisions",
