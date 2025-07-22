@@ -16,11 +16,8 @@ from kitsune.users.tests import UserFactory
 ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
 testserver:
 
-{title}
-
-https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_source=notification&utm_medium=email\
-#answer-{answer_id}
+{title} (https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-reply&utm_source=notification&utm_medium=email)
 
 {replier} wrote:
 "{content}"
@@ -48,7 +45,8 @@ ANSWER_EMAIL = "Hi {to_user},\n\n" + ANSWER_EMAIL_TO_ANONYMOUS
 ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
 {replier} has posted an answer to your question on testserver:
-{title}
+{title} (https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-reply&utm_source=notification&utm_medium=email)
 
 {replier} wrote:
 "{content}"
@@ -125,21 +123,25 @@ class NotificationsTests(TestCase):
         event_cls = QuestionReplyEvent if event_type == "reply" else QuestionSolvedEvent
         # Make sure 'before' values are the reverse.
         if turn_on:
-            assert not event_cls.is_notifying(user, q), (
-                "{} should not be notifying.".format(event_cls.__name__)
+            assert not event_cls.is_notifying(user, q), "{} should not be notifying.".format(
+                event_cls.__name__
             )
         else:
-            assert event_cls.is_notifying(user, q), "{} should be notifying.".format(event_cls.__name__)
+            assert event_cls.is_notifying(user, q), "{} should be notifying.".format(
+                event_cls.__name__
+            )
 
         url = "questions.watch" if turn_on else "questions.unwatch"
         data = {"event_type": event_type} if turn_on else {}
         post(self.client, url, data, args=[q.id])
 
         if turn_on:
-            assert event_cls.is_notifying(user, q), "{} should be notifying.".format(event_cls.__name__)
+            assert event_cls.is_notifying(user, q), "{} should be notifying.".format(
+                event_cls.__name__
+            )
         else:
-            assert not event_cls.is_notifying(user, q), (
-                "{} should not be notifying.".format(event_cls.__name__)
+            assert not event_cls.is_notifying(user, q), "{} should not be notifying.".format(
+                event_cls.__name__
             )
         return q
 

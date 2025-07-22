@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block header %}
-  <h1>{{ question_title }}</h1>
+  <h1><a href="https://{{ host }}{{ question_url }}">{{ question_title }}</a></h1>
   <img class="avatar" src="{{ profile_avatar(answerer) }}">
   <div class="user-meta">
     <strong>{{ display_name(answerer) }}</strong>
@@ -34,7 +34,7 @@
   </div>
   <p>
     <a class="button" href="https://{{ host }}{{ solution_url }}">{{ _('Mark it as solved') }}</a>
-    <a href="https://{{ host }}{{ answer_url }}">{{ _('This doesn\'t solve my problem') }}</a>
+    <a href="https://{{ host }}{{ answer_url }}">{{ _('View the reply') }}</a>
   </p>
   <div class="gi-box">
     <a href="https://{{ host }}/questions?filter=unsolved">{{ _('Browse for unsolved questions and help a Firefox user') }}</a>

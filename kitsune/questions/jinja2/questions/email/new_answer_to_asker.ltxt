@@ -4,7 +4,7 @@
 {{ _('Hi {username},')|f(username=display_name(to_user)) }}
 
 {{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=display_name(answerer), host=host) }}
-{{ question_title }}
+{{ question_title }} (https://{{ host }}{{ question_url }})
 
 {{ _('{answerer} wrote:')|f(answerer=display_name(answerer)) }}
 "{{ answer }}"
