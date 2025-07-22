@@ -24,6 +24,7 @@ REGEX_WINDOWS_HOME_DIR = re.compile(
     r"(?P<home_dir_parent>\\(?:user|users|documents and settings|winnt\\profiles)\\)[^\\]+",
     re.IGNORECASE,
 )
+REGEX_TOPIC_HIERARCHY_SPLITTER = re.compile(r">|;|\s/\s|\.|\s\-\s|\||\:\:|\:")
 
 
 log = logging.getLogger("k.questions")
@@ -171,6 +172,18 @@ def flag_question(
         flagged_object.save()
 
 
+def get_most_specific(topic_title):
+    """
+    If the given topic_title is actually a hierachy of topic titles, this function attempts
+    to return the most-specific topic title. Otherwise, it returns the given topic_title
+    stripped of leading and trailing whitespace.
+
+    The following hierarchy separators are recognized, none of which are present in the
+    existing topic titles: ".", ">", " / ", " - ", ";", "::", ":", and "|".
+    """
+    return REGEX_TOPIC_HIERARCHY_SPLITTER.split(topic_title)[-1].strip()
+
+
 def get_object_by_title(model, title, manager=None):
     try:
         obj = (manager or model.objects).get(title=title)
@@ -189,7 +202,6 @@ def update_question_fields_from_classification(question, result, sumo_bot):
     update_fields = {}
 
     if new_product_title and question.product.title != new_product_title:
-
         if new_product := get_object_by_title(
             Product,
             new_product_title,
@@ -200,7 +212,7 @@ def update_question_fields_from_classification(question, result, sumo_bot):
     if new_topic_title and (
         topic := get_object_by_title(
             Topic,
-            new_topic_title,
+            get_most_specific(new_topic_title),
             manager=Topic.active,
         )
     ):
