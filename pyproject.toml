@@ -82,7 +82,7 @@ dependencies = [
     "fuzzywuzzy>=0.18.0,<0.19",
     "django-ses==4.4.0",
     "django-post-office==3.10.0",
-    "langchain==0.3.25",
+    "langchain==0.3.26",
     "langchain-google-vertexai==2.0.27",
 ]
 
