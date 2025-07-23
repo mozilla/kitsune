@@ -1,6 +1,6 @@
 import re
 
-from playwright.sync_api import Page
+from playwright.sync_api import Page, ElementHandle
 
 from playwright_tests.core.basepage import BasePage
 
@@ -22,6 +22,10 @@ class ForumDiscussionsPage(BasePage):
         # Locators related to the search section.
         self.search_this_forum_search_field = page.locator("form#find-thread input#search-q")
         self.search_this_forum_search_button = page.locator("form#find-thread input.search-button")
+        self.search_results_headers = page.locator(
+            "//div[@id='search-results']//h3[@class='sumo-card-heading']/a")
+        self.search_results_body = page.locator(
+            "//div[@id='search-results']//div[@class='topic-article--text']/p")
 
         # Locators related to the threads table.
         self.thread_title = lambda thread_name : page.locator(
@@ -81,3 +85,16 @@ class ForumDiscussionsPage(BasePage):
         option = super()._get_text_of_element(
             self.forum_side_nav_selected_option)
         return re.sub(r'\s+', ' ', option).strip()
+
+    def search_in_community_discussion(self, search_string: str):
+        self._fill(self.search_this_forum_search_field, search_string)
+        self._click(self.search_this_forum_search_button)
+
+    def get_all_thread_titles_from_search_results(self) -> list[str]:
+        return self._get_text_of_elements(self.search_results_headers)
+
+    def get_all_thread_titles_from_search_results_handles(self) -> list[ElementHandle]:
+        return self._get_element_handles(self.search_results_headers)
+
+    def get_all_thread_content_from_search_results(self) -> list[str]:
+        return self._get_text_of_elements(self.search_results_body)

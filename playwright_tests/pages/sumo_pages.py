@@ -70,6 +70,8 @@ from playwright_tests.pages.contribute.contribute_pages.ways_to_contribute_pages
 from playwright_tests.pages.contribute.contributor_tools_pages.article_discussions_page import (
     ArticleDiscussionsPage,
 )
+from playwright_tests.pages.contribute.contributor_tools_pages.community_hub_page import \
+    CommunityHubPage
 from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
 from playwright_tests.pages.contribute.contributor_tools_pages.l10n_most_visited_translations import (
     MostVisitedTranslations,
@@ -180,6 +182,9 @@ class SumoPages:
 
         # Contribute page.
         self.contribute_page = ContributePage(page)
+
+        # Community hub page.
+        self.community_hub_page = CommunityHubPage(page)
 
         # AAQ Pages
         self.aaq_form_page = AAQFormPage(page)

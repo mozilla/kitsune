@@ -48,6 +48,16 @@ class CommonWebElements(BasePage):
             f"//div[@class='card--topic']/div[@class='topic-header']/h3[@class='card--title']/a"
             f"[normalize-space(text())='{card_title}']/../../following-sibling::a")
 
+        # Pagination page locators
+        self.pagination_item = lambda pagination_item: page.locator(
+            "ol[class='pagination']").get_by_role("link").filter(has_text=pagination_item)
+        self.selected_pagination_item = page.locator(
+            "ol[class='pagination'] li[class='selected']").get_by_role("link")
+        self.previous_pagination_item = page.locator(
+            "//ol[@class='pagination']//span[text()='Previous']/..")
+        self.next_pagination_item= page.locator(
+            "//ol[@class='pagination']//span[text()='Next']/..")
+
     # Actions against the Avoid Spam Banner
     def get_scam_banner_text(self) -> str:
         """Returns the scam banner text."""
@@ -154,3 +164,23 @@ class CommonWebElements(BasePage):
                 return False
         utilities.navigate_back()
         return True
+
+    def click_on_pagination_item(self, pagination_item: str):
+        """Clicking on the pagination item"""
+        self._click(self.pagination_item(pagination_item))
+
+    def get_selected_pagination_item(self) -> str:
+        """Returning the selected pagination item"""
+        return self._get_text_of_element(self.selected_pagination_item)
+
+    def click_on_previous_pagination_item(self):
+        """Clicking on the previous pagination item."""
+        self._click(self.previous_pagination_item)
+
+    def click_on_next_pagination_item(self):
+        """Clicking on the next pagination item."""
+        self._click(self.next_pagination_item)
+
+    def is_next_pagination_item_visible(self) -> bool:
+        """Return if the next pagination item is visible or not."""
+        return self._is_element_visible(self.next_pagination_item)

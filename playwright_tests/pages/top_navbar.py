@@ -52,6 +52,7 @@ class TopNavbar(BasePage):
             "//h4[text()='Browse by product']/../following-sibling::ul/li/a")
         self.browse_all_forum_threads_by_topics_top_navbar_options = page.locator(
             "//h4[text()='Browse all forum threads by topic']/../following-sibling::ul/li/a")
+
         # Locators belonging to the 'Contribute' top-navbar section.
         self.contribute_option = page.get_by_role("link").filter(has_text="Contribute")
         self.contributor_discussions_top_navbar_header = page.locator(
@@ -76,6 +77,9 @@ class TopNavbar(BasePage):
         self.guides_option = page.locator(
             "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
             has_text="Guides")
+        self.community_hub_option = page.locator(
+            "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
+            has_text="Community hub")
 
         # Locators belonging to the 'Sign In/Up' top-navbar section.
         self.signin_signup_button = page.locator("div#profile-navigation").get_by_role(
@@ -217,6 +221,11 @@ class TopNavbar(BasePage):
         """Click on the 'Guides' option"""
         self.hover_over_contribute_top_navbar()
         self._click(self.guides_option)
+
+    def click_on_community_hub_option(self):
+        """Click on the 'Community hub' option"""
+        self.hover_over_contribute_top_navbar()
+        self._click(self.community_hub_option)
 
     """
         Actions against the sign-in/sign-up top-navbar section.

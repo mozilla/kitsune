@@ -31,7 +31,8 @@ class AAQFlow:
                 subject, topic_name, body, attach_image)
 
         # Submitting the question.
-        self.aaq_form_page.click_aaq_form_submit_button(expected_locator=expected_locator)
+        with self.utilities.page.expect_navigation():
+            self.aaq_form_page.click_aaq_form_submit_button(expected_locator=expected_locator)
 
         # If the submission was done for freemium products we are retrieving the Question Subject,
         # Question url & Question Body for further test usage.
