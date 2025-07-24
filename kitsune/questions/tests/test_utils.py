@@ -5,11 +5,13 @@ from parameterized import parameterized
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import ModerationAction
+from kitsune.products.models import Topic
 from kitsune.products.tests import TopicFactory
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.utils import (
     get_mobile_product_from_ua,
+    get_most_specific,
     mark_content_as_spam,
     num_answers,
     num_questions,
@@ -204,21 +206,20 @@ class PIIRemovalTests(TestCase):
             },
         }
         expected = deepcopy(data)
-        expected["environmentVariables"][
-            "MOZ_CRASHREPORTER_DATA_DIRECTORY"
-        ] = "C:\\Users\\<USERNAME>\\AppData\\Roaming\\Mozilla\\Firefox\\Crash Reports"
-        expected["environmentVariables"][
-            "MOZ_CRASHREPORTER_PING_DIRECTORY"
-        ] = "C:\\Users\\<USERNAME>\\AppData\\Roaming\\Mozilla\\Firefox\\Pending Pings"
-        expected["startupCache"]["paths"][
-            "DiskCachePath"
-        ] = "C:\\Users\\<USERNAME>\\AppData\\Local\\Mozilla\\Firefox"
+        expected["environmentVariables"]["MOZ_CRASHREPORTER_DATA_DIRECTORY"] = (
+            "C:\\Users\\<USERNAME>\\AppData\\Roaming\\Mozilla\\Firefox\\Crash Reports"
+        )
+        expected["environmentVariables"]["MOZ_CRASHREPORTER_PING_DIRECTORY"] = (
+            "C:\\Users\\<USERNAME>\\AppData\\Roaming\\Mozilla\\Firefox\\Pending Pings"
+        )
+        expected["startupCache"]["paths"]["DiskCachePath"] = (
+            "C:\\Users\\<USERNAME>\\AppData\\Local\\Mozilla\\Firefox"
+        )
         remove_pii(data)
         self.assertDictEqual(data, expected)
 
 
 class ProcessClassificationResultTests(TestCase):
-
     def setUp(self):
         self.topic1 = TopicFactory()
         self.topic2 = TopicFactory()
@@ -384,3 +385,47 @@ class ProcessClassificationResultTests(TestCase):
                 notes__contains="Dude, it is so topic1.",
             ).exists()
         )
+
+
+class GetMostSpecificTests(TestCase):
+    def test_existing_topics(self):
+        """
+        Ensure that all existing topic titles are returned unharmed.
+        """
+        for topic in Topic.active.filter(visible=True):
+            with self.subTest(topic.title):
+                self.assertEqual(get_most_specific(topic.title), topic.title)
+
+    def test_hierarchical_topics(self):
+        """
+        Ensure that the most specific title is returned from hierarchical topic titles
+        using known separators.
+        """
+        hierachical_cases = [
+            ("Settings.Add-ons, extensions, and themes.Extensions", "Extensions"),
+            ("Settings>Add-ons, extensions, and themes>Extensions", "Extensions"),
+            ("Settings > Add-ons, extensions, and themes > Extensions", "Extensions"),
+            ("Settings - Add-ons, extensions, and themes - Extensions", "Extensions"),
+            ("Settings;Add-ons, extensions, and themes;Extensions", "Extensions"),
+            ("Settings ; Add-ons, extensions, and themes ; Extensions", "Extensions"),
+            ("Settings:Add-ons, extensions, and themes:Extensions", "Extensions"),
+            ("Settings : Add-ons, extensions, and themes : Extensions", "Extensions"),
+            ("Settings::Add-ons, extensions, and themes::Extensions", "Extensions"),
+            ("Settings :: Add-ons, extensions, and themes :: Extensions", "Extensions"),
+            (
+                "Performance and connectivity / Site breakages / Blocked application/service/website",
+                "Blocked application/service/website",
+            ),
+            (
+                "Performance and connectivity|Site breakages|Blocked application/service/website",
+                "Blocked application/service/website",
+            ),
+            (
+                "Performance and connectivity | Site breakages |  Blocked application/service/website ",
+                "Blocked application/service/website",
+            ),
+        ]
+
+        for hierarchical_title, expected in hierachical_cases:
+            with self.subTest(hierarchical_title):
+                self.assertEqual(get_most_specific(hierarchical_title), expected)
