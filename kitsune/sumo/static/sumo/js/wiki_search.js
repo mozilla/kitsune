@@ -7,7 +7,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
 document.addEventListener("DOMContentLoaded", function() {
   const locale = document.documentElement.lang;
-  const search = new Search(`/${locale}/search`, { w: 1, format: 'json' });
+  const search = new Search(`/${locale}/search`, { w: 1, format: 'json', locale: locale });
 
   const relatedDocsList = document.getElementById('related-docs-list');
   const searchInput = document.getElementById('search-related');
