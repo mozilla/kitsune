@@ -16,10 +16,6 @@ class MyProfileEditContributionAreasPage(BasePage):
             "input[value='l10n-contributors']")
         self.edit_contribution_areas_forum_contributors = page.locator(
             "input[value='forum-contributors']")
-        self.edit_contribution_areas_social_media_contributors = page.locator(
-            "input[value='social-contributors']")
-        self.edit_contribution_areas_mobile_support_contributors = page.locator(
-            "input[value='mobile-contributors']")
         self.edit_contribution_areas_checkbox_labels = page.locator(
             "//input[@type='checkbox']/parent::label")
         self.edit_contribution_areas_update_button = page.locator(
@@ -46,8 +42,6 @@ class MyProfileEditContributionAreasPage(BasePage):
         return {
             item.lower()
             .replace(" ", "-")
-            .replace("media", "")
-            .replace("support", "")
             .replace("--", "-")[1:]
             for item in self._get_text_of_elements(self.edit_contribution_areas_checkbox_labels)
         }
@@ -88,20 +82,10 @@ class MyProfileEditContributionAreasPage(BasePage):
         """Check if the forum contributors checkbox is checked"""
         return self._is_checkbox_checked(self.edit_contribution_areas_forum_contributors)
 
-    def is_social_media_contributors_checkbox_checked(self) -> bool:
-        """Check if the social media contributors checkbox is checked"""
-        return self._is_checkbox_checked(self.edit_contribution_areas_social_media_contributors)
-
-    def is_mobile_support_contributors_checkbox_checked(self) -> bool:
-        """Check if the mobile support contributors checkbox is checked"""
-        return self._is_checkbox_checked(self.edit_contribution_areas_mobile_support_contributors)
-
     def are_all_cont_pref_checked(self) -> bool:
         """Check if all contribution areas checkboxes are checked"""
         return all([
             self.is_kb_contributors_checkbox_checked(),
             self.is_l10n_contributors_checkbox_checked(),
-            self.is_forum_contributors_checkbox_checked(),
-            self.is_social_media_contributors_checkbox_checked(),
-            self.is_mobile_support_contributors_checkbox_checked(),
+            self.is_forum_contributors_checkbox_checked()
         ])
