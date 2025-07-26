@@ -4,10 +4,12 @@ from datetime import date, datetime, timedelta
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce, Now
 from sentry_sdk import capture_exception
 
+from kitsune.community.models import DeletedContribution
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 
@@ -100,8 +102,15 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int):
         creator=user, created__gte=date(year, 1, 1), created__lt=date(year + 1, 1, 1)
     )
 
+    qs_deleted = DeletedContribution.objects.filter(
+        contributor=user,
+        content_type=ContentType.objects.get_for_model(Answer),
+        contribution_timestamp__gte=date(year, 1, 1),
+        contribution_timestamp__lt=date(year + 1, 1, 1),
+    )
+
     # If the count is at or above the limit, award the badge.
-    if qs.count() >= settings.BADGE_LIMIT_SUPPORT_FORUM:
+    if (qs.count() + qs_deleted.count()) >= settings.BADGE_LIMIT_SUPPORT_FORUM:
         badge.award_to(user)
         return True
 

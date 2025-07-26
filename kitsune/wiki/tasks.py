@@ -5,6 +5,7 @@ import waffle
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -15,6 +16,7 @@ from django.utils.translation import gettext as _
 from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 
+from kitsune.community.models import DeletedContribution
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import skip_if_read_only_mode
@@ -286,15 +288,24 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int):
         created__gte=date(year, 1, 1),
         created__lt=date(year + 1, 1, 1),
     )
+    qs_deleted = DeletedContribution.objects.filter(
+        contributor=user,
+        content_type=ContentType.objects.get_for_model(Revision),
+        contribution_timestamp__gte=date(year, 1, 1),
+        contribution_timestamp__lt=date(year + 1, 1, 1),
+        metadata__is_approved=True,
+    )
     if badge_template["slug"] == WIKI_BADGES["kb-badge"]["slug"]:
         # kb-badge
         qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+        qs_deleted = qs_deleted.filter(locale=settings.WIKI_DEFAULT_LANGUAGE)
     else:
         # l10n-badge
         qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+        qs_deleted = qs_deleted.exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
 
     # If the count is 10 or higher, award the badge.
-    if qs.count() >= settings.BADGE_LIMIT_L10N_KB:
+    if (qs.count() + qs_deleted.count()) >= settings.BADGE_LIMIT_L10N_KB:
         badge.award_to(user)
         return True
 

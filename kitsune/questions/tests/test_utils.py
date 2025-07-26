@@ -55,10 +55,10 @@ class ContributionCountTestCase(TestCase):
         self.assertEqual(num_answers(u), 2)
 
         a1.delete()
-        self.assertEqual(num_answers(u), 1)
+        self.assertEqual(num_answers(u), 2)
 
         a2.delete()
-        self.assertEqual(num_answers(u), 0)
+        self.assertEqual(num_answers(u), 2)
 
     def test_num_solutions(self):
         u = UserFactory()
@@ -81,7 +81,7 @@ class ContributionCountTestCase(TestCase):
         self.assertEqual(num_solutions(u), 1)
 
         a2.delete()
-        self.assertEqual(num_solutions(u), 0)
+        self.assertEqual(num_solutions(u), 1)
 
 
 class FlagUserContentAsSpamTestCase(TestCase):
