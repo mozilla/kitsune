@@ -1375,3 +1375,6 @@ GOOGLE_APPLICATION_CREDENTIALS = config("GOOGLE_APPLICATION_CREDENTIALS", defaul
 
 # shell_plus conf
 SHELL_PLUS_DONT_LOAD = ["silk"]
+
+# AI Translation
+AI_ENABLED_LOCALES = ["es"]
