@@ -814,9 +814,13 @@ def review_revision(request, document_slug, revision_id):
 
                 doc.save()
 
-            # Send notifications of approvedness and readiness:
-            if rev.is_ready_for_localization or rev.is_approved:
+            # Send notifications of approvedness
+            if rev.is_approved:
                 ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
+            if rev.is_ready_for_localization:
+                # Trigger automatic translation with strategy pattern
+                # example: TranslationService().translate_document(rev, target_locales)
+                pass
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
