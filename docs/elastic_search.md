@@ -7,7 +7,7 @@
 
 Elastic supports adding new fields to an existing mapping,
 along with some other operations:
-https://www.elastic.co/guide/en/elasticsearch/reference/7.9/mapping.html#add-field-mapping
+https://www.elastic.co/guide/en/elasticsearch/reference/9.0/mapping.html#add-field-mapping
 
 To know whether a change you make to a Document will work in prod,
 try it locally having already set up the mapping:
@@ -46,7 +46,7 @@ you might want to add the `--print-sql-count` argument when testing out your cha
 to see how many SQL queries are being executed:
 
 ```sh
-CELERY_TASK_ALWAYS_EAGER=True ./manage.py es_reindex --print-sql-count --sql-chunk-size=100 --count=100
+CELERY_TASK_ALWAYS_EAGER=True ./manage.py es_reindex --print-sql-count --sql-chunk-size 100 --count 100
 ```
 
 If the result is much less than 100,
@@ -58,6 +58,162 @@ Consider using some combination of
 [`prefetch_related`](https://docs.djangoproject.com/en/dev/ref/models/querysets/#prefetch-related)
 or [annotations](https://docs.djangoproject.com/en/dev/ref/models/querysets/#annotate)
 to bring that number down.
+
+## Search Management Commands
+
+Kitsune provides two key management commands for working with Elasticsearch indices: `es_init` and `es_reindex`. These commands handle index initialization, migration via aliases, and document reindexing.
+
+### es_init Command
+
+The `es_init` command initializes Elasticsearch document types and manages index aliases. It's used to create new indices, update mappings, and handle index migrations.
+
+#### Basic Usage
+
+```bash
+# Initialize all document types (creates indices and aliases on first run)
+./manage.py es_init
+
+# Initialize specific document types only
+./manage.py es_init --limit WikiDocument QuestionDocument
+
+# Reload search analyzers (useful after updating synonyms)
+./manage.py es_init --reload-search-analyzers
+```
+
+#### Migration Options Using Aliases
+
+The command supports two types of migrations:
+
+**Write Migration via Alias (`--migrate-writes`)**
+- Creates a new index with a timestamp suffix
+- Points the `_write` alias to the new index
+
+```bash
+./manage.py es_init --migrate-writes
+```
+
+**Read Migration via Alias (`--migrate-reads`)**
+- Updates the `_read` alias to point where the `_write` alias points
+- Used to switch read operations to the new index after write migration is complete
+
+```bash
+./manage.py es_init --migrate-reads
+```
+
+**Combined Migration (Zero-Downtime Deployment)**
+```bash
+# Step 1: Create new index and migrate writes
+./manage.py es_init --migrate-writes
+
+# Step 2: Reindex data to new index (see es_reindex section)
+./manage.py es_reindex
+
+# Step 3: Switch reads to new index
+./manage.py es_init --migrate-reads
+```
+
+#### How It Works
+
+- If no write alias exists (first run), the command automatically creates both indices and aliases
+- If indices exist, it updates the existing index mapping (when possible)
+- Uses timestamped index names (e.g., `wikidocument_20241201_120000`) with aliases for read/write operations
+- Handles mapping conflicts by requiring explicit migration steps
+
+### es_reindex Command
+
+The `es_reindex` command populates Elasticsearch indices with data from the database. It supports incremental updates, performance optimization, and selective reindexing.
+
+#### Basic Usage
+
+```bash
+# Reindex all document types
+./manage.py es_reindex
+
+# Reindex specific document types
+./manage.py es_reindex --limit WikiDocument QuestionDocument
+
+# Reindex a percentage of documents (useful for testing)
+./manage.py es_reindex --percentage 10
+
+# Reindex a specific number of documents
+./manage.py es_reindex --count 1000
+```
+
+#### Time-Based Indexing
+
+```bash
+# Reindex documents updated after a specific date
+./manage.py es_reindex --updated-after "<updated date>"
+
+# Reindex documents updated before a specific date
+./manage.py es_reindex --updated-before "<updated date>"
+
+# Reindex documents updated within a date range
+./manage.py es_reindex --updated-after "<updated date>" --updated-before "<updated date>"
+```
+
+#### Performance Tuning
+
+```bash
+# Adjust chunk sizes for performance
+./manage.py es_reindex --sql-chunk-size 500 --elastic-chunk-size 100
+
+# Set custom timeout for bulk operations
+./manage.py es_reindex --timeout 60
+
+# Monitor SQL query performance
+./manage.py es_reindex --print-sql-count --count 100
+```
+
+#### Production Reindexing
+
+```bash
+# Reindex all document types
+# Use --limit to avoid resource issues
+./manage.py es_reindex --limit WikiDocument
+./manage.py es_reindex --limit QuestionDocument
+./manage.py es_reindex --limit AnswerDocument
+./manage.py es_reindex --limit ProfileDocument
+./manage.py es_reindex --limit ForumDocument
+```
+
+### Common Workflows
+
+#### Creating New Indices
+
+When you need to create completely new indices (e.g., for mapping changes that require reindexing):
+
+```bash
+# 1. Create new index and switch writes
+./manage.py es_init --migrate-writes
+
+# 2. Populate the new index
+./manage.py es_reindex
+
+# 3. Switch reads to new index (zero downtime)
+./manage.py es_init --migrate-reads
+```
+
+#### Updating Existing Indices
+
+For compatible mapping changes that don't require full reindexing:
+
+```bash
+# Update mapping on existing index
+./manage.py es_init
+
+# Optionally reindex recently updated documents
+./manage.py es_reindex --updated-after "<date of last update>"
+```
+
+#### Synonym Updates
+
+When updating search synonyms (no data reindexing required):
+
+```bash
+# Reload search analyzers to pick up synonym changes
+./manage.py es_init --reload-search-analyzers
+```
 
 ### Datetimes and timezones
 
@@ -107,7 +263,7 @@ to `kitsune.search.views.simple_search`.
 
 The `kitsune/search/dictionaries/synonyms` path contains a text file for each of our search-enabled locales,
 where synonyms are in the
-[Solr format](https://www.elastic.co/guide/en/elasticsearch/reference/7.10/analysis-synonym-graph-tokenfilter.html#_solr_synonyms_2).
+[Solr format](https://www.elastic.co/guide/en/elasticsearch/reference/9.0/analysis-synonym-graph-tokenfilter.html#_solr_synonyms_2).
 
 `expand` defaults to `True`,
 so synonyms with no explicit mapping resolve to all elements in the list.
@@ -251,11 +407,11 @@ Run the `bin/create_elastic_bundle.sh` script to create a zip file with the appr
 (You'll need to have `zip` installed for this command to work.)
 
 Then,
-either [create](https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-add-your-plugin) an extension,
-or [update](https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-update-bundles-and-plugins) the previously created extension.
+either [create](https://www.elastic.co/guide/en/cloud/9.0/ec-custom-bundles.html#ec-add-your-plugin) an extension,
+or [update](https://www.elastic.co/guide/en/cloud/9.0/ec-custom-bundles.html#ec-update-bundles-and-plugins) the previously created extension.
 
 And in either case,
-[update the deployment configuration](https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-update-bundles)
+[update the deployment configuration](https://www.elastic.co/guide/en/cloud/9.0/ec-custom-bundles.html#ec-update-bundles)
 with the custom extension.
 
 ```eval_rst
