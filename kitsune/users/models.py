@@ -142,6 +142,7 @@ class Profile(ModelBase):
     fxa_password_change = models.DateTimeField(blank=True, null=True)
     fxa_refresh_token = models.CharField(blank=True, default="", max_length=128)
     zendesk_id = models.CharField(blank=True, default="", max_length=1024)
+    is_mozilla_staff = models.BooleanField(default=False)
 
     updated_column_name = "user__date_joined"
 
