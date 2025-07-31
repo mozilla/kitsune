@@ -93,7 +93,7 @@
              {% if rev.is_ready_for_localization %}
                {% set reached_ready_for_l10n = True %}
                <a class="yes" title="{{ _('This revision is ready for localization.') }}"></a>
-             {% elif rev.can_be_readied_for_localization() %}
+             {% elif rev.can_be_translated() %}
                {% if not reached_ready_for_l10n and document.allows(user, 'mark_ready_for_l10n') %}
                  <a class="markasready" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}"
                   data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}"
