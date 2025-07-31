@@ -508,7 +508,6 @@ def test_forum_post_side_navbar_redirects(page: Page, create_user_factory):
             expected_title = {
                 "Forum moderator discussions": "Forum Moderators",
                 "Article discussions": "English Knowledge Base Discussions",
-                "Mobile support discussions": "Mobile Support forum discussions",
                 "Off topic discussions": "Off Topic",
                 "Lost thread discussions": "Lost Threads"
             }.get(option, option)
