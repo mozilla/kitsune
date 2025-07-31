@@ -37,6 +37,7 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.views import get_hierarchical_topics
+from kitsune.products import get_product_redirect_response
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -130,6 +131,12 @@ def product_list(request):
 
 def question_list(request, product_slug=None, topic_slug=None):
     """View the list of questions."""
+    redirect_response = get_product_redirect_response(
+        product_slug, question_list, topic_slug=topic_slug
+    )
+    if redirect_response:
+        return redirect_response
+
     if settings.DISABLE_QUESTIONS_LIST_GLOBAL:
         messages.add_message(request, messages.WARNING, "You cannot list questions at this time.")
         return HttpResponseRedirect("/")
@@ -714,11 +721,18 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
 def aaq_step2(request, product_slug):
     """Step 2: The product is selected."""
+    redirect_response = get_product_redirect_response(product_slug, aaq_step2)
+    if redirect_response:
+        return redirect_response
+
     return aaq(request, product_slug=product_slug, step=2)
 
 
 def aaq_step3(request, product_slug):
     """Step 3: Show full question form."""
+    redirect_response = get_product_redirect_response(product_slug, aaq_step3)
+    if redirect_response:
+        return redirect_response
 
     # This view can be called by htmx to set the GA4 event parameters on the submit
     # button of the new-question form whenever the category (topic) menu is changed.

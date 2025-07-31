@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.flagit.views import get_hierarchical_topics
-from kitsune.products import PRODUCT_SLUG_ALIASES
+from kitsune.products import get_product_redirect_response
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.sumo.utils import has_aaq_config, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
@@ -38,8 +38,9 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
     Raises:
         Http404: If product not found
     """
-    if slug in PRODUCT_SLUG_ALIASES:
-        return redirect(product_landing, slug=PRODUCT_SLUG_ALIASES[slug], permanent=True)
+    redirect_response = get_product_redirect_response(slug, product_landing)
+    if redirect_response:
+        return redirect_response
 
     product = get_object_or_404(Product, slug=slug)
 
@@ -76,6 +77,13 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
 @check_simple_wiki_locale
 def document_listing(request, topic_slug, product_slug=None, subtopic_slug=None):
     """The document listing page for a product + topic."""
+
+    # Check for product slug aliases and redirect if needed
+    redirect_response = get_product_redirect_response(
+        product_slug, document_listing, topic_slug=topic_slug, subtopic_slug=subtopic_slug
+    )
+    if redirect_response:
+        return redirect_response
 
     topic_navigation = any(
         [
