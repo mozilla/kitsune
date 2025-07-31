@@ -11,14 +11,14 @@ from kitsune.users.utils import delete_user_pipeline
 
 
 class Command(BaseCommand):
-    help = "Delete users who haven't logged in for a specified period (default: 3 years)"
+    help = "Delete users who haven't logged in for a specified period (default: 5 years)"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--years",
             type=int,
-            default=3,
-            help="Number of years of inactivity before deletion (default: 3)",
+            default=5,
+            help="Number of years of inactivity before deletion (default: 5)",
         )
         parser.add_argument(
             "--batch-size",
@@ -205,9 +205,8 @@ class Command(BaseCommand):
             )
 
     def _bulk_delete_batch(self, User, user_ids):
-        _, deleted_objects = User.objects.filter(id__in=user_ids).delete()
-
         try:
+            _, deleted_objects = User.objects.filter(id__in=user_ids).delete()
             user_count = deleted_objects.get("auth.User", 0)
             return user_count, 0
         except (DatabaseError, IntegrityError) as e:
