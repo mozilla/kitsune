@@ -7,7 +7,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
 document.addEventListener("DOMContentLoaded", function() {
   const locale = document.documentElement.lang;
-  const search = new Search(`/${locale}/search`, { w: 1, format: 'json' });
+  const search = new Search(`/${locale}/search`, { w: 1, format: 'json', locale: locale });
 
   const relatedDocsList = document.getElementById('related-docs-list');
   const searchInput = document.getElementById('search-related');
@@ -52,12 +52,31 @@ document.addEventListener("DOMContentLoaded", function() {
           .filter(result => result.type === 'document')
           .map(item => {
             let id = item.id;
-            if (!id && item.url) {
-              const match = item.url.match(/\/(\d+)\//);
-              if (match) {
-                id = match[1];
+            
+            // If we have a URL, try to extract the document ID from it
+            // This is more reliable than trusting the search API's ID field
+            if (item.url) {
+              // For URLs like /ro/kb/flash-113-ro or /en-US/kb/flash-113-crashes
+              // we need to find the actual document that matches this URL
+              const urlMatch = item.url.match(/\/([a-z-]+)\/kb\/([^\/]+)/);
+              if (urlMatch) {
+                const urlLocale = urlMatch[1];
+                
+                // If the URL locale matches our current locale, this is likely the correct document
+                if (urlLocale === locale) {
+                  // We'll trust this URL and the search should have returned the right ID
+                  // But the search API might have the wrong ID, so we'll make an additional request
+                  // to verify or we can try to extract from a different pattern
+                  
+                  // For now, let's try the pattern that might include the ID
+                  const idMatch = item.url.match(/\/(\d+)\//);
+                  if (idMatch) {
+                    id = idMatch[1];
+                  }
+                }
               }
             }
+            
             return {
               id: id,
               title: item.title,
