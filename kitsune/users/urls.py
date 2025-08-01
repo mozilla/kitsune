@@ -26,11 +26,9 @@ if settings.DEV or settings.TEST:
             re_path(r"^become$", views.become, name="users.become"),
         ]
     if settings.ENABLE_TESTING_ENDPOINTS:
-        detail_patterns += [
-            re_path(r"^trigger-delete$", views.trigger_delete, name="users.trigger_delete"),
-        ]
         api_patterns += [
             re_path(r"^create", api.create_test_user, name="users.api.create_test_user"),
+            re_path(r"^trigger-delete", api.trigger_delete, name="users.api.trigger_delete")
         ]
 
 users_patterns = [

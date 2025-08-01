@@ -612,21 +612,3 @@ class WebhookView(View):
             return HttpResponse(status=202)
         raise Http404
 
-
-@login_required
-def trigger_delete(request, username=None):
-    """
-    Log in with only a username, for use in testing.
-    Set ENABLE_TESTING_ENDPOINTS=True to enable.
-    """
-    if not (settings.DEV and settings.ENABLE_TESTING_ENDPOINTS):
-        raise Http404
-
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        raise Http404
-    else:
-        delete_user_pipeline(user)
-
-    return HttpResponseRedirect(reverse("home"))
