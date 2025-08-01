@@ -2,7 +2,7 @@ import readerModeIcon from "protocol/img/icons/reader-mode.svg";
 import blogIcon from "protocol/img/icons/blog.svg";
 import detailsInit from "./protocol-details-init";
 import tabsInit from "./sumo-tabs";
-import trackEvent, {addGAEventListeners} from "sumo/js/analytics";
+import trackEvent, { addGAEventListeners } from "sumo/js/analytics";
 import CachedXHR from "sumo/js/cached_xhr";
 import Search from "sumo/js/search_utils";
 
@@ -11,7 +11,7 @@ import "sumo/tpl/search-results-list.njk";
 import "sumo/tpl/search-results.njk";
 import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
-(function($) {
+(function ($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
   const searchTitle = "Search | Mozilla Support";
@@ -51,7 +51,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
     $('#instant-search-content').remove();
-    $('[data-instant-search="form"] input[name="q"]').each(function() {
+    $('[data-instant-search="form"] input[name="q"]').each(function () {
       $(this).val("");
     });
     $(".page-heading--intro-text").show();
@@ -115,7 +115,19 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
     // change aaq link if we're in aaq flow
     if (aaq_explore_step) {
-      $("#search-results-aaq-link").attr("href", window.location + "/form");
+      // Extract product slug from current URL path
+      var pathParts = window.location.pathname.split('/').filter(function (part) {
+        return part.length > 0;
+      });
+      // Look for the pattern /questions/new/{product_slug}
+      var questionsIndex = pathParts.indexOf('questions');
+      var newIndex = pathParts.indexOf('new');
+      if (questionsIndex !== -1 && newIndex !== -1 && newIndex === questionsIndex + 1 && newIndex + 1 < pathParts.length) {
+        var productSlug = pathParts[newIndex + 1];
+        if (productSlug && productSlug !== 'form') {
+          $("#search-results-aaq-link").attr("href", "/questions/new/" + productSlug + "/form");
+        }
+      }
     }
   }
 
@@ -141,12 +153,12 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     searchClient: search
   };
 
-  $(document).on('submit', '[data-instant-search="form"]', function(ev) {
+  $(document).on('submit', '[data-instant-search="form"]', function (ev) {
     ev.preventDefault();
     $(this).find('.searchbox').trigger('focus');
   });
 
-  $(document).on('input', '[data-instant-search="form"] input[type="search"]', function(ev) {
+  $(document).on('input', '[data-instant-search="form"] input[type="search"]', function (ev) {
     var $this = $(this);
     var $form = $this.closest('form');
     var formId = $form.attr('id');
@@ -171,7 +183,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
       InstantSearchSettings.hideContent();
 
-      $form.find('input').each(function() {
+      $form.find('input').each(function () {
         if ($(this).attr('type') === 'submit') {
           return true;
         }
@@ -181,7 +193,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
         if ($(this).attr('name') === 'q') {
           var value = $(this).val();
           // update the values in all search forms which aren't the one the user is typing into
-          $('[data-instant-search="form"]').not($form).each(function() {
+          $('[data-instant-search="form"]').not($form).each(function () {
             $(this).find('input[name="q"]').val(value);
           });
           return true;
@@ -189,7 +201,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
         params[$(this).attr('name')] = $(this).val();
       });
 
-      searchTimeout = setTimeout(function() {
+      searchTimeout = setTimeout(function () {
         search.unsetParam("page");
         search.setParams(params);
         let query = $this.val().trim();
@@ -216,7 +228,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     }
   });
 
-  $(document).on('click', '[data-instant-search="link"]', function(ev) {
+  $(document).on('click', '[data-instant-search="link"]', function (ev) {
     ev.preventDefault();
 
     var $this = $(this);
@@ -224,7 +236,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     var setParams = $this.data('instant-search-set-params');
     if (setParams) {
       setParams = setParams.split('&');
-      $(setParams).each(function() {
+      $(setParams).each(function () {
         var p = this.split('=');
         search.setParam(p.shift(), p.join('='));
       });
@@ -233,7 +245,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     var unsetParams = $this.data('instant-search-unset-params');
     if (unsetParams) {
       unsetParams = unsetParams.split('&');
-      $(unsetParams).each(function() {
+      $(unsetParams).each(function () {
         search.unsetParam(this);
       });
     }
@@ -250,7 +262,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
   });
 
   // 'Popular searches' feature
-  $(document).on('click', '[data-featured-search]', function(ev) {
+  $(document).on('click', '[data-featured-search]', function (ev) {
     var $mainInput = $('#support-search-masthead input[name=q]');
     var thisLink = $(this).text();
     $('#support-search-masthead input[name=q]').trigger('focus').val(thisLink);
@@ -258,7 +270,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     ev.preventDefault();
   });
 
-  $(document).on('click', '[data-mobile-nav-search-button]', function(ev) {
+  $(document).on('click', '[data-mobile-nav-search-button]', function (ev) {
     // If we hijack the layout of the page and the user clicks the button again.
     // assume they want to get rid of the search.
     if ($('.hidden-search-masthead').is(':visible')) {
@@ -284,7 +296,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     let state = e.type == "popstate" ? e.state : history.state;
     if (state?.query) {
       InstantSearchSettings.hideContent();
-      $('[data-instant-search="form"] input[name="q"]').each(function() {
+      $('[data-instant-search="form"] input[name="q"]').each(function () {
         $(this).val(state.query);
       });
       search.params = state.params;
