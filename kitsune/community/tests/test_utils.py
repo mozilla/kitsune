@@ -233,26 +233,41 @@ class DeletedContributionsTests(TestCase):
         four_days_ago = now - timedelta(days=4)
         five_days_ago = now - timedelta(days=5)
 
-        a1 = AnswerFactory(question__product=firefox, created=one_day_ago)
+        a1 = AnswerFactory(
+            question__product=firefox, created=one_day_ago, creator=ContributorFactory()
+        )
         q1 = a1.question
-        AnswerFactory(question=q1, is_spam=True, created=two_days_ago)
+        AnswerFactory(question=q1, created=two_days_ago)
+        AnswerFactory(
+            question=q1, is_spam=True, created=two_days_ago, creator=ContributorFactory()
+        )
         q1.solution = AnswerFactory(question=q1, creator=a1.creator, created=three_days_ago)
         q1.save()
         AnswerFactory(question=q1, creator=self.sumo_bot, created=four_days_ago)
+        AnswerFactory(question=q1, created=four_days_ago)
 
-        a2 = AnswerFactory(question__product=mobile, question__locale="de", created=one_day_ago)
+        a2 = AnswerFactory(
+            question__product=mobile,
+            question__locale="de",
+            created=one_day_ago,
+            creator=ContributorFactory(),
+        )
         q2 = a2.question
-        a3 = AnswerFactory(question=q2, created=two_days_ago)
-        AnswerFactory(question=q2, is_spam=True, created=three_days_ago)
+        AnswerFactory(question=q2, created=two_days_ago)
+        a3 = AnswerFactory(question=q2, created=two_days_ago, creator=ContributorFactory())
+        AnswerFactory(
+            question=q2, is_spam=True, created=three_days_ago, creator=ContributorFactory()
+        )
         AnswerFactory(question=q2, creator=self.sumo_bot, created=four_days_ago)
         AnswerFactory(question=q2, creator=a2.creator, created=four_days_ago)
+        AnswerFactory(question=q2, created=four_days_ago)
         q2.solution = AnswerFactory(question=q2, creator=a2.creator, created=five_days_ago)
         q2.save()
 
         q1.delete()
         q2.delete()
 
-        self.assertEqual(num_deleted_contributions(Answer), 6)
+        self.assertEqual(num_deleted_contributions(Answer), 10)
         self.assertEqual(num_deleted_contributions(Answer, contributor=a1.creator), 2)
         self.assertEqual(num_deleted_contributions(Answer, contributor=a2.creator), 3)
         self.assertEqual(num_deleted_contributions(Answer, contributor=a3.creator), 1)
@@ -266,34 +281,12 @@ class DeletedContributionsTests(TestCase):
             num_deleted_contributions(Answer, contributor=a3.creator, products__in=[firefox]), 0
         )
         self.assertEqual(num_deleted_contributions(Answer, metadata__is_solution=True), 2)
-        self.assertEqual(num_deleted_contributions(Answer, locale="de"), 4)
+        self.assertEqual(num_deleted_contributions(Answer, locale="de"), 6)
+        self.assertEqual(num_deleted_contributions(Answer, exclude_locale="en-US"), 6)
 
-        result = deleted_contribution_metrics_by_contributor(Answer)
-        self.assertEqual(
-            list(result.items()),
-            [
-                (a2.creator.id, (3, one_day_ago)),
-                (a1.creator.id, (2, one_day_ago)),
-                (a3.creator.id, (1, two_days_ago)),
-            ],
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, limit_to_contributor_groups=True
         )
-
-        result = deleted_contribution_metrics_by_contributor(Answer, limit=2)
-        self.assertEqual(
-            list(result.items()),
-            [(a2.creator.id, (3, one_day_ago)), (a1.creator.id, (2, one_day_ago))],
-        )
-
-        result = deleted_contribution_metrics_by_contributor(Answer, products=[mobile])
-        self.assertEqual(
-            list(result.items()),
-            [(a2.creator.id, (3, one_day_ago)), (a3.creator.id, (1, two_days_ago))],
-        )
-
-        result = deleted_contribution_metrics_by_contributor(Answer, products=[firefox])
-        self.assertEqual(list(result.items()), [(a1.creator.id, (2, one_day_ago))])
-
-        result = deleted_contribution_metrics_by_contributor(Answer, products=[firefox, mobile])
         self.assertEqual(
             list(result.items()),
             [
@@ -304,22 +297,61 @@ class DeletedContributionsTests(TestCase):
         )
 
         result = deleted_contribution_metrics_by_contributor(
-            Answer, locale="de", products=[firefox, mobile]
+            Answer, max_results=2, limit_to_contributor_groups=True
+        )
+        self.assertEqual(
+            list(result.items()),
+            [(a2.creator.id, (3, one_day_ago)), (a1.creator.id, (2, one_day_ago))],
+        )
+
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, products=[mobile], limit_to_contributor_groups=True
         )
         self.assertEqual(
             list(result.items()),
             [(a2.creator.id, (3, one_day_ago)), (a3.creator.id, (1, two_days_ago))],
         )
-        result = deleted_contribution_metrics_by_contributor(Answer, locale="en-US")
+
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, products=[firefox], limit_to_contributor_groups=True
+        )
         self.assertEqual(list(result.items()), [(a1.creator.id, (2, one_day_ago))])
 
-        result = deleted_contribution_metrics_by_contributor(Answer, locale="de")
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, products=[firefox, mobile], limit_to_contributor_groups=True
+        )
+        self.assertEqual(
+            list(result.items()),
+            [
+                (a2.creator.id, (3, one_day_ago)),
+                (a1.creator.id, (2, one_day_ago)),
+                (a3.creator.id, (1, two_days_ago)),
+            ],
+        )
+
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, locale="de", products=[firefox, mobile], limit_to_contributor_groups=True
+        )
+        self.assertEqual(
+            list(result.items()),
+            [(a2.creator.id, (3, one_day_ago)), (a3.creator.id, (1, two_days_ago))],
+        )
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, locale="en-US", limit_to_contributor_groups=True
+        )
+        self.assertEqual(list(result.items()), [(a1.creator.id, (2, one_day_ago))])
+
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, locale="de", limit_to_contributor_groups=True
+        )
         self.assertEqual(
             list(result.items()),
             [(a2.creator.id, (3, one_day_ago)), (a3.creator.id, (1, two_days_ago))],
         )
 
-        result = deleted_contribution_metrics_by_contributor(Answer, start=three_days_ago)
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, start=three_days_ago, limit_to_contributor_groups=True
+        )
         self.assertEqual(
             list(result.items()),
             [
@@ -329,14 +361,16 @@ class DeletedContributionsTests(TestCase):
             ],
         )
 
-        result = deleted_contribution_metrics_by_contributor(Answer, end=three_days_ago)
+        result = deleted_contribution_metrics_by_contributor(
+            Answer, end=three_days_ago, limit_to_contributor_groups=True
+        )
         self.assertEqual(
             list(result.items()),
             [(a2.creator.id, (2, four_days_ago)), (a1.creator.id, (1, three_days_ago))],
         )
 
         result = deleted_contribution_metrics_by_contributor(
-            Answer, start=three_days_ago, end=two_days_ago
+            Answer, start=three_days_ago, end=two_days_ago, limit_to_contributor_groups=True
         )
         self.assertEqual(
             list(result.items()),
@@ -347,7 +381,9 @@ class DeletedContributionsTests(TestCase):
         a1.creator.delete()
         a2.creator.delete()
         a3.creator.delete()
-        self.assertFalse(deleted_contribution_metrics_by_contributor(Answer))
+        self.assertFalse(
+            deleted_contribution_metrics_by_contributor(Answer, limit_to_contributor_groups=True)
+        )
 
     def test_for_revisions(self):
         rev1 = RevisionFactory(is_approved=True)
@@ -366,10 +402,12 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(num_deleted_contributions(Revision), 4)
         self.assertEqual(num_deleted_contributions(Revision, locale="de"), 1)
         self.assertEqual(num_deleted_contributions(Revision, locale="it"), 1)
+        self.assertEqual(num_deleted_contributions(Revision, exclude_locale="en-US"), 2)
         self.assertEqual(num_deleted_contributions(Revision, contributor=rev1.creator), 2)
         self.assertEqual(num_deleted_contributions(Document, contributor=rev1.creator), 1)
         self.assertEqual(num_deleted_contributions(Document, locale="en-US"), 1)
         self.assertEqual(num_deleted_contributions(Document, locale="it"), 1)
+        self.assertEqual(num_deleted_contributions(Document, exclude_locale="en-US"), 1)
 
         result = deleted_contribution_metrics_by_contributor(Revision)
         self.assertEqual(
@@ -406,6 +444,7 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(num_deleted_contributions(Document), 3)
         self.assertEqual(num_deleted_contributions(Document, contributor=rev1.creator), 1)
         self.assertEqual(num_deleted_contributions(Document, locale="en-US"), 3)
+        self.assertEqual(num_deleted_contributions(Document, exclude_locale="en-US"), 0)
 
         result = deleted_contribution_metrics_by_contributor(Document)
         self.assertEqual(

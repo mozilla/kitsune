@@ -17,14 +17,16 @@ from kitsune.users.models import ContributionAreas, User
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.wiki.models import Revision
 
+DEFAULT_PERIOD_DAYS = 90
+
 
 def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10, page=1):
     """Get the top Support Forum contributors."""
 
     if not start:
-        start = datetime.now() - timedelta(days=90)
+        start = datetime.now() - timedelta(days=DEFAULT_PERIOD_DAYS)
 
-    limit = count * 10
+    limit = min(count * 10, 1000)
 
     search = AnswerDocument.search()
 
@@ -48,9 +50,9 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
     if product:
         search = search.filter("term", question_product_id=product.id)
 
-    # our filters above aren't perfect, and don't only return answers from contributors
-    # so we need to collect more buckets than `count`, so we can hopefully find `count`
-    # number of contributors within
+    # The filters above don't restrict the results to contributors, so we need to
+    # collect more buckets than `count`, so we can hopefully find `count` number
+    # of contributors within the results.
     search.aggs.bucket(
         # create buckets for the `limit` most active users
         "contributions",
@@ -74,7 +76,8 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
         end=end,
         locale=locale,
         products=[product] if product else None,
-        limit=limit,
+        max_results=limit,
+        limit_to_contributor_groups=True,
     )
 
     if not (contribution_buckets or deletion_metrics_by_contributor):
@@ -180,8 +183,7 @@ def top_contributors_l10n(
             return cached
 
     if start is None:
-        # By default we go back 90 days.
-        start = date.today() - timedelta(days=90)
+        start = date.today() - timedelta(days=DEFAULT_PERIOD_DAYS)
 
     # Get the user ids and contribution count of the top contributors.
     revisions = Revision.objects.all()
@@ -256,18 +258,34 @@ def top_contributors_l10n(
     return results, total
 
 
-def num_deleted_contributions(model, **filters):
+def num_deleted_contributions(model, exclude_locale=None, **filters):
     """
     Returns the number of deleted model instances scoped by the filters.
     """
-    return DeletedContribution.objects.filter(
+    qs = DeletedContribution.objects.filter(
         content_type=ContentType.objects.get_for_model(model), **filters
-    ).count()
+    )
+    if exclude_locale:
+        qs = qs.exclude(locale=exclude_locale)
+
+    if any(key in filters for key in ("products__in", "contributor__groups__in")):
+        qs = qs.distinct()
+
+    return qs.count()
 
 
 def deleted_contribution_metrics_by_contributor(
-    model, start=None, end=None, locale=None, products=None, limit=None, **extra_filters
+    model,
+    start=None,
+    end=None,
+    locale=None,
+    products=None,
+    max_results=None,
+    limit_to_contributor_groups=False,
+    **extra_filters,
 ):
+    use_distinct = False
+
     filter_kwargs = {"content_type": ContentType.objects.get_for_model(model)}
 
     if start:
@@ -280,11 +298,23 @@ def deleted_contribution_metrics_by_contributor(
         filter_kwargs.update(locale=locale)
 
     if products:
+        use_distinct = True
         filter_kwargs.update(products__in=products)
+
+    if limit_to_contributor_groups:
+        use_distinct = True
+        filter_kwargs.update(
+            contributor__groups__in=Group.objects.filter(
+                name__in=ContributionAreas.get_groups(),
+            ),
+        )
 
     filter_kwargs.update(extra_filters)
 
     qs = DeletedContribution.objects.filter(**filter_kwargs)
+
+    if use_distinct:
+        qs = qs.distinct()
 
     results = (
         qs.values("contributor")
@@ -295,8 +325,8 @@ def deleted_contribution_metrics_by_contributor(
         .order_by("-total_deleted_contributions", "contributor")
     )
 
-    if limit:
-        results = results[:limit]
+    if max_results:
+        results = results[:max_results]
 
     return {
         row["contributor"]: (

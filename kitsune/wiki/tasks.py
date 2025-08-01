@@ -5,7 +5,6 @@ import waffle
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -16,7 +15,7 @@ from django.utils.translation import gettext as _
 from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 
-from kitsune.community.models import DeletedContribution
+from kitsune.community.utils import num_deleted_contributions
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import skip_if_read_only_mode
@@ -267,18 +266,18 @@ def _rebuild_kb_chunk(data):
 
 @shared_task
 @skip_if_read_only_mode
-def maybe_award_badge(badge_template: dict, year: int, user_id: int):
+def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
     """Award the specific badge to the user if they've earned it."""
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
-        return
+        return False
 
     badge = get_or_create_badge(badge_template, year)
 
     # If the user already has the badge, there is nothing else to do.
     if badge.is_awarded_to(user):
-        return
+        return False
 
     # Count the number of approved revisions in the appropriate locales
     # for the current year.
@@ -288,26 +287,33 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int):
         created__gte=date(year, 1, 1),
         created__lt=date(year + 1, 1, 1),
     )
-    qs_deleted = DeletedContribution.objects.filter(
-        contributor=user,
-        content_type=ContentType.objects.get_for_model(Revision),
-        contribution_timestamp__gte=date(year, 1, 1),
-        contribution_timestamp__lt=date(year + 1, 1, 1),
-        metadata__is_approved=True,
-    )
+
+    deleted_contributions_extra_kwargs: dict[str, str] = {}
+
     if badge_template["slug"] == WIKI_BADGES["kb-badge"]["slug"]:
         # kb-badge
         qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-        qs_deleted = qs_deleted.filter(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        deleted_contributions_extra_kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
     else:
         # l10n-badge
         qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-        qs_deleted = qs_deleted.exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        deleted_contributions_extra_kwargs.update(exclude_locale=settings.WIKI_DEFAULT_LANGUAGE)
+
+    num_contributions = qs.count() + num_deleted_contributions(
+        Revision,
+        contributor=user,
+        contribution_timestamp__gte=date(year, 1, 1),
+        contribution_timestamp__lt=date(year + 1, 1, 1),
+        metadata__is_approved=True,
+        **deleted_contributions_extra_kwargs,
+    )
 
     # If the count is 10 or higher, award the badge.
-    if (qs.count() + qs_deleted.count()) >= settings.BADGE_LIMIT_L10N_KB:
+    if num_contributions >= settings.BADGE_LIMIT_L10N_KB:
         badge.award_to(user)
         return True
+
+    return False
 
 
 @shared_task

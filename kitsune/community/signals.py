@@ -55,7 +55,10 @@ def record_deleted_revision_contribution(sender, instance, **kwargs):
             contributor=instance.creator,
             contribution_timestamp=instance.created,
             locale=instance.document.locale,
-            metadata={"is_approved": instance.is_approved},
+            metadata={
+                "is_approved": instance.is_approved,
+                "document_title": instance.document.title,
+            },
         )
         dc.products.set(instance.document.original.products.all())
 
