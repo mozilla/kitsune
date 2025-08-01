@@ -15,3 +15,13 @@
     </ul>
   </nav>
 {%- endmacro %}
+
+{% macro user_labels(user, show_question_owner=False, question_creator=None) %}
+  {% if show_question_owner and question_creator and user == question_creator %}
+    <span class="user-title">{{_('Question owner')}}</span>
+  {% endif %}
+  
+  {% if user.profile.is_mozilla_staff %}
+    <span class="user-title">{{_('Mozilla Staff')}}</span>
+  {% endif %}
+{% endmacro %}

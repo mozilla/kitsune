@@ -1,5 +1,5 @@
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
-
+{% from "users/includes/macros.html" import user_labels %}
 
 
 <section class="avatar-row">
@@ -21,6 +21,7 @@
             </span>
             {% endwith %}
           {% endif %}
+          {{ user_labels(post.creator) }}
         </a>
       </div>
       <span class="asked-on">

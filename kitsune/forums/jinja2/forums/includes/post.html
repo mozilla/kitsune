@@ -1,4 +1,5 @@
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
+{% from "users/includes/macros.html" import user_labels %}
 
 
 <section class="avatar-row">
@@ -18,6 +19,7 @@
               {{ ngettext('1 post', '{0} posts', post.author_post_count)|f(post.author_post_count) }}
             </span>
           {% endif %}
+          {{ user_labels(post.author) }}
         </a>
 
       </div>

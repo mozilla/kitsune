@@ -20,6 +20,25 @@ class FXAAuthBackendTests(TestCase):
         """Setup class."""
         self.backend = FXAAuthBackend()
 
+    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com", "mozillafoundation.org"])
+    def test_is_mozilla_domain_email(self):
+        """Test the is_mozilla_domain_email utility function."""
+        from kitsune.users.auth import is_mozilla_domain_email
+
+        # Test Mozilla domain emails
+        self.assertTrue(is_mozilla_domain_email("user@mozilla.org"))
+        self.assertTrue(is_mozilla_domain_email("user@mozilla.com"))
+        self.assertTrue(is_mozilla_domain_email("user@mozillafoundation.org"))
+
+        # Test non-Mozilla domain emails
+        self.assertFalse(is_mozilla_domain_email("user@example.com"))
+        self.assertFalse(is_mozilla_domain_email("user@gmail.com"))
+
+        # Test edge cases
+        self.assertFalse(is_mozilla_domain_email(""))
+        self.assertFalse(is_mozilla_domain_email(None))
+        self.assertFalse(is_mozilla_domain_email("invalid-email"))
+
     @patch("kitsune.users.auth.messages")
     def test_create_new_profile(self, message_mock):
         """Test that a new profile is created through Mozilla accounts."""
@@ -242,3 +261,106 @@ class FXAAuthBackendTests(TestCase):
                 " is already linked in another profile.",
             )
             self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")
+
+    @patch("kitsune.users.auth.messages")
+    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
+    def test_create_user_with_mozilla_domain_email(self, message_mock):
+        """Test that is_mozilla_staff is set to True for Mozilla domain emails."""
+        claims = {
+            "email": "user@mozilla.org",
+            "uid": "my_unique_fxa_id",
+            "avatar": "http://example.com/avatar",
+            "locale": "en-US",
+            "displayName": "Mozilla User",
+        }
+
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        users = User.objects.all()
+        self.assertEqual(users.count(), 0)
+        self.backend.create_user(claims)
+        users = User.objects.all()
+        self.assertEqual(users.count(), 1)
+        self.assertTrue(users[0].profile.is_mozilla_staff)
+        message_mock.success.assert_called()
+
+    @patch("kitsune.users.auth.messages")
+    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
+    def test_create_user_with_non_mozilla_domain_email(self, message_mock):
+        """Test that is_mozilla_staff is set to False for non-Mozilla domain emails."""
+        claims = {
+            "email": "user@example.com",
+            "uid": "my_unique_fxa_id",
+            "avatar": "http://example.com/avatar",
+            "locale": "en-US",
+            "displayName": "Regular User",
+        }
+
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        users = User.objects.all()
+        self.assertEqual(users.count(), 0)
+        self.backend.create_user(claims)
+        users = User.objects.all()
+        self.assertEqual(users.count(), 1)
+        self.assertFalse(users[0].profile.is_mozilla_staff)
+        message_mock.success.assert_called()
+
+    @patch("kitsune.users.auth.messages")
+    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
+    def test_update_user_email_to_mozilla_domain(self, message_mock):
+        """Test that is_mozilla_staff is updated when email changes to Mozilla domain."""
+        user = UserFactory.create(
+            profile__fxa_uid="my_unique_fxa_id",
+            email="user@example.com",
+            profile__is_fxa_migrated=True,
+            profile__is_mozilla_staff=False,
+        )
+        claims = {"uid": "my_unique_fxa_id", "email": "user@mozilla.org", "subscriptions": "[]"}
+        self.backend.update_user(user, claims)
+        user = User.objects.get(id=user.id)
+        self.assertEqual(user.email, "user@mozilla.org")
+        self.assertTrue(user.profile.is_mozilla_staff)
+        assert not message_mock.info.called
+
+    @patch("kitsune.users.auth.messages")
+    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
+    def test_update_user_email_from_mozilla_domain(self, message_mock):
+        """Test that is_mozilla_staff is updated when email changes from Mozilla domain."""
+        user = UserFactory.create(
+            profile__fxa_uid="my_unique_fxa_id",
+            email="user@mozilla.org",
+            profile__is_fxa_migrated=True,
+            profile__is_mozilla_staff=True,
+        )
+        claims = {"uid": "my_unique_fxa_id", "email": "user@example.com", "subscriptions": "[]"}
+        self.backend.update_user(user, claims)
+        user = User.objects.get(id=user.id)
+        self.assertEqual(user.email, "user@example.com")
+        self.assertFalse(user.profile.is_mozilla_staff)
+        assert not message_mock.info.called
+
+    @patch("kitsune.users.auth.messages")
+    @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
+    def test_fxa_migration_sets_mozilla_staff_flag(self, message_mock):
+        """Test that is_mozilla_staff is set during FxA migration."""
+        user = UserFactory.create(
+            email="user@mozilla.org",
+            profile__is_fxa_migrated=False,
+            profile__is_mozilla_staff=False,
+        )
+        claims = {"uid": "my_unique_fxa_id", "email": "user@mozilla.org", "subscriptions": "[]"}
+
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
+        self.backend.request = request_mock
+
+        self.backend.update_user(user, claims)
+        user = User.objects.get(id=user.id)
+        self.assertTrue(user.profile.is_fxa_migrated)
+        self.assertTrue(user.profile.is_mozilla_staff)
+        message_mock.info.assert_called_with(request_mock, "fxa_notification_updated")
