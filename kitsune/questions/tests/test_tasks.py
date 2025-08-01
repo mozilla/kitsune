@@ -2,10 +2,13 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.db.models.signals import post_save
+from django.test import override_settings
 
+from kitsune.kbadge.utils import get_or_create_badge
+from kitsune.questions.badges import QUESTIONS_BADGES
 from kitsune.questions.models import QuestionVote, send_vote_update_task
 from kitsune.questions.tasks import cleanup_old_spam, update_question_vote_chunk
-from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory
+from kitsune.questions.tests import AnswerFactory, QuestionFactory, QuestionVoteFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -62,3 +65,27 @@ class SpamCleanupTaskTestCase(TestCase):
         self.assertTrue(mock_log.info.called)
         # Should have start and completion log messages
         self.assertEqual(mock_log.info.call_count, 2)
+
+
+class TestMaybeAwardBadge(TestCase):
+    @override_settings(BADGE_LIMIT_SUPPORT_FORUM=4)
+    def test_maybe_award_badge_for_kb(self):
+        badge = get_or_create_badge(
+            QUESTIONS_BADGES["answer-badge"],
+            year=datetime.now().year,
+        )
+
+        a1 = AnswerFactory()
+        self.assertFalse(badge.is_awarded_to(a1.creator))
+
+        a2 = AnswerFactory(creator=a1.creator)
+        self.assertFalse(badge.is_awarded_to(a1.creator))
+
+        a3 = AnswerFactory(creator=a1.creator)
+        self.assertFalse(badge.is_awarded_to(a1.creator))
+
+        a2.delete()
+        a3.delete()
+
+        AnswerFactory(creator=a1.creator)
+        self.assertTrue(badge.is_awarded_to(a1.creator))

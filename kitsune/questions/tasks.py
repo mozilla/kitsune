@@ -8,6 +8,7 @@ from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce, Now
 from sentry_sdk import capture_exception
 
+from kitsune.community.utils import num_deleted_contributions
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 
@@ -79,7 +80,7 @@ def update_answer_pages(question_id: int):
 
 
 @shared_task
-def maybe_award_badge(badge_template: dict, year: int, user_id: int):
+def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
 
@@ -87,23 +88,30 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int):
         user = User.objects.get(id=user_id)
     except User.DoesNotExist as err:
         capture_exception(err)
-        return
+        return False
 
     # If the user already has the badge, there is nothing else to do.
     if badge.is_awarded_to(user):
-        return
+        return False
 
     # Count the number of replies tweeted in the current year.
     from kitsune.questions.models import Answer
 
-    qs = Answer.objects.filter(
+    num_contributions = Answer.objects.filter(
         creator=user, created__gte=date(year, 1, 1), created__lt=date(year + 1, 1, 1)
+    ).count() + num_deleted_contributions(
+        Answer,
+        contributor=user,
+        contribution_timestamp__gte=date(year, 1, 1),
+        contribution_timestamp__lt=date(year + 1, 1, 1),
     )
 
     # If the count is at or above the limit, award the badge.
-    if qs.count() >= settings.BADGE_LIMIT_SUPPORT_FORUM:
+    if num_contributions >= settings.BADGE_LIMIT_SUPPORT_FORUM:
         badge.award_to(user)
         return True
+
+    return False
 
 
 @shared_task

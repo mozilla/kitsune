@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
 from sentry_sdk import capture_exception
 
+from kitsune.community.utils import num_deleted_contributions
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import ModerationAction
 from kitsune.products.models import Product, Topic
@@ -37,12 +38,16 @@ def num_questions(user):
 
 def num_answers(user):
     """Returns the number of answers a user has."""
-    return Answer.objects.filter(creator=user).count()
+    return Answer.objects.filter(creator=user).count() + num_deleted_contributions(
+        Answer, contributor=user
+    )
 
 
 def num_solutions(user):
     """Returns the number of solutions a user has."""
-    return Question.objects.filter(solution__creator=user).count()
+    return Question.objects.filter(solution__creator=user).count() + num_deleted_contributions(
+        Answer, contributor=user, metadata__is_solution=True
+    )
 
 
 def mark_content_as_spam(user, by_user):

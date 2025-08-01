@@ -28,7 +28,6 @@ from kitsune.llm.tasks import question_classifier
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AAQConfigManager, AnswerManager, QuestionManager
-from kitsune.questions.tasks import update_answer_pages, update_question_votes
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
@@ -967,6 +966,8 @@ class Answer(AAQBase):
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent question info."""
+        from kitsune.questions.tasks import update_answer_pages
+
         question = Question.objects.get(pk=self.question.id)
         if question.last_answer == self:
             answers = question.answers.all().order_by("-created")
@@ -1126,6 +1127,8 @@ class VoteMetadata(ModelBase):
 
 
 def send_vote_update_task(**kwargs):
+    from kitsune.questions.tasks import update_question_votes
+
     if kwargs.get("created"):
         q = kwargs.get("instance").question
         update_question_votes.delay(q.id)

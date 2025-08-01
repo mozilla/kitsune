@@ -37,6 +37,7 @@ from sentry_sdk import capture_exception, capture_message
 
 from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
+from kitsune.community.utils import num_deleted_contributions
 from kitsune.forums.models import Post, Thread
 from kitsune.kbadge.models import Award
 from kitsune.kbforums.models import Post as KBForumPost
@@ -60,7 +61,7 @@ from kitsune.users.utils import (
     delete_user_pipeline,
     get_oidc_fxa_setting,
 )
-from kitsune.wiki.models import user_documents, user_redirects
+from kitsune.wiki.models import Document, user_documents, user_redirects
 
 
 @logout_required
@@ -144,7 +145,10 @@ def profile(request, username):
                 "num_questions": num_questions(user_profile.user),
                 "num_answers": num_answers(user_profile.user),
                 "num_solutions": num_solutions(user_profile.user),
-                "num_documents": user_documents(user_profile.user, viewer=request.user).count(),
+                "num_documents": (
+                    user_documents(user_profile.user, viewer=request.user).count()
+                    + num_deleted_contributions(Document, contributor=user_profile.user)
+                ),
             }
         )
 
