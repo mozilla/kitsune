@@ -1,4 +1,5 @@
 {
+  "close_account_page": "https://support.allizom.org/en-US/users/close_account",
   "valid_user_edit": {
     "username": "modifiedUsernameAutoTestt",
     "display_name": "Modified display name",

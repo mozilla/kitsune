@@ -98,3 +98,6 @@ class ForumDiscussionsPage(BasePage):
 
     def get_all_thread_content_from_search_results(self) -> list[str]:
         return self._get_text_of_elements(self.search_results_body)
+
+    def get_last_post_by_text(self, thread_name: str) -> str:
+        return self._get_text_of_element(self.last_post_by(thread_name))

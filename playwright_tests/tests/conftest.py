@@ -4,11 +4,12 @@ import warnings
 import requests
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, Error
+from requests import JSONDecodeError
 from slugify import slugify
-
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from playwright._impl._errors import TimeoutError
 
 
 @pytest.fixture(autouse=True)
@@ -34,15 +35,17 @@ def navigate_to_homepage(page: Page):
             page = response.request.frame.page
             print("502 error encountered. Reloading the page after 5 seconds.")
             page.wait_for_timeout(5000)
-            page.reload()
+            try:
+                utilities.refresh_page()
+            except TimeoutError:
+                print("TimeoutError encountered after reload.")
 
     page.context.on("response", handle_502_error)
 
     # Navigate to the SUMO stage homepage.
-    utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+    page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
 
     return page
-
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call) -> None:
@@ -96,7 +99,6 @@ def create_user_factory(page: Page, request):
         This helper function which creates a test user account.
 
         Args:
-            page (Page): The page object
             username (str): The username of the test user account
             groups (list[str]): The groups to which the user belongs
             permissions (list[str]): The permissions of the user
@@ -119,11 +121,16 @@ def create_user_factory(page: Page, request):
             "User-Agent": Utilities.user_agent
         }
 
-        response = requests.post(url=endpoint, json=request_body, headers=additional_headers)
-
-        created_users.append(username)
-        print(response.json())
-        return response.json()
+        for attempt in range(3):
+            response = requests.post(url=endpoint, json=request_body, headers=additional_headers)
+            try:
+                data = response.json()
+                created_users.append(username)
+                print(f"User creation API responded with: {data}")
+                return data
+            except (ValueError, JSONDecodeError) as e:
+                print("The user creation API failed. Retrying")
+                utilities.wait_for_given_timeout(5000)
 
     def _cleanup():
         endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "users/api/trigger-delete"
@@ -134,9 +141,7 @@ def create_user_factory(page: Page, request):
                 "User-Agent": Utilities.user_agent
             }
             request_body = {"username": username}
-
-            response = request.post(url=endpoint, json=request_body, headers=additional_headers)
-            print(response.json())
+            requests.post(url=endpoint, json=request_body, headers=additional_headers)
 
 
     request.addfinalizer(_cleanup)

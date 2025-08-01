@@ -17,6 +17,9 @@ class KBArticleShowHistoryPage(BasePage):
         self.l10n_modal = page.locator("div[class='mzp-c-modal-window']")
         self.revision_editor = lambda revision_id, username: page.locator(
             f"tr#{revision_id}").get_by_role("link").filter(has_text=username)
+        self.revision_creator = lambda revision_id: page.locator(
+            f"//tr[@id='{revision_id}']//td[@class='creator']/a"
+        )
         self.ready_for_localization_button = lambda revision_id: page.locator(
             f"tr#{revision_id} td[class='l10n'] a")
         self.ready_for_localization_status = lambda revision_id: page.locator(
@@ -131,6 +134,9 @@ class KBArticleShowHistoryPage(BasePage):
     def click_on_a_revision_date(self, revision_id):
         self._click(self.revision_date(revision_id))
 
+    def is_revision_displayed(self, revision_id) -> bool:
+        return self._is_element_visible(self.revision(revision_id))
+
     def get_revision_time(self, revision_id) -> str:
         return self._get_text_of_element(self.revision_time(revision_id))
 
@@ -202,3 +208,7 @@ class KBArticleShowHistoryPage(BasePage):
 
     def get_revision_significance(self, revision_id: str) -> str:
         return self._get_text_of_element(self.revision_significance(revision_id)).strip()
+
+    def get_revision_creator(self, revision_id: str) -> str:
+        """Get the revision creator based on the revision id."""
+        return self._get_element_inner_text_from_page(self.revision_creator(revision_id))

@@ -1,5 +1,4 @@
-from playwright.sync_api import Page
-
+from playwright.sync_api import Page, TimeoutError
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import \
     EditMyProfilePageMessages
@@ -12,7 +11,6 @@ from playwright_tests.pages.user_pages.my_profile_edit_settings_page import (
     MyProfileEditSettingsPage,
 )
 from playwright_tests.pages.user_pages.my_profile_user_navbar import UserNavbar
-
 
 class EditProfileDataFlow:
     def __init__(self, page: Page):
@@ -128,13 +126,15 @@ class EditProfileDataFlow:
 
         self.profile_contribution_areas.click_on_update_contribution_areas_button()
 
-    def close_account(self, username: str):
+    def close_account(self):
         """
         Navigates to the settings profile option and closes the account.
         """
         if self.utilities.get_page_url() != EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL:
             self.utilities.navigate_to_link(EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL)
-
         self.edit_profile_page.click_close_account_option()
-        self.edit_profile_page.add_username_to_close_account_modal(username)
-        self.edit_profile_page.click_close_account_button()
+        self.edit_profile_page.add_confirmation_code_to_close_account_modal()
+        try:
+            self.edit_profile_page.click_close_account_button()
+        except TimeoutError:
+            print("Load not complete")

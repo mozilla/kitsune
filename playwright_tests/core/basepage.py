@@ -150,6 +150,10 @@ class BasePage:
                 else:
                     raise Exception("Max retries exceeded. Could not interact with the checkbox")
 
+    def _is_element_disabled(self, locator: Locator) -> bool:
+        """Return whether the locator is disabled or not"""
+        return locator.is_disabled()
+
     def _click(self, element: str | Locator | ElementHandle, expected_locator=None,
                expected_url=None, with_force=False, retries=3, delay=2000):
         """
@@ -170,7 +174,7 @@ class BasePage:
                 if expected_locator:
                     self._wait_for_locator(expected_locator, timeout=3000)
                 if expected_url:
-                    self.page.wait_for_url(expected_url, timeout=3000)
+                    self.page.wait_for_url(expected_url, timeout=10000)
                 break
             except PlaywrightTimeoutError:
                 if expected_locator:

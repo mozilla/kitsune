@@ -26,14 +26,14 @@ class MessagingSystemFlows:
             recipients = recipient_username if isinstance(recipient_username, list) else [
                 recipient_username]
             for recipient in recipients:
-                self.new_message_page.type_into_new_message_to_input_field(recipient)
+                self.new_message_page.type_into_to_input_field(recipient)
                 self.new_message_page.click_on_a_searched_user(recipient)
 
         if message_body:
-            self.new_message_page.fill_into_new_message_body_textarea(message_body)
+            self.new_message_page.fill_into_message_textarea(message_body)
 
         if submit_message:
-            self.new_message_page.click_on_new_message_send_button(
+            self.new_message_page.click_on_send_button(
                 expected_url=expected_url)
 
     def delete_message_flow(self, username='', excerpt='', delete_message=True,
@@ -56,9 +56,9 @@ class MessagingSystemFlows:
 
         if from_inbox_list and (username or excerpt):
             if username:
-                self.inbox_page.click_on_inbox_message_delete_button_by_username(username)
+                self.inbox_page.click_on_message_delete_button_by_username(username)
             else:
-                self.inbox_page.click_on_inbox_message_delete_button_by_excerpt(excerpt)
+                self.inbox_page.click_on_message_delete_button_by_excerpt(excerpt)
 
         if delete_message:
             self.sent_message_page.click_on_delete_page_delete_button(expected_url=expected_url)

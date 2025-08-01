@@ -154,6 +154,16 @@ class ForumThreadPage(BasePage):
         """
         return self._get_text_of_element(self.modified_by(post_id))
 
+    def is_modified_by_section_displayed(self, post_id: str) -> bool:
+        """
+            Return whether the modified by section is displayed or not.
+            Args:
+                post_id (str): The ID of the post.
+            Returns:
+                bool: If the locator is displayed or not
+        """
+        return self._is_element_visible(self.modified_by(post_id))
+
     def is_edit_thread_title_option_visible(self) -> bool:
         """
             Check if the edit thread title option is visible.
@@ -472,3 +482,23 @@ class ForumThreadPage(BasePage):
                 str: The thread post quote text.
         """
         return self._get_text_of_element(self.quoted_thread_post_quote(post_id))
+
+    def get_post_author(self, post_id: str) -> str:
+        """
+         Get the author of a kb thread post.
+         Args:
+             post_id (str): The ID of the post.
+            Returns:
+                str: The author of the post.
+        """
+        return self._get_text_of_element(self.post_author(post_id))
+
+    def get_post_content(self, post_id: str) -> str:
+        """
+        Get the content of the thread post.
+        Args:
+            post_id (str): The ID of the post.
+        Returns:
+            str: The content of the post.
+        """
+        return self._get_text_of_element(self.post_content(post_id)).strip()

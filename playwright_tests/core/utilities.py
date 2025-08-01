@@ -12,13 +12,13 @@ from datetime import datetime
 from dateutil import parser
 from dateutil.tz import tz
 from nltk import SnowballStemmer, WordNetLemmatizer
-from playwright.sync_api import Page, Locator
+from playwright.sync_api import Page, Locator, Response
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.test_data.search_synonym import SearchSynonyms
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, Error as PlaywrightError
 
 
 class Utilities:
@@ -173,22 +173,28 @@ class Utilities:
         """
         self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
 
-    def navigate_to_link(self, link: str):
+    def navigate_to_link(self, link: str) -> Response:
         """
         This helper function navigates to a given link and awaits for the dom load to finish.
         If a response error is encountered we are performing a page refresh.
 
         Args:
             link (str): The link to navigate to
+        Returns:
+            Response.
         """
-        with self.page.expect_navigation() as navigation_info:
-            self.page.goto(link)
-        response = navigation_info.value
-        self.wait_for_dom_to_load()
+        try:
+            response = self.page.goto(link, wait_until="domcontentloaded")
+            if response is not None and response.status is not None:
+                if response.status >= 500:
+                    self.refresh_page()
+            return response
+        except PlaywrightError as e:
+            if "net::ERR_ABORTED" in str(e) or "frame was detached" in str(e):
+                print(f"Ignored benign navigation error to {link}: {e}")
+            else:
+                raise
 
-        if response is not None and response.status is not None:
-            if response.status >= 400:
-                self.refresh_page()
 
     def upload_file(self, element: Locator, path_to_file: str):
         """This helper function uploads the test-image.png file to a given file element chooser.
@@ -338,25 +344,30 @@ class Utilities:
             with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
                 cookies_data = json.load(file)
             self.page.context.add_cookies(cookies=cookies_data['cookies'])
+            self.refresh_page()
             if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
                 self.start_existing_session(session_file_name=session_file_name, tried_once=True)
         elif cookies is not None:
             self.page.context.add_cookies(cookies=cookies['cookies'])
+            self.refresh_page()
             if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
                 self.start_existing_session(cookies=cookies, tried_once=True)
 
-        # A SUMO action needs to be done in order to have the page refreshed with the correct
-        # session
-        self.refresh_page()
 
     def refresh_page(self):
         """
         This helper function performs a page reload.
         """
         try:
-            self.page.reload(wait_until="networkidle")
-        except PlaywrightTimeoutError:
-            print("Network idle state was not reached. Continuing...")
+            self.page.reload()
+            self.wait_for_dom_to_load()
+        except PlaywrightError as e:
+            msg = str(e)
+            if "net::ERR_ABORTED" in msg or "frame was detached" in msg:
+                print(f"Ignored benign reload error: {msg}")
+                self.wait_for_dom_to_load()
+            else:
+                raise
 
     def get_user_agent(self) -> str:
         """

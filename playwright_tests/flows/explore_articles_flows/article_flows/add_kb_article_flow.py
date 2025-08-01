@@ -265,11 +265,14 @@ class AddKbArticleFlow:
                 }
 
     def kb_article_creation_via_api(self, page: Page, approve_revision=False, is_template=False,
-                                    product=None, topic=None, category=None) -> dict[str, Any]:
+                                    product=None, topic=None, category=None, ready_for_l10n=False,
+                                    significance_type='') -> dict[str, Any]:
         """
         Create a new KB article via API.
         :param page: Page object.
         :param approve_revision: Approve the first revision of the article.
+        :param ready_for_l10n: Mark the revision as ready for localization.
+        :param significance_type: Add the significance type of the revision.
         :param is_template: Create a KB template.
         :param product: Product ID.
         :param topic: Topic ID.
@@ -314,7 +317,8 @@ class AddKbArticleFlow:
 
         first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
         if approve_revision:
-            self.approve_kb_revision(revision_id=first_revision_id)
+            self.approve_kb_revision(revision_id=first_revision_id, ready_for_l10n=ready_for_l10n)
+
 
         return {"article_title": kb_title,
                 "article_content": kb_article_test_data["article_content"],

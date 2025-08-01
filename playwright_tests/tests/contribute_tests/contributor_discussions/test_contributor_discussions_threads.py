@@ -872,7 +872,7 @@ def test_private_message_option(page: Page, create_user_factory):
                             "is displayed inside the inbox section"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_inbox_option()
-        expect(sumo_pages.inbox_page._inbox_message_based_on_excerpt(message)).to_be_visible()
+        expect(sumo_pages.inbox_page.get_inbox_message_locator_based_on_excerpt(message)).to_be_visible()
 
     with check, allure.step("Navigating back to the thread, signing out and verifying that the "
                             "'Private message' option redirects the user to the auth page"):
