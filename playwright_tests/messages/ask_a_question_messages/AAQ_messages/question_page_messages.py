@@ -6,6 +6,8 @@ class QuestionPageMessages:
     LOCKED_THREAD_BANNER = "This thread was closed. Please ask a new question if you need help."
     ARCHIVED_THREAD_BANNER = ("This thread was archived. Please ask a new question if you need "
                               "help.")
+    LOCKED_AND_ARCHIVED_BANNER = ("This thread was closed and archived. Please ask a new question"
+                                  " if you need help.")
     CHOSEN_SOLUTION_BANNER = "Thank you for choosing a solution!"
     CHOSEN_SOLUTION_CARD = "Chosen solution"
     CHOSEN_SOLUTION_REPLY_CARD = "Chosen Solution"

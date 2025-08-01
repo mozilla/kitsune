@@ -286,7 +286,7 @@ class BasePage:
         self.wait_for_dom_to_load()
         return locator.is_checked()
 
-    def _wait_for_locator(self, locator: Locator, timeout=3500):
+    def _wait_for_locator(self, locator: Locator, timeout=3500, raise_exception=False):
         """
         This helper function waits for a given element locator to be visible based on a given
         timeout.
@@ -295,6 +295,8 @@ class BasePage:
             locator.wait_for(state="visible", timeout=timeout)
         except PlaywrightTimeoutError:
             print(f"{locator} is not displayed")
+            if raise_exception:
+                raise
 
     def _move_mouse_to_location(self, x: int, y: int):
         """

@@ -158,7 +158,7 @@ class MyProfilePage(BasePage):
         return self._get_text_of_element(self.questions_link)
 
     def is_question_displayed(self) -> bool:
-        """Check if the question is displayed."""
+        """Check if the question link is displayed."""
         return self._is_element_visible(self.questions_link)
 
     def get_my_profile_solutions_text(self) -> str:
@@ -192,6 +192,10 @@ class MyProfilePage(BasePage):
     def click_my_profile_answers_link(self):
         """Click on the profile answers link."""
         self._click(self.answers_link)
+
+    def is_my_profile_answers_link_visible(self) -> bool:
+        """Verifying if the profile answers link option is visible."""
+        return self._is_element_visible(self.answers_link)
 
     def click_on_my_profile_questions_link(self):
         """Click on the profile questions link."""

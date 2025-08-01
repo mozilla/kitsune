@@ -289,7 +289,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template,
 
 
 # C2466524
-@pytest.mark.kbRestrictedVisibility1
+@pytest.mark.kbRestrictedVisibility
 @pytest.mark.parametrize("is_template", [False, True])
 def test_kb_restricted_visibility_media_gallery(page: Page, is_template,
                                                 create_user_factory):

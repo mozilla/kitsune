@@ -1,9 +1,14 @@
+import random
 import time
 import allure
 import pytest
 from playwright.sync_api import Page
+from pytest_check import check
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
+    QuestionPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
+from playwright_tests.messages.search_page_messages import SearchPageMessage
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -157,13 +162,15 @@ def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Pa
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
 
 
+# C1329227, C1492391
 @pytest.mark.smokeTest
 @pytest.mark.searchTests
-def test_searchbar_functionality_on_aaq_page(page: Page, create_user_factory):
+def test_searchbar_functionality_and_search_filters(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
     test_user = create_user_factory()
+    search_page_messages = SearchPageMessage()
 
     with allure.step("Submitting a new Firefox AAQ question and using the searchbar to search for "
                      "a particular kb Article and for the submitted question"):
@@ -177,6 +184,7 @@ def test_searchbar_functionality_on_aaq_page(page: Page, create_user_factory):
             aaq_question_test_data["valid_firefox_question"]["question_body"],
             expected_locator=sumo_pages.question_page.questions_header
         )
+        question_tile = question_info["aaq_subject"]
 
     with allure.step("Leaving a question reply so the question will be returned in search "
                      "results"):
@@ -187,23 +195,102 @@ def test_searchbar_functionality_on_aaq_page(page: Page, create_user_factory):
         utilities.wait_for_given_timeout(65000)
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 
-    with allure.step("Verifying that the question is successfully returned"):
+    product_filter = sumo_pages.search_page.get_the_highlighted_side_nav_item()
+
+    with check, allure.step("Verifying that the question is successfully returned"):
         assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
 
-    with allure.step("Verifying that the filter by product is applied to the correct product"):
-        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+    with check, allure.step("Verifying that the filter by product is applied to the correct "
+                            "product"):
+        assert product_filter == "All Products"
+
+    with check, allure.step("Verifying that the 'View All' filter is applied"):
+        result_count = utilities.number_extraction_from_string(
+            sumo_pages.search_page.get_search_results_header())
+        assert sumo_pages.search_page.get_doctype_filter() == "View All"
+        assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
+                expected_found_search_results_message(search_results_count=str(result_count),
+                                                      search_string=test_article_name,
+                                                      product_filter_option=product_filter))
+
+    with check, allure.step("Clicking on the 'Help Articles only' option and verifying that:"
+                            "1.The correct search results message is displayed."
+                            "2.The correct doctype filter is applied."
+                            "3.The article is successfully returned inside the search results."):
+        sumo_pages.search_page.click_on_help_articles_only_doctype_filter()
+        utilities.wait_for_given_timeout(2000)
+        result_count = utilities.number_extraction_from_string(
+            sumo_pages.search_page.get_search_results_header())
+        assert sumo_pages.search_page.get_doctype_filter() == "Help Articles Only"
+        assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
+                expected_found_search_results_message(search_results_count=str(result_count),
+                                                      search_string=test_article_name,
+                                                      product_filter_option=product_filter))
+        assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
+
+    with check, allure.step("Clicking on the 'Community Discussions Only' and verifying that:"
+                            "1. The correct search results message is displayed."
+                            "2. The correct doctype filter is applied."
+                            "3. The article is not returned inside the search results."):
+        sumo_pages.search_page.click_on_community_discussions_only_doctype_filter()
+        utilities.wait_for_given_timeout(2000)
+        assert sumo_pages.search_page.get_doctype_filter() == "Community Discussion Only"
+        assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
+                expected_no_results_search_results_message(search_string=test_article_name,
+                                                           product_filter_option=product_filter))
+        assert (test_article_name not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
-        sumo_pages.search_page.fill_into_searchbar(question_info["aaq_subject"], is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(question_tile, is_sidebar=True)
+        utilities.wait_for_given_timeout(2000)
+        result_count = utilities.number_extraction_from_string(
+            sumo_pages.search_page.get_search_results_header())
 
-    with allure.step("Verifying that the question is successfully returned"):
-        assert (question_info["aaq_subject"] in sumo_pages.search_page.
+    with check, allure.step("Verifying that:"
+                            "1. The question is successfully returned inside the search results."
+                            "2. The correct doctype filter is applied."
+                            "3. The correct search results message is returned."):
+        assert (question_tile in sumo_pages.search_page.
                 get_all_search_results_article_titles())
-
-    with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
-    sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
+        assert sumo_pages.search_page.get_doctype_filter() == "Community Discussion Only"
+        assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
+                expected_found_search_results_message(search_results_count=str(result_count),
+                                                      search_string=question_tile,
+                                                      product_filter_option=product_filter))
+
+    with check, allure.step("Clicking on the 'Help Articles Only' doctype filter and verifying:"
+                            "1. The question is not returned inside the search results."
+                            "2. The correct doctype filter is applied."
+                            "3. The correct search results message is returned."):
+        sumo_pages.search_page.click_on_help_articles_only_doctype_filter()
+        utilities.wait_for_given_timeout(2000)
+        assert (question_tile not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+        assert sumo_pages.search_page.get_doctype_filter() == "Help Articles Only"
+        assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
+                expected_no_results_search_results_message(search_string=question_tile,
+                                                           product_filter_option=product_filter))
+
+    with check, allure.step("Clicking on the 'View All' doctype filter and verifying:"
+                            "1. The question is successfully returned inside the search results."
+                            "2. The correct doctype filter is applied."
+                            "3. The correct search results message is returned."):
+        sumo_pages.search_page.click_on_view_all_doctype_filter()
+        utilities.wait_for_given_timeout(2000)
+        result_count = utilities.number_extraction_from_string(
+            sumo_pages.search_page.get_search_results_header())
+        assert (question_tile in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+        assert sumo_pages.search_page.get_doctype_filter() == "View All"
+        assert (sumo_pages.search_page.get_search_results_header() == search_page_messages.
+                expected_found_search_results_message(search_results_count=str(result_count),
+                                                      search_string=question_tile,
+                                                      product_filter_option=product_filter))
 
 
 # C890835
@@ -327,12 +414,13 @@ def test_stopwords(page: Page):
                                           'romanian', title, content)
 
 
-# C1329222
+# C1329222, C2667545
 @pytest.mark.searchTests
 def test_synonyms(page: Page):
     sumo_pages = SumoPages(page)
     search_terms = ['addon', 'add-on', 'add', 'how to add bookmarks', 'how to add themes',
-                    'pop-ups', 'popups', 'pop ups']
+                    'pop-ups', 'popups', 'pop ups', 'bookmarks bar', 'bookmark bar',
+                    'bookmarks toolbar', 'bookmark toolbar']
     with allure.step("Adding a search term and validating the search results"):
         for search_term in search_terms:
             sumo_pages.search_page.fill_into_searchbar(search_term)
@@ -341,6 +429,39 @@ def test_synonyms(page: Page):
                     title)
 
                 assert _verify_search_results(page, search_term, 'english', title, content)
+
+
+# C2796125
+@pytest.mark.searchTests
+def test_pagination_scroll_position(page: Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with allure.step("Adding the 'Test' search term and clicking on the next pagination item"):
+        sumo_pages.search_page.fill_into_searchbar("Test")
+        sumo_pages.common_web_elements.click_on_next_pagination_item()
+        utilities.wait_for_given_timeout(1000)
+
+    with check, allure.step("Verifying that the page is scrolled to the top of the page and the"
+                            "highlighted pagination item is 1"):
+        assert utilities.fetch_scrolly() == 0
+        assert sumo_pages.common_web_elements.get_selected_pagination_item() == "2"
+
+    with check, allure.step("Clicking on the 4 pagination item and verifying that the page is "
+                            "scrolled to the top of the page and the highlighted pagination item "
+                            "is 4"):
+        sumo_pages.common_web_elements.click_on_pagination_item("4")
+        utilities.wait_for_given_timeout(1000)
+        assert utilities.fetch_scrolly() == 0
+        assert sumo_pages.common_web_elements.get_selected_pagination_item() == "4"
+
+    with check, allure.step("Clicking on the previous pagination item and verifying that the "
+                            "page is scrolled to the top of the page and the highlighted "
+                            "pagination item is 2"):
+        sumo_pages.common_web_elements.click_on_previous_pagination_item()
+        utilities.wait_for_given_timeout(1000)
+        assert utilities.fetch_scrolly() == 0
+        assert sumo_pages.common_web_elements.get_selected_pagination_item() == "3"
 
 
 # C1329223
@@ -475,7 +596,7 @@ def test_advanced_search_syntax(page: Page):
                 assert _verify_search_results(page, search_term, 'english', title, content)
 
 
-# C1350860, C1349859, C1352396, C1352398
+# C1350860, C1349859, C1352396, C1352398, C1350863
 @pytest.mark.searchTests
 def test_conjunctions_and_disjunction_operators(page: Page):
     sumo_pages = SumoPages(page)
@@ -492,6 +613,20 @@ def test_conjunctions_and_disjunction_operators(page: Page):
                                                                 f"search result with title: "
                                                                 f"{title} and bolded content: "
                                                                 f"{content}")
+
+# C1358447
+@pytest.mark.searchTests
+def test_search_by_doc_id(page: Page):
+    sumo_pages = SumoPages(page)
+
+    # 67390 is the docId for the DoNotDelete article
+    search_string = "field:doc_id.en-US:67390"
+    document_title = "DoNotDelete"
+
+    with allure.step("Searching by document Id and verifying that the correct document is"
+                     " returned"):
+        sumo_pages.search_page.fill_into_searchbar(search_string)
+        assert document_title in sumo_pages.search_page.get_all_search_results_article_titles()
 
 
 # C1350861, C1349864, C1352398
@@ -820,6 +955,413 @@ def test_doc_id_field_operator(page: Page):
 
     with allure.step("Verifying that the correct article is returned"):
         sumo_pages.search_page.is_a_particular_article_visible(kb_result_dict['kb_title'])
+
+
+# C1329240
+@pytest.mark.searchTests
+def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Submitting a new KB article"):
+        test_article = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
+        utilities.wait_for_given_timeout(65000)
+
+    with allure.step("Verifying that the article is successfully returned"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with allure.step("Marking the question as obsolete"):
+        utilities.navigate_to_link(test_article["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
+        utilities.wait_for_given_timeout(65000)
+
+    with allure.step("Verifying that the article is no longer returned"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
+        assert (test_article["article_title"] not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with allure.step("Unmarking the question as obsolete"):
+        utilities.navigate_to_link(test_article["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=False)
+        utilities.wait_for_given_timeout(65000)
+
+    with allure.step("Verifying that the article is returned"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+
+#  C1329226
+@pytest.mark.searchTests
+def test_article_product_metadata_update_and_search_filter_by_product(page: Page,
+                                                                      create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Submitting a new KB article"):
+        test_article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
+        utilities.wait_for_given_timeout(65000)
+
+    with check, allure.step("Searching for the article and verifying that the article is returned "
+                            "inside the search results if the filter is applied to"
+                            " 'All Products'"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
+        assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with check, allure.step("Clicking on the 'Firefox' filter and verifying that the article"
+                            "is displayed inside the search results"):
+        sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox")
+        utilities.wait_for_given_timeout(2000)
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with check, allure.step("Clicking on the 'Firefox for Android' filter and verifying that the"
+                            "article is not displayed inside the search results"):
+        sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox for Android")
+        utilities.wait_for_given_timeout(2000)
+        assert (test_article["article_title"] not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with allure.step("Editing the article by adding 'Firefox for Android' as a product"):
+        utilities.navigate_to_link(test_article["article_url"])
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(product="Firefox for Android")
+        utilities.wait_for_given_timeout(65000)
+
+    with check, allure.step("Searching for the article and verifying that the article is returned "
+                            "in both 'Firefox' and 'Firefox for Android' product filters"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(test_article["article_title"])
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+        sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox")
+        utilities.wait_for_given_timeout(2000)
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+        sumo_pages.search_page.click_on_a_particular_side_nav_item("Firefox for Android")
+        utilities.wait_for_given_timeout(2000)
+        assert (test_article["article_title"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with allure.step("Searching for the article by filtering against a different product and "
+                     "verifying that the article is not displayed"):
+        sumo_pages.search_page.click_on_a_particular_side_nav_item("Thunderbird")
+        utilities.wait_for_given_timeout(2000)
+        assert (test_article["article_title"] not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+
+# C2873849
+@pytest.mark.searchTests
+def test_archived_questions_are_returned_advanced_search_results_only(page: Page,
+                                                                      create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory()
+    user = utilities.username_extraction_from_email(utilities.staff_user)
+
+    with allure.step("Posting a Firefox product question"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+
+        question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
+            attach_image=False,
+            expected_locator=sumo_pages.question_page.questions_header
+        )
+
+    with allure.step("Leaving a question reply so that the question is returned in search "
+                     "results"):
+        question_reply = (
+            utilities.aaq_question_test_data['valid_firefox_question']['question_reply'])
+        sumo_pages.aaq_flow.post_question_reply_flow( repliant_username=test_user['username'],
+                                                      reply=question_reply)
+        utilities.start_existing_session(session_file_name=user)
+        sumo_pages.question_page.click_on_archive_this_question_option()
+
+    with allure.step("Waiting for 1 minute so that the question is successfully returned in "
+                     "search results"):
+        utilities.wait_for_given_timeout(65000)
+
+    with allure.step("Searching for the question inside the searchbar"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(question_details["aaq_subject"])
+        assert (question_details["aaq_subject"] not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with allure.step("Searching for the question inside the searchbar using advanced search"
+                     "syntax"):
+        sumo_pages.search_page.clear_the_searchbar()
+        sumo_pages.search_page.fill_into_searchbar(
+            f"field:question_title.en-US:{question_details['aaq_subject']}")
+        assert (question_details["aaq_subject"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+        sumo_pages.search_page.clear_the_searchbar()
+        sumo_pages.search_page.fill_into_searchbar(
+            f"field:question_content.en-US:{question_details['question_body']}")
+        utilities.wait_for_given_timeout(2000)
+
+        while sumo_pages.common_web_elements.is_next_pagination_item_visible():
+            search_titles = sumo_pages.search_page.get_all_search_results_article_titles()
+            if question_details['aaq_subject'] in search_titles:
+                assert True
+                break
+
+            sumo_pages.common_web_elements.click_on_next_pagination_item()
+            utilities.wait_for_given_timeout(2000)
+        search_titles = sumo_pages.search_page.get_all_search_results_article_titles()
+        assert question_details['aaq_subject'] in search_titles
+
+
+#  C2874873, C2873851, C1358450
+@pytest.mark.searchTests
+def test_aaq_question_id_and_is_archived_fields_search(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Searching archived questions using the question_is_archived:true and "
+                            "verifying that the returned search results are only archived "
+                            "questions"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_is_archived:true")
+        sumo_pages.search_page.click_on_help_articles_only_doctype_filter()
+        utilities.wait_for_given_timeout(2000)
+
+        assert not sumo_pages.search_page.is_search_content_section_displayed()
+        assert (SearchPageMessage.EMPTY_SEARCH_RESULTS_MESSAGE == sumo_pages.
+                search_page.get_no_search_results_message())
+
+    with check, allure.step("Clicking on the 'Community Discussions Only' doctype filter and "
+                            "verifying that the returned search results are archived questions"):
+        sumo_pages.search_page.click_on_community_discussions_only_doctype_filter()
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        assert sumo_pages.question_page.get_thread_locked_text(
+        ) == QuestionPageMessages.ARCHIVED_THREAD_BANNER
+
+    with check, allure.step("Navigating back and searching for the question_is_archived:false"
+                            "and verifying that the returned search results are only unarchived "
+                            "questions"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_is_archived:false")
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        if sumo_pages.question_page.is_thread_locked_banner_displayed():
+            assert sumo_pages.question_page.get_thread_locked_text() not in (
+                [QuestionPageMessages.LOCKED_AND_ARCHIVED_BANNER,
+                 QuestionPageMessages.ARCHIVED_THREAD_BANNER]
+            )
+        else:
+            assert True
+
+    question_id = utilities.number_extraction_from_string_endpoint("/questions/",
+                                                                   utilities.get_page_url())
+    question_title = sumo_pages.question_page.get_question_header()
+
+    with check, allure.step("Navigating back and searching for the question_id and verifying that "
+                            "the correct question is returned"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(f"field:question_id:{question_id}")
+        assert [question_title] == sumo_pages.search_page.get_all_search_results_article_titles()
+
+
+# C2874062
+@pytest.mark.searchTests
+def test_aaq_question_is_locked_field_search(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Searching for question_is_locked:false inside the searchobx and "
+                            "verifying that the returned questions are locked"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_is_locked:false")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        print(sumo_pages.question_page.get_thread_locked_text())
+        if sumo_pages.question_page.is_thread_locked_banner_displayed():
+            assert sumo_pages.question_page.get_thread_locked_text() not in (
+                [QuestionPageMessages.LOCKED_AND_ARCHIVED_BANNER,
+                 QuestionPageMessages.LOCKED_THREAD_BANNER]
+            )
+        else:
+            assert True
+
+    with allure.step("Searching for question_is_locked:true inside the searchobx and verifying"
+                     " that the returned questions are not locked"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_is_locked:true")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        assert sumo_pages.question_page.get_thread_locked_text() in (
+            [QuestionPageMessages.LOCKED_AND_ARCHIVED_BANNER,
+             QuestionPageMessages.LOCKED_THREAD_BANNER])
+
+
+# C2874061, C1358448, C1358449
+@pytest.mark.searchTests
+def test_aaq_question_has_solution_field_search(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Searching for question_has_solution:false inside the searchobx and "
+                            "verifying that the returned questions don't have a solution"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_has_solution:false")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        assert not sumo_pages.question_page.is_solution_section_displayed()
+
+    with allure.step("Searching for question_has_solution:true inside the searchobx and verifying"
+                     " that the returned questions have a solution"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_has_solution:true")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        assert sumo_pages.question_page.is_solution_section_displayed()
+
+
+# C2874874
+@pytest.mark.searchTests
+def test_aaq_question_product_id_field_search(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Searching for question_product id 1 inside the searchobx and "
+                            "verifying that the returned questions are filled under the Firefox"
+                            "product"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_product_id:1")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        sumo_pages.question_page.click_on_question_details_button()
+        assert sumo_pages.question_page.get_question_details_product() == "Firefox"
+
+    with allure.step("Searching for question_product id 2 inside the searchobx and verifying"
+                     " that the returned questions are filled under the Firefox for Android"
+                     " product"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_product_id:2")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        sumo_pages.question_page.click_on_question_details_button()
+        assert sumo_pages.question_page.get_question_details_product() == "Firefox for Android"
+
+
+# C2874875
+@pytest.mark.searchTests
+def test_aaq_question_topic_id_field_search(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Searching for question_topic 383 inside the searchobx and "
+                            "verifying that returned questions are filled against the"
+                            " Accessibility topic"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_topic_id:383")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        sumo_pages.question_page.click_on_question_details_button()
+        assert sumo_pages.question_page.get_question_details_topic() == "Accessibility"
+
+    with allure.step("Searching for question_topic 410 inside the searchobx and verifying"
+                     " that the returned questions are filled against the Accounts topic"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_topic_id:410")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        sumo_pages.question_page.click_on_question_details_button()
+        assert sumo_pages.question_page.get_question_details_topic() == "Accounts"
+
+
+# C2874878
+@pytest.mark.searchTests
+def test_aaq_question_tag_id_field_search(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["Forum Moderators"])
+
+    utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Searching for question_tag_id 2272 inside the searchobx and "
+                            "verifying that the returned questions contain the accessibility tag"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_tag_ids:2772")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        sumo_pages.question_page.click_on_question_details_button()
+        assert "accessibility" in sumo_pages.question_page.get_question_tag_options(True)
+
+    with allure.step("Searching for question_tag_id 2273 inside the searchobx and verifying"
+                     " that the returned questions contain the firefox tag"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_tag_ids:2773")
+        utilities.wait_for_given_timeout(2000)
+        results = sumo_pages.search_page.get_all_search_results_handles()
+        random.choice(results).click()
+        sumo_pages.question_page.click_on_question_details_button()
+        assert "firefox" in sumo_pages.question_page.get_question_tag_options(True)
+
+
+# C1358452
+@pytest.mark.searchTests
+def test_aaq_question_votes_field_search(page:Page):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    with check, allure.step("Searching for question_num_votes:0 and verifying that the search"
+                            " results contain the queried number of question votes"):
+        sumo_pages.search_page.fill_into_searchbar("field:question_num_votes:0")
+        utilities.wait_for_given_timeout(2000)
+        assert all("0" in search_result for search_result in sumo_pages.search_page.
+                   get_text_of_question_votes())
+
+    with allure.step("Searching for question_num_votes:3 inside the searchobx and verifying"
+                     " that the returned questions contain the queried number of votes"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar("field:question_num_votes:3")
+        utilities.wait_for_given_timeout(2000)
+        assert all("3" in search_result for search_result in sumo_pages.
+                   search_page.get_text_of_question_votes())
 
 
 def _verify_search_results(page: Page, search_term: str, locale: str, search_result_title: str,

@@ -3,6 +3,8 @@ import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
+    OffTopicForumMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import \
     EditMyProfilePageMessages
@@ -129,6 +131,37 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page,
         sumo_pages.question_page.click_delete_this_question_question_tools_option()
         sumo_pages.question_page.click_delete_this_question_button()
         expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
+
+
+# C1318760
+@pytest.mark.userProfile
+def test_number_of_answers_and_questions_for_contributor_thread_contributions(page: Page,
+                                                                              create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+
+    with allure.step("Signing in with a contributor account and navigating to the Off topic"
+                     "forum"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+
+    with allure.step("Creating a new thread"):
+        thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
+                        generate_random_number(1, 1000))
+        sumo_pages.contributor_thread_flow.post_a_new_thread(
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body'])
+
+    with allure.step("Creating a new thread reply"):
+        sumo_pages.contributor_thread_flow.post_thread_reply(
+            reply_body=utilities.discussion_thread_data['thread_body'])
+
+    with allure.step("Navigating to the profile page and verifying that the answer and questions "
+                     "counter has not incremented"):
+        sumo_pages.top_navbar.click_on_view_profile_option()
+        assert not sumo_pages.my_profile_page.is_question_displayed()
+        assert not sumo_pages.my_profile_page.is_my_profile_answers_link_visible()
 
 
 # C890832,  C2094281, C891410, C2245210, C2245211, C2245212, C2245209

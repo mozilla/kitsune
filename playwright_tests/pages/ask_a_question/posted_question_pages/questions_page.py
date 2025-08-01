@@ -54,6 +54,10 @@ class QuestionPage(BasePage):
 
         # Question details locators.
         self.question_details_button = page.locator("button[aria-controls='question-details']")
+        self.question_details_product = page.locator("//div[@id='question-details']//span"
+                                                     "[text()='Product:']/following-sibling::span")
+        self.question_details_topic = page.locator("//div[@id='question-details']//span"
+                                                   "[text()='Topic:']/following-sibling::span")
         self.more_system_details_modal = page.locator("div[class='mzp-c-modal']")
         self.more_system_details_option = page.locator("a#show-more-details")
         self.close_additional_system_details_button = page.locator(
@@ -275,6 +279,9 @@ class QuestionPage(BasePage):
     def get_chosen_solution_section_locator(self) -> Locator:
         return self.problem_solved_reply_section
 
+    def is_solution_section_displayed(self) -> bool:
+        return self._is_element_visible(self.problem_solved_reply_section)
+
     def get_solved_problem_banner_text(self) -> str:
         return self._get_text_of_element(self.problem_solved_banner_text)
 
@@ -400,6 +407,12 @@ class QuestionPage(BasePage):
     def click_on_question_details_button(self):
         self._click(self.question_details_button)
 
+    def get_question_details_product(self) -> str:
+        return self._get_text_of_element(self.question_details_product)
+
+    def get_question_details_topic(self) -> str:
+        return self._get_text_of_element(self.question_details_topic)
+
     def click_on_more_system_details_option(self):
         self._click(self.more_system_details_option)
 
@@ -509,6 +522,9 @@ class QuestionPage(BasePage):
 
     def get_thread_locked_locator(self) -> Locator:
         return self.lock_this_thread_banner
+
+    def is_thread_locked_banner_displayed(self) -> bool:
+        return self._is_element_visible(self.lock_this_thread_banner)
 
     def get_archive_this_question_locator(self) -> Locator:
         return self.archive_this_question_option

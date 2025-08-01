@@ -8,6 +8,7 @@ class SearchSynonyms:
         'cache': ['cash', 'cookies'],
         'popup': ['pop up'],
         'pop up': ['popup'],
+        'pop-up':['pop-ups', 'popups'],
         'popups': ['pop-up', 'pop-ups', 'pop ups', 'pops up'],
 
         # Actions

@@ -306,7 +306,8 @@ class Utilities:
                 if FxAPageMessages.AUTH_PAGE_URL in self.get_page_url():
                     break
                 else:
-                    top_navbar._wait_for_locator(top_navbar.signin_signup_button)
+                    top_navbar._wait_for_locator(top_navbar.signin_signup_button,
+                                                 raise_exception=True)
                 break
             except PlaywrightTimeoutError:
                 print("Cookies were not successfully deleted. Retrying...")
@@ -663,3 +664,10 @@ class Utilities:
             return {"event": message.split(": ", 1)[1].rstrip(':')}
         elif message.startswith('parameters:'):
             return {"parameters": json.loads(message.split(": ", 1)[1])}
+
+    def fetch_scrolly(self) -> int:
+        """
+        This helper function returns the number of pixels by which the document is currently
+        scrolled vertically.
+        """
+        return self.page.evaluate("() => window.scrollY")
