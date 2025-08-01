@@ -375,3 +375,30 @@ def create_test_user(request):
             ],
         }
     )
+
+@group_required("Staff")
+@require_POST
+@csrf_exempt
+def trigger_delete(request):
+    """
+    Deletes a given test user.
+    """
+    if not (settings.DEV and settings.ENABLE_TESTING_ENDPOINTS):
+        raise Http404
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"message": "Invalid JSON payload."}, status=400)
+
+    if not (username := data.get("username")):
+        return JsonResponse({"message": 'Invalid JSON payload (missing "username").'}, status=400)
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse({"message": f"{username} does not exist."}, status=404)
+    else:
+        user.delete()
+
+    return JsonResponse({"message": f"{username} was successfully deleted!"})

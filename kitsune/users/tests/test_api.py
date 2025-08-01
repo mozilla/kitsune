@@ -343,3 +343,86 @@ class TestUserCreation(TestCase):
             data={"username": "mccartney"},
         )
         self.assertEqual(response.status_code, 409)
+
+class TestUserDeletion(TestCase):
+    """Test the trigger-delete API."""
+
+    url = reverse("users.api.trigger_delete", locale="en-US")
+
+    def setUp(self):
+        GroupFactory(name="Group1")
+        self.staff = GroupFactory(name="Staff")
+        self.beatles = GroupFactory(name="Beatles")
+        ringo = UserFactory(username="ringo", groups=[self.staff, self.beatles])
+        self.james = UserFactory(username="james1")
+        self.james2 = UserFactory(username="james2")
+        self.client.logout()
+        self.client.login(username=ringo.username, password="testpass")
+
+    @override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True)
+    def test_delete_test_user(self):
+        """Test correct user is deleted."""
+        response = self.client.post(
+            self.url,
+            content_type="application/json",
+            data={"username": self.james.username}
+        )
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["message"], f"{self.james.username} was successfully deleted!")
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username=self.james.username)
+
+    @override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True)
+    def test_delete_non_existent_user(self):
+        """Test when trying to delete a user that does not exist."""
+        jmg = "jamesmcgill"
+        response = self.client.post(
+            self.url,
+            content_type="application/json",
+            data={"username": jmg}
+        )
+        result = response.json()
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(result["message"], f"{jmg} does not exist.")
+
+    def test_delete_test_user_404(self):
+        """
+        Test all cases in which the user doesn't have the necessary perms to hit the endpoint.
+        """
+        with (
+            self.subTest("not enabled"),
+            override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=False),
+        ):
+            response = self.client.post(
+                self.url,
+                content_type="application/json",
+                data={"username": self.james2.username}
+            )
+            self.assertEqual(response.status_code, 404)
+
+        with (
+            self.subTest("not authenticated"),
+            override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True),
+        ):
+            self.client.logout()
+            response = self.client.post(
+                self.url,
+                content_type="application/json",
+                data={"username": self.james2.username}
+            )
+            self.assertEqual(response.status_code, 404)
+
+        with (
+            self.subTest("not staff"),
+            override_settings(DEV=True, ENABLE_TESTING_ENDPOINTS=True),
+        ):
+            self.client.logout()
+            michael = UserFactory(username="michael", groups=[self.beatles])
+            self.client.login(username=michael.username, password="testpass")
+            response = self.client.post(
+                self.url,
+                content_type="application/json",
+                data={"username": self.james2.username}
+            )
+            self.assertEqual(response.status_code, 404)

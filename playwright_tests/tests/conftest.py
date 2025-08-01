@@ -9,8 +9,6 @@ from slugify import slugify
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import \
-    MyProfileMessages
 
 
 @pytest.fixture(autouse=True)
@@ -128,17 +126,18 @@ def create_user_factory(page: Page, request):
         return response.json()
 
     def _cleanup():
+        endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "users/api/trigger-delete"
         for username in created_users:
             print("Deleting created users")
             additional_headers = {
                 "Cookie": f"session_id={session_id}",
                 "User-Agent": Utilities.user_agent
             }
+            request_body = {"username": username}
 
-            requests.get(
-                url=MyProfileMessages.get_my_profile_stage_url(username) + "trigger-delete",
-                headers=additional_headers
-            )
+            response = request.post(url=endpoint, json=request_body, headers=additional_headers)
+            print(response.json())
+
 
     request.addfinalizer(_cleanup)
     return _create_user
