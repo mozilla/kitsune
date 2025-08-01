@@ -43,7 +43,6 @@ from kitsune.wiki.config import (
     SIGNIFICANCES,
     TEMPLATE_TITLE_PREFIX,
     TEMPLATES_CATEGORY,
-    TYPO_SIGNIFICANCE,
 )
 from kitsune.wiki.managers import DocumentManager, RevisionManager
 from kitsune.wiki.permissions import (
@@ -900,7 +899,8 @@ class Revision(ModelBase, AbstractRevision):
                     % {"id": old.id}
                 )
 
-        if not self.can_be_readied_for_localization():
+        from kitsune.wiki.strategies import TranslationStrategy
+        if not TranslationStrategy.can_handle_revision(self):
             self.is_ready_for_localization = False
 
     def save(self, *args, **kwargs):
@@ -1017,18 +1017,6 @@ class Revision(ModelBase, AbstractRevision):
         from kitsune.wiki.parser import wiki_to_html
 
         return wiki_to_html(self.content, locale=self.document.locale, doc_id=self.document.id)
-
-    def can_be_readied_for_localization(self):
-        """Return whether this revision has the prerequisites necessary for the
-        user to mark it as ready for localization."""
-        # If not is_approved, can't be is_ready. TODO: think about using a
-        # single field with more states.
-        # Also, if significance is trivial, it shouldn't be translated.
-        return (
-            self.is_approved
-            and (self.significance or 0) > TYPO_SIGNIFICANCE
-            and self.document.locale == settings.WIKI_DEFAULT_LANGUAGE
-        )
 
     def get_absolute_url(self):
         return reverse(
