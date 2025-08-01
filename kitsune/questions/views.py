@@ -475,7 +475,7 @@ def question_details(
         {
             "all_products": products,
             "all_topics": topics,
-            "all_tags": SumoTag.objects.active(),
+            "all_tags": SumoTag.objects.active().order_by("-created"),
             "related_documents": related_documents,
             "related_questions": related_questions,
             "question_images": question_images,
