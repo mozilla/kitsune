@@ -473,7 +473,13 @@ class ForumDocument(SumoDocument):
         return super().get_field_value(field, instance, *args)
 
     def prepare_thread_title_semantic(self, instance):
-        return instance.thread.title
+        # instance could be a Post or Thread depending on context
+        # For Posts, get the thread title; for Threads, get the title directly
+        if hasattr(instance, 'thread') and instance.thread:
+            return instance.thread.title
+        else:
+            # instance is likely a Thread itself
+            return instance.title
 
     def prepare_content_semantic(self, instance):
         return instance.content
