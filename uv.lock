@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = "==3.11.*"
 
 [[package]]
@@ -725,15 +725,15 @@ wheels = [
 
 [[package]]
 name = "django-post-office"
-version = "3.10.0"
+version = "3.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleach", extra = ["css"] },
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/55/7a/42031aabb51602a51e652d5966f78bde7e6ed1cea2a623afa2ca5d1cf58a/django_post_office-3.10.0.tar.gz", hash = "sha256:95047f8d12e6544629a3ff979d527fdc3b538fa418c3fa4a0af8b5e665fb029e", size = 52883, upload-time = "2025-07-15T14:00:43.887Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/42/8ab42ba3524cf7989806471095848daa786dd4ba47a28e15694b5d151959/django_post_office-3.10.1.tar.gz", hash = "sha256:739a218cdf3d61968416e896e7998f2e7a88a01fc06f51b8e8d1ba9bd5392acb", size = 52983, upload-time = "2025-08-04T08:30:42.393Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/95/b73e6b68b3525d3b9bb724ffa4dc8838008d0609a5d5bfa07ea25b1e6944/django_post_office-3.10.0-py3-none-any.whl", hash = "sha256:bc0d3e40305486b729c4b7a79eafdeb468a245b9e9a3acaa12014ef84af1ac8b", size = 75725, upload-time = "2025-07-15T14:00:42.452Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/1b/aa153f1338c06319e4a262a47d2bd41e7da993e4db235eb420bfe66cf659/django_post_office-3.10.1-py3-none-any.whl", hash = "sha256:372e7b5e28c1fc44ab226f557845cf72d85e705d6124dd4c096a9f85721352f9", size = 75742, upload-time = "2025-08-04T08:30:40.732Z" },
 ]
 
 [[package]]
@@ -1784,7 +1784,7 @@ requires-dist = [
     { name = "django-jsonfield-backport", specifier = ">=1.0.5,<2" },
     { name = "django-jsonfield-compat", specifier = ">=0.4.4,<0.5" },
     { name = "django-mozilla-product-details", specifier = ">=1.0.3,<2" },
-    { name = "django-post-office", specifier = "==3.10.0" },
+    { name = "django-post-office", specifier = "==3.10.1" },
     { name = "django-ratelimit", specifier = ">=4.1.0,<5" },
     { name = "django-redis", specifier = ">=5.4.0,<6" },
     { name = "django-ses", specifier = "==4.4.0" },
