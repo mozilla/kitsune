@@ -1,7 +1,24 @@
-#######################
-# Common dependencies #
-#######################
-FROM python:3.11-bookworm AS base
+# =========================================
+# Stage 1: Build Frontend Assets in Node.js
+# =========================================
+FROM node:22-bookworm AS frontend-builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN cp .env-build .env && \
+    mkdir -p jsi18n/jsi18n && \
+    npm run webpack:build:prod && \
+    npm run webpack:build:pre-render && \
+    npm run webpack:test
+
+# ===================================
+# Stage 2: Common Python dependencies
+# ===================================
+FROM python:3.11-bookworm AS python-base
 
 WORKDIR /app
 EXPOSE 8000
@@ -15,69 +32,59 @@ ENV LANG=C.UTF-8 \
 RUN useradd -d /app -M --uid 1000 --shell /bin/bash kitsune
 
 RUN set -xe \
-    && apt-get update && apt-get install apt-transport-https \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
+    && apt-get update && apt-get install -y --no-install-recommends \
     gettext build-essential \
     libxml2-dev libxslt1-dev zlib1g-dev git \
     libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
     optipng postgresql zip \
-    # clean up
     && rm -rf /var/lib/apt/lists/*
 
-# Copy uv from official image
 COPY --from=ghcr.io/astral-sh/uv:0.7.20 /uv /uvx /bin/
-
-COPY ./scripts/install_nodejs.sh ./
 COPY pyproject.toml uv.lock ./
-RUN ./install_nodejs.sh && rm ./install_nodejs.sh
 RUN uv venv && uv sync --frozen --extra dev --no-install-project
 
-#########################
-# Frontend dependencies #
-#########################
-FROM base AS base-frontend
+# =================================
+# Stage 3: Development Image Target
+# =================================
+FROM python-base AS dev
 
-COPY package*.json ./
-RUN npm run install-prod
-
+# Copy source code and install the project itself
 COPY . .
-RUN cp .env-build .env && \
-    npm run webpack:build:prod
+RUN uv sync --frozen --extra dev
 
+# =============================
+# Stage 4: Testing Image Target
+# =============================
+FROM python-base AS test
 
-#################
-# Testing image #
-#################
-FROM base-frontend AS test
+COPY --from=frontend-builder /app/dist /app/dist
+COPY . .
+RUN uv sync --frozen --extra dev
 
 RUN cp .env-test .env && \
     ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
-    npm run webpack:build:pre-render && \
     ./manage.py collectstatic --noinput
 
+# ======================================
+# Stage 5: Build Production Dependencies
+# ======================================
+FROM python-base AS prod-deps
 
-##########################
-# Production dependences #
-##########################
-FROM base-frontend AS prod-deps
+COPY --from=frontend-builder /app/dist /app/dist
+COPY . .
 
-# Recreate virtual environment with only production dependencies and prod extra
 RUN rm -rf .venv && uv venv && uv sync --frozen --no-dev --extra prod --no-install-project
-
 RUN ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
-    npm run webpack:build:pre-render && \
     ./manage.py collectstatic --noinput
 
-##########################
-# Clean production image #
-##########################
+# =====================================
+# Stage 5: Final Clean Production Image
+# =====================================
 FROM python:3.11-slim-bookworm AS prod
 
 WORKDIR /app
-
 EXPOSE 8000
 
 ENV PATH="/app/.venv/bin:$PATH" \
@@ -94,7 +101,6 @@ COPY --from=prod-deps --chown=kitsune:kitsune /app/locale /app/locale
 COPY --from=prod-deps --chown=kitsune:kitsune /app/static /app/static
 COPY --from=prod-deps --chown=kitsune:kitsune /app/dist /app/dist
 
-# apt-get after copying everything to ensure we're always getting the latest packages in the prod image
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \

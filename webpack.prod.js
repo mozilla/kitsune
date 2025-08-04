@@ -1,6 +1,7 @@
 const { mergeWithCustomize, unique } = require("webpack-merge");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CompressionPlugin = require("compression-webpack-plugin");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const zlib = require("zlib");
 
 const dev = require("./webpack.dev.js");
@@ -8,7 +9,7 @@ const dev = require("./webpack.dev.js");
 module.exports = mergeWithCustomize({
   customizeArray: unique(
     "plugins",
-    ["MiniCssExtractPlugin"],
+    ["MiniCssExtractPlugin", "ImageMinimizerPlugin"],
     (plugin) => plugin.constructor && plugin.constructor.name
   ),
 })(dev, {

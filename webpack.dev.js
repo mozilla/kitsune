@@ -24,9 +24,22 @@ module.exports = merge(common, {
     }),
     new ImageMinimizerPlugin({
       minimizer: {
-        implementation: ImageMinimizerPlugin.imageminMinify,
+        implementation: ImageMinimizerPlugin.sharpMinify,
         options: {
-          plugins: ["optipng", "svgo"],
+          encodeOptions: {
+            png: { 
+              quality: 80,
+              progressive: true,
+              compressionLevel: 9
+            },
+            jpeg: { 
+              quality: 75,
+              progressive: true 
+            },
+            webp: { 
+              quality: 75 
+            }
+          },
         },
       },
     }),
