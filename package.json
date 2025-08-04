@@ -46,14 +46,14 @@
     "nunjucks": "^3.2.4",
     "svelte-navigator": "^3.2.2",
     "tom-select": "^2.4.3",
-    "underscore": "^1.13.6"
+    "underscore": "^1.13.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "@babel/plugin-transform-runtime": "^7.19.6",
     "@babel/preset-env": "^7.20.2",
     "@mozilla-protocol/core": "16.1.0",
-    "@types/underscore": "^1.11.4",
+    "@types/underscore": "^1.13.0",
     "autoprefixer": "^10.4.13",
     "babel-loader": "^9.1.2",
     "browser-sync": "^3.0.3",
