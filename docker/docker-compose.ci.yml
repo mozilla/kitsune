@@ -10,6 +10,12 @@ services:
       - elasticsearch
       - redis
 
+  frontend-test:
+    build:
+      context: .
+      target: frontend-builder
+    command: npx mocha --require ./webpack/mocha-require dist/tests.js
+
   prod:
     build:
       context: .

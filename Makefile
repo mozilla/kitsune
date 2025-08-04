@@ -5,11 +5,7 @@ else
 DC = $(shell which docker) compose
 endif
 
-UNAME_S := $(shell uname -s)
 INIT_ARGS := ""
-ifeq ($(UNAME_S),Darwin)
-	INIT_ARGS := "--optipng-fix"
-endif
 
 default: help
 	@echo ""
@@ -47,7 +43,7 @@ build:
 rebuild: clean build
 
 start: .docker-build
-	${DC} up web
+	${DC} up web node
 run: start
 
 init: .docker-build
@@ -95,4 +91,4 @@ docs: .docker-build
 	${DC} run web $(MAKE) -C docs/ clean
 	${DC} run web $(MAKE) -C docs/ html
 
-.PHONY: build rebuild run init shell runshell djshell clean lint format test test-js docs
+.PHONY: build rebuild run start init shell runshell djshell clean lint format test test-js docs
