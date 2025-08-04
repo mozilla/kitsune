@@ -207,11 +207,12 @@ class Command(BaseCommand):
     def _bulk_delete_batch(self, User, user_ids):
         try:
             _, deleted_objects = User.objects.filter(id__in=user_ids).delete()
-            user_count = deleted_objects.get("auth.User", 0)
-            return user_count, 0
-        except (DatabaseError, IntegrityError) as e:
+        except Exception as e:
             self.stderr.write(f"Error batch deleting users: {e}")
             return 0, len(user_ids)
+        else:
+            user_count = deleted_objects.get("auth.User", 0)
+            return user_count, 0
 
     def _report_progress(
         self,
