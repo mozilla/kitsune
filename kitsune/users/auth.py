@@ -20,6 +20,15 @@ from kitsune.users.utils import add_to_contributors, get_oidc_fxa_setting
 log = logging.getLogger("k.users")
 
 
+def is_mozilla_domain_email(email: str) -> bool:
+    """Check if the email domain is in the MOZILLA_DOMAINS list."""
+    if not email:
+        return False
+
+    domain = email.split('@')[-1].lower()
+    return domain in [d.lower() for d in settings.MOZILLA_DOMAINS]
+
+
 class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
     def authenticate(self, request, **kwargs):
         """Authenticate a user based on the OIDC code flow."""
@@ -97,6 +106,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_avatar = claims.get("avatar", "")
         profile.name = claims.get("displayName", "")
         subscriptions = claims.get("subscriptions", [])
+
+        if email := claims.get("email"):
+            profile.is_mozilla_staff = is_mozilla_domain_email(email)
 
         # Let's get the first element even if it's an empty string
         # A few assertions return a locale of None so we need to default to empty string
@@ -243,6 +255,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # If there is a refresh token, store it
         if self.refresh_token:
             profile.fxa_refresh_token = self.refresh_token
+
+        profile.is_mozilla_staff = is_mozilla_domain_email(email)
 
         with transaction.atomic():
             if user_attr_changed:

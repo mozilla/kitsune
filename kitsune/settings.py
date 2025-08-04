@@ -1174,10 +1174,12 @@ SUMO_BANNER_STRING = config("SUMO_BANNER_STRING", default="", cast=Csv())
 ALLOW_LINKS_FROM = [
     "mozilla.org",
     "mozilla.com",
+    "mozilla.ai",
     "mozillafoundation.org",
     "getpocket.com",
     "thunderbird.net",
 ]
+MOZILLA_DOMAINS = ALLOW_LINKS_FROM
 
 # Regexes
 TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")

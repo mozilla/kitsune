@@ -2,6 +2,7 @@
 {% from "karma/includes/karma_macros.html" import titles %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
+{% from "users/includes/macros.html" import user_labels %}
 
 <div class="answer {% if answer.is_spam %}marked-as-spam{% endif %}" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
   <section class="avatar-row">
@@ -16,7 +17,7 @@
           <a class="author-name" rel="nofollow" href="{{ profile_url(answer.creator) }}">
             <span class="display-name">{{ display_name(answer.creator) }}</span>
             {{ titles(answer.creator) }}
-            {% if answer.id and answer.creator == question.creator %}<span class="user-title">{{_('Question owner')}}</span>{% endif %}
+            {{ user_labels(answer.creator, show_question_owner=True, question_creator=question.creator) }}
           </a>
           {# {% if answer.id and question.creator != answer.creator %}
             <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
