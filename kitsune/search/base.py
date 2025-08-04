@@ -58,8 +58,12 @@ class SumoDocument(DSLDocument):
         cls.Index.base_name = f"{settings.ES_INDEX_PREFIX}_{name.lower()}"
         cls.Index.read_alias = f"{cls.Index.base_name}_read"
         cls.Index.write_alias = f"{cls.Index.base_name}_write"
-        # Bump the refresh interval to 1 minute
-        cls.Index.settings = {"refresh_interval": DEFAULT_ES_REFRESH_INTERVAL}
+        # Bump the refresh interval to 1 minute and increase field limit for semantic fields
+        cls.Index.settings = {
+            "refresh_interval": DEFAULT_ES_REFRESH_INTERVAL,
+            "mapping.nested_fields.limit": 1000,  # Increase from default 50 to support semantic fields
+            "mapping.total_fields.limit": 2000,   # Increase total field limit as well
+        }
 
         # this is the attribute elastic-dsl actually uses to determine which index
         # to query. we override the .search() method to get that to use the read
