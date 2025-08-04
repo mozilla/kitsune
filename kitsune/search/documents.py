@@ -329,6 +329,11 @@ class AnswerDocument(QuestionDocument):
     def prepare_content_semantic(self, instance):
         return instance.content
 
+    def prepare_answer_content_semantic(self, instance):
+        # For AnswerDocument, we don't need answer_content_semantic since this IS an answer
+        # Override the inherited method to avoid the AttributeError
+        return None
+
     def get_field_value(self, field, instance, *args):
         if field.startswith("question_"):
             instance = instance.question
