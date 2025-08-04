@@ -64,7 +64,7 @@
     "concurrently": "^7.6.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
-    "cssnano": "^5.1.14",
+    "cssnano": "^7.1.0",
     "env-cmd": "^10.1.0",
     "eslint": "^9.31.0",
     "eslint-import-resolver-webpack": "^0.13.10",
