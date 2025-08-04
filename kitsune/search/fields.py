@@ -11,7 +11,7 @@ SUPPORTED_LANGUAGES = list(settings.SUMO_LANGUAGES)
 SUPPORTED_LANGUAGES.remove("xx")
 
 # Default E5 multilingual model
-DEFAULT_E5_MODEL = getattr(settings, 'ELASTICSEARCH_SEMANTIC_MODEL_ID', '.multilingual-e5-small')
+DEFAULT_E5_MODEL = getattr(settings, 'ELASTICSEARCH_SEMANTIC_MODEL_ID', '.multilingual-e5-small-elasticsearch')
 
 
 def SemanticTextField(**params):
