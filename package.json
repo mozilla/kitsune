@@ -87,7 +87,7 @@
     "postcss-custom-properties": "^13.1.1",
     "postcss-loader": "^7.0.2",
     "sass": "^1.58.0",
-    "sass-loader": "^13.2.0",
+    "sass-loader": "^16.0.5",
     "sinon": "^15.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
