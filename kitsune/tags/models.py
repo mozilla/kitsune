@@ -35,7 +35,7 @@ class SumoTag(TagBase):
     objects = SumoTagManager()
 
     class Meta:
-        ordering = ["name", "-updated"]
+        ordering = ["name", "-created"]
 
 
 class SumoTaggedItem(GenericTaggedItemBase):
