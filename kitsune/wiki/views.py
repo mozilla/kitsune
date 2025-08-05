@@ -74,6 +74,7 @@ from kitsune.wiki.models import (
     doc_html_cache_key,
 )
 from kitsune.wiki.parser import wiki_to_html
+from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
 from kitsune.wiki.tasks import (
     render_document_cascade,
     schedule_rebuild_kb,
@@ -87,6 +88,7 @@ from kitsune.wiki.utils import (
 )
 
 log = logging.getLogger("k.wiki")
+l10n_factory = TranslationStrategyFactory()
 
 
 def doc_page_cache(view):
@@ -779,23 +781,21 @@ def review_revision(request, document_slug, revision_id):
                 # This is a new document without approved revisions.
                 # Significance is MAJOR.
                 rev.significance = MAJOR_SIGNIFICANCE
-
-            # If document is localizable and revision was approved and
-            # user has permission, set the is_ready_for_localization value.
-            if (
-                doc.allows(request.user, "mark_ready_for_l10n")
-                and rev.is_approved
-                and rev.can_be_readied_for_localization()
-            ):
-                rev.is_ready_for_localization = form.cleaned_data["is_ready_for_localization"]
-
-                # If the revision is ready for l10n, store the date
-                # and the user.
-                if rev.is_ready_for_localization:
-                    rev.readied_for_localization = rev.reviewed
-                    rev.readied_for_localization_by = rev.reviewer
-
             rev.save()
+            # Use form data to determine localization workflow
+            is_ready_for_l10n = form.cleaned_data.get("is_ready_for_localization", False) and doc.allows(request.user, "mark_ready_for_l10n")
+            match (rev.is_approved, is_ready_for_l10n):
+                case (True, True):
+                    # Approved AND ready for l10n - handle case within the localization strategy
+                    result = _execute_l10n_strategy(rev, "review_revision", request.user)
+                    if not result.success:
+                        log.error(f"L10n strategy failed: {result.error_message}")
+                case (True, False):
+                    # Approved but NOT ready for l10n - only approval notification
+                    ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
+                case _:
+                    pass
+
 
             # Update the needs change bit (if approved, default language and
             # user has permission).
@@ -813,14 +813,6 @@ def review_revision(request, document_slug, revision_id):
                     doc.needs_change_comment = ""
 
                 doc.save()
-
-            # Send notifications of approvedness
-            if rev.is_approved:
-                ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
-            if rev.is_ready_for_localization:
-                # Trigger automatic translation with strategy pattern
-                # example: TranslationService().translate_document(rev, target_locales)
-                pass
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
@@ -1533,19 +1525,12 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     if not revision.document.allows(request.user, "mark_ready_for_l10n"):
         raise PermissionDenied
 
-    if revision.can_be_readied_for_localization():
-        # We don't use update(), because that wouldn't update
-        # Document.latest_localizable_revision.
-        revision.is_ready_for_localization = True
-        revision.readied_for_localization = datetime.now()
-        revision.readied_for_localization_by = request.user
-        revision.save()
+    result = _execute_l10n_strategy(revision, "mark_ready_for_l10n", request.user)
 
-        ReadyRevisionEvent(revision).fire(exclude=[request.user])
-
+    if result.success:
         return HttpResponse(json.dumps({"message": revision_id}))
-
-    return HttpResponseBadRequest()
+    else:
+        return HttpResponseBadRequest(result.error_message)
 
 
 @login_required
@@ -1702,6 +1687,16 @@ def _show_revision_warning(document, revision):
     if revision:
         return document.revisions.filter(id__gt=revision.id, reviewed=None).exists()
     return False
+
+
+def _execute_l10n_strategy(revision, trigger, user=None):
+    """Execute l10n strategy for a given revision and trigger."""
+    l10n_request = TranslationRequest(
+        revision=revision,
+        trigger=trigger,
+        user=user
+    )
+    return l10n_factory.execute(l10n_request)
 
 
 def recent_revisions(request):
