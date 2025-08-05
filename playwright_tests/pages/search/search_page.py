@@ -1,4 +1,4 @@
-from playwright.sync_api import Locator, Page
+from playwright.sync_api import Locator, Page, ElementHandle
 
 from playwright_tests.core.basepage import BasePage
 
@@ -20,16 +20,23 @@ class SearchPage(BasePage):
         self.search_results_section = page.locator("main#search-results-list")
 
         # Locators belonging to the search results filter
-        self.view_all_filter = page.locator("//span[text()='View All']/..[0]")
-        self.help_articles_only_filter = page.locator("//span[text()='Help Articles Only']/..[0]")
+        self.selected_filter_locator = page.locator(
+            "//ul[@id='doctype-filter']/li[@class='tabs--item']/a[@class='selected']/span")
+        self.view_all_filter = page.locator(
+            "//ul[@id='doctype-filter']/li[@class='tabs--item']/a/span[text()='View All']")
+        self.help_articles_only_filter = page.locator(
+            "//ul[@id='doctype-filter']/li[@class='tabs--item']/a/span[text()='Help Articles "
+            "Only']")
         self.community_discussions_only_filter = page.locator(
-            "//span[text()='Community Discussion Only']/..[0]")
+            "//ul[@id='doctype-filter']/li[@class='tabs--item']/a/span[text()='Community "
+            "Discussion Only']")
 
         # Locators belonging to the search results
         self.search_results_titles = page.locator(
             "section[class='topic-list content-box'] a[class='title']")
         self.search_results_articles_summary = page.locator("div[class='topic-article--text'] p")
         self.search_results_content = page.locator("section[class='topic-list content-box']")
+        self.no_search_results_message = page.locator("//main[@id='search-results-list']/p")
         self.all_bolded_article_content = page.locator(
             "//h3[@class='sumo-card-heading']/a/../following-sibling::p/strong")
         self.article_search_summary = lambda article_title: page.locator(
@@ -37,6 +44,9 @@ class SearchPage(BasePage):
             f"text())='{article_title}']/../../p")
         self.article = lambda article_title: page.locator(
             "h3[class='sumo-card-heading']").get_by_role("link", name=article_title, exact=True)
+        self.question_votes_meta_information = page.locator(
+            "//ul[@class='topic-article--meta-list thread-meta']/li[contains(text(),"
+            "'people have this problem')]")
 
         # Locators belonging to the side navbar
         self.search_results_side_nav_header = page.locator("h3[class='sidebar-subheading']")
@@ -48,6 +58,7 @@ class SearchPage(BasePage):
 
         # General page locators
         self.page_header = page.locator("h1[class='sumo-page-heading-xl']")
+
 
     def _wait_for_visibility_of_search_results_section(self):
         self._wait_for_locator(self.search_results_section)
@@ -62,6 +73,7 @@ class SearchPage(BasePage):
             popular_search_option (str): The popular search option to click on
         """
         self._click(self.popular_search(popular_search_option))
+        self._wait_for_visibility_of_search_results_section()
 
     def get_search_result_summary_text_of_a_particular_article(self, article_title) -> str:
         """Get the search result summary text of a particular article
@@ -124,6 +136,11 @@ class SearchPage(BasePage):
         self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_elements(self.search_results_titles)
 
+    def get_all_search_results_handles(self) -> list[ElementHandle]:
+        """Get all search results handles"""
+        self._wait_for_visibility_of_search_results_section()
+        return self._get_element_handles(self.search_results_titles)
+
     def get_all_search_results_articles_summary(self) -> list[str]:
         """Get all the summaries of the search results"""
         self._wait_for_visibility_of_search_results_section()
@@ -137,6 +154,11 @@ class SearchPage(BasePage):
         """
         self._wait_for_visibility_of_search_results_section()
         return self.article(article_title)
+
+    def get_text_of_question_votes(self) -> list[str]:
+        """Get the 'I have this problem' question votes text"""
+        self._wait_for_visibility_of_search_results_section()
+        return self._get_text_of_elements(self.question_votes_meta_information)
 
     def is_search_content_section_displayed(self) -> bool:
         """Check if the search content section is displayed"""
@@ -219,3 +241,23 @@ class SearchPage(BasePage):
         """Get the search results header"""
         self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_element(self.search_results_header)
+
+    def get_doctype_filter(self) -> str:
+        """Get the selected doctype filter"""
+        return self._get_text_of_element(self.selected_filter_locator)
+
+    def click_on_view_all_doctype_filter(self):
+        """Clicking on the 'Vew All' doctype filter."""
+        self._click(self.view_all_filter)
+
+    def click_on_help_articles_only_doctype_filter(self):
+        """Clicking on the 'Help Articles Only filter.'"""
+        self._click(self.help_articles_only_filter)
+
+    def click_on_community_discussions_only_doctype_filter(self):
+        """Clicking on the 'Community Discussions Only' filter"""
+        self._click(self.community_discussions_only_filter)
+
+    def get_no_search_results_message(self) -> str:
+        """Returning the message displayed when no search results were returned."""
+        return self._get_text_of_element(self.no_search_results_message)
