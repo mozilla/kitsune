@@ -102,7 +102,17 @@
                {% else %}
                  <a class="no" title="{{ _('This revision is not ready for localization.') }}"></a>
                {% endif %}
+             {% elif not rev.is_approved %}
+               <span class="not-approved" title="{{ _('This revision is not approved yet.') }}"></span>
+             {% elif (rev.significance or 0) <= 10 %}
+               <span class="trivial" title="{{ _('This revision has trivial changes only.') }}"></span>
+             {% else %}
+               <span class="not-localizable" title="{{ _('This revision cannot be marked ready for localization.') }}"></span>
              {% endif %}
+           </td>
+         {% else %}
+           <td class="l10n">
+             <span class="translated" title="{{ _('This is a translated document.') }}"></span>
            </td>
          {% endif %}
          <td class="comment">
