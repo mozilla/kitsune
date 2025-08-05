@@ -47,8 +47,8 @@ from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE,
     TEMPLATES_CATEGORY,
 )
+from kitsune.wiki.content_managers import ManualContentManager, NotificationType
 from kitsune.wiki.events import (
-    ApprovedOrReadyUnion,
     ApproveRevisionInLocaleEvent,
     EditDocumentEvent,
     ReadyRevisionEvent,
@@ -65,7 +65,6 @@ from kitsune.wiki.forms import (
 )
 from kitsune.wiki.models import (
     Document,
-    DraftRevision,
     HelpfulVote,
     ImportantDate,
     Revision,
@@ -74,7 +73,12 @@ from kitsune.wiki.models import (
     doc_html_cache_key,
 )
 from kitsune.wiki.parser import wiki_to_html
-from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
+from kitsune.wiki.strategies import (
+    ManualTranslationStrategy,
+    TranslationRequest,
+    TranslationStrategy,
+    TranslationStrategyFactory,
+)
 from kitsune.wiki.tasks import (
     render_document_cascade,
     schedule_rebuild_kb,
@@ -783,16 +787,20 @@ def review_revision(request, document_slug, revision_id):
                 rev.significance = MAJOR_SIGNIFICANCE
             rev.save()
             # Use form data to determine localization workflow
-            is_ready_for_l10n = form.cleaned_data.get("is_ready_for_localization", False) and doc.allows(request.user, "mark_ready_for_l10n")
+            # Only allow ready for l10n if the revision can actually be localized (not TYPO_SIGNIFICANCE)
+            can_be_localized = TranslationStrategy.can_handle_revision(rev)
+            is_ready_for_l10n = (
+                form.cleaned_data.get("is_ready_for_localization", False)
+                and doc.allows(request.user, "mark_ready_for_l10n")
+                and can_be_localized
+            )
             match (rev.is_approved, is_ready_for_l10n):
                 case (True, True):
-                    # Approved AND ready for l10n - handle case within the localization strategy
-                    result = _execute_l10n_strategy(rev, "review_revision", request.user)
-                    if not result.success:
-                        log.error(f"L10n strategy failed: {result.error_message}")
+                    _execute_l10n_strategy(rev, "review_revision", request.user)
                 case (True, False):
-                    # Approved but NOT ready for l10n - only approval notification
-                    ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
+                    ManualTranslationStrategy().content_manager.fire_notifications(
+                        rev, [NotificationType.TRANSLATION_WORKFLOW], [rev.creator, request.user]
+                    )
                 case _:
                     pass
 
@@ -814,8 +822,9 @@ def review_revision(request, document_slug, revision_id):
 
                 doc.save()
 
-            # Send an email (not really a "notification" in the sense that
-            # there's a Watch table entry) to revision creator.
+            # Send review comment notification (separate from approval notifications)
+            # This includes the reviewer's comment,
+            # it is separate from the content manager notifications
             msg = form.cleaned_data["comment"]
             send_reviewed_notification.delay(rev.id, doc.id, msg)
             based_on_revs_ids = based_on_revs.values_list("id", flat=True)
@@ -958,10 +967,9 @@ def translate(request, document_slug, revision_id=None):
         # User has no perms, bye.
         raise PermissionDenied
 
-    # Check if the user has draft revision saved for the parent document with requeted locale
-    draft = DraftRevision.objects.filter(
-        creator=user, document=parent_doc, locale=request.LANGUAGE_CODE
-    ).first()
+    # Check if the user has draft revision saved for the parent document with requested locale
+    content_manager = ManualContentManager()
+    draft = content_manager.get_draft(user, parent_doc, request.LANGUAGE_CODE)
 
     base_rev = doc_form = rev_form = None
 
@@ -1000,27 +1008,28 @@ def translate(request, document_slug, revision_id=None):
         discard_draft = "discard" in request.POST and bool(draft)
         # Make sure that one of the two is True but not both
         if discard_draft ^ restore_draft:
-            if discard_draft:
-                draft.delete()
+            if discard_draft and content_manager.discard_draft(draft.id, user):
                 return HttpResponseRedirect(
                     urlparams(reverse("wiki.translate", args=[document_slug]))
                 )
+            elif restore_draft:
+                draft_data = content_manager.restore_draft(draft.id, user)
 
-            # If we are here - we have a draft to restore
-            if user_has_doc_perm:
-                doc_initial.update({"title": draft.title, "slug": draft.slug})
-                doc_form = DocumentForm(initial=doc_initial)
-            if user_has_rev_perm:
-                rev_initial.update(
-                    {
-                        "content": draft.content,
-                        "summary": draft.summary,
-                        "keywords": draft.keywords,
-                        "based_on": draft.based_on.id,
-                    }
-                )
-                based_on_rev = draft.based_on
-                rev_form = RevisionForm(instance=instance, initial=rev_initial)
+                if user_has_doc_perm:
+                    doc_initial.update({
+                        "title": draft_data.get("title", ""),
+                        "slug": draft_data.get("slug", "")
+                    })
+                    doc_form = DocumentForm(initial=doc_initial)
+                if user_has_rev_perm:
+                    rev_initial.update({
+                        "content": draft_data.get("content", ""),
+                        "summary": draft_data.get("summary", ""),
+                        "keywords": draft_data.get("keywords", ""),
+                        "based_on": draft_data.get("based_on"),
+                    })
+                    based_on_rev = draft.based_on
+                    rev_form = RevisionForm(instance=instance, initial=rev_initial)
         else:
             which_form = request.POST.get("form", "both")
             doc_form_invalid = False
@@ -1666,11 +1675,8 @@ def _document_form_initial(document):
 
 def _save_rev_and_notify(rev_form, creator, document, based_on_id=None, base_rev=None):
     """Save the given RevisionForm and send notifications."""
-    new_rev = rev_form.save(creator, document, based_on_id, base_rev)
-
-    # Enqueue notifications
-    ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=[new_rev.creator])
-    EditDocumentEvent(new_rev).fire(exclude=[new_rev.creator])
+    # Form.save() now handles notifications via strategy
+    return rev_form.save(creator, document, based_on_id, base_rev)
 
 
 def _maybe_schedule_rebuild(form):
