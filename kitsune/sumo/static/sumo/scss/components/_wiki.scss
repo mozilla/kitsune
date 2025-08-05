@@ -476,6 +476,36 @@ article {
         cursor: pointer;
       }
     }
+
+    span {
+      display: inline-block;
+      text-decoration: none;
+      height: 20px;
+      width: 20px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      &.not-approved {
+        background-image: url("protocol/img/icons/warning.svg");
+        opacity: 0.6;
+      }
+
+      &.trivial {
+        background-image: url("protocol/img/icons/info.svg");
+        opacity: 0.4;
+      }
+
+      &.not-localizable {
+        background-image: url("protocol/img/icons/delete.svg");
+        opacity: 0.4;
+      }
+
+      &.translated {
+        background-image: url("protocol/img/icons/globe.svg");
+        opacity: 0.6;
+      }
+    }
   }
 
   .compare {
