@@ -13,7 +13,13 @@ from kitsune import search as constants
 from kitsune.products.models import Product
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.forms import SimpleSearchForm
-from kitsune.search.search import CompoundSearch, QuestionSearch, WikiSearch
+from kitsune.search.search import (
+    CompoundSearch,
+    QuestionSearch,
+    SemanticQuestionSearch,
+    SemanticWikiSearch,
+    WikiSearch,
+)
 from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
@@ -72,6 +78,34 @@ def _get_product_title(product_title):
     return product, product_titles
 
 
+def _create_search(use_semantic, query, locale, product, w_flags):
+    """Create appropriate search object based on search type."""
+    search = CompoundSearch()
+
+    if use_semantic:
+        wiki_class, question_class = SemanticWikiSearch, SemanticQuestionSearch
+    else:
+        wiki_class, question_class = WikiSearch, QuestionSearch
+
+    if w_flags & constants.WHERE_WIKI:
+        search.add(wiki_class(query=query, locale=locale, product=product))
+    if w_flags & constants.WHERE_SUPPORT:
+        search.add(question_class(query=query, locale=locale, product=product))
+
+    return search
+
+
+def _execute_search_with_pagination(request, search):
+    """Execute search and apply pagination."""
+    page = paginate(
+        request,
+        search,
+        per_page=settings.SEARCH_RESULTS_PER_PAGE,
+        paginator_cls=SumoSearchPaginator,
+    )
+    return page, search.total, search.results
+
+
 def simple_search(request):
     is_json = request.GET.get("format") == "json"
     search_form = SimpleSearchForm(request.GET, auto_id=False)
@@ -96,23 +130,19 @@ def simple_search(request):
     product, product_titles = _get_product_title(cleaned["product"])
 
     # create search object
-    search = CompoundSearch()
+    use_semantic = settings.USE_SEMANTIC_SEARCH
 
-    # apply aaq/kb configs
-    if cleaned["w"] & constants.WHERE_WIKI:
-        search.add(WikiSearch(query=cleaned["q"], locale=language, product=product))
-    if cleaned["w"] & constants.WHERE_SUPPORT:
-        search.add(QuestionSearch(query=cleaned["q"], locale=language, product=product))
+    if use_semantic:
+        try:
+            search = _create_search(True, cleaned["q"], language, product, cleaned["w"])
+            page, total, results = _execute_search_with_pagination(request, search)
+        except Exception as e:
+            log.warning(f"Semantic search failed, falling back to traditional: {e}")
+            use_semantic = False
 
-    # execute search
-    page = paginate(
-        request,
-        search,
-        per_page=settings.SEARCH_RESULTS_PER_PAGE,
-        paginator_cls=SumoSearchPaginator,
-    )
-    total = search.total
-    results = search.results
+    if not use_semantic:
+        search = _create_search(False, cleaned["q"], language, product, cleaned["w"])
+        page, total, results = _execute_search_with_pagination(request, search)
 
     # generate fallback results if necessary
     fallback_results = None
