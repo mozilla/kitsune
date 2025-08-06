@@ -8,7 +8,7 @@ from kitsune.questions.models import Answer
 from kitsune.wiki.models import Document, Revision
 
 
-def is_marked_for_deletion(user, origin):
+def skip_on_user_deletion(user, origin):
     """
     Within the context of a pre or post-delete event, returns whether or
     not the deletion of the given user is at least part of the origin of
@@ -40,7 +40,7 @@ def record_deleted_answer_contributions(sender, instance, origin, **kwargs):
         or (not instance.creator.is_active)
         or (instance.creator == question.creator)
         or instance.creator.profile.is_system_account
-        or is_marked_for_deletion(instance.creator, origin)
+        or skip_on_user_deletion(instance.creator, origin)
     ):
         dc = DeletedContribution.objects.create(
             content_type=ContentType.objects.get_for_model(Answer),
@@ -69,7 +69,7 @@ def record_deleted_revision_contribution(sender, instance, origin, **kwargs):
     if (
         instance.creator.is_active
         and not instance.creator.profile.is_system_account
-        and not is_marked_for_deletion(instance.creator, origin)
+        and not skip_on_user_deletion(instance.creator, origin)
     ):
         dc = DeletedContribution.objects.create(
             content_type=ContentType.objects.get_for_model(Revision),
@@ -97,7 +97,7 @@ def record_deleted_document_contributions(sender, instance, origin, **kwargs):
         if (
             contributor.is_active
             and not contributor.profile.is_system_account
-            and not is_marked_for_deletion(contributor, origin)
+            and not skip_on_user_deletion(contributor, origin)
         ):
             last_contribution_timestamp = instance.revisions.filter(
                 is_approved=True, creator=contributor
