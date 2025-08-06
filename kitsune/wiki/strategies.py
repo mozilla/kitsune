@@ -146,11 +146,12 @@ class ManualTranslationStrategy(TranslationStrategy):
             case "mark_ready_for_l10n":
                 if revision.is_ready_for_localization:
                     message = "Revision is already ready for localization"
-                return self._handle_mark_ready_for_l10n(l10n_request)
-            case "review_revision":
-                if not revision.is_ready_for_localization:
+                elif not self.can_handle_revision(revision):
                     message = "Revision is not ready for localization"
-                return self._handle_review_revision(l10n_request)
+                else:
+                    return self._handle_readied_revision(l10n_request)
+            case "review_revision":
+                return self._handle_readied_revision(l10n_request)
             case _:
                 message = f"Unknown trigger: {l10n_request.trigger}"
 
@@ -162,40 +163,30 @@ class ManualTranslationStrategy(TranslationStrategy):
         """Update revision to mark it as ready for localization."""
         revision = l10n_request.revision
         revision.is_ready_for_localization = True
-        revision.readied_for_localization = datetime.now()
+        revision.readied_for_localization = (
+            revision.reviewed if l10n_request.trigger == "review_revision" else datetime.now()
+        )
         if l10n_request.user:
             revision.readied_for_localization_by = l10n_request.user
         revision.save()
 
-    def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Handle mark_ready_for_l10n trigger."""
-        self._update_revision_for_localization(l10n_request)
-
-        return TranslationResult(
-            success=True,
-            method=TranslationMethod.MANUAL,
-            metadata={},
-        )
-
-    def _handle_review_revision(self, l10n_request: TranslationRequest) -> TranslationResult:
+    def _handle_readied_revision(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle review_revision trigger - full workflow."""
         # Step 1: Update database (mark as ready for l10n)
         self._update_revision_for_localization(l10n_request)
         # Step 2: Fire notifications to translators
         self._notify_translators(l10n_request)
 
-        return TranslationResult(
-            success=True,
-            method=TranslationMethod.MANUAL,
-            metadata={}
-        )
-
+        return TranslationResult(success=True, method=TranslationMethod.MANUAL, metadata={})
 
     def _notify_translators(self, l10n_request: TranslationRequest) -> None:
         """Fire notifications to translators about the ready revision."""
-        from kitsune.wiki.events import ApprovedOrReadyUnion
+        from kitsune.wiki.events import ApprovedOrReadyUnion, ReadyRevisionEvent
 
-        ApprovedOrReadyUnion(l10n_request.revision).fire()
+        if l10n_request.trigger == "mark_ready_for_l10n":
+            ReadyRevisionEvent(l10n_request.revision).fire()
+        else:
+            ApprovedOrReadyUnion(l10n_request.revision).fire()
 
 
 class TranslationStrategyFactory:

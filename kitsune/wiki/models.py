@@ -897,9 +897,7 @@ class Revision(ModelBase, AbstractRevision):
                     % {"id": old.id}
                 )
 
-        from kitsune.wiki.strategies import TranslationStrategy
-
-        if not TranslationStrategy.can_handle_revision(self):
+        if not self.can_be_translated():
             self.is_ready_for_localization = False
 
     def save(self, *args, **kwargs):

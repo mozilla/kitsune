@@ -783,7 +783,11 @@ def review_revision(request, document_slug, revision_id):
                 rev.significance = MAJOR_SIGNIFICANCE
             rev.save()
             # Use form data to determine localization workflow
-            is_ready_for_l10n = form.cleaned_data.get("is_ready_for_localization", False) and doc.allows(request.user, "mark_ready_for_l10n")
+            is_ready_for_l10n = (
+                form.cleaned_data.get("is_ready_for_localization", False)
+                and doc.allows(request.user, "mark_ready_for_l10n")
+                and rev.can_be_translated()
+            )
             match (rev.is_approved, is_ready_for_l10n):
                 case (True, True):
                     # Approved AND ready for l10n - handle case within the localization strategy
@@ -795,7 +799,6 @@ def review_revision(request, document_slug, revision_id):
                     ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
                 case _:
                     pass
-
 
             # Update the needs change bit (if approved, default language and
             # user has permission).
@@ -1550,7 +1553,9 @@ def delete_document(request, document_slug):
 
     # Handle confirm delete form POST
     log.warning(
-        "User {} is deleting document: {} (id={})".format(request.user, document.title, document.id)
+        "User {} is deleting document: {} (id={})".format(
+            request.user, document.title, document.id
+        )
     )
     document.delete()
 
@@ -1691,11 +1696,7 @@ def _show_revision_warning(document, revision):
 
 def _execute_l10n_strategy(revision, trigger, user=None):
     """Execute l10n strategy for a given revision and trigger."""
-    l10n_request = TranslationRequest(
-        revision=revision,
-        trigger=trigger,
-        user=user
-    )
+    l10n_request = TranslationRequest(revision=revision, trigger=trigger, user=user)
     return l10n_factory.execute(l10n_request)
 
 
