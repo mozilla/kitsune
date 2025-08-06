@@ -18,7 +18,7 @@ def is_marked_for_deletion(user, origin):
         return False
 
     if isinstance(origin, QuerySet):
-        return user in origin
+        return origin.filter(pk=user.pk).exists()
 
     # The origin is a Django model instance.
     return user == origin
