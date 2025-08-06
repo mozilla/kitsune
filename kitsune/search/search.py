@@ -425,3 +425,48 @@ class CompoundSearch(SumoSearch):
         for child in self._children:
             if same_base_index(index, child.get_index()):
                 return child.make_result(hit)
+
+
+def _build_semantic_query(semantic_field, query_text, locale='en-US'):
+    """
+    Build a semantic query for the specified field and locale.
+    Helper function for semantic search classes.
+    """
+    field_name = f"{semantic_field}.{locale}"
+    return DSLQ('semantic', field=field_name, query=query_text)
+
+
+@dataclass
+class SemanticWikiSearch(WikiSearch):
+    """Semantic search over Knowledge Base articles using E5 multilingual model."""
+
+    def build_query(self):
+        """Override to use semantic queries instead of traditional text search."""
+        if not self.query:
+            return DSLQ("match_all")
+
+        # Build semantic queries for all wiki semantic fields
+        title_query = _build_semantic_query('title_semantic', self.query, self.locale)
+        content_query = _build_semantic_query('content_semantic', self.query, self.locale)
+        summary_query = _build_semantic_query('summary_semantic', self.query, self.locale)
+        keywords_query = _build_semantic_query('keywords_semantic', self.query, self.locale)
+
+        # Combine semantic queries
+        return title_query | content_query | summary_query | keywords_query
+
+
+@dataclass
+class SemanticQuestionSearch(QuestionSearch):
+    """Semantic search over questions using E5 multilingual model."""
+
+    def build_query(self):
+        """Override to use semantic queries instead of traditional text search."""
+        if not self.query:
+            return DSLQ("match_all")
+
+        # Build semantic queries for question fields
+        title_query = _build_semantic_query('question_title_semantic', self.query, self.locale)
+        content_query = _build_semantic_query('question_content_semantic', self.query, self.locale)
+        answer_query = _build_semantic_query('answer_content_semantic', self.query, self.locale)
+
+        return title_query | content_query | answer_query
