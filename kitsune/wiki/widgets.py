@@ -71,11 +71,20 @@ class ProductsWidget(forms.widgets.SelectMultiple):
 class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     """A widget to render the related documents list and search field."""
 
+    def __init__(self, attrs=None):
+        super().__init__(attrs)
+
     def render(self, name, value, attrs=None, renderer=None):
         if isinstance(value, int):
-            related_documents = Document.objects.filter(id__in=[value])
+            document_ids = [value]
         elif not isinstance(value, str) and isinstance(value, Iterable):
-            related_documents = Document.objects.filter(id__in=value)
+            document_ids = list(value)
+        else:
+            document_ids = []
+
+        if document_ids:
+            # Get the documents by their IDs
+            related_documents = Document.objects.filter(id__in=document_ids)
         else:
             related_documents = Document.objects.none()
 
