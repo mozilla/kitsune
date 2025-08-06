@@ -98,10 +98,10 @@ class DocumentForm(forms.ModelForm):
     )
 
     is_localizable = forms.BooleanField(
-        initial=True, label=_lazy("Allow translations:"), required=False
+        initial=True, label=_lazy("Allow translations"), required=False
     )
 
-    is_archived = forms.BooleanField(label=_lazy("Obsolete:"), required=False)
+    is_archived = forms.BooleanField(label=_lazy("Obsolete"), required=False)
 
     restrict_to_groups = forms.ModelMultipleChoiceField(
         required=False,
@@ -111,7 +111,7 @@ class DocumentForm(forms.ModelForm):
     )
 
     allow_discussion = forms.BooleanField(
-        label=_lazy("Allow discussion on this article?"), initial=True, required=False
+        label=_lazy("Allow discussion on this article"), initial=True, required=False
     )
 
     category = forms.ChoiceField(
@@ -119,7 +119,7 @@ class DocumentForm(forms.ModelForm):
         # Required for non-translations, which is
         # enforced in Document.clean().
         required=False,
-        label=_lazy("Category:"),
+        label=_lazy("Category"),
         help_text=_lazy("Type of article"),
     )
 
@@ -136,15 +136,15 @@ class DocumentForm(forms.ModelForm):
     )
 
     related_documents = forms.MultipleChoiceField(
-        label=_lazy("Related documents:"), required=False, widget=RelatedDocumentsWidget()
+        label=_lazy("Related documents"), required=False, widget=RelatedDocumentsWidget()
     )
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
-    needs_change = forms.BooleanField(label=_lazy("Needs change:"), initial=False, required=False)
+    needs_change = forms.BooleanField(label=_lazy("Needs change"), initial=False, required=False)
 
     needs_change_comment = forms.CharField(
-        label=_lazy("Comment:"), widget=forms.Textarea(), required=False
+        label=_lazy("Comment"), widget=forms.Textarea(), required=False
     )
 
     def clean_slug(self):
@@ -211,8 +211,8 @@ class DocumentForm(forms.ModelForm):
         fields = (
             "title",
             "slug",
+            "related_documents",
             "category",
-            "is_localizable",
             "products",
             "topics",
             "locale",
@@ -220,7 +220,7 @@ class DocumentForm(forms.ModelForm):
             "allow_discussion",
             "needs_change",
             "needs_change_comment",
-            "related_documents",
+            "is_localizable",
             "restrict_to_groups",
         )
 
