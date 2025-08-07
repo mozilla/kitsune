@@ -16,6 +16,9 @@ from kitsune.search.config import SEMANTIC_SEARCH_MIN_SCORE
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.search import (
     CompoundSearch,
+    HybridCompoundSearch,
+    HybridQuestionSearch,
+    HybridWikiSearch,
     QuestionSearch,
     SemanticQuestionSearch,
     SemanticWikiSearch,
@@ -79,21 +82,49 @@ def _get_product_title(product_title):
     return product, product_titles
 
 
-def _create_search(use_semantic, query, locale, product, w_flags):
+def _create_search(search_type, query, locale, product, w_flags):
     """Create appropriate search object based on search type."""
-    search = CompoundSearch()
 
-    if use_semantic:
-        wiki_class, question_class = SemanticWikiSearch, SemanticQuestionSearch
+    # Map search types to their corresponding classes
+    search_classes = {
+        "hybrid": (HybridWikiSearch, HybridQuestionSearch, HybridCompoundSearch),
+        "semantic": (SemanticWikiSearch, SemanticQuestionSearch, None),
+        "traditional": (WikiSearch, QuestionSearch, None),
+    }
+
+    # Default to hybrid if not specified
+    if search_type not in search_classes:
+        search_type = "hybrid"
+
+    wiki_class, question_class, compound_class = search_classes[search_type]
+
+    # Determine which content types to search
+    has_wiki = bool(w_flags & constants.WHERE_WIKI)
+    has_questions = bool(w_flags & constants.WHERE_SUPPORT)
+
+    # For hybrid search, use optimized single-type classes when possible
+    if search_type == "hybrid":
+        if has_wiki and has_questions:
+            # Both types - use compound search
+            return compound_class(query=query, locale=locale, product=product)
+        elif has_wiki:
+            # Wiki only - use direct wiki search
+            return wiki_class(query=query, locale=locale, product=product)
+        elif has_questions:
+            # Questions only - use direct question search
+            return question_class(query=query, locale=locale, product=product)
+        else:
+            # No specific flags - default to compound search
+            return compound_class(query=query, locale=locale, product=product)
+
+    # For semantic and traditional search, use CompoundSearch with appropriate classes
     else:
-        wiki_class, question_class = WikiSearch, QuestionSearch
-
-    if w_flags & constants.WHERE_WIKI:
-        search.add(wiki_class(query=query, locale=locale, product=product))
-    if w_flags & constants.WHERE_SUPPORT:
-        search.add(question_class(query=query, locale=locale, product=product))
-
-    return search
+        search = CompoundSearch()
+        if has_wiki:
+            search.add(wiki_class(query=query, locale=locale, product=product))
+        if has_questions:
+            search.add(question_class(query=query, locale=locale, product=product))
+        return search
 
 
 def _execute_search_with_pagination(request, search):
@@ -130,26 +161,76 @@ def simple_search(request):
     # get product and product titles
     product, product_titles = _get_product_title(cleaned["product"])
 
-    # create search object
-    use_semantic = settings.USE_SEMANTIC_SEARCH
+    # create search object - default to hybrid search
+    search_type = cleaned.get("search_type") or request.GET.get("search_type", "hybrid")
 
-    if use_semantic:
-        try:
-            search = _create_search(True, cleaned["q"], language, product, cleaned["w"])
-            page, total, results = _execute_search_with_pagination(request, search)
+    # Allow override to traditional search if needed
+    if not getattr(settings, "USE_SEMANTIC_SEARCH", True):
+        search_type = "traditional"
 
-            # Check if semantic search results meet minimum score threshold
-            if total > 0 and results:
-                max_score = max(result.meta.score for result in results)
-                if max_score < SEMANTIC_SEARCH_MIN_SCORE:
-                    log.info(f"Semantic search max score {max_score} below threshold {SEMANTIC_SEARCH_MIN_SCORE}, falling back to traditional")
-                    use_semantic = False
-        except Exception as e:
-            log.warning(f"Semantic search failed, falling back to traditional: {e}")
-            use_semantic = False
+    try:
+        search = _create_search(search_type, cleaned["q"], language, product, cleaned["w"])
+        page, total, results = _execute_search_with_pagination(request, search)
 
-    if not use_semantic:
-        search = _create_search(False, cleaned["q"], language, product, cleaned["w"])
+        # Enhanced logging for search analysis
+        log.info(f"Search '{cleaned['q']}' ({search_type}) returned {total} results")
+        if results:
+            scores = []
+            for i, result in enumerate(results[:10]):  # Log first 10 results
+                score = result.get('score', 'unknown') if isinstance(result, dict) else getattr(result, 'meta', {}).get('score', 'unknown')
+                title = result.get('title', 'unknown') if isinstance(result, dict) else getattr(result, 'title', 'unknown')
+                result_type = result.get('type', 'unknown') if isinstance(result, dict) else 'unknown'
+
+                if isinstance(score, int | float):
+                    scores.append(score)
+
+                if i < 5:  # Only log details for top 5
+                    log.info(f"Result {i+1}: score={score}, type={result_type}, title='{title[:50]}...'")
+
+            # Log score distribution for analysis
+            if scores:
+                min_score, max_score = min(scores), max(scores)
+                avg_score = sum(scores) / len(scores)
+                log.info(f"Score distribution: min={min_score:.3f}, max={max_score:.3f}, avg={avg_score:.3f}, count={len(scores)}")
+
+                # Log potential score gaps that might indicate semantic vs text results
+                if len(scores) >= 2:
+                    score_gaps = [abs(scores[i] - scores[i+1]) for i in range(len(scores)-1)]
+                    max_gap = max(score_gaps) if score_gaps else 0
+                    log.info(f"Max score gap: {max_gap:.3f} (may indicate retriever mixing)")
+        else:
+            log.info("No results returned from search")
+
+        # For debugging irrelevant queries, log if we got unexpected results
+        if cleaned['q'] and any(pattern in cleaned['q'].lower() for pattern in ['love', 'turtle', 'hate']):
+            if total > 0:
+                log.warning(f"UNEXPECTED: Query '{cleaned['q']}' (likely irrelevant) returned {total} results")
+                if results:
+                    max_score = max(result.get('score', 0) for result in results if isinstance(result, dict))
+                    log.warning(f"Max score for irrelevant query: {max_score:.3f}")
+            else:
+                log.info(f"GOOD: Irrelevant query '{cleaned['q']}' correctly returned 0 results")
+
+        # For hybrid search, check if semantic component is performing well
+        # Only fallback if the query seems potentially relevant
+        if search_type == "hybrid" and total > 0 and results:
+            # Results are dictionaries after make_result(), so access score key directly
+            try:
+                max_score = max(result.get("score", 0) for result in results if isinstance(result, dict))
+            except (AttributeError, TypeError, ValueError):
+                # Fallback: if results are still hit objects, try accessing meta.score
+                try:
+                    max_score = max(result.meta.score for result in results)
+                except AttributeError:
+                    max_score = 1.0  # Safe default to avoid fallback
+
+            if max_score < SEMANTIC_SEARCH_MIN_SCORE:
+                log.info(f"Hybrid search max score {max_score} below threshold {SEMANTIC_SEARCH_MIN_SCORE}, falling back to traditional")
+                search = _create_search("traditional", cleaned["q"], language, product, cleaned["w"])
+                page, total, results = _execute_search_with_pagination(request, search)
+    except Exception as e:
+        log.warning(f"Hybrid search failed, falling back to traditional: {e}")
+        search = _create_search("traditional", cleaned["q"], language, product, cleaned["w"])
         page, total, results = _execute_search_with_pagination(request, search)
 
     # generate fallback results if necessary

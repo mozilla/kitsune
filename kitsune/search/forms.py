@@ -33,6 +33,7 @@ class SimpleSearchForm(BaseSearchForm):
     explain = forms.BooleanField(required=False)
     all_products = forms.BooleanField(required=False)
     language = forms.CharField(required=False)
+    search_type = forms.CharField(required=False)  # hybrid, semantic, traditional
 
     product = forms.MultipleChoiceField(
         required=False, label=_lazy("Relevant to"), widget=forms.CheckboxSelectMultiple()
