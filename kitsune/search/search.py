@@ -449,15 +449,15 @@ class SemanticWikiSearch(WikiSearch):
         title_query = _build_semantic_query('title_semantic', self.query, self.locale)
         content_query = _build_semantic_query('content_semantic', self.query, self.locale)
         summary_query = _build_semantic_query('summary_semantic', self.query, self.locale)
-        keywords_query = _build_semantic_query('keywords_semantic', self.query, self.locale)
+        # keywords_query = _build_semantic_query('keywords_semantic', self.query, self.locale)
 
         # Combine semantic queries
-        return title_query | content_query | summary_query | keywords_query
+        return title_query | content_query | summary_query # | keywords_query
 
 
 @dataclass
 class SemanticQuestionSearch(QuestionSearch):
-    """Semantic search over questions using E5 multilingual model."""
+    """Semantic search over questions using ES model."""
 
     def build_query(self):
         """Override to use semantic queries instead of traditional text search."""
