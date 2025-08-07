@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
+from kitsune.llm.l10n.translator import translate
+from kitsune.users.models import Profile
 from kitsune.wiki.config import TYPO_SIGNIFICANCE
 from kitsune.wiki.content_managers import (
     AIContentManager,
@@ -13,7 +16,7 @@ from kitsune.wiki.content_managers import (
     ManualContentManager,
     NotificationType,
 )
-from kitsune.wiki.models import Revision
+from kitsune.wiki.models import Document, Revision
 
 
 class TranslationMethod(models.TextChoices):
@@ -106,17 +109,92 @@ class AITranslationStrategy(TranslationStrategy):
     def __post_init__(self):
         self.content_manager = AIContentManager()
 
+    def _create_translation(
+        self, doc, target_locale, translated_content, publish=True
+    ) -> Revision:
+        """
+        Create and return the machine translation of the current revision of the given
+        document for the given target locale. By default, it's approved immediately,
+        unless specific otherwise.
+        """
+        title = (
+            doc.title
+            if doc.is_template
+            else translated_content.get("title", {}).get("translation")
+        )
+
+        content = translated_content["content"]["translation"]
+        summary = translated_content["summary"]["translation"]
+        keywords = translated_content["keywords"]["translation"]
+
+        # TODO: Probably move this into the content manager?
+        target_doc = Document.objects.get_or_create(
+            parent=doc,
+            locale=target_locale,
+            defaults={
+                "title": title,
+                "slug": doc.slug,
+                "is_localizable": False,
+                "category": doc.category,
+                "is_template": doc.is_template,
+                "allow_discussion": doc.allow_discussion,
+            },
+        )
+
+        now = datetime.now()
+        sumo_bot = Profile.get_sumo_bot()
+
+        data = {
+            "created": now,
+            "creator": sumo_bot,
+            "content": content,
+            "summary": summary,
+            "keywords": keywords,
+            "is_approved": publish,
+        }
+
+        if publish:
+            data.update(reviewed=now, reviewer=sumo_bot)
+
+        return self.content_manager.create_revision(
+            data,
+            creator=sumo_bot,
+            document=target_doc,
+            based_on_id=doc.latest_localizable_revision_id,
+            send_notifications=True,
+        )
+
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Perform AI translation."""
-        # placeholder for AI translation logic
+        # First, follow the manual process so that the appropriate checks are
+        # made, the revision is marked as ready for L10N, and the appropriate
+        # notifications are sent.
+        result = ManualTranslationStrategy().translate(l10n_request)
 
+        if not result.success:
+            return result
+
+        doc = l10n_request.revision.document
+
+        if l10n_request.target_locale:
+            target_locales = [l10n_request.target_locale]
+        else:
+            target_locales = settings.AI_ENABLED_LOCALES
+
+        results = []
+        for target_locale in target_locales:
+            # TODO: This should be done asynchronously.
+            # TODO: Probably rename this "translate" function in import?
+            translated_content = translate(doc=doc, target_locale=target_locale)
+            rev = self._create_translation(doc, target_locale, translated_content, publish=True)
+            results.append((rev, translated_content))
+
+        # TODO: What to provide here?
+        # I don't think TranslationResult.translated_content as a str is useful.
         return TranslationResult(
             success=True,
             method=TranslationMethod.AI,
-            translated_content="",
-            cost=0.0,
-            quality_score=1.0,
-            metadata={},
+            metadata={"results": results},
         )
 
 
@@ -178,14 +256,13 @@ class ManualTranslationStrategy(TranslationStrategy):
             success=False, method=TranslationMethod.MANUAL, error_message=message
         )
 
-
     def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle mark_ready_for_l10n trigger."""
         # Method will auto-detect that this is a standalone action and use current time
         self.content_manager.mark_ready_for_localization(
             l10n_request.revision,
             l10n_request.user,
-            send_notifications=True
+            send_notifications=True,
         )
 
         return TranslationResult(
@@ -207,20 +284,31 @@ class ManualTranslationStrategy(TranslationStrategy):
             self.content_manager.mark_ready_for_localization(
                 l10n_request.revision,
                 l10n_request.user,
-                send_notifications=False
+                send_notifications=False,
             )
 
-        self.content_manager.fire_notifications(l10n_request.revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users)
+        self.content_manager.fire_notifications(
+            l10n_request.revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users
+        )
         return TranslationResult(
             success=True,
             method=TranslationMethod.MANUAL,
             metadata={},
         )
 
-
-    def create_revision(self, form_data, creator, document, based_on_id=None, base_rev=None, send_notifications=False):
+    def create_revision(
+        self,
+        form_data,
+        creator,
+        document,
+        based_on_id=None,
+        base_rev=None,
+        send_notifications=False,
+    ):
         """Create a revision with optional notifications."""
-        return self.content_manager.create_revision(form_data, creator, document, based_on_id, base_rev, send_notifications)
+        return self.content_manager.create_revision(
+            form_data, creator, document, based_on_id, base_rev, send_notifications
+        )
 
     def save_draft(self, user, parent_doc, target_locale, draft_data):
         """Convenience method - delegates to content_manager."""

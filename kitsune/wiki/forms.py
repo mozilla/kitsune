@@ -349,7 +349,7 @@ class RevisionForm(forms.ModelForm):
             document=document,
             based_on_id=based_on_id,
             base_rev=base_rev,
-            send_notifications=True
+            send_notifications=True,
         )
 
 
