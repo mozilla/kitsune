@@ -13,6 +13,7 @@ from kitsune.wiki.models import DraftRevision, Revision
 
 class NotificationType(models.TextChoices):
     """Types of notifications that can be fired by content managers."""
+
     CONTENT_CREATION = "content_creation", "Content Creation"
     TRANSLATION_WORKFLOW = "translation_workflow", "Translation Workflow"
     READY_FOR_L10N = "ready_for_l10n", "Ready for Localization"
@@ -21,7 +22,9 @@ class NotificationType(models.TextChoices):
 class WikiContentManager:
     """Manages both draft revisions and published revisions for wiki content."""
 
-    def save_draft(self, user, parent_doc, target_locale: str, draft_data: dict[str, Any]) -> DraftRevision:
+    def save_draft(
+        self, user, parent_doc, target_locale: str, draft_data: dict[str, Any]
+    ) -> DraftRevision:
         """Save or update a draft revision for the given user, document, and locale.
 
         Args:
@@ -90,7 +93,15 @@ class WikiContentManager:
         else:
             return True
 
-    def create_revision(self, form_data: dict[str, Any], creator, document, based_on_id=None, base_rev=None, send_notifications=False) -> Revision:
+    def create_revision(
+        self,
+        form_data: dict[str, Any],
+        creator,
+        document,
+        based_on_id=None,
+        base_rev=None,
+        send_notifications=False,
+    ) -> Revision:
         """Create a new revision from form data with validation and permissions.
 
         Args:
@@ -119,7 +130,9 @@ class WikiContentManager:
             self.fire_notifications(revision, [NotificationType.CONTENT_CREATION])
         return revision
 
-    def publish_draft(self, draft_id: int, user, form_data: dict[str, Any], based_on_id=None, base_rev=None) -> Revision:
+    def publish_draft(
+        self, draft_id: int, user, form_data: dict[str, Any], based_on_id=None, base_rev=None
+    ) -> Revision:
         """Convert a draft to a published revision and delete the draft.
 
         Args:
@@ -154,7 +167,9 @@ class WikiContentManager:
                 case NotificationType.READY_FOR_L10N:
                     ReadyRevisionEvent(revision).fire(exclude=exclude_users)
 
-    def mark_ready_for_localization(self, revision: Revision, user=None, send_notifications=True) -> None:
+    def mark_ready_for_localization(
+        self, revision: Revision, user=None, send_notifications=True
+    ) -> None:
         """Mark a revision as ready for localization and optionally send notifications."""
         revision.is_ready_for_localization = True
         revision.readied_for_localization = revision.reviewed
@@ -167,17 +182,19 @@ class WikiContentManager:
             self.fire_notifications(revision, [NotificationType.READY_FOR_L10N], exclude_users)
 
 
-
 class ManualContentManager(WikiContentManager):
     """Content manager for manual translation workflow."""
+
     pass
 
 
 class AIContentManager(WikiContentManager):
     """Content manager for AI translation workflow."""
+
     pass
 
 
 class HybridContentManager(WikiContentManager):
     """Content manager for hybrid translation workflow."""
+
     pass
