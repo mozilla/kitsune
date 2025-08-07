@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any
 
 from django.conf import settings
@@ -8,6 +7,12 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from kitsune.wiki.config import TYPO_SIGNIFICANCE
+from kitsune.wiki.content_managers import (
+    AIContentManager,
+    HybridContentManager,
+    ManualContentManager,
+    NotificationType,
+)
 from kitsune.wiki.models import Revision
 
 
@@ -66,7 +71,6 @@ class TranslationStrategy(AbstractTranslationStrategy):
         try:
             document = revision.document
         except revision.__class__.document.RelatedObjectDoesNotExist:
-            # Document doesn't exist or isn't loaded
             return False
 
         return all(
@@ -93,8 +97,14 @@ class TranslationStrategy(AbstractTranslationStrategy):
         return TranslationResult(success=True, method=TranslationMethod.MANUAL, metadata={})
 
 
+@dataclass
 class AITranslationStrategy(TranslationStrategy):
     """AI-based translation strategy without human review."""
+
+    content_manager: "AIContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = AIContentManager()
 
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Perform AI translation."""
@@ -110,8 +120,14 @@ class AITranslationStrategy(TranslationStrategy):
         )
 
 
+@dataclass
 class HybridTranslationStrategy(TranslationStrategy):
     """Hybrid translation strategy (AI + Human review)."""
+
+    content_manager: "HybridContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = HybridContentManager()
 
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Perform hybrid translation."""
@@ -127,8 +143,14 @@ class HybridTranslationStrategy(TranslationStrategy):
         )
 
 
+@dataclass
 class ManualTranslationStrategy(TranslationStrategy):
     """Manual translation workflow coordinator."""
+
+    content_manager: "ManualContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = ManualContentManager()
 
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Execute manual translation strategy based on trigger."""
@@ -144,12 +166,10 @@ class ManualTranslationStrategy(TranslationStrategy):
 
         match l10n_request.trigger:
             case "mark_ready_for_l10n":
-                if revision.is_ready_for_localization:
-                    message = "Revision is already ready for localization"
-                return self._handle_mark_ready_for_l10n(l10n_request)
-            case "review_revision":
                 if not revision.is_ready_for_localization:
-                    message = "Revision is not ready for localization"
+                    return self._handle_mark_ready_for_l10n(l10n_request)
+                message = "Revision is already ready for localization"
+            case "review_revision":
                 return self._handle_review_revision(l10n_request)
             case _:
                 message = f"Unknown trigger: {l10n_request.trigger}"
@@ -158,18 +178,15 @@ class ManualTranslationStrategy(TranslationStrategy):
             success=False, method=TranslationMethod.MANUAL, error_message=message
         )
 
-    def _update_revision_for_localization(self, l10n_request: TranslationRequest) -> None:
-        """Update revision to mark it as ready for localization."""
-        revision = l10n_request.revision
-        revision.is_ready_for_localization = True
-        revision.readied_for_localization = datetime.now()
-        if l10n_request.user:
-            revision.readied_for_localization_by = l10n_request.user
-        revision.save()
 
     def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle mark_ready_for_l10n trigger."""
-        self._update_revision_for_localization(l10n_request)
+        # Method will auto-detect that this is a standalone action and use current time
+        self.content_manager.mark_ready_for_localization(
+            l10n_request.revision,
+            l10n_request.user,
+            send_notifications=True
+        )
 
         return TranslationResult(
             success=True,
@@ -178,24 +195,48 @@ class ManualTranslationStrategy(TranslationStrategy):
         )
 
     def _handle_review_revision(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Handle review_revision trigger - full workflow."""
-        # Step 1: Update database (mark as ready for l10n)
-        self._update_revision_for_localization(l10n_request)
-        # Step 2: Fire notifications to translators
-        self._notify_translators(l10n_request)
+        """Handle review_revision trigger - sends approval notifications and conditionally handles localization."""
+        exclude_users = []
+        if l10n_request.revision.creator:
+            exclude_users.append(l10n_request.revision.creator)
+        if l10n_request.user:
+            exclude_users.append(l10n_request.user)
 
+        if self.can_handle(l10n_request):
+            # Mark as ready for localization - method will auto-detect if this is part of review workflow
+            self.content_manager.mark_ready_for_localization(
+                l10n_request.revision,
+                l10n_request.user,
+                send_notifications=False
+            )
+
+        self.content_manager.fire_notifications(l10n_request.revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users)
         return TranslationResult(
             success=True,
             method=TranslationMethod.MANUAL,
-            metadata={}
+            metadata={},
         )
 
 
-    def _notify_translators(self, l10n_request: TranslationRequest) -> None:
-        """Fire notifications to translators about the ready revision."""
-        from kitsune.wiki.events import ApprovedOrReadyUnion
+    def create_revision(self, form_data, creator, document, based_on_id=None, base_rev=None, send_notifications=False):
+        """Create a revision with optional notifications."""
+        return self.content_manager.create_revision(form_data, creator, document, based_on_id, base_rev, send_notifications)
 
-        ApprovedOrReadyUnion(l10n_request.revision).fire()
+    def save_draft(self, user, parent_doc, target_locale, draft_data):
+        """Convenience method - delegates to content_manager."""
+        return self.content_manager.save_draft(user, parent_doc, target_locale, draft_data)
+
+    def get_draft(self, user, parent_doc, target_locale):
+        """Convenience method - delegates to content_manager."""
+        return self.content_manager.get_draft(user, parent_doc, target_locale)
+
+    def restore_draft(self, draft_id, user):
+        """Convenience method - delegates to content_manager."""
+        return self.content_manager.restore_draft(draft_id, user)
+
+    def discard_draft(self, draft_id, user):
+        """Convenience method - delegates to content_manager."""
+        return self.content_manager.discard_draft(draft_id, user)
 
 
 class TranslationStrategyFactory:

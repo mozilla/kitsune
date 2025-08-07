@@ -10,6 +10,7 @@ from django.utils.translation import ngettext_lazy as _nlazy
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, MultiUsernameFilterField
 from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
+from kitsune.wiki.content_managers import ManualContentManager
 from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import ProductsWidget, RelatedDocumentsWidget, TopicsWidget
@@ -340,22 +341,16 @@ class RevisionForm(forms.ModelForm):
         form.
 
         """
-        # Throws a TypeError if somebody passes in a commit kwarg:
-        new_rev = super().save(commit=False, **kwargs)
-
-        new_rev.document = document
-        new_rev.creator = creator
-
-        if based_on_id:
-            new_rev.based_on_id = based_on_id
-
-        # If the document doesn't allow the revision creator to edit the
-        # keywords, keep the old value.
-        if base_rev and not document.allows(creator, "edit_keywords"):
-            new_rev.keywords = base_rev.keywords
-
-        new_rev.save()
-        return new_rev
+        form_data = self.cleaned_data.copy()
+        content_manager = ManualContentManager()
+        return content_manager.create_revision(
+            form_data=form_data,
+            creator=creator,
+            document=document,
+            based_on_id=based_on_id,
+            base_rev=base_rev,
+            send_notifications=True
+        )
 
 
 class DraftRevisionForm(forms.ModelForm):
@@ -369,10 +364,8 @@ class DraftRevisionForm(forms.ModelForm):
         doc_data = self.cleaned_data
         parent_doc = doc_data["based_on"].document
         locale = request.LANGUAGE_CODE
-        draft, created = DraftRevision.objects.update_or_create(
-            creator=creator, document=parent_doc, locale=locale, defaults=doc_data
-        )
-        return draft
+
+        return ManualContentManager().save_draft(creator, parent_doc, locale, doc_data)
 
 
 class ReviewForm(forms.Form):
