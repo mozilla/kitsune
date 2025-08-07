@@ -12,7 +12,7 @@ from kitsune.questions.models import Answer
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import TestCase
-from kitsune.users.models import Profile
+from kitsune.users.models import Profile, User
 from kitsune.users.tests import ContributorFactory
 from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.tests import RevisionFactory
@@ -471,3 +471,27 @@ class DeletedContributionsTests(TestCase):
         rev4.creator.delete()
         rev5.creator.delete()
         self.assertFalse(deleted_contribution_metrics_by_contributor(Document))
+
+    def test_for_user_direct_deletion(self):
+        creator = ContributorFactory()
+        AnswerFactory(question__product=ProductFactory(slug="firefox"), creator=creator)
+        RevisionFactory(creator=creator)
+        RevisionFactory(is_approved=True, creator=creator)
+
+        creator.delete()
+
+        self.assertEqual(num_deleted_contributions(Answer), 0)
+        self.assertEqual(num_deleted_contributions(Revision), 0)
+        self.assertEqual(num_deleted_contributions(Document), 0)
+
+    def test_for_user_deletion_via_queryset(self):
+        creator = ContributorFactory()
+        AnswerFactory(question__product=ProductFactory(slug="firefox"), creator=creator)
+        RevisionFactory(creator=creator)
+        RevisionFactory(is_approved=True, creator=creator)
+
+        User.objects.filter(id__in=[creator.id]).delete()
+
+        self.assertEqual(num_deleted_contributions(Answer), 0)
+        self.assertEqual(num_deleted_contributions(Revision), 0)
+        self.assertEqual(num_deleted_contributions(Document), 0)
