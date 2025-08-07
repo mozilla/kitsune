@@ -12,6 +12,7 @@ from django.views.decorators.cache import cache_page
 from kitsune import search as constants
 from kitsune.products.models import Product
 from kitsune.search.base import SumoSearchPaginator
+from kitsune.search.config import SEMANTIC_SEARCH_MIN_SCORE
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.search import (
     CompoundSearch,
@@ -136,6 +137,13 @@ def simple_search(request):
         try:
             search = _create_search(True, cleaned["q"], language, product, cleaned["w"])
             page, total, results = _execute_search_with_pagination(request, search)
+
+            # Check if semantic search results meet minimum score threshold
+            if total > 0 and results:
+                max_score = max(result.meta.score for result in results)
+                if max_score < SEMANTIC_SEARCH_MIN_SCORE:
+                    log.info(f"Semantic search max score {max_score} below threshold {SEMANTIC_SEARCH_MIN_SCORE}, falling back to traditional")
+                    use_semantic = False
         except Exception as e:
             log.warning(f"Semantic search failed, falling back to traditional: {e}")
             use_semantic = False

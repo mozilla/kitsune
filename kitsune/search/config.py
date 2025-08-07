@@ -374,3 +374,7 @@ ES_LOCALE_ANALYZERS = {
 DEFAULT_ES_CONNECTION = "es_default"
 # default refresh_interval for all indices
 DEFAULT_ES_REFRESH_INTERVAL = "60s"
+
+# Minimum score threshold for semantic search results
+# If the best result score is below this threshold, fallback to traditional search
+SEMANTIC_SEARCH_MIN_SCORE = 0.5
