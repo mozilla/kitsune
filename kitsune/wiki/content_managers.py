@@ -118,7 +118,6 @@ class WikiContentManager:
         draft.delete()
         return revision
 
-
     def create_revision(
         self,
         data: dict[str, Any],
@@ -203,6 +202,7 @@ class WikiContentManager:
             exclude_users = [user] if user else []
             self.fire_notifications(revision, [NotificationType.READY_FOR_L10N], exclude_users)
 
+
 class ManualContentManager(WikiContentManager):
     """Content manager for manual translation workflow."""
 
@@ -225,8 +225,8 @@ class AIContentManager(WikiContentManager):
 
         This method handles both document creation and revision creation for AI translations.
         """
-        target_locale = data.pop('target_locale', None)
-        translated_content = data.pop('translated_content', None)
+        target_locale = data.pop("target_locale", None)
+        translated_content = data.pop("translated_content", None)
 
         if target_locale and translated_content:
             title = (
@@ -253,9 +253,11 @@ class AIContentManager(WikiContentManager):
             if not based_on_id:
                 based_on_id = document.parent.latest_localizable_revision_id
 
-            data['created'] = datetime.now()
+            data["created"] = datetime.now()
 
-        return super().create_revision(data, document, Profile.get_sumo_bot(), based_on_id, base_rev, send_notifications)
+        return super().create_revision(
+            data, document, Profile.get_sumo_bot(), based_on_id, base_rev, send_notifications
+        )
 
     def publish_revision(self, revision: Revision, user=None, send_notifications=True) -> Revision:
         """Publish (approve) a revision using the sumo bot.
@@ -268,7 +270,7 @@ class AIContentManager(WikiContentManager):
         return super().publish_revision(revision, user, send_notifications)
 
 
-class HybridContentManager(WikiContentManager):
+class HybridContentManager(AIContentManager):
     """Content manager for hybrid translation workflow."""
 
     pass

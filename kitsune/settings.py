@@ -1380,3 +1380,4 @@ SHELL_PLUS_DONT_LOAD = ["silk"]
 
 # AI Translation
 AI_ENABLED_LOCALES = config("AI_ENABLED_LOCALES", default="", cast=Csv())
+HYBRID_ENABLED_LOCALES = config("HYBRID_ENABLED_LOCALES", default="", cast=Csv())

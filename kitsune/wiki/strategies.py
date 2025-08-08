@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
@@ -16,6 +17,11 @@ from kitsune.wiki.content_managers import (
     WikiContentManager,
 )
 from kitsune.wiki.models import Revision
+from kitsune.wiki.tasks import translate as translate_task
+
+SUPPORTED_TARGET_LOCALES = [
+    locale for locale in settings.SUMO_LANGUAGES if locale not in ("xx", "en-US")
+]
 
 
 class TranslationMethod(models.TextChoices):
@@ -35,7 +41,32 @@ class TranslationRequest:
     target_locale: str = ""
     method: Any = TranslationMethod.MANUAL
     priority: str = "normal"
+    asynchronous: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    def as_json(self):
+        return json.dumps(
+            {
+                "revision_id": self.revision.id,
+                "trigger": self.trigger,
+                "user_id": self.user.id if self.user else None,
+                "target_locale": self.target_locale,
+                "method": self.method,
+                "priority": self.priority,
+                "asynchronous": self.asynchronous,
+                "metadata": self.metadata,
+            }
+        )
+
+    @classmethod
+    def from_json(cls, data_as_json):
+        data = json.loads(data_as_json)
+        if user_id := data.pop("user_id"):
+            data["user"] = User.objects.get(id=user_id)
+        data["revision"] = Revision.objects.select_related("document").get(
+            id=data.pop("revision_id")
+        )
+        return cls(**data)
 
 
 @dataclass
@@ -55,7 +86,7 @@ class AbstractTranslationStrategy(ABC):
     """Abstract base class for translation strategies."""
 
     @abstractmethod
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult | None:
         """Perform translation using this strategy."""
         pass
 
@@ -73,7 +104,6 @@ class TranslationStrategy(AbstractTranslationStrategy):
 
     def __post_init__(self):
         self.content_manager = WikiContentManager()
-
 
     def _is_localizable_document(self, revision: Revision) -> bool:
         """Check if a document is localizable."""
@@ -101,6 +131,28 @@ class TranslationStrategy(AbstractTranslationStrategy):
         """Check if a revision meets basic criteria for l10n."""
         return cls()._is_localizable_document(revision)
 
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult | None:
+        """Execute manual translation strategy based on trigger."""
+        return TranslationResult(success=True)
+
+    def _log_operation(
+        self, l10n_request: TranslationRequest, translation_result: TranslationResult
+    ) -> None:
+        # TODO: Future enhancement - log all operations to database
+        # This will track: revision_id, strategy_used, timestamps, outcomes
+        # self._log_operation(l10n_request, result)
+        pass
+
+
+@dataclass
+class ManualTranslationStrategy(TranslationStrategy):
+    """Manual translation workflow coordinator."""
+
+    content_manager: "ManualContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = ManualContentManager()
+
     def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle mark_ready_for_l10n trigger."""
         # Method will auto-detect that this is a standalone action and use current time
@@ -110,48 +162,56 @@ class TranslationStrategy(AbstractTranslationStrategy):
             send_notifications=True,
         )
 
-        return TranslationResult(
+        result = TranslationResult(
             success=True,
             method=TranslationMethod.MANUAL,
+            revision=l10n_request.revision,
             metadata={},
         )
+        self._log_operation(l10n_request, result)
+        return result
 
     def _handle_review_revision(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle review_revision trigger - sends approval notifications and conditionally handles localization."""
+        # Mark as ready for localization - method will auto-detect if this is part of review workflow
+        self.content_manager.mark_ready_for_localization(
+            l10n_request.revision,
+            l10n_request.user,
+            send_notifications=False,
+        )
+
         exclude_users = []
         if l10n_request.revision.creator:
             exclude_users.append(l10n_request.revision.creator)
         if l10n_request.user:
             exclude_users.append(l10n_request.user)
 
-        if self.can_handle(l10n_request):
-            # Mark as ready for localization - method will auto-detect if this is part of review workflow
-            self.content_manager.mark_ready_for_localization(
-                l10n_request.revision,
-                l10n_request.user,
-                send_notifications=False,
-            )
-
         self.content_manager.fire_notifications(
             l10n_request.revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users
         )
-        return TranslationResult(
+        result = TranslationResult(
             success=True,
             method=TranslationMethod.MANUAL,
+            revision=l10n_request.revision,
             metadata={},
         )
+        self._log_operation(l10n_request, result)
+        return result
 
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Perform translation using this strategy."""
+        revision = l10n_request.revision
 
         if not self.can_handle(l10n_request):
-            return TranslationResult(
+            result = TranslationResult(
                 success=False,
                 method=TranslationMethod.MANUAL,
+                revision=revision,
                 error_message="Revision cannot be marked as ready for localization",
             )
+            self._log_operation(l10n_request, result)
+            return result
 
-        revision = l10n_request.revision
         message = None
 
         match l10n_request.trigger:
@@ -164,10 +224,15 @@ class TranslationStrategy(AbstractTranslationStrategy):
             case _:
                 message = f"Unknown trigger: {l10n_request.trigger}"
 
-        return TranslationResult(
-            success=False, method=TranslationMethod.MANUAL, revision=revision, error_message=message, metadata={}
+        result = TranslationResult(
+            success=False,
+            method=TranslationMethod.MANUAL,
+            revision=revision,
+            error_message=message,
+            metadata={},
         )
-
+        self._log_operation(l10n_request, result)
+        return result
 
 
 @dataclass
@@ -179,19 +244,15 @@ class AITranslationStrategy(TranslationStrategy):
     def __post_init__(self):
         self.content_manager = AIContentManager()
 
-
-
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+    def translate(self, l10n_request: TranslationRequest) -> None:
         """Perform AI translation."""
-        # Base class handles the revision marking and notifications.
-        result = super().translate(l10n_request)
-
-        if not result.success:
-            return result
+        if l10n_request.asynchronous:
+            l10n_request.method = TranslationMethod.AI
+            translate_task.delay(l10n_request.as_json())
+            return
 
         doc = l10n_request.revision.document
 
-        # TODO: This should be done asynchronously.
         translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
 
         data = {
@@ -203,14 +264,24 @@ class AITranslationStrategy(TranslationStrategy):
         }
 
         rev = self.content_manager.publish_revision(
-            self.content_manager.create_revision(data, doc, send_notifications=True),
+            self.content_manager.create_revision(data, doc, send_notifications=True)
         )
 
-        return TranslationResult(
-            success=True,
-            method=TranslationMethod.AI,
-            revision=rev,
-            metadata={},
+        self._log_operation(
+            l10n_request,
+            TranslationResult(
+                success=True,
+                method=TranslationMethod.AI,
+                revision=rev,
+                metadata={
+                    "explanation": {
+                        "content": translated_content["content"]["explanation"],
+                        "summary": translated_content["summary"]["explanation"],
+                        "keywords": translated_content["keywords"]["explanation"],
+                        "title": translated_content.get("title", {}).get("explanation"),
+                    }
+                },
+            ),
         )
 
 
@@ -223,62 +294,43 @@ class HybridTranslationStrategy(TranslationStrategy):
     def __post_init__(self):
         self.content_manager = HybridContentManager()
 
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+    def translate(self, l10n_request: TranslationRequest) -> None:
         """Perform hybrid translation."""
+        if l10n_request.asynchronous:
+            l10n_request.method = TranslationMethod.HYBRID
+            translate_task.delay(l10n_request.as_json())
+            return
 
-        # placeholder for hybrid translation logic
-        return TranslationResult(
-            success=True,
-            method=TranslationMethod.HYBRID,
-            revision=l10n_request.revision,
-            cost=0.0,
-            quality_score=0.95,
-            metadata={},
+        doc = l10n_request.revision.document
+
+        translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
+
+        data = {
+            "content": translated_content["content"]["translation"],
+            "summary": translated_content["summary"]["translation"],
+            "keywords": translated_content["keywords"]["translation"],
+            "target_locale": l10n_request.target_locale,
+            "translated_content": translated_content,
+        }
+
+        rev = self.content_manager.create_revision(data, doc, send_notifications=True)
+
+        self._log_operation(
+            l10n_request,
+            TranslationResult(
+                success=True,
+                method=TranslationMethod.HYBRID,
+                revision=rev,
+                metadata={
+                    "explanation": {
+                        "content": translated_content["content"]["explanation"],
+                        "summary": translated_content["summary"]["explanation"],
+                        "keywords": translated_content["keywords"]["explanation"],
+                        "title": translated_content.get("title", {}).get("explanation"),
+                    }
+                },
+            ),
         )
-
-
-@dataclass
-class ManualTranslationStrategy(TranslationStrategy):
-    """Manual translation workflow coordinator."""
-
-    content_manager: "ManualContentManager" = field(init=False)
-
-    def __post_init__(self):
-        self.content_manager = ManualContentManager()
-
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Execute manual translation strategy based on trigger."""
-        return super().translate(l10n_request)
-
-    def create_revision(
-        self,
-        data,
-        document,
-        creator,
-        based_on_id=None,
-        base_rev=None,
-        send_notifications=False,
-    ):
-        """Create a revision with optional notifications."""
-        return self.content_manager.create_revision(
-            data, document, creator, based_on_id, base_rev, send_notifications
-        )
-
-    def save_draft(self, user, parent_doc, target_locale, draft_data):
-        """Convenience method - delegates to content_manager."""
-        return self.content_manager.save_draft(user, parent_doc, target_locale, draft_data)
-
-    def get_draft(self, user, parent_doc, target_locale):
-        """Convenience method - delegates to content_manager."""
-        return self.content_manager.get_draft(user, parent_doc, target_locale)
-
-    def restore_draft(self, draft_id, user):
-        """Convenience method - delegates to content_manager."""
-        return self.content_manager.restore_draft(draft_id, user)
-
-    def discard_draft(self, draft_id, user):
-        """Convenience method - delegates to content_manager."""
-        return self.content_manager.discard_draft(draft_id, user)
 
 
 class TranslationStrategyFactory:
@@ -291,25 +343,30 @@ class TranslationStrategyFactory:
             TranslationMethod.HYBRID: HybridTranslationStrategy(),
         }
 
-    def get_strategy(self, method: TranslationMethod) -> TranslationStrategy:
+    def get_strategy(self, method: Any) -> TranslationStrategy:
         """Get a specific strategy by method."""
         return self._strategies[method]
 
-    def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy:
+    def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy | None:
         """Select the best strategy based on business rules."""
         if l10n_request.target_locale in settings.AI_ENABLED_LOCALES:
-            return self._strategies[TranslationMethod.AI]
-        return self._strategies[TranslationMethod.MANUAL]
+            return self.get_strategy(TranslationMethod.AI)
+        elif l10n_request.target_locale in settings.HYBRID_ENABLED_LOCALES:
+            return self.get_strategy(TranslationMethod.HYBRID)
+        return None
 
     def execute(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Execute translation workflow using appropriate strategy."""
-        # TODO: Future enhancement - log all operations to database
-        # This will track: revision_id, strategy_used, timestamps, outcomes
+        # The manual strategy handles the revision marking and notifications.
+        result = ManualTranslationStrategy().translate(l10n_request)
 
-        strategy = self.select_best_strategy(l10n_request)
-        result = strategy.translate(l10n_request)
+        if not result.success:
+            return result
 
-        # TODO: Store result in database log
-        # self._log_operation(l10n_request, result)
+        for target_locale in SUPPORTED_TARGET_LOCALES:
+            l10n_request.target_locale = target_locale
+            if strategy := self.select_best_strategy(l10n_request):
+                l10n_request.asynchronous = True
+                strategy.translate(l10n_request)
 
         return result
