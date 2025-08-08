@@ -341,12 +341,12 @@ class RevisionForm(forms.ModelForm):
         form.
 
         """
-        form_data = self.cleaned_data.copy()
+        data = self.cleaned_data.copy()
         content_manager = ManualContentManager()
         return content_manager.create_revision(
-            form_data=form_data,
-            creator=creator,
+            data=data,
             document=document,
+            creator=creator,
             based_on_id=based_on_id,
             base_rev=base_rev,
             send_notifications=True,

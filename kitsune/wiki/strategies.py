@@ -1,22 +1,21 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
-from kitsune.llm.l10n.translator import translate
-from kitsune.users.models import Profile
+from kitsune.llm.l10n.translator import translate as llm_translate
 from kitsune.wiki.config import TYPO_SIGNIFICANCE
 from kitsune.wiki.content_managers import (
     AIContentManager,
     HybridContentManager,
     ManualContentManager,
     NotificationType,
+    WikiContentManager,
 )
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Revision
 
 
 class TranslationMethod(models.TextChoices):
@@ -33,7 +32,7 @@ class TranslationRequest:
     revision: Revision
     trigger: str
     user: User | None = None
-    target_locale: str | None = None
+    target_locale: str = ""
     method: Any = TranslationMethod.MANUAL
     priority: str = "normal"
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -45,7 +44,7 @@ class TranslationResult:
 
     success: bool
     method: Any = None
-    translated_content: str | None = None
+    revision: Revision | None = None
     error_message: str | None = None
     cost: float = 0.0
     quality_score: float | None = None
@@ -66,8 +65,15 @@ class AbstractTranslationStrategy(ABC):
         pass
 
 
+@dataclass
 class TranslationStrategy(AbstractTranslationStrategy):
     """Base class for translation strategies."""
+
+    content_manager: "WikiContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = WikiContentManager()
+
 
     def _is_localizable_document(self, revision: Revision) -> bool:
         """Check if a document is localizable."""
@@ -94,167 +100,6 @@ class TranslationStrategy(AbstractTranslationStrategy):
     def can_handle_revision(cls, revision: Revision) -> bool:
         """Check if a revision meets basic criteria for l10n."""
         return cls()._is_localizable_document(revision)
-
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Perform translation using this strategy."""
-        return TranslationResult(success=True, method=TranslationMethod.MANUAL, metadata={})
-
-
-@dataclass
-class AITranslationStrategy(TranslationStrategy):
-    """AI-based translation strategy without human review."""
-
-    content_manager: "AIContentManager" = field(init=False)
-
-    def __post_init__(self):
-        self.content_manager = AIContentManager()
-
-    def _create_translation(
-        self, doc, target_locale, translated_content, publish=True
-    ) -> Revision:
-        """
-        Create and return the machine translation of the current revision of the given
-        document for the given target locale. By default, it's approved immediately,
-        unless specific otherwise.
-        """
-        title = (
-            doc.title
-            if doc.is_template
-            else translated_content.get("title", {}).get("translation")
-        )
-
-        content = translated_content["content"]["translation"]
-        summary = translated_content["summary"]["translation"]
-        keywords = translated_content["keywords"]["translation"]
-
-        # TODO: Probably move this into the content manager?
-        target_doc = Document.objects.get_or_create(
-            parent=doc,
-            locale=target_locale,
-            defaults={
-                "title": title,
-                "slug": doc.slug,
-                "is_localizable": False,
-                "category": doc.category,
-                "is_template": doc.is_template,
-                "allow_discussion": doc.allow_discussion,
-            },
-        )
-
-        now = datetime.now()
-        sumo_bot = Profile.get_sumo_bot()
-
-        data = {
-            "created": now,
-            "creator": sumo_bot,
-            "content": content,
-            "summary": summary,
-            "keywords": keywords,
-            "is_approved": publish,
-        }
-
-        if publish:
-            data.update(reviewed=now, reviewer=sumo_bot)
-
-        return self.content_manager.create_revision(
-            data,
-            creator=sumo_bot,
-            document=target_doc,
-            based_on_id=doc.latest_localizable_revision_id,
-            send_notifications=True,
-        )
-
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Perform AI translation."""
-        # First, follow the manual process so that the appropriate checks are
-        # made, the revision is marked as ready for L10N, and the appropriate
-        # notifications are sent.
-        result = ManualTranslationStrategy().translate(l10n_request)
-
-        if not result.success:
-            return result
-
-        doc = l10n_request.revision.document
-
-        if l10n_request.target_locale:
-            target_locales = [l10n_request.target_locale]
-        else:
-            target_locales = settings.AI_ENABLED_LOCALES
-
-        results = []
-        for target_locale in target_locales:
-            # TODO: This should be done asynchronously.
-            # TODO: Probably rename this "translate" function in import?
-            translated_content = translate(doc=doc, target_locale=target_locale)
-            rev = self._create_translation(doc, target_locale, translated_content, publish=True)
-            results.append((rev, translated_content))
-
-        # TODO: What to provide here?
-        # I don't think TranslationResult.translated_content as a str is useful.
-        return TranslationResult(
-            success=True,
-            method=TranslationMethod.AI,
-            metadata={"results": results},
-        )
-
-
-@dataclass
-class HybridTranslationStrategy(TranslationStrategy):
-    """Hybrid translation strategy (AI + Human review)."""
-
-    content_manager: "HybridContentManager" = field(init=False)
-
-    def __post_init__(self):
-        self.content_manager = HybridContentManager()
-
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Perform hybrid translation."""
-
-        # placeholder for hybrid translation logic
-        return TranslationResult(
-            success=True,
-            method=TranslationMethod.HYBRID,
-            translated_content="",
-            cost=0.0,
-            quality_score=0.95,
-            metadata={},
-        )
-
-
-@dataclass
-class ManualTranslationStrategy(TranslationStrategy):
-    """Manual translation workflow coordinator."""
-
-    content_manager: "ManualContentManager" = field(init=False)
-
-    def __post_init__(self):
-        self.content_manager = ManualContentManager()
-
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Execute manual translation strategy based on trigger."""
-        if not self.can_handle(l10n_request):
-            return TranslationResult(
-                success=False,
-                method=TranslationMethod.MANUAL,
-                error_message="Revision cannot be marked as ready for localization",
-            )
-
-        revision = l10n_request.revision
-        message = None
-
-        match l10n_request.trigger:
-            case "mark_ready_for_l10n":
-                if not revision.is_ready_for_localization:
-                    return self._handle_mark_ready_for_l10n(l10n_request)
-                message = "Revision is already ready for localization"
-            case "review_revision":
-                return self._handle_review_revision(l10n_request)
-            case _:
-                message = f"Unknown trigger: {l10n_request.trigger}"
-
-        return TranslationResult(
-            success=False, method=TranslationMethod.MANUAL, error_message=message
-        )
 
     def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle mark_ready_for_l10n trigger."""
@@ -296,18 +141,127 @@ class ManualTranslationStrategy(TranslationStrategy):
             metadata={},
         )
 
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+        """Perform translation using this strategy."""
+
+        if not self.can_handle(l10n_request):
+            return TranslationResult(
+                success=False,
+                method=TranslationMethod.MANUAL,
+                error_message="Revision cannot be marked as ready for localization",
+            )
+
+        revision = l10n_request.revision
+        message = None
+
+        match l10n_request.trigger:
+            case "mark_ready_for_l10n":
+                if not revision.is_ready_for_localization:
+                    return self._handle_mark_ready_for_l10n(l10n_request)
+                message = "Revision is already ready for localization"
+            case "review_revision":
+                return self._handle_review_revision(l10n_request)
+            case _:
+                message = f"Unknown trigger: {l10n_request.trigger}"
+
+        return TranslationResult(
+            success=False, method=TranslationMethod.MANUAL, revision=revision, error_message=message, metadata={}
+        )
+
+
+
+@dataclass
+class AITranslationStrategy(TranslationStrategy):
+    """AI-based translation strategy without human review."""
+
+    content_manager: "AIContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = AIContentManager()
+
+
+
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+        """Perform AI translation."""
+        # Base class handles the revision marking and notifications.
+        result = super().translate(l10n_request)
+
+        if not result.success:
+            return result
+
+        doc = l10n_request.revision.document
+
+        # TODO: This should be done asynchronously.
+        translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
+
+        data = {
+            "content": translated_content["content"]["translation"],
+            "summary": translated_content["summary"]["translation"],
+            "keywords": translated_content["keywords"]["translation"],
+            "target_locale": l10n_request.target_locale,
+            "translated_content": translated_content,
+        }
+
+        rev = self.content_manager.publish_revision(
+            self.content_manager.create_revision(data, doc, send_notifications=True),
+        )
+
+        return TranslationResult(
+            success=True,
+            method=TranslationMethod.AI,
+            revision=rev,
+            metadata={},
+        )
+
+
+@dataclass
+class HybridTranslationStrategy(TranslationStrategy):
+    """Hybrid translation strategy (AI + Human review)."""
+
+    content_manager: "HybridContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = HybridContentManager()
+
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+        """Perform hybrid translation."""
+
+        # placeholder for hybrid translation logic
+        return TranslationResult(
+            success=True,
+            method=TranslationMethod.HYBRID,
+            revision=l10n_request.revision,
+            cost=0.0,
+            quality_score=0.95,
+            metadata={},
+        )
+
+
+@dataclass
+class ManualTranslationStrategy(TranslationStrategy):
+    """Manual translation workflow coordinator."""
+
+    content_manager: "ManualContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = ManualContentManager()
+
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+        """Execute manual translation strategy based on trigger."""
+        return super().translate(l10n_request)
+
     def create_revision(
         self,
-        form_data,
-        creator,
+        data,
         document,
+        creator,
         based_on_id=None,
         base_rev=None,
         send_notifications=False,
     ):
         """Create a revision with optional notifications."""
         return self.content_manager.create_revision(
-            form_data, creator, document, based_on_id, base_rev, send_notifications
+            data, document, creator, based_on_id, base_rev, send_notifications
         )
 
     def save_draft(self, user, parent_doc, target_locale, draft_data):
