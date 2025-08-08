@@ -1380,3 +1380,4 @@ SHELL_PLUS_DONT_LOAD = ["silk"]
 
 # AI Translation
 AI_ENABLED_LOCALES = ["es"]
+HYBRID_ENABLED_LOCALES = ["it"]
