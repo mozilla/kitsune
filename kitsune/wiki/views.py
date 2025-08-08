@@ -74,7 +74,6 @@ from kitsune.wiki.models import (
 )
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.strategies import (
-    ManualTranslationStrategy,
     TranslationRequest,
     TranslationStrategy,
     TranslationStrategyFactory,
@@ -798,12 +797,11 @@ def review_revision(request, document_slug, revision_id):
                 case (True, True):
                     _execute_l10n_strategy(rev, "review_revision", request.user)
                 case (True, False):
-                    ManualTranslationStrategy().content_manager.fire_notifications(
+                    ManualContentManager().fire_notifications(
                         rev, [NotificationType.TRANSLATION_WORKFLOW], [rev.creator, request.user]
                     )
                 case _:
                     pass
-
 
             # Update the needs change bit (if approved, default language and
             # user has permission).
@@ -1016,18 +1014,19 @@ def translate(request, document_slug, revision_id=None):
                 draft_data = content_manager.restore_draft(draft.id, user)
 
                 if user_has_doc_perm:
-                    doc_initial.update({
-                        "title": draft_data.get("title", ""),
-                        "slug": draft_data.get("slug", "")
-                    })
+                    doc_initial.update(
+                        {"title": draft_data.get("title", ""), "slug": draft_data.get("slug", "")}
+                    )
                     doc_form = DocumentForm(initial=doc_initial)
                 if user_has_rev_perm:
-                    rev_initial.update({
-                        "content": draft_data.get("content", ""),
-                        "summary": draft_data.get("summary", ""),
-                        "keywords": draft_data.get("keywords", ""),
-                        "based_on": draft_data.get("based_on"),
-                    })
+                    rev_initial.update(
+                        {
+                            "content": draft_data.get("content", ""),
+                            "summary": draft_data.get("summary", ""),
+                            "keywords": draft_data.get("keywords", ""),
+                            "based_on": draft_data.get("based_on"),
+                        }
+                    )
                     based_on_rev = draft.based_on
                     rev_form = RevisionForm(instance=instance, initial=rev_initial)
         else:
@@ -1559,7 +1558,9 @@ def delete_document(request, document_slug):
 
     # Handle confirm delete form POST
     log.warning(
-        "User {} is deleting document: {} (id={})".format(request.user, document.title, document.id)
+        "User {} is deleting document: {} (id={})".format(
+            request.user, document.title, document.id
+        )
     )
     document.delete()
 
@@ -1697,11 +1698,7 @@ def _show_revision_warning(document, revision):
 
 def _execute_l10n_strategy(revision, trigger, user=None):
     """Execute l10n strategy for a given revision and trigger."""
-    l10n_request = TranslationRequest(
-        revision=revision,
-        trigger=trigger,
-        user=user
-    )
+    l10n_request = TranslationRequest(revision=revision, trigger=trigger, user=user)
     return l10n_factory.execute(l10n_request)
 
 

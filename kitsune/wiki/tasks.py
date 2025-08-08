@@ -33,6 +33,10 @@ from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.task")
 
+shared_task_with_retry = shared_task(
+    acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs={"max_retries": 3}
+)
+
 
 @shared_task
 def send_reviewed_notification(revision_id: int, document_id: int, message: str):
@@ -348,3 +352,13 @@ def render_document_cascade(base_doc_id):
             link_to.linked_from
             for link_to in d.links_to().filter(kind__in=["template", "include"])
         )
+
+
+@shared_task_with_retry
+def translate(l10n_request_as_json: str) -> None:
+    from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
+
+    l10n_request = TranslationRequest.from_json(l10n_request_as_json)
+    if strategy := TranslationStrategyFactory().get_strategy(l10n_request.method):
+        l10n_request.asynchronous = False
+        strategy.translate(l10n_request)
