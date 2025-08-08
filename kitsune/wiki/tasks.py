@@ -29,7 +29,12 @@ from kitsune.wiki.models import (
     TitleCollision,
     resolves_to_document_view,
 )
+from kitsune.wiki.strategies import TranslationStrategyFactory
 from kitsune.wiki.utils import generate_short_url
+
+shared_task_with_retry = shared_task(
+    acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs={"max_retries": 3}
+)
 
 log = logging.getLogger("k.task")
 
@@ -348,3 +353,12 @@ def render_document_cascade(base_doc_id):
             link_to.linked_from
             for link_to in d.links_to().filter(kind__in=["template", "include"])
         )
+
+
+@shared_task_with_retry
+def handle_due_tasks_for_translations():
+    """
+    This function handles tasks that become due over time for translations.
+    """
+    for strategy in TranslationStrategyFactory().strategies:
+        strategy.handle_due_tasks()
