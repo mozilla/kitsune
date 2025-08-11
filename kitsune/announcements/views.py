@@ -23,11 +23,15 @@ def create_for_locale(request):
     form = AnnouncementForm(request.POST)
 
     if form.is_valid():
+        platforms = form.cleaned_data.pop('platforms', [])
         a = Announcement(creator=user, locale=locale, **form.cleaned_data)
         a.save()
+
+        if platforms:
+            a.platforms.set(platforms)
+
         return HttpResponse(json.dumps({"id": a.id}), content_type="application/json")
-    else:
-        return HttpResponse(json.dumps(form.errors), status=400, content_type="application/json")
+    return HttpResponse(json.dumps(form.errors), status=400, content_type="application/json")
 
 
 @require_POST

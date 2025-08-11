@@ -3,7 +3,7 @@ import factory.django
 import factory.fuzzy
 from django.template.defaultfilters import slugify
 
-from kitsune.products.models import Product, Topic, Version
+from kitsune.products.models import Platform, Product, Topic, Version
 from kitsune.sumo.tests import FuzzyUnicode
 
 
@@ -58,3 +58,13 @@ class VersionFactory(factory.django.DjangoModelFactory):
     visible = True
     default = factory.fuzzy.FuzzyChoice([False, True])
     product = factory.SubFactory(ProductFactory)
+
+
+class PlatformFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Platform
+
+    name = FuzzyUnicode()
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
+    visible = True
+    display_order = factory.fuzzy.FuzzyInteger(10)

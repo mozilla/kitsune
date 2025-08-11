@@ -39,6 +39,7 @@ class Announcement(ModelBase):
     )
     groups = models.ManyToManyField(Group, related_name="announcements", blank=True, null=True)
     locale = models.ForeignKey(Locale, on_delete=models.CASCADE, null=True, blank=True)
+    platforms = models.ManyToManyField("products.Platform", related_name="announcements", blank=True)
     send_email = models.BooleanField(
         default=False,
         help_text=(
@@ -60,22 +61,19 @@ class Announcement(ModelBase):
         return wiki_to_html(self.content.strip())
 
     @classmethod
-    def get_site_wide(cls):
-        return cls._visible_query(groups=None, locale=None)
+    def get_site_wide(cls, platform_slugs: Iterable[str] | None = None):
+        """Returns announcements that are visible to everyone (no group/locale restrictions)."""
+        return cls._visible_query(platforms=platform_slugs).filter(groups__isnull=True, locale__isnull=True)
 
     @classmethod
-    def get_for_groups(cls, group_ids: Iterable[int]) -> QuerySet[Self]:
-        """Returns visible announcements for the given group ids.
+    def get_for_groups(cls, group_ids: Iterable[int], platform_slugs: Iterable[str] | None = None) -> QuerySet[Self]:
+        """Returns visible announcements for the given group ids and platform slugs.
 
         If an announcement has no groups, it's considered site-wide and will be included.
         If an announcement has any groups, it will only be included if one of those groups
         is in the provided group_ids.
         """
-        return (
-            cls._visible_query()
-            .filter(Q(groups__isnull=True) | Q(groups__id__in=group_ids))
-            .distinct()
-        )
+        return cls._visible_query(platforms=platform_slugs, groups=group_ids)
 
     @classmethod
     def get_for_locale_name(cls, locale_name):
@@ -84,13 +82,34 @@ class Announcement(ModelBase):
 
     @classmethod
     def _visible_query(cls, **query_kwargs):
-        """Return visible announcements given a groups query."""
-        return Announcement.objects.filter(
+        """Return visible announcements given query parameters."""
+        query = Announcement.objects.filter(
             # Show if interval is specified and current or show_until is None
             Q(show_after__range=(datetime.min, Now()))
-            & (Q(show_until__range=(Now(), datetime.max)) | Q(show_until__isnull=True)),
-            **query_kwargs,
+            & (Q(show_until__range=(Now(), datetime.max)) | Q(show_until__isnull=True))
         )
+
+        # Handle platform filtering
+        platforms = query_kwargs.pop('platforms', None)
+        groups = query_kwargs.pop('groups', None)
+
+        if platforms and 'web' not in platforms:
+            has_web_announcements = query.filter(platforms__slug='web').exists()
+            if not has_web_announcements:
+                query = query.filter(
+                    Q(platforms__isnull=True) |
+                    Q(platforms__slug__in=platforms)
+                )
+
+        if groups:
+            query = query.filter(Q(groups__isnull=True) | Q(groups__id__in=groups))
+        else:
+            query = query.filter(groups__isnull=True)
+
+        if query_kwargs:
+            query = query.filter(**query_kwargs)
+
+        return query.distinct()
 
 
 @receiver(m2m_changed, sender=Announcement.groups.through)

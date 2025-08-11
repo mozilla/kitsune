@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.tests import AnnouncementFactory
+from kitsune.products.tests import PlatformFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import LocaleFactory
@@ -78,3 +79,153 @@ class AnnouncementModelTests(TestCase):
         locale_ann = Announcement.get_for_locale_name(self.locale.locale)
         self.assertEqual(1, locale_ann.count())
         self.assertEqual(a, locale_ann[0])
+
+    def test_platform_based_filtering(self):
+        """Test platform-based announcement filtering."""
+        # Create platforms
+        mac_platform = PlatformFactory(slug="mac", name="macOS")
+        win_platform = PlatformFactory(slug="win10", name="Windows 10")
+        linux_platform = PlatformFactory(slug="linux", name="Linux")
+
+        # Site-wide announcement (no platforms)
+        site_wide_ann = AnnouncementFactory()
+
+        # macOS-targeted announcement
+        mac_ann = AnnouncementFactory()
+        mac_ann.platforms.add(mac_platform)
+
+        # Windows-targeted announcement
+        win_ann = AnnouncementFactory()
+        win_ann.platforms.add(win_platform)
+
+        # Multi-platform announcement
+        multi_ann = AnnouncementFactory()
+        multi_ann.platforms.add(mac_platform, linux_platform)
+
+        # Test site-wide with no platform filtering
+        announcements = Announcement.get_site_wide()
+        self.assertEqual(4, announcements.count())
+        self.assertIn(site_wide_ann, announcements)
+        self.assertIn(mac_ann, announcements)
+        self.assertIn(win_ann, announcements)
+        self.assertIn(multi_ann, announcements)
+
+        # Test macOS platform filtering
+        mac_announcements = Announcement._visible_query(platforms=["mac"])
+        self.assertEqual(3, mac_announcements.count())
+        self.assertIn(site_wide_ann, mac_announcements)  # Site-wide included
+        self.assertIn(mac_ann, mac_announcements)        # macOS targeted
+        self.assertIn(multi_ann, mac_announcements)      # Multi-platform includes macOS
+        self.assertNotIn(win_ann, mac_announcements)     # Windows targeted excluded
+
+        # Test Windows platform filtering
+        win_announcements = Announcement._visible_query(platforms=["win10"])
+        self.assertEqual(2, win_announcements.count())
+        self.assertIn(site_wide_ann, win_announcements)  # Site-wide included
+        self.assertIn(win_ann, win_announcements)        # Windows targeted
+        self.assertNotIn(mac_ann, win_announcements)     # macOS targeted excluded
+        self.assertNotIn(multi_ann, win_announcements)   # Multi-platform doesn't include Windows
+
+        # Test multiple platform filtering
+        multi_platform_announcements = Announcement._visible_query(platforms=["mac", "linux"])
+        self.assertEqual(3, multi_platform_announcements.count())
+        self.assertIn(site_wide_ann, multi_platform_announcements)  # Site-wide included
+        self.assertIn(mac_ann, multi_platform_announcements)        # macOS targeted
+        self.assertIn(multi_ann, multi_platform_announcements)      # Multi-platform matches both
+        self.assertNotIn(win_ann, multi_platform_announcements)    # Windows targeted excluded
+
+    def test_platform_and_group_combined_filtering(self):
+        """Test combined platform and group filtering."""
+        # Create platforms and groups
+        mac_platform = PlatformFactory(slug="mac", name="macOS")
+        win_platform = PlatformFactory(slug="win10", name="Windows 10")
+        group1 = GroupFactory()
+        group2 = GroupFactory()
+
+        # Site-wide announcement (no platforms, no groups)
+        site_wide_ann = AnnouncementFactory()
+
+        # macOS + group1 announcement
+        mac_group1_ann = AnnouncementFactory()
+        mac_group1_ann.platforms.add(mac_platform)
+        mac_group1_ann.groups.add(group1)
+
+        # Windows + group2 announcement
+        win_group2_ann = AnnouncementFactory()
+        win_group2_ann.platforms.add(win_platform)
+        win_group2_ann.groups.add(group2)
+
+        # macOS + no groups announcement
+        mac_only_ann = AnnouncementFactory()
+        mac_only_ann.platforms.add(mac_platform)
+
+        # Test macOS user in group1
+        announcements = Announcement.get_for_groups([group1.id], platform_slugs=["mac"])
+        self.assertEqual(3, announcements.count())
+        self.assertIn(site_wide_ann, announcements)      # Site-wide included
+        self.assertIn(mac_group1_ann, announcements)     # macOS + group1
+        self.assertIn(mac_only_ann, announcements)       # macOS only
+        self.assertNotIn(win_group2_ann, announcements)  # Windows + group2 excluded
+
+        # Test macOS user in group2
+        announcements = Announcement.get_for_groups([group2.id], platform_slugs=["mac"])
+        self.assertEqual(2, announcements.count())
+        self.assertIn(site_wide_ann, announcements)      # Site-wide included
+        self.assertIn(mac_only_ann, announcements)       # macOS only
+        self.assertNotIn(mac_group1_ann, announcements)  # macOS + group1 excluded (wrong group)
+        self.assertNotIn(win_group2_ann, announcements)  # Windows + group2 excluded (wrong platform)
+
+        # Test Windows user in group1
+        announcements = Announcement.get_for_groups([group1.id], platform_slugs=["win10"])
+        self.assertEqual(1, announcements.count())
+        self.assertIn(site_wide_ann, announcements)      # Site-wide included
+        self.assertNotIn(win_group2_ann, announcements)  # Windows + group2 excluded (wrong group)
+        self.assertNotIn(mac_group1_ann, announcements)  # macOS + group1 excluded (wrong platform)
+        self.assertNotIn(mac_only_ann, announcements)    # macOS only excluded (wrong platform)
+
+    def test_web_platform_special_case(self):
+        """Test that 'web' platform makes announcements site-wide."""
+        web_platform = PlatformFactory(slug="web", name="Web")
+
+        # Announcement with web platform
+        web_ann = AnnouncementFactory()
+        web_ann.platforms.add(web_platform)
+
+        # Announcement with macOS platform
+        mac_platform = PlatformFactory(slug="mac", name="macOS")
+        mac_ann = AnnouncementFactory()
+        mac_ann.platforms.add(mac_platform)
+
+        # Test that web platform announcement is always included
+        mac_announcements = Announcement._visible_query(platforms=["mac"])
+        self.assertEqual(2, mac_announcements.count())
+        self.assertIn(web_ann, mac_announcements)  # Web platform always included
+        self.assertIn(mac_ann, mac_announcements)  # macOS platform included
+
+        win_announcements = Announcement._visible_query(platforms=["win10"])
+        self.assertEqual(2, win_announcements.count())
+        self.assertIn(web_ann, win_announcements)  # Web platform always included
+        self.assertIn(mac_ann, win_announcements)  # macOS platform included (site-wide)
+
+    def test_no_platforms_detected(self):
+        """Test behavior when no platforms are detected from user agent."""
+        mac_platform = PlatformFactory(slug="mac", name="macOS")
+
+        # Announcement with macOS platform
+        mac_ann = AnnouncementFactory()
+        mac_ann.platforms.add(mac_platform)
+
+        # Site-wide announcement
+        site_wide_ann = AnnouncementFactory()
+
+        # Test with empty platform list (uncertainty case)
+        announcements = Announcement._visible_query(platforms=[])
+        self.assertEqual(2, announcements.count())
+        self.assertIn(site_wide_ann, announcements)  # Site-wide included
+        self.assertIn(mac_ann, announcements)        # macOS targeted included (uncertainty)
+
+        # Test with None platforms (site-wide)
+        announcements = Announcement.get_site_wide()
+        self.assertEqual(2, announcements.count())
+        self.assertIn(site_wide_ann, announcements)
+        self.assertIn(mac_ann, announcements)

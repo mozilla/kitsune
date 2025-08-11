@@ -3,6 +3,8 @@ from datetime import date
 from django import forms
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.products.models import Platform
+
 
 class AnnouncementForm(forms.Form):
     """Form for collecting information about an announcement.
@@ -20,4 +22,11 @@ class AnnouncementForm(forms.Form):
     )
     show_until = forms.DateField(
         label=_lazy("Show until"), required=False, input_formats=["%Y-%m-%d"]
+    )
+    platforms = forms.ModelMultipleChoiceField(
+        queryset=Platform.objects.filter(visible=True),
+        label=_lazy("Target Platforms"),
+        required=False,
+        help_text=_lazy("Select platforms to target. Leave empty for site-wide announcements."),
+        widget=forms.CheckboxSelectMultiple
     )
