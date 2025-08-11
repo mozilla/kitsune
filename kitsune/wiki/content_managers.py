@@ -193,7 +193,9 @@ class WikiContentManager:
     ) -> None:
         """Mark a revision as ready for localization and optionally send notifications."""
         revision.is_ready_for_localization = True
-        revision.readied_for_localization = revision.reviewed
+        revision.readied_for_localization = (
+            datetime.now() if send_notifications else revision.reviewed
+        )
         if user:
             revision.readied_for_localization_by = user
         revision.save()

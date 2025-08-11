@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Any
 
 from django.conf import settings
@@ -26,6 +26,7 @@ SUPPORTED_TARGET_LOCALES = [
 
 class TranslationMethod(models.TextChoices):
     """Available translation methods."""
+
     AI = "ai"
     MANUAL = "manual"
     HYBRID = "hybrid"
@@ -44,12 +45,23 @@ class TranslationRequest:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def as_json(self):
-        return json.dumps(asdict(self))
+        return json.dumps(
+            {
+                "revision_id": self.revision.id,
+                "trigger": self.trigger,
+                "user_id": self.user.id if self.user else None,
+                "target_locale": self.target_locale,
+                "method": self.method,
+                "priority": self.priority,
+                "asynchronous": self.asynchronous,
+                "metadata": self.metadata,
+            }
+        )
 
     @classmethod
     def from_json(cls, data_as_json):
         data = json.loads(data_as_json)
-        if user_id := data.pop("user_id"):
+        if user_id := data.pop("user_id", None):
             data["user"] = User.objects.get(id=user_id)
         data["revision"] = Revision.objects.select_related("document").get(
             id=data.pop("revision_id")
@@ -232,7 +244,9 @@ class AITranslationStrategy(TranslationStrategy):
     def __post_init__(self):
         self.content_manager = AIContentManager()
 
-    def translate(self, l10n_request: TranslationRequest, publish: bool = True) -> TranslationResult:
+    def translate(
+        self, l10n_request: TranslationRequest, publish: bool = True
+    ) -> TranslationResult:
         """Perform AI translation."""
         doc = l10n_request.revision.document
 
@@ -256,10 +270,10 @@ class AITranslationStrategy(TranslationStrategy):
             revision=rev,
             metadata={
                 "explanation": {
-                "content": translated_content["content"]["explanation"],
-                "summary": translated_content["summary"]["explanation"],
-                "keywords": translated_content["keywords"]["explanation"],
-                "title": translated_content.get("title", {}).get("explanation"),
+                    "content": translated_content["content"]["explanation"],
+                    "summary": translated_content["summary"]["explanation"],
+                    "keywords": translated_content["keywords"]["explanation"],
+                    "title": translated_content.get("title", {}).get("explanation"),
                 }
             },
         )
@@ -311,14 +325,14 @@ class TranslationStrategyFactory:
         """Execute translation workflow using appropriate strategy."""
         strategy = self.select_best_strategy(l10n_request)
 
-        if l10n_request.asynchronous and l10n_request.method != TranslationMethod.MANUAL:
+        if l10n_request.asynchronous and (l10n_request.method != TranslationMethod.MANUAL):
             translate_task.delay(l10n_request.as_json())
 
             return TranslationResult(
                 success=True,
                 method=l10n_request.method,
                 revision=l10n_request.revision,
-                metadata={"status": "queued_for_processing"}
+                metadata={"status": "queued_for_processing"},
             )
         else:
             return strategy.translate(l10n_request)
