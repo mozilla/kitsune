@@ -4,11 +4,11 @@ from kitsune.announcements.models import Announcement
 
 
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "get_groups", "locale", "creator", "is_visible"]
+    list_display = ["__str__", "get_groups", "get_platforms", "locale", "creator", "is_visible"]
     exclude = ["created"]
     readonly_fields = ["creator"]
     date_hierarchy = "created"
-    list_filter = ["created", "groups", "locale"]
+    list_filter = ["created", "groups", "platforms", "locale"]
     search_fields = ["creator__username"]
 
     def get_groups(self, obj):
@@ -18,6 +18,14 @@ class AnnouncementAdmin(admin.ModelAdmin):
         return ""
 
     get_groups.short_description = "Groups"  # type: ignore
+
+    def get_platforms(self, obj):
+        platforms = obj.platforms.all()
+        if platforms:
+            return ", ".join([p.name for p in platforms])
+        return ""
+
+    get_platforms.short_description = "Platforms"  # type: ignore
 
     def is_visible(self, obj):
         visible = obj.is_visible()
