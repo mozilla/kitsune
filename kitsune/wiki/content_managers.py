@@ -1,18 +1,21 @@
+from datetime import datetime
 from typing import Any
 
 from django.db import models
 
+from kitsune.users.models import Profile
 from kitsune.wiki.events import (
     ApprovedOrReadyUnion,
     EditDocumentEvent,
     ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent,
 )
-from kitsune.wiki.models import DraftRevision, Revision
+from kitsune.wiki.models import Document, DraftRevision, Revision
 
 
 class NotificationType(models.TextChoices):
     """Types of notifications that can be fired by content managers."""
+
     CONTENT_CREATION = "content_creation", "Content Creation"
     TRANSLATION_WORKFLOW = "translation_workflow", "Translation Workflow"
     READY_FOR_L10N = "ready_for_l10n", "Ready for Localization"
@@ -21,7 +24,9 @@ class NotificationType(models.TextChoices):
 class WikiContentManager:
     """Manages both draft revisions and published revisions for wiki content."""
 
-    def save_draft(self, user, parent_doc, target_locale: str, draft_data: dict[str, Any]) -> DraftRevision:
+    def save_draft(
+        self, user, parent_doc, target_locale: str, draft_data: dict[str, Any]
+    ) -> DraftRevision:
         """Save or update a draft revision for the given user, document, and locale.
 
         Args:
@@ -90,11 +95,42 @@ class WikiContentManager:
         else:
             return True
 
-    def create_revision(self, form_data: dict[str, Any], creator, document, based_on_id=None, base_rev=None, send_notifications=False) -> Revision:
-        """Create a new revision from form data with validation and permissions.
+    def publish_draft(
+        self, draft_id: int, user, data: dict[str, Any], based_on_id=None, base_rev=None
+    ) -> Revision:
+        """Convert a draft to a published revision and delete the draft.
 
         Args:
-            form_data: Dictionary containing revision data (content, summary, keywords, etc.)
+            draft_id: ID of the draft to publish
+            user: The user publishing the draft
+            data: Data for revision creation
+            based_on_id: Optional ID of the revision this is based on
+            base_rev: Optional base revision object
+        Returns:
+            Revision: The created revision
+        """
+        try:
+            draft = DraftRevision.objects.select_related("document").get(id=draft_id, creator=user)
+        except DraftRevision.DoesNotExist:
+            raise ValueError(f"Draft {draft_id} not found for user {user.username}")
+
+        revision = self.create_revision(data, user, draft.document, based_on_id, base_rev)
+        draft.delete()
+        return revision
+
+    def create_revision(
+        self,
+        data: dict[str, Any],
+        document,
+        creator,
+        based_on_id=None,
+        base_rev=None,
+        send_notifications=False,
+    ) -> Revision:
+        """Create a new revision from data with validation and permissions.
+
+        Args:
+            data: Dictionary containing revision data (content, summary, keywords, etc.)
             creator: The user creating the revision
             document: The document this revision belongs to
             based_on_id: Optional ID of the revision this is based on
@@ -103,9 +139,10 @@ class WikiContentManager:
         Returns:
             Revision: The created revision
         """
-        revision = Revision(**form_data)
+        revision = Revision(**data)
         revision.document = document
         revision.creator = creator
+        revision.created = datetime.now()
 
         if based_on_id:
             revision.based_on_id = based_on_id
@@ -119,25 +156,22 @@ class WikiContentManager:
             self.fire_notifications(revision, [NotificationType.CONTENT_CREATION])
         return revision
 
-    def publish_draft(self, draft_id: int, user, form_data: dict[str, Any], based_on_id=None, base_rev=None) -> Revision:
-        """Convert a draft to a published revision and delete the draft.
+    def publish_revision(self, revision: Revision, user, send_notifications=True) -> Revision:
+        """Publish (approve) a revision.
 
         Args:
-            draft_id: ID of the draft to publish
-            user: The user publishing the draft
-            form_data: Form data for revision creation
-            based_on_id: Optional ID of the revision this is based on
-            base_rev: Optional base revision object
-        Returns:
-            Revision: The created revision
+            revision: The revision to publish
+            user: The user publishing the revision
+            send_notifications: Whether to send content creation notifications
         """
-        try:
-            draft = DraftRevision.objects.select_related("document").get(id=draft_id, creator=user)
-        except DraftRevision.DoesNotExist:
-            raise ValueError(f"Draft {draft_id} not found for user {user.username}")
+        revision.is_approved = True
+        revision.reviewed = datetime.now()
+        revision.reviewer = user
+        revision.save()
 
-        revision = self.create_revision(form_data, user, draft.document, based_on_id, base_rev)
-        draft.delete()
+        if send_notifications:
+            exclude_users = [user] if user else []
+            self.fire_notifications(revision, [NotificationType.CONTENT_CREATION], exclude_users)
         return revision
 
     def fire_notifications(self, revision: Revision, notification_types, exclude_users=None):
@@ -154,10 +188,14 @@ class WikiContentManager:
                 case NotificationType.READY_FOR_L10N:
                     ReadyRevisionEvent(revision).fire(exclude=exclude_users)
 
-    def mark_ready_for_localization(self, revision: Revision, user=None, send_notifications=True) -> None:
+    def mark_ready_for_localization(
+        self, revision: Revision, user=None, send_notifications=True
+    ) -> None:
         """Mark a revision as ready for localization and optionally send notifications."""
         revision.is_ready_for_localization = True
-        revision.readied_for_localization = revision.reviewed
+        revision.readied_for_localization = (
+            datetime.now() if send_notifications else revision.reviewed
+        )
         if user:
             revision.readied_for_localization_by = user
         revision.save()
@@ -167,17 +205,74 @@ class WikiContentManager:
             self.fire_notifications(revision, [NotificationType.READY_FOR_L10N], exclude_users)
 
 
-
 class ManualContentManager(WikiContentManager):
     """Content manager for manual translation workflow."""
+
     pass
 
 
 class AIContentManager(WikiContentManager):
     """Content manager for AI translation workflow."""
-    pass
+
+    def create_revision(
+        self,
+        data: dict[str, Any],
+        document,
+        creator=None,
+        based_on_id=None,
+        base_rev=None,
+        send_notifications=False,
+    ) -> Revision:
+        """Create a revision with AI-specific handling for document creation.
+
+        This method handles both document creation and revision creation for AI translations.
+        """
+        target_locale = data.pop("target_locale", None)
+        translated_content = data.pop("translated_content", None)
+
+        if target_locale and translated_content:
+            title = (
+                document.title
+                if document.is_template
+                else translated_content.get("title", {}).get("translation")
+            )
+
+            target_doc, _ = Document.objects.get_or_create(
+                parent=document,
+                locale=target_locale,
+                defaults={
+                    "title": title,
+                    "slug": document.slug,
+                    "is_localizable": False,
+                    "category": document.category,
+                    "is_template": document.is_template,
+                    "allow_discussion": document.allow_discussion,
+                },
+            )
+
+            document = target_doc
+
+            if not based_on_id:
+                based_on_id = document.parent.latest_localizable_revision_id
+
+            data["created"] = datetime.now()
+
+        return super().create_revision(
+            data, document, Profile.get_sumo_bot(), based_on_id, base_rev, send_notifications
+        )
+
+    def publish_revision(self, revision: Revision, user=None, send_notifications=True) -> Revision:
+        """Publish (approve) a revision using the sumo bot.
+
+        Args:
+            revision: The revision to publish
+            send_notifications: Whether to send content creation notifications
+        """
+        user = user or Profile.get_sumo_bot()
+        return super().publish_revision(revision, user, send_notifications)
 
 
-class HybridContentManager(WikiContentManager):
+class HybridContentManager(AIContentManager):
     """Content manager for hybrid translation workflow."""
+
     pass

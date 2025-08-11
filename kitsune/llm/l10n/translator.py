@@ -55,7 +55,6 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
         return None
 
     for content_attribute in content_attributes:
-
         payload.update(
             source_text=get_source_text(content_attribute),
             prior_translation=get_prior_translation(content_attribute),
