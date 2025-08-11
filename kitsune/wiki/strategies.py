@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from django.conf import settings
@@ -26,11 +26,10 @@ SUPPORTED_TARGET_LOCALES = [
 
 class TranslationMethod(models.TextChoices):
     """Available translation methods."""
-
-    AI = "ai", "AI Translation"
-    MANUAL = "manual", "Manual Translation"
-    HYBRID = "hybrid", "Hybrid Translation"
-    VENDOR = "vendor", "Vendor Translation"
+    AI = "ai"
+    MANUAL = "manual"
+    HYBRID = "hybrid"
+    VENDOR = "vendor"
 
 
 @dataclass
@@ -45,18 +44,7 @@ class TranslationRequest:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def as_json(self):
-        return json.dumps(
-            {
-                "revision_id": self.revision.id,
-                "trigger": self.trigger,
-                "user_id": self.user.id if self.user else None,
-                "target_locale": self.target_locale,
-                "method": self.method,
-                "priority": self.priority,
-                "asynchronous": self.asynchronous,
-                "metadata": self.metadata,
-            }
-        )
+        return json.dumps(asdict(self))
 
     @classmethod
     def from_json(cls, data_as_json):
@@ -86,7 +74,7 @@ class AbstractTranslationStrategy(ABC):
     """Abstract base class for translation strategies."""
 
     @abstractmethod
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult | None:
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Perform translation using this strategy."""
         pass
 
@@ -131,7 +119,7 @@ class TranslationStrategy(AbstractTranslationStrategy):
         """Check if a revision meets basic criteria for l10n."""
         return cls()._is_localizable_document(revision)
 
-    def translate(self, l10n_request: TranslationRequest) -> TranslationResult | None:
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Execute manual translation strategy based on trigger."""
         return TranslationResult(success=True)
 
@@ -244,63 +232,8 @@ class AITranslationStrategy(TranslationStrategy):
     def __post_init__(self):
         self.content_manager = AIContentManager()
 
-    def translate(self, l10n_request: TranslationRequest) -> None:
+    def translate(self, l10n_request: TranslationRequest, publish: bool = True) -> TranslationResult:
         """Perform AI translation."""
-        if l10n_request.asynchronous:
-            l10n_request.method = TranslationMethod.AI
-            translate_task.delay(l10n_request.as_json())
-            return
-
-        doc = l10n_request.revision.document
-
-        translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
-
-        data = {
-            "content": translated_content["content"]["translation"],
-            "summary": translated_content["summary"]["translation"],
-            "keywords": translated_content["keywords"]["translation"],
-            "target_locale": l10n_request.target_locale,
-            "translated_content": translated_content,
-        }
-
-        rev = self.content_manager.publish_revision(
-            self.content_manager.create_revision(data, doc, send_notifications=True)
-        )
-
-        self._log_operation(
-            l10n_request,
-            TranslationResult(
-                success=True,
-                method=TranslationMethod.AI,
-                revision=rev,
-                metadata={
-                    "explanation": {
-                        "content": translated_content["content"]["explanation"],
-                        "summary": translated_content["summary"]["explanation"],
-                        "keywords": translated_content["keywords"]["explanation"],
-                        "title": translated_content.get("title", {}).get("explanation"),
-                    }
-                },
-            ),
-        )
-
-
-@dataclass
-class HybridTranslationStrategy(TranslationStrategy):
-    """Hybrid translation strategy (AI + Human review)."""
-
-    content_manager: "HybridContentManager" = field(init=False)
-
-    def __post_init__(self):
-        self.content_manager = HybridContentManager()
-
-    def translate(self, l10n_request: TranslationRequest) -> None:
-        """Perform hybrid translation."""
-        if l10n_request.asynchronous:
-            l10n_request.method = TranslationMethod.HYBRID
-            translate_task.delay(l10n_request.as_json())
-            return
-
         doc = l10n_request.revision.document
 
         translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
@@ -314,23 +247,40 @@ class HybridTranslationStrategy(TranslationStrategy):
         }
 
         rev = self.content_manager.create_revision(data, doc, send_notifications=True)
+        if publish:
+            rev = self.content_manager.publish_revision(rev)
 
-        self._log_operation(
-            l10n_request,
-            TranslationResult(
-                success=True,
-                method=TranslationMethod.HYBRID,
-                revision=rev,
-                metadata={
-                    "explanation": {
-                        "content": translated_content["content"]["explanation"],
-                        "summary": translated_content["summary"]["explanation"],
-                        "keywords": translated_content["keywords"]["explanation"],
-                        "title": translated_content.get("title", {}).get("explanation"),
-                    }
-                },
-            ),
+        result = TranslationResult(
+            success=True,
+            method=l10n_request.method,
+            revision=rev,
+            metadata={
+                "explanation": {
+                "content": translated_content["content"]["explanation"],
+                "summary": translated_content["summary"]["explanation"],
+                "keywords": translated_content["keywords"]["explanation"],
+                "title": translated_content.get("title", {}).get("explanation"),
+                }
+            },
         )
+        self._log_operation(l10n_request, result)
+        return result
+
+
+@dataclass
+class HybridTranslationStrategy(TranslationStrategy):
+    """Hybrid translation strategy (AI + Human review)."""
+
+    content_manager: "HybridContentManager" = field(init=False)
+
+    def __post_init__(self):
+        self.content_manager = HybridContentManager()
+
+    def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
+        """Perform hybrid translation."""
+        result = AITranslationStrategy().translate(l10n_request, publish=False)
+        result.method = TranslationMethod.HYBRID
+        return result
 
 
 class TranslationStrategyFactory:
@@ -343,30 +293,32 @@ class TranslationStrategyFactory:
             TranslationMethod.HYBRID: HybridTranslationStrategy(),
         }
 
-    def get_strategy(self, method: Any) -> TranslationStrategy:
+    def get_strategy(self, method: TranslationMethod | str) -> TranslationStrategy:
         """Get a specific strategy by method."""
+        if isinstance(method, str):
+            method = TranslationMethod(method)
         return self._strategies[method]
 
-    def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy | None:
+    def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy:
         """Select the best strategy based on business rules."""
         if l10n_request.target_locale in settings.AI_ENABLED_LOCALES:
             return self.get_strategy(TranslationMethod.AI)
         elif l10n_request.target_locale in settings.HYBRID_ENABLED_LOCALES:
             return self.get_strategy(TranslationMethod.HYBRID)
-        return None
+        return self.get_strategy(TranslationMethod.MANUAL)
 
     def execute(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Execute translation workflow using appropriate strategy."""
-        # The manual strategy handles the revision marking and notifications.
-        result = ManualTranslationStrategy().translate(l10n_request)
+        strategy = self.select_best_strategy(l10n_request)
 
-        if not result.success:
-            return result
+        if l10n_request.asynchronous and l10n_request.method != TranslationMethod.MANUAL:
+            translate_task.delay(l10n_request.as_json())
 
-        for target_locale in SUPPORTED_TARGET_LOCALES:
-            l10n_request.target_locale = target_locale
-            if strategy := self.select_best_strategy(l10n_request):
-                l10n_request.asynchronous = True
-                strategy.translate(l10n_request)
-
-        return result
+            return TranslationResult(
+                success=True,
+                method=l10n_request.method,
+                revision=l10n_request.revision,
+                metadata={"status": "queued_for_processing"}
+            )
+        else:
+            return strategy.translate(l10n_request)
