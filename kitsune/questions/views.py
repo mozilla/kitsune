@@ -967,7 +967,6 @@ def unsolve(request, question_id, answer_id):
 
     question.solution = None
     question.save()
-    question.remove_metadata("solver_id")
 
     messages.add_message(request, messages.SUCCESS, _("The solution was undone successfully."))
 
@@ -1287,7 +1286,9 @@ def lock_question(request, question_id):
 
     question.is_locked = not question.is_locked
     log.info(
-        "User {} set is_locked={} on question with id={} ".format(request.user, question.is_locked, question.id)
+        "User {} set is_locked={} on question with id={} ".format(
+            request.user, question.is_locked, question.id
+        )
     )
     question.save()
 
@@ -1305,7 +1306,9 @@ def archive_question(request, question_id):
 
     question.is_archived = not question.is_archived
     log.info(
-        "User {} set is_archived={} on question with id={} ".format(request.user, question.is_archived, question.id)
+        "User {} set is_archived={} on question with id={} ".format(
+            request.user, question.is_archived, question.id
+        )
     )
     question.save()
 
@@ -1393,7 +1396,7 @@ def watch_question(request, question_id):
             msg = msg or (
                 _("You will be notified of updates by email.")
                 if request.user.is_authenticated
-                else _("You should receive an email shortly " "to confirm your subscription.")
+                else _("You should receive an email shortly to confirm your subscription.")
             )
             return HttpResponse(json.dumps({"message": msg}))
 
