@@ -92,7 +92,7 @@ class AbstractTranslationStrategy(ABC):
 
     @abstractmethod
     def can_handle(self, l10n_request: TranslationRequest) -> bool:
-        """Check if this strategy can handle the request (basic validation)."""
+        """Check if this strategy can handle the request."""
         pass
 
 
@@ -323,11 +323,25 @@ class TranslationStrategyFactory:
 
     def execute(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Execute translation workflow using appropriate strategy."""
+        if l10n_request.method == TranslationMethod.MANUAL:
+            manual_result = self.get_strategy(TranslationMethod.MANUAL).translate(l10n_request)
+            if manual_result.success:
+                for locales, method in [(settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
+                                        (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID)]:
+                    for locale in locales:
+                        self.execute(TranslationRequest(
+                            revision=l10n_request.revision,
+                            trigger="translate",
+                            target_locale=locale,
+                            method=method,
+                            user=l10n_request.user,
+                            asynchronous=True
+                        ))
+            return manual_result
+        # For explicit AI/Hybrid requests, use existing single-strategy logic
         strategy = self.select_best_strategy(l10n_request)
-
         if l10n_request.asynchronous and (l10n_request.method != TranslationMethod.MANUAL):
             translate_task.delay(l10n_request.as_json())
-
             return TranslationResult(
                 success=True,
                 method=l10n_request.method,
