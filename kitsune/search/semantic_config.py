@@ -9,7 +9,7 @@ from django.conf import settings
 
 # E5 Multilingual Model Configuration for Semantic Search
 E5_MODELS = {
-    '.multilingual-e5-small': {
+    '.multilingual-e5-small-elasticsearch': {
         'description': 'E5 Small - Multilingual text embedding model',
         'type': 'e5',
         'version': 'small',
