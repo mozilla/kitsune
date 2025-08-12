@@ -103,19 +103,17 @@
 <div id="announcements">
   {% call announcement_bar('geoip-suggestion', 'warning', close_memory="remember", close_type="remove") %}{% endcall %}
 
-  <div class="announcement-loading">
-    {% call announcement_bar('loading', 'info') %}
-    {% endcall %}
-  </div>
+  {% for announ in get_announcements(request) %}
+      {% call announcement_bar(announ.id, 'warning', close_memory="session") %}
+          {{ announ.content | wiki_to_html }}
+      {% endcall %}
+  {% endfor %}
   {% if settings.READ_ONLY %}
       {% call announcement_bar('read-only', 'warning') %}
           {% include "includes/readonly_annoucement.html" %}
       {% endcall %}
   {% endif %}
 </div>
-
-<!-- Hidden input for platform data -->
-<input type="hidden" id="platform-data" name="platform" value="">
 
 <header class="mzp-c-navigation sumo-nav">
   <div class="mzp-c-navigation-l-content">
@@ -299,36 +297,36 @@
                 data-event-name="link_click"
                 data-event-parameters='{"link_name": "footer.sync-your-data.kb-article"}'>
                 {{ _('Sync Your Data') }}
-            </a>
-          </li>
-          <li>
-            <a href="{{ url('products.product', 'mozilla-account') }}"
-              data-event-name="link_click"
-              data-event-parameters='{
-                "link_name": "footer.get-help.product-home",
-                "link_detail": "mozilla-account"
-              }'>
-              {{ _('Get Help') }}
-            </a>
-          </li>
-        </ul>
-      </section>
+              </a>
+            </li>
+            <li>
+              <a href="{{ url('products.product', 'mozilla-account') }}"
+                data-event-name="link_click"
+                data-event-parameters='{
+                  "link_name": "footer.get-help.product-home",
+                  "link_detail": "mozilla-account"
+                }'>
+                {{ _('Get Help') }}
+              </a>
+            </li>
+          </ul>
+        </section>
 
-      <section class="mzp-c-footer-col lang-col">
-        <form class="mzp-c-language-switcher" method="get" action="#">
-          <a class="mzp-c-language-switcher-link" href="{{ locale_picker_url }}">{{ _('Language') }}</a>
-          <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
-          <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
-            name="lang">
-            {% for locale in settings.LANGUAGE_CHOICES %}
-                <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
-            {% endfor %}
-          </select>
-          <!-- form submit button is shown when JavaScript is not enabled -->
-          <button type="submit">{{ _('Go') }}</button>
-        </form>
-        <ul class="mzp-c-footer-links-social">
-          <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
+        <section class="mzp-c-footer-col lang-col">
+          <form class="mzp-c-language-switcher" method="get" action="#">
+            <a class="mzp-c-language-switcher-link" href="{{ locale_picker_url }}">{{ _('Language') }}</a>
+            <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
+            <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
+             name="lang">
+              {% for locale in settings.LANGUAGE_CHOICES %}
+                  <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
+              {% endfor %}
+            </select>
+            <!-- form submit button is shown when JavaScript is not enabled -->
+            <button type="submit">{{ _('Go') }}</button>
+          </form>
+          <ul class="mzp-c-footer-links-social">
+            <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
             <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>
             <li><a class="instagram" href="https://www.instagram.com/firefox">Instagram<span> (firefox)</span></a></li>
           </ul>

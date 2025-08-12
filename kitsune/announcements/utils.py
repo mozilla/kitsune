@@ -6,11 +6,6 @@ def detect_platform_from_user_agent(request) -> list[str]:
     Returns a list of platform slugs that match the request.
     For uncertain cases, returns multiple platforms to ensure visibility.
     """
-    # Check for JavaScript override first (for AJAX requests)
-    js_platform = request.META.get('_JS_PLATFORM')
-    if js_platform:
-        return [js_platform]
-
     platform = request.META.get("HTTP_SEC_CH_UA_PLATFORM", "").strip('"').lower()
     platform_version = request.META.get("HTTP_SEC_CH_UA_PLATFORM_VERSION", "").strip('"')
     ua = request.META.get("HTTP_USER_AGENT", "").lower()
