@@ -1,11 +1,17 @@
+import logging
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import UTC, datetime, timedelta
+from typing import Self
 
 import bleach
 from dateutil import parser
+from django.conf import settings
 from django.utils.text import slugify
+from elasticsearch import RequestError
 from elasticsearch.dsl import Q as DSLQ
+from elasticsearch.dsl import Search as DSLSearch
+from elasticsearch.dsl.query import Query
 from pyparsing import ParseException
 
 from kitsune.products.models import Product
@@ -17,6 +23,7 @@ from kitsune.search.documents import (
     QuestionDocument,
     WikiDocument,
 )
+from kitsune.search.es_utils import es_client
 from kitsune.search.parser import Parser
 from kitsune.search.parser.operators import (
     AndOperator,
@@ -29,6 +36,8 @@ from kitsune.search.parser.tokens import ExactToken, RangeToken, TermToken
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.parser import wiki_to_html
+
+log = logging.getLogger("k.search")
 
 QUESTION_DAYS_DELTA = 365 * 2
 FVH_HIGHLIGHT_OPTIONS = {
@@ -58,10 +67,10 @@ CATEGORY_EXACT_MAPPING = {
 def first_highlight(hit):
     highlight = getattr(hit.meta, "highlight", None)
     if highlight:
-        # `highlight` is of type AttrDict, which is internal to elasticsearch_dsl
+        # 'highlight' is of type AttrDict, which is internal to elasticsearch.dsl
         # when converted to a dict, it's like:
-        # `{ 'es_field_name' : ['highlight1', 'highlight2'], 'field2': ... }`
-        # so here we're getting the first item in the first value in that dict:
+        # `{ 'es_field_name' : ['hightlight1', 'highlight2'], 'field2': ... }`
+        # so here we're getting the first field item in the first value in that dict:
         return next(iter(highlight.to_dict().values()))[0]
     return None
 
@@ -82,7 +91,6 @@ def same_base_index(a, b):
 @dataclass
 class QuestionSearch(SumoSearch):
     """Search over questions."""
-
     locale: str = "en-US"
     product: Product | None = None
 
@@ -115,19 +123,18 @@ class QuestionSearch(SumoSearch):
 
     def is_simple_search(self, token=None):
         """Determine if the search query is simple (no advanced operators) or advanced.
-
         Advanced searches are those containing:
         - Field operators (field:value)
         - Boolean operators (AND, OR, NOT)
-        - Range tokens (date ranges, numeric ranges)
-        - Exact tokens (quoted strings)
+        - Range operators (range:field:operator:value)
+        - Exact matching (exact:field:value)
+        - Quoted phrases ("exact phrase")
 
         Simple searches contain only basic terms and space-separated phrases.
         """
         if token is None:
             if not self.query or not self.query.strip():
                 return True
-
             try:
                 parsed = Parser(self.query)
                 return self.is_simple_search(parsed.parsed)
@@ -194,7 +201,6 @@ class QuestionSearch(SumoSearch):
             summary = hit.question_content[self.locale][:SNIPPET_LENGTH]
         summary = strip_html(summary)
 
-        # for questions that have no answers, set to None:
         answer_content = getattr(hit, "answer_content", None)
 
         return {
@@ -213,7 +219,6 @@ class QuestionSearch(SumoSearch):
 @dataclass
 class WikiSearch(SumoSearch):
     """Search over Knowledge Base articles."""
-
     locale: str = "en-US"
     product: Product | None = None
 
@@ -283,7 +288,6 @@ class WikiSearch(SumoSearch):
 @dataclass
 class ProfileSearch(SumoSearch):
     """Search over User Profiles."""
-
     group_ids: list[int] = dfield(default_factory=list)
 
     def get_index(self):
@@ -296,6 +300,10 @@ class ProfileSearch(SumoSearch):
         return []
 
     def get_filter(self):
+        if not self.group_ids:
+            # When no group filtering is specified, use simple query
+            return self.build_query()
+
         return DSLQ(
             "boosting",
             positive=self.build_query(),
@@ -318,8 +326,7 @@ class ProfileSearch(SumoSearch):
 
 @dataclass
 class ForumSearch(SumoSearch):
-    """Search over User Profiles."""
-
+    """Search over Forum posts."""
     thread_forum_id: int | None = None
 
     def get_index(self):
@@ -369,22 +376,40 @@ class ForumSearch(SumoSearch):
 
 
 @dataclass
+class SemanticWikiSearch(WikiSearch):
+    """Semantic search over Knowledge Base articles using E5 multilingual model."""
+    def build_query(self):
+        if not self.query:
+            return DSLQ("match_all")
+        title_query = DSLQ("semantic", field=f"title_semantic.{self.locale}", query=self.query)
+        content_query = DSLQ("semantic", field=f"content_semantic.{self.locale}", query=self.query)
+        summary_query = DSLQ("semantic", field=f"summary_semantic.{self.locale}", query=self.query)
+        return title_query | content_query | summary_query
+
+
+@dataclass
+class SemanticQuestionSearch(QuestionSearch):
+    """Semantic search over questions using ES model."""
+    def build_query(self):
+        if not self.query:
+            return DSLQ("match_all")
+        title_query = DSLQ("semantic", field=f"question_title_semantic.{self.locale}", query=self.query)
+        content_query = DSLQ("semantic", field=f"question_content_semantic.{self.locale}", query=self.query)
+        answer_query = DSLQ("semantic", field=f"answer_content_semantic.{self.locale}", query=self.query)
+        return title_query | content_query | answer_query
+
+
+@dataclass
 class CompoundSearch(SumoSearch):
     """Combine a number of SumoSearch classes into one search."""
-
     _children: list[SumoSearch] = dfield(default_factory=list, init=False)
-    _parse_query: bool = True
 
-    @property  # type: ignore
-    def parse_query(self):
-        return self._parse_query
-
-    @parse_query.setter
-    def parse_query(self, value):
-        """Set value of parse_query across all children."""
-        self._parse_query = value
-        for child in self._children:
-            child.parse_query = value
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        # When parse_query is set, propagate to children
+        if name == 'parse_query' and hasattr(self, '_children'):
+            for child in self._children:
+                child.parse_query = value
 
     def add(self, child):
         """Add a SumoSearch instance to search over. Chainable."""
@@ -393,7 +418,6 @@ class CompoundSearch(SumoSearch):
     def _from_children(self, name):
         """
         Get an attribute from all children.
-
         Will flatten lists.
         """
         value = []
@@ -401,7 +425,6 @@ class CompoundSearch(SumoSearch):
         for child in self._children:
             attr = getattr(child, name)()
             if isinstance(attr, list):
-                # if the attribute's value is itself a list, unpack it
                 value = [*value, *attr]
             else:
                 value.append(attr)
@@ -417,7 +440,6 @@ class CompoundSearch(SumoSearch):
         return self._from_children("get_highlight_fields_options")
 
     def get_filter(self):
-        # `should` with `minimum_should_match=1` acts like an OR filter
         return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
 
     def make_result(self, hit):
@@ -427,46 +449,330 @@ class CompoundSearch(SumoSearch):
                 return child.make_result(hit)
 
 
-def _build_semantic_query(semantic_field, query_text, locale='en-US'):
-    """
-    Build a semantic query for the specified field and locale.
-    Helper function for semantic search classes.
-    """
-    field_name = f"{semantic_field}.{locale}"
-    return DSLQ('semantic', field=field_name, query=query_text)
+# Hybrid search implementation - minimal additions only
+
+
+class RRFQuery(Query):
+    """Custom Query wrapper for RRF (Reciprocal Rank Fusion) queries."""
+    name = 'rrf'
+
+    def __init__(self, query_dict, **kwargs):
+        self._query_dict = query_dict
+        super().__init__(**kwargs)
+
+    def to_dict(self):
+        return self._query_dict
 
 
 @dataclass
-class SemanticWikiSearch(WikiSearch):
-    """Semantic search over Knowledge Base articles using E5 multilingual model."""
+class HybridSearch(SumoSearch):
+    """
+    Base class for hybrid search combining semantic and traditional text search using RRF.
+    Supports all existing advanced search syntax while adding semantic capabilities.
+    """
+    locale: str = "en-US"
+
+    def __post_init__(self):
+        if self.query and ':' in self.query:
+            try:
+                Parser(self.query)
+            except ParseException:
+                pass
+
+    def run(self, key: int | slice | None = None) -> Self:
+        """Override run() to handle RRF hybrid search properly at request level."""
+        if key is None:
+            key = slice(0, settings.SEARCH_RESULTS_PER_PAGE)
+
+        query = self.build_query()
+        if isinstance(query, RRFQuery):
+            search = DSLSearch(using=es_client(), index=self.get_index()).params(
+                **settings.ES_SEARCH_PARAMS
+            )
+
+            for highlight_field, options in self.get_highlight_fields_options():
+                search = search.highlight(highlight_field, **options)
+
+            search = search[key]
+
+            rrf_dict = query.to_dict()
+            filters = self._get_filters_only()
+
+            if filters:
+                for retriever in rrf_dict["retriever"]["rrf"]["retrievers"]:
+                    if "standard" in retriever and "query" in retriever["standard"]:
+                        original_query = retriever["standard"]["query"]
+                        retriever["standard"]["query"] = {
+                            "bool": {
+                                "filter": filters,
+                                "must": original_query
+                            }
+                        }
+
+            search = search.update_from_dict(rrf_dict)
+        else:
+            return super().run(key)
+
+        try:
+            result = search.execute()
+        except RequestError as e:
+            if self.parse_query:
+                self.parse_query = False
+                return self.run(key)
+            raise e
+
+        self.hits = result.hits
+        self.total = result.hits.total
+        if hasattr(self.total, 'value'):
+            self.total = self.total.value
+        elif isinstance(self.total, dict):
+            self.total = self.total.get('value', self.total)
+        self.results = [self.make_result(hit) for hit in self.hits]
+        self.last_key = key
+
+        return self
+
+    def _get_filters_only(self):
+        """Get just the filter part without the query - to be overridden by subclasses."""
+        return [DSLQ("term", _index=self.get_index())]
 
     def build_query(self):
-        """Override to use semantic queries instead of traditional text search."""
+        """Build hybrid query using RRF to combine semantic and traditional text search."""
         if not self.query:
             return DSLQ("match_all")
 
-        # Build semantic queries for all wiki semantic fields
-        title_query = _build_semantic_query('title_semantic', self.query, self.locale)
-        content_query = _build_semantic_query('content_semantic', self.query, self.locale)
-        summary_query = _build_semantic_query('summary_semantic', self.query, self.locale)
-        # keywords_query = _build_semantic_query('keywords_semantic', self.query, self.locale)
+        if ':' in self.query and not self.query.startswith('field:'):
+            log.warning(f"Query '{self.query}' contains field syntax, using traditional search")
+            return self._build_text_retriever()
 
-        # Combine semantic queries
-        return title_query | content_query | summary_query # | keywords_query
+        text_retriever = self._build_text_retriever()
+        semantic_retriever = self._build_semantic_retriever()
+
+        if semantic_retriever is None:
+            return text_retriever
+
+        rrf_query = {
+            "retriever": {
+                "rrf": {
+                    "retrievers": [
+                        {"standard": {"query": text_retriever.to_dict()}},
+                        {"standard": {"query": semantic_retriever.to_dict()}}
+                    ],
+                    "rank_window_size": 100,
+                    "rank_constant": 20
+                }
+            }
+        }
+
+        return RRFQuery(rrf_query)
+
+    def _build_text_retriever(self):
+        raise NotImplementedError
+
+    def _build_semantic_retriever(self):
+        raise NotImplementedError
 
 
 @dataclass
-class SemanticQuestionSearch(QuestionSearch):
-    """Semantic search over questions using ES model."""
+class HybridWikiSearch(HybridSearch, WikiSearch):
+    """Hybrid search for wiki documents combining semantic and traditional text search."""
+    def _get_filters_only(self):
+        filters = [
+            DSLQ("term", _index=self.get_index()),
+            DSLQ("exists", field=f"title.{self.locale}"),
+        ]
+        if self.product:
+            filters.append(DSLQ("term", product_ids=self.product.id))
+        return filters
 
-    def build_query(self):
-        """Override to use semantic queries instead of traditional text search."""
+    def _build_semantic_retriever(self):
         if not self.query:
-            return DSLQ("match_all")
+            return None
+        title_query = DSLQ("semantic", field=f"title_semantic.{self.locale}", query=self.query)
+        content_query = DSLQ("semantic", field=f"content_semantic.{self.locale}", query=self.query)
+        summary_query = DSLQ("semantic", field=f"summary_semantic.{self.locale}", query=self.query)
+        return title_query | content_query | summary_query
 
-        # Build semantic queries for question fields
-        title_query = _build_semantic_query('question_title_semantic', self.query, self.locale)
-        content_query = _build_semantic_query('question_content_semantic', self.query, self.locale)
-        answer_query = _build_semantic_query('answer_content_semantic', self.query, self.locale)
+    def _build_text_retriever(self):
+        wiki_search = WikiSearch(query=self.query, locale=self.locale, product=self.product)
+        return wiki_search.build_query()
 
+
+@dataclass
+class HybridQuestionSearch(HybridSearch, QuestionSearch):
+    """Hybrid search for question documents combining semantic and traditional text search."""
+    def _get_filters_only(self):
+        filters = [
+            DSLQ("term", _index=self.get_index()),
+            DSLQ("exists", field=f"question_title.{self.locale}"),
+            DSLQ(
+                "range",
+                question_created={
+                    "gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)
+                },
+            ),
+            DSLQ("bool", must_not=DSLQ("exists", field="updated")),
+        ]
+
+        if hasattr(self, 'is_simple_search') and self.is_simple_search():
+            filters.append(DSLQ("term", question_is_archived=False))
+
+        if self.product:
+            filters.append(DSLQ("term", question_product_id=self.product.id))
+
+        return filters
+
+    def _build_semantic_retriever(self):
+        if not self.query:
+            return None
+        title_query = DSLQ("semantic", field=f"question_title_semantic.{self.locale}", query=self.query)
+        content_query = DSLQ("semantic", field=f"question_content_semantic.{self.locale}", query=self.query)
+        answer_query = DSLQ("semantic", field=f"answer_content_semantic.{self.locale}", query=self.query)
         return title_query | content_query | answer_query
+
+    def _build_text_retriever(self):
+        question_search = QuestionSearch(query=self.query, locale=self.locale, product=self.product)
+        return question_search.build_query()
+
+
+@dataclass
+class HybridCompoundSearch(HybridSearch):
+    """
+    True hybrid compound search using a single RRF query across wiki and question documents.
+    Uses Elasticsearch's native RRF to combine semantic and text search across multiple indices.
+    """
+    product: Product | None = None
+
+    def get_index(self):
+        """Search across both wiki and question indices."""
+        return f"{WikiDocument.Index.read_alias},{QuestionDocument.Index.read_alias}"
+
+    def get_fields(self):
+        """Get all searchable fields from both wiki and question documents."""
+        wiki_fields = [
+            f"keywords.{self.locale}^8",
+            f"title.{self.locale}^6",
+            f"summary.{self.locale}^4",
+            f"content.{self.locale}^2",
+        ]
+
+        question_fields = [
+            f"question_title.{self.locale}^2",
+            f"question_content.{self.locale}",
+            f"answer_content.{self.locale}",
+        ]
+
+        return wiki_fields + question_fields
+
+    def get_filter(self):
+        filters = self._get_filters_only()
+        if filters:
+            return DSLQ("bool", filter=filters, must=self.build_query())
+        else:
+            return self.build_query()
+
+    def get_highlight_fields_options(self):
+        """Combine highlight fields from both wiki and question searches."""
+        fields = []
+        for field in [f"summary.{self.locale}", f"content.{self.locale}"]:
+            fields.append((field, FVH_HIGHLIGHT_OPTIONS))
+        for field in [f"question_content.{self.locale}", f"answer_content.{self.locale}"]:
+            fields.append((field, FVH_HIGHLIGHT_OPTIONS))
+        return fields
+
+    def _get_filters_only(self):
+        """Get combined filters for both wiki and question documents."""
+        wiki_filters = [
+            DSLQ("term", _index=WikiDocument.Index.read_alias),
+            DSLQ("exists", field=f"title.{self.locale}"),
+        ]
+        if self.product:
+            wiki_filters.append(DSLQ("term", product_ids=self.product.id))
+
+        question_filters = [
+            DSLQ("term", _index=QuestionDocument.Index.read_alias),
+            DSLQ("exists", field=f"question_title.{self.locale}"),
+            DSLQ(
+                "range",
+                question_created={
+                    "gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)
+                },
+            ),
+            DSLQ("bool", must_not=DSLQ("exists", field="updated")),
+        ]
+        if self.product:
+            question_filters.append(DSLQ("term", question_product_id=self.product.id))
+
+        return [
+            DSLQ("bool", should=[
+                DSLQ("bool", filter=wiki_filters),
+                DSLQ("bool", filter=question_filters)
+            ], minimum_should_match=1)
+        ]
+
+    def _build_semantic_retriever(self):
+        if not self.query:
+            return None
+
+        wiki_title = DSLQ("semantic", field=f"title_semantic.{self.locale}", query=self.query)
+        wiki_content = DSLQ("semantic", field=f"content_semantic.{self.locale}", query=self.query)
+        wiki_summary = DSLQ("semantic", field=f"summary_semantic.{self.locale}", query=self.query)
+
+        question_title = DSLQ("semantic", field=f"question_title_semantic.{self.locale}", query=self.query)
+        question_content = DSLQ("semantic", field=f"question_content_semantic.{self.locale}", query=self.query)
+        answer_content = DSLQ("semantic", field=f"answer_content_semantic.{self.locale}", query=self.query)
+
+        return wiki_title | wiki_content | wiki_summary | question_title | question_content | answer_content
+
+    def _build_text_retriever(self):
+        all_fields = self.get_fields()
+        return DSLQ("multi_match", query=self.query, fields=all_fields)
+
+    def make_result(self, hit):
+        """Route result creation to appropriate handler based on index."""
+        index = hit.meta.index
+        if same_base_index(index, WikiDocument.Index.read_alias):
+            return self._make_wiki_result(hit)
+        elif same_base_index(index, QuestionDocument.Index.read_alias):
+            return self._make_question_result(hit)
+        else:
+            return {"type": "unknown", "title": "Unknown result"}
+
+    def _make_wiki_result(self, hit):
+        """Make result for wiki document."""
+        summary = first_highlight(hit)
+        if not summary and hasattr(hit, "summary"):
+            summary = getattr(hit.summary, self.locale, None)
+        if not summary:
+            summary = hit.content[self.locale][:SNIPPET_LENGTH]
+        summary = strip_html(summary)
+
+        return {
+            "type": "document",
+            "url": reverse("wiki.document", args=[hit.slug[self.locale]], locale=self.locale),
+            "score": hit.meta.score,
+            "title": hit.title[self.locale],
+            "search_summary": summary,
+            "id": hit.meta.id,
+        }
+
+    def _make_question_result(self, hit):
+        """Make result for question document."""
+        summary = first_highlight(hit)
+        if not summary:
+            summary = hit.question_content[self.locale][:SNIPPET_LENGTH]
+        summary = strip_html(summary)
+
+        answer_content = getattr(hit, "answer_content", None)
+
+        return {
+            "type": "question",
+            "url": reverse("questions.details", kwargs={"question_id": hit.question_id}),
+            "score": hit.meta.score,
+            "title": hit.question_title[self.locale],
+            "search_summary": summary,
+            "last_updated": datetime.fromisoformat(hit.question_updated),
+            "is_solved": hit.question_has_solution,
+            "num_answers": len(answer_content[self.locale]) if answer_content else 0,
+            "num_votes": hit.question_num_votes,
+        }
