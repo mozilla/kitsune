@@ -1,15 +1,17 @@
 import _throttle from "underscore/modules/throttle";
 import UITour from "./libs/uitour";
 import trackEvent from "sumo/js/analytics";
+import BrowserDetect from "./browserdetect";
 
-(function($) {
+(function ($) {
   'use strict';
 
-  jQuery(function() {
+  jQuery(function () {
     initFolding();
     initAnnouncements();
+    initJavaScriptFirstAnnouncements();
 
-    $('#delete-profile-username-input').on('keyup', function(ev) {
+    $('#delete-profile-username-input').on('keyup', function (ev) {
       var username = $('#delete-profile-username').val();
       var inputUsername = $('#delete-profile-username-input').val();
       if (inputUsername === username) {
@@ -19,7 +21,7 @@ import trackEvent from "sumo/js/analytics";
       }
     });
 
-    $(window).on('scroll', _throttle(function() {
+    $(window).on('scroll', _throttle(function () {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
       } else {
@@ -27,12 +29,12 @@ import trackEvent from "sumo/js/analytics";
       }
     }, 100));
 
-    $('.ui-truncatable .show-more-link').on('click', function(ev) {
+    $('.ui-truncatable .show-more-link').on('click', function (ev) {
       ev.preventDefault();
       $(this).closest('.ui-truncatable').removeClass('truncated');
     });
 
-    $(document).on('click', '.close-button', function() {
+    $(document).on('click', '.close-button', function () {
       var $this = $(this);
       var $target;
       if ($this.data('close-id')) {
@@ -52,13 +54,13 @@ import trackEvent from "sumo/js/analytics";
       }
     });
 
-    $(document).on('change', 'select[data-submit]', function() {
+    $(document).on('change', 'select[data-submit]', function () {
       var $this = $(this);
       var $form = ($this.data('submit')) ? $('#' + $this.data('submit')) : $this.closest('form');
       $form.trigger('submit');
     });
 
-    $('[data-close-memory="remember"]').each(function() {
+    $('[data-close-memory="remember"]').each(function () {
       var $this = $(this);
       var id = $this.data('close-id');
       if (id) {
@@ -71,14 +73,14 @@ import trackEvent from "sumo/js/analytics";
             $('#' + id).hide();
           }
         } else {
-            if ($target.data("close-initial") === "hidden") {
-              $target.show();
+          if ($target.data("close-initial") === "hidden") {
+            $target.show();
           }
         }
       }
     });
 
-    $('[data-close-memory="session"]').each(function() {
+    $('[data-close-memory="session"]').each(function () {
       var $this = $(this);
       var id = $this.data("close-id");
       if (id) {
@@ -91,7 +93,7 @@ import trackEvent from "sumo/js/analytics";
       }
     });
 
-    $('[data-toggle]').each(function() {
+    $('[data-toggle]').each(function () {
       var $this = $(this);
       var $target = ($this.data('toggle-target')) ? $($this.data('toggle-target')) : $this;
       var trigger = ($this.data('toggle-trigger')) ? $this.data('toggle-trigger') : 'click';
@@ -103,7 +105,7 @@ import trackEvent from "sumo/js/analytics";
         $target.addClass(targetClasses.join(' '));
       }
 
-      $this.on(trigger, function(ev) {
+      $this.on(trigger, function (ev) {
         ev.preventDefault();
         var classname = $this.data('toggle');
         $target.toggleClass(classname);
@@ -125,13 +127,13 @@ import trackEvent from "sumo/js/analytics";
       });
     });
 
-    $('[data-ui-type="tabbed-view"]').each(function() {
+    $('[data-ui-type="tabbed-view"]').each(function () {
       var $tv = $(this);
       var $tabs = $tv.children('[data-tab-role="tabs"]').children().children();
       var $panels = $tv.children('[data-tab-role="panels"]').children();
 
-      $tabs.each(function(i) {
-        $(this).on('click', function(e) {
+      $tabs.each(function (i) {
+        $(this).on('click', function (e) {
           e.preventDefault();
           $panels.hide();
           $panels.eq(i).show();
@@ -143,7 +145,7 @@ import trackEvent from "sumo/js/analytics";
       $tabs.first().trigger('click');
     });
 
-    $('.btn, .button, a').each(function() {
+    $('.btn, .button, a').each(function () {
       var $this = $(this);
       var $form = $this.closest('form');
       var type = $this.attr('data-type');
@@ -156,7 +158,7 @@ import trackEvent from "sumo/js/analytics";
           $form = $('#' + $this.attr('data-form'));
         }
 
-        $this.on('click', function(ev) {
+        $this.on('click', function (ev) {
           var name = $this.attr('data-name');
           var value = $this.attr('data-value');
 
@@ -183,7 +185,7 @@ import trackEvent from "sumo/js/analytics";
       } else if (trigger === 'click') {
         // Trigger a click on another element.
 
-        $this.on('click', function(ev) {
+        $this.on('click', function (ev) {
           ev.preventDefault();
           $($this.attr('data-trigger-target'))[0].trigger('click');
           return false;
@@ -193,24 +195,24 @@ import trackEvent from "sumo/js/analytics";
 
     var foldingSelectors = '.folding-section, [data-ui-type="folding-section"]';
 
-    $('body').on('click', foldingSelectors + ' header', function() {
+    $('body').on('click', foldingSelectors + ' header', function () {
       $(this).closest(foldingSelectors).toggleClass('collapsed');
     });
 
-    $('form[data-confirm]').on('submit', function() {
+    $('form[data-confirm]').on('submit', function () {
       return confirm($(this).data('confirm-text'));
     });
   });
 
-  $(window).on('load', function() {
-    $('[data-ui-type="carousel"]').each(function() {
+  $(window).on('load', function () {
+    $('[data-ui-type="carousel"]').each(function () {
       var $this = $(this);
       var $container = $(this).children().first();
 
       var width = 0;
       var height = 0;
 
-      $container.children().each(function() {
+      $container.children().each(function () {
         if (height < $(this).outerHeight()) {
           height = $(this).outerHeight();
         }
@@ -226,23 +228,23 @@ import trackEvent from "sumo/js/analytics";
 
       var scrollInterval;
 
-      $left.on('mouseover', function() {
-        scrollInterval = setInterval(function() {
+      $left.on('mouseover', function () {
+        scrollInterval = setInterval(function () {
           $this.scrollLeft($this.scrollLeft() - 1);
         }, 1);
       });
 
-      $left.on('mouseout', function() {
+      $left.on('mouseout', function () {
         clearInterval(scrollInterval);
       });
 
-      $right.on('mouseover', function() {
-        scrollInterval = setInterval(function() {
+      $right.on('mouseover', function () {
+        scrollInterval = setInterval(function () {
           $this.scrollLeft($this.scrollLeft() + 1);
         }, 1);
       });
 
-      $right.on('mouseout', function() {
+      $right.on('mouseout', function () {
         clearInterval(scrollInterval);
       });
     });
@@ -251,7 +253,7 @@ import trackEvent from "sumo/js/analytics";
   function initFolding() {
     var $folders = $('.sidebar-folding > li');
     // When a header is clicked, expand/contract the menu items.
-    $folders.children('a, span').on("click", function() {
+    $folders.children('a, span').on("click", function () {
       var $parent = $(this).parent();
       $parent.toggleClass('selected');
       // Store this for future page loads.
@@ -266,7 +268,7 @@ import trackEvent from "sumo/js/analytics";
 
     // Load the folded/unfolded state of the
     // menus from local storage and apply it.
-    $folders.each(function() {
+    $folders.each(function () {
       var $this = $(this);
       var id = $this.attr('id');
 
@@ -285,14 +287,11 @@ import trackEvent from "sumo/js/analytics";
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
-    // When an announcement is closed, remember it.
-    $announcements.on('click', '.close-button', function() {
+    $announcements.on('click', '.close-button', function () {
       var id = $(this).closest('.announce-bar').attr('id');
       localStorage.setItem(id + '.closed', true);
     });
-
-    // If an announcement has not been hidden before, show it.
-    $announcements.find('.announce-bar').each(function() {
+    $announcements.find('.announce-bar').each(function () {
       var $this = $(this);
       var id = $this.attr('id');
       if (localStorage.getItem(id + '.closed') !== 'true') {
@@ -301,13 +300,93 @@ import trackEvent from "sumo/js/analytics";
     });
   }
 
-  $(document).on('click', '#show-password', function() {
+  const PLATFORM_MAP = {
+    "Windows": {
+      "11": "win11",
+      "10": "win10",
+      "default": "win10"
+    },
+    "Mac OS": "mac",
+    "Linux": "linux",
+    "Android": "android"
+  };
+
+  async function detectPlatform() {
+    try {
+      const detect = new BrowserDetect();
+      const os = await detect.getOS();
+
+      if (os.name === 'Windows') {
+        return PLATFORM_MAP.Windows[os.version] || PLATFORM_MAP.Windows.default;
+      } else if (PLATFORM_MAP[os.name]) {
+        return PLATFORM_MAP[os.name];
+      }
+      return 'web';
+    } catch (error) {
+      return 'web';
+    }
+  }
+
+  function showAnnouncementsIfNotClosed(container) {
+    container.querySelectorAll('[data-close-memory="session"]').forEach(function (element) {
+      const id = element.getAttribute('data-close-id');
+      if (id) {
+        const target = document.getElementById(id);
+        if (target && target.getAttribute('data-close-initial') === 'hidden') {
+          if (sessionStorage.getItem(id + '.closed') !== 'true') {
+            target.style.display = 'block';
+          }
+        }
+      }
+    });
+
+    container.querySelectorAll('[data-close-memory="remember"]').forEach(function (element) {
+      const id = element.getAttribute('data-close-id');
+      if (id) {
+        const target = document.getElementById(id);
+        if (target && target.getAttribute('data-close-initial') === 'hidden') {
+          if (localStorage.getItem(id + '.closed') !== 'true') {
+            target.style.display = 'block';
+          }
+        }
+      }
+    });
+  }
+
+  async function initJavaScriptFirstAnnouncements() {
+    const announcementsDiv = document.getElementById('announcements');
+    const platformInput = document.getElementById('platform-data');
+
+    if (!announcementsDiv || !platformInput || typeof htmx === 'undefined') {
+      return;
+    }
+
+    const platform = await detectPlatform();
+    platformInput.value = platform;
+
+    const currentPath = window.location.pathname;
+    const langMatch = currentPath.match(/^\/[a-z]{2}-[A-Z]{2}/);
+    const langPrefix = langMatch ? langMatch[0] : '/en-US';
+    const endpointUrl = langPrefix + '/announcements/for-platform';
+
+    htmx.ajax('GET', endpointUrl, {
+      source: announcementsDiv,
+      target: announcementsDiv,
+      swap: 'innerHTML',
+      values: { platform: platform }
+    }).then(() => {
+      showAnnouncementsIfNotClosed(announcementsDiv);
+    }).catch(() => {
+    });
+  }
+
+  $(document).on('click', '#show-password', function () {
     var $form = $(this).closest('form');
     var $pw = $form.find('input[name="password"]');
     $pw.attr('type', (this.checked) ? 'text' : 'password');
   });
 
-  $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
+  $(document).on('click', '[data-mozilla-ui-reset]', function (ev) {
     ev.preventDefault();
     // Send event to GA for metrics/reporting purposes.
     trackEvent('refresh_firefox_click');
