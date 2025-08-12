@@ -43,10 +43,10 @@ class WikiDocument(SumoDocument):
     doc_id = SumoLocaleAwareKeywordField(store=True)
 
     # Semantic text fields for Elasticsearch semantic search
-    # Note: keywords excluded from semantic search as they're typically short and keyword-based
     title_semantic = SumoLocaleAwareSemanticTextField()
     content_semantic = SumoLocaleAwareSemanticTextField()
     summary_semantic = SumoLocaleAwareSemanticTextField()
+    keywords_semantic = SumoLocaleAwareSemanticTextField()
 
     class Index:
         pass
