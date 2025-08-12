@@ -1,0 +1,12 @@
+{% from 'includes/common_macros.html' import announcement_bar with context %}
+{% call announcement_bar('geoip-suggestion', 'warning', close_memory="remember", close_type="remove") %}{% endcall %}
+{% for announ in announcements %}
+    {% call announcement_bar(announ.id, 'warning', close_memory="session") %}
+        {{ announ.content | wiki_to_html }}
+    {% endcall %}
+{% endfor %}
+{% if settings.READ_ONLY %}
+    {% call announcement_bar('read-only', 'warning') %}
+        {% include "includes/readonly_annoucement.html" %}
+    {% endcall %}
+{% endif %}
