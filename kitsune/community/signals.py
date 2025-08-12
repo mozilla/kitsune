@@ -99,15 +99,16 @@ def record_deleted_document_contributions(sender, instance, origin, **kwargs):
             and not contributor.profile.is_system_account
             and not skip_on_user_deletion(contributor, origin)
         ):
-            last_contribution_timestamp = instance.revisions.filter(
+            # Only contributors with at least one approved revision in
+            # the revision history will be considered contributors.
+            if last_contribution_timestamp := instance.revisions.filter(
                 is_approved=True, creator=contributor
-            ).aggregate(last_created=Max("created"))["last_created"]
-
-            dc = DeletedContribution.objects.create(
-                content_type=ContentType.objects.get_for_model(Document),
-                contributor=contributor,
-                contribution_timestamp=last_contribution_timestamp,
-                locale=instance.locale,
-                metadata={"title": instance.title},
-            )
-            dc.products.set(instance.original.products.all())
+            ).aggregate(last_created=Max("created"))["last_created"]:
+                dc = DeletedContribution.objects.create(
+                    content_type=ContentType.objects.get_for_model(Document),
+                    contributor=contributor,
+                    contribution_timestamp=last_contribution_timestamp,
+                    locale=instance.locale,
+                    metadata={"title": instance.title},
+                )
+                dc.products.set(instance.original.products.all())
