@@ -501,6 +501,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.sumo.anonymous.AnonymousIdentityMiddleware",
     "kitsune.sumo.middleware.ReadOnlyMiddleware",
     "kitsune.sumo.middleware.PlusToSpaceMiddleware",
+    "kitsune.sumo.middleware.ClientHintsMiddleware",
     "commonware.middleware.ScrubRequestOnException",
     "waffle.middleware.WaffleMiddleware",
     "commonware.middleware.RobotsTagHeader",

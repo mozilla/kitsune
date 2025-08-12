@@ -335,6 +335,17 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             return response
 
 
+class ClientHintsMiddleware:
+    """Middleware to request client hints for better platform detection."""
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response['Accept-CH'] = 'Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version'
+        return response
+
+
 class InAAQMiddleware(MiddlewareMixin):
     """
     Middleware that clears AAQ data from the session under certain conditions.
