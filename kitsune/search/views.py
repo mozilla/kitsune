@@ -172,64 +172,20 @@ def simple_search(request):
         search = _create_search(search_type, cleaned["q"], language, product, cleaned["w"])
         page, total, results = _execute_search_with_pagination(request, search)
 
-        # Enhanced logging for search analysis
-        log.info(f"Search '{cleaned['q']}' ({search_type}) returned {total} results")
-        if results:
-            scores = []
-            for i, result in enumerate(results[:10]):  # Log first 10 results
-                score = result.get('score', 'unknown') if isinstance(result, dict) else getattr(result, 'meta', {}).get('score', 'unknown')
-                title = result.get('title', 'unknown') if isinstance(result, dict) else getattr(result, 'title', 'unknown')
-                result_type = result.get('type', 'unknown') if isinstance(result, dict) else 'unknown'
-
-                if isinstance(score, int | float):
-                    scores.append(score)
-
-                if i < 5:  # Only log details for top 5
-                    log.info(f"Result {i+1}: score={score}, type={result_type}, title='{title[:50]}...'")
-
-            # Log score distribution for analysis
-            if scores:
-                min_score, max_score = min(scores), max(scores)
-                avg_score = sum(scores) / len(scores)
-                log.info(f"Score distribution: min={min_score:.3f}, max={max_score:.3f}, avg={avg_score:.3f}, count={len(scores)}")
-
-                # Log potential score gaps that might indicate semantic vs text results
-                if len(scores) >= 2:
-                    score_gaps = [abs(scores[i] - scores[i+1]) for i in range(len(scores)-1)]
-                    max_gap = max(score_gaps) if score_gaps else 0
-                    log.info(f"Max score gap: {max_gap:.3f} (may indicate retriever mixing)")
-        else:
-            log.info("No results returned from search")
-
-        # For debugging irrelevant queries, log if we got unexpected results
-        if cleaned['q'] and any(pattern in cleaned['q'].lower() for pattern in ['love', 'turtle', 'hate']):
-            if total > 0:
-                log.warning(f"UNEXPECTED: Query '{cleaned['q']}' (likely irrelevant) returned {total} results")
-                if results:
-                    max_score = max(result.get('score', 0) for result in results if isinstance(result, dict))
-                    log.warning(f"Max score for irrelevant query: {max_score:.3f}")
-            else:
-                log.info(f"GOOD: Irrelevant query '{cleaned['q']}' correctly returned 0 results")
-
         # For hybrid search, check if semantic component is performing well
-        # Only fallback if the query seems potentially relevant
         if search_type == "hybrid" and total > 0 and results:
-            # Results are dictionaries after make_result(), so access score key directly
             try:
                 max_score = max(result.get("score", 0) for result in results if isinstance(result, dict))
             except (AttributeError, TypeError, ValueError):
-                # Fallback: if results are still hit objects, try accessing meta.score
                 try:
                     max_score = max(result.meta.score for result in results)
                 except AttributeError:
                     max_score = 1.0  # Safe default to avoid fallback
 
             if max_score < SEMANTIC_SEARCH_MIN_SCORE:
-                log.info(f"Hybrid search max score {max_score} below threshold {SEMANTIC_SEARCH_MIN_SCORE}, falling back to traditional")
                 search = _create_search("traditional", cleaned["q"], language, product, cleaned["w"])
                 page, total, results = _execute_search_with_pagination(request, search)
-    except Exception as e:
-        log.warning(f"Hybrid search failed, falling back to traditional: {e}")
+    except Exception:
         search = _create_search("traditional", cleaned["q"], language, product, cleaned["w"])
         page, total, results = _execute_search_with_pagination(request, search)
 
