@@ -1471,7 +1471,19 @@ def answer_preview_async(request):
     answer = Answer(creator=request.user, content=request.POST.get("content", ""))
     template = "questions/includes/answer_preview.html"
 
-    return render(request, template, {"answer_preview": answer})
+    question_id = request.POST.get("slug", "").split("/")[-1]
+    question = None
+
+    if question_id and question_id.isdigit():
+        try:
+            question = Question.objects.get(pk=question_id)
+        except Question.DoesNotExist:
+            pass
+
+    return render(request, template, {
+        "answer_preview": answer,
+        "question": question
+    })
 
 
 def metrics(request, locale_code=None):
