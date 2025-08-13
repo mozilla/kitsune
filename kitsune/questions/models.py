@@ -198,6 +198,10 @@ class Question(AAQBase):
 
         super().save(*args, **kwargs)
 
+        # Ensure that the metadata doesn't contain a "solver_id" if there's no solution.
+        if not self.solution:
+            self.remove_metadata("solver_id")
+
         if new:
             # actstream
             # Authors should automatically follow their own questions.

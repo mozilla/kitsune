@@ -286,6 +286,16 @@ class TestQuestionMetadata(TestCase):
         self.assertFalse(self.question.created_after_failed_kb_deflection)
         self.assertEqual(self.question.kb_visits_prior_to_creation, [])
 
+    def test_solver_id(self):
+        self.assertIsNone(self.question.solver)
+        user = UserFactory()
+        answer = AnswerFactory(question=self.question, content="This is the answer!")
+        self.question.set_solution(answer, user)
+        self.assertEqual(self.question.solver, user)
+        self.question.solution = None
+        self.question.save()
+        self.assertIsNone(self.question.solver)
+
 
 class QuestionTests(TestCase):
     """Tests for Question model"""
