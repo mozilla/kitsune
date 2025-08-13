@@ -432,17 +432,23 @@ class DeletedContributionsTests(TestCase):
         self.assertFalse(deleted_contribution_metrics_by_contributor(Revision))
 
     def test_for_documents(self):
-        rev1 = RevisionFactory(is_approved=True)
+        rev1 = RevisionFactory(
+            is_approved=False
+        )  # Creates a contributor without an approved revision.
         doc = rev1.document
         RevisionFactory(document=doc, creator=self.sumo_bot, is_approved=True)
-        rev3 = RevisionFactory(document=doc, creator=rev1.creator, is_approved=True)
+        rev2 = RevisionFactory(document=doc, is_approved=True)
+        rev3 = RevisionFactory(document=doc, creator=rev2.creator, is_approved=True)
         rev4 = RevisionFactory(document=doc, is_approved=True)
         rev5 = RevisionFactory(document=doc, is_approved=True)
+        rev6 = RevisionFactory(document=doc, is_approved=True)
+
+        rev6.delete()  # Creates another contributor without an approved revision.
 
         doc.delete()
 
         self.assertEqual(num_deleted_contributions(Document), 3)
-        self.assertEqual(num_deleted_contributions(Document, contributor=rev1.creator), 1)
+        self.assertEqual(num_deleted_contributions(Document, contributor=rev1.creator), 0)
         self.assertEqual(num_deleted_contributions(Document, locale="en-US"), 3)
         self.assertEqual(num_deleted_contributions(Document, exclude_locale="en-US"), 0)
 
@@ -450,7 +456,7 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(
             list(result.items()),
             [
-                (rev1.creator.id, (1, rev3.created)),
+                (rev3.creator.id, (1, rev3.created)),
                 (rev4.creator.id, (1, rev4.created)),
                 (rev5.creator.id, (1, rev5.created)),
             ],
@@ -460,14 +466,14 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(
             list(result.items()),
             [
-                (rev1.creator.id, (1, rev3.created)),
+                (rev3.creator.id, (1, rev3.created)),
                 (rev4.creator.id, (1, rev4.created)),
                 (rev5.creator.id, (1, rev5.created)),
             ],
         )
 
         # Ensure cascade delete when contributor deleted.
-        rev1.creator.delete()
+        rev2.creator.delete()
         rev4.creator.delete()
         rev5.creator.delete()
         self.assertFalse(deleted_contribution_metrics_by_contributor(Document))
