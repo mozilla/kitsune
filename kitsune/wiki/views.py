@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, F, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -78,12 +78,7 @@ from kitsune.wiki.strategies import (
     TranslationStrategy,
     TranslationStrategyFactory,
 )
-from kitsune.wiki.tasks import (
-    render_document_cascade,
-    schedule_rebuild_kb,
-    send_contributor_notification,
-    send_reviewed_notification,
-)
+from kitsune.wiki.tasks import render_document_cascade, schedule_rebuild_kb
 from kitsune.wiki.utils import (
     get_visible_document_or_404,
     get_visible_revision_or_404,
@@ -738,10 +733,14 @@ def review_revision(request, document_slug, revision_id):
     # former approved versions:
     should_ask_significance = not doc.parent and doc.current_revision
 
-    based_on_revs = doc.revisions.all()
-    last_approved_date = getattr(doc.current_revision, "created", datetime.fromordinal(1))
-    based_on_revs = based_on_revs.filter(created__gt=last_approved_date)
-    revision_contributors = list(set(based_on_revs.values_list("creator__username", flat=True)))
+    revision_contributors = list(
+        doc.revisions.filter(
+            Q(document__current_revision__isnull=True)
+            | Q(created__gt=F("document__current_revision__created"))
+        )
+        .values_list("creator__username", flat=True)
+        .distinct()
+    )
 
     # Get Unreviewed Revisions
     unreviewed_revisions = Revision.objects.filter(
@@ -820,13 +819,11 @@ def review_revision(request, document_slug, revision_id):
 
                 doc.save()
 
-            # Send review comment notification (separate from approval notifications)
-            # This includes the reviewer's comment,
-            # it is separate from the content manager notifications
+            # Send review comment notification (separate from approval notifications).
             msg = form.cleaned_data["comment"]
-            send_reviewed_notification.delay(rev.id, doc.id, msg)
-            based_on_revs_ids = based_on_revs.values_list("id", flat=True)
-            send_contributor_notification(based_on_revs_ids, rev.id, doc.id, msg)
+            ManualContentManager().fire_notifications(
+                rev, [NotificationType.REVIEW_WORKFLOW], comment=msg
+            )
 
             render_document_cascade.delay(doc.id)
 

@@ -1,11 +1,13 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.functions import Now
 
 from kitsune.llm.l10n.translator import translate as llm_translate
 from kitsune.wiki.config import TYPO_SIGNIFICANCE
@@ -17,6 +19,8 @@ from kitsune.wiki.content_managers import (
     WikiContentManager,
 )
 from kitsune.wiki.models import Revision
+from kitsune.wiki.tasks import handle_pending_reviews as handle_pending_reviews_task
+from kitsune.wiki.tasks import translate as translate_task
 
 SUPPORTED_TARGET_LOCALES = [
     locale for locale in settings.SUMO_LANGUAGES if locale not in ("xx", "en-US")
@@ -262,6 +266,7 @@ class AITranslationStrategy(TranslationStrategy):
         rev = self.content_manager.create_revision(data, doc, send_notifications=True)
         if publish:
             rev = self.content_manager.publish_revision(rev)
+            self.content_manager.fire_notifications(rev, [NotificationType.REVIEW_WORKFLOW])
 
         result = TranslationResult(
             success=True,
@@ -294,6 +299,49 @@ class HybridTranslationStrategy(TranslationStrategy):
         result = AITranslationStrategy().translate(l10n_request, publish=False)
         result.method = TranslationMethod.HYBRID
         return result
+
+    def reject_stale_translations(self) -> list[Revision]:
+        """
+        Reject stale, unreviewed machine translations.
+        """
+        if not settings.HYBRID_ENABLED_LOCALES:
+            return []
+
+        results = []
+        for rev in self.content_manager.get_stale_translations(
+            locales=settings.HYBRID_ENABLED_LOCALES
+        ):
+            self.content_manager.reject_revision(rev, comment="No longer relevant.")
+            results.append(rev)
+        return results
+
+    def publish_unreviewed_within_grace_period(self) -> list[Revision]:
+        """
+        Publish fresh machine translations that have not been reviewed within the grace period.
+        """
+        if not (settings.HYBRID_REVIEW_GRACE_PERIOD and settings.HYBRID_ENABLED_LOCALES):
+            return []
+
+        results = []
+        for rev in self.content_manager.get_fresh_translations(
+            locales=settings.HYBRID_ENABLED_LOCALES,
+            created__lt=Now() - timedelta(days=settings.HYBRID_REVIEW_GRACE_PERIOD),
+        ):
+            self.content_manager.publish_revision(
+                rev,
+                comment=(
+                    "Automatically approved because it was not reviewed within"
+                    f" {settings.HYBRID_REVIEW_GRACE_PERIOD} day(s)."
+                ),
+            )
+            results.append(rev)
+        return results
+
+    def handle_pending_reviews(self, asynchronous=True):
+        if asynchronous:
+            handle_pending_reviews_task.delay()
+        self.reject_stale_translations()
+        self.publish_unreviewed_within_grace_period()
 
 
 class TranslationStrategyFactory:
@@ -330,22 +378,27 @@ class TranslationStrategyFactory:
         if l10n_request.method == TranslationMethod.MANUAL:
             manual_result = self.get_strategy(TranslationMethod.MANUAL).translate(l10n_request)
             if manual_result.success:
-                for locales, method in [(settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
-                                        (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID)]:
+                for locales, method in [
+                    (settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
+                    (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID),
+                ]:
                     for locale in locales:
-                        self.execute(TranslationRequest(
-                            revision=l10n_request.revision,
-                            trigger="translate",
-                            target_locale=locale,
-                            method=method,
-                            user=l10n_request.user,
-                            asynchronous=True
-                        ))
+                        self.execute(
+                            TranslationRequest(
+                                revision=l10n_request.revision,
+                                trigger="translate",
+                                target_locale=locale,
+                                method=method,
+                                user=l10n_request.user,
+                                asynchronous=True,
+                            )
+                        )
             return manual_result
         # For explicit AI/Hybrid requests, use existing single-strategy logic
         strategy = self.select_best_strategy(l10n_request)
         if l10n_request.asynchronous and (l10n_request.method != TranslationMethod.MANUAL):
             from kitsune.wiki.tasks import translate as translate_task
+
             translate_task.delay(l10n_request.as_json())
             return TranslationResult(
                 success=True,

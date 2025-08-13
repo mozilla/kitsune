@@ -485,6 +485,22 @@ def job_reprocess_failed_account_events():
     call_command("reprocess_failed_account_events --within-hours 24")
 
 
+# Every hour.
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="*",
+    minute="55",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_HANDLE_PENDING_REVIEWS)
+def job_handle_pending_reviews():
+    call_command("handle_pending_reviews")
+
+
 def run():
     try:
         schedule.start()

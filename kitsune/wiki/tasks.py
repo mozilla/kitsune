@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
+from django.db.models import F, Q
 from django.urls import reverse as django_reverse
 from django.utils.translation import gettext as _
 from requests.exceptions import HTTPError
@@ -40,15 +41,16 @@ shared_task_with_retry = shared_task(
 
 
 @shared_task
-def send_reviewed_notification(revision_id: int, document_id: int, message: str):
+def send_reviewed_notification(revision_id: int, message: str):
     """Send notification of review to the revision creator."""
 
     try:
-        revision = Revision.objects.get(id=revision_id)
-        document = Document.objects.get(id=document_id)
-    except (Revision.DoesNotExist, Document.DoesNotExist) as err:
+        revision = Revision.objects.select_related("document").get(id=revision_id)
+    except Revision.DoesNotExist as err:
         capture_exception(err)
         return
+    else:
+        document = revision.document
 
     if revision.reviewer == revision.creator:
         log.debug("Revision (id={}) reviewed by creator, skipping email".format(revision.id))
@@ -90,6 +92,8 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
 
     for user in [revision.creator, revision.reviewer]:
         if hasattr(user, "profile"):
+            if user.profile.is_system_account:
+                continue
             locale = user.profile.locale
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
@@ -100,19 +104,21 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
 
 
 @shared_task
-def send_contributor_notification(
-    based_on_ids: list[int], revision_id: int, document_id: int, message: str
-):
+def send_contributor_notification(revision_id: int, message: str):
     """Send notification of review to the contributors of revisions."""
 
     try:
-        revision = Revision.objects.get(id=revision_id)
-        document = Document.objects.get(id=document_id)
-    except (Revision.DoesNotExist, Document.DoesNotExist) as err:
+        revision = Revision.objects.select_related("document").get(id=revision_id)
+    except Revision.DoesNotExist as err:
         capture_exception(err)
         return
+    else:
+        document = revision.document
 
-    based_on = Revision.objects.filter(id__in=based_on_ids)
+    based_on = document.revisions.filter(
+        Q(document__current_revision__isnull=True)
+        | Q(created__gt=F("document__current_revision__created"))
+    )
 
     text_template = "wiki/email/reviewed_contributors.ltxt"
     html_template = "wiki/email/reviewed_contributors.html"
@@ -157,6 +163,8 @@ def send_contributor_notification(
 
         if hasattr(user, "profile"):
             locale = user.profile.locale
+            if user.profile.is_system_account:
+                continue
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
 
@@ -387,3 +395,10 @@ def process_stale_translations(limit=None) -> dict:
         "queued_count": processed_count,
     }
     return summary
+
+
+@shared_task_with_retry
+def handle_pending_reviews() -> None:
+    from kitsune.wiki.strategies import HybridTranslationStrategy
+
+    HybridTranslationStrategy().handle_pending_reviews(asynchronous=False)
