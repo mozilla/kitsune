@@ -1,102 +1,111 @@
 {%- autoescape false %}
 {#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('Hi {username}')|f(username=display_name(contributor)) }}
+{{ _('Hi {username},')|f(username=display_name(contributor)) }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Welcome to SUMO a.k.a SUpport.Mozilla.Org! Thank you so much for your interest in helping Mozilla users.
-We are happy to have you here and very excited to share some fundamental resources and information to get you started.
+I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience 
+team, I'd love to thank you for registering as a contributor at SUMO a.k.a. 
+SUpport.MOzilla.org. We're so excited you've joined us! Mozilla wouldn't be 
+what it is today without the passionate contributions from people like you.
 {% endtrans %}
 
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+To help you get started, here are a few essentials:
+{% endtrans %}
+
+---
+{{ _('Know the basics') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans url=add_utm('https://www.mozilla.org/en-US/about/governance/policies/participation/', 'contribute', source='new-contributor')%}
-First and foremost, you need to know about our <a href="{{ url }}">Community Participation Guidelines</a> (CPG). 
-Everyone within Mozilla is required to adhere to Mozilla’s CPG to help us create a safe and positive community experience for all. 
-If you’re just starting out, we highly encourage you to enroll in the following course to learn more about it.
+Before diving in, please take a moment to read our Community Participation 
+Guidelines (CPG). This helps us maintain a safe and positive community 
+experience for all. You can also take this short course to learn more.
 {% endtrans %}
-
-
-{#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('(Contributor) Community Particiation Guidelines (CPG) Enforcement.') }}
 
 {{ add_utm('https://mozilla.teachable.com/', 'contribute', source='new-contributor') }}
 
-
-{#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('Now you might be wondering: “Ok, I understand the CPG now. How can I help and get involved in the community?”') }}
-{#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('There are many ways you can contribute to SUMO') }}
+---
+{{ _("Choose how you'd like to contribute") }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Answer questions in the support forum
+There are 3 ways you can contribute to Mozilla through SUMO:
+{% endtrans %}
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+By answering questions in the Community Forums
 {% endtrans %}
 
 {{ add_utm('https://support.mozilla.org/en-US/contribute/forum', 'contribute', source='new-forum-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Improve our help articles
+By improving our help articles in English
 {% endtrans %}
 
 {{ add_utm('https://support.mozilla.org/en-US/contribute/kb', 'contribute', source='new-kb-contributor') }}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-Localize help articles to your local language
+By localizing our help articles into your local language
 {% endtrans %}
 
 {{ add_utm('https://support.mozilla.org/en-US/contribute/l10n', 'contribute', source='new-l10n-contributor') }}
 
-{#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('Great! Now, how can I connect to other contributors?') }}
+---
+{{ _('Stay connected and ask for help') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-We have a few channels you can use to reach out, introduce yourself, or discuss anything related to SUMO: 
+Running into a blocker or just want to connect with the others? Don't worry! 
+Here are a few ways to connect with the community and get support:
 {% endtrans %}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-SUMO Matrix room: You can chat with other community members in our Matrix room
+SUMO Matrix room: Join our community chat space to ask quick questions or 
+connect with fellow contributors in real time.
 {% endtrans %}
 
 {{ add_utm('https://chat.mozilla.org/#/room/#SUMO:mozilla.org', 'contribute', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Contributors Forum: Follow contributor’s discussion to get updated on releases and community updates
+Community Discussions: Participate in ongoing discussion threads or start your 
+own. You can also follow the forum to stay updated on Firefox releases and 
+community announcements.
 {% endtrans %}
 
 {{ add_utm('https://support.mozilla.org/en-US/forums/contributors/', 'contribute', source='new-training') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Discourse Forum: Get updated on what’s going on in other parts of Mozilla community
-{% endtrans %}
-
-{{ add_utm('https://discourse.mozilla.org/c/sumo/22', 'contribute', source='new-contributor') }}
-
-
-{#- L10n: This is an email.  Whitespace matters! -#}
-{% trans %}
-Contributors also meet monthly at 5 pm UTC on Wednesday (usually a week before the Firefox train-release) to discuss product releases, community updates, or general Mozilla updates. 
-You can find the agenda of past and upcoming meetings.
+Community Call: Join us for our regular call at 5 PM UTC on Wednesdays 
+(typically during release weeks) to catch up on updates and chat with the team.
 {% endtrans %}
 
 {{ add_utm('https://wiki.mozilla.org/Support:Community_Calls', 'contribute', source='new-contributor') }}
 
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+If you ever need help or just want to say hi, feel free to message me directly 
+on SUMO. I'd love to hear from you!
+{% endtrans %}
+{{ pm_link }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Last but not least, let’s keep rocking the helpful web together!
+Thanks again for being here, and let's keep rocking the helpful web together! 🚀
 {% endtrans %}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-Thanks,
-SUMO Community Managers
+Kind Regards,
+{{ name }} from Mozilla Support
 {% endtrans %}
 
 {% endautoescape %}

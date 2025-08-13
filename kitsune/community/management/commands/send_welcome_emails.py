@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from kitsune.questions.models import Answer
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 from kitsune.users.models import Profile
+from kitsune.users.utils import get_community_team_member_info
 from kitsune.wiki.models import Revision
 
 
@@ -24,7 +25,10 @@ class Command(BaseCommand):
 
         wait_period = datetime.now() - timedelta(hours=24)
         messages = []
-        context = {"host": Site.objects.get_current().domain}
+
+        base_context = {
+            "host": Site.objects.get_current().domain
+        }
 
         # Answers
 
@@ -38,8 +42,12 @@ class Command(BaseCommand):
 
         @safe_translation
         def _make_answer_email(locale, to):
+            # Get team member info for first_answer emails
+            team_info = get_community_team_member_info('first_answer')
+            context = {**base_context, **team_info, 'user': to}
+
             return make_mail(
-                subject=_("Thank you for your contribution to Mozilla Support!"),
+                subject=_("Congrats on your first forum reply!"),
                 text_template="community/email/first_answer.ltxt",
                 html_template="community/email/first_answer.html",
                 context_vars=context,
@@ -62,6 +70,10 @@ class Command(BaseCommand):
 
         # This doesn't need localized, and so don't need the `safe_translation` helper.
         for user in User.objects.filter(id__in=l10n_recipient_ids):
+            # Get team member info for first_l10n emails
+            team_info = get_community_team_member_info('first_l10n')
+            context = {**base_context, **team_info, 'user': user}
+
             messages.append(
                 make_mail(
                     subject="Thank you for your contribution to Mozilla Support!",
