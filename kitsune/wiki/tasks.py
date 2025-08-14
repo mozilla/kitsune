@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, datetime
 
 import waffle
 from celery import shared_task
@@ -10,7 +10,8 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.urls import reverse as django_reverse
 from django.utils.translation import gettext as _
 from requests.exceptions import HTTPError
@@ -115,10 +116,23 @@ def send_contributor_notification(revision_id: int, message: str):
     else:
         document = revision.document
 
-    based_on = document.revisions.filter(
-        Q(document__current_revision__isnull=True)
-        | Q(created__gt=F("document__current_revision__created"))
-    )
+    if revision.is_approved:
+        previous_approved_created = Subquery(
+            document.revisions.filter(is_approved=True, created__lt=revision.created)
+            .order_by("-created")
+            .values("created")[:1]
+        )
+        based_on = document.revisions.filter(
+            created__gt=Coalesce(previous_approved_created, datetime.min)
+        )
+    else:
+        based_on = document.revisions.filter(
+            Q(document__current_revision__isnull=True)
+            | (
+                Q(created__gt=F("document__current_revision__created"))
+                & Q(created__lt=revision.created)
+            )
+        )
 
     text_template = "wiki/email/reviewed_contributors.ltxt"
     html_template = "wiki/email/reviewed_contributors.html"
@@ -364,6 +378,7 @@ def render_document_cascade(base_doc_id):
 
 
 @shared_task_with_retry
+@skip_if_read_only_mode
 def translate(l10n_request_as_json: str) -> None:
     from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
 
@@ -398,7 +413,8 @@ def process_stale_translations(limit=None) -> dict:
 
 
 @shared_task_with_retry
-def handle_pending_reviews() -> None:
+@skip_if_read_only_mode
+def publish_pending_translations() -> None:
     from kitsune.wiki.strategies import HybridTranslationStrategy
 
-    HybridTranslationStrategy().handle_pending_reviews(asynchronous=False)
+    HybridTranslationStrategy().publish_pending_translations(log=log)

@@ -496,9 +496,9 @@ def job_reprocess_failed_account_events():
     coalesce=True,
     skip=settings.READ_ONLY,
 )
-@babis.decorator(ping_after=settings.DMS_HANDLE_PENDING_REVIEWS)
-def job_handle_pending_reviews():
-    call_command("handle_pending_reviews")
+@babis.decorator(ping_after=settings.DMS_PUBLISH_PENDING_TRANSLATIONS)
+def job_publish_pending_translations():
+    call_command("publish_pending_translations")
 
 
 def run():

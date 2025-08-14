@@ -4,17 +4,15 @@ from typing import Any
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import F, Q, QuerySet
 
 from kitsune.users.models import Profile
-from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.events import (
     ApprovedOrReadyUnion,
     EditDocumentEvent,
     ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent,
 )
-from kitsune.wiki.models import Document, DraftRevision, Revision
+from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
 from kitsune.wiki.tasks import (
     render_document_cascade,
     send_contributor_notification,
@@ -131,11 +129,11 @@ class WikiContentManager:
     def create_revision(
         self,
         data: dict[str, Any],
-        document,
-        creator,
-        based_on_id=None,
-        base_rev=None,
-        send_notifications=False,
+        document: Document,
+        creator: User,
+        based_on_id: int | None = None,
+        base_rev: Revision | None = None,
+        send_notifications: bool = False,
     ) -> Revision:
         """Create a new revision from data with validation and permissions.
 
@@ -167,22 +165,43 @@ class WikiContentManager:
         return revision
 
     def publish_revision(
-        self, revision: Revision, user, comment=None, send_notifications=True
+        self,
+        revision: Revision,
+        user: User,
+        comment: str | None = None,
+        send_notifications: bool = True,
     ) -> Revision:
         """Publish (approve) a revision."""
-        return self.review_revision(revision, user, True, comment, send_notifications)
+        notification_types = (
+            [
+                NotificationType.TRANSLATION_WORKFLOW,
+                NotificationType.REVIEW_WORKFLOW,
+            ]
+            if send_notifications
+            else None
+        )
+        rev = self._review_revision(revision, user, True, comment, notification_types)
+        render_document_cascade.delay(rev.document.id)
+        return rev
 
-    def reject_revision(self, revision: Revision, user, comment=None) -> Revision:
+    def reject_revision(
+        self,
+        revision: Revision,
+        user: User,
+        comment: str | None = None,
+        send_notifications: bool = True,
+    ) -> Revision:
         """Reject (disapprove) a revision."""
-        return self.review_revision(revision, user, False, comment, send_notifications=False)
+        notification_types = [NotificationType.REVIEW_WORKFLOW] if send_notifications else None
+        return self._review_revision(revision, user, False, comment, notification_types)
 
-    def review_revision(
+    def _review_revision(
         self,
         revision: Revision,
         reviewer: User,
         approve: bool,
         comment: str | None = None,
-        send_notifications=True,
+        notification_types: Iterable[Any] | None = None,
     ) -> Revision:
         """Review (approve or reject) a revision.
 
@@ -191,56 +210,73 @@ class WikiContentManager:
             reviewer: The user reviewing the revision
             approve: Whether the revision is approved or not
             comment: An optional comment to assign to the revision
-            send_notifications: Whether to send content creation notifications
+            notifications: An iterable of notifications to send
         """
         revision.is_approved = approve
         revision.reviewed = datetime.now()
         revision.reviewer = reviewer
         if comment:
-            revision.comment = comment
+            if revision.comment:
+                # Attempt to append the comment if the revision already has one.
+                if (len(revision.comment) + len(comment) + 1) <= MAX_REVISION_COMMENT_LENGTH:
+                    revision.comment = f"{revision.comment}\n{comment}"
+            else:
+                revision.comment = comment
         revision.save()
 
-        if approve and send_notifications:
-            exclude_users = [reviewer] if reviewer else []
-            self.fire_notifications(
-                revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users
-            )
+        if notification_types:
+            self.fire_notifications(revision, notification_types)
         return revision
 
     def fire_notifications(
-        self, revision: Revision, notification_types, exclude_users=None, comment=None
-    ):
+        self,
+        revision: Revision,
+        notification_types: Iterable[Any],
+        comment: str | None = None,
+    ) -> None:
         """Unified notification dispatcher - figures out what notifications to fire."""
-        exclude_users = exclude_users or [revision.creator]
-
         for notif_type in notification_types:
             match notif_type:
                 case NotificationType.CONTENT_CREATION:
+                    exclude_users = [revision.creator]
                     ReviewableRevisionInLocaleEvent(revision).fire(exclude=exclude_users)
                     EditDocumentEvent(revision).fire(exclude=exclude_users)
                 case NotificationType.TRANSLATION_WORKFLOW:
-                    ApprovedOrReadyUnion(revision).fire(exclude=exclude_users)
+                    ApprovedOrReadyUnion(revision).fire(
+                        exclude=[revision.creator, revision.reviewer]
+                    )
                 case NotificationType.READY_FOR_L10N:
+                    exclude_users = []
+                    if revision.readied_for_localization_by:
+                        exclude_users.append(revision.readied_for_localization_by)
                     ReadyRevisionEvent(revision).fire(exclude=exclude_users)
                 case NotificationType.REVIEW_WORKFLOW:
                     send_reviewed_notification.delay(revision.id, comment)
                     send_contributor_notification.delay(revision.id, comment)
 
     def mark_ready_for_localization(
-        self, revision: Revision, user=None, send_notifications=True
+        self,
+        revision: Revision,
+        user: User | None,
+        is_review_workflow: bool = False,
+        send_notifications: bool = True,
     ) -> None:
         """Mark a revision as ready for localization and optionally send notifications."""
         revision.is_ready_for_localization = True
         revision.readied_for_localization = (
-            datetime.now() if send_notifications else revision.reviewed
+            revision.reviewed if is_review_workflow else datetime.now()
         )
         if user:
             revision.readied_for_localization_by = user
         revision.save()
 
         if send_notifications:
-            exclude_users = [user] if user else []
-            self.fire_notifications(revision, [NotificationType.READY_FOR_L10N], exclude_users)
+            notification_types = (
+                [NotificationType.TRANSLATION_WORKFLOW]
+                if is_review_workflow
+                else [NotificationType.READY_FOR_L10N]
+            )
+            self.fire_notifications(revision, notification_types)
 
 
 class ManualContentManager(WikiContentManager):
@@ -304,72 +340,17 @@ class AIContentManager(WikiContentManager):
     ) -> Revision:
         """Publish (approve) a revision using the sumo bot."""
         user = user or Profile.get_sumo_bot()
-        rev = super().publish_revision(revision, user, comment, send_notifications)
-        self.fire_notifications(rev, [NotificationType.REVIEW_WORKFLOW])
-        render_document_cascade.delay(rev.document.id)
-        return rev
+        return super().publish_revision(revision, user, comment, send_notifications)
+
+    def reject_revision(
+        self, revision: Revision, user=None, comment=None, send_notifications=True
+    ) -> Revision:
+        """Reject (disapprove) a revision using the sumo bot."""
+        user = user or Profile.get_sumo_bot()
+        return super().reject_revision(revision, user, comment, send_notifications)
 
 
 class HybridContentManager(AIContentManager):
     """Content manager for hybrid translation workflow."""
 
-    def __init__(self):
-        unreviewed_translations = Revision.objects.filter(
-            is_approved=False,
-            reviewed__isnull=True,
-            document__parent__isnull=False,
-            document__parent__is_localizable=True,
-            document__parent__current_revision__isnull=False,
-            document__parent__latest_localizable_revision__isnull=False,
-        )
-
-        outdated = Q(based_on_id__lt=F("document__parent__latest_localizable_revision_id"))
-        another_already_approved = Q(
-            document__current_revision__based_on_id__gte=F(
-                "document__parent__latest_localizable_revision_id"
-            )
-        )
-        translations_discontinued = Q(document__parent__is_archived=True) | Q(
-            document__parent__html__startswith=REDIRECT_HTML
-        )
-
-        # Unreviewed translations that are no longer useful.
-        self._qs_stale_translations = unreviewed_translations.filter(
-            outdated | another_already_approved | translations_discontinued
-        )
-
-        # Unreviewed translations that are still fresh and useful.
-        self._qs_fresh_translations = unreviewed_translations.filter(
-            based_on_id__gte=F("document__parent__latest_localizable_revision_id")
-        ).exclude(another_already_approved | translations_discontinued)
-
-    def get_stale_translations(
-        self,
-        creator: User | None = None,
-        locales: Iterable[str] | None = None,
-        **extra_filters: dict[str, Any],
-    ) -> QuerySet[Revision]:
-        """Unreviewed translations that are no longer useful."""
-        filters: dict[str, Any] = {"creator": creator or Profile.get_sumo_bot()}
-        if locales:
-            filters.update(document__locale__in=locales)
-        return self._qs_stale_translations.filter(**filters, **extra_filters)
-
-    def get_fresh_translations(
-        self,
-        creator: User | None = None,
-        locales: Iterable[str] | None = None,
-        **extra_filters: dict[str, Any],
-    ) -> QuerySet[Revision]:
-        """Unreviewed translations that are still fresh and useful."""
-        filters: dict[str, Any] = {"creator": creator or Profile.get_sumo_bot()}
-        if locales:
-            filters.update(document__locale__in=locales)
-        return self._qs_fresh_translations.filter(**filters, **extra_filters)
-
-    def reject_revision(self, revision: Revision, user=None, comment=None) -> Revision:
-        """Reject (disapprove) a revision using the sumo bot."""
-        user = user or Profile.get_sumo_bot()
-        rev = super().reject_revision(revision, user, comment)
-        self.fire_notifications(rev, [NotificationType.REVIEW_WORKFLOW])
-        return rev
+    pass

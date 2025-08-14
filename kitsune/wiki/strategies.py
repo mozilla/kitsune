@@ -1,30 +1,28 @@
 import json
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import timedelta
+from functools import cached_property
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import F, Q
 from django.db.models.functions import Now
 
 from kitsune.llm.l10n.translator import translate as llm_translate
-from kitsune.wiki.config import TYPO_SIGNIFICANCE
+from kitsune.users.models import Profile
+from kitsune.wiki.config import REDIRECT_HTML, TYPO_SIGNIFICANCE
 from kitsune.wiki.content_managers import (
     AIContentManager,
     HybridContentManager,
     ManualContentManager,
-    NotificationType,
     WikiContentManager,
 )
-from kitsune.wiki.models import Revision
-from kitsune.wiki.tasks import handle_pending_reviews as handle_pending_reviews_task
+from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.tasks import translate as translate_task
-
-SUPPORTED_TARGET_LOCALES = [
-    locale for locale in settings.SUMO_LANGUAGES if locale not in ("xx", "en-US")
-]
 
 
 class TranslationMethod(models.TextChoices):
@@ -159,11 +157,7 @@ class ManualTranslationStrategy(TranslationStrategy):
     def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle mark_ready_for_l10n trigger."""
         # Method will auto-detect that this is a standalone action and use current time
-        self.content_manager.mark_ready_for_localization(
-            l10n_request.revision,
-            l10n_request.user,
-            send_notifications=True,
-        )
+        self.content_manager.mark_ready_for_localization(l10n_request.revision, l10n_request.user)
 
         result = TranslationResult(
             success=True,
@@ -178,20 +172,9 @@ class ManualTranslationStrategy(TranslationStrategy):
         """Handle review_revision trigger - sends approval notifications and conditionally handles localization."""
         # Mark as ready for localization - method will auto-detect if this is part of review workflow
         self.content_manager.mark_ready_for_localization(
-            l10n_request.revision,
-            l10n_request.user,
-            send_notifications=False,
+            l10n_request.revision, l10n_request.user, is_review_workflow=True
         )
 
-        exclude_users = []
-        if l10n_request.revision.creator:
-            exclude_users.append(l10n_request.revision.creator)
-        if l10n_request.user:
-            exclude_users.append(l10n_request.user)
-
-        self.content_manager.fire_notifications(
-            l10n_request.revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users
-        )
         result = TranslationResult(
             success=True,
             method=TranslationMethod.MANUAL,
@@ -266,7 +249,6 @@ class AITranslationStrategy(TranslationStrategy):
         rev = self.content_manager.create_revision(data, doc, send_notifications=True)
         if publish:
             rev = self.content_manager.publish_revision(rev)
-            self.content_manager.fire_notifications(rev, [NotificationType.REVIEW_WORKFLOW])
 
         result = TranslationResult(
             success=True,
@@ -294,61 +276,92 @@ class HybridTranslationStrategy(TranslationStrategy):
     def __post_init__(self):
         self.content_manager = HybridContentManager()
 
+        sumo_bot = Profile.get_sumo_bot()
+
+        unreviewed_translations = Revision.objects.filter(
+            creator=sumo_bot,
+            is_approved=False,
+            reviewed__isnull=True,
+            document__parent__is_localizable=True,
+            document__parent__current_revision__isnull=False,
+            document__parent__latest_localizable_revision__isnull=False,
+            document__locale__in=settings.HYBRID_ENABLED_LOCALES,
+        )
+
+        outdated = Q(based_on_id__lt=F("document__parent__latest_localizable_revision_id"))
+        another_already_approved = Q(
+            document__current_revision__based_on_id__gte=F(
+                "document__parent__latest_localizable_revision_id"
+            )
+        )
+        translations_discontinued = Q(document__parent__is_archived=True) | Q(
+            document__parent__html__startswith=REDIRECT_HTML
+        )
+
+        # Unreviewed machine translations that are no longer useful.
+        self._qs_obsolete = unreviewed_translations.filter(
+            outdated | another_already_approved | translations_discontinued
+        )
+
+        # Fresh, unreviewed machine translations that have not been reviewed within
+        # the grace period.
+        self._qs_pending = unreviewed_translations.filter(
+            based_on_id__gte=F("document__parent__latest_localizable_revision_id"),
+            created__lt=Now() - timedelta(days=settings.HYBRID_REVIEW_GRACE_PERIOD),
+        ).exclude(another_already_approved | translations_discontinued)
+
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Perform hybrid translation."""
         result = AITranslationStrategy().translate(l10n_request, publish=False)
         result.method = TranslationMethod.HYBRID
         return result
 
-    def reject_stale_translations(self) -> list[Revision]:
+    def reject_obsolete_translations(self, document: Document) -> None:
         """
-        Reject stale, unreviewed machine translations.
+        Reject obsolete machine translations for the given document.
         """
         if not settings.HYBRID_ENABLED_LOCALES:
-            return []
+            return
 
-        results = []
-        for rev in self.content_manager.get_stale_translations(
-            locales=settings.HYBRID_ENABLED_LOCALES
-        ):
+        if document.locale == settings.WIKI_DEFAULT_LANGUAGE:
+            qs_obsolete = self._qs_obsolete.filter(document__parent=document)
+        elif document.locale in settings.HYBRID_ENABLED_LOCALES:
+            qs_obsolete = self._qs_obsolete.filter(document=document)
+        else:
+            return
+
+        for rev in qs_obsolete:
             self.content_manager.reject_revision(rev, comment="No longer relevant.")
-            results.append(rev)
-        return results
 
-    def publish_unreviewed_within_grace_period(self) -> list[Revision]:
+    def publish_pending_translations(self, log: logging.Logger | None = None) -> None:
         """
         Publish fresh machine translations that have not been reviewed within the grace period.
         """
         if not (settings.HYBRID_REVIEW_GRACE_PERIOD and settings.HYBRID_ENABLED_LOCALES):
-            return []
+            return
 
-        results = []
-        for rev in self.content_manager.get_fresh_translations(
-            locales=settings.HYBRID_ENABLED_LOCALES,
-            created__lt=Now() - timedelta(days=settings.HYBRID_REVIEW_GRACE_PERIOD),
-        ):
-            self.content_manager.publish_revision(
-                rev,
+        grace_period = f"{settings.HYBRID_REVIEW_GRACE_PERIOD} day(s)"
+
+        for revision in self._qs_pending:
+            rev = self.content_manager.publish_revision(
+                revision,
                 comment=(
-                    "Automatically approved because it was not reviewed within"
-                    f" {settings.HYBRID_REVIEW_GRACE_PERIOD} day(s)."
+                    f"Automatically approved because it was not reviewed within {grace_period}."
                 ),
             )
-            results.append(rev)
-        return results
-
-    def handle_pending_reviews(self, asynchronous=True):
-        if asynchronous:
-            handle_pending_reviews_task.delay()
-        self.reject_stale_translations()
-        self.publish_unreviewed_within_grace_period()
+            if log:
+                log.info(
+                    f"Automatically approved {rev.get_absolute_url()} because it was not"
+                    f" reviewed within {grace_period}."
+                )
 
 
 class TranslationStrategyFactory:
     """Factory for creating and selecting translation strategies."""
 
-    def __init__(self):
-        self._strategies = {
+    @cached_property
+    def _strategies(self):
+        return {
             TranslationMethod.AI: AITranslationStrategy(),
             TranslationMethod.MANUAL: ManualTranslationStrategy(),
             TranslationMethod.HYBRID: HybridTranslationStrategy(),
