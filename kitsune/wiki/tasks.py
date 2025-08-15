@@ -10,7 +10,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
-from django.db.models import F, Q, Subquery
+from django.db.models import Subquery
 from django.db.models.functions import Coalesce
 from django.urls import reverse as django_reverse
 from django.utils.translation import gettext as _
@@ -116,23 +116,22 @@ def send_contributor_notification(revision_id: int, message: str):
     else:
         document = revision.document
 
-    if revision.is_approved:
-        previous_approved_created = Subquery(
-            document.revisions.filter(is_approved=True, created__lt=revision.created)
-            .order_by("-created")
-            .values("created")[:1]
-        )
-        based_on = document.revisions.filter(
-            created__gt=Coalesce(previous_approved_created, datetime.min)
-        )
-    else:
-        based_on = document.revisions.filter(
-            Q(document__current_revision__isnull=True)
-            | (
-                Q(created__gt=F("document__current_revision__created"))
-                & Q(created__lt=revision.created)
-            )
-        )
+    # Get all of the revisions created before this one but created
+    # after the previously approved revision, if there is one.
+    based_on = document.revisions.filter(
+        created__lte=revision.created,
+        created__gt=Coalesce(
+            Subquery(
+                document.revisions.filter(
+                    is_approved=True,
+                    created__lt=revision.created,
+                )
+                .order_by("-created")
+                .values("created")[:1]
+            ),
+            datetime.min,
+        ),
+    )
 
     text_template = "wiki/email/reviewed_contributors.ltxt"
     html_template = "wiki/email/reviewed_contributors.html"

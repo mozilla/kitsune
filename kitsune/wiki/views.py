@@ -11,8 +11,8 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Exists, F, OuterRef, Q
-from django.db.models.functions import Now, TruncDate
+from django.db.models import Count, Exists, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce, Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -735,8 +735,18 @@ def review_revision(request, document_slug, revision_id):
 
     revision_contributors = list(
         doc.revisions.filter(
-            Q(document__current_revision__isnull=True)
-            | Q(created__gt=F("document__current_revision__created"))
+            created__lte=rev.created,
+            created__gt=Coalesce(
+                Subquery(
+                    doc.revisions.filter(
+                        is_approved=True,
+                        created__lt=rev.created,
+                    )
+                    .order_by("-created")
+                    .values("created")[:1]
+                ),
+                datetime.min,
+            ),
         )
         .values_list("creator__username", flat=True)
         .distinct()
@@ -843,7 +853,7 @@ def review_revision(request, document_slug, revision_id):
         "document": doc,
         "form": form,
         "parent_revision": parent_revision,
-        "revision_contributors": list(revision_contributors),
+        "revision_contributors": revision_contributors,
         "should_ask_significance": should_ask_significance,
         "latest_unapproved_revision_id": latest_unapproved_revision_id,
         "current_revision_id": current_revision_id,
