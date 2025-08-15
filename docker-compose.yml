@@ -40,6 +40,7 @@ services:
       - discovery.type=single-node
       - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
       - xpack.security.enabled=false
+      - xpack.license.self_generated.type=trial
       - action.destructive_requires_name=false
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - network.host=0.0.0.0
