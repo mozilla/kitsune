@@ -31,7 +31,6 @@ from kitsune.wiki.models import (
     TitleCollision,
     resolves_to_document_view,
 )
-from kitsune.wiki.services import StaleTranslationService
 from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.task")
@@ -398,6 +397,8 @@ def process_stale_translations(limit=None) -> dict:
     Returns:
         dict: Summary of processing results
     """
+    from kitsune.wiki.services import StaleTranslationService
+
     service = StaleTranslationService()
     processed_candidates = service.process_stale_translations(limit=limit)
     processed_count = len(processed_candidates)
