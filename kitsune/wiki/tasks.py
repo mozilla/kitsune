@@ -412,9 +412,9 @@ def process_stale_translations(limit=None) -> dict:
     return summary
 
 
-@shared_task_with_retry
+@shared_task
 @skip_if_read_only_mode
 def publish_pending_translations() -> None:
-    from kitsune.wiki.strategies import HybridTranslationStrategy
+    from kitsune.wiki.services import HybridTranslationService
 
-    HybridTranslationStrategy().publish_pending_translations(log=log)
+    HybridTranslationService().publish_pending_translations(log=log)

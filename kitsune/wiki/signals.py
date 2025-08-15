@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from kitsune.wiki.models import Document
-from kitsune.wiki.strategies import HybridTranslationStrategy
+from kitsune.wiki.services import HybridTranslationService
 
 
 @receiver(
@@ -19,4 +19,4 @@ def reject_obsolete_translations(sender, instance, created, **kwargs):
         # A freshly created document can't lead to obsolete translations.
         return
 
-    HybridTranslationStrategy().reject_obsolete_translations(instance)
+    HybridTranslationService().reject_obsolete_translations(instance)
