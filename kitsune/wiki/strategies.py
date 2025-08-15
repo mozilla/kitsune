@@ -17,7 +17,6 @@ from kitsune.wiki.content_managers import (
     WikiContentManager,
 )
 from kitsune.wiki.models import Revision
-from kitsune.wiki.tasks import translate as translate_task
 
 SUPPORTED_TARGET_LOCALES = [
     locale for locale in settings.SUMO_LANGUAGES if locale not in ("xx", "en-US")
@@ -313,13 +312,18 @@ class TranslationStrategyFactory:
             method = TranslationMethod(method)
         return self._strategies[method]
 
+    def get_method_for_locale(self, locale: str) -> TranslationMethod:
+        """Determine the appropriate translation method for a given locale."""
+        if locale in settings.AI_ENABLED_LOCALES:
+            return TranslationMethod(TranslationMethod.AI)
+        elif locale in settings.HYBRID_ENABLED_LOCALES:
+            return TranslationMethod(TranslationMethod.HYBRID)
+        return TranslationMethod(TranslationMethod.MANUAL)
+
     def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy:
         """Select the best strategy based on business rules."""
-        if l10n_request.target_locale in settings.AI_ENABLED_LOCALES:
-            return self.get_strategy(TranslationMethod.AI)
-        elif l10n_request.target_locale in settings.HYBRID_ENABLED_LOCALES:
-            return self.get_strategy(TranslationMethod.HYBRID)
-        return self.get_strategy(TranslationMethod.MANUAL)
+        method = self.get_method_for_locale(l10n_request.target_locale)
+        return self.get_strategy(method)
 
     def execute(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Execute translation workflow using appropriate strategy."""
@@ -341,6 +345,7 @@ class TranslationStrategyFactory:
         # For explicit AI/Hybrid requests, use existing single-strategy logic
         strategy = self.select_best_strategy(l10n_request)
         if l10n_request.asynchronous and (l10n_request.method != TranslationMethod.MANUAL):
+            from kitsune.wiki.tasks import translate as translate_task
             translate_task.delay(l10n_request.as_json())
             return TranslationResult(
                 success=True,

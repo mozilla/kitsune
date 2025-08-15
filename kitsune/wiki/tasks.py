@@ -29,6 +29,7 @@ from kitsune.wiki.models import (
     TitleCollision,
     resolves_to_document_view,
 )
+from kitsune.wiki.services import StaleTranslationService
 from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.task")
@@ -362,3 +363,27 @@ def translate(l10n_request_as_json: str) -> None:
     if strategy := TranslationStrategyFactory().get_strategy(l10n_request.method):
         l10n_request.asynchronous = False
         strategy.translate(l10n_request)
+
+
+@shared_task
+@skip_if_read_only_mode
+def process_stale_translations(limit=None) -> dict:
+    """Periodic task to process stale translations.
+
+    Args:
+        limit: Maximum number of stale translations to process
+        (defaults to STALE_TRANSLATION_BATCH_SIZE)
+    Returns:
+        dict: Summary of processing results
+    """
+    service = StaleTranslationService()
+    processed_candidates = service.process_stale_translations(limit=limit)
+    processed_count = len(processed_candidates)
+
+    summary = {
+        "processed_count": processed_count,
+        "successful_count": processed_count,
+        "failed_count": 0,
+        "queued_count": processed_count,
+    }
+    return summary
