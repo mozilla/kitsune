@@ -18,14 +18,6 @@ class ConDiscussionsMessages:
             "Forum discussions for SUMO localization. Get started: "
             "https://support.mozilla.org/kb/localize-mozilla-support"
         ),
-        "Social Support discussions": (
-            "Social Support forum discussions. Get started: "
-            "https://support.mozilla.org/kb/social-support-guidelines"
-        ),
-        "Mobile Support forum discussions": (
-            "Mobile Support forum discussions. Learn how to get involved: "
-            "https://support.mozilla.org/kb/how-contribute-mobile-support-start-here"
-        ),
         "Forum Moderators": "Private forum for Forum Moderators only.",
         "Off Topic": (
             "A forum for the things in life that aren't about Firefox support. "
