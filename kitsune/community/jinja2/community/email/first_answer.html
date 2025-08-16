@@ -1,67 +1,94 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
-  <p>
-    {% trans %}
-      Thank you for your first contribution to the Mozilla support
-      forums! You just made somebody's day!
-    {% endtrans %}
-  </p>
+  <p>{{ _('Hi {username},')|f(username=display_name(user)) }}</p>
 
   <p>
     {% trans %}
-      Mozilla support forum is fully powered by our volunteer community that helps
-      hundreds of users every day. This community is formed by
-      passionate Firefox and Thunderbird users who take some of their
-      spare time to help others. We couldn't do it without your passion
-      and enthusiasm. Your contribution, as minor as it might seem, has
-      tremendous value. Solving one issue in the support forums can help
-      up to 1000 users a day!
-    {% endtrans %}
-  </p>
-
-  <p><strong>{{ _('Tell us about yourself!') }}</strong></p>
-
-  <p>
-    {% trans intro_url='/forums/contributors', matrix_url='https://chat.mozilla.org/#/room/#SUMO:mozilla.org' %}
-      We are always very happy to hear from new people who like helping
-      on the forums so if you haven’t met our community yet,
-      <a href="{{ intro_url }}">please take a minute to introduce yourself</a>.
-      If you want to stay low-profile, that’s also ok :). You can also
-      find us all hanging out on Matrix, on the <a href="{{ matrix_url }}">#sumo channel</a>.
-    {% endtrans %}
-  </p>
-
-  <p><strong>{{ _('Learn new things') }}</strong></p>
-
-  <p>
-    {% trans onboarding_url='/kb/how-contribute-support-forum?utm_source=onboardingemail&utm_medium=1intro&utm_term=cqt&utm_campaign=ContribOnboarding' %}
-      If you are interested in learning more about how this whole support
-      thing works, check out our
-      <a href="{{ onboarding_url }}">contributor guidelines</a>.
-      This includes some cool troubleshooting info, how-to
-      questions, and info about where to find more help if stuck.
-    {% endtrans %}
-  </p>
-
-  <p><strong>{{ _('Stay in touch') }}</strong></p>
-
-  <p>
-    {% trans forums_url='/forums/contributors', blog_url='https://blog.mozilla.org/sumo/', twitter_url='https://twitter.com/sumo_mozilla', meetings_url='https://wiki.mozilla.org/Support/Weekly_Meetings', participate_url='/kb/how-participate-sumo-contributor-meetings' %}
-      Finally, if you want to follow all news related to SUMO, don’t
-      forget about our
-      <a href="{{ forums_url }}">community forums</a>,
-      <a href="{{ blog_url }}">official blog</a> and
-      <a href="{{ twitter_url }}">Twitter account</a>.
-      We also
-      <a href="{{ meetings_url }}">meet every month</a> - and you can <a href="{{ participate_url }}">join us</a>.
+      Thank you and congratulations on your first contribution to the Mozilla Support Community Forums! You just made somebody's day, and we're so glad you're here.
     {% endtrans %}
   </p>
 
   <p>
     {% trans %}
-      Thank you once more. We are looking forward to seeing you more often
-      around SUMO! Keep rocking!
+      Our Community Forum is powered by incredible contributors like Jefferson, Noah, and now YOU, who help hundreds of users every single day. You might think that you've just helped one user, but your reply might help hundreds more who might find the thread later through a search.
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _("Here's what you can do next to keep the momentum going:") }}</strong></p>
+
+  <p><strong>{{ _('Know our rules & guidelines') }}</strong></p>
+  <p>
+    {% trans rules_url='/kb/forum-rules-and-guidelines' %}
+      If you haven't, please check out our <a href="{{ rules_url }}">Forum rules and guidelines</a> to learn how we keep this space safe and helpful for everyone.
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _('Tell us about yourself') }}</strong></p>
+  <p>
+    {% trans intro_url='/forums/contributors' %}
+      We'd love to get to know you! If you feel comfortable, <a href="{{ intro_url }}">say hi and introduce yourself in this thread</a>.
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _('Keep yourself updated') }}</strong></p>
+  <p>
+    {% trans prefs_url='/users/edit' %}
+      Consider <a href="{{ prefs_url }}">updating your notification preferences</a> to make sure you stay in the loop on threads you've participated in.
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _('Learn the basic and best practices') }}</strong></p>
+  <p>
+    {% trans guidelines_url='/kb/how-contribute-support-forum' %}
+      Check out our <a href="{{ guidelines_url }}">get started guidelines and best practices</a> for contributing in the forums. These resources will help you up to speed quickly and help you make a meaningful impact in the Mozilla Support Community.
+    {% endtrans %}
+  </p>
+  <p>
+    {% trans video_url='https://www.youtube.com/watch?v=bmwbSVplqMw' %}
+      👉 <a href="{{ video_url }}">Watch this video if you prefer visual tutorial</a>
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _('Stay updated') }}</strong></p>
+  <p>
+    {% trans forums_url='/forums/contributors' %}
+      Consider clicking the "Watch this forum" button on <a href="{{ forums_url }}">Forum Discussions</a> to get community updates that are relevant to forum contributors.
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _('Want to do more?') }}</strong></p>
+  <p>
+    {% trans %}
+      If you reach 30 replies in a year, you'll earn our Forum Contributor of the year badge—a small token of recognition for your big impact.
+    {% endtrans %}
+  </p>
+
+  <p><strong>{{ _('Stay connected') }}</strong></p>
+  <p>
+    {% trans matrix_url='https://chat.mozilla.org/#/room/#SUMO:mozilla.org' %}
+      Feeling stuck or just want to hang out with other enthusiastic community members? <a href="{{ matrix_url }}">Join us on Matrix!</a>
+    {% endtrans %}
+  </p>
+
+  {% if pm_link %}
+  <p>
+    {% trans pm_url=pm_link %}
+      We're so excited to see how your journey with SUMO unfolds. And remember, I'm just <a href="{{ pm_url }}">a message away on SUMO</a> if you have any questions or want to chat. 😊
+    {% endtrans %}
+  </p>
+  {% else %}
+  <p>
+    {% trans %}
+      We're so excited to see how your journey with SUMO unfolds. If you have any questions, feel free to reach out to the community! 😊
+    {% endtrans %}
+  </p>
+  {% endif %}
+
+  <p>
+    {% trans %}
+      Kind Regards,<br>
+      {{ name }} from Mozilla Support
     {% endtrans %}
   </p>
 {% endblock %}

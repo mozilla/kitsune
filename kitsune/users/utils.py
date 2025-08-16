@@ -1,5 +1,6 @@
 import bisect
 import logging
+import random
 from re import compile, escape
 from uuid import uuid4
 
@@ -26,6 +27,54 @@ from kitsune.wiki.handlers import DocumentListener
 log = logging.getLogger("k.users")
 
 
+def get_community_team_member_info(email_type='contributor'):
+    """Get a random member from the Community Team who has logged in within 7 days."""
+    from datetime import datetime, timedelta
+
+    from kitsune.wiki.utils import generate_short_url
+
+    # Try to get a Community Team member who has logged in within 7 days
+    seven_days_ago = datetime.now() - timedelta(days=7)
+
+    try:
+        community_team = Group.objects.get(name="Community Team")
+        active_members = community_team.user_set.filter(
+            is_active=True,
+            last_login__gte=seven_days_ago
+        )
+
+        if active_members.exists():
+            member = random.choice(active_members)
+            username = member.username
+
+            # Build the PM URL
+            campaign_map = {
+                'contributor': 'new-contributor',
+                'first_answer': 'first-answer',
+                'first_l10n': 'first-revision'
+            }
+            campaign = campaign_map.get(email_type, 'new-contributor')
+
+            pm_url = f"https://support.mozilla.org/en-US/messages/new?to={username}&utm_campaign={campaign}&utm_medium=bitly&utm_source=email"
+            pm_link = generate_short_url(pm_url) or pm_url
+
+            return {
+                'username': username,
+                'name': member.first_name or username,
+                'pm_link': pm_link
+            }
+
+    except Group.DoesNotExist:
+        pass
+
+    # Default fallback - return generic Community Team info without PM link
+    return {
+        'username': 'Community Team',
+        'name': 'Community Team',
+        'pm_link': None  # This will hide the PM link section in templates
+    }
+
+
 def add_to_contributors(user, language_code, contribution_area=""):
     area = contribution_area.upper()
     if not ContributionAreas.has_member(area):
@@ -39,13 +88,19 @@ def add_to_contributors(user, language_code, contribution_area=""):
     user.groups.add(group)
     user.save()
 
+    # Get Community Team member info for the email
+    team_info = get_community_team_member_info()
+
     @email_utils.safe_translation
     def _make_mail(locale):
+        context_vars = {"contributor": user}
+        context_vars.update(team_info)
+
         mail = email_utils.make_mail(
-            subject=_("Welcome to SUMO!"),
+            subject=_("Welcome to Mozilla Support Community! 🎉"),
             text_template="users/email/contributor.ltxt",
             html_template="users/email/contributor.html",
-            context_vars={"contributor": user},
+            context_vars=context_vars,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=user.email,
         )
