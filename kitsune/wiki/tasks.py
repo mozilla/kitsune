@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, datetime
 
 import waffle
 from celery import shared_task
@@ -10,6 +10,8 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
+from django.db.models import Subquery
+from django.db.models.functions import Coalesce
 from django.urls import reverse as django_reverse
 from django.utils.translation import gettext as _
 from requests.exceptions import HTTPError
@@ -29,7 +31,6 @@ from kitsune.wiki.models import (
     TitleCollision,
     resolves_to_document_view,
 )
-from kitsune.wiki.services import StaleTranslationService
 from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.task")
@@ -40,15 +41,16 @@ shared_task_with_retry = shared_task(
 
 
 @shared_task
-def send_reviewed_notification(revision_id: int, document_id: int, message: str):
+def send_reviewed_notification(revision_id: int, message: str):
     """Send notification of review to the revision creator."""
 
     try:
-        revision = Revision.objects.get(id=revision_id)
-        document = Document.objects.get(id=document_id)
-    except (Revision.DoesNotExist, Document.DoesNotExist) as err:
+        revision = Revision.objects.select_related("document").get(id=revision_id)
+    except Revision.DoesNotExist as err:
         capture_exception(err)
         return
+    else:
+        document = revision.document
 
     if revision.reviewer == revision.creator:
         log.debug("Revision (id={}) reviewed by creator, skipping email".format(revision.id))
@@ -90,6 +92,8 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
 
     for user in [revision.creator, revision.reviewer]:
         if hasattr(user, "profile"):
+            if user.profile.is_system_account:
+                continue
             locale = user.profile.locale
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
@@ -100,19 +104,33 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
 
 
 @shared_task
-def send_contributor_notification(
-    based_on_ids: list[int], revision_id: int, document_id: int, message: str
-):
+def send_contributor_notification(revision_id: int, message: str):
     """Send notification of review to the contributors of revisions."""
 
     try:
-        revision = Revision.objects.get(id=revision_id)
-        document = Document.objects.get(id=document_id)
-    except (Revision.DoesNotExist, Document.DoesNotExist) as err:
+        revision = Revision.objects.select_related("document").get(id=revision_id)
+    except Revision.DoesNotExist as err:
         capture_exception(err)
         return
+    else:
+        document = revision.document
 
-    based_on = Revision.objects.filter(id__in=based_on_ids)
+    # Get all of the revisions created before this one but created
+    # after the previously approved revision, if there is one.
+    based_on = document.revisions.filter(
+        created__lte=revision.created,
+        created__gt=Coalesce(
+            Subquery(
+                document.revisions.filter(
+                    is_approved=True,
+                    created__lt=revision.created,
+                )
+                .order_by("-created")
+                .values("created")[:1]
+            ),
+            datetime.min,
+        ),
+    )
 
     text_template = "wiki/email/reviewed_contributors.ltxt"
     html_template = "wiki/email/reviewed_contributors.html"
@@ -157,6 +175,8 @@ def send_contributor_notification(
 
         if hasattr(user, "profile"):
             locale = user.profile.locale
+            if user.profile.is_system_account:
+                continue
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
 
@@ -356,6 +376,7 @@ def render_document_cascade(base_doc_id):
 
 
 @shared_task_with_retry
+@skip_if_read_only_mode
 def translate(l10n_request_as_json: str) -> None:
     from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
 
@@ -376,6 +397,8 @@ def process_stale_translations(limit=None) -> dict:
     Returns:
         dict: Summary of processing results
     """
+    from kitsune.wiki.services import StaleTranslationService
+
     service = StaleTranslationService()
     processed_candidates = service.process_stale_translations(limit=limit)
     processed_count = len(processed_candidates)
@@ -387,3 +410,11 @@ def process_stale_translations(limit=None) -> dict:
         "queued_count": processed_count,
     }
     return summary
+
+
+@shared_task
+@skip_if_read_only_mode
+def publish_pending_translations() -> None:
+    from kitsune.wiki.services import HybridTranslationService
+
+    HybridTranslationService().publish_pending_translations(log=log)

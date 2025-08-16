@@ -116,7 +116,7 @@ class ReviewMailTestCase(TestCase):
         revision.reviewed = datetime.now()
         revision.is_approved = True
         revision.save()
-        send_reviewed_notification(revision.id, revision.document.id, message)
+        send_reviewed_notification(revision.id, message)
 
     @mock.patch.object(Site.objects, "get_current")
     def test_reviewed_notification(self, get_current):

@@ -13,14 +13,9 @@ from kitsune.wiki.content_managers import (
     AIContentManager,
     HybridContentManager,
     ManualContentManager,
-    NotificationType,
     WikiContentManager,
 )
 from kitsune.wiki.models import Revision
-
-SUPPORTED_TARGET_LOCALES = [
-    locale for locale in settings.SUMO_LANGUAGES if locale not in ("xx", "en-US")
-]
 
 
 class TranslationMethod(models.TextChoices):
@@ -155,11 +150,7 @@ class ManualTranslationStrategy(TranslationStrategy):
     def _handle_mark_ready_for_l10n(self, l10n_request: TranslationRequest) -> TranslationResult:
         """Handle mark_ready_for_l10n trigger."""
         # Method will auto-detect that this is a standalone action and use current time
-        self.content_manager.mark_ready_for_localization(
-            l10n_request.revision,
-            l10n_request.user,
-            send_notifications=True,
-        )
+        self.content_manager.mark_ready_for_localization(l10n_request.revision, l10n_request.user)
 
         result = TranslationResult(
             success=True,
@@ -174,20 +165,9 @@ class ManualTranslationStrategy(TranslationStrategy):
         """Handle review_revision trigger - sends approval notifications and conditionally handles localization."""
         # Mark as ready for localization - method will auto-detect if this is part of review workflow
         self.content_manager.mark_ready_for_localization(
-            l10n_request.revision,
-            l10n_request.user,
-            send_notifications=False,
+            l10n_request.revision, l10n_request.user, is_review_workflow=True
         )
 
-        exclude_users = []
-        if l10n_request.revision.creator:
-            exclude_users.append(l10n_request.revision.creator)
-        if l10n_request.user:
-            exclude_users.append(l10n_request.user)
-
-        self.content_manager.fire_notifications(
-            l10n_request.revision, [NotificationType.TRANSLATION_WORKFLOW], exclude_users
-        )
         result = TranslationResult(
             success=True,
             method=TranslationMethod.MANUAL,
@@ -330,22 +310,27 @@ class TranslationStrategyFactory:
         if l10n_request.method == TranslationMethod.MANUAL:
             manual_result = self.get_strategy(TranslationMethod.MANUAL).translate(l10n_request)
             if manual_result.success:
-                for locales, method in [(settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
-                                        (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID)]:
+                for locales, method in [
+                    (settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
+                    (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID),
+                ]:
                     for locale in locales:
-                        self.execute(TranslationRequest(
-                            revision=l10n_request.revision,
-                            trigger="translate",
-                            target_locale=locale,
-                            method=method,
-                            user=l10n_request.user,
-                            asynchronous=True
-                        ))
+                        self.execute(
+                            TranslationRequest(
+                                revision=l10n_request.revision,
+                                trigger="translate",
+                                target_locale=locale,
+                                method=method,
+                                user=l10n_request.user,
+                                asynchronous=True,
+                            )
+                        )
             return manual_result
         # For explicit AI/Hybrid requests, use existing single-strategy logic
         strategy = self.select_best_strategy(l10n_request)
         if l10n_request.asynchronous and (l10n_request.method != TranslationMethod.MANUAL):
             from kitsune.wiki.tasks import translate as translate_task
+
             translate_task.delay(l10n_request.as_json())
             return TranslationResult(
                 success=True,

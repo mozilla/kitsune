@@ -1,6 +1,8 @@
+from collections.abc import Iterable
 from datetime import datetime
 from typing import Any
 
+from django.contrib.auth.models import User
 from django.db import models
 
 from kitsune.users.models import Profile
@@ -10,7 +12,12 @@ from kitsune.wiki.events import (
     ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent,
 )
-from kitsune.wiki.models import Document, DraftRevision, Revision
+from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
+from kitsune.wiki.tasks import (
+    render_document_cascade,
+    send_contributor_notification,
+    send_reviewed_notification,
+)
 
 
 class NotificationType(models.TextChoices):
@@ -19,6 +26,7 @@ class NotificationType(models.TextChoices):
     CONTENT_CREATION = "content_creation", "Content Creation"
     TRANSLATION_WORKFLOW = "translation_workflow", "Translation Workflow"
     READY_FOR_L10N = "ready_for_l10n", "Ready for Localization"
+    REVIEW_WORKFLOW = "review_workflow", "Review Workflow"
 
 
 class WikiContentManager:
@@ -121,11 +129,11 @@ class WikiContentManager:
     def create_revision(
         self,
         data: dict[str, Any],
-        document,
-        creator,
-        based_on_id=None,
-        base_rev=None,
-        send_notifications=False,
+        document: Document,
+        creator: User,
+        based_on_id: int | None = None,
+        base_rev: Revision | None = None,
+        send_notifications: bool = False,
     ) -> Revision:
         """Create a new revision from data with validation and permissions.
 
@@ -156,53 +164,119 @@ class WikiContentManager:
             self.fire_notifications(revision, [NotificationType.CONTENT_CREATION])
         return revision
 
-    def publish_revision(self, revision: Revision, user, send_notifications=True) -> Revision:
-        """Publish (approve) a revision.
+    def publish_revision(
+        self,
+        revision: Revision,
+        user: User,
+        comment: str | None = None,
+        send_notifications: bool = True,
+    ) -> Revision:
+        """Publish (approve) a revision."""
+        notification_types = (
+            [
+                NotificationType.TRANSLATION_WORKFLOW,
+                NotificationType.REVIEW_WORKFLOW,
+            ]
+            if send_notifications
+            else None
+        )
+        rev = self._review_revision(revision, user, True, comment, notification_types)
+        render_document_cascade.delay(rev.document.id)
+        return rev
+
+    def reject_revision(
+        self,
+        revision: Revision,
+        user: User,
+        comment: str | None = None,
+        send_notifications: bool = True,
+    ) -> Revision:
+        """Reject (disapprove) a revision."""
+        notification_types = [NotificationType.REVIEW_WORKFLOW] if send_notifications else None
+        return self._review_revision(revision, user, False, comment, notification_types)
+
+    def _review_revision(
+        self,
+        revision: Revision,
+        reviewer: User,
+        approve: bool,
+        comment: str | None = None,
+        notification_types: Iterable[Any] | None = None,
+    ) -> Revision:
+        """Review (approve or reject) a revision.
 
         Args:
             revision: The revision to publish
-            user: The user publishing the revision
-            send_notifications: Whether to send content creation notifications
+            reviewer: The user reviewing the revision
+            approve: Whether the revision is approved or not
+            comment: An optional comment to assign to the revision
+            notifications: An iterable of notifications to send
         """
-        revision.is_approved = True
+        revision.is_approved = approve
         revision.reviewed = datetime.now()
-        revision.reviewer = user
+        revision.reviewer = reviewer
+        if comment:
+            if revision.comment:
+                # Attempt to append the comment if the revision already has one.
+                if (len(revision.comment) + len(comment) + 1) <= MAX_REVISION_COMMENT_LENGTH:
+                    revision.comment = f"{revision.comment}\n{comment}"
+            else:
+                revision.comment = comment
         revision.save()
 
-        if send_notifications:
-            exclude_users = [user] if user else []
-            self.fire_notifications(revision, [NotificationType.CONTENT_CREATION], exclude_users)
+        if notification_types:
+            self.fire_notifications(revision, notification_types)
         return revision
 
-    def fire_notifications(self, revision: Revision, notification_types, exclude_users=None):
+    def fire_notifications(
+        self,
+        revision: Revision,
+        notification_types: Iterable[Any],
+        comment: str | None = None,
+    ) -> None:
         """Unified notification dispatcher - figures out what notifications to fire."""
-        exclude_users = exclude_users or [revision.creator]
-
         for notif_type in notification_types:
             match notif_type:
                 case NotificationType.CONTENT_CREATION:
+                    exclude_users = [revision.creator]
                     ReviewableRevisionInLocaleEvent(revision).fire(exclude=exclude_users)
                     EditDocumentEvent(revision).fire(exclude=exclude_users)
                 case NotificationType.TRANSLATION_WORKFLOW:
-                    ApprovedOrReadyUnion(revision).fire(exclude=exclude_users)
+                    ApprovedOrReadyUnion(revision).fire(
+                        exclude=[revision.creator, revision.reviewer]
+                    )
                 case NotificationType.READY_FOR_L10N:
+                    exclude_users = []
+                    if revision.readied_for_localization_by:
+                        exclude_users.append(revision.readied_for_localization_by)
                     ReadyRevisionEvent(revision).fire(exclude=exclude_users)
+                case NotificationType.REVIEW_WORKFLOW:
+                    send_reviewed_notification.delay(revision.id, comment)
+                    send_contributor_notification.delay(revision.id, comment)
 
     def mark_ready_for_localization(
-        self, revision: Revision, user=None, send_notifications=True
+        self,
+        revision: Revision,
+        user: User | None,
+        is_review_workflow: bool = False,
+        send_notifications: bool = True,
     ) -> None:
         """Mark a revision as ready for localization and optionally send notifications."""
         revision.is_ready_for_localization = True
         revision.readied_for_localization = (
-            datetime.now() if send_notifications else revision.reviewed
+            revision.reviewed if is_review_workflow else datetime.now()
         )
         if user:
             revision.readied_for_localization_by = user
         revision.save()
 
         if send_notifications:
-            exclude_users = [user] if user else []
-            self.fire_notifications(revision, [NotificationType.READY_FOR_L10N], exclude_users)
+            notification_types = (
+                [NotificationType.TRANSLATION_WORKFLOW]
+                if is_review_workflow
+                else [NotificationType.READY_FOR_L10N]
+            )
+            self.fire_notifications(revision, notification_types)
 
 
 class ManualContentManager(WikiContentManager):
@@ -261,15 +335,19 @@ class AIContentManager(WikiContentManager):
             data, document, Profile.get_sumo_bot(), based_on_id, base_rev, send_notifications
         )
 
-    def publish_revision(self, revision: Revision, user=None, send_notifications=True) -> Revision:
-        """Publish (approve) a revision using the sumo bot.
-
-        Args:
-            revision: The revision to publish
-            send_notifications: Whether to send content creation notifications
-        """
+    def publish_revision(
+        self, revision: Revision, user=None, comment=None, send_notifications=True
+    ) -> Revision:
+        """Publish (approve) a revision using the sumo bot."""
         user = user or Profile.get_sumo_bot()
-        return super().publish_revision(revision, user, send_notifications)
+        return super().publish_revision(revision, user, comment, send_notifications)
+
+    def reject_revision(
+        self, revision: Revision, user=None, comment=None, send_notifications=True
+    ) -> Revision:
+        """Reject (disapprove) a revision using the sumo bot."""
+        user = user or Profile.get_sumo_bot()
+        return super().reject_revision(revision, user, comment, send_notifications)
 
 
 class HybridContentManager(AIContentManager):

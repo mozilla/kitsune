@@ -519,7 +519,9 @@ class RevisionTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual("Revision id: {}".format(r.id), doc("div.revision-info li").first().text())
+        self.assertEqual(
+            "Revision id: {}".format(r.id), doc("div.revision-info li").first().text()
+        )
         self.assertEqual(d.title, doc("h1.sumo-page-heading").text())
         self.assertEqual(pq(r.content_parsed)("div").text(), doc("#doc-content div").text())
         self.assertEqual(
@@ -1480,7 +1482,7 @@ class ReviewRevisionTests(TestCase):
         user_ = UserFactory()
         self.revision = Revision(
             summary="lipsum",
-            content="<div>Lorem {for mac}Ipsum{/for} " "Dolor</div>",
+            content="<div>Lorem {for mac}Ipsum{/for} Dolor</div>",
             keywords="kw1 kw2",
             document=self.document,
             creator=user_,
@@ -1560,7 +1562,7 @@ class ReviewRevisionTests(TestCase):
 
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
-        reviewed_delay.assert_called_with(r.id, r.document.id, "something")
+        reviewed_delay.assert_called_with(r.id, "something")
 
         if r.based_on is not None:
             old_rev = r.document.current_Revision
@@ -1634,7 +1636,7 @@ class ReviewRevisionTests(TestCase):
         r = Revision.objects.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
-        delay.assert_called_with(r.id, r.document.id, comment)
+        delay.assert_called_with(r.id, comment)
 
         # Verify that revision creator is not in contributors
         assert r.creator not in r.document.contributors.all()
@@ -2421,9 +2423,9 @@ class DocumentWatchTests(TestCase):
         # Unsubscribe
         response = post(self.client, "wiki.document_unwatch", args=[self.document.slug])
         self.assertEqual(200, response.status_code)
-        assert not EditDocumentEvent.is_notifying(
-            self.user, self.document
-        ), "Watch was not destroyed"
+        assert not EditDocumentEvent.is_notifying(self.user, self.document), (
+            "Watch was not destroyed"
+        )
 
 
 class LocaleWatchTests(TestCase):
@@ -2730,7 +2732,9 @@ class RevisionDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
+            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id
+            ),
             redirect[0],
         )
 
@@ -2738,7 +2742,9 @@ class RevisionDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
+            "/{}{}?next=/en-US/kb/{}/revision/{}/delete".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id
+            ),
             redirect[0],
         )
 
@@ -2875,7 +2881,9 @@ class DocumentDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
+            "/{}{}?next=/en-US/kb/{}/delete".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug
+            ),
             redirect[0],
         )
 
@@ -2883,7 +2891,9 @@ class DocumentDeleteTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/kb/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
+            "/{}{}?next=/en-US/kb/{}/delete".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug
+            ),
             redirect[0],
         )
 
