@@ -111,9 +111,16 @@ Thanks again for being here, and let's keep rocking the helpful web together! ðŸ
 {% endtrans %}
 
 {# L10n: This is an email.  Whitespace matters! #}
+{% if pm_link %}
 {% trans %}
 Kind Regards,
-{% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
+{{ name }} from Mozilla Support
 {% endtrans %}
+{% else %}
+{% trans %}
+Kind Regards,
+The Mozilla Support Community Team
+{% endtrans %}
+{% endif %}
 
 {% endautoescape %}

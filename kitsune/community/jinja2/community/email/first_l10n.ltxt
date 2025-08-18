@@ -82,6 +82,11 @@ We're so excited to see how your journey with SUMO unfolds. If you have any
 questions, feel free to reach out to the community! 😊
 {%- endif %}
 
+{% if pm_link %}
 Kind Regards,
-{% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
+{{ name }} from Mozilla Support
+{% else %}
+Kind Regards,
+The Mozilla Support Community Team
+{% endif %}
 {% endautoescape %}

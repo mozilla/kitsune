@@ -85,10 +85,19 @@
   </p>
   {% endif %}
 
+  {% if pm_link %}
   <p>
     {% trans %}
       Kind Regards,<br>
-      {% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
+      {{ name }} from Mozilla Support
     {% endtrans %}
   </p>
+  {% else %}
+  <p>
+    {% trans %}
+      Kind Regards,<br>
+      The Mozilla Support Community Team
+    {% endtrans %}
+  </p>
+  {% endif %}
 {% endblock %}
