@@ -186,8 +186,9 @@ def simple_search(request):
         search = _create_search("traditional", cleaned["q"], language, product, cleaned["w"])
         page, total, results = _execute_search_with_pagination(request, search)
 
-    # For hybrid search, check if semantic component is performing well
-    if search_type == "hybrid" and total > 0 and results:
+    # For semantic search (not hybrid), check if semantic component is performing well
+    # Skip this check for hybrid search since RRF handles quality balancing internally
+    if search_type == "semantic" and total > 0 and results:
         try:
             max_score = max(
                 (r.get("score", 0) if isinstance(r, dict) else getattr(getattr(r, "meta", None), "score", 0))
@@ -209,6 +210,9 @@ def simple_search(request):
     if total == 0:
         fallback_results = _fallback_results(request.user, language, cleaned["product"])
 
+    # Check if results were capped
+    results_capped = getattr(search, 'results_capped', False)
+
     data = {
         "num_results": total,
         "results": results,
@@ -218,6 +222,7 @@ def simple_search(request):
         "w": cleaned["w"],
         "lang_name": lang_name,
         "products": Product.active.filter(visible=True),
+        "results_capped": results_capped,
     }
 
     if not is_json:
