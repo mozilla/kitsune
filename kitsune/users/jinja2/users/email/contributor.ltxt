@@ -3,12 +3,21 @@
 {{ _('Hi {username},')|f(username=display_name(contributor)) }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
+{% if pm_link %}
 {% trans %}
 I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience 
 team, I'd love to thank you for registering as a contributor at SUMO a.k.a. 
 SUpport.MOzilla.org. We're so excited you've joined us! Mozilla wouldn't be 
 what it is today without the passionate contributions from people like you.
 {% endtrans %}
+{% else %}
+{% trans %}
+On behalf of the Customer Experience team, we'd love to thank you for 
+registering as a contributor at SUMO a.k.a. SUpport.MOzilla.org. We're so 
+excited you've joined us! Mozilla wouldn't be what it is today without the 
+passionate contributions from people like you.
+{% endtrans %}
+{% endif %}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}

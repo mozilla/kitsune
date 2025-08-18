@@ -3,11 +3,19 @@
 {% block content %}
   <p>{{ _('Hi {username},')|f(username=display_name(contributor)) }}</p>
 
+  {% if pm_link %}
   <p>
     {% trans home_url='https://support.mozilla.org/' %}
       I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience team, I'd love to thank you for registering as a contributor at <a href="{{ home_url }}">SUMO a.k.a. SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
     {% endtrans %}
   </p>
+  {% else %}
+  <p>
+    {% trans home_url='https://support.mozilla.org/' %}
+      On behalf of the Customer Experience team, we'd love to thank you for registering as a contributor at <a href="{{ home_url }}">SUMO a.k.a. SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
+    {% endtrans %}
+  </p>
+  {% endif %}
 
   <p>
     {% trans %}
