@@ -241,8 +241,8 @@ class HybridRRFSearchStrategy(SearchStrategy):
                         {"standard": {"query": traditional_query.to_dict()}},
                         {"standard": {"query": semantic_query.to_dict()}}
                     ],
-                    "rank_window_size": 100,
-                    "rank_constant": 20
+                    "rank_window_size": settings.RRF_WINDOW_MAX_SIZE,
+                    "rank_constant": settings.RRF_RANK_CONSTANT
                 }
             }
         }
@@ -643,7 +643,15 @@ class UnifiedSearch(SumoSearch):
 
         self.hits = result["hits"]["hits"]
         total = result["hits"]["total"]
-        self.total = total["value"] if isinstance(total, dict) else total
+        raw_total = total["value"] if isinstance(total, dict) else total
+
+        # Cap total at the RRF window size since that's all we can retrieve
+        rrf_window_size = rrf_dict["retriever"]["rrf"]["rank_window_size"]
+        self.total = min(raw_total, rrf_window_size)
+
+        # Track if results were capped for display purposes
+        self.results_capped = raw_total > rrf_window_size
+
         self.results = [self.make_result(self._convert_hit_to_attrdict(hit)) for hit in self.hits]
         self.last_key = key
 
@@ -816,7 +824,8 @@ def WikiSearch(query="", search_mode="hybrid", locales=None, primary_locale="en-
         search_mode=search_mode,
         locales=locales or [primary_locale],
         primary_locale=primary_locale,
-        product=product
+        product=product,
+        **kwargs
     )
 
 
@@ -832,7 +841,8 @@ def QuestionSearch(query="", search_mode="hybrid", locales=None, primary_locale=
         search_mode=search_mode,
         locales=locales or [primary_locale],
         primary_locale=primary_locale,
-        product=product
+        product=product,
+        **kwargs
     )
 
 
@@ -872,7 +882,8 @@ def CompoundSearch(query="", search_mode="hybrid", locales=None, primary_locale=
         search_mode=search_mode,
         locales=locales or [primary_locale],
         primary_locale=primary_locale,
-        product=product
+        product=product,
+        **kwargs
     )
 
 
