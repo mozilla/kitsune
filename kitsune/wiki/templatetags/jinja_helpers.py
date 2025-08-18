@@ -2,7 +2,7 @@ from django_jinja import library
 from markupsafe import Markup
 
 from kitsune.sumo import parser
-from kitsune.wiki.content_managers import AIContentManager
+from kitsune.wiki.content_managers import HybridContentManager
 from kitsune.wiki.diff import BetterHtmlDiff
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document
@@ -33,4 +33,4 @@ def is_auto_published_translation(doc: Document) -> bool:
     the given document's current revision was machine-generated and not
     reviewed by a human.
     """
-    return AIContentManager().is_auto_published_translation(doc.current_revision)
+    return HybridContentManager().is_auto_published_translation(doc.current_revision)

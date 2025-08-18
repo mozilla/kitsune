@@ -350,6 +350,10 @@ class AIContentManager(WikiContentManager):
         user = user or Profile.get_sumo_bot()
         return super().reject_revision(revision, user, comment, send_notifications)
 
+
+class HybridContentManager(AIContentManager):
+    """Content manager for hybrid translation workflow."""
+
     def is_auto_published_translation(self, revision: Revision | None) -> bool:
         """
         Is this revision a machine translation that was published without human review?
@@ -365,9 +369,3 @@ class AIContentManager(WikiContentManager):
         sumo_bot = Profile.get_sumo_bot()
 
         return (revision.creator == sumo_bot) and (revision.reviewer == sumo_bot)
-
-
-class HybridContentManager(AIContentManager):
-    """Content manager for hybrid translation workflow."""
-
-    pass
