@@ -78,7 +78,7 @@ class Command(BaseCommand):
 
             messages.append(
                 make_mail(
-                    subject="Thank you for your contribution to Mozilla Support!",
+                    subject="Congrats on your first article revision!",
                     text_template="community/email/first_l10n.ltxt",
                     html_template="community/email/first_l10n.html",
                     context_vars=context,

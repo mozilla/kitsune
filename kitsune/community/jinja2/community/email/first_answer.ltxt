@@ -7,8 +7,8 @@ Thank you and congratulations on your first contribution to the Mozilla Support
 Community Forums! You just made somebody's day, and we're so glad you're here.
 {% endtrans %}
 
-{% trans %}
-Our Community Forum is powered by incredible contributors like Jefferson, Noah, 
+{% trans jeff_url='https://mzl.la/4mDU91b' noah_url='https://mzl.la/45burLD' %}
+Our Community Forum is powered by incredible contributors like Jefferson ({{ jeff_url }}), Noah ({{ noah_url }}), 
 and now YOU, who help hundreds of users every single day. You might think that 
 you've just helped one user, but your reply might help hundreds more who might 
 find the thread later through a search.
@@ -56,6 +56,7 @@ meaningful impact in the Mozilla Support Community.
 {% endtrans %}
 
 https://{{ host }}/kb/how-contribute-support-forum
+https://{{ host }}/kb/best-practices-answering-questions-support-forum
 
 {% trans %}
 👉 Watch this video if you prefer visual tutorial
@@ -80,6 +81,8 @@ https://{{ host }}/forums/contributors
 If you reach 30 replies in a year, you'll earn our Forum Contributor of the year 
 badge—a small token of recognition for your big impact.
 {% endtrans %}
+
+https://mzl.la/4muj8nj
 
 ---
 {{ _('Stay connected') }}

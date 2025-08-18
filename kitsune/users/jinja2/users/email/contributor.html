@@ -4,8 +4,8 @@
   <p>{{ _('Hi {username},')|f(username=display_name(contributor)) }}</p>
 
   <p>
-    {% trans %}
-      I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience team, I'd love to thank you for registering as a contributor at SUMO a.k.a. SUpport.MOzilla.org. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
+    {% trans home_url='https://support.mozilla.org/' %}
+      I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience team, I'd love to thank you for registering as a contributor at <a href="{{ home_url }}">SUMO a.k.a. SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
     {% endtrans %}
   </p>
 
@@ -67,7 +67,7 @@
     </li>
     <li>
       {% trans url=add_utm('https://wiki.mozilla.org/Support:Community_Calls', 'contribute', source='new-contributor') %}
-          <strong><a href="{{ url }}">Community Call</a></strong>: Join us for our regular call at 5 PM UTC on Wednesdays (typically during release weeks) to catch up on updates and chat with the team.
+          <strong><a href="{{ url }}">Community Call</a></strong>: Join us for our regular call at <strong>5 PM UTC on Wednesdays</strong> (typically during release weeks) to catch up on updates and chat with the team.
       {% endtrans %}
     </li>
   </ul>
