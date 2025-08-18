@@ -320,6 +320,7 @@ class SumoSearch(SumoSearchInterface):
     hits: list[AttrDict] = dfield(default_factory=list, init=False)
     results: list[dict] = dfield(default_factory=list, init=False)
     last_key: int | slice | None = dfield(default=None, init=False)
+    results_capped: bool = dfield(default=False, init=False)
 
     query: str = ""
     default_operator: str = "AND"
