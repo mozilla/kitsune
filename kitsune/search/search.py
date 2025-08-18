@@ -259,7 +259,11 @@ class SearchStrategyFactory:
 
     @staticmethod
     def create_strategy(search_mode: str, context: SearchContext, query: str | None = None) -> SearchStrategy:
-        """Create appropriate search strategy based on mode and query content."""
+        """Create appropriate search strategy based on mode and query content.
+
+        Only supports hybrid (default) and traditional modes.
+        Pure semantic mode is no longer supported as a standalone option.
+        """
         query_to_check = query or context.query
 
         # Check for advanced syntax that requires traditional search
@@ -267,12 +271,10 @@ class SearchStrategyFactory:
             log.debug(f"Using traditional search for advanced query: {query_to_check}")
             return TraditionalSearchStrategy(context)
 
-        # Use the specified search mode
-        if search_mode == "semantic":
-            return SemanticSearchStrategy(context)
-        elif search_mode == "traditional":
+        # Use the specified search mode - only hybrid or traditional
+        if search_mode == "traditional":
             return TraditionalSearchStrategy(context)
-        else:  # hybrid (default)
+        else:  # hybrid (default) - includes any invalid mode
             return HybridRRFSearchStrategy(context)
 
     @staticmethod

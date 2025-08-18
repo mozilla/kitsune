@@ -12,9 +12,6 @@ from django.views.decorators.cache import cache_page
 from kitsune import search as constants
 from kitsune.products.models import Product
 from kitsune.search.base import SumoSearchPaginator
-from kitsune.search.config import (
-    SEMANTIC_SEARCH_MIN_SCORE,
-)
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.search import (
     CompoundSearch,
@@ -83,14 +80,14 @@ def _create_search(search_type, query, locales, product, w_flags):
     """Create appropriate search object based on search type and locales.
 
     Args:
-        search_type: "hybrid", "semantic", or "traditional"
+        search_type: "hybrid" or "traditional"
         query: Search query string
         locales: List of locales or single locale string
         product: Product instance or None
         w_flags: WHERE flags for content types
     """
     # Default to hybrid if not specified or invalid
-    if search_type not in ["hybrid", "semantic", "traditional"]:
+    if search_type not in ["hybrid", "traditional"]:
         search_type = "hybrid"
 
     # Handle single locale vs multi-locale
@@ -166,9 +163,12 @@ def simple_search(request):
     product, product_titles = _get_product_title(cleaned["product"])
 
     # create search object - default to hybrid search
-    search_type = cleaned.get("search_type") or request.GET.get("search_type", "hybrid")
+    # Only support hybrid (default) and traditional modes
+    search_type = request.GET.get("search_type", "hybrid")
+    if search_type not in ["hybrid", "traditional"]:
+        search_type = "hybrid"  # Default to hybrid for any invalid value
 
-    # Allow override to traditional search if needed
+    # Allow override to traditional search if semantic search is disabled
     if not getattr(settings, "USE_SEMANTIC_SEARCH", True):
         search_type = "traditional"
 
@@ -185,25 +185,6 @@ def simple_search(request):
         # Fallback to single-locale traditional search
         search = _create_search("traditional", cleaned["q"], language, product, cleaned["w"])
         page, total, results = _execute_search_with_pagination(request, search)
-
-    # For semantic search (not hybrid), check if semantic component is performing well
-    # Skip this check for hybrid search since RRF handles quality balancing internally
-    if search_type == "semantic" and total > 0 and results:
-        try:
-            max_score = max(
-                (r.get("score", 0) if isinstance(r, dict) else getattr(getattr(r, "meta", None), "score", 0))
-                for r in results
-            ) if results else 1.0
-        except (AttributeError, TypeError, ValueError):
-            max_score = 1.0
-
-        if max_score < SEMANTIC_SEARCH_MIN_SCORE:
-            try:
-                search = _create_search("traditional", cleaned["q"], search_locales, product, cleaned["w"])
-                page, total, results = _execute_search_with_pagination(request, search)
-            except Exception:
-                # Keep the original search results if fallback fails
-                pass
 
     # generate fallback results if necessary
     fallback_results = None
