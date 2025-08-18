@@ -71,6 +71,6 @@
 
   <p>
     Kind Regards,<br>
-    {{ name }} from Mozilla Support
+    {% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
   </p>
 {% endblock %}

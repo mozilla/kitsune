@@ -40,11 +40,12 @@ class Command(BaseCommand):
             Answer.objects.filter(answer_filter).values_list("creator", flat=True)
         )
 
+        # Get team member info for first_answer emails
+        answer_team_info = get_community_team_member_info('first_answer')
+
         @safe_translation
         def _make_answer_email(locale, to):
-            # Get team member info for first_answer emails
-            team_info = get_community_team_member_info('first_answer')
-            context = {**base_context, **team_info, 'user': to}
+            context = {**base_context, **answer_team_info, 'user': to}
 
             return make_mail(
                 subject=_("Congrats on your first forum reply!"),
@@ -68,11 +69,12 @@ class Command(BaseCommand):
             Revision.objects.filter(l10n_filter).values_list("creator", flat=True)
         )
 
+        # Get team member info for first_l10n emails
+        l10n_team_info = get_community_team_member_info('first_l10n')
+
         # This doesn't need localized, and so don't need the `safe_translation` helper.
         for user in User.objects.filter(id__in=l10n_recipient_ids):
-            # Get team member info for first_l10n emails
-            team_info = get_community_team_member_info('first_l10n')
-            context = {**base_context, **team_info, 'user': user}
+            context = {**base_context, **l10n_team_info, 'user': user}
 
             messages.append(
                 make_mail(

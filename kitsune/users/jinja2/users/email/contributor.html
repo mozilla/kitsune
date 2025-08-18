@@ -72,11 +72,19 @@
     </li>
   </ul>
 
+  {% if pm_link %}
   <p>
     {% trans pm_url=pm_link %}
       If you ever need help or just want to say hi, feel free to <a href="{{ pm_url }}">message me directly on SUMO</a>. I'd love to hear from you!
     {% endtrans %}
   </p>
+  {% else %}
+  <p>
+    {% trans %}
+      If you ever need help or just want to say hi, feel free to reach out to the community! We'd love to hear from you!
+    {% endtrans %}
+  </p>
+  {% endif %}
 
   <p>
     {% trans %}
@@ -87,7 +95,7 @@
   <p>
     {% trans %}
       Kind Regards,<br>
-      {{ name }} from Mozilla Support
+      {% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
     {% endtrans %}
   </p>
 {% endblock %}

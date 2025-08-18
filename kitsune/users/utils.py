@@ -1,6 +1,7 @@
 import bisect
 import logging
 import random
+from datetime import datetime, timedelta
 from re import compile, escape
 from uuid import uuid4
 
@@ -23,21 +24,21 @@ from kitsune.tidings.models import Watch
 from kitsune.users.handlers import UserDeletionPublisher
 from kitsune.users.models import ContributionAreas, Deactivation, Setting
 from kitsune.wiki.handlers import DocumentListener
+from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.users")
 
 
 def get_community_team_member_info(email_type='contributor'):
     """Get a random member from the Community Team who has logged in within 7 days."""
-    from datetime import datetime, timedelta
-
-    from kitsune.wiki.utils import generate_short_url
-
-    # Try to get a Community Team member who has logged in within 7 days
     seven_days_ago = datetime.now() - timedelta(days=7)
 
     try:
         community_team = Group.objects.get(name="Community Team")
+    except Group.DoesNotExist:
+        community_team = None
+
+    if community_team:
         active_members = community_team.user_set.filter(
             is_active=True,
             last_login__gte=seven_days_ago
@@ -64,14 +65,11 @@ def get_community_team_member_info(email_type='contributor'):
                 'pm_link': pm_link
             }
 
-    except Group.DoesNotExist:
-        pass
-
     # Default fallback - return generic Community Team info without PM link
     return {
         'username': 'Community Team',
         'name': 'Community Team',
-        'pm_link': None  # This will hide the PM link section in templates
+        'pm_link': None
     }
 
 

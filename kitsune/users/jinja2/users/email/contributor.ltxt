@@ -90,12 +90,20 @@ Community Call: Join us for our regular call at 5 PM UTC on Wednesdays
 
 {{ add_utm('https://wiki.mozilla.org/Support:Community_Calls', 'contribute', source='new-contributor') }}
 
+{%- if pm_link -%}
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
 If you ever need help or just want to say hi, feel free to message me directly 
 on SUMO. I'd love to hear from you!
 {% endtrans %}
 {{ pm_link }}
+{%- else -%}
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+If you ever need help or just want to say hi, feel free to reach out to the 
+community! We'd love to hear from you!
+{% endtrans %}
+{%- endif %}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
@@ -105,7 +113,7 @@ Thanks again for being here, and let's keep rocking the helpful web together! ðŸ
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
 Kind Regards,
-{{ name }} from Mozilla Support
+{% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
 {% endtrans %}
 
 {% endautoescape %}

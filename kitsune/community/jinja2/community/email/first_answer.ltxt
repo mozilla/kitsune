@@ -106,6 +106,6 @@ questions, feel free to reach out to the community! 😊
 
 {% trans %}
 Kind Regards,
-{{ name }} from Mozilla Support
+{% if pm_link %}{{ name }} from Mozilla Support{% else %}The Mozilla Support Community Team{% endif %}
 {% endtrans %}
 {% endautoescape %}
