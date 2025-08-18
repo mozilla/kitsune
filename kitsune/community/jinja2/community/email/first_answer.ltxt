@@ -7,7 +7,7 @@ Thank you and congratulations on your first contribution to the Mozilla Support
 Community Forums! You just made somebody's day, and we're so glad you're here.
 {% endtrans %}
 
-{% trans jeff_url='https://mzl.la/4mDU91b' noah_url='https://mzl.la/45burLD' %}
+{% trans jeff_url='https://mzl.la/4mDU91b', noah_url='https://mzl.la/45burLD' %}
 Our Community Forum is powered by incredible contributors like Jefferson ({{ jeff_url }}), Noah ({{ noah_url }}), 
 and now YOU, who help hundreds of users every single day. You might think that 
 you've just helped one user, but your reply might help hundreds more who might 
