@@ -1,52 +1,92 @@
 {# This is an email.  Whitespace matters! #}
 {# This does not need translated, since it is being sent to localizers. #}
 {%- autoescape false %}
+Hi {{ display_name(user) }},
 
-Thank you for your first contribution to our Knowledge Base in your language!
-You can consider yourself an Open Web rockstar on the rise. :-) Your
-contribution will now undergo review by our awesome community members and
-should be published soon.
+Thank you and congratulations on your first article revision on our Knowledge 
+Base! Your contribution will now undergo review by our awesome community members.
 
-SUMO has millions of visitors each month and more than 60% of them view pages
-in languages other than English. You may think that you translated just one
-page, but for all the users who speak your language it makes a *huge* difference.
-
----
-Team up
-
-It’s always a good idea to get in touch with your Locale Leaders. You can find
-them clicking your language’s name on the locale page, linked below Send them
-a Private Message - they are there to help you help others through your
-localizing skills!
-
-* Locale Page - https://{{ host }}/kb/locales
-
-If you want to get in touch with other people localizing SUMO in your language
-you can check out the forums or Matrix.
-
-* L10n forums - https://{{ host }}/forums/l10n-forum/711196?last=64679
-* Matrix sumo channel - https://chat.mozilla.org/#/room/#SUMO:mozilla.org
+SUMO has millions of visitors each month and more than 60% of them view pages 
+in languages other than English. You may think that you translated just one 
+page, but for all the users who speak your language it makes a huge difference. 
+And for that, we're incredibly grateful for contributors like Wxie (https://mzl.la/41t5p8b), Michele (https://mzl.la/4m4xzib), 
+and now YOU who went extra miles to help other users.
 
 ---
-Stay in touch
+Here's what you can do next to keep the momentum going:
 
-Finally, if you want to follow all news related to SUMO, don’t forget about our
+Get to know our style guide and syntaxes
 
-* Community forums - https://{{ host }}/forums/contributors
-* Official blog - https://blog.mozilla.org/sumo/
-* Twitter account - https://twitter.com/sumo_mozilla
-* Weekly meetings - https://wiki.mozilla.org/Support/Weekly_Meetings
-* Join contributor meetings - https://{{ host }}/kb/how-participate-sumo-contributor-meetings
+If you're into the English KB, check out this guideline to get to know our guideline.
+https://{{ host }}/kb/kb-style-guide
+
+If you're into localization, check out our general localization style guide.
+https://{{ host }}/kb/localization-style-guide
+
+Additionally, you may want to familiarize yourself with our markup.
+https://{{ host }}/kb/wiki-markup-reference
 
 ---
-Keep rocking
+Team up!
 
-So, now that you know how to improve our community-powered support
-wiki in your language, why not localize another article?
+If you're onto article localization, it's always a good idea to get in touch 
+with your Locale Leaders. You can find them by clicking on your language's name 
+in this list:
+https://{{ host }}/kb/locales
 
-* Localization dashboard: https://{{ host }}/localization
-localize another article
+Send them a Private Message - they are there to help you help others through 
+your localizing skills!
 
-Thank you once more. We are looking forward to seeing you more often
-around SUMO!
+If the English KB is your jazz, you may want to get yourself familiar with the 
+content request process to understand our workflow.
+https://{{ host }}/kb/content-request-process
+
+---
+Learn the basic
+
+Check out this guidelines to get started in the KB
+https://{{ host }}/kb/how-contribute-knowledge-base
+
+Check out this guidelines to get started in localization
+https://{{ host }}/kb/how-localize-articles
+
+---
+Stay updated
+
+Consider clicking the "Watch this forum" button on the Localization Discussions 
+or the Knowledge Base Discussions to get updates that are relevant to KB and 
+Localization contributions.
+
+* Localization Discussions - https://{{ host }}/forums/l10n-forum
+* Knowledge Base Discussions - https://{{ host }}/forums/kb-forum
+
+---
+Want to do more?
+
+If you reach 10 approved revisions in a year, you'll earn our Contributor of the 
+year badge—a small token of recognition for your big impact.
+
+---
+Stay connected
+
+Feeling stuck or just want to hang out with other enthusiastic community 
+members? Join us on Matrix!
+https://chat.mozilla.org/#/room/#SUMO:mozilla.org
+
+{% if pm_link -%}
+We're so excited to see how your journey with SUMO unfolds. And remember, I'm 
+just a message away on SUMO if you have any questions or want to chat. 😊
+{{ pm_link }}
+{%- else -%}
+We're so excited to see how your journey with SUMO unfolds. If you have any 
+questions, feel free to reach out to the community! 😊
+{%- endif %}
+
+{% if pm_link %}
+Kind Regards,
+{{ name }} from Mozilla Support
+{% else %}
+Kind Regards,
+The Mozilla Support Community Team
+{% endif %}
 {% endautoescape %}

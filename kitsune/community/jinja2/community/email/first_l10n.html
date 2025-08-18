@@ -2,58 +2,78 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
+  <p>Hi {{ display_name(user) }},</p>
+
   <p>
-    Thank you for your first contribution to our Knowledge Base in your
-    language! You can consider yourself an Open Web rockstar on the rise.
-    :-) Your contribution will now undergo review by our awesome community
-    members and should be published soon.
+    Thank you and congratulations on your first article revision on our Knowledge Base! Your contribution will now undergo review by our awesome community members.
   </p>
 
   <p>
-    SUMO has millions of visitors each month and more than 60% of them view
-    pages in languages other than English. You may think that you
-    translated just one page, but for all the users who speak your language
-    it makes a <strong>huge</strong> difference.
+  SUMO has millions of visitors each month and more than 60% of them view pages in languages other than English. You may think that you translated just one page, but for all the users who speak your language it makes a huge difference. And for that, we're incredibly grateful for contributors like <a href="https://mzl.la/41t5p8b">Wxie</a>, <a href="https://mzl.la/4m4xzib">Michele</a>, and now YOU who went extra miles to help other users.
   </p>
 
+  <p>Here's what you can do next to keep the momentum going:</p>
 
-  <p><strong>Team up</strong></p>
+  <p><strong>Get to know our style guide and syntaxes</strong></p>
+  <ul>
+    <li>If you're into the English KB, check out <a href="/kb/kb-style-guide">this guide</a> to get to know our guidelines.</li>
+    <li>If you're into localization, check out our <a href="/kb/localization-style-guide">general localization style guide</a>.</li>
+  </ul>
   <p>
-    It’s always a good idea to get in touch with your Locale Leaders.
-    You can find them by clicking on your language’s name
-    <a href="/kb/locales">in this list</a>.
-    Send them a Private Message - they are there to help you help others
-    through your localizing skills!
+    Additionally, you may want to familiarize yourself with our <a href="/kb/wiki-markup-reference">markup</a>.
   </p>
 
+  <p><strong>Team up!</strong></p>
   <p>
-    If you want to get in touch with other people localizing SUMO in your
-    language, go to our <a href="/forums/l10n-forum/">l10n forum</a>.
-    You can also find people hanging out on Matrix at
-    <a href="https://chat.mozilla.org/#/room/#SUMO:mozilla.org">#sumo channel</a>.
+    If you're onto article localization, it's always a good idea to get in touch with your Locale Leaders. You can find them by clicking on your language's name <a href="/kb/locales">in this list</a>. Send them a Private Message - they are there to help you help others through your localizing skills!
+  </p>
+  <p>
+    If the English KB is your jazz, you may want to get yourself familiar with the <a href="/kb/content-request-process">content request process</a> to understand our workflow.
   </p>
 
-  <p><strong>Stay in touch</strong></p>
+  <p><strong>Learn the basic</strong></p>
+  <ul>
+    <li>Check out <a href="/kb/how-contribute-knowledge-base">these guidelines</a> to get started in the KB</li>
+  <li>Check out <a href="/kb/how-localize-articles">these guidelines</a> to get started in localization</li>
+  </ul>
+
+  <p><strong>Stay updated</strong></p>
+  <p style="text-align: center;">
+    <img src="{{ webpack_static('sumo/img/community/support-forum-discussions.png') }}" alt="Support Forum Discussions" style="max-width: 100%; height: auto;">
+  </p>
   <p>
-    Finally, if you want to follow all news related to SUMO, don’t forget about our
-    <a href="/forums/contributors">community forums</a>,
-    <a href="https://blog.mozilla.org/sumo/">official blog</a>
-    and
-    <a href="https://twitter.com/sumo_mozilla">Twitter account</a>.
-    We also
-    <a href="https://wiki.mozilla.org/Support/Weekly_Meetings">meet every month</a>
-    - and you can <a href="/kb/how-participate-sumo-contributor-meetings">join us</a>.
+    Consider clicking the "Watch this forum" button on the <a href="/forums/l10n-forum">Localization Discussions</a> or the <a href="/forums/kb-forum">Knowledge Base Discussions</a> to get updates that are relevant to KB and Localization contributions.
   </p>
 
-  <p><strong>Keep rocking</strong></p>
+  <p><strong>Want to do more?</strong></p>
   <p>
-    So, now that you know how to improve our community-powered
-    support wiki in your language, why not
-    <a href="/localization">localize another article</a>?
+  If you reach 10 approved revisions in a year, you'll earn our <a href="https://mzl.la/46OIrfw">Contributor of the year badge</a>—a small token of recognition for your big impact.
   </p>
 
+  <p><strong>Stay connected</strong></p>
   <p>
-    Thank you once more. We are looking forward to seeing you more often
-    around SUMO!
+    Feeling stuck or just want to hang out with other enthusiastic community members? Join us on <a href="https://chat.mozilla.org/#/room/#SUMO:mozilla.org">Matrix!</a>
   </p>
+
+  {% if pm_link %}
+  <p>
+    We're so excited to see how your journey with SUMO unfolds. And remember, I'm just <a href="{{ pm_link }}">a message away</a> on SUMO if you have any questions or want to chat. 😊
+  </p>
+  {% else %}
+  <p>
+    We're so excited to see how your journey with SUMO unfolds. If you have any questions, feel free to reach out to the community! 😊
+  </p>
+  {% endif %}
+
+  {% if pm_link %}
+  <p>
+    Kind Regards,<br>
+    {{ name }} from Mozilla Support
+  </p>
+  {% else %}
+  <p>
+    Kind Regards,<br>
+    The Mozilla Support Community Team
+  </p>
+  {% endif %}
 {% endblock %}

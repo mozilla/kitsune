@@ -1,67 +1,121 @@
 {# This is an email.  Whitespace matters! #}
 {%- autoescape false %}
-{% trans %}
-Thank you for your first contribution to the Mozilla support forums! You just
-made somebody's day!
-{% endtrans %}
+{{ _('Hi {username},')|f(username=display_name(user)) }}
 
 {% trans %}
-Mozilla support forum is fully powered by our volunteer community that helps
-hundreds of users every day. This community is formed by
-passionate Firefox and Thunderbird users who take some of their
-spare time to help others. We couldn't do it without your passion
-and enthusiasm. Your contribution, as minor as it might seem, has
-tremendous value. Solving one issue in the support forums can help
-up to 1000 users a day!
+Thank you and congratulations on your first contribution to the Mozilla Support 
+Community Forums! You just made somebody's day, and we're so glad you're here.
+{% endtrans %}
+
+{% trans jeff_url='https://mzl.la/4mDU91b', noah_url='https://mzl.la/45burLD' %}
+Our Community Forum is powered by incredible contributors like Jefferson ({{ jeff_url }}), Noah ({{ noah_url }}), 
+and now YOU, who help hundreds of users every single day. You might think that 
+you've just helped one user, but your reply might help hundreds more who might 
+find the thread later through a search.
 {% endtrans %}
 
 ---
-{{ _('Tell us about yourself!') }}
+{{ _("Here's what you can do next to keep the momentum going:") }}
+
+{{ _('Know our rules & guidelines') }}
 
 {% trans %}
-We are always very happy to hear from new people who like helping on the forums
-so if you haven’t met our community yet, please take a minute to introduce
-yourself. If you want to stay low-profile, that’s also ok :). You can also find
-us all hanging out on Matrix, on the #sumo channel.
+If you haven't, please check out our Forum rules and guidelines to learn how we 
+keep this space safe and helpful for everyone.
 {% endtrans %}
 
-* Introductions - https://{{ host }}/forums/contributors
-* Matrix - https://chat.mozilla.org/#/room/#SUMO:mozilla.org
-
-{% trans url='https://' + host + '/forums/contributors' %}
-The community forum is at {{ url }}.
-{% endtrans %}
+https://{{ host }}/kb/forum-rules-and-guidelines
 
 ---
-{{ _('Learn new things') }}
+{{ _('Tell us about yourself') }}
 
 {% trans %}
-If you are interested in learning more about how this whole support thing
-works, check out our contributor guidelines. This includes some cool
-troubleshooting info, how-to questions, and info about where to
-find more help if stuck.
+We'd love to get to know you! If you feel comfortable, say hi and introduce 
+yourself in this thread.
 {% endtrans %}
-https://{{ host }}/kb/how-contribute-support-forum?utm_source=onboardingemail&utm_medium=1intro&utm_term=cqt&utm_campaign=ContribOnboarding
+
+https://{{ host }}/forums/contributors
 
 ---
-{{ _('Stay in touch') }}
+{{ _('Keep yourself updated') }}
 
 {% trans %}
-Finally, if you want to follow all news related to SUMO, don’t forget about our
+Consider updating your notification preferences to make sure you stay in the 
+loop on threads you've participated in.
 {% endtrans %}
 
-* {{ _('Community forums') }} - https://{{ host }}/forums/contributors
-* {{ _('Official blog') }} - https://blog.mozilla.org/sumo/
-* {{ _('Twitter account') }} - https://twitter.com/sumo_mozilla
-* {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
+https://{{ host }}/users/edit
 
-{% trans %}
-We also meet every month and you can join us.
-{% endtrans %}
-* {{ _('Contributor meetings') }} - https://{{ host }}/kb/how-participate-sumo-contributor-meetings
+---
+{{ _('Learn the basic and best practices') }}
 
 {% trans %}
-Thank you once more. We are looking forward to seeing you more often around
-SUMO! Keep rocking!
+Check out our get started guidelines and best practices for contributing in the 
+forums. These resources will help you up to speed quickly and help you make a 
+meaningful impact in the Mozilla Support Community.
 {% endtrans %}
+
+https://{{ host }}/kb/how-contribute-support-forum
+https://{{ host }}/kb/best-practices-answering-questions-support-forum
+
+{% trans %}
+👉 Watch this video if you prefer visual tutorial
+{% endtrans %}
+
+https://www.youtube.com/watch?v=bmwbSVplqMw
+
+---
+{{ _('Stay updated') }}
+
+{% trans %}
+Consider clicking the "Watch this forum" button on Forum Discussions to get 
+community updates that are relevant to forum contributors.
+{% endtrans %}
+
+https://{{ host }}/forums/contributors
+
+---
+{{ _('Want to do more?') }}
+
+{% trans %}
+If you reach 30 replies in a year, you'll earn our Forum Contributor of the year 
+badge—a small token of recognition for your big impact.
+{% endtrans %}
+
+https://mzl.la/4muj8nj
+
+---
+{{ _('Stay connected') }}
+
+{% trans %}
+Feeling stuck or just want to hang out with other enthusiastic community 
+members? Join us on Matrix!
+{% endtrans %}
+
+https://chat.mozilla.org/#/room/#SUMO:mozilla.org
+
+{% if pm_link -%}
+{% trans pm_url=pm_link %}
+We're so excited to see how your journey with SUMO unfolds. And remember, I'm 
+just a message away on SUMO if you have any questions or want to chat. 😊
+{% endtrans %}
+{{ pm_link }}
+{%- else -%}
+{% trans %}
+We're so excited to see how your journey with SUMO unfolds. If you have any 
+questions, feel free to reach out to the community! 😊
+{% endtrans %}
+{%- endif %}
+
+{% if pm_link %}
+{% trans %}
+Kind Regards,
+{{ name }} from Mozilla Support
+{% endtrans %}
+{% else %}
+{% trans %}
+Kind Regards,
+The Mozilla Support Community Team
+{% endtrans %}
+{% endif %}
 {% endautoescape %}
