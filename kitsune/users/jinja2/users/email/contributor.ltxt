@@ -34,7 +34,7 @@ Guidelines (CPG). This helps us maintain a safe and positive community
 experience for all. You can also take this short course to learn more.
 {% endtrans %}
 
-{{ add_utm('https://mozilla.teachable.com/', 'contribute', source='new-contributor') }}
+https://mzl.la/4mdwqoO
 
 ---
 {{ _("Choose how you'd like to contribute") }}
@@ -49,21 +49,21 @@ There are 3 ways you can contribute to Mozilla through SUMO:
 By answering questions in the Community Forums
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/contribute/forum', 'contribute', source='new-forum-contributor') }}
+https://mzl.la/4mco40w
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
 By improving our help articles in English
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/contribute/kb', 'contribute', source='new-kb-contributor') }}
+https://mzl.la/45rFRto
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
 By localizing our help articles into your local language
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/contribute/l10n', 'contribute', source='new-l10n-contributor') }}
+https://mzl.la/45GvB1M
 
 ---
 {{ _('Stay connected and ask for help') }}
@@ -80,7 +80,7 @@ SUMO Matrix room: Join our community chat space to ask quick questions or
 connect with fellow contributors in real time.
 {% endtrans %}
 
-{{ add_utm('https://chat.mozilla.org/#/room/#SUMO:mozilla.org', 'contribute', source='new-contributor') }}
+https://mzl.la/41ANCvV
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
@@ -89,7 +89,7 @@ own. You can also follow the forum to stay updated on Firefox releases and
 community announcements.
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/forums/contributors/', 'contribute', source='new-training') }}
+https://mzl.la/3Htkxvw
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
@@ -97,7 +97,7 @@ Community Call: Join us for our regular call at 5 PM UTC on Wednesdays
 (typically during release weeks) to catch up on updates and chat with the team.
 {% endtrans %}
 
-{{ add_utm('https://wiki.mozilla.org/Support:Community_Calls', 'contribute', source='new-contributor') }}
+https://mzl.la/4oquNFt
 
 {%- if pm_link -%}
 {#- L10n: This is an email.  Whitespace matters! -#}
