@@ -6,13 +6,13 @@
   {% if pm_link %}
   <p>
     {% trans home_url='https://support.mozilla.org/' %}
-      I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience team, I'd love to thank you for registering as a contributor at <a href="{{ home_url }}">SUMO a.k.a. SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
+      I'm {{ name }}, your SUMO Community Manager. On behalf of the Customer Experience team, I'd love to thank you for registering as a contributor at SUMO a.k.a. <a href="{{ home_url }}">SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
     {% endtrans %}
   </p>
   {% else %}
   <p>
     {% trans home_url='https://support.mozilla.org/' %}
-      On behalf of the Customer Experience team, we'd love to thank you for registering as a contributor at <a href="{{ home_url }}">SUMO a.k.a. SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
+      On behalf of the Customer Experience team, we'd love to thank you for registering as a contributor at SUMO a.k.a. <a href="{{ home_url }}">SUpport.MOzilla.org</a>. We're so excited you've joined us! Mozilla wouldn't be what it is today without the passionate contributions from people like you.
     {% endtrans %}
   </p>
   {% endif %}
@@ -65,17 +65,17 @@
   <ul>
     <li>
       {% trans url=add_utm('https://chat.mozilla.org/#/room/#SUMO:mozilla.org', 'contribute', source='new-contributor')%}
-        <strong><a href="{{ url }}">SUMO Matrix room</a></strong>: Join our community chat space to ask quick questions or connect with fellow contributors in real time.
+        <a href="{{ url }}">SUMO Matrix room</a></strong>: Join our community chat space to ask quick questions or connect with fellow contributors in real time.
       {% endtrans %}
     </li>
     <li>
       {% trans url=add_utm('https://support.mozilla.org/en-US/forums/contributors/', 'contribute', source='new-training')%}
-        <strong><a href="{{ url }}">Community Discussions</a></strong>: Participate in ongoing discussion threads or start your own. You can also follow the forum to stay updated on Firefox releases and community announcements.
+        <a href="{{ url }}">Community Discussions</a></strong>: Participate in ongoing discussion threads or start your own. You can also follow the forum to stay updated on Firefox releases and community announcements.
       {% endtrans %}
     </li>
     <li>
       {% trans url=add_utm('https://wiki.mozilla.org/Support:Community_Calls', 'contribute', source='new-contributor') %}
-          <strong><a href="{{ url }}">Community Call</a></strong>: Join us for our regular call at <strong>5 PM UTC on Wednesdays</strong> (typically during release weeks) to catch up on updates and chat with the team.
+          <a href="{{ url }}">Community Call</a></strong>: Join us for our regular call at <strong>5 PM UTC on Wednesdays</strong> (typically during release weeks) to catch up on updates and chat with the team.
       {% endtrans %}
     </li>
   </ul>

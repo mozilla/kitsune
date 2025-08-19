@@ -17,14 +17,14 @@ Here's what you can do next to keep the momentum going:
 
 Get to know our style guide and syntaxes
 
-If you're into the English KB, check out this guideline to get to know our guideline.
-https://{{ host }}/kb/kb-style-guide
+If you're into the English KB, check out this guide to get to know our guidelines.
+https://mzl.la/4mb2g5s
 
 If you're into localization, check out our general localization style guide.
-https://{{ host }}/kb/localization-style-guide
+https://mzl.la/4ojbVZ4
 
 Additionally, you may want to familiarize yourself with our markup.
-https://{{ host }}/kb/wiki-markup-reference
+https://mzl.la/4ojbVZ4
 
 ---
 Team up!
@@ -32,23 +32,22 @@ Team up!
 If you're onto article localization, it's always a good idea to get in touch 
 with your Locale Leaders. You can find them by clicking on your language's name 
 in this list:
-https://{{ host }}/kb/locales
+https://mzl.la/3J0jFzd
 
 Send them a Private Message - they are there to help you help others through 
 your localizing skills!
 
 If the English KB is your jazz, you may want to get yourself familiar with the 
 content request process to understand our workflow.
-https://{{ host }}/kb/content-request-process
 
 ---
-Learn the basic
+Learn the basics
 
 Check out this guidelines to get started in the KB
-https://{{ host }}/kb/how-contribute-knowledge-base
+https://mzl.la/4ftQQHu
 
 Check out this guidelines to get started in localization
-https://{{ host }}/kb/how-localize-articles
+https://mzl.la/4m7DFhK
 
 ---
 Stay updated
@@ -57,8 +56,8 @@ Consider clicking the "Watch this forum" button on the Localization Discussions
 or the Knowledge Base Discussions to get updates that are relevant to KB and 
 Localization contributions.
 
-* Localization Discussions - https://{{ host }}/forums/l10n-forum
-* Knowledge Base Discussions - https://{{ host }}/forums/kb-forum
+* Localization Discussions - https://mzl.la/4fN2nlv
+* Knowledge Base Discussions - https://mzl.la/45vnGDb
 
 ---
 Want to do more?
@@ -71,7 +70,7 @@ Stay connected
 
 Feeling stuck or just want to hang out with other enthusiastic community 
 members? Join us on Matrix!
-https://chat.mozilla.org/#/room/#SUMO:mozilla.org
+https://mzl.la/3US4Xg8
 
 {% if pm_link -%}
 We're so excited to see how your journey with SUMO unfolds. And remember, I'm 

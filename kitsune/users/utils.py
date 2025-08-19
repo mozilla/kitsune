@@ -30,8 +30,8 @@ log = logging.getLogger("k.users")
 
 
 def get_community_team_member_info(email_type='contributor'):
-    """Get a random member from the Community Team who has logged in within 7 days."""
-    seven_days_ago = datetime.now() - timedelta(days=7)
+    """Get a random member from the Community Team who has logged in within 30 days."""
+    thirty_days_ago = datetime.now() - timedelta(days=30)
 
     try:
         community_team = Group.objects.get(name="Community Team")
@@ -41,7 +41,7 @@ def get_community_team_member_info(email_type='contributor'):
     if community_team:
         active_members = community_team.user_set.filter(
             is_active=True,
-            last_login__gte=seven_days_ago
+            last_login__gte=thirty_days_ago
         )
 
         if active_members.exists():
