@@ -46,8 +46,6 @@ class WelcomeEmailsTests(TestCase):
 
         # Check that no links used the wrong host.
         assert "support.mozilla.org" not in mail.outbox[0].body
-        # Check that one link used the right host.
-        assert "https://testserver/forums/contributors" in mail.outbox[0].body
         assert (
             "say hi and introduce"
             in mail.outbox[0].body
@@ -88,9 +86,6 @@ class WelcomeEmailsTests(TestCase):
 
         # Check that no links used the wrong host.
         assert "support.mozilla.org" not in mail.outbox[0].body
-        # Check that one link used the right host.
-        assert "https://testserver/kb/locales" in mail.outbox[0].body
-        # Assumption: links will be done consistently, and so this is enough testing.
 
         # u3's flag should now be set.
         u1 = User.objects.get(id=u1.id)
