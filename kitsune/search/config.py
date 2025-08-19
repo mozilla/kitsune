@@ -378,3 +378,9 @@ DEFAULT_ES_REFRESH_INTERVAL = "60s"
 # If the best result score is below this threshold, fallback to traditional search
 SEMANTIC_SEARCH_MIN_SCORE = 2.5
 
+# Minimum score threshold for RRF hybrid search results
+# RRF scores are typically much lower than raw semantic scores (0.01-0.1 range)
+# If the best result score is below this threshold, treat as "no results"
+# Note: May need tuning based on actual RRF score distributions in production
+RRF_HYBRID_MIN_SCORE = 0.05
+

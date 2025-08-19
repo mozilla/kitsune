@@ -1389,3 +1389,9 @@ SHELL_PLUS_DONT_LOAD = ["silk"]
 # AI Translation
 AI_ENABLED_LOCALES = config("AI_ENABLED_LOCALES", default="", cast=Csv())
 HYBRID_ENABLED_LOCALES = config("HYBRID_ENABLED_LOCALES", default="", cast=Csv())
+
+# RRF Settings for hybrid search
+RRF_WINDOW_MAX_SIZE = config("RRF_WINDOW_MAX_SIZE", default=500, cast=int)
+RRF_RANK_CONSTANT = config("RRF_RANK_CONSTANT", default=20, cast=int)
+# Minimum score threshold for RRF hybrid search results - tune based on production data
+RRF_HYBRID_MIN_SCORE = config("RRF_HYBRID_MIN_SCORE", default=0.05, cast=float)
