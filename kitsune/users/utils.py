@@ -56,7 +56,7 @@ def get_community_team_member_info(email_type='contributor'):
             }
             campaign = campaign_map.get(email_type, 'new-contributor')
 
-            pm_url = f"https://support.mozilla.org/en-US/messages/new?to={username}&utm_campaign={campaign}&utm_medium=bitly&utm_source=email"
+            pm_url = f"https://support.mozilla.org/messages/new?to={username}&utm_campaign={campaign}&utm_medium=bitly&utm_source=email"
             pm_link = generate_short_url(pm_url) or pm_url
 
             return {
