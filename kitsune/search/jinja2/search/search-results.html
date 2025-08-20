@@ -8,10 +8,15 @@
 <div id="search-results" class="sumo-page-section--inner">
   {% if num_results > 0 %}
   <p class="sumo-page-intro">
-    {# L10n: {n} is the number of search results, {q} is the search query. #}
-    {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong>',
-                      'Found <strong>{n}</strong> results for <strong>{q}</strong>',
-                      num_results)|fe(n=num_results, q=q) }}
+    {% if results_capped %}
+      {# L10n: {n} is the number of search results (capped), {q} is the search query. #}
+      {{ _('Found over <strong>{n}</strong> results for <strong>{q}</strong>')|fe(n=num_results, q=q) }}
+    {% else %}
+      {# L10n: {n} is the number of search results, {q} is the search query. #}
+      {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong>',
+                        'Found <strong>{n}</strong> results for <strong>{q}</strong>',
+                        num_results)|fe(n=num_results, q=q) }}
+    {% endif %}
   </p>
 
   <div class="content-box">

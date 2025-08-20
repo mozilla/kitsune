@@ -761,8 +761,15 @@ ES_INDEX_PREFIX = config("ES_INDEX_PREFIX", default="sumo")
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = config("ES_LIVE_INDEXING", default=True, cast=bool)
 
+# Semantic Search Configuration
+USE_SEMANTIC_SEARCH = config("USE_SEMANTIC_SEARCH", default=True, cast=bool)
+
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
+
+# RRF (Reciprocal Rank Fusion) configuration for hybrid search
+RRF_WINDOW_MAX_SIZE = 500  # Maximum window size to prevent performance issues
+RRF_RANK_CONSTANT = 20  # Rank constant for RRF algorithm
 
 # Search default settings
 SEARCH_DEFAULT_CATEGORIES = (

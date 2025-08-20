@@ -44,16 +44,22 @@ class SimpleSearchForm(BaseSearchForm):
         product_field = self.fields["product"]
         product_field.choices = Product.active.values_list("slug", "title")
 
-    def clean_products(self):
-        products = self.cleaned_data["products"]
+    def clean_product(self):
+        products = self.cleaned_data["product"]
         # If products were specified or all_products was set, then we return
         # the products as is.
-        if products or self.cleaned_data["all_products"]:
+        if products or self.cleaned_data.get("all_products"):
             return products
 
         # If no products were specified and we're not looking for all_products,
         # then populate products by looking at things in the query.
-        lowered_q = self.cleaned_data["q"].lower()
+        # Only do this if 'q' passed validation (i.e., it exists in cleaned_data)
+        q = self.cleaned_data.get("q")
+        if not q:
+            # If q is missing, the form is already invalid due to required=True
+            # Just return the empty products list
+            return products
+        lowered_q = q.lower()
 
         if "thunderbird" in lowered_q:
             products.append("thunderbird")

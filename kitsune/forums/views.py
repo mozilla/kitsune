@@ -560,5 +560,6 @@ def search(request, forum_slug=None):
         "num_results": total,
         "forum": forum,
         "pages": pages,
+        "results_capped": getattr(search, 'results_capped', False),
     }
     return render(request, "search/search-results.html", data)

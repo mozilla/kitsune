@@ -6,7 +6,12 @@ from kitsune.questions.models import Answer, Question
 from kitsune.search import config
 from kitsune.search.base import SumoDocument
 from kitsune.search.es_utils import es_client
-from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
+from kitsune.search.fields import (
+    SemanticTextField,
+    SumoLocaleAwareKeywordField,
+    SumoLocaleAwareSemanticTextField,
+    SumoLocaleAwareTextField,
+)
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import (
@@ -36,6 +41,11 @@ class WikiDocument(SumoDocument):
     keywords = SumoLocaleAwareTextField()
     slug = SumoLocaleAwareKeywordField(store=True)
     doc_id = SumoLocaleAwareKeywordField(store=True)
+
+    # Note: keywords excluded from semantic search as they're typically short and keyword-based
+    title_semantic = SumoLocaleAwareSemanticTextField()
+    content_semantic = SumoLocaleAwareSemanticTextField()
+    summary_semantic = SumoLocaleAwareSemanticTextField()
 
     class Index:
         pass
@@ -86,6 +96,19 @@ class WikiDocument(SumoDocument):
 
     def prepare_display_order(self, instance):
         return instance.original.display_order
+
+    # Semantic field preparation methods
+    def prepare_title_semantic(self, instance):
+        return instance.title
+
+    def prepare_content_semantic(self, instance):
+        return instance.html
+
+    def prepare_summary_semantic(self, instance):
+        if instance.current_revision:
+            return instance.summary
+        return ""
+
 
     @classmethod
     def get_model(cls):
@@ -144,6 +167,10 @@ class QuestionDocument(SumoDocument):
 
     locale = field.Keyword()
 
+    question_title_semantic = SumoLocaleAwareSemanticTextField()
+    question_content_semantic = SumoLocaleAwareSemanticTextField()
+    answer_content_semantic = SumoLocaleAwareSemanticTextField()
+
     class Index:
         pass
 
@@ -185,6 +212,26 @@ class QuestionDocument(SumoDocument):
         if field.startswith("question_"):
             field = field[len("question_") :]
         return super().get_field_value(field, *args)
+
+    # Semantic field preparation methods
+    def prepare_question_title_semantic(self, instance):
+        return instance.title
+
+    def prepare_question_content_semantic(self, instance):
+        return instance.content
+
+    def prepare_answer_content_semantic(self, instance):
+        return [
+            answer.content
+            for answer in (
+                # when bulk indexing use answer queryset prefetched in `get_queryset` method
+                # this is to avoid running an extra query for each question in the chunk
+                instance.es_question_answers_not_spam
+                if hasattr(instance, "es_question_answers_not_spam")
+                # fallback if non-spam answers haven't been prefetched
+                else instance.answers.filter(is_spam=False)
+            )
+        ]
 
     @classmethod
     def get_model(cls):
@@ -236,6 +283,9 @@ class AnswerDocument(QuestionDocument):
 
     is_solution = field.Boolean()
 
+    # Semantic text field for Elasticsearch semantic search
+    content_semantic = SumoLocaleAwareSemanticTextField()
+
     @classmethod
     def prepare(cls, instance, **kwargs):
         """Override super method to exclude certain docs."""
@@ -270,6 +320,13 @@ class AnswerDocument(QuestionDocument):
         # clear answer_content field from QuestionDocument,
         # as we don't need the content of sibling answers in an AnswerDocument
         return None
+
+    def prepare_content_semantic(self, instance):
+        return instance.content
+
+    def prepare_answer_content_semantic(self, instance):
+        # For AnswerDocument, this field should contain the content of this answer
+        return instance.content
 
     def get_field_value(self, field, instance, *args):
         if field.startswith("question_"):
@@ -325,6 +382,9 @@ class ProfileDocument(SumoDocument):
     product_ids = field.Keyword(multi=True)
     group_ids = field.Keyword(multi=True)
 
+    # Semantic text field for Elasticsearch semantic search
+    name_semantic = SemanticTextField()
+
     class Index:
         pass
 
@@ -358,6 +418,9 @@ class ProfileDocument(SumoDocument):
     def prepare_group_ids(self, instance):
         return [group.id for group in instance.user.groups.all()]
 
+    def prepare_name_semantic(self, instance):
+        return instance.name
+
     @classmethod
     def get_model(cls):
         return Profile
@@ -387,6 +450,9 @@ class ForumDocument(SumoDocument):
     updated = field.Date()
     updated_by_id = field.Keyword()
 
+    thread_title_semantic = SemanticTextField()
+    content_semantic = SemanticTextField()
+
     class Index:
         pass
 
@@ -398,6 +464,21 @@ class ForumDocument(SumoDocument):
             instance = instance.thread
             field = field[len("thread_") :]
         return super().get_field_value(field, instance, *args)
+
+    def prepare_thread_title_semantic(self, instance):
+        # instance should be a Post (see get_model), so get the thread title
+        # Handle both Post and Thread instances for robustness
+        if hasattr(instance, 'thread'):
+            # This is a Post object
+            return instance.thread.title
+        elif hasattr(instance, 'title'):
+            # This is a Thread object
+            return instance.title
+        else:
+            return ""
+
+    def prepare_content_semantic(self, instance):
+        return instance.content
 
     @classmethod
     def get_model(cls):
