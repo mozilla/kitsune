@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from datetime import datetime
 from typing import Any
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -353,4 +354,18 @@ class AIContentManager(WikiContentManager):
 class HybridContentManager(AIContentManager):
     """Content manager for hybrid translation workflow."""
 
-    pass
+    def is_auto_published_translation(self, revision: Revision | None) -> bool:
+        """
+        Is this revision a machine translation that was published without human review?
+        """
+        if not (
+            revision
+            and (document := revision.document)
+            and document.parent
+            and (document.locale != settings.WIKI_DEFAULT_LANGUAGE)
+        ):
+            return False
+
+        sumo_bot = Profile.get_sumo_bot()
+
+        return (revision.creator == sumo_bot) and (revision.reviewer == sumo_bot)
