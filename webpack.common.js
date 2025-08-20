@@ -108,7 +108,9 @@ module.exports = {
       filename: "[name].css",
     }),
     new webpack.DefinePlugin({
-      "process.env": JSON.stringify(process.env),
+      "process.env": JSON.stringify({
+        DEBUG: process.env.DEBUG, // Add other variables as needed
+      }),
     }),
   ],
   cache: {
