@@ -11,8 +11,8 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Exists, OuterRef, Q, Subquery, F
-from django.db.models.functions import Coalesce, Now, TruncDate
+from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -606,7 +606,7 @@ def edit_document_metadata(request, document_slug, revision_id=None):
     can_archive = doc.allows(user, "archive")
 
     doc_form = DocumentForm(
-        initial=_document_form_initial(doc, request.user),
+        initial=_document_form_initial(doc, request.user, locale=request.LANGUAGE_CODE),
         can_archive=can_archive,
         can_edit_needs_change=can_edit_needs_change,
         locale=request.LANGUAGE_CODE,
@@ -996,7 +996,7 @@ def translate(request, document_slug, revision_id=None):
 
     if user_has_doc_perm:
         # Restore draft if draft is available and user requested to restore
-        doc_initial = _document_form_initial(doc, request.user) if doc else {}
+        doc_initial = _document_form_initial(doc, request.user, locale=request.LANGUAGE_CODE) if doc else {}
         doc_form = DocumentForm(initial=doc_initial, locale=request.LANGUAGE_CODE)
 
     if user_has_rev_perm:
@@ -1677,17 +1677,33 @@ def show_translations(request, document_slug):
     )
 
 
-def _document_form_initial(document, user=None):
+def _document_form_initial(document, user=None, locale=None):
     """Return a dict with the document data pertinent for the form."""
+    # Get the parent document's related documents
+    parent_related_docs = document.original.related_documents.all()
+
     if user:
-        related_document_ids = Document.objects.visible(
-            user, id__in=document.original.related_documents.all()
-        ).values_list("id", flat=True)
-    else:
-        # Fallback to original behavior
-        related_document_ids = Document.objects.filter(related_documents=document).values_list(
-            "id", flat=True
+        # Filter by visibility
+        parent_related_docs = Document.objects.visible(
+            user, id__in=parent_related_docs
         )
+
+    # For non-English locales, we need to show translations if they exist
+    # This ensures the TomSelect shows the localized titles
+    related_document_ids = []
+    if locale and locale != settings.WIKI_DEFAULT_LANGUAGE:
+        for parent_doc in parent_related_docs:
+            # Try to find a translation in the requested locale
+            translation = parent_doc.translations.filter(locale=locale).first()
+            if translation:
+                # Use the translation ID so it shows in the TomSelect
+                related_document_ids.append(translation.id)
+            else:
+                # No translation, use the English parent
+                related_document_ids.append(parent_doc.id)
+    else:
+        # For English, just use the parent IDs directly
+        related_document_ids = list(parent_related_docs.values_list("id", flat=True))
 
     return {
         "title": document.title,
@@ -1861,23 +1877,53 @@ def get_fallback_locale(doc, request):
 
 
 def _get_related_documents_for_locale(document, locale, user):
-    """Return visible related documents prioritizing the given locale."""
+    """Return visible related documents prioritizing the given locale.
 
-    # For translated documents, we need to check both:
-    # 1. Documents directly related to this document
-    # 2. Documents related to the parent document (inheritance)
-    """Return visible related documents prioritizing the given locale."""
-    related_docs = document.original.related_documents.filter(is_archived=False).all()
-    return (
-        Document.objects.visible(user, id__in=related_docs)
-        .annotate(
-            translation_id=Subquery(
-                Document.objects.filter(parent=OuterRef("pk"), locale=locale).values("id")
-            )
-        )
-        .annotate(desired_id=Coalesce("translation_id", "id"))
-        .filter(id=F("desired_id"))
-    )
+    This function handles displaying related documents with proper locale fallback:
+    - Shows translations in the requested locale when available
+    - Falls back to English versions when translations don't exist
+    - Avoids N+1 queries by using prefetch_related
+    """
+    # Get the parent document's related documents (not archived)
+    related_parent_docs = document.original.related_documents.filter(
+        is_archived=False
+    ).prefetch_related('translations')
+
+    # Build the final list of documents to display
+    result_docs = []
+    seen_parents = set()
+
+    for parent_doc in related_parent_docs:
+        # Skip if we've already processed this parent
+        if parent_doc.id in seen_parents:
+            continue
+        seen_parents.add(parent_doc.id)
+
+        # Try to find a translation in the requested locale
+        if locale and locale != settings.WIKI_DEFAULT_LANGUAGE:
+            translation = parent_doc.translations.filter(
+                locale=locale,
+                current_revision__isnull=False
+            ).first()
+
+            if translation:
+                # Use the translation if it exists and is visible
+                if Document.objects.visible(user, id=translation.id).exists():
+                    result_docs.append(translation)
+                    continue
+
+        # Fall back to the English parent if no translation or if in English locale
+        if Document.objects.visible(user, id=parent_doc.id).exists():
+            result_docs.append(parent_doc)
+
+    # Return a queryset from the collected documents
+    if result_docs:
+        doc_ids = [doc.id for doc in result_docs]
+        # Preserve the order and ensure we have all the needed data
+        return Document.objects.filter(id__in=doc_ids).select_related('current_revision')
+
+    # Return empty queryset if no documents
+    return Document.objects.none()
 
 
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):

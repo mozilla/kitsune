@@ -155,40 +155,31 @@ class DocumentForm(forms.ModelForm):
         return slug
 
     def clean_related_documents(self):
-        """Clean related documents, correcting for search API locale bug."""
+        """Clean related documents - map translation IDs to parent document IDs."""
         data = self.cleaned_data.get("related_documents", [])
         if not data:
             return data
 
-        corrected_ids = []
-        seen_ids = set()
-
+        # Map translation IDs to parent document IDs
+        parent_ids = []
         for doc_id_str in data:
             try:
                 doc_id = int(doc_id_str)
                 doc = Document.objects.get(id=doc_id)
 
-                # If this is an English document but we're in a non-English locale,
-                # try to find the translation for our locale
-                if doc.locale == "en-US" and self._locale and self._locale != "en-US":
-                    translation = doc.translations.filter(locale=self._locale).first()
-                    if translation:
-                        if str(translation.id) not in seen_ids:
-                            corrected_ids.append(str(translation.id))
-                            seen_ids.add(str(translation.id))
-                        continue
-
-                if doc_id_str not in seen_ids:
-                    corrected_ids.append(doc_id_str)
-                    seen_ids.add(doc_id_str)
+                # If this is a translation, use its parent's ID
+                # Otherwise use the document's ID as-is (it's already a parent)
+                if doc.parent:
+                    parent_ids.append(str(doc.parent.id))
+                else:
+                    parent_ids.append(doc_id_str)
 
             except (ValueError, Document.DoesNotExist):
                 # Keep invalid IDs for normal validation to handle
-                if doc_id_str not in seen_ids:
-                    corrected_ids.append(doc_id_str)
-                    seen_ids.add(doc_id_str)
+                parent_ids.append(doc_id_str)
 
-        return corrected_ids
+        return parent_ids
+
 
     def clean(self):
         cdata = super().clean()
@@ -269,9 +260,6 @@ class DocumentForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        # Store locale for use in clean methods
-        self._locale = locale
-
         title_field = self.fields["title"]
         title_field.initial = initial_title
 
@@ -284,29 +272,29 @@ class DocumentForm(forms.ModelForm):
         products_field = self.fields["products"]
         products_field.choices = Product.active.values_list("id", "title")
 
+        # Set up related documents choices
         related_documents_field = self.fields["related_documents"]
 
-        # Start with all non-template documents in the current locale
-        if locale:
-            base_choices = Document.objects.filter(is_template=False, locale=locale)
-        else:
-            base_choices = Document.objects.filter(is_template=False)
+        # For non-English locales, we show translated documents but need to include
+        # both translation IDs (for display) and parent IDs (for validation after mapping)
+        choices = []
 
-        choices = list(base_choices.values_list("id", "title"))
-
-        # Always add existing related documents to prevent validation errors
-        # This ensures that when editing a document, its current related docs remain valid choices
-        if self.instance and hasattr(self.instance, "pk") and self.instance.pk:
-            existing_related_ids = list(
-                self.instance.related_documents.values_list("id", flat=True)
-            )
-            # Get any existing related docs that aren't already in our choices
-            existing_docs = Document.objects.filter(id__in=existing_related_ids).exclude(
-                id__in=[choice[0] for choice in choices]
-            )
-            # Add them to choices
-            for doc in existing_docs:
+        if locale and locale != settings.WIKI_DEFAULT_LANGUAGE:
+            # Show documents in the requested locale
+            locale_docs = Document.objects.filter(is_template=False, locale=locale)
+            for doc in locale_docs:
                 choices.append((doc.id, doc.title))
+                # Also add the parent document as a valid choice (for validation)
+                # but don't show it in the UI - it's just for form validation
+                if doc.parent:
+                    choices.append((doc.parent.id, f"[Parent of {doc.title}]"))
+        else:
+            # For English or if no locale specified, show all documents in that locale
+            related_documents_choices = Document.objects.filter(
+                is_template=False,
+                locale=locale or settings.WIKI_DEFAULT_LANGUAGE
+            )
+            choices = list(related_documents_choices.values_list("id", "title"))
 
         related_documents_field.choices = choices
 
