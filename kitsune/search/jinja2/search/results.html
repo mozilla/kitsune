@@ -24,10 +24,10 @@
       {% if num_results > 0 %}
         <p class="sumo-page-intro">
           {% if results_capped %}
-            {# L10n: {n} is the number of search results (capped), {q} is the search query, {product} is the product. #}
-            Found over <strong>{{ num_results }}</strong> results for <strong>{{ q }}</strong> for <strong>{{ product_titles }}</strong>
+            {# L10n: {n} is the number of search results (capped), {q} is the search query, {product} is the product titles. #}
+            {{ _('Found over <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>')|fe(n=num_results, q=q, product=product_titles) }}
           {% else %}
-            {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+            {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product titles. #}
             {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
                         'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
                         num_results)|fe(n=num_results, q=q, product=product_titles) }}

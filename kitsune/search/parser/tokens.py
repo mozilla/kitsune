@@ -35,12 +35,24 @@ class TermToken(BaseToken):
         return self
 
     def elastic_query(self, context):
-        return DSLQ(
-            "simple_query_string",
-            query=self.term,
-            default_operator="OR",
-            fields=context["fields"],
-        )
+        # Split the query to count terms for minimum match calculation
+        terms = self.term.split()
+
+        query_params = {
+            "query": self.term,
+            "default_operator": "OR",
+            "fields": context["fields"],
+        }
+
+        # Add minimum_should_match for multi-term queries to improve quality
+        # For 2-3 terms: require 60% match, 4+ terms: require 50% match
+        if len(terms) >= 2:
+            if len(terms) <= 3:
+                query_params["minimum_should_match"] = "60%"
+            else:
+                query_params["minimum_should_match"] = "50%"
+
+        return DSLQ("simple_query_string", **query_params)
 
 
 class RangeToken(BaseToken):
