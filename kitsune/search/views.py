@@ -205,33 +205,8 @@ def simple_search(request):
                 # Keep the original search results if fallback fails
                 pass
 
-    # For hybrid search, check if RRF scores indicate low-quality results (likely gibberish)
-    if search_type == "hybrid" and total > 0 and results:
-        try:
-            # Extract max score from results
-            max_score = 0
-            for r in results:
-                if isinstance(r, dict):
-                    score = r.get("score", 0)
-                else:
-                    # Try to get score from meta attribute
-                    meta = getattr(r, "meta", None)
-                    score = getattr(meta, "score", 0) if meta else 0
-                max_score = max(max_score, score)
-        except (AttributeError, TypeError, ValueError) as e:
-            log.debug(f"Error extracting RRF score: {e}")
-            max_score = 1.0  # Default to allowing results if we can't extract score
-
-        # RRF scores are much lower than semantic scores (typically 0.01-0.1 range)
-        if max_score < settings.RRF_HYBRID_MIN_SCORE:
-            log.info(
-                f"Filtering hybrid search results for query '{cleaned['q']}' - "
-                f"max RRF score {max_score:.4f} below threshold {settings.RRF_HYBRID_MIN_SCORE}"
-            )
-            # Treat as no results found - don't fallback to traditional since
-            # gibberish queries won't produce good results there either
-            total = 0
-            results = []
+    # Note: Quality filtering is now handled at the query level using minimum_should_match
+    # requirements in the search strategies, not through post-search score filtering.
 
     # generate fallback results if necessary
     fallback_results = None

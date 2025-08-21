@@ -597,6 +597,17 @@ class UnifiedSearch(SumoSearch):
         rrf_dict = query.to_dict()
         filters = self._build_filters()
 
+        # Dynamically adjust RRF window size based on requested page
+        # The window must be large enough to include all requested results
+        if isinstance(key, slice):
+            requested_end = key.stop or settings.SEARCH_RESULTS_PER_PAGE
+        else:
+            requested_end = key + 1
+
+        # Set window size to accommodate requested results, capped at max
+        needed_window_size = min(requested_end, settings.RRF_WINDOW_MAX_SIZE)
+        rrf_dict["retriever"]["rrf"]["rank_window_size"] = needed_window_size
+
         if filters:
             filter_dicts = []
             for f in filters:
@@ -645,12 +656,12 @@ class UnifiedSearch(SumoSearch):
         total = result["hits"]["total"]
         raw_total = total["value"] if isinstance(total, dict) else total
 
-        # Cap total at the RRF window size since that's all we can retrieve
-        rrf_window_size = rrf_dict["retriever"]["rrf"]["rank_window_size"]
-        self.total = min(raw_total, rrf_window_size)
+        # Cap total at the MAX RRF window size since that's all we can retrieve
+        # (not the adjusted window size which changes per page request)
+        self.total = min(raw_total, settings.RRF_WINDOW_MAX_SIZE)
 
         # Track if results were capped for display purposes
-        self.results_capped = raw_total > rrf_window_size
+        self.results_capped = raw_total > settings.RRF_WINDOW_MAX_SIZE
 
         self.results = [self.make_result(self._convert_hit_to_attrdict(hit)) for hit in self.hits]
         self.last_key = key

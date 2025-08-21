@@ -1394,4 +1394,6 @@ HYBRID_ENABLED_LOCALES = config("HYBRID_ENABLED_LOCALES", default="", cast=Csv()
 RRF_WINDOW_MAX_SIZE = config("RRF_WINDOW_MAX_SIZE", default=500, cast=int)
 RRF_RANK_CONSTANT = config("RRF_RANK_CONSTANT", default=20, cast=int)
 # Minimum score threshold for RRF hybrid search results - tune based on production data
-RRF_HYBRID_MIN_SCORE = config("RRF_HYBRID_MIN_SCORE", default=0.06, cast=float)
+# RRF scores range from ~0.048 (rank 1) to ~0.002 (rank 500) with k=20
+# Setting to 0.01 filters only results ranked worse than ~100
+RRF_HYBRID_MIN_SCORE = config("RRF_HYBRID_MIN_SCORE", default=0.01, cast=float)
