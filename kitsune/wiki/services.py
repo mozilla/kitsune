@@ -139,7 +139,7 @@ class HybridTranslationService:
         # the grace period.
         self._qs_pending = unreviewed_translations.filter(
             based_on_id__gte=F("document__parent__latest_localizable_revision_id"),
-            created__lt=Now() - timedelta(days=settings.HYBRID_REVIEW_GRACE_PERIOD),
+            created__lt=Now() - timedelta(hours=settings.HYBRID_REVIEW_GRACE_PERIOD),
         ).exclude(another_already_approved | translations_discontinued)
 
     def reject_obsolete_translations(self, document: Document) -> None:
@@ -166,7 +166,7 @@ class HybridTranslationService:
         if not (settings.HYBRID_REVIEW_GRACE_PERIOD and settings.HYBRID_ENABLED_LOCALES):
             return
 
-        grace_period = f"{settings.HYBRID_REVIEW_GRACE_PERIOD} day(s)"
+        grace_period = f"{settings.HYBRID_REVIEW_GRACE_PERIOD} hour(s)"
 
         for revision in self._qs_pending:
             rev = self.content_manager.publish_revision(
