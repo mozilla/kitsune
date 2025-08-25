@@ -184,6 +184,13 @@ class SemanticSearchStrategy(SearchStrategy):
         if not self.context.query:
             return DSLQ("match_all")
 
+        # Check for gibberish before building semantic queries
+        from kitsune.search.parser.tokens import TermToken
+        term_token = TermToken(self.context.query)
+        if term_token._is_likely_gibberish(self.context.query.lower()):
+            # Return a query that matches nothing for gibberish
+            return DSLQ("bool", must_not=DSLQ("match_all"))
+
         semantic_queries = []
         semantic_fields = self.context.get_semantic_fields()
 
