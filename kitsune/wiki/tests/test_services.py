@@ -9,12 +9,8 @@ from kitsune.wiki.config import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SI
 from kitsune.wiki.services import HybridTranslationService
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
-APPROVED_MSG = "Automatically approved because it was not reviewed within 3 day(s)."
+APPROVED_MSG = "Automatically approved because it was not reviewed within 72 hour(s)."
 REJECTED_MSG = "No longer relevant."
-APPROVED_COPY_MSG = (
-    "Automatically created and approved because an alternate translation "
-    "was not approved within 5 day(s) after the rejection of {url}."
-)
 
 
 class HybridTranslationServiceTests(TestCase):
@@ -233,7 +229,7 @@ class HybridTranslationServiceTests(TestCase):
         )
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=3,
+        HYBRID_REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_reject_obsolete_translations_with_default_doc1(self):
@@ -302,7 +298,7 @@ class HybridTranslationServiceTests(TestCase):
         self.assertTrue(self.rev1_it_2.reviewed < datetime_prior_to_test)
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=3,
+        HYBRID_REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_reject_obsolete_translations_with_default_doc2(self):
@@ -371,7 +367,7 @@ class HybridTranslationServiceTests(TestCase):
         self.assertTrue(self.rev1_it.reviewed < datetime_prior_to_test)
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=3,
+        HYBRID_REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_reject_obsolete_translations_with_doc1_el(self):
@@ -416,7 +412,7 @@ class HybridTranslationServiceTests(TestCase):
                 self.assertIsNone(rev.reviewed)
 
     @override_settings(
-        HYBRID_REVIEW_GRACE_PERIOD=3,
+        HYBRID_REVIEW_GRACE_PERIOD=72,
         HYBRID_ENABLED_LOCALES=["el", "ro", "es", "it", "de", "ja"],
     )
     def test_publish_pending_translations(self):
