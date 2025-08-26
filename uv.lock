@@ -1815,7 +1815,7 @@ requires-dist = [
     { name = "lxml", specifier = ">=4.9.4,<5" },
     { name = "mkdocs", specifier = ">=1.5.3,<2" },
     { name = "mkdocs-material", specifier = ">=9.5.3,<10" },
-    { name = "mozilla-django-oidc", specifier = "==4.0.0" },
+    { name = "mozilla-django-oidc", specifier = "==4.0.1" },
     { name = "newrelic", specifier = ">=9.5.0,<10" },
     { name = "oauthlib", specifier = ">=3.2.2,<4" },
     { name = "parameterized", specifier = ">=0.8.1,<0.9" },
@@ -2122,7 +2122,7 @@ wheels = [
 
 [[package]]
 name = "mozilla-django-oidc"
-version = "4.0.0"
+version = "4.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -2130,9 +2130,9 @@ dependencies = [
     { name = "josepy" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/36/7c/bba6e158f70ee6308c49b5cfe67e66328da79edd71d45b9f0d43288b1766/mozilla-django-oidc-4.0.0.tar.gz", hash = "sha256:7eb9d05a033ac61a74ea3be33d3f822818bc8dcab81c471fef94c0d65c7cbe1c", size = 48935, upload-time = "2024-01-11T15:23:05.892Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/f9/1ca554a62bf8a4fd31b68209df8603075c2b7436400ea3f7ddd597f204a5/mozilla-django-oidc-4.0.1.tar.gz", hash = "sha256:4ff8c64069e3e05c539cecf9345e73225a99641a25e13b7a5f933ec897b58918", size = 49027, upload-time = "2024-03-12T12:29:26.866Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/8d/7b097654fa3e0ec7f3e53766714c8b5a39926f7f6be5477acec56072c3ba/mozilla_django_oidc-4.0.0-py2.py3-none-any.whl", hash = "sha256:01a4ab19341503ec06fcbe6ea12329ed709d4226bf1d2c7541b0b1c4c4e8a738", size = 29041, upload-time = "2024-01-11T15:23:03.912Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/d6/2b75bf4e742c54028ae07a1fb5a2624e5a73e9cfd2185c2df0e22cbfe14e/mozilla_django_oidc-4.0.1-py2.py3-none-any.whl", hash = "sha256:04ef58759be69f22cdc402d082480aaebf193466cad385dc9e4f8df2a0b187ca", size = 29059, upload-time = "2024-03-12T12:29:24.978Z" },
 ]
 
 [[package]]
