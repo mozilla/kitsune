@@ -61,9 +61,18 @@ class Announcement(ModelBase):
         return wiki_to_html(self.content.strip())
 
     @classmethod
-    def get_site_wide(cls, platform_slugs: Iterable[str] | None = None):
+    def get_site_wide(cls, platform_slugs: Iterable[str] | None = None, locale_name: str | None = None):
         """Returns announcements that are visible to everyone (no group/locale restrictions)."""
-        return cls._visible_query(platforms=platform_slugs).filter(groups__isnull=True, locale__isnull=True)
+        query = cls._visible_query(platforms=platform_slugs).filter(groups__isnull=True)
+
+        if locale_name:
+            query = query.filter(
+                Q(locale__isnull=True) | Q(locale__locale=locale_name)
+            )
+        else:
+            query = query.filter(locale__isnull=True)
+
+        return query
 
     @classmethod
     def get_for_groups(cls, group_ids: Iterable[int], platform_slugs: Iterable[str] | None = None) -> QuerySet[Self]:
