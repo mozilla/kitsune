@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import UTC, datetime, timedelta
+from typing import Self
 
 import bleach
 from dateutil import parser
 from django.utils.text import slugify
+from elasticsearch import RequestError
 from elasticsearch.dsl import Q as DSLQ
-from pyparsing import ParseException
+from elasticsearch.dsl import Search as DSLSearch
 
 from kitsune.products.models import Product
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
@@ -17,37 +19,31 @@ from kitsune.search.documents import (
     QuestionDocument,
     WikiDocument,
 )
-from kitsune.search.parser import Parser
-from kitsune.search.parser.operators import (
-    AndOperator,
-    FieldOperator,
-    NotOperator,
-    OrOperator,
-    SpaceOperator,
-)
-from kitsune.search.parser.tokens import ExactToken, RangeToken, TermToken
+from kitsune.search.es_utils import es_client
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.parser import wiki_to_html
 
 QUESTION_DAYS_DELTA = 365 * 2
+
+
+class RRFQuery:
+    def __init__(self, query_dict):
+        self.query_dict = query_dict
+
+    def to_dict(self):
+        return self.query_dict
 FVH_HIGHLIGHT_OPTIONS = {
     "type": "fvh",
-    # order highlighted fragments by their relevance:
     "order": "score",
-    # only get one fragment per field:
     "number_of_fragments": 1,
-    # split fragments at the end of sentences:
     "boundary_scanner": "sentence",
-    # return fragments roughly this size:
     "fragment_size": SNIPPET_LENGTH,
-    # add these tags before/after the highlighted sections:
     "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
     "post_tags": [f"</{HIGHLIGHT_TAG}>"],
 }
 CATEGORY_EXACT_MAPPING = {
     "dict": {
-        # `name` is lazy, using str() to force evaluation:
         slugify(str(name)): _id
         for _id, name in CATEGORIES
     },
@@ -58,10 +54,6 @@ CATEGORY_EXACT_MAPPING = {
 def first_highlight(hit):
     highlight = getattr(hit.meta, "highlight", None)
     if highlight:
-        # `highlight` is of type AttrDict, which is internal to elasticsearch_dsl
-        # when converted to a dict, it's like:
-        # `{ 'es_field_name' : ['highlight1', 'highlight2'], 'field2': ... }`
-        # so here we're getting the first item in the first value in that dict:
         return next(iter(highlight.to_dict().values()))[0]
     return None
 
@@ -72,11 +64,6 @@ def strip_html(summary):
         tags=[HIGHLIGHT_TAG],
         strip=True,
     )
-
-
-def same_base_index(a, b):
-    """Check if the base parts of two index names are the same."""
-    return a.split("_")[:-1] == b.split("_")[:-1]
 
 
 @dataclass
@@ -92,7 +79,7 @@ class QuestionSearch(SumoSearch):
     def get_fields(self):
         return [
             # ^x boosts the score from that field by x amount
-            f"question_title.{self.locale}^2",
+            f"question_title.{self.locale}^1",  # Reduced boost to let wiki titles compete better
             f"question_content.{self.locale}",
             f"answer_content.{self.locale}",
         ]
@@ -113,44 +100,53 @@ class QuestionSearch(SumoSearch):
             ],
         }
 
-    def is_simple_search(self, token=None):
-        """Determine if the search query is simple (no advanced operators) or advanced.
+    def get_advanced_query_field_names(self):
+        """Return list of field names that can be used in advanced queries."""
+        return ["title", "content", "question", "answer"]
 
-        Advanced searches are those containing:
-        - Field operators (field:value)
-        - Boolean operators (AND, OR, NOT)
-        - Range tokens (date ranges, numeric ranges)
-        - Exact tokens (quoted strings)
+    def get_base_filters(self):
+        """Get base filters that apply to all query types."""
+        filters = [
+            DSLQ("term", _index=self.get_index()),
+            DSLQ("exists", field=f"question_title.{self.locale}"),
+            DSLQ(
+                "range",
+                question_created={
+                    "gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)
+                },
+            ),
+        ]
+        if not self.is_advanced_query():
+            filters.append(DSLQ("term", question_is_archived=False))
+        if self.product:
+            filters.append(DSLQ("term", question_product_id=self.product.id))
+        return filters
 
-        Simple searches contain only basic terms and space-separated phrases.
-        """
-        if token is None:
-            if not self.query or not self.query.strip():
-                return True
+    def get_semantic_fields(self):
+        """Return semantic fields for QuestionSearch."""
+        return [
+            "question_title_semantic",
+            "question_content_semantic",
+            "answer_content_semantic",
+        ]
 
-            try:
-                parsed = Parser(self.query)
-                return self.is_simple_search(parsed.parsed)
-            except ParseException:
-                # If parsing fails, it's definitely a simple search
-                return True
+    def _apply_filters_to_query(self, query):
+        """Apply question-specific filters to a query."""
+        return DSLQ(
+            "bool",
+            filter=self.get_base_filters(),
+            must_not=DSLQ("exists", field="updated"),
+            must=query
+        )
 
-        # Advanced operators and tokens indicate an advanced search
-        if isinstance(
-            token, FieldOperator | AndOperator | OrOperator | NotOperator | RangeToken | ExactToken
-        ):
-            return False
-
-        # TermToken is always simple
-        if isinstance(token, TermToken):
-            return True
-
-        # SpaceOperator is simple only if all its arguments are simple
-        if isinstance(token, SpaceOperator):
-            return all(self.is_simple_search(arg) for arg in token.arguments)
-
-        # Any other token types are advanced by default
-        return False
+    def build_query(self):
+        """Build query - use hybrid RRF for simple queries, traditional for advanced."""
+        if self.is_advanced_query():
+            # Advanced query - use traditional parser with field operator support
+            return self.build_traditional_query_with_filters(strict_matching=True)
+        else:
+            # Simple query - use hybrid RRF (handles difficult queries better)
+            return self.build_hybrid_rrf_query()
 
     def get_highlight_fields_options(self):
         fields = [
@@ -160,32 +156,19 @@ class QuestionSearch(SumoSearch):
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
     def get_filter(self):
-        filters = [
-            # restrict to the question index
-            DSLQ("term", _index=self.get_index()),
-            # ensure that there is a title for the passed locale
-            DSLQ("exists", field=f"question_title.{self.locale}"),
-            # only return questions created within QUESTION_DAYS_DELTA
-            DSLQ(
-                "range",
-                question_created={
-                    "gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)
-                },
-            ),
-        ]
-
-        if self.is_simple_search():
-            filters.append(DSLQ("term", question_is_archived=False))
-
-        if self.product:
-            filters.append(DSLQ("term", question_product_id=self.product.id))
-        return DSLQ(
-            "bool",
-            filter=filters,
-            # exclude AnswerDocuments from the search:
-            must_not=DSLQ("exists", field="updated"),
-            must=self.build_query(),
-        )
+        # Check if we're building an RRF query
+        query = self.build_query()
+        if isinstance(query, RRFQuery):
+            # For RRF queries, filters are already applied inside the retrievers
+            return query
+        else:
+            # Traditional query flow
+            return DSLQ(
+                "bool",
+                filter=self.get_base_filters(),
+                must_not=DSLQ("exists", field="updated"),
+                must=query
+            )
 
     def make_result(self, hit):
         # generate a summary for search:
@@ -224,7 +207,7 @@ class WikiSearch(SumoSearch):
         return [
             # ^x boosts the score from that field by x amount
             f"keywords.{self.locale}^8",
-            f"title.{self.locale}^6",
+            f"title.{self.locale}^15",  # Further increased boost for wiki titles to beat questions
             f"summary.{self.locale}^4",
             f"content.{self.locale}^2",
         ]
@@ -250,16 +233,47 @@ class WikiSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self):
-        # Add default filters:
+    def get_advanced_query_field_names(self):
+        """Return list of field names that can be used in advanced queries."""
+        return ["title", "content", "category"]
+
+    def get_base_filters(self):
+        """Get base filters that apply to all query types."""
         filters = [
-            # limit scope to the Wiki index
             DSLQ("term", _index=self.get_index()),
             DSLQ("exists", field=f"title.{self.locale}"),
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
-        return DSLQ("bool", filter=filters, must=self.build_query())
+        return filters
+
+    def get_semantic_fields(self):
+        """Return semantic fields for WikiSearch."""
+        return [
+            "title_semantic",
+            "content_semantic",
+            "summary_semantic",
+        ]
+
+    def build_query(self):
+        """Build query - use hybrid RRF for simple queries, traditional for advanced."""
+        if self.is_advanced_query():
+            # Advanced query - use traditional parser with field operator support
+            return self.build_traditional_query_with_filters(strict_matching=True)
+        else:
+            # Simple query - use hybrid RRF (handles difficult queries better)
+            return self.build_hybrid_rrf_query()
+
+
+    def get_filter(self):
+        # Check if we're building an RRF query
+        query = self.build_query()
+        if isinstance(query, RRFQuery):
+            # For RRF queries, filters are already applied inside the retrievers
+            return query
+        else:
+            # Traditional query flow
+            return DSLQ("bool", filter=self.get_base_filters(), must=query)
 
     def make_result(self, hit):
         # generate a summary for search:
@@ -369,59 +383,218 @@ class ForumSearch(SumoSearch):
 
 
 @dataclass
-class CompoundSearch(SumoSearch):
-    """Combine a number of SumoSearch classes into one search."""
+class UnifiedRRFSearch(SumoSearch):
+    """Unified search using RRF to combine all search types (questions, wiki, etc.)."""
 
-    _children: list[SumoSearch] = dfield(default_factory=list, init=False)
-    _parse_query: bool = True
+    locale: str = "en-US"
+    product: Product | None = None
+    group_ids: list[int] = dfield(default_factory=list)
+    thread_forum_id: int | None = None
+    min_score: float = 0.005  # Lower threshold for RRF scores to return more results
 
-    @property  # type: ignore
-    def parse_query(self):
-        return self._parse_query
+    def __post_init__(self):
+        # Cache search instances to avoid repeated creation
+        self._question_search = None
+        self._wiki_search = None
+        self._profile_search = None
+        self._forum_search = None
 
-    @parse_query.setter
-    def parse_query(self, value):
-        """Set value of parse_query across all children."""
-        self._parse_query = value
-        for child in self._children:
-            child.parse_query = value
+    @property
+    def question_search(self):
+        if self._question_search is None:
+            self._question_search = QuestionSearch(query=self.query, locale=self.locale, product=self.product)
+        return self._question_search
 
-    def add(self, child):
-        """Add a SumoSearch instance to search over. Chainable."""
-        self._children.append(child)
+    @property
+    def wiki_search(self):
+        if self._wiki_search is None:
+            self._wiki_search = WikiSearch(query=self.query, locale=self.locale, product=self.product)
+        return self._wiki_search
 
-    def _from_children(self, name):
-        """
-        Get an attribute from all children.
+    @property
+    def profile_search(self):
+        if self._profile_search is None:
+            self._profile_search = ProfileSearch(query=self.query, group_ids=self.group_ids)
+        return self._profile_search
 
-        Will flatten lists.
-        """
-        value = []
+    @property
+    def forum_search(self):
+        if self._forum_search is None:
+            self._forum_search = ForumSearch(query=self.query, thread_forum_id=self.thread_forum_id)
+        return self._forum_search
 
-        for child in self._children:
-            attr = getattr(child, name)()
-            if isinstance(attr, list):
-                # if the attribute's value is itself a list, unpack it
-                value = [*value, *attr]
-            else:
-                value.append(attr)
-        return value
+    def build_rrf_query(self):
+        """Build a combined query - this is used for advanced queries only."""
+        should_queries = []
+
+        # Use cached instances
+        should_queries.append(self.question_search.build_query())
+        should_queries.append(self.wiki_search.build_query())
+        should_queries.append(self.profile_search.build_query())
+        should_queries.append(self.forum_search.build_query())
+
+        # Combine with bool query
+        combined_query = DSLQ("bool", should=should_queries, minimum_should_match=1)
+        return combined_query
 
     def get_index(self):
-        return ",".join(self._from_children("get_index"))
+        """Return combined index names for all search types - programmatically derived from child searches."""
+        indices = [
+            self.question_search.get_index(),
+            self.wiki_search.get_index(),
+            self.profile_search.get_index(),
+            self.forum_search.get_index(),
+        ]
+        return ",".join(indices)
 
     def get_fields(self):
-        return self._from_children("get_fields")
+        return [
+            f"question_title.{self.locale}^2",
+            f"question_content.{self.locale}",
+            f"answer_content.{self.locale}",
+            f"keywords.{self.locale}^8",
+            f"title.{self.locale}^6",
+            f"summary.{self.locale}^4",
+            f"content.{self.locale}^2",
+            "username",
+            "name",
+            "thread_title",
+        ]
 
     def get_highlight_fields_options(self):
-        return self._from_children("get_highlight_fields_options")
+        """Return combined highlight fields from all child searches."""
+        highlight_fields = []
+
+        # Collect highlight fields from all child searches
+        for search in [self.question_search, self.wiki_search, self.profile_search, self.forum_search]:
+            highlight_fields.extend(search.get_highlight_fields_options())
+
+        return highlight_fields
 
     def get_filter(self):
-        # `should` with `minimum_should_match=1` acts like an OR filter
-        return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
+        if self._is_simple_query():
+            return self.build_rrf_query()
+        else:
+            # For advanced queries, return traditional query
+            return DSLQ("bool", filter=self.get_base_filters(), must=self.build_query())
 
+    def run(self, key: int | slice = slice(0, 10)) -> Self:
+        """Override run to handle RRF queries properly."""
+        if self._is_simple_query():
+            # Use RRF for simple queries
+            return self._run_rrf_search(key)
+        else:
+            # Use traditional search for advanced queries
+            return self._run_traditional_search(key)
+
+    def _is_simple_query(self):
+        """Check if query is simple (not advanced) across all search types."""
+        return not (self.question_search.is_advanced_query() or self.wiki_search.is_advanced_query())
+
+    def _gather_individual_search_results(self):
+        """Execute individual search types and gather results."""
+        all_results = []
+
+        # QuestionSearch RRF
+        self.question_search.run(slice(0, 50))
+        all_results.extend(self.question_search.results)
+
+        # WikiSearch RRF
+        self.wiki_search.run(slice(0, 50))
+        all_results.extend(self.wiki_search.results)
+
+        # ProfileSearch (traditional)
+        self.profile_search.run(slice(0, 100))
+        all_results.extend(self.profile_search.results)
+
+        # ForumSearch (traditional)
+        self.forum_search.run(slice(0, 100))
+        all_results.extend(self.forum_search.results)
+
+        return all_results
+
+
+    def _apply_pagination(self, all_results, key):
+        """Apply pagination to sorted results."""
+        if isinstance(key, slice):
+            start = key.start or 0
+            stop = key.stop or len(all_results)
+            return all_results[start:stop]
+        else:
+            return all_results[key:key+1]
+
+    def _run_rrf_search(self, key: int | slice) -> Self:
+        """Run RRF search by executing individual RRF queries and combining results."""
+        all_results = self._gather_individual_search_results()
+
+        all_results.sort(key=lambda x: x.get('score', 0), reverse=True)
+
+        if self.min_score > 0:
+            all_results = [r for r in all_results if r.get('score', 0) >= self.min_score]
+
+        paginated_results = self._apply_pagination(all_results, key)
+
+        self.results = paginated_results
+        self.total = len(all_results)
+        self.hits = []
+        self.last_key = key
+
+        return self
+
+    def _run_traditional_search(self, key: int | slice) -> Self:
+        """Run traditional search for advanced queries."""
+        from django.conf import settings
+
+        # Traditional DSL search flow
+        search = DSLSearch(using=es_client(), index=self.get_index()).params(
+            **settings.ES_SEARCH_PARAMS
+        )
+
+        # Get the filter/query
+        filter_or_query = self.get_filter()
+
+        # add the search class' filter
+        search = search.query(filter_or_query)
+
+        # Apply min_score if set
+        if self.min_score > 0:
+            search = search.extra(min_score=self.min_score)
+
+        # add highlights for the search class' highlight_fields
+        for highlight_field, options in self.get_highlight_fields_options():
+            search = search.highlight(highlight_field, **options)
+        # slice search
+        search = search[key]
+
+        # perform search
+        try:
+            result = search.execute()
+        except RequestError as e:
+            if self.parse_query:
+                # try search again, but without parsing any advanced syntax
+                self.parse_query = False
+                return self.run(key)
+            raise e
+
+        self.hits = result.hits
+        self.last_key = key
+        self.total = self.hits.total.value  # type: ignore
+        self.results = [self.make_result(hit) for hit in self.hits]
+
+        return self
     def make_result(self, hit):
         index = hit.meta.index
-        for child in self._children:
-            if same_base_index(index, child.get_index()):
-                return child.make_result(hit)
+        if "question" in index:
+            return self.question_search.make_result(hit)
+        elif "wiki" in index:
+            return self.wiki_search.make_result(hit)
+        elif "profile" in index:
+            return self.profile_search.make_result(hit)
+        elif "forum" in index:
+            return self.forum_search.make_result(hit)
+        else:
+            return {}
+
+
+# Alias for backward compatibility
+UnifiedSearch = UnifiedRRFSearch

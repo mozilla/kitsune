@@ -13,7 +13,7 @@ from kitsune import search as constants
 from kitsune.products.models import Product
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.forms import SimpleSearchForm
-from kitsune.search.search import CompoundSearch, QuestionSearch, WikiSearch
+from kitsune.search.search import QuestionSearch, UnifiedRRFSearch, WikiSearch
 from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
@@ -95,14 +95,29 @@ def simple_search(request):
     # get product and product titles
     product, product_titles = _get_product_title(cleaned["product"])
 
-    # create search object
-    search = CompoundSearch()
+    # create search object based on 'w' parameter (where to search)
+    w = cleaned["w"]
 
-    # apply aaq/kb configs
-    if cleaned["w"] & constants.WHERE_WIKI:
-        search.add(WikiSearch(query=cleaned["q"], locale=language, product=product))
-    if cleaned["w"] & constants.WHERE_SUPPORT:
-        search.add(QuestionSearch(query=cleaned["q"], locale=language, product=product))
+    if w == constants.WHERE_WIKI:
+        # Help Articles Only
+        search = WikiSearch(query=cleaned["q"], locale=language, product=product)
+    elif w == constants.WHERE_SUPPORT:
+        # Community Discussion Only
+        search = QuestionSearch(query=cleaned["q"], locale=language, product=product)
+    elif w == constants.WHERE_DISCUSSION:
+        # Forum posts only (not implemented in UnifiedRRFSearch properly)
+        search = UnifiedRRFSearch(
+            query=cleaned["q"],
+            locale=language,
+            product=product
+        )
+    else:
+        # View All (default) - search across all document types
+        search = UnifiedRRFSearch(
+            query=cleaned["q"],
+            locale=language,
+            product=product
+        )
 
     # execute search
     page = paginate(

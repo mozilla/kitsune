@@ -6,7 +6,11 @@ from kitsune.questions.models import Answer, Question
 from kitsune.search import config
 from kitsune.search.base import SumoDocument
 from kitsune.search.es_utils import es_client
-from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
+from kitsune.search.fields import (
+    SemanticTextField,
+    SumoLocaleAwareKeywordField,
+    SumoLocaleAwareTextField,
+)
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import (
@@ -36,6 +40,11 @@ class WikiDocument(SumoDocument):
     keywords = SumoLocaleAwareTextField()
     slug = SumoLocaleAwareKeywordField(store=True)
     doc_id = SumoLocaleAwareKeywordField(store=True)
+
+    # Semantic fields for hybrid search (not locale-aware - E5 handles multilingual natively)
+    title_semantic = SemanticTextField()
+    content_semantic = SemanticTextField()
+    summary_semantic = SemanticTextField()
 
     class Index:
         pass
@@ -86,6 +95,17 @@ class WikiDocument(SumoDocument):
 
     def prepare_display_order(self, instance):
         return instance.original.display_order
+
+    def prepare_title_semantic(self, instance):
+        return instance.title
+
+    def prepare_content_semantic(self, instance):
+        return instance.html
+
+    def prepare_summary_semantic(self, instance):
+        if instance.current_revision:
+            return instance.summary
+        return ""
 
     @classmethod
     def get_model(cls):
@@ -144,6 +164,11 @@ class QuestionDocument(SumoDocument):
 
     locale = field.Keyword()
 
+    # Semantic fields for hybrid search (not locale-aware - E5 handles multilingual natively)
+    question_title_semantic = SemanticTextField()
+    question_content_semantic = SemanticTextField()
+    answer_content_semantic = SemanticTextField()
+
     class Index:
         pass
 
@@ -180,6 +205,23 @@ class QuestionDocument(SumoDocument):
                 else instance.answers.filter(is_spam=False)
             )
         ]
+
+    def prepare_question_title_semantic(self, instance):
+        return instance.title
+
+    def prepare_question_content_semantic(self, instance):
+        return instance.content
+
+    def prepare_answer_content_semantic(self, instance):
+        answers = [
+            answer.content
+            for answer in (
+                instance.es_question_answers_not_spam
+                if hasattr(instance, "es_question_answers_not_spam")
+                else instance.answers.filter(is_spam=False)
+            )
+        ]
+        return " ".join(answers) if answers else ""
 
     def get_field_value(self, field, *args):
         if field.startswith("question_"):
@@ -271,10 +313,18 @@ class AnswerDocument(QuestionDocument):
         # as we don't need the content of sibling answers in an AnswerDocument
         return None
 
-    def get_field_value(self, field, instance, *args):
+    def prepare_answer_content_semantic(self, instance):
+        # clear answer_content_semantic field from QuestionDocument,
+        # as we don't need the content of sibling answers in an AnswerDocument
+        return None
+
+    def get_field_value(self, field, instance, prepare_method):
         if field.startswith("question_"):
             instance = instance.question
-        return super().get_field_value(field, instance, *args)
+        # answer_content fields need to be processed on the question, not the answer
+        elif field in ["answer_content", "answer_content_semantic"]:
+            instance = instance.question
+        return super().get_field_value(field, instance, prepare_method)
 
     def to_action(self, *args, **kwargs):
         # if the id is un-prefixed, add it
