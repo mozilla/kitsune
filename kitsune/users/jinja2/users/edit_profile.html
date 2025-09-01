@@ -95,11 +95,11 @@
           {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be undone.') }}
         </p>
         <p>
-          {{ _('Please type in your username to confirm') }}
+          {% trans confirmation_string=delete_account_confirmation %}Please type <strong>{{ confirmation_string }}</strong> to confirm.{% endtrans %}
         </p>
         <div class="field">
-          <input id="delete-profile-username-input" name="entered_username" type="text">
-          <input id="delete-profile-username" name="account_username" type="hidden" value="{{ profile.user.username }}">
+          <input id="delete-profile-confirmation-input" name="entered_confirmation" type="text">
+          <input id="delete-profile-confirmation" name="expected_confirmation" type="hidden" value="{{ delete_account_confirmation }}">
         </div>
         <p>
           <button type="submit" id="delete-profile-button" class="sumo-button secondary-button button-lg warning-button"

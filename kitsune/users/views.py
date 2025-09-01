@@ -1,4 +1,6 @@
 import json
+import secrets
+import string
 from ast import literal_eval
 
 import requests
@@ -158,6 +160,17 @@ def profile(request, username):
 @login_required
 @require_POST
 def close_account(request):
+    expected_confirmation = request.session.get("delete_account_confirmation")
+    entered_confirmation = request.POST.get("entered_confirmation")
+
+    if not expected_confirmation or expected_confirmation != entered_confirmation:
+        messages.add_message(request, messages.ERROR, _("Confirmation failed. Account not deleted."))
+        return HttpResponseRedirect(reverse("users.edit_my_profile"))
+
+    # Clear the confirmation from the session
+    if "delete_account_confirmation" in request.session:
+        del request.session["delete_account_confirmation"]
+
     delete_user_pipeline(request.user)
 
     # Log the user out
@@ -380,6 +393,11 @@ def edit_profile(request, username=None):
                 request.session["timezone"] = new_timezone
         return HttpResponseRedirect(reverse("users.profile", args=[user.username]))
 
+    # CWF protection for account deletion
+    if request.method == "GET":
+        random_string = "".join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(6))
+        request.session["delete_account_confirmation"] = random_string
+
     # TODO: detect timezone automatically from client side, see
     msgs = messages.get_messages(request)
     fxa_messages = [m.message for m in msgs if m.message.startswith("fxa_notification")]
@@ -392,6 +410,7 @@ def edit_profile(request, username=None):
             "user_form": user_form,
             "profile": user_profile,
             "fxa_messages": fxa_messages,
+            "delete_account_confirmation": request.session.get("delete_account_confirmation"),
         },
     )
 

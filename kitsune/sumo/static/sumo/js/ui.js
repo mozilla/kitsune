@@ -9,10 +9,10 @@ import trackEvent from "sumo/js/analytics";
     initFolding();
     initAnnouncements();
 
-    $('#delete-profile-username-input').on('keyup', function(ev) {
-      var username = $('#delete-profile-username').val();
-      var inputUsername = $('#delete-profile-username-input').val();
-      if (inputUsername === username) {
+    $('#delete-profile-confirmation-input').on('keyup', function(ev) {
+      var confirmation = $('#delete-profile-confirmation').val().trim();
+      var inputConfirmation = $('#delete-profile-confirmation-input').val().trim();
+      if (inputConfirmation === confirmation) {
         $('#delete-profile-button').prop('disabled', false);
       } else {
         $('#delete-profile-button').prop('disabled', true);

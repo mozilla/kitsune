@@ -661,7 +661,26 @@ class UserCloseAccountTests(TestCase):
         self.assertTrue(self.user.is_active)
         self.assertTrue(self.user.profile.name)
 
-        res = self.client.post(reverse("users.close_account", locale="en-US"))
+        # To close an account, the user must enter a confirmation string.
+        # This is generated and put into the session by the edit_profile view.
+        session = self.client.session
+        session["delete_account_confirmation"] = "test-confirmation"
+        session.save()
+
+        # First, test with an incorrect confirmation string.
+        res = self.client.post(
+            reverse("users.close_account", locale="en-US"),
+            {"entered_confirmation": "wrong-string"},
+        )
+        self.assertEqual(302, res.status_code)  # Should redirect back to edit_profile
+        # The user should still exist
+        self.assertTrue(User.objects.filter(id=self.user.id).exists())
+
+        # Now, test with the correct confirmation string.
+        res = self.client.post(
+            reverse("users.close_account", locale="en-US"),
+            {"entered_confirmation": "test-confirmation"},
+        )
         self.assertEqual(200, res.status_code)
 
         # The user should be completely deleted
