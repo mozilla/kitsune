@@ -39,6 +39,7 @@ from kitsune.sumo.utils import (
     smart_int,
     truncated_json_dumps,
 )
+from kitsune.users.models import Profile
 from kitsune.wiki.config import (
     CATEGORIES,
     COLLAPSIBLE_DOCUMENTS,
@@ -747,6 +748,10 @@ def review_revision(request, document_slug, revision_id):
                 ),
                 datetime.min,
             ),
+        )
+        .filter(
+            Q(creator__profile__isnull=True)
+            | Q(creator__profile__account_type=Profile.AccountType.REGULAR)
         )
         .values_list("creator__username", flat=True)
         .distinct()
