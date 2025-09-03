@@ -134,7 +134,11 @@ def translation_parser(message: AIMessage) -> dict[str, Any]:
     result = {}
     content = message.content
     for name in ("translation", "explanation"):
-        result[name] = content.split(f"<<begin-{name}>>")[-1].split(f"<<end-{name}>>")[0].strip()
+        parsed = content.split(f"<<begin-{name}>>")[-1].split(f"<<end-{name}>>")[0].strip()
+        # Strip the wiki fenced code block markdown syntax if present.
+        if parsed.startswith("```wiki") and parsed.endswith("```"):
+            parsed = parsed.removeprefix("```wiki").removesuffix("```").strip()
+        result[name] = parsed
     return result
 
 
