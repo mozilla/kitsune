@@ -1,6 +1,6 @@
 {# This is an email.  Whitespace matters! #}
 {%- autoescape false %}
-{{ _('Hi {username},')|f(username=display_name(user)) }}
+{{ _('Hi') }} {{ display_name(user) }},
 
 {% trans %}
 Thank you and congratulations on your first contribution to the Mozilla Support 
