@@ -39,8 +39,9 @@
           Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
       {% endif %}
-      {% if not self_approving or revision_contributors %}
-        {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
+      {% if revision_contributors %}
+        {# Show message textbox if there are recent contributors. #}
+        {# Note that the reviewer is never included in the list of recent contributors. #}
         <div class="message">
           <label for="id-approve-comment">
             {{ revision_contributors_label(revision_contributors) }}
@@ -75,8 +76,9 @@
 
     <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Defer this Translation') }}{% else %}{{ _('Defer this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
       {% csrf_token %}
-      {% if not self_approving or revision_contributors %}
-        {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
+      {% if revision_contributors %}
+        {# Show message textbox if there are recent contributors. #}
+        {# Note that the reviewer is never included in the list of recent contributors. #}
         <p>
           {% trans %}Thanks for taking the time to review these changes.
           Please thank the editor and then give specific, constructive
