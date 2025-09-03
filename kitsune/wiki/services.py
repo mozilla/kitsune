@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import Exists, F, OuterRef, Q
 from django.db.models.functions import Now
 from django.utils import timezone
 
@@ -35,6 +35,16 @@ class StaleTranslationService:
             target_locales = settings.AI_ENABLED_LOCALES + settings.HYBRID_ENABLED_LOCALES
 
         cutoff_date = timezone.now() - timedelta(days=settings.STALE_TRANSLATION_THRESHOLD_DAYS)
+        sumo_bot = Profile.get_sumo_bot()
+
+        # Skip translations that already have a pending LLM revision
+        pending_sumo_bot_revision = Revision.objects.filter(
+            document=OuterRef("pk"),
+            creator=sumo_bot,
+            is_approved=False,
+            reviewed__isnull=True,
+            based_on_id=OuterRef("parent__latest_localizable_revision_id"),
+        )
 
         stale_translations = (
             Document.objects.filter(
@@ -52,6 +62,8 @@ class StaleTranslationService:
                     "current_revision__created"
                 )
             )
+            .annotate(has_pending_llm_revision=Exists(pending_sumo_bot_revision))
+            .filter(has_pending_llm_revision=False)
         )
 
         if limit is not None:
@@ -64,7 +76,7 @@ class StaleTranslationService:
         return candidates
 
     def process_stale_translations(
-        self, limit: int | None = None
+        self, limit: int | None = None, target_locales: list[str] | None = None
     ) -> list[tuple[Document, Document, str]]:
         """Process stale translations using appropriate strategies.
 
@@ -76,7 +88,9 @@ class StaleTranslationService:
         if limit is None:
             limit = settings.STALE_TRANSLATION_BATCH_SIZE
 
-        candidates = self.find_stale_translation_candidates(limit=limit)
+        candidates = self.find_stale_translation_candidates(
+            limit=limit, target_locales=target_locales
+        )
 
         for english_doc, translation_doc, locale in candidates:
             translation_method = self.strategy_factory.get_method_for_locale(locale)
