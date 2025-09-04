@@ -3,6 +3,7 @@ from functools import partial
 from django.conf import settings
 from elasticsearch.dsl import Keyword, Text
 from elasticsearch.dsl import Object as DSLObject
+from elasticsearch.dsl.field import Field
 
 from kitsune.search.es_utils import es_analyzer_for_locale
 
@@ -44,3 +45,19 @@ SumoKeywordField = partial(construct_locale_field, field=Keyword)
 # {'en-US': Text(analyzer_for_the_specific_locale)}
 SumoLocaleAwareTextField = partial(SumoTextField, locales=SUPPORTED_LANGUAGES)
 SumoLocaleAwareKeywordField = partial(SumoKeywordField, locales=SUPPORTED_LANGUAGES)
+
+
+class SemanticTextField(Field):
+    """A semantic text field that uses inference for embeddings."""
+
+    name = "semantic_text"
+
+    def __init__(self, inference_id=".multilingual-e5-small-elasticsearch", **kwargs):
+        super().__init__(**kwargs)
+        self._inference_id = inference_id
+
+    def to_dict(self):
+        return {
+            "type": "semantic_text",
+            "inference_id": self._inference_id,
+        }
