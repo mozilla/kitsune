@@ -9,3 +9,5 @@ class InboxPageMessages:
     MULTIPLE_MESSAGES_DELETION_BANNER_TEXT = "The messages were deleted!"
     NO_MESSAGES_SELECTED_BANNER_TEXT = "No messages selected. Please try again."
     NAVBAR_INBOX_SELECTED_BG_COLOR = "rgb(237, 237, 240)"
+    READ_MESSAGE_DELETED_USER_INFO = ("You can no longer reply to the sender of this message. The"
+                                      " user is no longer active. ")

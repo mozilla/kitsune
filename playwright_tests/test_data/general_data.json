@@ -109,5 +109,6 @@
     "article_discussions": "https://support.allizom.org/en-US/kb/all/discussions"
   },
   "groups": "https://support.allizom.org/en-US/groups/",
-  "test_article_link": "https://support.allizom.org/en-US/kb/donotdelete"
+  "test_article_link": "https://support.allizom.org/en-US/kb/donotdelete",
+  "system_account_name": "SuMo Bot"
 }

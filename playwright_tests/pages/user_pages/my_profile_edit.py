@@ -44,10 +44,16 @@ class MyProfileEdit(BasePage):
         self.cancel_button = page.get_by_role("button").filter(has_text="Cancel")
         self.update_my_profile_button = page.get_by_role("button").filter(
             has_text="Update My Profile")
+
+        # Locators belonging to the close account modal.
         self.close_account_and_delete_all_profile_information_link = page.locator(
             "p.delete-account-link a")
-        self.close_account_username_modal = page.locator("input#delete-profile-username-input")
-        self.close_account_delete_button = page.locator("input#delete-profile-button")
+        self.close_account_username_modal = page.locator("input#delete-profile-confirmation-input")
+        self.close_account_username_modal_confirmation_code = page.locator(
+            "//div[@id='delete-profile']//strong")
+        self.close_account_delete_button = page.locator("button#delete-profile-button")
+        self.close_modal_button = page.locator("button[class='mzp-c-modal-button-close']")
+
         self.all_input_edit_profile_input_fields = page.locator(
             "//form[not(contains(@action, '/en-US/users/close_account'))]/div[@class='field']/"
             "input[not(contains(@id, 'id_username'))]"
@@ -259,13 +265,37 @@ class MyProfileEdit(BasePage):
         """Click the close account and delete all profile information link"""
         self._click(self.close_account_and_delete_all_profile_information_link)
 
-    def add_username_to_close_account_modal(self, username: str):
-        """Add the username to the close account modal"""
-        self._fill(self.close_account_username_modal, username)
+    def add_confirmation_code_to_close_account_modal(self, invalid_code=False):
+        """
+        Add the confirmation code to the close account modal.
+            Args:
+                invalid_code (bool): If set to true to be used in tests which are covering the
+                submission of an invalid code inside the user deletion modal.
+        """
+        self._wait_for_given_timeout(1000)
+        code = self._get_text_of_element(self.close_account_username_modal_confirmation_code)
+        if invalid_code:
+            code += "A"
+
+        self._type(self.close_account_username_modal, code, 10)
+
+    def clear_confirmation_code_from_close_account_modal(self):
+        """Clearing the confirmation code from the close account modal"""
+        self._clear_field(self.close_account_username_modal)
 
     def click_close_account_button(self):
         """Click the close account button in the close account modal"""
-        self._click(self.close_account_delete_button)
+        self._click(self.close_account_delete_button,
+                    expected_url="https://support.allizom.org/en-US/users/close_account",
+                    retries=2)
+
+    def is_delete_your_account_button_disabled(self) -> bool:
+        """Returning whether the 'Delete Your Account' button is disabled or not."""
+        return self._is_element_disabled(self.close_account_delete_button)
+
+    def click_on_close_modal_button(self):
+        """Clicking on the 'X' button from the close account modal"""
+        self._click(self.close_modal_button)
 
     def click_manage_firefox_account_button(self):
         """Click the manage firefox account button"""

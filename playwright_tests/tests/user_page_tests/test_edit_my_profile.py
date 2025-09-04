@@ -757,6 +757,46 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         assert time_difference <= 1, (f"Time difference is more than 1 minute: {time_difference} "
                                       f"minutes")
 
+# C891532
+@pytest.mark.editUserProfileTests
+def test_close_account_and_delete_profile_information(page:Page, create_user_factory):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    test_user = create_user_factory()
+
+    with allure.step(f"Signing in with a test account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Navigating to the edit profile page and clicking on the 'Close account "
+                     "button'"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.click_close_account_option()
+
+    with allure.step("Verifying that the 'Delete Your Account' button is disabled by default"):
+        assert sumo_pages.edit_my_profile_page.is_delete_your_account_button_disabled()
+
+    with allure.step("Adding a different code inside the input and verifying that the "
+                     "'Delete Your Account' button is disabled"):
+        sumo_pages.edit_my_profile_page.add_confirmation_code_to_close_account_modal(
+            invalid_code=True)
+        assert sumo_pages.edit_my_profile_page.is_delete_your_account_button_disabled()
+
+    with allure.step("Clearing the confirmation code input field, adding the correct code inside "
+                     "the input field and closing the modal"):
+        sumo_pages.edit_my_profile_page.clear_confirmation_code_from_close_account_modal()
+        sumo_pages.edit_my_profile_page.add_confirmation_code_to_close_account_modal()
+        sumo_pages.edit_my_profile_page.click_on_close_modal_button()
+
+    with allure.step("Refreshing the page and verifying that the user was not deleted"):
+        utilities.refresh_page()
+        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+
+    with allure.step("Deleting the user via the 'Close account and delete all profile information'"
+                     "modal"):
+        sumo_pages.edit_profile_flow.close_account()
+        assert utilities.get_page_url() ==  utilities.profile_edit_test_data["close_account_page"]
+        assert sumo_pages.top_navbar.is_sign_in_up_button_displayed()
+
 
 def _validate_profile_info(page: Page, target: str, profile_info: str, username: str,
                            second_user_session_cookies: dict) -> bool:

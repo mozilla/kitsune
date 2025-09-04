@@ -287,7 +287,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page,
                 get_text_of_document_links())
 
     with allure.step("Navigating to the article and changing the title"):
-        new_article_title = "Updated title test v1"
+        new_article_title = "Updated title test " + utilities.generate_random_number(1, 1000)
         sumo_pages.my_documents_page.click_on_a_particular_document(
             article_details['article_title'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=new_article_title)

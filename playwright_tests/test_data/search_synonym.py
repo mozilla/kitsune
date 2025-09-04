@@ -6,9 +6,9 @@ class SearchSynonyms:
 
         # Technical terms
         'cache': ['cash', 'cookies'],
-        'popup': ['pop up'],
+        'popup': ['pop up', "pop-ups"],
         'pop up': ['popup'],
-        'pop-up':['pop-ups', 'popups'],
+        'pop-up':['pop-ups', 'popups', 'popup'],
         'popups': ['pop-up', 'pop-ups', 'pop ups', 'pops up'],
 
         # Actions
