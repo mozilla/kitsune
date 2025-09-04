@@ -7,8 +7,6 @@ from django.shortcuts import render
 from google.auth.exceptions import GoogleAuthError
 from OpenSSL.crypto import Error as OpenSSLError
 
-from kitsune.announcements.forms import AnnouncementForm
-from kitsune.announcements.models import Announcement
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 from kitsune.sumo.googleanalytics import visitors_by_locale
@@ -74,8 +72,6 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None, p
         ),
         "is_watching_default_ready": ReadyRevisionEvent.is_notifying(request.user, **ready_kwargs),
         "on_default_locale": on_default_locale,
-        "announce_form": AnnouncementForm(),
-        "announcements": Announcement.get_for_locale_name(current_locale),
         "product": product,
         "products": Product.objects.filter(visible=True),
     }

@@ -31,7 +31,6 @@ urlpatterns = i18n_patterns(
     path("messages/", include("kitsune.messages.urls")),
     path("groups/", include("kitsune.groups.urls")),
     path("kpi/", include("kitsune.kpi.urls")),
-    path("announcements/", include("kitsune.announcements.urls")),
     path("community/", include("kitsune.community.urls")),
     path("badges/", include("kitsune.kbadge.urls")),
     path("locales", sumo_views.locales, name="sumo.locales"),

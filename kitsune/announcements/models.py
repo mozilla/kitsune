@@ -1,10 +1,9 @@
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Self
 
 from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.db.models.functions import Now
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
@@ -21,7 +20,7 @@ class Announcement(ModelBase):
         default=datetime.now,
         db_index=True,
         verbose_name="Start displaying",
-        help_text=("When this announcement will start appearing. " "(US/Pacific)"),
+        help_text=("When this announcement will start appearing. (US/Pacific)"),
     )
     show_until = models.DateTimeField(
         db_index=True,
@@ -29,8 +28,7 @@ class Announcement(ModelBase):
         blank=True,
         verbose_name="Stop displaying",
         help_text=(
-            "When this announcement will stop appearing. "
-            "Leave blank for indefinite. (US/Pacific)"
+            "When this announcement will stop appearing. Leave blank for indefinite. (US/Pacific)"
         ),
     )
     content = models.TextField(
@@ -39,7 +37,9 @@ class Announcement(ModelBase):
     )
     groups = models.ManyToManyField(Group, related_name="announcements", blank=True, null=True)
     locale = models.ForeignKey(Locale, on_delete=models.CASCADE, null=True, blank=True)
-    platforms = models.ManyToManyField("products.Platform", related_name="announcements", blank=True)
+    platforms = models.ManyToManyField(
+        "products.Platform", related_name="announcements", blank=True
+    )
     send_email = models.BooleanField(
         default=False,
         help_text=(
@@ -61,33 +61,14 @@ class Announcement(ModelBase):
         return wiki_to_html(self.content.strip())
 
     @classmethod
-    def get_site_wide(cls, platform_slugs: Iterable[str] | None = None, locale_name: str | None = None):
-        """Returns announcements that are visible to everyone (no group/locale restrictions)."""
-        query = cls._visible_query(platforms=platform_slugs).filter(groups__isnull=True)
-
-        if locale_name:
-            query = query.filter(
-                Q(locale__isnull=True) | Q(locale__locale=locale_name)
-            )
-        else:
-            query = query.filter(locale__isnull=True)
-
-        return query
-
-    @classmethod
-    def get_for_groups(cls, group_ids: Iterable[int], platform_slugs: Iterable[str] | None = None) -> QuerySet[Self]:
-        """Returns visible announcements for the given group ids and platform slugs.
-
-        If an announcement has no groups, it's considered site-wide and will be included.
-        If an announcement has any groups, it will only be included if one of those groups
-        is in the provided group_ids.
-        """
-        return cls._visible_query(platforms=platform_slugs, groups=group_ids)
-
-    @classmethod
-    def get_for_locale_name(cls, locale_name):
-        """Returns visible announcements for a given locale name."""
-        return cls._visible_query(locale__locale=locale_name)
+    def get_site_wide(
+        cls,
+        platform_slugs: Iterable[str] | None = None,
+        group_ids: Iterable[int] | None = None,
+        locale_name: str | None = None,
+    ):
+        """Returns all visible announcements that satisfy the given filters."""
+        return cls._visible_query(platforms=platform_slugs, groups=group_ids, locale=locale_name)
 
     @classmethod
     def _visible_query(cls, **query_kwargs):
@@ -99,21 +80,24 @@ class Announcement(ModelBase):
         )
 
         # Handle platform filtering
-        platforms = query_kwargs.pop('platforms', None)
-        groups = query_kwargs.pop('groups', None)
+        platforms = query_kwargs.pop("platforms", None)
+        groups = query_kwargs.pop("groups", None)
+        locale = query_kwargs.pop("locale", None)
 
-        if platforms and 'web' not in platforms:
-            has_web_announcements = query.filter(platforms__slug='web').exists()
+        if platforms and "web" not in platforms:
+            has_web_announcements = query.filter(platforms__slug="web").exists()
             if not has_web_announcements:
-                query = query.filter(
-                    Q(platforms__isnull=True) |
-                    Q(platforms__slug__in=platforms)
-                )
+                query = query.filter(Q(platforms__isnull=True) | Q(platforms__slug__in=platforms))
 
         if groups:
             query = query.filter(Q(groups__isnull=True) | Q(groups__id__in=groups))
         else:
             query = query.filter(groups__isnull=True)
+
+        if locale:
+            query = query.filter(Q(locale__isnull=True) | Q(locale__locale=locale))
+        else:
+            query = query.filter(locale__isnull=True)
 
         if query_kwargs:
             query = query.filter(**query_kwargs)

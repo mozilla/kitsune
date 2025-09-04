@@ -9,10 +9,8 @@ def get_announcements(request):
     user = request.user if request.user.is_authenticated else None
 
     user_platforms = detect_platform_from_user_agent(request)
-    current_locale = request.LANGUAGE_CODE
+    user_groups = user.groups.values_list("id", flat=True) if user else None
 
-    if user:
-        user_groups = user.groups.values_list("id", flat=True)
-        return Announcement.get_for_groups(user_groups, platform_slugs=user_platforms)
-
-    return Announcement.get_site_wide(platform_slugs=user_platforms, locale_name=current_locale)
+    return Announcement.get_site_wide(
+        platform_slugs=user_platforms, group_ids=user_groups, locale_name=request.LANGUAGE_CODE
+    )

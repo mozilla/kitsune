@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET
 
-from kitsune.announcements.views import user_can_announce
 from kitsune.dashboards import PERIODS
 from kitsune.dashboards.readouts import (
     CONTRIBUTOR_READOUTS,
@@ -22,7 +21,6 @@ from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import smart_int
 from kitsune.wiki.config import CATEGORIES
-from kitsune.wiki.models import Locale
 
 log = logging.getLogger("k.dashboards")
 
@@ -120,18 +118,13 @@ def localization(request):
     """Render aggregate data about articles in a non-default locale."""
     if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
         return HttpResponseRedirect(reverse("dashboards.contributors"))
-    locales = Locale.objects.filter(locale=request.LANGUAGE_CODE)
-    if locales:
-        permission = user_can_announce(request.user, locales[0])
-    else:
-        permission = False
 
     product = _get_product(request)
 
     data = {
         "overview_rows": l10n_overview_rows(request.LANGUAGE_CODE, product=product),
-        "user_can_announce": permission,
     }
+
     return render_readouts(
         request, L10N_READOUTS, "localization.html", extra_data=data, product=product
     )
