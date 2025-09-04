@@ -8,7 +8,8 @@ from kitsune.llm.l10n.config import L10N_PROTECTED_TERMS
 TRANSLATION_INSTRUCTIONS = """
 # Role and task
 - You are an expert at translating technical documents written in Wiki syntax about Mozilla's products from {{ source_language }} to {{ target_language }}.
-- Your task is to translate the given {{ source_language }} text into {{ target_language }}, **strictly obeying** the task instructions.
+- Your task is to translate the given {{ source_language }} text into {{ target_language }}, **strictly following** the definitions, rules, and task instructions provided below.
+- The definitions, rules, and task instructions provided below **take precedence over all other guidance**.
 - You may be given a "prior translation" as well. If so, the task instructions will describe how to use the "prior translation" to complete your task.
 
 # Definitions
@@ -56,6 +57,9 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\x20\x7f]*)\\s*(?
     r"\\{(for|key|filepath|button|menu|pref) .*?\\}"
     ```
 
+    - In other words, do not translate these tags **as well as their content**.
+    - For example, each of the strings `{button Allow}` and `{menu Settings}` and `{pref Name}` should never be translated.
+
 3. For each `wiki-hook`, perform the following steps:
     - First, check if the `wiki-hook` is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
@@ -64,12 +68,12 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\x20\x7f]*)\\s*(?
 4. For each `wiki-article-link`, perform the following steps:
     - First, check if the `wiki-article-link` is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
-    - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matched by the named group `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**.
+    - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matching its `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**.
 
 5. For each `wiki-external-link`, perform the following steps:
     - First, check if the `wiki-external-link` is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
-    - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matched by the named group `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**.
+    - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matching its `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**.
 
 # Task Instructions
 1. **Build the `prior-translation-wiki-map`**. If no "prior translation" is provided, set the `prior-translation-wiki-map` to an empty `dict`.
