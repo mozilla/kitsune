@@ -927,7 +927,7 @@ class Revision(ModelBase, AbstractRevision):
                 new_revs = new_revs.filter(id__gt=self.document.current_revision.id)
             new_contributors = {r.creator for r in new_revs.select_related("creator")}
             for user in new_contributors:
-                if user not in contributors:
+                if user not in contributors and not user.profile.is_system_account:
                     self.document.contributors.add(user)
 
             # Update document denormalized fields
