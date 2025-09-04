@@ -53,28 +53,20 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\x20\x7f]*)\\s*(?
 2. **Preserve unchanged** each string that case-sensitively matches the following regular expression:
 
     ```python
-    r"\\{(for|key|filepath) .*?\\}"
+    r"\\{(for|key|filepath|button|menu|pref) .*?\\}"
     ```
 
-3. For each string that case-sensitively matches the following regular expression:
-
-    ```python
-    r"\\{(?:button|menu|pref) (?P<description>.*?)\\}"
-    ```
-
-    - Translate only the text matched by the named group `description` (**remember to obey rule #1 above**), and **preserve the rest of the string unchanged**.
-
-4. For each `wiki-hook`, perform the following steps:
+3. For each `wiki-hook`, perform the following steps:
     - First, check if the `wiki-hook` is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
     - If it is **not** a key within the `prior-translation-wiki-map`, **preserve it unchanged**.
 
-5. For each `wiki-article-link`, perform the following steps:
+4. For each `wiki-article-link`, perform the following steps:
     - First, check if the `wiki-article-link` is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
     - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matched by the named group `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**.
 
-6. For each `wiki-external-link`, perform the following steps:
+5. For each `wiki-external-link`, perform the following steps:
     - First, check if the `wiki-external-link` is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
     - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matched by the named group `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**.
