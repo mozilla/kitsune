@@ -483,30 +483,19 @@ class SumoSearch(SumoSearchInterface):
 
     def build_hybrid_rrf_query(self):
         """Build RRF hybrid query combining traditional and semantic search with quality filtering."""
+
         from kitsune.search.search import RRFQuery
 
         # Get search quality settings with defaults
         rrf_window_size = getattr(settings, 'SEARCH_RRF_WINDOW_SIZE', 50)
         rrf_rank_constant = getattr(settings, 'SEARCH_RRF_RANK_CONSTANT', 60)
         strict_relevance = getattr(settings, 'SEARCH_STRICT_RELEVANCE', True)
-        require_text_match = getattr(settings, 'SEARCH_REQUIRE_TEXT_MATCH', True)
 
         # Build traditional query with stricter matching if enabled
         traditional_query = self.build_traditional_query_with_filters(strict_matching=strict_relevance)
 
-        # If require_text_match is enabled, only include semantic search for documents
-        # that also match the traditional search. This filters out nonsense queries.
-        if require_text_match:
-            semantic_base = self.build_semantic_query_with_filters()
-
-            # Wrap semantic query with traditional filter
-            semantic_query = DSLQ(
-                "bool",
-                must=semantic_base,
-                filter=traditional_query  # Require traditional match for semantic results
-            )
-        else:
-            semantic_query = self.build_semantic_query_with_filters()
+        # Build semantic query (quality filtering applied during result processing)
+        semantic_query = self.build_semantic_query_with_filters()
 
         rrf_query = {
             "retriever": {
@@ -587,13 +576,9 @@ class SumoSearch(SumoSearchInterface):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
-        # Import here to avoid circular dependency
         from kitsune.search.search import RRFQuery
 
-        # Get the filter/query
         filter_or_query = self.get_filter()
-
-        # Check if it's an RRF query
         if isinstance(filter_or_query, RRFQuery):
             client = es_client()
 
@@ -609,52 +594,118 @@ class SumoSearch(SumoSearchInterface):
             rrf_body["from"] = start
             rrf_body["size"] = size
 
+            # Workaround for ES 9.0.2 RRF+highlighting bug
+            highlight_fields = {}
+            for field, options in self.get_highlight_fields_options():
+                # Convert fvh options to plain highlighter for compatibility
+                rrf_options = options.copy()
+                if rrf_options.get("type") == "fvh":
+                    rrf_options["type"] = "plain"
+                    # Remove fvh-specific options that aren't supported by plain highlighter
+                    rrf_options.pop("boundary_scanner", None)
+                highlight_fields[field] = rrf_options
+
             try:
                 result = client.search(
                     index=self.get_index(),
                     body=rrf_body,
                     **settings.ES_SEARCH_PARAMS
                 )
+
+                require_text_match = getattr(settings, 'SEARCH_REQUIRE_TEXT_MATCH', True)
+
+                if result["hits"]["hits"] and (highlight_fields or require_text_match):
+                    doc_ids = [hit["_id"] for hit in result["hits"]["hits"]]
+
+                    locale = getattr(self, 'locale', 'en-US')
+                    filter_highlight_body = {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {"ids": {"values": doc_ids}},
+                                    # Include the original text query for both filtering and highlighting
+                                    {"multi_match": {
+                                        "query": self.query,
+                                        "fields": list(highlight_fields.keys()) if highlight_fields else [
+                                            f"content.{locale}",
+                                            f"title.{locale}",
+                                            f"summary.{locale}"
+                                        ]
+                                    }}
+                                ]
+                            }
+                        },
+                        "size": len(doc_ids),
+                        "_source": False
+                    }
+                    if highlight_fields:
+                        filter_highlight_body["highlight"] = {"fields": highlight_fields}
+
+                    filter_highlight_result = client.search(
+                        index=self.get_index(),
+                        body=filter_highlight_body,
+                        **settings.ES_SEARCH_PARAMS
+                    )
+
+                    text_matching_ids = {hit["_id"] for hit in filter_highlight_result["hits"]["hits"]}
+                    highlights_by_id = {}
+                    if highlight_fields:
+                        for hit in filter_highlight_result["hits"]["hits"]:
+                            if "highlight" in hit:
+                                highlights_by_id[hit["_id"]] = hit["highlight"]
+
+                    if require_text_match:
+                        filtered_hits = []
+                        for hit in result["hits"]["hits"]:
+                            if hit["_id"] in text_matching_ids:
+                                if hit["_id"] in highlights_by_id:
+                                    hit["highlight"] = highlights_by_id[hit["_id"]]
+                                filtered_hits.append(hit)
+                        result["hits"]["hits"] = filtered_hits
+                    else:
+                        for hit in result["hits"]["hits"]:
+                            if hit["_id"] in highlights_by_id:
+                                hit["highlight"] = highlights_by_id[hit["_id"]]
+
             except RequestError as e:
                 if self.parse_query:
                     self.parse_query = False
                     return self.run(key)
                 raise e
 
-            # Process RRF results
-            # With require_text_match enabled, nonsense queries are already filtered out
-            # since they have 0 traditional matches
+            # RRF scores are inherently lower than traditional BM25 scores, so use a lower threshold
+            rrf_min_score = getattr(settings, 'SEARCH_RRF_MIN_SCORE_THRESHOLD', 0.01)
             self.hits = []
+
             for hit in result["hits"]["hits"]:
-                # Convert raw hit to AttrDict for compatibility
+                hit_score = hit.get("_score", 0)
+
+                if hit_score < rrf_min_score:
+                    continue
+
                 attr_hit = AttrDict(hit["_source"])
                 attr_hit.meta = AttrDict({
                     "id": hit["_id"],
-                    "score": hit.get("_score", 0),
+                    "score": hit_score,
                     "index": hit["_index"]
                 })
+                if "highlight" in hit:
+                    attr_hit.meta.highlight = AttrDict(hit["highlight"])
                 self.hits.append(attr_hit)
 
             self.last_key = key
-            # Use the count of filtered hits as total (not the raw ES total)
-            # This prevents pagination issues with filtered results
+            # Use filtered hit count to prevent pagination issues
             self.total = len(self.hits)
             self.results = [self.make_result(hit) for hit in self.hits]
         else:
-            # Traditional DSL search flow
             search = DSLSearch(using=es_client(), index=self.get_index()).params(
                 **settings.ES_SEARCH_PARAMS
             )
 
-            # add the search class' filter
             search = search.query(filter_or_query)
-            # add highlights for the search class' highlight_fields
             for highlight_field, options in self.get_highlight_fields_options():
                 search = search.highlight(highlight_field, **options)
-            # slice search
             search = search[key]
-
-            # perform search
             try:
                 result = search.execute()
             except RequestError as e:
