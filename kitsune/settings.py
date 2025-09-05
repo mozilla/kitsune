@@ -761,8 +761,13 @@ ES_INDEX_PREFIX = config("ES_INDEX_PREFIX", default="sumo")
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = config("ES_LIVE_INDEXING", default=True, cast=bool)
 
-SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
+
+# Search quality and relevance settings
+SEARCH_STRICT_RELEVANCE = config("SEARCH_STRICT_RELEVANCE", default=True, cast=bool)
+SEARCH_RRF_WINDOW_SIZE = config("SEARCH_RRF_WINDOW_SIZE", default=50, cast=int)
+SEARCH_RRF_RANK_CONSTANT = config("SEARCH_RRF_RANK_CONSTANT", default=60, cast=int)
+SEARCH_REQUIRE_TEXT_MATCH = config("SEARCH_REQUIRE_TEXT_MATCH", default=True, cast=bool)
 
 # Search default settings
 SEARCH_DEFAULT_CATEGORIES = (

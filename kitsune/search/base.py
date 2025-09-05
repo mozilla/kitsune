@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from elasticsearch import NotFoundError, RequestError
 from elasticsearch.dsl import Document as DSLDocument
 from elasticsearch.dsl import InnerDoc, MetaField, field
+from elasticsearch.dsl import Q as DSLQ
 from elasticsearch.dsl import Search as DSLSearch
 from elasticsearch.dsl.utils import AttrDict
 from pyparsing import ParseException
@@ -23,7 +24,14 @@ from kitsune.search.config import (
 )
 from kitsune.search.es_utils import es_client
 from kitsune.search.parser import Parser
-from kitsune.search.parser.tokens import TermToken
+from kitsune.search.parser.operators import (
+    AndOperator,
+    FieldOperator,
+    NotOperator,
+    OrOperator,
+    SpaceOperator,
+)
+from kitsune.search.parser.tokens import ExactToken, RangeToken, TermToken
 
 
 class SumoDocument(DSLDocument):
@@ -361,37 +369,305 @@ class SumoSearch(SumoSearchInterface):
             }
         )
 
+    def build_traditional_query_with_filters(self, strict_matching=False):
+        """Build traditional query with filters applied.
+
+        Args:
+            strict_matching: If True, apply strict matching rules based on query length
+        """
+        # Check if this query uses field operators that need query_string
+        has_field_operators = ":" in self.query and (
+            any(f"{field}:" in self.query for field in self.get_advanced_query_field_names()) or
+            any(f"{field.split('^')[0]}:" in self.query for field in self.get_fields())
+        )
+
+        if has_field_operators:
+            # Use query_string for field operator syntax
+            query = DSLQ(
+                "query_string",
+                query=self.query,
+                fields=self.get_fields()
+            )
+        elif not strict_matching or not self.query or not self.query.strip():
+            # Use parser-based query for advanced syntax or when not strict
+            parsed = None
+            if self.parse_query:
+                try:
+                    parsed = Parser(self.query)
+                except ParseException:
+                    pass
+            if not parsed:
+                parsed = TermToken(self.query)
+
+            query = parsed.elastic_query({
+                "fields": self.get_fields(),
+                "settings": self.get_settings(),
+            })
+        else:
+            # Use strict matching based on query length
+            query_terms = self.query.strip().split()
+            term_count = len(query_terms)
+
+            # Check if this is a conversational query (starts with question words)
+            conversational_starters = ['how', 'why', 'what', 'when', 'where', 'who', 'which', 'can', 'could', 'should', 'would']
+            is_conversational = any(self.query.lower().startswith(word) for word in conversational_starters)
+
+            if term_count == 1:
+                # Single term - use normal parser-based matching
+                return self.build_traditional_query_with_filters(strict_matching=False)
+            elif term_count == 2:
+                # 2 terms - require 100% match (AND operator)
+                query = DSLQ(
+                    "simple_query_string",
+                    query=self.query,
+                    fields=self.get_fields(),
+                    default_operator="AND",
+                    flags="PHRASE"
+                )
+            elif term_count == 3:
+                # 3 terms - require 66% match (minimum 2 out of 3)
+                query = DSLQ(
+                    "simple_query_string",
+                    query=self.query,
+                    fields=self.get_fields(),
+                    minimum_should_match="66%",
+                    flags="PHRASE"
+                )
+            elif term_count == 4:
+                # 4 terms - require 50% match (minimum 2 out of 4)
+                query = DSLQ(
+                    "simple_query_string",
+                    query=self.query,
+                    fields=self.get_fields(),
+                    minimum_should_match="50%",
+                    flags="PHRASE"
+                )
+            # 5+ terms - adjust strictness based on query type
+            elif is_conversational:
+                # Conversational queries: be more lenient, don't require phrase matching
+                query = DSLQ(
+                    "simple_query_string",
+                    query=self.query,
+                    fields=self.get_fields(),
+                    minimum_should_match="30%",  # More lenient for conversational queries
+                    # No PHRASE flag - allow terms to match in any order
+                )
+            else:
+                # Technical queries: maintain stricter matching
+                query = DSLQ(
+                    "simple_query_string",
+                    query=self.query,
+                    fields=self.get_fields(),
+                    minimum_should_match="40%",  # Keep stricter for technical queries
+                    flags="PHRASE"  # Require phrase matching for technical precision
+                )
+
+        return self._apply_filters_to_query(query)
+
+    def build_semantic_query_with_filters(self):
+        """Build semantic query with filters applied."""
+        semantic_fields = self.get_semantic_fields()
+        if not semantic_fields:
+            return DSLQ("match_none")
+
+        semantic_queries = [
+            DSLQ("semantic", field=field_name, query=self.query)
+            for field_name in semantic_fields
+        ]
+
+        # Combine semantic queries
+        combined_semantic = DSLQ("bool", should=semantic_queries, minimum_should_match=1)
+
+        # Apply base filters
+        return self._apply_filters_to_query(combined_semantic)
+
+    def build_hybrid_rrf_query(self):
+        """Build RRF hybrid query combining traditional and semantic search with quality filtering."""
+        from kitsune.search.search import RRFQuery
+
+        # Get search quality settings with defaults
+        rrf_window_size = getattr(settings, 'SEARCH_RRF_WINDOW_SIZE', 50)
+        rrf_rank_constant = getattr(settings, 'SEARCH_RRF_RANK_CONSTANT', 60)
+        strict_relevance = getattr(settings, 'SEARCH_STRICT_RELEVANCE', True)
+        require_text_match = getattr(settings, 'SEARCH_REQUIRE_TEXT_MATCH', True)
+
+        # Build traditional query with stricter matching if enabled
+        traditional_query = self.build_traditional_query_with_filters(strict_matching=strict_relevance)
+
+        # If require_text_match is enabled, only include semantic search for documents
+        # that also match the traditional search. This filters out nonsense queries.
+        if require_text_match:
+            semantic_base = self.build_semantic_query_with_filters()
+
+            # Wrap semantic query with traditional filter
+            semantic_query = DSLQ(
+                "bool",
+                must=semantic_base,
+                filter=traditional_query  # Require traditional match for semantic results
+            )
+        else:
+            semantic_query = self.build_semantic_query_with_filters()
+
+        rrf_query = {
+            "retriever": {
+                "rrf": {
+                    "retrievers": [
+                        {"standard": {"query": traditional_query.to_dict()}},
+                        {"standard": {"query": semantic_query.to_dict()}}
+                    ],
+                    "rank_window_size": rrf_window_size,
+                    "rank_constant": rrf_rank_constant
+                }
+            }
+        }
+        return RRFQuery(rrf_query)
+
+    def get_semantic_fields(self):
+        """Return list of semantic fields for this search. Override in subclasses."""
+        return []
+
+    def _apply_filters_to_query(self, query):
+        """Apply base filters to a query. Override in subclasses for specific behavior."""
+        if hasattr(self, 'get_base_filters'):
+            return DSLQ("bool", filter=self.get_base_filters(), must=query)
+        return query
+
+    def get_advanced_query_field_names(self):
+        """Return list of field names that can be used in advanced queries. Override in subclasses."""
+        return []
+
+    def is_advanced_query(self, token=None):
+        """Check if query uses advanced search syntax."""
+        if token is None:
+            if not self.query or not self.query.strip():
+                return False
+
+            # Quick check for field operators (field:value syntax)
+            if ":" in self.query:
+                # Check if it's a field operator by looking for known field prefixes
+                field_names = self.get_advanced_query_field_names()
+                for field in field_names:
+                    if f"{field}:" in self.query:
+                        return True
+
+                # Also check for locale-aware field names (e.g., title.en-US:, content.fr:)
+                # Get all possible field combinations from get_fields()
+                if hasattr(self, 'get_fields'):
+                    search_fields = self.get_fields()
+                    for search_field in search_fields:
+                        # Extract base field name (remove boost like ^15)
+                        clean_field = search_field.split('^')[0]
+                        if f"{clean_field}:" in self.query:
+                            return True
+
+            # Check for quoted strings (exact match syntax)
+            if '"' in self.query:
+                return True
+
+            try:
+                parsed = Parser(self.query)
+                return self.is_advanced_query(parsed.parsed)
+            except ParseException:
+                return False
+
+        # Advanced operators and tokens
+
+        if isinstance(
+            token, FieldOperator | AndOperator | OrOperator | NotOperator | RangeToken | ExactToken
+        ):
+            return True
+
+        # SpaceOperator may contain advanced tokens
+        if isinstance(token, SpaceOperator):
+            return any(self.is_advanced_query(arg) for arg in token.arguments)
+
+        return False
+
     def run(self, key: int | slice = slice(0, settings.SEARCH_RESULTS_PER_PAGE)) -> Self:
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
-        search = DSLSearch(using=es_client(), index=self.get_index()).params(
-            **settings.ES_SEARCH_PARAMS
-        )
+        # Import here to avoid circular dependency
+        from kitsune.search.search import RRFQuery
 
-        # add the search class' filter
-        search = search.query(self.get_filter())
-        # add highlights for the search class' highlight_fields
-        for highlight_field, options in self.get_highlight_fields_options():
-            search = search.highlight(highlight_field, **options)
-        # slice search
-        search = search[key]
+        # Get the filter/query
+        filter_or_query = self.get_filter()
 
-        # perform search
-        try:
-            result = search.execute()
-        except RequestError as e:
-            if self.parse_query:
-                # try search again, but without parsing any advanced syntax
-                self.parse_query = False
-                return self.run(key)
-            raise e
+        # Check if it's an RRF query
+        if isinstance(filter_or_query, RRFQuery):
+            client = es_client()
 
-        self.hits = result.hits
-        self.last_key = key
+            if isinstance(key, slice):
+                start = key.start or 0
+                stop = key.stop or settings.SEARCH_RESULTS_PER_PAGE
+                size = stop - start
+            else:
+                start = key
+                size = 1
 
-        self.total = self.hits.total.value  # type: ignore
-        self.results = [self.make_result(hit) for hit in self.hits]
+            rrf_body = filter_or_query.to_dict()
+            rrf_body["from"] = start
+            rrf_body["size"] = size
+
+            try:
+                result = client.search(
+                    index=self.get_index(),
+                    body=rrf_body,
+                    **settings.ES_SEARCH_PARAMS
+                )
+            except RequestError as e:
+                if self.parse_query:
+                    self.parse_query = False
+                    return self.run(key)
+                raise e
+
+            # Process RRF results
+            # With require_text_match enabled, nonsense queries are already filtered out
+            # since they have 0 traditional matches
+            self.hits = []
+            for hit in result["hits"]["hits"]:
+                # Convert raw hit to AttrDict for compatibility
+                attr_hit = AttrDict(hit["_source"])
+                attr_hit.meta = AttrDict({
+                    "id": hit["_id"],
+                    "score": hit.get("_score", 0),
+                    "index": hit["_index"]
+                })
+                self.hits.append(attr_hit)
+
+            self.last_key = key
+            # Use the count of filtered hits as total (not the raw ES total)
+            # This prevents pagination issues with filtered results
+            self.total = len(self.hits)
+            self.results = [self.make_result(hit) for hit in self.hits]
+        else:
+            # Traditional DSL search flow
+            search = DSLSearch(using=es_client(), index=self.get_index()).params(
+                **settings.ES_SEARCH_PARAMS
+            )
+
+            # add the search class' filter
+            search = search.query(filter_or_query)
+            # add highlights for the search class' highlight_fields
+            for highlight_field, options in self.get_highlight_fields_options():
+                search = search.highlight(highlight_field, **options)
+            # slice search
+            search = search[key]
+
+            # perform search
+            try:
+                result = search.execute()
+            except RequestError as e:
+                if self.parse_query:
+                    self.parse_query = False
+                    return self.run(key)
+                raise e
+
+            self.hits = result.hits
+            self.last_key = key
+
+            self.total = self.hits.total.value  # type: ignore
+            self.results = [self.make_result(hit) for hit in self.hits]
 
         return self
 
@@ -409,6 +685,11 @@ class SumoSearchPaginator(DjPaginator):
 
     Because of this, the `orphans` argument won't work.
     """
+
+    @property
+    def count(self):
+        """Return the total number of objects, updating dynamically after search runs."""
+        return len(self.object_list)
 
     def pre_validate_number(self, number):
         """
