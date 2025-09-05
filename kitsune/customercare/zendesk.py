@@ -123,6 +123,7 @@ class ZendeskClient:
             "ticket_form_id": settings.ZENDESK_TICKET_FORM_ID,
         }
 
+        tags = []
         # If this is the normal, athenticated form we want to use the category field
         if user.is_authenticated:
             custom_fields.append(
@@ -140,7 +141,15 @@ class ZendeskClient:
                     {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": "accounts"},
                 ]
             )
-            ticket_kwargs.update({"tags": [LOGINLESS_TAG]})
+            tags.append(LOGINLESS_TAG)
+
+        zendesk_tags = ticket_fields.get("zendesk_tags", [])
+        if zendesk_tags:
+            tags.extend(zendesk_tags)
+
+        if tags:
+            ticket_kwargs.update({"tags": tags})
+
         ticket_kwargs.update({"custom_fields": custom_fields})
         ticket = Ticket(**ticket_kwargs)
 
