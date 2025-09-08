@@ -75,7 +75,8 @@ COPY --from=frontend-builder /app/dist /app/dist
 COPY . .
 
 RUN rm -rf .venv && uv venv && uv sync --frozen --no-dev --extra prod --no-install-project
-RUN ./scripts/l10n-fetch-lint-compile.sh && \
+RUN cp .env-build .env && \
+    ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
     ./manage.py collectstatic --noinput
 
@@ -112,4 +113,4 @@ RUN mkdir /app/media && chown kitsune:kitsune /app/media
 USER kitsune
 
 ARG GIT_SHA=head
-ENV GIT_SHA ${GIT_SHA}
+ENV GIT_SHA=${GIT_SHA}
