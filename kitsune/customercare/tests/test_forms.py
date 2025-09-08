@@ -39,8 +39,8 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(form.product_categories, expected_categories)
 
         category_topics = [choice[1] for choice in form.fields["category"].choices if choice[0]]
-        self.assertIn("Mozilla VPN won't connect", category_topics)
-        self.assertIn("I am having problems selecting a server", category_topics)
+        self.assertIn("I can't connect to Mozilla VPN", category_topics)
+        self.assertIn("I can't choose a VPN location", category_topics)
 
     def test_different_products_get_different_categories(self):
         """Test that different products get different categories."""
@@ -50,10 +50,10 @@ class ZendeskFormTests(TestCase):
         vpn_topics = [choice[1] for choice in vpn_form.fields["category"].choices if choice[0]]
         relay_topics = [choice[1] for choice in relay_form.fields["category"].choices if choice[0]]
 
-        self.assertIn("I am having problems selecting a server", vpn_topics)
-        self.assertNotIn("I am having problems selecting a server", relay_topics)
-        self.assertIn("I want to change my email mask domain", relay_topics)
-        self.assertNotIn("I want to change my email mask domain", vpn_topics)
+        self.assertIn("I can't choose a VPN location", vpn_topics)
+        self.assertNotIn("I can't choose a VPN location", relay_topics)
+        self.assertIn("I want to change my Relay email domain", relay_topics)
+        self.assertNotIn("I want to change my Relay email domain", vpn_topics)
 
     @patch('django.conf.settings.LOGIN_EXCEPTIONS', ['mozilla-account'])
     def test_loginless_form_gets_loginless_categories(self):
