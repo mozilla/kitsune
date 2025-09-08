@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: .
-      target: base
+      target: dev
     command: ./bin/run-prod.sh
     env_file: .env
     volumes:
@@ -20,6 +20,36 @@ services:
       - mailcatcher
     ports:
       - "8000:8000"
+
+  node:
+    image: node:22-bookworm
+    working_dir: /app
+    command: >
+      sh -c "npm install && npm start"
+    volumes:
+      - ./:/app:delegated
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - web
+
+  celery:
+    build:
+      context: .
+      target: dev
+    command: bash -c "source /app/.venv/bin/activate && python -m celery -A kitsune worker -l info -n default@%h -Q celery,email"
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+      - /app/.venv
+    user: ${UID:-1000}
+    depends_on:
+      - postgres
+      - redis
 
   postgres:
     image: postgres:15.3
@@ -60,20 +90,6 @@ services:
   redis:
     image: redis:3
 
-  celery:
-    build:
-      context: .
-      target: base
-    command: bash -c "source /app/.venv/bin/activate && python -m celery -A kitsune worker -l info -n default@%h -Q celery,email"
-    env_file: .env
-    volumes:
-      - ./:/app:delegated
-      - /app/.venv
-    user: ${UID:-kitsune}
-    depends_on:
-      - postgres
-      - redis
-
   mailcatcher:
     image: schickling/mailcatcher
     ports:
@@ -81,3 +97,4 @@ services:
 
 volumes:
   pgvolume:
+  node_modules:
