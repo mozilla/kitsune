@@ -829,15 +829,14 @@ wheels = [
 
 [[package]]
 name = "django-timezone-field"
-version = "5.1"
+version = "7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
-    { name = "pytz" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d5/77/26eed0dae663f46032b4dcb86a22498cc02e2357e62fff4abaaef4945c1b/django_timezone_field-5.1.tar.gz", hash = "sha256:73fc49519273cd5da1c7f16abc04a4bcad87b00cc02968d0d384c0fecf9a8a86", size = 11525, upload-time = "2023-06-18T21:54:28.395Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/5b/0dbe271fef3c2274b83dbcb1b19fa3dacf1f7e542382819294644e78ea8b/django_timezone_field-7.1.tar.gz", hash = "sha256:b3ef409d88a2718b566fabe10ea996f2838bc72b22d3a2900c0aa905c761380c", size = 13727, upload-time = "2025-01-11T17:49:54.486Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/ba/d8226ac6a2d285e4f2b89d05707e7f025c7642586cb00388536d841b02f7/django_timezone_field-5.1-py3-none-any.whl", hash = "sha256:16ca9955a4e16064e32168b1a0d1cdb2839679c6cb56856c1f49f506e2ca4281", size = 10902, upload-time = "2023-06-18T21:54:26.528Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/09/7a808392a751a24ffa62bec00e3085a9c1a151d728c323a5bab229ea0e58/django_timezone_field-7.1-py3-none-any.whl", hash = "sha256:93914713ed882f5bccda080eda388f7006349f25930b6122e9b07bf8db49c4b4", size = 13177, upload-time = "2025-01-11T17:49:52.142Z" },
 ]
 
 [[package]]
@@ -1792,7 +1791,7 @@ requires-dist = [
     { name = "django-statici18n", specifier = ">=2.4.0,<3" },
     { name = "django-storages", extras = ["google"], specifier = ">=1.14.2,<2" },
     { name = "django-taggit", specifier = ">=6.1.0,<7" },
-    { name = "django-timezone-field", specifier = "~=5.1" },
+    { name = "django-timezone-field", specifier = "~=7.1" },
     { name = "django-user-agents", specifier = ">=0.4.0,<0.5" },
     { name = "django-waffle", specifier = ">=3.0.0,<4" },
     { name = "django-watchman", specifier = "==1.3.0" },
