@@ -478,13 +478,17 @@ def test_premium_products_aaq(page: Page):
                 sumo_pages.aaq_flow.submit_an_aaq_question(
                     subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
                     body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
-                    is_premium=True
+                    is_premium=True,
+                    expected_locator= sumo_pages.aaq_form_page.premium_ticket_message,
+                    form_url=premium_form_link
                 )
             else:
                 sumo_pages.aaq_flow.submit_an_aaq_question(
                     subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
                     body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
-                    is_premium=True
+                    is_premium=True,
+                    expected_locator=sumo_pages.aaq_form_page.premium_ticket_message,
+                    form_url=premium_form_link
                 )
                 if utilities.get_page_url() == premium_form_link:
                     with utilities.page.expect_navigation():
@@ -515,13 +519,17 @@ def test_loginless_mozilla_account_aaq(page: Page):
             # element is not available.
             if sumo_pages.top_navbar.is_sign_in_up_button_displayed():
                 sumo_pages.top_navbar.click_on_signin_signup_button()
-            sumo_pages.auth_page.click_on_cant_sign_in_to_my_mozilla_account_link()
+            with page.expect_navigation():
+                sumo_pages.auth_page.click_on_cant_sign_in_to_my_mozilla_account_link()
+            page_url = utilities.get_page_url()
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
                 body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
                 is_premium=True,
                 email=utilities.staff_user,
-                is_loginless=True
+                is_loginless=True,
+                expected_locator= sumo_pages.aaq_form_page.premium_ticket_message,
+                form_url=page_url
             )
             if i <= 3:
                 with allure.step("Verifying that the correct success message is displayed"):

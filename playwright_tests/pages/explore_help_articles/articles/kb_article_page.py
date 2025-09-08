@@ -14,6 +14,8 @@ class KBArticlePage(BasePage):
         self.kb_article_breadcrumbs_list = page.locator("ol#breadcrumbs").get_by_role("link")
         self.kb_article_restricted_banner = page.locator("div.warning-box")
         self.kb_article_content = page.locator("section#doc-content")
+        self.kb_article_content_image = lambda image_name: page.locator(
+            f"//section[@id='doc-content']//img[@alt='{image_name}']")
         self.kb_article_content_approved_content = page.locator("section#doc-content p")
         self.kb_article_contributors = page.locator("div[class='document--contributors-list "
                                                     "text-body-xs'] a")
@@ -99,6 +101,9 @@ class KBArticlePage(BasePage):
 
     def get_what_links_here_locator(self):
         return self.editing_tools_what_links_here
+
+    def is_article_content_image_displayed(self, image_title: str):
+        return self._is_element_visible(self.kb_article_content_image(image_title))
 
     # KB Article editing tools section actions.
     def click_on_show_history_option(self):

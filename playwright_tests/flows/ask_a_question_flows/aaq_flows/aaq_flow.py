@@ -21,8 +21,10 @@ class AAQFlow:
     # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
     def _submit_an_aaq_question(self, subject: str, body: str, topic_name='', attach_image=False,
                                 is_premium=False, email="", is_loginless=False,
-                                expected_locator=None):
+                                expected_locator=None, form_url=None):
         question_subject = ''
+        if form_url and self.utilities.get_page_url() != form_url:
+            self.utilities.navigate_to_link(form_url)
         if is_premium:
             self.add_valid_data_to_all_premium_products_aaq_fields(subject, body, is_loginless,
                                                                    email)
@@ -31,8 +33,7 @@ class AAQFlow:
                 subject, topic_name, body, attach_image)
 
         # Submitting the question.
-        with self.utilities.page.expect_navigation():
-            self.aaq_form_page.click_aaq_form_submit_button(expected_locator=expected_locator)
+        self.aaq_form_page.click_aaq_form_submit_button(expected_locator=expected_locator)
 
         # If the submission was done for freemium products we are retrieving the Question Subject,
         # Question url & Question Body for further test usage.

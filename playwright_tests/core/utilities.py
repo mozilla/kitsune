@@ -12,7 +12,7 @@ from datetime import datetime
 from dateutil import parser
 from dateutil.tz import tz
 from nltk import SnowballStemmer, WordNetLemmatizer
-from playwright.sync_api import Page, Locator, Response
+from playwright.sync_api import Page, Locator, Response, expect
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
@@ -682,3 +682,14 @@ class Utilities:
         scrolled vertically.
         """
         return self.page.evaluate("() => window.scrollY")
+
+    def expect_locator_visibility(self, locator: Locator) -> bool:
+        for attempt in range(3):
+            try:
+                expect(locator).to_be_visible(timeout=4000)
+                return True
+            except AssertionError:
+                print("Expected locator not present. Reloading the page.")
+                self.page.reload()
+        else:
+            return False
