@@ -24,7 +24,7 @@ BASE_CATEGORIES: dict[str, CategoryDict] = {
         },
     },
     "accounts_signin": {
-        "topic": "I'm having trouble signing into my account/product",
+        "topic": "I can't sign in to my Mozilla account or subscription",
         "tags": {
             "legacy": "accounts",
             "tiers": ["t1-passwords-and-sign-in", "t2-sign-in", "t3-sign-in-failure"],
@@ -33,7 +33,7 @@ BASE_CATEGORIES: dict[str, CategoryDict] = {
         },
     },
     "general": {
-        "topic": "I have feedback or want to request a feature",
+        "topic": "I want to share feedback or suggest a feature",
         "tags": {
             "legacy": "general",
             "tiers": ["general"],
@@ -58,7 +58,7 @@ ZENDESK_CATEGORIES = {
         {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
             "slug": "technical",
-            "topic": "Mozilla VPN won't connect",
+            "topic": "I can't connect to Mozilla VPN",
             "tags": {
                 "legacy": "technical",
                 "tiers": [
@@ -72,7 +72,7 @@ ZENDESK_CATEGORIES = {
         },
         {
             "slug": "technical",
-            "topic": "I need help installing or updating my product",
+            "topic": "I need help installing or updating Mozilla VPN",
             "tags": {
                 "legacy": "technical",
                 "tiers": ["t1-installation-and-updates"],
@@ -82,7 +82,7 @@ ZENDESK_CATEGORIES = {
         },
         {
             "slug": "technical",
-            "topic": "I am having problems selecting a server",
+            "topic": "I can't choose a VPN location",
             "tags": {
                 "legacy": "technical",
                 "tiers": [
@@ -102,7 +102,7 @@ ZENDESK_CATEGORIES = {
         {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
             "slug": "technical",
-            "topic": "I'm not receiving emails sent to my mask",
+            "topic": "I'm not receiving emails to my Relay mask",
             "tags": {
                 "legacy": "technical",
                 "tiers": ["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
@@ -112,7 +112,7 @@ ZENDESK_CATEGORIES = {
         },
         {
             "slug": "technical",
-            "topic": "I want to change my email mask domain",
+            "topic": "I want to change my Relay email domain",
             "tags": {
                 "legacy": "technical",
                 "tiers": ["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
@@ -126,7 +126,7 @@ ZENDESK_CATEGORIES = {
     "mozilla-account": [
         {
             "slug": "accounts",
-            "topic": "I need help with Sync (syncing/recovery)",
+            "topic": "I need help with Firefox Sync",
             "tags": {
                 "legacy": "accounts",
                 "tiers": ["t1-backup-recovery-and-sync"],
@@ -137,7 +137,7 @@ ZENDESK_CATEGORIES = {
         {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
             "slug": "accounts",
-            "topic": "I want to delete my account",
+            "topic": "I want to delete my Mozilla account",
             "tags": {
                 "legacy": "accounts",
                 "tiers": ["t1-accounts", "t2-account-management"],
@@ -153,7 +153,7 @@ ZENDESK_CATEGORIES = {
         {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
             "slug": "technical",
-            "topic": "My removal has been in-progress for a long time",
+            "topic": "My data removal is taking too long",
             "tags": {
                 "legacy": "technical",
                 "tiers": ["t1-privacy-and-security", "t2-data-removal", "t3-data-brokers"],
@@ -163,7 +163,7 @@ ZENDESK_CATEGORIES = {
         },
         {
             "slug": "technical",
-            "topic": "I'm seeing scan results that aren't mine",
+            "topic": "I'm seeing results that don't belong to me",
             "tags": {
                 "legacy": "technical",
                 "tiers": [
@@ -204,7 +204,7 @@ ZENDESK_CATEGORIES_LOGINLESS = {
         },
         {
             "slug": "fxa-emailverify-lockout",
-            "topic": "I cant recover my account using email",
+            "topic": "I can't recover my account using email",
             "tags": {
                 "legacy": "accounts",
                 "tiers": ["t1-passwords-and-sign-in", "t2-sign-in", "t3-email-verify-lockout"],
