@@ -97,7 +97,7 @@ ZENDESK_CATEGORIES = {
         {**BASE_CATEGORIES["general"], "slug": "general"},
         {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
     ],
-    "firefox-relay": [
+    "relay": [
         {**BASE_CATEGORIES["payments"], "slug": "payments"},
         {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
@@ -118,6 +118,32 @@ ZENDESK_CATEGORIES = {
                 "tiers": ["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
                 "automation": None,
                 "segmentation": "seg-relay-chg-domain",
+            },
+        },
+        {**BASE_CATEGORIES["general"], "slug": "general"},
+        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+    ],
+    "pocket": [
+        {**BASE_CATEGORIES["payments"], "slug": "payments"},
+        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
+        {
+            "slug": "technical",
+            "topic": "I'm having issues with highlighting or saving content",
+            "tags": {
+                "legacy": "technical",
+                "tiers": ["t1-privacy-and-security"],
+                "automation": None,
+                "segmentation": None,
+            },
+        },
+        {
+            "slug": "technical",
+            "topic": "My saved articles are missing from my library",
+            "tags": {
+                "legacy": "technical",
+                "tiers": ["t1-privacy-and-security"],
+                "automation": None,
+                "segmentation": None,
             },
         },
         {**BASE_CATEGORIES["general"], "slug": "general"},
