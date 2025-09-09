@@ -9,12 +9,14 @@ class TagsDict(TypedDict):
 
 
 class CategoryDict(TypedDict):
+    slug: str
     topic: str
     tags: TagsDict
 
 
 BASE_CATEGORIES: dict[str, CategoryDict] = {
     "payments": {
+        "slug": "payments",
         "topic": "I need help with a billing or subscription question",
         "tags": {
             "legacy": "payments",
@@ -24,6 +26,7 @@ BASE_CATEGORIES: dict[str, CategoryDict] = {
         },
     },
     "accounts_signin": {
+        "slug": "account-signin",
         "topic": "I can't sign in to my Mozilla account or subscription",
         "tags": {
             "legacy": "accounts",
@@ -33,6 +36,7 @@ BASE_CATEGORIES: dict[str, CategoryDict] = {
         },
     },
     "general": {
+        "slug": "general",
         "topic": "I want to share feedback or suggest a feature",
         "tags": {
             "legacy": "general",
@@ -42,6 +46,7 @@ BASE_CATEGORIES: dict[str, CategoryDict] = {
         },
     },
     "not_listed": {
+        "slug": "not-listed",
         "topic": "My issue isn't listed here",
         "tags": {
             "legacy": "not_listed",
@@ -54,10 +59,8 @@ BASE_CATEGORIES: dict[str, CategoryDict] = {
 
 ZENDESK_CATEGORIES = {
     "mozilla-vpn": [
-        {**BASE_CATEGORIES["payments"], "slug": "payments"},
-        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
-            "slug": "technical",
+            "slug": "vpn-connection-issues",
             "topic": "I can't connect to Mozilla VPN",
             "tags": {
                 "legacy": "technical",
@@ -71,7 +74,7 @@ ZENDESK_CATEGORIES = {
             },
         },
         {
-            "slug": "technical",
+            "slug": "vpn-installation-updates",
             "topic": "I need help installing or updating Mozilla VPN",
             "tags": {
                 "legacy": "technical",
@@ -81,7 +84,7 @@ ZENDESK_CATEGORIES = {
             },
         },
         {
-            "slug": "technical",
+            "slug": "vpn-server-selection",
             "topic": "I can't choose a VPN location",
             "tags": {
                 "legacy": "technical",
@@ -94,14 +97,11 @@ ZENDESK_CATEGORIES = {
                 "segmentation": None,
             },
         },
-        {**BASE_CATEGORIES["general"], "slug": "general"},
-        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+        *BASE_CATEGORIES.values(),
     ],
     "relay": [
-        {**BASE_CATEGORIES["payments"], "slug": "payments"},
-        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
-            "slug": "technical",
+            "slug": "relay-email-forwarding",
             "topic": "I'm not receiving emails to my Relay mask",
             "tags": {
                 "legacy": "technical",
@@ -111,7 +111,7 @@ ZENDESK_CATEGORIES = {
             },
         },
         {
-            "slug": "technical",
+            "slug": "relay-domain-change",
             "topic": "I want to change my Relay email domain",
             "tags": {
                 "legacy": "technical",
@@ -120,14 +120,11 @@ ZENDESK_CATEGORIES = {
                 "segmentation": "seg-relay-chg-domain",
             },
         },
-        {**BASE_CATEGORIES["general"], "slug": "general"},
-        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+        *BASE_CATEGORIES.values(),
     ],
     "pocket": [
-        {**BASE_CATEGORIES["payments"], "slug": "payments"},
-        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
-            "slug": "technical",
+            "slug": "pocket-saving-highlighting",
             "topic": "I'm having issues with highlighting or saving content",
             "tags": {
                 "legacy": "technical",
@@ -137,7 +134,7 @@ ZENDESK_CATEGORIES = {
             },
         },
         {
-            "slug": "technical",
+            "slug": "pocket-missing-articles",
             "topic": "My saved articles are missing from my library",
             "tags": {
                 "legacy": "technical",
@@ -146,12 +143,11 @@ ZENDESK_CATEGORIES = {
                 "segmentation": None,
             },
         },
-        {**BASE_CATEGORIES["general"], "slug": "general"},
-        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+        *BASE_CATEGORIES.values(),
     ],
     "mozilla-account": [
         {
-            "slug": "accounts",
+            "slug": "mozilla-account-sync",
             "topic": "I need help with Firefox Sync",
             "tags": {
                 "legacy": "accounts",
@@ -160,9 +156,8 @@ ZENDESK_CATEGORIES = {
                 "segmentation": None,
             },
         },
-        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
-            "slug": "accounts",
+            "slug": "mozilla-account-delete",
             "topic": "I want to delete my Mozilla account",
             "tags": {
                 "legacy": "accounts",
@@ -171,14 +166,11 @@ ZENDESK_CATEGORIES = {
                 "segmentation": "seg-acct-delete",
             },
         },
-        {**BASE_CATEGORIES["general"], "slug": "general"},
-        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+        *BASE_CATEGORIES.values(),
     ],
     "monitor": [
-        {**BASE_CATEGORIES["payments"], "slug": "payments"},
-        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
         {
-            "slug": "technical",
+            "slug": "monitor-data-removal",
             "topic": "My data removal is taking too long",
             "tags": {
                 "legacy": "technical",
@@ -188,7 +180,7 @@ ZENDESK_CATEGORIES = {
             },
         },
         {
-            "slug": "technical",
+            "slug": "monitor-wrong-results",
             "topic": "I'm seeing results that don't belong to me",
             "tags": {
                 "legacy": "technical",
@@ -201,14 +193,10 @@ ZENDESK_CATEGORIES = {
                 "segmentation": "seg-mntor-wrong-scan-result",
             },
         },
-        {**BASE_CATEGORIES["general"], "slug": "general"},
-        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+        *BASE_CATEGORIES.values(),
     ],
     "mdn-plus": [
-        {**BASE_CATEGORIES["payments"], "slug": "payments"},
-        {**BASE_CATEGORIES["accounts_signin"], "slug": "accounts"},
-        {**BASE_CATEGORIES["general"], "slug": "general"},
-        {**BASE_CATEGORIES["not_listed"], "slug": "not_listed"},
+        *BASE_CATEGORIES.values(),
     ],
 }
 
