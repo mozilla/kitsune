@@ -33,7 +33,7 @@ r"\\[\\[(?!Image:|Video:|V:|Button:|UI:|Include:|I:|Template:|T:)[^|]+?(?:\\|(?P
 A `wiki-external-link` is a string that case-sensitively matches the regular expression pattern that follows:
 
 ```python
-r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\x20\x7f]*)\\s*(?P<description>.*?)\\]"
+r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\\x00-\\x20\\x7f]*)\\s*(?P<description>.*?)\\]"
 ```
 
 ## Definition of `prior-translation-wiki-map`
@@ -54,26 +54,18 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\x20\x7f]*)\\s*(?
 2. **Preserve unchanged** each string that case-sensitively matches the following regular expression:
 
     ```python
-    r"\\{(for|key|filepath|button|menu|pref) .*?\\}"
+    r"\\{(for|key|filepath|button|menu|pref) [^}]*\\}"
     ```
 
     - In other words, preserve unchanged both the tags and the text inside the tags.
     - For example, each of the strings `{button Allow}` and `{menu Settings}` and `{pref Name}` should be preserved unchanged.
 
-3. For each `wiki-hook`, perform the following steps:
-    - First, check if the `wiki-hook` is a key within the `prior-translation-wiki-map`.
+3. For each wiki element (`wiki-hook`, `wiki-article-link`, or `wiki-external-link`), perform the following steps:
+    - First, check if the element is a key within the `prior-translation-wiki-map`.
     - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
-    - If it is **not** a key within the `prior-translation-wiki-map`, **preserve it unchanged**.
-
-4. For each `wiki-article-link`, perform the following steps:
-    - First, check if the `wiki-article-link` is a key within the `prior-translation-wiki-map`.
-    - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
-    - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matching its `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**. If there is no `description`, preserve the entire `wiki-article-link` unchanged.
-
-5. For each `wiki-external-link`, perform the following steps:
-    - First, check if the `wiki-external-link` is a key within the `prior-translation-wiki-map`.
-    - If it is a key within the `prior-translation-wiki-map`, use its value from the `prior-translation-wiki-map` as its translation.
-    - If it is **not** a key within the `prior-translation-wiki-map`, translate only the text matching its `description` (**remember to obey rule #1 above**), and **preserve the rest unchanged**. If there is no `description`, preserve the entire `wiki-external-link` unchanged.
+    - If it is **not** a key within the `prior-translation-wiki-map`:
+        - For `wiki-hook`: **preserve it unchanged**
+        - For `wiki-article-link` and `wiki-external-link`: translate only the `description` text if present (**remember to obey rule #1 above**), and **preserve the rest unchanged**. If there is no `description`, preserve the entire element unchanged.
 
 # Task Instructions
 1. **Build the `prior-translation-wiki-map`**. If no "prior translation" is provided, set the `prior-translation-wiki-map` to an empty `dict`.
