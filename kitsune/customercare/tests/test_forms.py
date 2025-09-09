@@ -21,7 +21,7 @@ class ZendeskFormTests(TestCase):
         )
         self.relay_product = ProductFactory(
             title="Firefox Relay",
-            slug="firefox-relay",
+            slug="relay",
             codename="relay"
         )
         self.accounts_product = ProductFactory(
