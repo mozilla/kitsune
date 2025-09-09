@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+from django.test.utils import override_settings
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -537,6 +538,7 @@ class RevisionTests(TestCase):
         # is current revision?
         self.assertEqual("Yes", doc(".revision-info li").eq(8).find("span").text())
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     @mock.patch.object(ReadyRevisionEvent, "fire")
     def test_mark_as_ready_POST(self, fire):
         """HTTP POST to mark a revision as ready for l10n."""
@@ -1594,6 +1596,7 @@ class ReviewRevisionTests(TestCase):
             to=["joe@example.com"],
         )
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_approve_and_ready_for_l10n_revision(self):
         """Verify revision approval with ready for l10n."""
         add_permission(self.user, Revision, "mark_ready_for_l10n")

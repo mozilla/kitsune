@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core import mail
+from django.test.utils import override_settings
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase, post
@@ -94,6 +95,7 @@ class ReviewTests(TestCase):
 
         self.assertEqual(302, response.status_code)
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_ready(self):
         """Show that a ready(-and-approved) rev mails Ready watchers a Ready
         notification and Approved watchers an Approved one."""
@@ -105,6 +107,7 @@ class ReviewTests(TestCase):
         _assert_approved_mail(mail.outbox[1])
         _assert_creator_mail(mail.outbox[2])
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_when_restricted(self):
         """
         Test notifications for ReadyRevisionEvent and ApproveRevisionInLocaleEvent
@@ -141,6 +144,7 @@ class ReviewTests(TestCase):
         _assert_ready_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_product_specific_ready(self):
         """Verify product-specific ready for review notifications."""
         # Add an all products in 'es' watcher and a Firefox OS in 'es'
@@ -225,6 +229,7 @@ class ReviewTests(TestCase):
         self.assertEqual(2, len(mail.outbox))  # 1 mail to creator, one to the reviewer.
         assert mail.outbox[0].subject.startswith("Your revision has been reviewed")
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_user_watching_both(self):
         """If a single person is watching ready and approved revisions and a
         revision becomes ready, send only the readiness email, not the approval
@@ -285,6 +290,7 @@ class ReadyForL10nTests(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_ready(self):
         """Show that a ready(-and-approved) rev mails Ready watchers a Ready
         notification and Approved watchers an Approved one."""
@@ -294,6 +300,7 @@ class ReadyForL10nTests(TestCase):
         _assert_ready_mail(mail.outbox[0])
         _assert_ready_mail(mail.outbox[1])
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_product_specific_ready(self):
         """Verify product-specific ready for l10n notifications."""
         # Add a Firefox OS watcher.
@@ -340,6 +347,7 @@ class ReviewableRevisionInLocaleEventTests(TestCase):
         creator = UserFactory(groups=[GroupFactory(name=settings.STAFF_GROUP)])
         self.client.login(username=creator.username, password="testpass")
 
+    @override_settings(AI_ENABLED_LOCALES=[], HYBRID_ENABLED_LOCALES=[])
     def test_when_restricted(self):
         """
         Test notifications for ReviewableRevisionInLocaleEvent when creating
