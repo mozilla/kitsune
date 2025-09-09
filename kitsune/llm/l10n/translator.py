@@ -16,7 +16,7 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
     given document into the target locale. The given document must be a parent
     document.
     """
-    llm = get_llm(model_name=L10N_LLM_MODEL)
+    llm = get_llm(model_name=L10N_LLM_MODEL, temperature=0.0)
 
     translation_chain = translation_prompt | llm | translation_parser
 
