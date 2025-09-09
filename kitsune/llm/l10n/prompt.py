@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 from langchain.prompts import ChatPromptTemplate
@@ -27,14 +26,14 @@ r"\\[\\[(Image|Video|V|Button|UI|Include|I|Template|T):.*?\\]\\]"
 A `wiki-article-link` is a string that case-sensitively matches the regular expression pattern that follows:
 
 ```python
-r"\\[\\[(?!Image:|Video:|V:|Button:|UI:|Include:|I:|Template:|T:)[^|\\]]+?(?:\\|(?P<description>.+?))?\\]\\]"
+r"\\[\\[(?!Image:|Video:|V:|Button:|UI:|Include:|I:|Template:|T:)[^|]+?(?:\\|(?P<description>.+?))?\\]\\]"
 ```
 
 ## Definition of `wiki-external-link`
 A `wiki-external-link` is a string that case-sensitively matches the regular expression pattern that follows:
 
 ```python
-r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\x00-\\x20\\x7f]*)\\s*(?P<description>.*?)\\]"
+r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\\x00-\\x20\\x7f]*)\\s*(?P<description>.*?)\\]"
 ```
 
 ## Definition of `prior-translation-wiki-map`
@@ -89,16 +88,14 @@ Use the following template to format your response:
 SOURCE_ARTICLE = """
 # Prior translation
 
-{%- set source_lang = source_language -%}
-{%- set target_lang = target_language -%}
 {%if prior_translation -%}
-## The {{ source_lang }} text of the prior translation
+## The {{ source_language }} text of the prior translation
 
 ```wiki
 {{ prior_translation.source_text|safe }}
 ```
 
-## The {{ target_lang }} text of the prior translation
+## The {{ target_language }} text of the prior translation
 
 ```wiki
 {{ prior_translation.target_text|safe }}
@@ -107,7 +104,7 @@ SOURCE_ARTICLE = """
 There is no prior translation.
 {%- endif %}
 
-# The {{ source_lang }} text to translate
+# The {{ source_language }} text to translate
 
 ```wiki
 {{ source_text|safe }}
@@ -118,44 +115,18 @@ There is no prior translation.
 def translation_parser(message: AIMessage) -> dict[str, Any]:
     """
     Parses the result from the LLM invocation for a translation, and returns a dictionary
-    with the translation and the explanation. Uses robust parsing to handle malformed responses.
+    with the translation and the explanation. Special characters in the translation and
+    the explanation often caused JSON decode errors when the StructuredOutputParser was
+    used.
     """
     result = {}
     content = message.content
-
-
     for name in ("translation", "explanation"):
-        # Try regex pattern first for robust parsing
-        match = re.search(rf"<<begin-{name}>>(.*?)<<end-{name}>>", content, re.DOTALL)
-        if match:
-            parsed = match.group(1).strip()
-        else:
-            # Fallback to original split method
-            try:
-                split_parts = content.split(f"<<begin-{name}>>")
-                if len(split_parts) > 1:
-                    end_parts = split_parts[-1].split(f"<<end-{name}>>")
-                    if len(end_parts) > 1:
-                        parsed = end_parts[0].strip()
-                    else:
-                        # Begin tag found but no end tag
-                        parsed = split_parts[-1].strip()
-                else:
-                    # No begin tag found
-                    parsed = content if name == "translation" else ""
-            except (IndexError, AttributeError):
-                # Last resort: return empty string or original content for translation
-                parsed = content if name == "translation" else ""
-
-        # Strip the wiki fenced code block markdown syntax if present
+        parsed = content.split(f"<<begin-{name}>>")[-1].split(f"<<end-{name}>>")[0].strip()
+        # Strip the wiki fenced code block markdown syntax if present.
         if parsed.startswith("```wiki") and parsed.endswith("```"):
             parsed = parsed.removeprefix("```wiki").removesuffix("```").strip()
-        elif parsed.startswith("```") and parsed.endswith("```"):
-            # Handle generic code blocks too
-            parsed = parsed[3:-3].strip()
-
         result[name] = parsed
-
     return result
 
 
