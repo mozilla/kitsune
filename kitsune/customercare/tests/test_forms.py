@@ -84,7 +84,7 @@ class ZendeskFormTests(TestCase):
         form = ZendeskForm(
             data={
                 'email': 'test@example.com',
-                'category': 'accounts',
+                'category': 'vpn-connection-issues',
                 'subject': 'Test subject',
                 'description': 'Test description',
                 'country': 'US'
@@ -97,11 +97,11 @@ class ZendeskFormTests(TestCase):
         form.send(self.user, self.vpn_product)
 
         expected_tags = [
-            "accounts",  # legacy
-            "t1-passwords-and-sign-in",  # tier1
-            "t2-sign-in",  # tier2
-            "t3-sign-in-failure",  # tier3
-            "ssa-sign-in-failure-automation"  # automation
+            "technical",  # legacy
+            "t1-performance-and-connectivity",  # tier1
+            "t2-connectivity",  # tier2
+            "t3-connection-failure",  # tier3
+            "ssa-connection-issues-automation"  # automation
         ]
         self.assertEqual(form.cleaned_data["zendesk_tags"], expected_tags)
         mock_client.create_ticket.assert_called_once_with(self.user, form.cleaned_data)
@@ -115,7 +115,7 @@ class ZendeskFormTests(TestCase):
         form = ZendeskForm(
             data={
                 'email': 'test@example.com',
-                'category': 'technical',
+                'category': 'relay-email-forwarding',
                 'subject': 'Test subject',
                 'description': 'Test description',
             },
