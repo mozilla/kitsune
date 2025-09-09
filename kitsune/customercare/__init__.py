@@ -123,27 +123,8 @@ ZENDESK_CATEGORIES = {
         *BASE_CATEGORIES.values(),
     ],
     "pocket": [
-        {
-            "slug": "pocket-saving-highlighting",
-            "topic": "I'm having issues with highlighting or saving content",
-            "tags": {
-                "legacy": "technical",
-                "tiers": ["t1-privacy-and-security"],
-                "automation": None,
-                "segmentation": None,
-            },
-        },
-        {
-            "slug": "pocket-missing-articles",
-            "topic": "My saved articles are missing from my library",
-            "tags": {
-                "legacy": "technical",
-                "tiers": ["t1-privacy-and-security"],
-                "automation": None,
-                "segmentation": None,
-            },
-        },
-        *BASE_CATEGORIES.values(),
+        BASE_CATEGORIES["not_listed"],
+        BASE_CATEGORIES["accounts_signin"],
     ],
     "mozilla-account": [
         {
