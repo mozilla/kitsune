@@ -727,13 +727,6 @@
   </a>
 </li>
 <li>
-  <a href="{{ url('forums.threads', 'social-media') }}" {% if active == "social-media" %} class="selected" {% endif %}
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.social-support-discussions' }}"}'>
-    {{ _('Social support discussions') }}
-  </a>
-</li>
-<li>
   <a href="{{ url('forums.threads', 'support-forum-contributors') }}" {% if active == "support-forum-contributors" %} class="selected" {% endif %}
     data-event-name="link_click"
     data-event-parameters='{"link_name": "{{ context + '.support-forum-discussions' }}"}'>
@@ -764,13 +757,6 @@
   </li>
 {% endif %}
 {% if context == "sidebar-menu" %}
-  <li>
-    <a href="{{ url('forums.threads', 'mobile-support') }}" {% if active == "mobile-support" %} class="selected" {% endif %}
-      data-event-name="link_click"
-      data-event-parameters='{"link_name": "{{ context + '.mobile-support-discussions' }}"}'>
-      {{ _('Mobile support discussions') }}
-    </a>
-  </li>
   <li>
     <a href="{{ url('forums.threads', 'knowledge-base-articles') }}" {% if active == "knowledge-base-articles" %} class="selected" {% endif %}
       data-event-name="link_click"

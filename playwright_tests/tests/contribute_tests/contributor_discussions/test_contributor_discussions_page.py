@@ -13,14 +13,8 @@ from playwright_tests.messages.contribute_messages.con_discussions.forum_moderat
 from playwright_tests.messages.contribute_messages.con_discussions.localization_discussions import (
     LocalizationDiscussionsMessages,
 )
-from playwright_tests.messages.contribute_messages.con_discussions.mobile_support import (
-    MobileSupportForumMessages,
-)
 from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
     OffTopicForumMessages,
-)
-from playwright_tests.messages.contribute_messages.con_discussions.social_support import (
-    SocialSupportForumMessages,
 )
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
@@ -76,8 +70,6 @@ def test_contributor_discussions_side_nav_redirect(page: Page, create_user_facto
                 option = "Forum Moderators"
             elif option == "Article discussions":
                 option = "English Knowledge Base Discussions"
-            elif option == "Mobile support discussions":
-                option = "Mobile Support forum discussions"
             elif option == "Off topic discussions":
                 option = "Off Topic"
             elif option == "Lost thread discussions":
@@ -255,7 +247,7 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     original_forum = LocalizationDiscussionsMessages.PAGE_TITLE
-    target_forum = MobileSupportForumMessages.PAGE_TITLE
+    target_forum = OffTopicForumMessages.PAGE_TITLE
     test_user = create_user_factory(groups=["forum-contributors"],
                                     permissions=["move_forum_thread"])
 
@@ -306,7 +298,7 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
         assert (test_user["username"] == sumo_pages.contributor_discussions_page.
                 get_forum_last_post_by(original_forum))
 
-    with allure.step("Moving the thread to the 'Mobile Support forum discussions' forum"):
+    with allure.step("Moving the thread to the 'Off Topic' forum"):
         utilities.navigate_to_link(thread_link)
         sumo_pages.contributor_thread_flow.move_thread_to_a_different_forum(target_forum)
 
@@ -372,8 +364,8 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with allure.step("Signing in with an contributor account"):
         utilities.start_existing_session(cookies=test_user)
 
-    with allure.step("Navigating to the 'Social Support' forum and posting a new thread"):
-        utilities.navigate_to_link(SocialSupportForumMessages.PAGE_URL)
+    with allure.step("Navigating to the 'Off topic' forum and posting a new thread"):
+        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
@@ -391,7 +383,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with check, allure.step("Clicking on the last post date link and verifying that the user is"
                             " redirected to the correct link"):
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
-            SocialSupportForumMessages.PAGE_TITLE
+            OffTopicForumMessages.PAGE_TITLE
         )
         assert sumo_pages.forum_thread_page.is_thread_post_visible(post_id)
 
@@ -400,7 +392,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
                             "the correct user profile page"):
         utilities.navigate_back()
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
-            SocialSupportForumMessages.PAGE_TITLE
+            OffTopicForumMessages.PAGE_TITLE
         )
         assert (test_user["username"] in MyProfileMessages.
                 get_my_profile_stage_url(test_user["username"]))
@@ -422,7 +414,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with check, allure.step("Clicking on the last post date link and verifying that the user is "
                             "redirected to the correct link"):
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
-            SocialSupportForumMessages.PAGE_TITLE
+            OffTopicForumMessages.PAGE_TITLE
         )
         assert sumo_pages.forum_thread_page.is_thread_post_visible(reply_id)
 
@@ -431,7 +423,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with check, allure.step("Clicking on the last post by link and verifying that the user is "
                             "redirected to the correct user profile page"):
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
-            SocialSupportForumMessages.PAGE_TITLE
+            OffTopicForumMessages.PAGE_TITLE
         )
         assert (test_user_two["username"] in MyProfileMessages.
                 get_my_profile_stage_url(test_user_two["username"]))
