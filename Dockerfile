@@ -1,22 +1,5 @@
-# =========================================
-# Stage 1: Build Frontend Assets in Node.js
-# =========================================
-FROM node:22-bookworm AS frontend-builder
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-RUN cp .env-build .env && \
-    mkdir -p jsi18n/jsi18n && \
-    npm run webpack:build:prod && \
-    npm run webpack:build:pre-render && \
-    npm run webpack:test
-
 # ===================================
-# Stage 2: Common Python dependencies
+# Stage 1: Common Python dependencies
 # ===================================
 FROM python:3.11-bookworm AS python-base
 
@@ -44,7 +27,37 @@ COPY pyproject.toml uv.lock ./
 RUN uv venv && uv sync --frozen --extra dev --no-install-project
 
 # =================================
-# Stage 3: Development Image Target
+# Stage 2: Generate jsi18n files
+# =================================
+FROM python-base AS jsi18n-generator
+
+COPY . .
+RUN uv sync --frozen --extra dev
+
+RUN cp .env-build .env && \
+    ./scripts/l10n-fetch-lint-compile.sh && \
+    ./manage.py compilejsi18n
+
+# ==================================
+# Stage 3: Frontend Builder (Node.js)
+# ==================================
+FROM node:22-bookworm AS frontend-builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+COPY --from=jsi18n-generator /app/jsi18n ./jsi18n
+
+RUN cp .env-build .env && \
+    npm run webpack:build:prod && \
+    npm run webpack:build:pre-render && \
+    npm run webpack:test
+
+# =================================
+# Stage 4: Development Image Target
 # =================================
 FROM python-base AS dev
 
@@ -53,7 +66,7 @@ COPY . .
 RUN uv sync --frozen --extra dev
 
 # =============================
-# Stage 4: Testing Image Target
+# Stage 5: Testing Image Target
 # =============================
 FROM python-base AS test
 
@@ -67,7 +80,7 @@ RUN cp .env-test .env && \
     ./manage.py collectstatic --noinput
 
 # ======================================
-# Stage 5: Build Production Dependencies
+# Stage 6: Build Production Dependencies
 # ======================================
 FROM python-base AS prod-deps
 
@@ -81,7 +94,7 @@ RUN cp .env-build .env && \
     ./manage.py collectstatic --noinput
 
 # =====================================
-# Stage 5: Final Clean Production Image
+# Stage 7: Final Clean Production Image
 # =====================================
 FROM python:3.11-slim-bookworm AS prod
 
