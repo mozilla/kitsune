@@ -48,7 +48,7 @@
       {% if is_owner %}
         {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
           Your privacy is important to us. Your username is always visible to the public -
-          if you would like to edit your username, {{ a_open }} click here. {{ a_close }}
+          you can always {{ a_open }} edit your username {{ a_close }} if you would like to do so.
         {% endtrans %}
       {% endif %}
     </p>
