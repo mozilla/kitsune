@@ -154,6 +154,33 @@ class DocumentForm(forms.ModelForm):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
 
+    def clean_related_documents(self):
+        """Clean related documents - map translation IDs to parent document IDs."""
+        data = self.cleaned_data.get("related_documents", [])
+        if not data:
+            return data
+
+        # Map translation IDs to parent document IDs
+        parent_ids = []
+        for doc_id_str in data:
+            try:
+                doc_id = int(doc_id_str)
+                doc = Document.objects.get(id=doc_id)
+
+                # If this is a translation, use its parent's ID
+                # Otherwise use the document's ID as-is (it's already a parent)
+                if doc.parent:
+                    parent_ids.append(str(doc.parent.id))
+                else:
+                    parent_ids.append(doc_id_str)
+
+            except (ValueError, Document.DoesNotExist):
+                # Keep invalid IDs for normal validation to handle
+                parent_ids.append(doc_id_str)
+
+        return parent_ids
+
+
     def clean(self):
         cdata = super().clean()
         locale = cdata.get("locale")
@@ -229,6 +256,7 @@ class DocumentForm(forms.ModelForm):
         can_archive = kwargs.pop("can_archive", False)
         can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
         initial_title = kwargs.pop("initial_title", "")
+        locale = kwargs.pop("locale", None)
 
         super().__init__(*args, **kwargs)
 
@@ -244,8 +272,31 @@ class DocumentForm(forms.ModelForm):
         products_field = self.fields["products"]
         products_field.choices = Product.active.values_list("id", "title")
 
+        # Set up related documents choices
         related_documents_field = self.fields["related_documents"]
-        related_documents_field.choices = Document.objects.values_list("id", "title")
+
+        # For non-English locales, we show translated documents but need to include
+        # both translation IDs (for display) and parent IDs (for validation after mapping)
+        choices = []
+
+        if locale and locale != settings.WIKI_DEFAULT_LANGUAGE:
+            # Show documents in the requested locale
+            locale_docs = Document.objects.filter(is_template=False, locale=locale)
+            for doc in locale_docs:
+                choices.append((doc.id, doc.title))
+                # Also add the parent document as a valid choice (for validation)
+                # but don't show it in the UI - it's just for form validation
+                if doc.parent:
+                    choices.append((doc.parent.id, f"[Parent of {doc.title}]"))
+        else:
+            # For English or if no locale specified, show all documents in that locale
+            related_documents_choices = Document.objects.filter(
+                is_template=False,
+                locale=locale or settings.WIKI_DEFAULT_LANGUAGE
+            )
+            choices = list(related_documents_choices.values_list("id", "title"))
+
+        related_documents_field.choices = choices
 
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.
