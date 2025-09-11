@@ -1717,6 +1717,8 @@ def _execute_l10n_strategy(revision, trigger, user=None):
 def recent_revisions(request):
     request.GET = request.GET.copy()
     fragment = request.GET.pop("fragment", None)
+    if not fragment:
+        request.GET.setdefault("include_bots", "on")
     form = RevisionFilterForm(request.GET)
 
     # Validate the form to populate cleaned_data, even with invalid usernames.
@@ -1730,6 +1732,9 @@ def recent_revisions(request):
         # Only apply user filter if there are valid users
         if form.cleaned_data.get("users"):
             filters.update(creator__in=form.cleaned_data["users"])
+
+        if not form.cleaned_data.get("include_bots"):
+            filters.update(creator__profile__account_type=Profile.AccountType.REGULAR)
 
         start = form.cleaned_data.get("start")
         end = form.cleaned_data.get("end")
