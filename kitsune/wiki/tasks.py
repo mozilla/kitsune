@@ -388,7 +388,7 @@ def translate(l10n_request_as_json: str) -> None:
 
 @shared_task
 @skip_if_read_only_mode
-def process_stale_translations(limit=None) -> dict:
+def process_stale_translations(limit=None) -> None:
     """Periodic task to process stale translations.
 
     Args:
@@ -401,15 +401,10 @@ def process_stale_translations(limit=None) -> dict:
 
     service = StaleTranslationService()
     processed_candidates = service.process_stale_translations(limit=limit)
-    processed_count = len(processed_candidates)
 
-    summary = {
-        "processed_count": processed_count,
-        "successful_count": processed_count,
-        "failed_count": 0,
-        "queued_count": processed_count,
-    }
-    return summary
+    log.info(f"Processed {len(processed_candidates)} stale translations:")
+    for parent, translated_doc, locale in processed_candidates:
+        log.info(translated_doc.get_absolute_url())
 
 
 @shared_task
