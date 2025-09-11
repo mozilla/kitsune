@@ -71,14 +71,12 @@
     input {
       flex: 1 1 auto;
       width: 100%;
-      width: 100%;
-      max-width: none;
+      max-width: 100%;
       margin: 0 0 p.$spacing-md 0;
 
       &[type="checkbox"] {
-        width: auto;
-        margin-right: p.$spacing-md;
-        margin-left: p.$spacing-xs;
+        min-width: 1.5rem;
+        min-height: 1.5rem;
       }
     }
 
@@ -91,8 +89,8 @@
 
       select,
       input {
-        margin: 0 10px;
-
+        width: auto;
+        margin: 0 p.$spacing-md 0 2px;
       }
     }
   }
