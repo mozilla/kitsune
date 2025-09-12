@@ -8,52 +8,52 @@ from kitsune.wiki.locale_views import EDITOR, LEADER, REVIEWER
 # These patterns inherit (?P<document_slug>[^\/]).
 document_patterns = [
     re_path(r"^$", views.document, name="wiki.document"),
-    re_path(r"^/revision/(?P<revision_id>\d+)$", views.revision, name="wiki.revision"),
-    re_path(r"^/history$", views.document_revisions, name="wiki.document_revisions"),
-    re_path(r"^/edit$", views.edit_document, name="wiki.edit_document"),
-    re_path(r"^/edit/metadata$", views.edit_document_metadata, name="wiki.edit_document_metadata"),
+    re_path(r"^revision/(?P<revision_id>\d+)$", views.revision, name="wiki.revision"),
+    re_path(r"^history$", views.document_revisions, name="wiki.document_revisions"),
+    re_path(r"^edit$", views.edit_document, name="wiki.edit_document"),
+    re_path(r"^edit/metadata$", views.edit_document_metadata, name="wiki.edit_document_metadata"),
     re_path(
-        r"^/edit/(?P<revision_id>\d+)$", views.edit_document, name="wiki.new_revision_based_on"
+        r"^edit/(?P<revision_id>\d+)$", views.edit_document, name="wiki.new_revision_based_on"
     ),
-    re_path(r"^/review/(?P<revision_id>\d+)$", views.review_revision, name="wiki.review_revision"),
-    re_path(r"^/compare$", views.compare_revisions, name="wiki.compare_revisions"),
-    re_path(r"^/translate$", views.translate, name="wiki.translate"),
+    re_path(r"^review/(?P<revision_id>\d+)$", views.review_revision, name="wiki.review_revision"),
+    re_path(r"^compare$", views.compare_revisions, name="wiki.compare_revisions"),
+    re_path(r"^translate$", views.translate, name="wiki.translate"),
     re_path(
-        r"^/readyforl10n/(?P<revision_id>\d+)$",
+        r"^readyforl10n/(?P<revision_id>\d+)$",
         views.mark_ready_for_l10n_revision,
         name="wiki.mark_ready_for_l10n_revision",
     ),
-    re_path(r"^/locales$", views.select_locale, name="wiki.select_locale"),
-    re_path(r"^/show_translations$", views.show_translations, name="wiki.show_translations"),
-    re_path(r"^/links$", views.what_links_here, name="wiki.what_links_here"),
+    re_path(r"^locales$", views.select_locale, name="wiki.select_locale"),
+    re_path(r"^show_translations$", views.show_translations, name="wiki.show_translations"),
+    re_path(r"^links$", views.what_links_here, name="wiki.what_links_here"),
     # Un/Subscribe to document edit notifications.
-    re_path(r"^/watch$", views.watch_document, name="wiki.document_watch"),
-    re_path(r"^/unwatch$", views.unwatch_document, name="wiki.document_unwatch"),
+    re_path(r"^watch$", views.watch_document, name="wiki.document_watch"),
+    re_path(r"^unwatch$", views.unwatch_document, name="wiki.document_unwatch"),
     # Vote helpful/not helpful
-    re_path(r"^/vote", views.handle_vote, name="wiki.document_vote"),
+    re_path(r"^vote", views.handle_vote, name="wiki.document_vote"),
     # Get helpful votes data
     re_path(
-        r"^/get-votes-async", views.get_helpful_votes_async, name="wiki.get_helpful_votes_async"
+        r"^get-votes-async", views.get_helpful_votes_async, name="wiki.get_helpful_votes_async"
     ),
     # KB discussion forums
-    re_path(r"^/discuss/", include("kitsune.kbforums.urls")),
+    re_path(r"^discuss/", include("kitsune.kbforums.urls")),
     # Delete a revision
     re_path(
-        r"^/revision/(?P<revision_id>\d+)/delete$",
+        r"^revision/(?P<revision_id>\d+)/delete$",
         views.delete_revision,
         name="wiki.delete_revision",
     ),
     # Delete a document
-    re_path(r"^/delete", views.delete_document, name="wiki.document_delete"),
+    re_path(r"^delete", views.delete_document, name="wiki.document_delete"),
     # Manage contributors
-    re_path(r"^/add-contributor$", views.add_contributor, name="wiki.add_contributor"),
+    re_path(r"^add-contributor$", views.add_contributor, name="wiki.add_contributor"),
     re_path(
-        r"^/remove-contributor/(?P<user_id>\d+)$",
+        r"^remove-contributor/(?P<user_id>\d+)$",
         views.remove_contributor,
         name="wiki.remove_contributor",
     ),
     # Ajax view to indicate a user is ignoring a lock and editing a document.
-    re_path(r"^/steal_lock$", views.steal_lock, name="wiki.steal_lock"),
+    re_path(r"^steal_lock$", views.steal_lock, name="wiki.steal_lock"),
 ]
 
 locale_patterns = [
@@ -147,7 +147,7 @@ urlpatterns = [
     re_path(r"^/preview-wiki-content$", views.preview_revision, name="wiki.preview"),
     re_path(r"^/save_draft$", views.draft_revision, name="wiki.draft_revision"),
     re_path(r"^/category/(?P<category>\d+)$", views.list_documents, name="wiki.category"),
-    re_path(r"^/(?P<document_slug>[^/]+)", include(document_patterns)),
+    re_path(r"^/(?P<document_slug>[^/]+)/", include(document_patterns)),
 ]
 
 urlpatterns += [
