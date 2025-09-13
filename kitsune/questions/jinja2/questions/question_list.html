@@ -153,6 +153,13 @@
           <span>{{ _('Done') }}</span>
         </a>
       </li>
+      {% if request.user.has_perm("flagit.can_moderate") %}
+      <li class="tabs--item">
+        <a href="{{ questions_url(show='spam', filter=None, page=None) }}" {{ show|class_selected('spam') }}>
+          <span>{{ _('Spam') }}</span>
+        </a>
+      </li>
+      {% endif %}
     </ul>
   </nav>
 
@@ -281,6 +288,7 @@
 
 
 {% block side %}
+{% if show != "spam" %}
 <div class="forum--sidebar-sort large-only">
   <select data-sort-questions>
     {% for o, details in orders.items() %}
@@ -292,6 +300,7 @@
     {% endfor %}
   </select>
 </div>
+{% endif %}
 
 {% if request.user.is_authenticated %}
 <div class="questions-sidebar">
@@ -303,7 +312,7 @@
       {% for f, desc in filters.items() %}
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
-      {% if topic_list %}
+      {% if topic_list and show != "spam" %}
         <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
         <li>
 
@@ -324,9 +333,11 @@
           </select>
         </li>
       {% endif %}
+      {% if show != "spam" %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
       <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
       <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+      {% endif %}
     </ul>
   </nav>
 
