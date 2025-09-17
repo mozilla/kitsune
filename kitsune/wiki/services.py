@@ -49,12 +49,14 @@ class StaleTranslationService:
         stale_translations = (
             Document.objects.filter(
                 parent__isnull=False,  # Is a translation
+                parent__is_archived=False,
                 parent__is_localizable=True,
                 parent__latest_localizable_revision__isnull=False,
                 current_revision__created__lt=cutoff_date,
                 locale__in=target_locales,
                 current_revision__isnull=False,
             )
+            .exclude(parent__html__startswith=REDIRECT_HTML)
             .select_related("parent", "parent__latest_localizable_revision", "current_revision")
             .filter(
                 # Parent has been updated since this translation
