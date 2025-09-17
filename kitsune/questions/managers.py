@@ -4,6 +4,7 @@ from django.db.models import F, Manager, Q
 from django.db.models.functions import Now
 
 from kitsune.questions import config
+from kitsune.users.models import Profile
 
 
 class QuestionManager(Manager):
@@ -71,6 +72,15 @@ class QuestionManager(Manager):
 
     def solved(self):
         return self.filter(solution__isnull=False)
+
+    def spam(self):
+        return self.filter(is_spam=True)
+
+    def detected_spam(self):
+        return self.filter(is_spam=True, marked_as_spam_by=Profile.get_sumo_bot().id)
+
+    def undetected_spam(self):
+        return self.filter(is_spam=True).exclude(marked_as_spam_by=Profile.get_sumo_bot().id)
 
 
 class AAQConfigManager(Manager):

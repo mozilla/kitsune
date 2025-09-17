@@ -108,6 +108,14 @@ FILTER_GROUPS = {
             ("locked", _lazy("Locked")),
         ]
     ),
+    "spam": OrderedDict(
+        [
+            # L10n: This filter option is for the Spam tab, thus "marked" refers to "marked as spam".
+            ("detected-spam", _lazy("Marked automatically")),
+            # L10n: This filter option is for the Spam tab, thus "marked" refers to "marked as spam".
+            ("undetected-spam", _lazy("Marked manually")),
+        ]
+    ),
 }
 
 ORDER_BY = OrderedDict(
@@ -216,6 +224,10 @@ def question_list(request, product_slug=None, topic_slug=None):
             question_qs = question_qs.locked()
         case "recently-unanswered":
             question_qs = question_qs.recently_unanswered()
+        case "detected-spam":
+            question_qs = question_qs.detected_spam()
+        case "undetected-spam":
+            question_qs = question_qs.undetected_spam()
         case _:
             if show == "needs-attention":
                 question_qs = question_qs.needs_attention()
@@ -223,6 +235,8 @@ def question_list(request, product_slug=None, topic_slug=None):
                 question_qs = question_qs.responded()
             if show == "done":
                 question_qs = question_qs.done()
+            if show == "spam":
+                question_qs = question_qs.spam()
 
     question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
     # Exclude questions over 90 days old without an answer or older than 2 years or created
@@ -238,7 +252,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     question_qs = question_qs.prefetch_related("topic", "product")
 
-    if not request.user.has_perm("flagit.can_moderate"):
+    if not request.user.has_perm("flagit.can_moderate") or show != "spam":
         question_qs = question_qs.filter(is_spam=False)
 
     if owner == "mine" and request.user.is_authenticated:

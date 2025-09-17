@@ -1,9 +1,20 @@
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
 
 
 class QuestionManagerTestCase(TestCase):
+    def test_spam(self):
+        """Verify the spam queryset."""
+        # Create a question, there shouldn't be any spam yet.
+        q = QuestionFactory()
+        self.assertEqual(0, Question.objects.spam().count())
+
+        # Mark the question as spam
+        q.mark_as_spam(Profile.get_sumo_bot())
+        self.assertEqual(1, Question.objects.spam().count())
+
     def test_done(self):
         """Verify the done queryset."""
         # Create a question, there shouldn't be any done yet.
@@ -54,7 +65,7 @@ class QuestionManagerTestCase(TestCase):
 
     def test_needs_attention(self):
         """Verify the needs_attention queryset."""
-        # Create a question, there shouldn't be one needs_attention.
+        # Create a question, there should be one needs_attention.
         q = QuestionFactory()
         self.assertEqual(1, Question.objects.needs_attention().count())
 
