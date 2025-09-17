@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from sentry_sdk import capture_exception
 
 from kitsune.wiki.tasks import process_stale_translations
 
@@ -15,13 +16,11 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         limit = options.get("limit")
-        result = process_stale_translations(limit=limit)
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Processed {result['processed_count']} stale translations: "
-                f"{result['successful_count']} successful, "
-                f"{result['failed_count']} failed, "
-                f"{result['queued_count']} queued for async processing"
-            )
-        )
+        self.stdout.write("Starting to process stale translations...")
+        try:
+            task = process_stale_translations.delay(limit=limit)
+        except Exception as e:
+            capture_exception(e)
+        else:
+            self.stdout.write(self.style.SUCCESS(f"Task queued successfully. Task ID: {task.id}"))
