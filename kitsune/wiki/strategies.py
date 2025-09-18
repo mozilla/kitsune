@@ -228,34 +228,57 @@ class AITranslationStrategy(TranslationStrategy):
     ) -> TranslationResult:
         """Perform AI translation."""
         doc = l10n_request.revision.document
+        target_locale = l10n_request.target_locale
 
-        translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
-
-        data = {
-            "content": translated_content["content"]["translation"],
-            "summary": translated_content["summary"]["translation"],
-            "keywords": translated_content["keywords"]["translation"],
-            "target_locale": l10n_request.target_locale,
-            "translated_content": translated_content,
-        }
-
-        rev = self.content_manager.create_revision(data, doc, send_notifications=True)
-        if publish:
-            rev = self.content_manager.publish_revision(rev)
-
-        result = TranslationResult(
-            success=True,
-            method=l10n_request.method,
-            revision=rev,
-            metadata={
-                "explanation": {
-                    "content": translated_content["content"]["explanation"],
-                    "summary": translated_content["summary"]["explanation"],
-                    "keywords": translated_content["keywords"]["explanation"],
-                    "title": translated_content.get("title", {}).get("explanation"),
+        if doc.is_redirect:
+            translated_content = {}
+            target_doc = doc.translated_to(target_locale)
+            if target_doc and target_doc.current_revision:
+                # The document has an active translation in the target locale,
+                # so let's update that translation so it redirects as well.
+                translated_content["content"] = {
+                    "translation": doc.current_revision.content,
+                    "explanation": "Redirect content copied from parent.",
                 }
-            },
-        )
+                translated_content["summary"] = translated_content["keywords"] = {
+                    "translation": "",
+                    "explanation": "Set to an empty string due to redirect.",
+                }
+        else:
+            translated_content = llm_translate(doc=doc, target_locale=target_locale)
+
+        if translated_content:
+            data = {
+                "content": translated_content["content"]["translation"],
+                "summary": translated_content["summary"]["translation"],
+                "keywords": translated_content["keywords"]["translation"],
+                "target_locale": target_locale,
+                "translated_content": translated_content,
+            }
+
+            rev = self.content_manager.create_revision(data, doc, send_notifications=True)
+            if publish:
+                rev = self.content_manager.publish_revision(rev)
+
+            result = TranslationResult(
+                success=True,
+                method=l10n_request.method,
+                revision=rev,
+                metadata={
+                    "explanation": {
+                        "content": translated_content["content"]["explanation"],
+                        "summary": translated_content["summary"]["explanation"],
+                        "keywords": translated_content["keywords"]["explanation"],
+                        "title": translated_content.get("title", {}).get("explanation"),
+                    }
+                },
+            )
+        else:
+            result = TranslationResult(
+                success=False,
+                method=l10n_request.method,
+                error_message="No translation was necessary.",
+            )
         self._log_operation(l10n_request, result)
         return result
 

@@ -201,6 +201,10 @@ def document(request, document_slug, document=None):
         if doc.parent and doc.parent.current_revision:
             # The "doc" is a translation with no approved content, but its
             # parent has approved content, so let's fall back to its parent.
+            if doc.parent.is_redirect:
+                # If its parent is a redirect, switch to its parent
+                # so that we engage the redirect logic below.
+                doc = doc.parent
             fallback_reason = "translation_not_approved"
         else:
             # We can't find any approved content to show.

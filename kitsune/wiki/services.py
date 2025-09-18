@@ -8,7 +8,6 @@ from django.db.models.functions import Now
 from django.utils import timezone
 
 from kitsune.users.models import Profile
-from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.content_managers import HybridContentManager
 from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
@@ -140,21 +139,16 @@ class HybridTranslationService:
                 "document__parent__latest_localizable_revision_id"
             )
         )
-        translations_discontinued = Q(document__parent__is_archived=True) | Q(
-            document__parent__html__startswith=REDIRECT_HTML
-        )
 
         # Unreviewed machine translations that are no longer useful.
-        self._qs_obsolete = unreviewed_translations.filter(
-            outdated | another_already_approved | translations_discontinued
-        )
+        self._qs_obsolete = unreviewed_translations.filter(outdated | another_already_approved)
 
         # Fresh, unreviewed machine translations that have not been reviewed within
         # the grace period.
         self._qs_pending = unreviewed_translations.filter(
             based_on_id__gte=F("document__parent__latest_localizable_revision_id"),
             created__lt=Now() - timedelta(hours=settings.HYBRID_REVIEW_GRACE_PERIOD),
-        ).exclude(another_already_approved | translations_discontinued)
+        ).exclude(another_already_approved)
 
     def reject_obsolete_translations(self, document: Document) -> None:
         """
