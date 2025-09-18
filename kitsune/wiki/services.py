@@ -55,6 +55,7 @@ class StaleTranslationService:
                 locale__in=target_locales,
                 current_revision__isnull=False,
             )
+            .exclude(parent__html__startswith=REDIRECT_HTML)
             .select_related("parent", "parent__latest_localizable_revision", "current_revision")
             .filter(
                 # Parent has been updated since this translation
