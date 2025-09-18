@@ -1,9 +1,17 @@
+import re
 from typing import Any
 
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import AIMessage
+from langchain_core.exceptions import OutputParserException
 
 from kitsune.llm.l10n.config import L10N_PROTECTED_TERMS
+
+DELIMITER = "<<<<translation-and-explanation-delimiter>>>>"
+TRANSLATION_PARSER_REGEX = re.compile(
+    rf"^(```wiki\s+)?\s*(?P<translation>.+?)(?(1)\s*```)\s*{DELIMITER}\s*(?P<explanation>.+)$",
+    re.DOTALL,
+)
 
 TRANSLATION_INSTRUCTIONS = """
 # Role and task
@@ -74,15 +82,7 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\\x00-\\x20\\x7f]*)\\s
 4. For each part that is different, **freshly translate** that part. **Remember to obey the `Rules for translating special strings`**.
 5. **Combine** the copied parts and the freshly translated parts into a final translation.
 6. In your response, include your final translation and an explanation describing what you did for each step.
-
-# Response Format
-Use the following template to format your response:
-<<begin-translation>>
-{ translation }
-<<end-translation>>
-<<begin-explanation>>
-{ explanation }
-<<end-explanation>>
+7. **Format** your response by providing your final translation, followed by the delimiter `{{ delimiter }}`, followed by your explanation.
 """
 
 SOURCE_ARTICLE = """
@@ -120,13 +120,19 @@ def translation_parser(message: AIMessage) -> dict[str, Any]:
     used.
     """
     result = {}
-    content = message.content
-    for name in ("translation", "explanation"):
-        parsed = content.split(f"<<begin-{name}>>")[-1].split(f"<<end-{name}>>")[0].strip()
-        # Strip the wiki fenced code block markdown syntax if present.
-        if parsed.startswith("```wiki") and parsed.endswith("```"):
-            parsed = parsed.removeprefix("```wiki").removesuffix("```").strip()
-        result[name] = parsed
+    content = message.text()
+
+    mo = TRANSLATION_PARSER_REGEX.match(content)
+
+    if not mo:
+        raise OutputParserException(
+            "The LLM response was not formatted correctly.",
+            observation="The response was not formatted correctly.",
+            llm_output=content,
+        )
+
+    result["translation"] = mo.group("translation")
+    result["explanation"] = mo.group("explanation")
     return result
 
 
@@ -136,4 +142,4 @@ translation_prompt = ChatPromptTemplate(
         ("human", SOURCE_ARTICLE),
     ),
     template_format="jinja2",
-).partial(protected_terms=L10N_PROTECTED_TERMS)
+).partial(protected_terms=L10N_PROTECTED_TERMS, delimiter=DELIMITER)
