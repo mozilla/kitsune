@@ -16,6 +16,8 @@ from playwright_tests.messages.contribute_messages.con_discussions.localization_
 from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
     OffTopicForumMessages,
 )
+from playwright_tests.messages.contribute_messages.con_discussions.support_forum_discussions import \
+    SupportForumDiscussionsMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
     MyProfileMessages,
@@ -208,8 +210,9 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the last post time reflects the newly created "
                             "thread"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").replace("\u202f", " ") == (
-            sumo_pages.contributor_discussions_page.get_forum_last_post_date(target_topic))
+        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
+            "\u202f", " ") == (sumo_pages.contributor_discussions_page.
+                               get_forum_last_post_date(target_topic))
 
     with check, allure.step("Verifying that the correct username is displayed inside the last post"
                             "section"):
@@ -247,7 +250,7 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     original_forum = LocalizationDiscussionsMessages.PAGE_TITLE
-    target_forum = OffTopicForumMessages.PAGE_TITLE
+    target_forum = SupportForumDiscussionsMessages.PAGE_TITLE
     test_user = create_user_factory(groups=["forum-contributors"],
                                     permissions=["move_forum_thread"])
 
@@ -255,7 +258,7 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Contributor Discussions' page and fetching the number of "
-                     "threads posted for the 'Localization Discussions' and for the Mobile Support"
+                     "threads posted for the 'Localization Discussions' and for the Support "
                      "forum"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         original_forum_count = int(sumo_pages.contributor_discussions_page.
@@ -290,15 +293,16 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
 
     with check, allure.step("Verifying that the last post time reflects the newly created "
                             "thread"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").replace("\u202f", " ") == (
-            sumo_pages.contributor_discussions_page.get_forum_last_post_date(original_forum))
+        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
+            "\u202f", " ") == (sumo_pages.contributor_discussions_page.
+                               get_forum_last_post_date(original_forum))
 
     with check, allure.step("Verifying that the correct username is displayed inside the last post"
                             "section"):
         assert (test_user["username"] == sumo_pages.contributor_discussions_page.
                 get_forum_last_post_by(original_forum))
 
-    with allure.step("Moving the thread to the 'Off Topic' forum"):
+    with allure.step("Moving the thread to the 'Support forum"):
         utilities.navigate_to_link(thread_link)
         sumo_pages.contributor_thread_flow.move_thread_to_a_different_forum(target_forum)
 
@@ -314,8 +318,9 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
                 get_forum_thread_count(target_forum))
 
     with check, allure.step("Verifying that the last post time reflects the newly moved thread"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").replace("\u202f", " ") == (
-            sumo_pages.contributor_discussions_page.get_forum_last_post_date(target_forum))
+        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
+            "\u202f", " ") == (sumo_pages.contributor_discussions_page.
+                               get_forum_last_post_date(target_forum))
 
     with check, allure.step("Verifying that the correct username is displayed inside the last "
                             "post"):
@@ -324,8 +329,9 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
 
     with check, allure.step("Verifying that the last post time is no longer displayed inside "
                             "the original forum"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").replace("\u202f", " ") != (
-            sumo_pages.contributor_discussions_page.get_forum_last_post_date(original_forum))
+        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
+            "\u202f", " ") != (sumo_pages.contributor_discussions_page.
+                               get_forum_last_post_date(original_forum))
 
     with check, allure.step("Verifying that the username is no longer displayed inside the "
                             "original forum section"):
@@ -364,8 +370,8 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with allure.step("Signing in with an contributor account"):
         utilities.start_existing_session(cookies=test_user)
 
-    with allure.step("Navigating to the 'Off topic' forum and posting a new thread"):
-        utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
+    with allure.step("Navigating to the 'Support Forum' forum and posting a new thread"):
+        utilities.navigate_to_link(SupportForumDiscussionsMessages.PAGE_URL)
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
@@ -383,7 +389,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with check, allure.step("Clicking on the last post date link and verifying that the user is"
                             " redirected to the correct link"):
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
-            OffTopicForumMessages.PAGE_TITLE
+            SupportForumDiscussionsMessages.PAGE_TITLE
         )
         assert sumo_pages.forum_thread_page.is_thread_post_visible(post_id)
 
@@ -392,7 +398,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
                             "the correct user profile page"):
         utilities.navigate_back()
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
-            OffTopicForumMessages.PAGE_TITLE
+            SupportForumDiscussionsMessages.PAGE_TITLE
         )
         assert (test_user["username"] in MyProfileMessages.
                 get_my_profile_stage_url(test_user["username"]))
@@ -414,7 +420,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with check, allure.step("Clicking on the last post date link and verifying that the user is "
                             "redirected to the correct link"):
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
-            OffTopicForumMessages.PAGE_TITLE
+            SupportForumDiscussionsMessages.PAGE_TITLE
         )
         assert sumo_pages.forum_thread_page.is_thread_post_visible(reply_id)
 
@@ -423,7 +429,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     with check, allure.step("Clicking on the last post by link and verifying that the user is "
                             "redirected to the correct user profile page"):
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
-            OffTopicForumMessages.PAGE_TITLE
+            SupportForumDiscussionsMessages.PAGE_TITLE
         )
         assert (test_user_two["username"] in MyProfileMessages.
                 get_my_profile_stage_url(test_user_two["username"]))

@@ -46,11 +46,12 @@ class AddKbArticleFlow:
                                   article_category=None, article_keyword=None,
                                   allow_discussion=True, allow_translations=True,
                                   selected_product=True, selected_topics=True, search_summary=None,
-                                  article_content=None, article_content_image='',
+                                  article_content=None, article_content_image=False,
                                   submit_article=True, is_template=False, expiry_date=None,
                                   restricted_to_groups: list[str] = None, single_group="",
                                   approve_first_revision=False, ready_for_localization=False,
-                                  locale="en-US") -> dict[str, Any]:
+                                  locale="en-US",
+                                  media_file_name="", media_file_type="") -> dict[str, Any]:
 
         self.utilities.navigate_to_link(f"https://support.allizom.org/{locale}/kb/new")
         kb_article_test_data = self.utilities.kb_article_test_data
@@ -126,11 +127,18 @@ class AddKbArticleFlow:
             self.submit_kb_article_page.add_text_to_content_textarea(article_content)
 
         if article_content_image:
-            self.submit_kb_article_page.click_on_insert_media_button()
-            self.add_media_flow.add_media_to_kb_article(
-                file_type="Image",
-                file_name=article_content_image
-            )
+            if media_file_type and media_file_name:
+                self.submit_kb_article_page.click_on_insert_media_button()
+                self.add_media_flow.add_media_to_kb_article(
+                    file_type=media_file_type,
+                    file_name=media_file_name
+                )
+            else:
+                self.submit_kb_article_page.click_on_insert_media_button()
+                self.add_media_flow.add_media_to_kb_article(
+                    file_type="Image",
+                    file_name=article_content_image
+                )
 
         if expiry_date is not None:
             self.submit_kb_article_page.add_text_to_expiry_date_field(expiry_date)
