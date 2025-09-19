@@ -439,6 +439,10 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             or self.category in (ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY)
         )
 
+    @property
+    def is_redirect(self):
+        return self.html.startswith(REDIRECT_HTML)
+
     def get_absolute_url(self):
         return reverse("wiki.document", locale=self.locale, args=[self.slug])
 
@@ -486,7 +490,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         # If a document starts with REDIRECT_HTML and contains any <a> tags
         # with hrefs, return the href of the first one. This trick saves us
         # from having to parse the HTML every time.
-        if self.html.startswith(REDIRECT_HTML):
+        if self.is_redirect:
             anchors = PyQuery(self.html)("a[href]")
             if anchors:
                 # Articles with a redirect have a link that has the locale
