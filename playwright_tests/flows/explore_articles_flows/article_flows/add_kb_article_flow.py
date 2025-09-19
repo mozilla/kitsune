@@ -1,9 +1,7 @@
 from typing import Any
-
 from playwright.sync_api import Page
 from slugify import slugify
-
-from playwright_tests.core.utilities import Utilities
+from playwright_tests.core.utilities import Utilities, retry_on_502
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import (
     AddKbMediaFlow,
 )
@@ -37,21 +35,18 @@ class AddKbArticleFlow:
         self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
         self.edit_kb_article_page = EditKBArticlePage(page)
 
-    def submit_simple_kb_article(self, **kwargs):
-        return self.utilities.re_call_function_on_error(
-            lambda: self._submit_simple_kb_article(**kwargs)
-        )
 
-    def _submit_simple_kb_article(self, article_title=None, article_slug=None,
-                                  article_category=None, article_keyword=None,
-                                  allow_discussion=True, allow_translations=True,
-                                  selected_product=True, selected_topics=True, search_summary=None,
-                                  article_content=None, article_content_image=False,
-                                  submit_article=True, is_template=False, expiry_date=None,
-                                  restricted_to_groups: list[str] = None, single_group="",
-                                  approve_first_revision=False, ready_for_localization=False,
-                                  locale="en-US",
-                                  media_file_name="", media_file_type="") -> dict[str, Any]:
+    @retry_on_502
+    def submit_simple_kb_article(self, article_title=None, article_slug=None,
+                                 article_category=None, article_keyword=None,
+                                 allow_discussion=True, allow_translations=True,
+                                 selected_product=True, selected_topics=True, search_summary=None,
+                                 article_content=None, article_content_image=False,
+                                 submit_article=True, is_template=False, expiry_date=None,
+                                 restricted_to_groups: list[str] = None, single_group="",
+                                 approve_first_revision=False, ready_for_localization=False,
+                                 locale="en-US",
+                                 media_file_name="", media_file_type="") -> dict[str, Any]:
 
         self.utilities.navigate_to_link(f"https://support.allizom.org/{locale}/kb/new")
         kb_article_test_data = self.utilities.kb_article_test_data
@@ -181,13 +176,9 @@ class AddKbArticleFlow:
                 "first_revision_id": first_revision_id
                 }
 
-    def approve_kb_revision(self, **kwargs):
-        return self.utilities.re_call_function_on_error(
-            lambda: self._approve_kb_revision(**kwargs)
-        )
-
-    def _approve_kb_revision(self, revision_id: str, revision_needs_change=False,
-                             ready_for_l10n=False, significance_type=''):
+    @retry_on_502
+    def approve_kb_revision(self, revision_id: str, revision_needs_change=False,
+                            ready_for_l10n=False, significance_type=''):
         if (KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT not in
                 self.utilities.get_page_url()):
             self.kb_article_page.click_on_show_history_option()
@@ -216,16 +207,11 @@ class AddKbArticleFlow:
 
         self.kb_article_review_revision_page.click_accept_revision_accept_button()
 
-    def submit_new_kb_revision(self, **kwargs):
-        return self.utilities.re_call_function_on_error(
-            lambda: self._submit_new_kb_revision(**kwargs)
-        )
-
-    def _submit_new_kb_revision(self, keywords=None, search_result_summary=None, content=None,
-                                expiry_date=None, changes_description=None, is_admin=False,
-                                approve_revision=False, revision_needs_change=False,
-                                ready_for_l10n=False, significance_type=''
-                                ) -> dict[str, Any]:
+    @retry_on_502
+    def submit_new_kb_revision(self, keywords=None, search_result_summary=None, content=None,
+                               expiry_date=None, changes_description=None, is_admin=False,
+                               approve_revision=False, revision_needs_change=False,
+                               ready_for_l10n=False, significance_type='') -> dict[str, Any]:
 
         self.kb_article_page.click_on_edit_article_option()
 

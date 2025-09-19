@@ -417,7 +417,7 @@ def test_topic_inheritance_from_parent(page: Page, create_user_factory):
     with allure.step("Navigating to the parent article and editing it's metadata by adding a new "
                      "topic"):
         utilities.navigate_to_link(parent_article_info["article_url"])
-        sumo_pages.edit_article_metadata_flow._edit_article_metadata(
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
             topics=["Settings", "Customization"]
         )
 
@@ -435,7 +435,7 @@ def test_topic_inheritance_from_parent(page: Page, create_user_factory):
 
     with allure.step("Removing the old topic from the parent article"):
         utilities.navigate_to_link(parent_article_info["article_url"])
-        sumo_pages.edit_article_metadata_flow._edit_article_metadata(topics="Accounts")
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(topics="Accounts")
 
     with allure.step("Navigating to the first topic listing page and verifying that the"
                      " translation is not displayed"):

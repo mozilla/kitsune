@@ -2,7 +2,7 @@ import allure
 import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
-from playwright_tests.core.utilities import Utilities
+from playwright_tests.core.utilities import Utilities, retry_on_502
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_form_page_messages import (
     AAQFormMessages)
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
@@ -347,9 +347,9 @@ def test_share_firefox_data_functionality(page: Page, create_user_factory):
             utilities.aaq_question_test_data["troubleshooting_information"]
         )
         with utilities.page.expect_navigation():
-            utilities.re_call_function_on_error(
-                sumo_pages.aaq_form_page.click_aaq_form_submit_button,
-                expected_locator=sumo_pages.question_page.questions_header
+            retry_on_502(
+                sumo_pages.aaq_form_page.click_aaq_form_submit_button(
+                expected_locator=sumo_pages.question_page.questions_header)
             )
 
     with allure.step("Verifying that the troubleshooting information is displayed"):
@@ -443,9 +443,10 @@ def test_system_details_information(page: Page, create_user_factory):
                                         "correct provided troubleshooting information is "
                                         "displayed"):
                     with utilities.page.expect_navigation():
-                        utilities.re_call_function_on_error(
-                            sumo_pages.aaq_form_page.click_aaq_form_submit_button,
+                        retry_on_502(
+                            sumo_pages.aaq_form_page.click_aaq_form_submit_button(
                             expected_locator=sumo_pages.question_page.questions_header
+                            )
                         )
 
                     sumo_pages.question_page.click_on_question_details_button()
@@ -492,10 +493,9 @@ def test_premium_products_aaq(page: Page):
                 )
                 if utilities.get_page_url() == premium_form_link:
                     with utilities.page.expect_navigation():
-                        utilities.re_call_function_on_error(
-                            sumo_pages.aaq_form_page.click_aaq_form_submit_button(),
-                            with_force=True,
-                            expected_locator=sumo_pages.question_page.questions_header
+                        retry_on_502(
+                            sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True,
+                            expected_locator=sumo_pages.question_page.questions_header)
                         )
 
         with allure.step("Verifying that the correct success message is displayed"):
@@ -517,11 +517,6 @@ def test_loginless_mozilla_account_aaq(page: Page):
             # In case a 502 error occurs we might end up in the auth page after the automatic
             # refresh/retry so we need to skip the signin_signup button click since the
             # element is not available.
-            if sumo_pages.top_navbar.is_sign_in_up_button_displayed():
-                sumo_pages.top_navbar.click_on_signin_signup_button()
-            with page.expect_navigation():
-                sumo_pages.auth_page.click_on_cant_sign_in_to_my_mozilla_account_link()
-            page_url = utilities.get_page_url()
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
                 body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
@@ -529,7 +524,7 @@ def test_loginless_mozilla_account_aaq(page: Page):
                 email=utilities.staff_user,
                 is_loginless=True,
                 expected_locator= sumo_pages.aaq_form_page.premium_ticket_message,
-                form_url=page_url
+                form_url=utilities.aaq_question_test_data["products_aaq_url"]["Mozilla Account"]
             )
             if i <= 3:
                 with allure.step("Verifying that the correct success message is displayed"):
