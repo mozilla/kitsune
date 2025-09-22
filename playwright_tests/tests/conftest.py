@@ -30,15 +30,17 @@ def navigate_to_homepage(page: Page):
         This function is used to handle 502 errors. It reloads the page after 5 seconds if a
         502 error is encountered.
         """
-        if response.status == 502:
-            warnings.warn("502 encountered")
-            page = response.request.frame.page
-            print("502 error encountered. Reloading the page after 5 seconds.")
-            page.wait_for_timeout(5000)
-            try:
-                utilities.refresh_page()
-            except TimeoutError:
-                print("TimeoutError encountered after reload.")
+        for attempt in range(5):
+            if response.status == 502:
+                warnings.warn("502 encountered")
+                page = response.request.frame.page
+                print("502 error encountered. Reloading the page after 5 seconds.")
+                page.wait_for_timeout(5000)
+                try:
+                    utilities.refresh_page()
+                    return
+                except TimeoutError:
+                    print("TimeoutError encountered after reload.")
 
     page.context.on("response", handle_502_error)
 
