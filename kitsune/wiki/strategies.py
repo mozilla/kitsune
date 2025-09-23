@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 from django.conf import settings
@@ -18,6 +19,15 @@ from kitsune.wiki.content_managers import (
 from kitsune.wiki.models import Revision
 
 
+class TranslationTrigger(str, Enum):
+    """Available translation triggers."""
+
+    REVIEW_REVISION = "review_revision"
+    MARK_READY_FOR_L10N = "mark_ready_for_l10n"
+    TRANSLATE = "translate"
+    STALE_TRANSLATION_UPDATE = "stale_translation_update"
+
+
 class TranslationMethod(models.TextChoices):
     """Available translation methods."""
 
@@ -30,7 +40,7 @@ class TranslationMethod(models.TextChoices):
 @dataclass
 class TranslationRequest:
     revision: Revision
-    trigger: str
+    trigger: TranslationTrigger
     user: User | None = None
     target_locale: str = ""
     method: Any = TranslationMethod.MANUAL
@@ -318,7 +328,7 @@ class TranslationStrategyFactory:
                         self.execute(
                             TranslationRequest(
                                 revision=l10n_request.revision,
-                                trigger="translate",
+                                trigger=TranslationTrigger.TRANSLATE,
                                 target_locale=locale,
                                 method=method,
                                 user=l10n_request.user,

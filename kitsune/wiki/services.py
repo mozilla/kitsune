@@ -11,7 +11,11 @@ from kitsune.users.models import Profile
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.content_managers import HybridContentManager
 from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.strategies import TranslationRequest, TranslationStrategyFactory
+from kitsune.wiki.strategies import (
+    TranslationRequest,
+    TranslationStrategyFactory,
+    TranslationTrigger,
+)
 
 
 class StaleTranslationService:
@@ -97,7 +101,7 @@ class StaleTranslationService:
 
             l10n_request = TranslationRequest(
                 revision=english_doc.latest_localizable_revision,
-                trigger="stale_translation_update",
+                trigger=TranslationTrigger.STALE_TRANSLATION_UPDATE,
                 target_locale=locale,
                 method=translation_method,
                 asynchronous=True,
