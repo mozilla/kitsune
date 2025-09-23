@@ -78,6 +78,7 @@ from kitsune.wiki.strategies import (
     TranslationRequest,
     TranslationStrategy,
     TranslationStrategyFactory,
+    TranslationTrigger,
 )
 from kitsune.wiki.tasks import render_document_cascade, schedule_rebuild_kb
 from kitsune.wiki.utils import (
@@ -809,7 +810,7 @@ def review_revision(request, document_slug, revision_id):
             )
             match (rev.is_approved, is_ready_for_l10n):
                 case (True, True):
-                    _execute_l10n_strategy(rev, "review_revision", request.user)
+                    _execute_l10n_strategy(rev, TranslationTrigger.REVIEW_REVISION, request.user)
                 case (True, False):
                     ManualContentManager().fire_notifications(
                         rev, [NotificationType.TRANSLATION_WORKFLOW], [rev.creator, request.user]
@@ -1545,7 +1546,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     if not revision.document.allows(request.user, "mark_ready_for_l10n"):
         raise PermissionDenied
 
-    result = _execute_l10n_strategy(revision, "mark_ready_for_l10n", request.user)
+    result = _execute_l10n_strategy(revision, TranslationTrigger.MARK_READY_FOR_L10N, request.user)
 
     if result.success:
         return HttpResponse(json.dumps({"message": revision_id}))
