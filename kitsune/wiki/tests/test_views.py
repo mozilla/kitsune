@@ -1,4 +1,3 @@
-
 import json
 from unittest import mock
 
@@ -1439,6 +1438,19 @@ class RedirectTests(TestCase):
         redirect = rev.document
         response = self.client.get(redirect.get_absolute_url() + "?redirect=no", follow=True)
         self.assertContains(response, "REDIRECT ")
+
+    def test_translation_when_parent_is_redirect(self):
+        """If the translation's parent is a redirect, the translation should redirect."""
+        target = ApprovedRevisionFactory(document__locale="en-US").document
+        parent = RedirectRevisionFactory(
+            document__locale="en-US", is_approved=True, target=target
+        ).document
+        child = ApprovedRevisionFactory(document__parent=parent, document__locale="it").document
+        response = self.client.get(child.get_absolute_url())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            response["location"].startswith(target.get_absolute_url().replace("/en-US/", "/it/"))
+        )
 
 
 class LocaleRedirectTests(TestCase):

@@ -207,9 +207,10 @@ def document(request, document_slug, document=None):
             # We can't find any approved content to show.
             fallback_reason = "no_content"
 
-    any_localizable_revision = doc.revisions.filter(
-        is_approved=True, is_ready_for_localization=True
-    ).exists()
+    if doc.parent and doc.parent.is_redirect:
+        # If a translation's parent is a redirect, always use the parent instead.
+        doc = doc.parent
+
     # Obey explicit redirect pages:
     # Don't redirect on redirect=no (like Wikipedia), so we can link from a
     # redirected-to-page back to a "Redirected from..." link, so you can edit
@@ -334,7 +335,9 @@ def document(request, document_slug, document=None):
         "show_aaq_widget": show_aaq_widget,
         "breadcrumb_items": breadcrumbs,
         "document_css_class": document_css_class,
-        "any_localizable_revision": any_localizable_revision,
+        "any_localizable_revision": doc.revisions.filter(
+            is_approved=True, is_ready_for_localization=True
+        ).exists(),
         "full_locale_name": full_locale_name,
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
