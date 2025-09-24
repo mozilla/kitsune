@@ -343,7 +343,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
 
     if status == "locked":
         with allure.step("Clicking on the 'Lock this question' option"):
-            sumo_pages.question_page.click_on_lock_this_question_locator()
+            sumo_pages.question_page.click_on_lock_this_question_option()
     elif status == "archived":
         with allure.step("Clicking on the 'Archive this question' option"):
             sumo_pages.question_page.click_on_archive_this_question_option()
@@ -418,7 +418,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
 
     if status == "locked":
         with allure.step("Unlocking the question"):
-            sumo_pages.question_page.click_on_lock_this_question_locator()
+            sumo_pages.question_page.click_on_lock_this_question_option()
     elif status == "archived":
         with allure.step("Clicking on the 'Archive this question' option"):
             sumo_pages.question_page.click_on_archive_this_question_option()

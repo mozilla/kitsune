@@ -523,8 +523,7 @@ def test_loginless_mozilla_account_aaq(page: Page):
                 is_premium=True,
                 email=utilities.staff_user,
                 is_loginless=True,
-                expected_locator= sumo_pages.aaq_form_page.premium_ticket_message,
-                form_url=utilities.aaq_question_test_data["products_aaq_url"]["Mozilla Account"]
+                expected_locator= sumo_pages.aaq_form_page.premium_ticket_message
             )
             if i <= 3:
                 with allure.step("Verifying that the correct success message is displayed"):
