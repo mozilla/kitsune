@@ -120,6 +120,7 @@ class TranslationStrategy(AbstractTranslationStrategy):
             [
                 document.is_localizable,
                 document.locale == settings.WIKI_DEFAULT_LANGUAGE,
+                not document.is_redirect,
                 revision.is_approved,
                 not revision.significance or revision.significance > TYPO_SIGNIFICANCE,
             ]

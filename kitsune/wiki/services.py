@@ -59,6 +59,7 @@ class StaleTranslationService:
                 locale__in=target_locales,
                 current_revision__isnull=False,
             )
+            .exclude(parent__html__startswith=REDIRECT_HTML)
             .select_related("parent", "parent__latest_localizable_revision", "current_revision")
             .filter(
                 # Parent has been updated since this translation
@@ -144,9 +145,7 @@ class HybridTranslationService:
                 "document__parent__latest_localizable_revision_id"
             )
         )
-        translations_discontinued = Q(document__parent__is_archived=True) | Q(
-            document__parent__html__startswith=REDIRECT_HTML
-        )
+        translations_discontinued = Q(document__parent__html__startswith=REDIRECT_HTML)
 
         # Unreviewed machine translations that are no longer useful.
         self._qs_obsolete = unreviewed_translations.filter(
