@@ -5,129 +5,169 @@ from django.db import migrations
 
 
 def remove_wagtail_tables_and_permissions(apps, schema_editor):
-    """Remove all Wagtail tables and associated permissions/content types."""
-    
+    """Remove Wagtail tables, sequences and associated permissions/content types."""
+
+    wagtail_tables = [
+        "wagtailcore_pageviewrestriction_groups",
+        "wagtailcore_groupapprovaltask_groups",
+        "wagtailcore_collectionviewrestriction_groups",
+        "wagtailusers_userprofile",
+        "wagtailsearch_indexentry",
+        "wagtailredirects_redirect",
+        "wagtailimages_rendition",
+        "wagtailimages_image",
+        "wagtailforms_formsubmission",
+        "wagtailembeds_embed",
+        "wagtaildocs_document",
+        "wagtailcore_workflowtask",
+        "wagtailcore_workflowstate",
+        "wagtailcore_workflowpage",
+        "wagtailcore_workflowcontenttype",
+        "wagtailcore_workflow",
+        "wagtailcore_uploadedfile",
+        "wagtailcore_taskstate",
+        "wagtailcore_task",
+        "wagtailcore_site",
+        "wagtailcore_revision",
+        "wagtailcore_referenceindex",
+        "wagtailcore_pageviewrestriction",
+        "wagtailcore_pagesubscription",
+        "wagtailcore_pagelogentry",
+        "wagtailcore_page",
+        "wagtailcore_modellogentry",
+        "wagtailcore_locale",
+        "wagtailcore_grouppagepermission",
+        "wagtailcore_groupcollectionpermission",
+        "wagtailcore_groupapprovaltask",
+        "wagtailcore_commentreply",
+        "wagtailcore_comment",
+        "wagtailcore_collectionviewrestriction",
+        "wagtailcore_collection",
+        "wagtailadmin_editingsession",
+        "wagtailadmin_admin",
+        "wagtail_localize_translationsource",
+        "wagtail_localize_translationlog",
+        "wagtail_localize_translationcontext",
+        "wagtail_localize_translation",
+        "wagtail_localize_translatableobject",
+        "wagtail_localize_templatesegment",
+        "wagtail_localize_template",
+        "wagtail_localize_stringtranslation",
+        "wagtail_localize_stringsegment",
+        "wagtail_localize_string",
+        "wagtail_localize_segmentoverride",
+        "wagtail_localize_relatedobjectsegment",
+        "wagtail_localize_overridablesegment",
+        "wagtail_localize_localesynchronization",
+    ]
+
+    wagtail_sequences = [
+        "wagtail_localize_localesynchronization_id_seq",
+        "wagtail_localize_overridablesegment_id_seq",
+        "wagtail_localize_relatedobjectsegment_id_seq",
+        "wagtail_localize_segmentoverride_id_seq",
+        "wagtail_localize_string_id_seq",
+        "wagtail_localize_stringsegment_id_seq",
+        "wagtail_localize_stringtranslation_id_seq",
+        "wagtail_localize_template_id_seq",
+        "wagtail_localize_templatesegment_id_seq",
+        "wagtail_localize_translation_id_seq",
+        "wagtail_localize_translationcontext_id_seq",
+        "wagtail_localize_translationlog_id_seq",
+        "wagtail_localize_translationsource_id_seq",
+        "wagtailadmin_admin_id_seq",
+        "wagtailadmin_editingsession_id_seq",
+        "wagtailcore_collection_id_seq",
+        "wagtailcore_collectionviewrestriction_groups_id_seq",
+        "wagtailcore_collectionviewrestriction_id_seq",
+        "wagtailcore_comment_id_seq",
+        "wagtailcore_commentreply_id_seq",
+        "wagtailcore_groupapprovaltask_groups_id_seq",
+        "wagtailcore_groupcollectionpermission_id_seq",
+        "wagtailcore_grouppagepermission_id_seq",
+        "wagtailcore_locale_id_seq",
+        "wagtailcore_modellogentry_id_seq",
+        "wagtailcore_page_id_seq",
+        "wagtailcore_pagelogentry_id_seq",
+        "wagtailcore_pagerevision_id_seq",
+        "wagtailcore_pagesubscription_id_seq",
+        "wagtailcore_pageviewrestriction_groups_id_seq",
+        "wagtailcore_pageviewrestriction_id_seq",
+        "wagtailcore_referenceindex_id_seq",
+        "wagtailcore_site_id_seq",
+        "wagtailcore_task_id_seq",
+        "wagtailcore_taskstate_id_seq",
+        "wagtailcore_uploadedfile_id_seq",
+        "wagtailcore_workflow_id_seq",
+        "wagtailcore_workflowstate_id_seq",
+        "wagtailcore_workflowtask_id_seq",
+        "wagtaildocs_document_id_seq",
+        "wagtailembeds_embed_id_seq",
+        "wagtailforms_formsubmission_id_seq",
+        "wagtailimages_image_id_seq",
+        "wagtailimages_rendition_id_seq",
+        "wagtailredirects_redirect_id_seq",
+        "wagtailsearch_indexentry_id_seq",
+        "wagtailusers_userprofile_id_seq",
+    ]
+
     # Get the database connection
     connection = schema_editor.connection
-    
-    # First, check for any foreign keys from non-Wagtail tables to Wagtail tables
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT 
-                tc.table_name as from_table,
-                kcu.column_name as from_column,
-                ccu.table_name AS to_table
-            FROM 
-                information_schema.table_constraints AS tc 
-                JOIN information_schema.key_column_usage AS kcu
-                  ON tc.constraint_name = kcu.constraint_name
-                  AND tc.table_schema = kcu.table_schema
-                JOIN information_schema.constraint_column_usage AS ccu
-                  ON ccu.constraint_name = tc.constraint_name
-                  AND ccu.table_schema = tc.table_schema
-            WHERE tc.constraint_type = 'FOREIGN KEY' 
-                AND ccu.table_name LIKE 'wagtail%'
-                AND tc.table_name NOT LIKE 'wagtail%';
-        """)
-        
-        foreign_keys = cursor.fetchall()
-        if foreign_keys:
-            print("WARNING: Found foreign keys from non-Wagtail tables to Wagtail tables:")
-            for fk in foreign_keys:
-                print(f"  {fk[0]}.{fk[1]} -> {fk[2]}")
-            raise Exception(
-                "Cannot safely remove Wagtail tables due to foreign key dependencies from non-Wagtail tables. "
-                "Please remove these foreign keys first."
-            )
-    
-    # Find all Wagtail tables dynamically using LIKE pattern
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            AND table_name LIKE 'wagtail%'
-            ORDER BY 
-                -- Drop many-to-many junction tables first to avoid FK issues
-                CASE WHEN table_name LIKE '%_groups' THEN 0 ELSE 1 END,
-                -- Then drop child tables before parent tables
-                table_name DESC;
-        """)
-        wagtail_tables = [row[0] for row in cursor.fetchall()]
-    
-    if not wagtail_tables:
-        print("No Wagtail tables found to drop.")
-    else:
-        print(f"Found {len(wagtail_tables)} Wagtail tables to drop.")
-    
-    # Drop tables using raw SQL
-    # We use CASCADE to handle foreign key constraints between Wagtail tables
-    # The safety check above ensures no non-Wagtail tables will be affected
+
     tables_dropped = 0
     with connection.cursor() as cursor:
         for table_name in wagtail_tables:
             try:
-                cursor.execute(f'DROP TABLE IF EXISTS {table_name} CASCADE;')
+                cursor.execute(f"DROP TABLE IF EXISTS {table_name} CASCADE;")
             except Exception as e:
-                print(f'Error dropping table {table_name}: {e}')
+                print(f"Error dropping table {table_name}: {e}")
                 raise
-            print(f'Dropped table: {table_name}')
+            print(f"Dropped table: {table_name}")
             tables_dropped += 1
-    
+
+    sequences_dropped = 0
+    with connection.cursor() as cursor:
+        for sequence_name in wagtail_sequences:
+            try:
+                cursor.execute(f"DROP SEQUENCE IF EXISTS {sequence_name} CASCADE;")
+            except Exception as e:
+                print(f"Error dropping sequence {sequence_name}: {e}")
+                raise
+            print(f"Dropped sequence: {sequence_name}")
+            sequences_dropped += 1
+
     # Clean up Wagtail permissions and content types
-    Permission = apps.get_model('auth', 'Permission')
-    ContentType = apps.get_model('contenttypes', 'ContentType')
-    
+    Permission = apps.get_model("auth", "Permission")
+    ContentType = apps.get_model("contenttypes", "ContentType")
+
     # Delete all permissions for Wagtail content types using startswith
     # This catches all app labels like 'wagtailadmin', 'wagtailcore', 'wagtail_localize', etc.
     deleted_perms = Permission.objects.filter(
-        content_type__app_label__startswith='wagtail'
+        content_type__app_label__startswith="wagtail"
     ).delete()
     total_perms_deleted = deleted_perms[0]
-    
-    if total_perms_deleted > 0:
-        print(f'Deleted {total_perms_deleted} Wagtail permissions')
-    
+
     # Delete all Wagtail content types
-    deleted_ct = ContentType.objects.filter(
-        app_label__startswith='wagtail'
-    ).delete()
+    deleted_ct = ContentType.objects.filter(app_label__startswith="wagtail").delete()
     total_ct_deleted = deleted_ct[0]
-    
-    if total_ct_deleted > 0:
-        print(f'Deleted {total_ct_deleted} Wagtail content types')
-    
+
     # Print summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("WAGTAIL REMOVAL SUMMARY:")
     print(f"  Tables dropped: {tables_dropped}")
+    print(f"  Sequences dropped: {sequences_dropped}")
     print(f"  Permissions deleted: {total_perms_deleted}")
     print(f"  Content types deleted: {total_ct_deleted}")
-    print("="*60)
-
-
-def reverse_remove_wagtail(apps, schema_editor):
-    """
-    Reversal would require reinstalling Wagtail and running its migrations.
-    This is intentionally left as a no-op since we're removing Wagtail completely.
-    """
-    raise NotImplementedError(
-        "Cannot reverse the removal of Wagtail tables. "
-        "Please reinstall Wagtail and run its migrations if needed."
-    )
+    print("=" * 60)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sumo', '0001_squashed_0004_delete_wagtaildocument'),
-        ('contenttypes', '0002_remove_content_type_name'),
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("sumo", "0001_squashed_0004_delete_wagtaildocument"),
+        ("contenttypes", "0002_remove_content_type_name"),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
-        migrations.RunPython(
-            remove_wagtail_tables_and_permissions,
-            reverse_remove_wagtail,
-        ),
+        migrations.RunPython(remove_wagtail_tables_and_permissions, migrations.RunPython.noop),
     ]
