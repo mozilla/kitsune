@@ -47,11 +47,10 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
             and target_doc
             and (target_rev := target_doc.current_revision)
             and (source_rev := target_rev.based_on)
+            and (source_text := getattr(source_rev, content_attribute))
+            and (target_text := getattr(target_rev, content_attribute))
         ):
-            return {
-                "source_text": getattr(source_rev, content_attribute),
-                "target_text": getattr(target_rev, content_attribute),
-            }
+            return {"source_text": source_text, "target_text": target_text}
         return None
 
     for content_attribute in content_attributes:
@@ -60,6 +59,14 @@ def translate(doc: "Document", target_locale: str) -> dict[str, dict[str, Any]]:
             prior_translation=get_prior_translation(content_attribute),
         )
 
-        result[content_attribute] = translation_chain.invoke(payload)
+        if payload["source_text"]:
+            result[content_attribute] = translation_chain.invoke(payload)
+        else:
+            result[content_attribute] = {
+                "translation": "",
+                "explanation": (
+                    "No translation was necessary. The source text was an empty string."
+                ),
+            }
 
     return result
