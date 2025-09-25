@@ -73,6 +73,7 @@ nav:
         - celery.md
         - email.md
         - localization.md
+        - l10n-system.md
         - elastic_search.md
         - frontend.md
         - svelte.md
