@@ -1,3 +1,4 @@
+import functools
 import os
 import warnings
 import requests
@@ -638,27 +639,6 @@ class Utilities:
         """
         route.abort()
 
-    def re_call_function_on_error(self, func, *args, **kwargs):
-        """This helper function re-calls a function if a 502 error is encountered.
-
-        Args:
-            func: The function to be re-called
-            *args: The function arguments
-            **kwargs: The function keyword arguments
-        """
-
-        for attempt in range(3):
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                result = func(*args, **kwargs)
-
-                if (any(issubclass(warning.category, UserWarning) and str(
-                        warning.message) == "502 encountered" for warning in w)):
-                    print("502 error encountered while executing the function. Retrying...")
-                    if attempt < 2:
-                        continue
-                return result
-
     def get_csrfmiddlewaretoken(self) -> str:
         """
         This helper function fetches the csrfmiddlewaretoken from the page.
@@ -693,3 +673,21 @@ class Utilities:
                 self.page.reload()
         else:
             return False
+
+
+def retry_on_502(func):
+    """Decorator that retries the wrapped function if a 502 error is encountered."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for attempt in range(3):
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                result = func(*args, **kwargs)
+
+                if (any(issubclass(warning.category, UserWarning) and str(
+                    warning.message) == "502 encountered" for warning in w)):
+                    print("502 error encountered while executing the function. Retrying...")
+                    if attempt < 2:
+                        continue
+                return result
+    return wrapper
