@@ -82,7 +82,7 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\\x00-\\x20\\x7f]*)\\s
 4. For each part that is different, **freshly translate** that part. **Remember to obey the `Rules for translating special strings`**.
 5. **Combine** the copied parts and the freshly translated parts into a final translation.
 6. In your response, include your final translation and an explanation describing what you did for each step.
-7. **Format** your response by providing your final translation, followed by the delimiter `{{ delimiter }}`, followed by your explanation.
+7. **Format** your response by providing your final translation, followed by the delimiter `{{ delimiter }}`, followed by your explanation. Your final translation **must be provided without any added commentary, formatting, markdown fences, or extra text of any kind**.
 """
 
 SOURCE_ARTICLE = """
