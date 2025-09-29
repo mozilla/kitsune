@@ -8,6 +8,7 @@ from playwright_tests.tests.conftest import create_user_factory
 
 
 # C2952002, C2952017
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -71,6 +72,7 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
 
 
 # C2952003, C2952016
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_unreviewed_revisions_are_not_assigned_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -130,6 +132,7 @@ def test_deferred_revisions_are_not_assigned_to_system_account(page:Page, create
 
 
 #  C2979501, C2979502
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_localization_revisions_are_assigned_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)

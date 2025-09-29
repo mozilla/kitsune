@@ -226,6 +226,7 @@ def test_user_deletion_on_question_with_spam_replies(page: Page, create_user_fac
 
 
 # C2807314
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 @pytest.mark.parametrize("question_type", ["archived", "non-archived"])
 def test_user_deletion_on_question_with_replies_from_other_user(page: Page,
@@ -325,6 +326,7 @@ def test_user_deletion_on_question_with_replies_from_same_user(page: Page,
 
 
 # C2807314
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 @pytest.mark.parametrize("question_type", ["archived", "non-archived"])
 def test_user_deletion_on_question_with_solution(page: Page, question_type, create_user_factory):
@@ -418,6 +420,7 @@ def test_user_deletion_on_voted_question(page: Page, question_type, create_user_
 
 
 # C2807938, C2807940, C2926133, C2807890, C2807892, C2807893
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 @pytest.mark.parametrize("answer_type", ["simple", "solution", "voted"])
 @pytest.mark.parametrize("question_type", ["archived", "non-archived"])

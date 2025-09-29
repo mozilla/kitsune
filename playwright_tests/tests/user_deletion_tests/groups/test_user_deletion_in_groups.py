@@ -5,7 +5,8 @@ from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# C2939494 
+# C2939494
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_deleted_user_is_removed_from_groups(page: Page, create_user_factory):
     utilities = Utilities(page)

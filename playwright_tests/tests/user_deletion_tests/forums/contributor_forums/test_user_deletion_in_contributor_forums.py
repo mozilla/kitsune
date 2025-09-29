@@ -9,6 +9,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C3132836
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_thread_with_no_replies_is_not_assigned_to_system_user(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -261,6 +262,7 @@ def test_deleting_the_user_which_edited_a_thread(page: Page, create_user_factory
 
 
 # C2939461
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_threads_are_assigned_to_system_account_if_contains_additional_posts(page: Page,
                                                                              create_user_factory):
@@ -299,6 +301,7 @@ def test_threads_are_assigned_to_system_account_if_contains_additional_posts(pag
 
 
 # C2939461
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_thread_replies_are_assigned_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)

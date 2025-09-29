@@ -65,6 +65,8 @@ class AuthFlowPage:
 
         if self.auth_page.is_enter_otp_code_input_field_displayed():
             """If the OTP code input field is displayed, provide the OTP code."""
+            self.utilities.clear_fxa_email(self.utilities.staff_user)
+            self.auth_page.click_on_email_new_code_button()
             self.__provide_otp_code(self.utilities.get_fxa_verification_code(
                 fxa_username=username))
         self.utilities.wait_for_dom_to_load()
