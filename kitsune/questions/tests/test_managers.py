@@ -1,9 +1,61 @@
+from kitsune.questions.managers import get_sumo_bot
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.models import Profile
+from kitsune.users.tests import UserFactory
 
 
 class QuestionManagerTestCase(TestCase):
+    def setUp(self):
+        get_sumo_bot.cache_clear()
+
+    def test_spam(self):
+        """Verify the spam queryset."""
+        q = QuestionFactory()
+        self.assertEqual(0, Question.objects.spam().count())
+
+        q.mark_as_spam(Profile.get_sumo_bot())
+        self.assertEqual(1, Question.objects.spam().count())
+
+    def test_detected_spam(self):
+        """Verify the detected_spam queryset for bot-marked spam."""
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
+
+        q1.mark_as_spam(Profile.get_sumo_bot())
+        detected_questions = Question.objects.detected_spam().filter(id__in=[q1.id, q2.id])
+        self.assertEqual(1, detected_questions.count())
+        self.assertEqual(q1.id, detected_questions.first().id)
+
+        human_user = UserFactory()
+        q2.mark_as_spam(human_user)
+
+        detected_questions = Question.objects.detected_spam().filter(id__in=[q1.id, q2.id])
+        self.assertEqual(1, detected_questions.count())
+        self.assertEqual(q1.id, detected_questions.first().id)
+
+    def test_undetected_spam(self):
+        """Verify the undetected_spam queryset for manually marked spam."""
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
+
+        human_user = UserFactory()
+        q1.mark_as_spam(human_user)
+
+        undetected_questions = Question.objects.undetected_spam().filter(id=q1.id)
+        self.assertEqual(1, undetected_questions.count())
+        self.assertEqual(q1.id, undetected_questions.first().id)
+
+        q2.mark_as_spam(Profile.get_sumo_bot())
+
+        self.assertTrue(Question.objects.undetected_spam().filter(id=q1.id).exists())
+        self.assertFalse(Question.objects.undetected_spam().filter(id=q2.id).exists())
+
+        our_questions = Question.objects.undetected_spam().filter(id__in=[q1.id, q2.id])
+        self.assertEqual(1, our_questions.count())
+        self.assertEqual(q1.id, our_questions.first().id)
+
     def test_done(self):
         """Verify the done queryset."""
         # Create a question, there shouldn't be any done yet.
@@ -54,7 +106,7 @@ class QuestionManagerTestCase(TestCase):
 
     def test_needs_attention(self):
         """Verify the needs_attention queryset."""
-        # Create a question, there shouldn't be one needs_attention.
+        # Create a question, there should be one needs_attention.
         q = QuestionFactory()
         self.assertEqual(1, Question.objects.needs_attention().count())
 

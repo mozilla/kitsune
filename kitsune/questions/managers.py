@@ -1,9 +1,17 @@
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 from django.db.models import F, Manager, Q
 from django.db.models.functions import Now
 
 from kitsune.questions import config
+from kitsune.users.models import Profile
+
+
+@lru_cache(maxsize=1)
+def get_sumo_bot():
+    """Get the SuMo bot user with caching."""
+    return Profile.get_sumo_bot()
 
 
 class QuestionManager(Manager):
@@ -71,6 +79,17 @@ class QuestionManager(Manager):
 
     def solved(self):
         return self.filter(solution__isnull=False)
+
+    def spam(self):
+        return self.filter(is_spam=True)
+
+    def detected_spam(self):
+        sumo_bot = get_sumo_bot()
+        return self.filter(is_spam=True, marked_as_spam_by=sumo_bot)
+
+    def undetected_spam(self):
+        sumo_bot = get_sumo_bot()
+        return self.filter(is_spam=True).exclude(marked_as_spam_by=sumo_bot)
 
 
 class AAQConfigManager(Manager):
