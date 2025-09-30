@@ -1,5 +1,7 @@
 from django.core.validators import RegexValidator
 
-TwitterValidator = RegexValidator(
-    r"^[\w]+$", message="Please enter correct Twitter Handle", code="Invalid name"
+UsernameValidator = RegexValidator(
+    r"^[\w]+$",
+    message="Please enter a valid username (letters, numbers, and underscores only)",
+    code="Invalid username",
 )

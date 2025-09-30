@@ -2,27 +2,31 @@ from django.forms import ValidationError
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.forms import username_allowed
-from kitsune.users.validators import TwitterValidator
+from kitsune.users.validators import UsernameValidator
 
 
-class TwitterValidatorTestCase(TestCase):
+class UsernameValidatorTestCase(TestCase):
     def setUp(self):
         def test_valid(self):
-            TwitterValidator("a_valid_name")
+            UsernameValidator("a_valid_name")
 
         def test_has_number(self):
-            TwitterValidator("valid123")
+            UsernameValidator("valid123")
 
         def test_has_letter_number_underscore(self):
-            TwitterValidator("valid_name_123")
+            UsernameValidator("valid_name_123")
 
     def test_has_slash(self):
-        # Twitter usernames can not have slash "/"
-        self.assertRaises(ValidationError, lambda: TwitterValidator("x/"))
+        self.assertRaises(ValidationError, lambda: UsernameValidator("x/"))
 
     def test_has_at_sign(self):
-        # Dont Accept Twitter Username with "@"
-        self.assertRaises(ValidationError, lambda: TwitterValidator("@x"))
+        self.assertRaises(ValidationError, lambda: UsernameValidator("@x"))
+
+    def test_has_hyphen(self):
+        self.assertRaises(ValidationError, lambda: UsernameValidator("user-name"))
+
+    def test_path_traversal_attack(self):
+        self.assertRaises(ValidationError, lambda: UsernameValidator("/../../wp-login.php"))
 
 
 class Testusername_allowed(TestCase):

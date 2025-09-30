@@ -17,7 +17,7 @@ from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.managers import AllProfilesManager, RegularProfileManager
-from kitsune.users.validators import TwitterValidator
+from kitsune.users.validators import UsernameValidator
 
 log = logging.getLogger("k.users")
 
@@ -98,14 +98,22 @@ class Profile(ModelBase):
         max_length=15,
         null=True,
         blank=True,
-        validators=[TwitterValidator],
+        validators=[UsernameValidator],
         verbose_name=_lazy("Twitter Username"),
     )
     community_mozilla_org = models.CharField(
-        max_length=255, default="", blank=True, verbose_name=_lazy("Community Portal Username")
+        max_length=255,
+        default="",
+        blank=True,
+        validators=[UsernameValidator],
+        verbose_name=_lazy("Community Portal Username"),
     )
     people_mozilla_org = models.CharField(
-        max_length=255, blank=True, default="", verbose_name=_lazy("People Directory Username")
+        max_length=255,
+        blank=True,
+        default="",
+        validators=[UsernameValidator],
+        verbose_name=_lazy("People Directory Username"),
     )
     matrix_handle = models.CharField(
         max_length=255, default="", blank=True, verbose_name=_lazy("Matrix Nickname")
