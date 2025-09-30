@@ -544,7 +544,7 @@ class QuestionPage(BasePage):
     def click_on_thread_locked_link(self):
         self._click(self.lock_this_thread_banner_link)
 
-    def click_on_lock_this_question_locator(self):
+    def click_on_lock_this_question_option(self):
         self._click(self.lock_this_question_option)
 
     def click_on_subscribe_to_feed_option(self):
