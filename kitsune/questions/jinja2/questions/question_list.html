@@ -155,7 +155,7 @@
       </li>
       {% if request.user.has_perm("flagit.can_moderate") %}
       <li class="tabs--item">
-        <a href="{{ questions_url(show='spam', filter=None, page=None) }}" {{ show|class_selected('spam') }}>
+        <a href="{{ questions_url(show='spam', filter=None, page=None, owner=None, topic=None) }}" {{ show|class_selected('spam') }}>
           <span>{{ _('Spam') }}</span>
         </a>
       </li>
