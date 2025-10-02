@@ -3,13 +3,19 @@ import re
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.db.models.functions import Coalesce
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext_lazy as _nlazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, MultiUsernameFilterField
-from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
+from kitsune.wiki.config import (
+    CANNED_RESPONSES_CATEGORY,
+    CATEGORIES,
+    SIGNIFICANCES,
+    TEMPLATES_CATEGORY,
+)
 from kitsune.wiki.content_managers import ManualContentManager
 from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH, Document, DraftRevision, Revision
 from kitsune.wiki.tasks import add_short_links
@@ -63,6 +69,9 @@ COMMENT_LONG = _lazy(
 )
 PRODUCT_REQUIRED = _lazy("Please select at least one product.")
 TOPIC_REQUIRED = _lazy("Please select at least one topic.")
+RELATED_DOCUMENTS_DISALLOWED = _lazy(
+    "Related documents are not allowed for Templates and Canned Responses."
+)
 
 
 class DocumentForm(forms.ModelForm):
@@ -135,8 +144,11 @@ class DocumentForm(forms.ModelForm):
         widget=ProductsWidget(),
     )
 
-    related_documents = forms.MultipleChoiceField(
-        label=_lazy("Related documents:"), required=False, widget=RelatedDocumentsWidget()
+    related_documents = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=Document.objects.none(),
+        label=_lazy("Related documents:"),
+        widget=RelatedDocumentsWidget(),
     )
 
     locale = forms.CharField(widget=forms.HiddenInput())
@@ -154,9 +166,27 @@ class DocumentForm(forms.ModelForm):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
 
+    def clean_related_documents(self):
+        """Replace any children with their parent documents."""
+        related_docs = self.cleaned_data.get("related_documents", Document.objects.none())
+
+        # In the form, we'll show the translations of the related documents if they exist
+        # (see kitsune.wiki.views.get_visible_related_documents), but we always store
+        # related documents as parents.
+        return Document.objects.filter(
+            id__in=related_docs.annotate(
+                root_id=Coalesce("parent_id", "id"),
+            ).values_list("root_id", flat=True)
+        ).distinct()
+
     def clean(self):
         cdata = super().clean()
         locale = cdata.get("locale")
+
+        if cdata.get("related_documents") and (
+            int(cdata.get("category", 0)) in (TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY)
+        ):
+            raise forms.ValidationError(RELATED_DOCUMENTS_DISALLOWED)
 
         # Products are required for en-US
         product_ids = set(map(int, cdata.get("products", [])))
@@ -229,6 +259,7 @@ class DocumentForm(forms.ModelForm):
         can_archive = kwargs.pop("can_archive", False)
         can_edit_needs_change = kwargs.pop("can_edit_needs_change", False)
         initial_title = kwargs.pop("initial_title", "")
+        locale = kwargs.pop("locale", None)
 
         super().__init__(*args, **kwargs)
 
@@ -244,8 +275,13 @@ class DocumentForm(forms.ModelForm):
         products_field = self.fields["products"]
         products_field.choices = Product.active.values_list("id", "title")
 
+        # Set up the queryset for the related documents field.
         related_documents_field = self.fields["related_documents"]
-        related_documents_field.choices = Document.objects.values_list("id", "title")
+        queryset = Document.objects.filter(is_template=False)
+        locales = [settings.WIKI_DEFAULT_LANGUAGE]
+        if locale and (locale != settings.WIKI_DEFAULT_LANGUAGE):
+            locales.append(locale)
+        related_documents_field.queryset = queryset.filter(locale__in=locales)
 
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.

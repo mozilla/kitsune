@@ -1,5 +1,4 @@
 import json
-from collections.abc import Iterable
 
 from django import forms
 from django.template.loader import render_to_string
@@ -72,14 +71,12 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     """A widget to render the related documents list and search field."""
 
     def render(self, name, value, attrs=None, renderer=None):
-        if isinstance(value, int):
-            related_documents = Document.objects.filter(id__in=[value])
-        elif not isinstance(value, str) and isinstance(value, Iterable):
-            related_documents = Document.objects.filter(id__in=value)
-        else:
-            related_documents = Document.objects.none()
+        related_documents = (
+            Document.objects.filter(id__in=value).values("pk", "title")
+            if value
+            else Document.objects.none()
+        )
 
         return render_to_string(
-            "wiki/includes/related_docs_widget.html",
-            {"related_documents": related_documents, "name": name},
+            "wiki/includes/related_docs_widget.html", {"related_documents": related_documents}
         )

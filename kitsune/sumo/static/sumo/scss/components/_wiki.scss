@@ -1318,3 +1318,23 @@ article {
     transform: rotate(0);
   }
 }
+
+// Styling for the tom-select clear_button plugin.
+.ts-wrapper.multi.plugin-clear_button .ts-control > .clear-button {
+  opacity: 100%;
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 8px;
+  text-shadow: 0 1px 0 rgba(0, 51, 83, 30%);
+  border-radius: 3px;
+  background-image: linear-gradient(to bottom, #1da7ee, #178ee9) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 20%),inset 0 1px rgba(255, 255, 255, 3%);
+
+  &:hover {
+    background-image: linear-gradient(to bottom, #008fd8, #0075cf) !important;
+  }
+}

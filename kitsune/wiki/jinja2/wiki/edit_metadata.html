@@ -47,6 +47,7 @@
             {% endif %}
               {% for field in document_form.visible_fields() if
                 (field.name != 'restrict_to_groups') and (field.name != 'is_localizable' or not document.translations.exists()) %}
+                {% if (field.name != 'related_documents') or document.allows_related_documents %}
                 <div class="field has-large-textarea">
                   {{ field|label_with_help }}
                   {% if field.name in ['products', 'topics'] %}
@@ -57,6 +58,7 @@
                   {% endif %}
                   {{ field }}
                 </div>
+                {% endif %}
               {% endfor %}
             {% if document.translations.exists() %}
               {{ document_form.is_localizable.as_hidden()|safe }}
