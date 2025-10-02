@@ -20,5 +20,7 @@ def test_create_user_sessions_for_test_accounts(page: Page):
         account_password=utilities.user_secrets_pass
     )
     utilities.wait_for_given_timeout(3500)
+    assert (sumo_pages.top_navbar.get_text_of_logged_in_username() == utilities
+            .username_extraction_from_email(utilities.staff_user))
     username = utilities.username_extraction_from_email(utilities.staff_user)
     utilities.store_session_cookies(username)

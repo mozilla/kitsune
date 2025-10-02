@@ -1,8 +1,5 @@
 name: Playwright Tests
 on:
-    schedule:
-        # Playwright tests are running automatically in Firefox on each Monday & in Chromium on each Friday.
-        - cron: '0 5 * * 1,5'
     workflow_dispatch:
         inputs:
             Browsers:
@@ -77,18 +74,8 @@ jobs:
         run: |
           source .venv/bin/activate && python -m nltk.downloader wordnet omw-1.4
       - name: Set up browsers env
-        if: "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
         run: |
-            if [ "${{ github.event_name }}" == 'schedule' ]; then
-                current_day=$(date +\%u)
-                if [ $current_day -eq 1 ]; then
-                    echo "BROWSER=firefox" >> $GITHUB_ENV
-                elif [ $current_day -eq 5 ]; then
-                    echo "BROWSER=chromium" >> $GITHUB_ENV
-                fi
-            elif [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
-                echo "BROWSER=${{inputs.Browsers}}" >> $GITHUB_ENV
-            fi
+            echo "BROWSER=${{inputs.Browsers}}" >> $GITHUB_ENV
       - name: Ensure Playwright browsers are installed
         run: |
             source .venv/bin/activate && playwright install ${{ env.BROWSER }}
@@ -104,7 +91,7 @@ jobs:
             source ../.venv/bin/activate
             declare dispatch_test_suite="${{inputs.TestSuite}}"
             declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "contributorForumSearch" "userGroupsTests" "antiSpamTests" "contributorDiscussions" "contributorDiscussionsThreads" "userDeletion")
-            if [ "$dispatch_test_suite" == "All" ] || [ "${{ github.event_name}}" == "schedule" ] ; then
+            if [ "$dispatch_test_suite" == "All" ] ; then
                 for test in "${all_test_suites[@]}"; do
                     if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
                         any_failures=true
@@ -138,21 +125,45 @@ jobs:
                 fi
             fi
             echo "TESTS_FAILED=$any_failures" >> $GITHUB_ENV
-      - name: Generating Allure Report
-        working-directory: playwright_tests
-        if: success() || failure()
-        run: |
-            curl -o allure-2.32.0.tgz -L https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.32.0/allure-commandline-2.32.0.tgz
-            tar -zxvf allure-2.32.0.tgz
-            export PATH=$PATH:$PWD/allure-2.32.0/bin
-            allure generate --single-file reports/allure_reports
-      - name: Upload the combined test report as artifact
-        if: success() || failure()
+
+      - name: Upload raw test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Playwright test report
-          path: |
-            playwright_tests/allure-report
+            name: raw-allure-results
+            path: playwright_tests/reports/allure_reports
+
       - name: Playwright Test Status
         if: env.TESTS_FAILED == 'true'
         run: exit 1
+
+  generating_allure_report:
+      runs-on: ubuntu-latest
+      needs: playwright_tests
+      if: always()
+      steps:
+          - uses: actions/checkout@v3
+          - name: Download test results
+            uses: actions/download-artifact@v4
+            with:
+                name: raw-allure-results
+                path: allure-results
+          - name: Install Allure CLI
+            run: |
+                curl -o allure-2.32.0.tgz -L https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.32.0/allure-commandline-2.32.0.tgz
+                tar -zxvf allure-2.32.0.tgz
+                echo "$PWD/allure-2.32.0/bin" >> $GITHUB_PATH
+          - name: Generate Allure Report
+            run: |
+                allure generate --single-file allure-results -o allure-report
+          - name: Upload the combined test report as artifact
+            uses: actions/upload-artifact@v4
+            with:
+                name: Final Allure Report
+                path: allure-report
+          - name: Delete raw allure results
+            if: success()
+            uses: geekyeggo/delete-artifact@v5
+            with:
+                name: raw-allure-results
+

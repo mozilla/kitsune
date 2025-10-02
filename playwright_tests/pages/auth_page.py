@@ -24,8 +24,10 @@ class AuthPage(BasePage):
         self.enter_your_password_input_field = page.locator("input[type='password']")
         self.enter_your_password_submit_button = page.get_by_role(
             "button", name="Sign in", exact=True)
-        self.enter_otp_code_input_field = page.locator("input#otp-code")
-        self.enter_otp_code_confirm_button = page.locator("button#submit-btn")
+        self.enter_otp_code_input_field = page.locator(
+            "//input[@data-testid='signin-token-code-input-field']")
+        self.enter_otp_code_confirm_button = page.locator("//button[@type='submit']")
+        self.email_new_code = page.locator("//button[text()='Email new code.']")
 
     def click_on_cant_sign_in_to_my_mozilla_account_link(self):
         """Click on 'Can't sign in to my Mozilla account' link"""
@@ -55,6 +57,10 @@ class AuthPage(BasePage):
         """Click on 'Submit' OTP code button"""
         self._click(self.enter_otp_code_confirm_button)
 
+    def click_on_email_new_code_button(self):
+        """Click on Email new code. button"""
+        self._click(self.email_new_code)
+
     def add_data_to_email_input_field(self, text: str):
         """Add data to 'Enter your email' input field"""
         self._fill(self.enter_your_email_input_field, text)
@@ -65,7 +71,7 @@ class AuthPage(BasePage):
 
     def add_data_to_otp_code_input_field(self, text: str):
         """Add data to 'Enter OTP code' input field"""
-        self._fill(self.enter_otp_code_input_field, text)
+        self._type(self.enter_otp_code_input_field, text, 100)
 
     def clear_email_input_field(self):
         """Clear 'Enter your email' input field"""

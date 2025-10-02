@@ -8,6 +8,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C2939491
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_media_file_ownership_reassignment_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)

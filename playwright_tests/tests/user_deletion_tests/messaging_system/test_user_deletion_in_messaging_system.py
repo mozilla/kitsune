@@ -9,6 +9,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 
 # C2939485
+@pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_deleted_user_is_displayed_in_both_inbox_and_outbox(page: Page, create_user_factory):
     utilities = Utilities(page)
