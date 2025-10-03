@@ -93,7 +93,7 @@ class Utilities:
         for attempt in range(max_attempts):
             try:
                 # Steps:
-                # 1. Parsing the inbox json encoded response for the subject.
+                # 1. Parsing the inbox json encoded response for the x-signing-verify-code.
                 # 2. Clearing the inbox for the given fxa username if the verification code was
                 # fetched.
                 # 3. Returning the fxa verification code for further usage.
@@ -101,8 +101,7 @@ class Utilities:
                 response = requests.get(f"https://restmail.net/mail/{cleared_username}")
                 response.raise_for_status()
                 json_response = response.json()
-                fxa_verification_code = str(self.number_extraction_from_string(
-                    json_response[0]['subject']))
+                fxa_verification_code = json_response[0]['headers']['x-signin-verify-code']
                 self.clear_fxa_email(cleared_username)
                 return fxa_verification_code
             except HTTPError as htt_err:
