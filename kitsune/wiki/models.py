@@ -797,6 +797,10 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             locale__in=("", self.locale), target__contains=f"kb/{self.slug}"
         ).exists()
 
+    @property
+    def allows_related_documents(self):
+        return self.category not in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]
+
 
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field

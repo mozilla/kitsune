@@ -7,7 +7,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
 document.addEventListener("DOMContentLoaded", function() {
   const locale = document.documentElement.lang;
-  const search = new Search(`/${locale}/search`, { w: 1, format: 'json' });
+  const search = new Search("/api/1/kb/", { locales: `en-US,${locale}`, categories: "10,20,30,40,50" });
 
   const relatedDocsList = document.getElementById('related-docs-list');
   const searchInput = document.getElementById('search-related');
@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", function() {
     closeAfterSelect: true,
     maxItems: null, // Allow multiple selections
     plugins: {
+      clear_button: {
+        title: "Clear All",
+      },
       remove_button: {
         title: 'Remove this document'
       }
@@ -48,24 +51,9 @@ document.addEventListener("DOMContentLoaded", function() {
           return callback();
         }
 
-        const formattedResults = data.results
-          .filter(result => result.type === 'document')
-          .map(item => {
-            let id = item.id;
-            if (!id && item.url) {
-              const match = item.url.match(/\/(\d+)\//);
-              if (match) {
-                id = match[1];
-              }
-            }
-            return {
-              id: id,
-              title: item.title,
-              url: item.url
-            };
-          })
-          .filter(item => item.id)
-          .filter(item => !currentDocId || String(item.id) !== String(currentDocId));
+        const formattedResults = data.results.filter(
+          item => !currentDocId || String(item.id) !== String(currentDocId)
+        );
 
         callback(formattedResults);
       });
@@ -110,13 +98,13 @@ document.addEventListener("DOMContentLoaded", function() {
     if (emptyMessage) {
       emptyMessage.remove();
     }
-    
+
     preSelectedOptions.forEach(option => {
       const docData = {
         id: option.value,
         title: option.textContent
       };
-      
+
       // Add the option to TomSelect's options and selected items
       tomSelect.addOption(docData);
       tomSelect.addItem(option.value, true); // true = silent, don't trigger events

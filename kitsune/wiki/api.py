@@ -13,7 +13,7 @@ from kitsune.wiki.models import Document
 class DocumentShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ("title", "slug")
+        fields = ("id", "title", "slug")
 
 
 class DocumentDetailSerializer(DocumentShortSerializer):
@@ -37,19 +37,31 @@ class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
     serializer_class = DocumentShortSerializer
 
     def get_queryset(self):
-        queryset = Document.objects.visible(
-            self.request.user, category__in=settings.IA_DEFAULT_CATEGORIES
-        )
+        locales = self.request.query_params.get("locales")
+        if locales:
+            # Multiple locales are separated by commas.
+            locales = locales.replace(",", " ").split()
+        elif locale := normalize_language(self.get_locale()):
+            locales = [locale]
 
-        locale = normalize_language(self.get_locale())
+        categories = self.request.query_params.get("categories")
+        if categories:
+            # Multiple categories are separated by commas.
+            categories = categories.replace(",", " ").split()
+        else:
+            categories = settings.IA_DEFAULT_CATEGORIES
+
         product = self.request.query_params.get("product")
         topic = self.request.query_params.get("topic")
         is_template = bool(self.request.query_params.get("is_template", False))
         is_archived = bool(self.request.query_params.get("is_archived", False))
         is_redirect = bool(self.request.query_params.get("is_redirect", False))
+        title_query = self.request.query_params.get("q")
 
-        if locale is not None:
-            queryset = queryset.filter(locale=locale)
+        queryset = Document.objects.visible(self.request.user, category__in=categories)
+
+        if locales:
+            queryset = queryset.filter(locale__in=locales)
 
         if product is not None:
             if locale == settings.WIKI_DEFAULT_LANGUAGE:
@@ -75,6 +87,9 @@ class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
             queryset = queryset.filter(redirect_filter)
         else:
             queryset = queryset.filter(~redirect_filter)
+
+        if title_query:
+            queryset = queryset.filter(title__icontains=title_query)
 
         return queryset
 

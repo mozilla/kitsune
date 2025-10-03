@@ -318,6 +318,10 @@ def document(request, document_slug, document=None):
 
     update_kb_visited(request.session, doc)
 
+    related_documents = get_visible_related_documents(
+        request.user, doc, locale=request.LANGUAGE_CODE, is_archived=False
+    )
+
     data = {
         "document": doc,
         "is_first_revision": is_first_revision,
@@ -343,6 +347,7 @@ def document(request, document_slug, document=None):
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
         "product_titles": ", ".join(p.title for p in sorted(products, key=lambda p: p.title)),
+        "related_docs": related_documents,
     }
 
     return maybe_vary_on_accept_language(render(request, "wiki/document.html", data))
@@ -387,7 +392,9 @@ def new_document(request):
     """Create a new wiki document."""
     products = Product.active.filter(visible=True)
     if request.method == "GET":
-        doc_form = DocumentForm(initial_title=request.GET.get("title"))
+        doc_form = DocumentForm(
+            initial_title=request.GET.get("title"), locale=request.LANGUAGE_CODE
+        )
         rev_form = RevisionForm()
         return render(
             request,
@@ -401,7 +408,7 @@ def new_document(request):
 
     post_data = request.POST.copy()
     post_data.update({"locale": request.LANGUAGE_CODE})
-    doc_form = DocumentForm(post_data)
+    doc_form = DocumentForm(post_data, locale=request.LANGUAGE_CODE)
     rev_form = RevisionForm(post_data)
 
     if doc_form.is_valid() and rev_form.is_valid():
@@ -601,9 +608,10 @@ def edit_document_metadata(request, document_slug, revision_id=None):
     can_archive = doc.allows(user, "archive")
 
     doc_form = DocumentForm(
-        initial=_document_form_initial(doc),
+        initial=_document_form_initial(doc, request.user),
         can_archive=can_archive,
         can_edit_needs_change=can_edit_needs_change,
+        locale=request.LANGUAGE_CODE,
     )
 
     if request.method == "POST":  # POST
@@ -617,6 +625,7 @@ def edit_document_metadata(request, document_slug, revision_id=None):
             instance=doc,
             can_archive=can_archive,
             can_edit_needs_change=can_edit_needs_change,
+            locale=request.LANGUAGE_CODE,
         )
         if doc_form.is_valid():
             # Get the possibly new slug for the imminent redirection:
@@ -989,8 +998,8 @@ def translate(request, document_slug, revision_id=None):
 
     if user_has_doc_perm:
         # Restore draft if draft is available and user requested to restore
-        doc_initial = _document_form_initial(doc) if doc else {}
-        doc_form = DocumentForm(initial=doc_initial)
+        doc_initial = _document_form_initial(doc, request.user) if doc else {}
+        doc_form = DocumentForm(initial=doc_initial, locale=request.LANGUAGE_CODE)
 
     if user_has_rev_perm:
         rev_initial = {"based_on": based_on_rev.id, "comment": ""}
@@ -1033,7 +1042,7 @@ def translate(request, document_slug, revision_id=None):
                     doc_initial.update(
                         {"title": draft_data.get("title", ""), "slug": draft_data.get("slug", "")}
                     )
-                    doc_form = DocumentForm(initial=doc_initial)
+                    doc_form = DocumentForm(initial=doc_initial, locale=request.LANGUAGE_CODE)
                 if user_has_rev_perm:
                     rev_initial.update(
                         {
@@ -1056,7 +1065,7 @@ def translate(request, document_slug, revision_id=None):
                 disclose_description = True
                 post_data = request.POST.copy()
                 post_data.update({"locale": request.LANGUAGE_CODE})
-                doc_form = DocumentForm(post_data, instance=doc)
+                doc_form = DocumentForm(post_data, instance=doc, locale=request.LANGUAGE_CODE)
                 doc_form.instance.locale = request.LANGUAGE_CODE
                 doc_form.instance.parent = parent_doc
                 if which_form == "both":
@@ -1670,7 +1679,7 @@ def show_translations(request, document_slug):
     )
 
 
-def _document_form_initial(document):
+def _document_form_initial(document, user=None):
     """Return a dict with the document data pertinent for the form."""
     return {
         "title": document.title,
@@ -1679,10 +1688,8 @@ def _document_form_initial(document):
         "is_localizable": document.is_localizable,
         "is_archived": document.is_archived,
         "topics": Topic.active.filter(document=document).values_list("id", flat=True),
-        "products": list(Product.active.filter(document=document).values_list("id", flat=True)),
-        "related_documents": Document.objects.filter(related_documents=document).values_list(
-            "id", flat=True
-        ),
+        "products": Product.active.filter(document=document).values_list("id", flat=True),
+        "related_documents": get_visible_related_documents(user, document),
         "allow_discussion": document.allow_discussion,
         "needs_change": document.needs_change,
         "needs_change_comment": document.needs_change_comment,
@@ -1843,6 +1850,45 @@ def get_fallback_locale(doc, request):
     # the second part of the result tuple, because if we've reached this point, the
     # incoming Accept-Language header could have influenced the result.
     return (None, True)
+
+
+def get_visible_related_documents(user, document, locale=None, **extra_filters):
+    """
+    Returns the related documents for the given document that are visible to the
+    given user. Selects translations for the given locale if they exist, and can
+    optionally apply extra filters on the related documents (for example, to
+    exclude archived documents).
+    """
+    if not locale:
+        locale = document.locale
+
+    # Ensure that we always use the parent's related documents.
+    related_docs = document.original.related_documents.all()
+
+    if extra_filters:
+        related_docs = related_docs.filter(**extra_filters)
+
+    if locale != settings.WIKI_DEFAULT_LANGUAGE:
+        # For non-English locales, show the translations if they exist. Note
+        # that even though we show the translations if they exist, the actual
+        # related documents are always parents.
+        related_docs = (
+            related_docs.annotate(
+                show_id=Coalesce(
+                    Subquery(
+                        Document.objects.filter(
+                            locale=locale,
+                            parent=OuterRef("pk"),
+                        ).values("pk")[:1]
+                    ),
+                    "pk",
+                )
+            )
+            .values("show_id")
+            .distinct()
+        )
+
+    return Document.objects.visible(user, id__in=related_docs)
 
 
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
