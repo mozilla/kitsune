@@ -184,6 +184,25 @@ class ReviewMailTestCase(TestCase):
         assert '"All about quotes"' in mail.outbox[0].body
         assert 'foo & "bar"' in mail.outbox[0].body
 
+    @mock.patch.object(Site.objects, "get_current")
+    def test_no_notification_for_system_account_revision(self, get_current):
+        """Test that no review notifications are sent for system account created revisions."""
+        get_current.return_value.domain = "testserver"
+
+        # Import here to avoid circular imports
+        from kitsune.users.models import Profile
+
+        # Create a bot revision (created by system account)
+        sumo_bot = Profile.get_sumo_bot()
+        rev = RevisionFactory(creator=sumo_bot)
+        msg = "Bot revision reviewed"
+
+        # Human reviewer approves the bot revision
+        self._approve_and_send(rev, self.user, msg)
+
+        # Verify no email was sent (this tests the fix for GitHub issue #2542)
+        self.assertEqual(0, len(mail.outbox))
+
 
 class TestDocumentRenderCascades(TestCase):
     def _clean(self, d):

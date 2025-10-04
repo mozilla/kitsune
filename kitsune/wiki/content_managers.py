@@ -252,8 +252,10 @@ class WikiContentManager:
                         exclude_users.append(revision.readied_for_localization_by)
                     ReadyRevisionEvent(revision).fire(exclude=exclude_users)
                 case NotificationType.REVIEW_WORKFLOW:
-                    send_reviewed_notification.delay(revision.id, comment)
                     send_contributor_notification.delay(revision.id, comment)
+                    profile = getattr(revision.creator, "profile", None)
+                    if not (profile and profile.is_system_account):
+                        send_reviewed_notification.delay(revision.id, comment)
 
     def mark_ready_for_localization(
         self,

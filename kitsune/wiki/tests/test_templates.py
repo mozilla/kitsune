@@ -31,7 +31,7 @@ from kitsune.wiki.events import (
     get_diff_for,
 )
 from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Locale, Revision
-from kitsune.wiki.tasks import send_reviewed_notification
+from kitsune.wiki.tasks import send_contributor_notification, send_reviewed_notification
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -1989,6 +1989,61 @@ class ReviewRevisionTests(TestCase):
         subject = doc(".unreviewed-revision").text()
         message = "Unreviewed Revision:"
         assert message in subject
+
+    @mock.patch.object(send_reviewed_notification, "delay")
+    @mock.patch.object(send_contributor_notification, "delay")
+    @mock.patch.object(Site.objects, "get_current")
+    def test_no_reviewer_notification_for_bot_revision_review(self, get_current, contributor_delay, reviewer_delay):
+        """Test that reviewer notifications are skipped but contributor notifications are kept for bot revisions (GitHub issue #2542)."""
+        get_current.return_value.domain = "testserver"
+
+        # Import here to avoid circular imports
+        from kitsune.users.models import Profile
+
+        # Create a revision made by the SuMo bot (system account)
+        sumo_bot = Profile.get_sumo_bot()
+        bot_revision = Revision(
+            summary="AI translation",
+            content="<div>Bot-generated content</div>",
+            keywords="ai translation",
+            document=self.document,
+            creator=sumo_bot,
+        )
+        bot_revision.save()
+
+        # Human reviewer approves the bot revision
+        response = post(
+            self.client,
+            "wiki.review_revision",
+            {"approve": "Approve Revision", "comment": "Looks good"},
+            args=[self.document.slug, bot_revision.id],
+        )
+        self.assertEqual(200, response.status_code)
+
+        # Verify that reviewer notifications were NOT sent (fixes GitHub issue #2542)
+        reviewer_delay.assert_not_called()
+        # But contributor notifications WERE sent (addresses reviewer's concern in PR #6928)
+        contributor_delay.assert_called_once_with(bot_revision.id, "Looks good")
+
+    @mock.patch.object(send_reviewed_notification, "delay")
+    @mock.patch.object(send_contributor_notification, "delay")
+    @mock.patch.object(Site.objects, "get_current")
+    def test_both_notifications_sent_for_human_revision_review(self, get_current, contributor_delay, reviewer_delay):
+        """Test that both reviewer and contributor notifications are sent for human-created revisions."""
+        get_current.return_value.domain = "testserver"
+
+        # Human reviewer approves a human-created revision
+        response = post(
+            self.client,
+            "wiki.review_revision",
+            {"approve": "Approve Revision", "comment": "Great work"},
+            args=[self.document.slug, self.revision.id],
+        )
+        self.assertEqual(200, response.status_code)
+
+        # Verify that BOTH types of notifications were sent for human revisions
+        reviewer_delay.assert_called_once_with(self.revision.id, "Great work")
+        contributor_delay.assert_called_once_with(self.revision.id, "Great work")
 
 
 class CompareRevisionTests(TestCase):
