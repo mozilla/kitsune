@@ -52,6 +52,8 @@ class TopNavbar(BasePage):
             "//h4[text()='Browse by product']/../following-sibling::ul/li/a")
         self.browse_all_forum_threads_by_topics_top_navbar_options = page.locator(
             "//h4[text()='Browse all forum threads by topic']/../following-sibling::ul/li/a")
+        self.firefox_desktop_option = page.locator("//a[text()='Firefox desktop']")
+        self.view_all_forums = page.locator("//a[normalize-space(text())='View all forums']")
 
         # Locators belonging to the 'Contribute' top-navbar section.
         self.contribute_option = page.get_by_role("link").filter(has_text="Contribute")
@@ -150,6 +152,17 @@ class TopNavbar(BasePage):
         """Get all 'Browse all forum threads by topic' top-navbar options locators"""
         self.hover_over_community_forums_top_navbar_option()
         return self.browse_all_forum_threads_by_topics_top_navbar_options.all()
+
+    def click_on_firefox_desktop_option(self):
+        """Click on the 'Firefox desktop' option from the 'Browse by product' section."""
+        self.hover_over_community_forums_top_navbar_option()
+        self._click(self.firefox_desktop_option)
+
+    def click_on_view_all_forums_option(self):
+        """Click on the 'View all forums' option from the 'Browse by product' section."""
+        self.hover_over_community_forums_top_navbar_option()
+        self._click(self.view_all_forums)
+
 
     """
         Actions against the 'Ask a Question' top-navbar section.

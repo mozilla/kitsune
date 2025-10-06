@@ -44,7 +44,7 @@ from playwright_tests.pages.common_elements.common_web_elements import CommonWeb
 from playwright_tests.pages.community_forums.forums_pages.product_support_forum import (
     ProductSupportForum,
 )
-from playwright_tests.pages.community_forums.forums_pages.support_forums_page import (
+from playwright_tests.pages.community_forums.forums_pages.all_community_forums_page import (
     SupportForumsPage,
 )
 from playwright_tests.pages.contribute.contribute_pages.contribute_page import ContributePage
@@ -219,7 +219,7 @@ class SumoPages:
         self.contact_support_page = ContactSupportPage(page)
 
         # Forums
-        self.support_forums_page = SupportForumsPage(page)
+        self.all_community_forums_page = SupportForumsPage(page)
         self.product_support_forum = ProductSupportForum(page)
 
         # User Groups

@@ -95,7 +95,3 @@ class AuthPage(BasePage):
         """Check if 'Continue with Firefox Accounts' button is displayed"""
         self._wait_for_locator(self.continue_with_firefox_accounts_button)
         return self._is_element_visible(self.continue_with_firefox_accounts_button)
-
-    def get_continue_with_firefox_button_locator(self) -> Locator:
-        """Get 'Continue with Firefox Accounts' button locator"""
-        return self.continue_with_firefox_accounts_button
