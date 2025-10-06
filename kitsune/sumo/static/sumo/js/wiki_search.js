@@ -34,9 +34,6 @@ document.addEventListener("DOMContentLoaded", function() {
     closeAfterSelect: true,
     maxItems: null, // Allow multiple selections
     plugins: {
-      clear_button: {
-        title: "Clear All",
-      },
       remove_button: {
         title: 'Remove this document'
       }
