@@ -1876,7 +1876,8 @@ def get_visible_related_documents(user, document, locale=None, **extra_filters):
             related_docs.annotate(
                 show_id=Coalesce(
                     Subquery(
-                        Document.objects.filter(
+                        Document.objects.visible(
+                            user,
                             locale=locale,
                             parent=OuterRef("pk"),
                         ).values("pk")[:1]
