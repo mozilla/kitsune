@@ -196,9 +196,6 @@ document.addEventListener("DOMContentLoaded", function () {
   new TomSelect("select[id='id_restrict_to_groups']", {
     closeAfterSelect: true,
     plugins: {
-      clear_button: {
-        title: "Clear All",
-      },
       remove_button: {
         title: "Remove Item"
       },
