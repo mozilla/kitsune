@@ -17,7 +17,6 @@ class KBArticleEditMetadata(BasePage):
         self.clear_all_selected_groups_button = page.locator("div[class='clear-button']")
         self.kb_article_restrict_visibility_field = page.locator(
             "input#id_restrict_to_groups-ts-control")
-        self.kb_article_restrict_visibility_delete_all_groups = page.locator("a[title='remove']")
         self.title_input_field = page.locator("input#id_title")
         self.slug_input_field = page.locator("input#id_slug")
         self.category_select_field = page.locator("select#id_category")
@@ -56,22 +55,16 @@ class KBArticleEditMetadata(BasePage):
     def delete_a_chosen_restricted_visibility_group(self, chosen_group: str):
         self._click(self.delete_group(chosen_group))
 
-    def clear_all_restricted_visibility_group_selections(self):
-        self._click(self.clear_all_selected_groups_button)
-
-    def is_clear_all_restricted_visibility_group_selection_visible(self) -> bool:
-        self._hover_over_element(self.restrict_visibility_input_field)
-        return self._is_element_visible(self.clear_all_selected_groups_button)
-
     def add_and_select_restrict_visibility_group_metadata(self, group_name: str):
         self._fill(self.kb_article_restrict_visibility_field, group_name)
         self._click(self.restrict_group(group_name))
 
-    def delete_a_restricted_visibility_group_metadata(self, group_name=""):
-        if group_name != "":
-            self._click(self.delete_a_group(group_name))
+    def delete_a_restricted_visibility_group_metadata(self, groups: [str, list[str]]):
+        if isinstance(groups, str):
+            self._click(self.delete_a_group(groups))
         else:
-            self._click(self.clear_all_selected_groups_button)
+            for group in groups:
+                self._click(self.delete_a_group(group))
 
     def get_text_of_title_input_field(self) -> str:
         return self._get_element_input_value(self.title_input_field)

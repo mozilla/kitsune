@@ -23,12 +23,13 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     test_user_two = create_user_factory()
     test_user_three = create_user_factory(groups=["Accessibility"])
     test_user_four = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     utilities.start_existing_session(cookies=test_user)
 
     article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
         approve_first_revision=True,
-        single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+        single_group=whitelisted_groups[0],
         is_template=is_template
     )
 
@@ -79,7 +80,7 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with an admin account and whitelisting a new group"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
     with allure.step("Signing in with a user which is part of the whitelisted groups"):
         utilities.start_existing_session(cookies=test_user_four)
@@ -119,7 +120,7 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with an admin account and removing the first group"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
-            group_name=utilities.kb_article_test_data['restricted_visibility_groups'][0]
+            whitelisted_groups[0]
         )
 
     with allure.step("Signing in with an account belonging to the removed group"):
@@ -143,7 +144,8 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with an admin account and removing all restricted groups"):
         utilities.start_existing_session(cookies=test_user)
 
-        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(group_name='')
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups[1])
 
     with allure.step("Deleting user session"):
         utilities.delete_cookies()
@@ -167,13 +169,14 @@ def test_restricted_visibility_in_search_results(page: Page, create_user_factory
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "Staff"])
     test_user_two = create_user_factory()
     test_user_three = create_user_factory(groups=["Accessibility"])
+    whitelisted_group = utilities.kb_article_test_data['restricted_visibility_groups'][0]
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0]
+            single_group=whitelisted_group[0]
         )
 
     with allure.step("Wait for ~1 minute until the kb article is available in search"):
@@ -228,13 +231,14 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_groups[0],
             is_template=is_template
         )
 
@@ -266,7 +270,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template,
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     with allure.step("Signing in with the user belonging to group 2 and verifying that the "
@@ -282,7 +286,9 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template,
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups)
 
     with allure.step("Navigating to the recent revisions page, signing out and verifying "
                      "that the article is displayed"):
@@ -307,13 +313,14 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_groups[0],
             article_content_image=utilities.kb_article_test_data['article_image'],
             is_template=is_template
         )
@@ -361,7 +368,7 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template,
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     with allure.step("Navigating to the 'Media Gallery' page"):
@@ -383,8 +390,10 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template,
         assert article_details['article_title'] in (sumo_pages.media_gallery
                                                     .get_image_in_documents_list_items_text())
     with allure.step("Removing restrictions"):
+        utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups)
 
     with allure.step("Navigating to the media gallery image page and verifying that the "
                      "article is displayed for signed out users"):
@@ -412,13 +421,14 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_groups[0],
             is_template=is_template
         )
 
@@ -456,7 +466,7 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     with allure.step("Navigating to the article discussion page and verifying that the "
@@ -473,7 +483,9 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups)
 
     with allure.step("Navigating to the article discussion page and verifying that the "
                      "article is displayed for signed out users"):
@@ -496,13 +508,14 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0]
+            single_group=whitelisted_groups[0]
         )
 
     sumo_pages.kb_article_page.click_on_article_option()
@@ -541,7 +554,7 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     sumo_pages.kb_article_page.click_on_article_option()
@@ -570,13 +583,14 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
 
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_groups[0],
             is_template=is_template
         )
 
@@ -614,7 +628,7 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template,
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     with allure.step("Navigating to the user profile page"):
@@ -633,7 +647,10 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template,
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups
+        )
 
     with allure.step("Navigating to the user profile page"):
         sumo_pages.top_navbar.click_on_view_profile_option()
@@ -661,6 +678,7 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_group = utilities.kb_article_test_data['restricted_visibility_groups'][0]
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
@@ -668,7 +686,7 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template,
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
             ready_for_localization=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_group,
             is_template=is_template
         )
 
@@ -701,7 +719,10 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template,
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_group
+        )
 
     with allure.step("Signing out and verifying that the article is displayed inside the "
                      "kb-overview dashboard"):
@@ -724,13 +745,14 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_group = utilities.kb_article_test_data['restricted_visibility_groups'][0]
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
             ready_for_localization=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_group,
             is_template=is_template
         )
 
@@ -765,7 +787,10 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template,
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_group
+        )
 
     with allure.step("Signing out and verifying that the article is displayed inside the "
                      "kb-overview dashboard"):
@@ -789,6 +814,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
@@ -796,7 +822,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
             ready_for_localization=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_groups[0],
             is_template=is_template
         )
 
@@ -837,7 +863,7 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     utilities.start_existing_session(cookies=test_user_three)
@@ -854,7 +880,10 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups
+        )
 
     with allure.step("Navigating to the test article linked to the document"):
         utilities.navigate_to_link(utilities.general_test_data['test_article_link'])
@@ -880,13 +909,14 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template,
                                             "forum-contributors"])
     test_user_two = create_user_factory(groups=["Accessibility"])
     test_user_three = create_user_factory(groups=["Contributors"])
+    whitelisted_groups = utilities.kb_article_test_data['restricted_visibility_groups']
 
     with allure.step("Creating a new kb article with restricted visibility"):
         utilities.start_existing_session(cookies=test_user)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True,
             ready_for_localization=True,
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][0],
+            single_group=whitelisted_groups[0],
             is_template=is_template
         )
 
@@ -925,7 +955,7 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template,
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            single_group=utilities.kb_article_test_data['restricted_visibility_groups'][1]
+            single_group=whitelisted_groups[1]
         )
 
     with allure.step("Verifying that the restricted kb article is displayed for the second "
@@ -941,7 +971,10 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template,
 
     with allure.step("Removing restrictions"):
         utilities.navigate_to_link(article_details['article_url'])
-        remove_all_article_restrictions(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
+            whitelisted_groups
+        )
 
     utilities.navigate_to_link(article_details['article_url'])
     sumo_pages.kb_article_page.click_on_show_history_option()
@@ -954,14 +987,6 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template,
             sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
                 article_details['article_title'])
         )
-
-
-def remove_all_article_restrictions(page: Page, user):
-    utilities = Utilities(page)
-    sumo_pages = SumoPages(page)
-    utilities.start_existing_session(cookies=user)
-
-    sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(group_name='')
 
 
 def _create_discussion_thread(page: Page) -> dict[str, Any]:

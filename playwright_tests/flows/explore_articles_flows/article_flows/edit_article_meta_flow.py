@@ -94,12 +94,11 @@ class EditArticleMetaFlow:
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
 
     @retry_on_502
-    def remove_a_restricted_visibility_group(self, group_name=""):
+    def remove_a_restricted_visibility_group(self, groups:[str, list[str]]):
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()
 
         if self.edit_kb_article_page.is_edit_anyway_option_visible():
             self.edit_kb_article_page.click_on_edit_anyway_option()
-        self.kb_article_edit_metadata_page.delete_a_restricted_visibility_group_metadata(
-            group_name)
+        self.kb_article_edit_metadata_page.delete_a_restricted_visibility_group_metadata(groups)
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
