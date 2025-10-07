@@ -66,10 +66,12 @@ Different content managers handle the publishing workflow:
 
 #### 5. Services (`kitsune/wiki/services.py`)
 
-**StaleTranslationService**
+**TranslationService**
 - Identifies outdated translations that need updates
+- Creates missing translations for enabled locales
 - Processes batch updates using appropriate strategies
 - Configurable via `STALE_TRANSLATION_THRESHOLD_DAYS` and `STALE_TRANSLATION_BATCH_SIZE`
+- Supports both stale translation updates (`create=False`) and new translation creation (`create=True`)
 
 **HybridTranslationService**
 - Manages hybrid workflow automation
@@ -84,6 +86,7 @@ The system responds to several trigger events (`TranslationTrigger`):
 - `MARK_READY_FOR_L10N`: Manual request to mark content for translation
 - `TRANSLATE`: Direct translation request
 - `STALE_TRANSLATION_UPDATE`: Periodic updates of outdated content
+- `INITIAL_TRANSLATION`: Creation of missing translations for enabled locales
 
 ## Configuration
 

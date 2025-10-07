@@ -18,15 +18,30 @@ from kitsune.wiki.strategies import (
 )
 
 
-class StaleTranslationService:
-    """Service for managing stale translation detection and processing."""
+class TranslationService:
+    """Service for managing automatic translation detection and processing."""
 
     def __init__(self):
         self.strategy_factory = TranslationStrategyFactory()
+        self.sumo_bot = Profile.get_sumo_bot()
 
-    def find_stale_translation_candidates(
+    def _get_target_locales(self, target_locales: list[str] | None) -> list[str]:
+        """Get target locales, defaulting to AI+HYBRID enabled locales."""
+        if target_locales is None:
+            return settings.AI_ENABLED_LOCALES + settings.HYBRID_ENABLED_LOCALES
+        return target_locales
+
+    def _get_base_english_docs_query(self):
+        """Get base queryset for localizable English documents."""
+        return Document.objects.filter(
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_localizable=True,
+            latest_localizable_revision__isnull=False,
+        ).exclude(html__startswith=REDIRECT_HTML)
+
+    def get_stale_translations(
         self, target_locales: list[str] | None = None, limit: int | None = None
-    ) -> list[tuple[Document, Document, str]]:
+    ) -> list[tuple[Document, Document | None, str]]:
         """Find English articles with stale translations that need updating.
 
         Args:
@@ -35,16 +50,17 @@ class StaleTranslationService:
         Returns:
             List of tuples: (english_document, translation_document, target_locale)
         """
-        if target_locales is None:
-            target_locales = settings.AI_ENABLED_LOCALES + settings.HYBRID_ENABLED_LOCALES
+        target_locales = self._get_target_locales(target_locales)
 
         cutoff_date = timezone.now() - timedelta(days=settings.STALE_TRANSLATION_THRESHOLD_DAYS)
-        sumo_bot = Profile.get_sumo_bot()
+
+        # Get base English documents query
+        english_docs = self._get_base_english_docs_query()
 
         # Skip translations that already have a pending LLM revision
         pending_sumo_bot_revision = Revision.objects.filter(
             document=OuterRef("pk"),
-            creator=sumo_bot,
+            creator=self.sumo_bot,
             is_approved=False,
             reviewed__isnull=True,
             based_on_id=OuterRef("parent__latest_localizable_revision_id"),
@@ -52,14 +68,11 @@ class StaleTranslationService:
 
         stale_translations = (
             Document.objects.filter(
-                parent__isnull=False,  # Is a translation
-                parent__is_localizable=True,
-                parent__latest_localizable_revision__isnull=False,
+                parent__in=english_docs,
                 current_revision__created__lt=cutoff_date,
                 locale__in=target_locales,
                 current_revision__isnull=False,
             )
-            .exclude(parent__html__startswith=REDIRECT_HTML)
             .select_related("parent", "parent__latest_localizable_revision", "current_revision")
             .filter(
                 # Parent has been updated since this translation
@@ -80,42 +93,96 @@ class StaleTranslationService:
         ]
         return candidates
 
-    def process_stale_translations(
-        self, limit: int | None = None, target_locales: list[str] | None = None
-    ) -> list[tuple[Document, Document, str]]:
-        """Process stale translations using appropriate strategies.
+    def get_missing_translations(
+        self, target_locales: list[str] | None = None, limit: int | None = None
+    ) -> list[tuple[Document, Document | None, str]]:
+        """Find English articles that are missing translations in enabled locales.
+
+        Args:
+            target_locales: List of locales to check (defaults to AI+HYBRID enabled locales)
+            limit: Maximum number of missing translations to return
+        Returns:
+            List of tuples: (english_document, None, target_locale)
+        """
+        target_locales = self._get_target_locales(target_locales)
+
+        missing_translations: list[tuple[Document, Document | None, str]] = []
+
+        for locale in target_locales:
+            if limit is not None and len(missing_translations) >= limit:
+                break
+
+            # Find English docs that don't have a translation in this locale
+            docs = (
+                self._get_base_english_docs_query()
+                .exclude(translations__locale=locale)
+                .select_related("latest_localizable_revision")
+                .order_by("-latest_localizable_revision__created")
+            )
+
+            # Apply remaining limit
+            remaining_limit = limit - len(missing_translations) if limit else None
+            if remaining_limit:
+                docs = docs[:remaining_limit]
+
+            for doc in docs:
+                missing_translations.append((doc, None, locale))
+                if limit and len(missing_translations) >= limit:
+                    break
+
+        return missing_translations
+
+    def process_translations(
+        self,
+        limit: int | None = None,
+        target_locales: list[str] | None = None,
+        create: bool = False,
+    ) -> list[tuple[Document, Document | None, str]]:
+        """Process translations using appropriate strategies.
 
         Args:
             limit: Maximum number of translations to process
+            target_locales: List of locales to check (defaults to AI+HYBRID enabled locales)
+            create: If True, create missing translations; if False, update stale translations
         Returns:
             List of tuples (english_document, translation_document, target_locale) that were processed
         """
         if limit is None:
             limit = settings.STALE_TRANSLATION_BATCH_SIZE
 
-        candidates = self.find_stale_translation_candidates(
-            limit=limit, target_locales=target_locales
-        )
+        candidates: list[tuple[Document, Document | None, str]]
+        if create:
+            candidates = self.get_missing_translations(limit=limit, target_locales=target_locales)
+            trigger = TranslationTrigger.INITIAL_TRANSLATION
+            metadata_key = "initial_translation"
+        else:
+            candidates = self.get_stale_translations(limit=limit, target_locales=target_locales)
+            trigger = TranslationTrigger.STALE_TRANSLATION_UPDATE
+            metadata_key = "stale_translation_update"
 
         for english_doc, translation_doc, locale in candidates:
             translation_method = self.strategy_factory.get_method_for_locale(locale)
 
+            metadata = {
+                metadata_key: True,
+                "english_revision_date": english_doc.latest_localizable_revision.created.isoformat(),
+            }
+
+            if translation_doc and translation_doc.current_revision:
+                metadata.update(
+                    {
+                        "previous_translation_revision_id": translation_doc.current_revision.id,
+                        "translation_revision_date": translation_doc.current_revision.created.isoformat(),
+                    }
+                )
+
             l10n_request = TranslationRequest(
                 revision=english_doc.latest_localizable_revision,
-                trigger=TranslationTrigger.STALE_TRANSLATION_UPDATE,
+                trigger=trigger,
                 target_locale=locale,
                 method=translation_method,
                 asynchronous=True,
-                metadata={
-                    "stale_translation_update": True,
-                    "previous_translation_revision_id": translation_doc.current_revision.id
-                    if translation_doc.current_revision
-                    else None,
-                    "english_revision_date": english_doc.latest_localizable_revision.created.isoformat(),
-                    "translation_revision_date": translation_doc.current_revision.created.isoformat()
-                    if translation_doc.current_revision
-                    else None,
-                },
+                metadata=metadata,
             )
             self.strategy_factory.execute(l10n_request)
         return candidates

@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils import timezone
 
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.config import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
-from kitsune.wiki.services import HybridTranslationService
+from kitsune.wiki.services import HybridTranslationService, TranslationService
+from kitsune.wiki.strategies import TranslationTrigger
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 APPROVED_MSG = "Automatically approved because it was not reviewed within 72 hour(s)."
@@ -462,3 +465,209 @@ class HybridTranslationServiceTests(TestCase):
         for rev in (self.rev1_el, self.rev1_el_2, self.rev1_ja, self.rev1_ja_2):
             self.assertFalse(rev.is_approved)
             self.assertTrue(rev.reviewed > datetime_prior_to_test)
+
+
+class TranslationServiceTests(TestCase):
+    @override_settings(
+        AI_ENABLED_LOCALES=["es", "fr"],
+        HYBRID_ENABLED_LOCALES=["de"],
+        STALE_TRANSLATION_THRESHOLD_DAYS=30,
+    )
+    def test_get_stale_translations(self):
+        # Create English doc with localizable revision
+        en_doc = DocumentFactory(locale="en-US", is_localizable=True)
+        old_revision = ApprovedRevisionFactory(
+            document=en_doc,
+            created=timezone.now() - timedelta(days=60),
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+        new_revision = ApprovedRevisionFactory(
+            document=en_doc,
+            created=timezone.now() - timedelta(days=5),
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+
+        # Create stale translation
+        es_doc = DocumentFactory(parent=en_doc, locale="es")
+        ApprovedRevisionFactory(
+            document=es_doc,
+            based_on=old_revision,
+            created=timezone.now() - timedelta(days=50),
+        )
+
+        # Create fresh translation (should not appear)
+        fr_doc = DocumentFactory(parent=en_doc, locale="fr")
+        ApprovedRevisionFactory(
+            document=fr_doc,
+            based_on=new_revision,
+            created=timezone.now() - timedelta(days=1),
+        )
+
+        service = TranslationService()
+        stale = service.get_stale_translations()
+
+        self.assertEqual(len(stale), 1)
+        self.assertEqual(stale[0][0].id, en_doc.id)
+        self.assertEqual(stale[0][1].id, es_doc.id)
+        self.assertEqual(stale[0][2], "es")
+
+    @override_settings(
+        AI_ENABLED_LOCALES=["es", "fr"],
+        HYBRID_ENABLED_LOCALES=["de"],
+        STALE_TRANSLATION_THRESHOLD_DAYS=30,
+    )
+    def test_get_stale_translations_skips_pending_revisions(self):
+        sumo_bot = Profile.get_sumo_bot()
+
+        en_doc = DocumentFactory(locale="en-US", is_localizable=True)
+        old_revision = ApprovedRevisionFactory(
+            document=en_doc,
+            created=timezone.now() - timedelta(days=60),
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+        new_revision = ApprovedRevisionFactory(
+            document=en_doc,
+            created=timezone.now() - timedelta(days=5),
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+
+        es_doc = DocumentFactory(parent=en_doc, locale="es")
+        ApprovedRevisionFactory(
+            document=es_doc,
+            based_on=old_revision,
+            created=timezone.now() - timedelta(days=50),
+        )
+
+        # Create pending SUMO bot revision
+        RevisionFactory(
+            document=es_doc,
+            based_on=new_revision,
+            creator=sumo_bot,
+            is_approved=False,
+            reviewed=None,
+        )
+
+        service = TranslationService()
+        stale = service.get_stale_translations()
+
+        self.assertEqual(len(stale), 0)
+
+    @override_settings(
+        AI_ENABLED_LOCALES=["es", "fr"],
+        HYBRID_ENABLED_LOCALES=["de"],
+    )
+    def test_get_missing_translations(self):
+        en_doc = DocumentFactory(locale="en-US", is_localizable=True)
+        ApprovedRevisionFactory(
+            document=en_doc,
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+
+        # Create translation for one locale
+        es_doc = DocumentFactory(parent=en_doc, locale="es")
+        ApprovedRevisionFactory(document=es_doc)
+
+        service = TranslationService()
+        missing = service.get_missing_translations()
+
+        # Should find missing fr and de translations
+        self.assertEqual(len(missing), 2)
+        locales = {m[2] for m in missing}
+        self.assertEqual(locales, {"fr", "de"})
+        self.assertEqual(missing[0][0].id, en_doc.id)
+        self.assertIsNone(missing[0][1])
+
+    @override_settings(
+        AI_ENABLED_LOCALES=["es"],
+        HYBRID_ENABLED_LOCALES=[],
+    )
+    def test_get_missing_translations_skips_pending_revisions(self):
+        sumo_bot = Profile.get_sumo_bot()
+
+        en_doc = DocumentFactory(locale="en-US", is_localizable=True)
+        rev = ApprovedRevisionFactory(
+            document=en_doc,
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+
+        # Create pending revision for non-existent translation
+        es_doc = DocumentFactory(parent=en_doc, locale="es")
+        RevisionFactory(
+            document=es_doc,
+            based_on=rev,
+            creator=sumo_bot,
+            is_approved=False,
+            reviewed=None,
+        )
+
+        service = TranslationService()
+        missing = service.get_missing_translations()
+
+        self.assertEqual(len(missing), 0)
+
+    @override_settings(
+        AI_ENABLED_LOCALES=["es"],
+        HYBRID_ENABLED_LOCALES=[],
+        STALE_TRANSLATION_BATCH_SIZE=10,
+        STALE_TRANSLATION_THRESHOLD_DAYS=30,
+    )
+    @patch("kitsune.wiki.services.TranslationStrategyFactory")
+    def test_process_translations_stale(self, mock_factory):
+        en_doc = DocumentFactory(locale="en-US", is_localizable=True)
+        old_rev = ApprovedRevisionFactory(
+            document=en_doc,
+            created=timezone.now() - timedelta(days=60),
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+        ApprovedRevisionFactory(
+            document=en_doc,
+            created=timezone.now() - timedelta(days=5),
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+
+        es_doc = DocumentFactory(parent=en_doc, locale="es")
+        ApprovedRevisionFactory(
+            document=es_doc,
+            based_on=old_rev,
+            created=timezone.now() - timedelta(days=50),
+        )
+
+        service = TranslationService()
+        result = service.process_translations(create=False)
+
+        self.assertEqual(len(result), 1)
+        mock_factory.return_value.execute.assert_called_once()
+        call_args = mock_factory.return_value.execute.call_args[0][0]
+        self.assertEqual(call_args.trigger, TranslationTrigger.STALE_TRANSLATION_UPDATE)
+        self.assertTrue(call_args.metadata.get("stale_translation_update"))
+
+    @override_settings(
+        AI_ENABLED_LOCALES=["es"],
+        HYBRID_ENABLED_LOCALES=[],
+        STALE_TRANSLATION_BATCH_SIZE=10,
+    )
+    @patch("kitsune.wiki.services.TranslationStrategyFactory")
+    def test_process_translations_create(self, mock_factory):
+        en_doc = DocumentFactory(locale="en-US", is_localizable=True)
+        ApprovedRevisionFactory(
+            document=en_doc,
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE,
+        )
+
+        service = TranslationService()
+        result = service.process_translations(create=True)
+
+        self.assertEqual(len(result), 1)
+        mock_factory.return_value.execute.assert_called_once()
+        call_args = mock_factory.return_value.execute.call_args[0][0]
+        self.assertEqual(call_args.trigger, TranslationTrigger.INITIAL_TRANSLATION)
+        self.assertTrue(call_args.metadata.get("initial_translation"))

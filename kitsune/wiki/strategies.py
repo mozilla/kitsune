@@ -26,6 +26,7 @@ class TranslationTrigger(str, Enum):
     MARK_READY_FOR_L10N = "mark_ready_for_l10n"
     TRANSLATE = "translate"
     STALE_TRANSLATION_UPDATE = "stale_translation_update"
+    INITIAL_TRANSLATION = "initial_translation"
 
 
 class TranslationMethod(models.TextChoices):
