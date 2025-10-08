@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
-from django.db.models import Q
+from django.db.models import Q, Value
 from django.db.models.functions import Now
 from django.urls import is_valid_path
 from django.utils import translation
@@ -1145,6 +1145,44 @@ class DocumentImage(ModelBase):
 
     def __str__(self):
         return "<DocumentImage: {doc} includes {img}>".format(doc=self.document, img=self.image)
+
+
+class PinnedArticleConfig(ModelBase):
+    # If the product is null, the pinned articles apply to the home page.
+    product = models.ForeignKey(
+        Product,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="pinned_article_config",
+        help_text=_lazy("Leave empty to configure the home page."),
+    )
+    pinned_articles = models.ManyToManyField(
+        Document,
+        limit_choices_to=Q(parent__isnull=True),
+    )
+
+    class Meta:
+        verbose_name = "Pinned Article Configuration"
+        ordering = ("product__title", "id")
+        constraints = [
+            # Ensure each product can only have one config.
+            models.UniqueConstraint(
+                fields=["product"],
+                condition=Q(product__isnull=False),
+                name="unique_pinned_article_config_per_product",
+            ),
+            # Ensure there is only one config where the product field is NULL.
+            models.UniqueConstraint(
+                Value(1, output_field=models.IntegerField()),
+                condition=Q(product__isnull=True),
+                name="unique_pinned_article_config_home_page",
+            ),
+        ]
+
+    def __str__(self):
+        product_title = self.product.title if self.product else "Home Page"
+        return f"Pinned Article Configuration for {product_title}"
 
 
 def get_locale_and_slug_from_document_url(url, required_locale=None):
