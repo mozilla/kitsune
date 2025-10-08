@@ -17,7 +17,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document, PinnedArticleConfig, Revision
 
 KB_VISITED_DEFAULT_TTL = 60 * 60 * 24  # 24 hours
 
@@ -112,14 +112,46 @@ def _active_contributors_id(from_date, to_date, locale, product):
     return set(list(editors) + list(reviewers))
 
 
-def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
+def get_pinned_articles(user=None, product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
+    """
+    Returns a queryset of the pinned articles for the given product and locale that are
+    visible to the given user.
+    """
+    if not (config := PinnedArticleConfig.objects.filter(product=product).first()):
+        return Document.objects.none()
+
+    pinned_articles = config.pinned_articles.all()
+
+    condition = Q(id__in=pinned_articles)
+
+    if locale != settings.WIKI_DEFAULT_LANGUAGE:
+        condition = condition | Q(parent__in=pinned_articles)
+
+    return (
+        Document.objects.visible(user, locale=locale)
+        .filter(condition)
+        .select_related("current_revision")
+    )
+
+
+def get_featured_articles(
+    product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE, include_pinned_articles=True
+):
     """Returns up to 4 random articles from the most visited.
 
     Args:
         product: Optional product to filter by
         topics: Optional iterable of topics to filter by
         locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
+        include_pinned_articles: Whether or not to include the pinned articles (defaults to True)
     """
+    if include_pinned_articles:
+        pinned_articles = list(get_pinned_articles(product=product, locale=locale))
+        if len(pinned_articles) >= 4:
+            return pinned_articles[:4]
+    else:
+        pinned_articles = []
+
     parent_prefix = "parent__" if locale != settings.WIKI_DEFAULT_LANGUAGE else ""
 
     filter_kwargs = {
@@ -164,9 +196,10 @@ def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAUL
     # Only include the ten most visited articles for sampling.
     docs = list(qs[:10])
 
-    if len(docs) <= 4:
-        return docs
-    return random.sample(docs, 4)
+    if len(docs) > 4:
+        docs = random.sample(docs, 4)
+
+    return (pinned_articles + docs)[:4]
 
 
 def get_visible_document_or_404(
@@ -229,7 +262,9 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     """
     topics_data: list[dict] = []
 
-    featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
+    featured_articles = get_featured_articles(
+        product, locale=request.LANGUAGE_CODE, topics=topics, include_pinned_articles=False
+    )
 
     # Get both main and fallback documents from the faceted search
     main_docs_data, fallback_docs_data = documents_for(

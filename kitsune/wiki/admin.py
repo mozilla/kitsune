@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.db.models import F
 
-from kitsune.wiki.models import Document, ImportantDate, Locale
+from kitsune.wiki.models import Document, ImportantDate, Locale, PinnedArticleConfig
 
 
 class DocumentAdmin(admin.ModelAdmin):
@@ -101,3 +102,21 @@ class LocaleAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Locale, LocaleAdmin)
+
+
+class PinnedArticleConfigAdmin(admin.ModelAdmin):
+    list_display = ("display_name",)
+    ordering = (F("product__title").asc(nulls_first=True), "id")
+    autocomplete_fields = ("pinned_articles",)
+
+    @admin.display(description="Home and Product Landing Pages")
+    def display_name(self, obj):
+        """
+        Return the display name for this configuration.
+        """
+        if obj.product:
+            return f"{obj.product.title} Product Landing Page"
+        return "Home Page"
+
+
+admin.site.register(PinnedArticleConfig, PinnedArticleConfigAdmin)

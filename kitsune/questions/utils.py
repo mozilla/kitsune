@@ -107,7 +107,12 @@ def get_featured_articles(product, locale):
         pinned_articles = []
 
     if len(pinned_articles) < 4:
-        return (pinned_articles + kb_get_featured_articles(product=product, locale=locale))[:4]
+        return (
+            pinned_articles
+            + kb_get_featured_articles(
+                product=product, locale=locale, include_pinned_articles=False
+            )
+        )[:4]
 
     return pinned_articles[-4:]
 
