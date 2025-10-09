@@ -236,14 +236,6 @@ class FeaturedArticlesTestCase(TestCase):
                 {self.d_pinned.id, self.d1.id, self.d2.id, self.de1.parent.id},
             )
 
-        with self.subTest("with product, excluding pinned articles"):
-            featured = get_featured_articles(product=self.product1, include_pinned_articles=False)
-            self.assertEqual(len(featured), 3)
-            self.assertEqual(
-                {d.id for d in featured},
-                {self.d1.id, self.d2.id, self.de1.parent.id},
-            )
-
         with self.subTest("with product and topic"):
             featured = get_featured_articles(product=self.product1, topics=[self.topic2])
             self.assertEqual(len(featured), 3)

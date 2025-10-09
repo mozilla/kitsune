@@ -3,7 +3,6 @@ import logging
 import re
 from typing import Any
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
@@ -15,7 +14,6 @@ from kitsune.llm.questions.classifiers import ModerationAction
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
 from kitsune.users.models import Profile
-from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
 from kitsune.wiki.utils import has_visited_kb
 
 REGEX_NON_WINDOWS_HOME_DIR = re.compile(
@@ -80,41 +78,6 @@ def get_mobile_product_from_ua(user_agent):
         return None
     else:
         return "mobile"
-
-
-def get_featured_articles(product, locale):
-    """
-    Returns 4 featured articles for the AAQ.
-
-    Will return pinned articles first, then fill randomly from the most visited articles.
-
-    For pinned articles in WIKI_DEFAULT_LANGUAGE, return a localized version if it exists.
-    For pinned articles in other locales, return them only if `locale` matches.
-    """
-    if config := product.aaq_configs.first():
-        pinned_articles = [
-            localized_article
-            for article in config.pinned_articles.filter(
-                locale__in=(locale, settings.WIKI_DEFAULT_LANGUAGE)
-            )
-            if (
-                localized_article := (
-                    article if article.locale == locale else article.translated_to(locale)
-                )
-            )
-        ]
-    else:
-        pinned_articles = []
-
-    if len(pinned_articles) < 4:
-        return (
-            pinned_articles
-            + kb_get_featured_articles(
-                product=product, locale=locale, include_pinned_articles=False
-            )
-        )[:4]
-
-    return pinned_articles[-4:]
 
 
 def remove_home_dir_pii(text: str, mask: str = "<USERNAME>") -> str:
