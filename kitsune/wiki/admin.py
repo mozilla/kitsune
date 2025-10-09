@@ -106,16 +106,22 @@ admin.site.register(Locale, LocaleAdmin)
 
 class PinnedArticleConfigAdmin(admin.ModelAdmin):
     list_display = ("display_name",)
-    ordering = (F("product__title").asc(nulls_first=True), "id")
+    ordering = (
+        F("product__title").asc(nulls_first=True),
+        F("aaq_config__product__title").asc(nulls_first=True),
+        "id",
+    )
     autocomplete_fields = ("pinned_articles",)
 
-    @admin.display(description="Home and Product Landing Pages")
+    @admin.display(description="Home, Product Landing, and AAQ Product Pages")
     def display_name(self, obj):
         """
         Return the display name for this configuration.
         """
         if obj.product:
             return f"{obj.product.title} Product Landing Page"
+        elif obj.aaq_config:
+            return f"{obj.aaq_config.product.title} AAQ Product Page"
         return "Home Page"
 
 

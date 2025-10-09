@@ -1170,6 +1170,7 @@ EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
     "firefox-fire-tv",
     "focus-firefox",
     "thunderbird",
+    "thunderbird-android",
 ]
 
 # Substring to match in slug in order to display the SUMO CTA banner

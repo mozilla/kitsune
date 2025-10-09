@@ -35,7 +35,6 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.tags.models import BigVocabTaggableManager, SumoTag
 from kitsune.upload.models import ImageAttachment
-from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.questions")
 
@@ -869,7 +868,6 @@ class QuestionLocale(ModelBase):
 class AAQConfig(ModelBase):
     title = models.CharField(max_length=255, default="")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="aaq_configs")
-    pinned_articles = models.ManyToManyField(Document, null=True, blank=True)
     associated_tags = models.ManyToManyField(SumoTag, null=True, blank=True)
     enabled_locales = models.ManyToManyField(QuestionLocale)
     # Whether the configuration is active or not. Only one can be active per product

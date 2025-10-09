@@ -1155,7 +1155,18 @@ class PinnedArticleConfig(ModelBase):
         blank=True,
         on_delete=models.CASCADE,
         related_name="pinned_article_config",
-        help_text=_lazy("Leave empty to configure the home page."),
+        help_text=_lazy(
+            "Leave empty to configure for the Home Page or when linking to an AAQ configuration."
+        ),
+    )
+    aaq_config = models.ForeignKey(
+        "questions.AAQConfig",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="pinned_article_config",
+        verbose_name="AAQ configuration",
+        help_text=_lazy("Leave empty unless linking to an AAQ configuration."),
     )
     pinned_articles = models.ManyToManyField(
         Document,
@@ -1164,25 +1175,41 @@ class PinnedArticleConfig(ModelBase):
 
     class Meta:
         verbose_name = "Pinned Article Configuration"
-        ordering = ("product__title", "id")
+        ordering = ("product__title", "aaq_config__title", "id")
         constraints = [
+            # Exclude an association with both a product and an AAQ config.
+            models.CheckConstraint(
+                check=Q(product__isnull=True) | Q(aaq_config__isnull=True),
+                name="exclusive_product_or_aaq_config",
+            ),
             # Ensure each product can only have one config.
             models.UniqueConstraint(
                 fields=["product"],
                 condition=Q(product__isnull=False),
                 name="unique_pinned_article_config_per_product",
             ),
-            # Ensure there is only one config where the product field is NULL.
+            # Ensure each AAQ config can only have one config.
+            models.UniqueConstraint(
+                fields=["aaq_config"],
+                condition=Q(aaq_config__isnull=False),
+                name="unique_pinned_article_config_per_aaq_config",
+            ),
+            # Ensure there is only one home page config.
             models.UniqueConstraint(
                 Value(1, output_field=models.IntegerField()),
-                condition=Q(product__isnull=True),
+                condition=Q(product__isnull=True, aaq_config__isnull=True),
                 name="unique_pinned_article_config_home_page",
             ),
         ]
 
     def __str__(self):
-        product_title = self.product.title if self.product else "Home Page"
-        return f"Pinned Article Configuration for {product_title}"
+        if self.product:
+            title = f"{self.product.title} Product Landing Page"
+        elif self.aaq_config:
+            title = f"{self.aaq_config.product.title} AAQ Product Page"
+        else:
+            title = "Home Page"
+        return f"Pinned Article Configuration for {title}"
 
 
 def get_locale_and_slug_from_document_url(url, required_locale=None):
