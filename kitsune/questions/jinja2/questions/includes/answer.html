@@ -110,7 +110,7 @@
   </div>
   {% if answer.id and question.editable %}
     <div class="answer-tools align-end">
-      {% if user != answer.creator %}
+      {% if user.is_authenticated and user != answer.creator %}
       <div class="document-vote is-forum-answer text-right">
         <form class="document-vote--form helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
           {% csrf_token %}

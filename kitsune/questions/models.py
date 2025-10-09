@@ -76,6 +76,12 @@ class AAQBase(ModelBase):
         """Is the user eligible to vote or
         did the user already vote for this answer or question?"""
 
+        if not request.user.is_authenticated:
+            return False
+
+        if self.creator == request.user:
+            return True
+
         q_kwargs = {}
 
         if self.__class__ == Answer:
@@ -85,16 +91,8 @@ class AAQBase(ModelBase):
             VoteObject = QuestionVote
             q_kwargs.update({"question": self})
 
-        if request.user.is_authenticated:
-            if self.creator == request.user:
-                return True
-            q_kwargs["creator"] = request.user
-            return VoteObject.objects.filter(**q_kwargs).exists()
-        elif request.anonymous.has_id:
-            q_kwargs["anonymous_id"] = request.anonymous.anonymous_id
-            return VoteObject.objects.filter(**q_kwargs).exists()
-        else:
-            return False
+        q_kwargs["creator"] = request.user
+        return VoteObject.objects.filter(**q_kwargs).exists()
 
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
