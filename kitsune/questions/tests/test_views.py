@@ -447,6 +447,34 @@ class TestVoteAnswers(TestCase):
         )
         self.assertEqual(res.status_code, 404)
 
+    def test_anonymous_user_cannot_vote_on_answer(self):
+        """Anonymous users cannot vote on answers and are redirected to login."""
+        self.client.logout()
+
+        res = self.client.post(
+            reverse("questions.answer_vote", args=[self.question.id, self.answer.id]),
+            {"helpful": "y"},
+        )
+
+        # Should redirect to login page
+        self.assertEqual(res.status_code, 302)
+        self.assertIn(settings.LOGIN_URL, res.url)
+
+    def test_authenticated_user_can_vote_on_answer(self):
+        """Authenticated users can vote on answers."""
+        res = self.client.post(
+            reverse("questions.answer_vote", args=[self.question.id, self.answer.id]),
+            {"helpful": "y"},
+        )
+
+        # Should redirect to answer (successful vote)
+        self.assertEqual(res.status_code, 302)
+
+        # Verify vote was created
+        self.assertEqual(AnswerVote.objects.filter(answer=self.answer).count(), 1)
+        vote = AnswerVote.objects.get(answer=self.answer)
+        self.assertTrue(vote.helpful)
+
 
 class TestVoteQuestions(TestCase):
     def setUp(self):
@@ -530,18 +558,6 @@ class TestRateLimiting(TestCase):
         # Now make another, it should fail.
         self._check_question_vote(question2, True)
 
-    def test_answer_vote_limit(self):
-        """Test that an anonymous user's votes are ignored after 1
-        answer votes."""
-        q = QuestionFactory()
-        answers = AnswerFactory.create_batch(11, question=q)
-
-        # The rate limit is 1 per minute. So make 1 requests.
-        self._check_answer_vote(q, answers[0], False)
-
-        # Now make another, it should fail.
-        self._check_answer_vote(q, answers[1], True)
-
     def test_question_vote_logged_in(self):
         """This exhausts the rate limit, then logs in, and exhausts it
         again."""
@@ -569,28 +585,26 @@ class TestRateLimiting(TestCase):
         self._check_question_vote(question2, True)
 
     def test_answer_vote_logged_in(self):
-        """This exhausts the rate limit, then logs in, and exhausts it
-        again."""
+        """Test that different authenticated users have separate rate limits."""
         q = QuestionFactory()
         answer1 = AnswerFactory(question=q)
         answer2 = AnswerFactory(question=q)
-        u = UserFactory(password="testpass")
+        u1 = UserFactory(password="testpass")
+        u2 = UserFactory(password="testpass")
 
-        # The rate limit is 1 per day. So make 1 requests.
+        # First user logs in and votes
+        self.client.login(username=u1.username, password="testpass")
+        # The rate limit is 1 per hour. So make 1 request.
         self._check_answer_vote(q, answer1, False)
 
-        # The ratelimit has been hit, so the next request will fail.
+        # The rate limit has been hit for this user, so the next request will fail.
         self._check_answer_vote(q, answer2, True)
 
-        # Login.
-        self.client.login(username=u.username, password="testpass")
+        # Login as a different user - they should have their own rate limit
+        self.client.login(username=u2.username, password="testpass")
         self._check_answer_vote(q, answer1, False)
 
-        # Now the user has hit the rate limit too, so this should fail.
-        self._check_answer_vote(q, answer2, True)
-
-        # Logging out out won't help
-        self.client.logout()
+        # Now the second user has also hit the rate limit.
         self._check_answer_vote(q, answer2, True)
 
     def test_answers_limit(self):
