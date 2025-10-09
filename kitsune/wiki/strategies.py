@@ -26,6 +26,7 @@ class TranslationTrigger(str, Enum):
     MARK_READY_FOR_L10N = "mark_ready_for_l10n"
     TRANSLATE = "translate"
     STALE_TRANSLATION_UPDATE = "stale_translation_update"
+    INITIAL_TRANSLATION = "initial_translation"
 
 
 class TranslationMethod(models.TextChoices):
@@ -303,17 +304,37 @@ class TranslationStrategyFactory:
             method = TranslationMethod(method)
         return self._strategies[method]
 
-    def get_method_for_locale(self, locale: str) -> TranslationMethod:
+    def get_method_for_locale(self, locale: str) -> str:
         """Determine the appropriate translation method for a given locale."""
         if locale in settings.AI_ENABLED_LOCALES:
-            return TranslationMethod(TranslationMethod.AI)
+            return TranslationMethod.AI
         elif locale in settings.HYBRID_ENABLED_LOCALES:
-            return TranslationMethod(TranslationMethod.HYBRID)
-        return TranslationMethod(TranslationMethod.MANUAL)
+            return TranslationMethod.HYBRID
+        return TranslationMethod.MANUAL
+
+    def get_method_for_document(self, document, locale: str) -> str:
+        """Determine translation method based on document attributes and locale.
+
+        Args:
+            document: The Document object to translate
+            locale: Target locale
+
+        Returns:
+            TranslationMethod to use for this document/locale combination
+        """
+        # Archived documents in HYBRID locales use AI flow
+        if locale in settings.HYBRID_ENABLED_LOCALES and document.is_archived:
+            return TranslationMethod.AI
+
+        # Otherwise use standard locale-based routing
+        return self.get_method_for_locale(locale)
 
     def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy:
         """Select the best strategy based on business rules."""
-        method = self.get_method_for_locale(l10n_request.target_locale)
+        method = self.get_method_for_document(
+            l10n_request.revision.document,
+            l10n_request.target_locale
+        )
         return self.get_strategy(method)
 
     def execute(self, l10n_request: TranslationRequest) -> TranslationResult:

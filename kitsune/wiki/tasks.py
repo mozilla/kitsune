@@ -400,11 +400,31 @@ def process_stale_translations(limit=None) -> None:
     from kitsune.wiki.services import StaleTranslationService
 
     service = StaleTranslationService()
-    processed_candidates = service.process_stale_translations(limit=limit)
+    processed_candidates = service.process_stale(limit=limit)
 
     log.info(f"Processed {len(processed_candidates)} stale translations:")
     for parent, translated_doc, locale in processed_candidates:
-        log.info(translated_doc.get_absolute_url())
+        if translated_doc:
+            log.info(translated_doc.get_absolute_url())
+
+
+@shared_task
+@skip_if_read_only_mode
+def create_missing_translations(limit=None) -> None:
+    """Periodic task to create missing translations for enabled locales.
+
+    Args:
+        limit: Maximum number of missing translations to process
+        (defaults to STALE_TRANSLATION_BATCH_SIZE)
+    """
+    from kitsune.wiki.services import MissingTranslationService
+
+    service = MissingTranslationService()
+    processed_candidates = service.process_missing(limit=limit)
+
+    log.info(f"Created {len(processed_candidates)} missing translations:")
+    for english_doc, translation_doc, locale in processed_candidates:
+        log.info(f"{english_doc.get_absolute_url()} -> {locale}")
 
 
 @shared_task
