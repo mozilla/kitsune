@@ -6,8 +6,8 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.base import SessionBase
-from django.db.models import OuterRef, Q, Subquery
-from django.db.models.functions import Now
+from django.db.models import Exists, F, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce, Now
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
 
@@ -17,7 +17,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document, PinnedArticleConfig, Revision
 
 KB_VISITED_DEFAULT_TTL = 60 * 60 * 24  # 24 hours
 
@@ -112,61 +112,111 @@ def _active_contributors_id(from_date, to_date, locale, product):
     return set(list(editors) + list(reviewers))
 
 
-def get_featured_articles(product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
-    """Returns up to 4 random articles from the most visited.
+def get_pinned_articles(user=None, product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
+    """
+    Returns a queryset of the pinned articles for the given product and locale that are
+    visible to the given user.
+    """
+    if not (config := PinnedArticleConfig.objects.filter(product=product).first()):
+        return Document.objects.none()
+
+    pinned_articles = config.pinned_articles.all()
+
+    condition = Q(id__in=pinned_articles)
+
+    if locale != settings.WIKI_DEFAULT_LANGUAGE:
+        condition = condition | Q(parent__in=pinned_articles)
+
+    return (
+        Document.objects.visible(user, locale=locale)
+        .filter(condition)
+        .select_related("current_revision")
+    )
+
+
+def get_featured_articles(
+    user=None, product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE, limit=4
+) -> list[Document]:
+    """
+    Returns a list of up to "limit" KB articles, first including any pinned articles, and
+    for any remaining slots, a random selection of the most visited.
 
     Args:
+        user: Optional user for visibility
         product: Optional product to filter by
         topics: Optional iterable of topics to filter by
         locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
+        limit: Optional integer to limit the number of articles in the queryset
+    Returns:
+        A list of up to "limit" Document instances
     """
-    parent_prefix = "parent__" if locale != settings.WIKI_DEFAULT_LANGUAGE else ""
+    pinned_articles = list(get_pinned_articles(user=user, product=product, locale=locale)[:limit])
 
-    filter_kwargs = {
-        f"{parent_prefix}restrict_to_groups__isnull": True,
-    }
-
-    if product:
-        filter_kwargs[f"{parent_prefix}products"] = product
-
-    if topics:
-        filter_kwargs[f"{parent_prefix}topics__in"] = topics
-
-    excluded_product_slugs = settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES
+    if len(pinned_articles) == limit:
+        return pinned_articles
 
     qs = (
-        Document.objects.filter(
-            locale=locale,
-            is_template=False,
-            is_archived=False,
-            current_revision__isnull=False,
-            **filter_kwargs,
-        )
-        .exclude(**{f"{parent_prefix}products__slug__in": excluded_product_slugs})
+        Document.objects.visible(user, locale=locale, is_template=False, is_archived=False)
         .exclude(html__startswith=REDIRECT_HTML)
-        .select_related("current_revision")
+        .annotate(root_id=Coalesce(F("parent_id"), F("id")))
+    )
+
+    if pinned_articles:
+        qs = qs.exclude(id__in=[doc.id for doc in pinned_articles])
+
+    if product:
+        qs = qs.filter(
+            Exists(
+                Document.objects.filter(
+                    id=OuterRef("root_id"),
+                    products=product,
+                )
+            )
+        )
+    else:
+        # If we're not getting the featured articles for a specific product,
+        # exclude articles associated with these configured products.
+        qs = qs.exclude(
+            Exists(
+                Document.objects.filter(
+                    id=OuterRef("root_id"),
+                    products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES,
+                )
+            )
+        )
+
+    if topics:
+        qs = qs.filter(
+            Exists(
+                Document.objects.filter(
+                    id=OuterRef("root_id"),
+                    topics__in=topics,
+                )
+            )
+        )
+
+    qs = (
+        qs.select_related("current_revision")
         .annotate(
             num_visits=Subquery(
                 WikiDocumentVisits.objects.filter(
-                    document=OuterRef(f"{parent_prefix}pk"), period=LAST_7_DAYS
-                ).values("visits")
+                    document=OuterRef("root_id"), period=LAST_7_DAYS
+                ).values("visits")[:1]
             )
         )
         .exclude(num_visits__isnull=True)
         .order_by("-num_visits")
     )
 
-    if topics:
-        # Documents that match multiple topics will be repeated,
-        # so remove any duplicates when we're matching by topics.
-        qs = qs.distinct()
+    # Include double the limit of the most visited articles for sampling.
+    docs = list(qs[: (limit * 2)])
 
-    # Only include the ten most visited articles for sampling.
-    docs = list(qs[:10])
+    remaining_limit = limit - len(pinned_articles)
 
-    if len(docs) <= 4:
-        return docs
-    return random.sample(docs, 4)
+    if len(docs) > remaining_limit:
+        docs = random.sample(docs, remaining_limit)
+
+    return pinned_articles + docs
 
 
 def get_visible_document_or_404(
@@ -229,7 +279,9 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     """
     topics_data: list[dict] = []
 
-    featured_articles = get_featured_articles(product, locale=request.LANGUAGE_CODE, topics=topics)
+    featured_articles = get_featured_articles(
+        user=request.user, product=product, topics=topics, locale=request.LANGUAGE_CODE
+    )
 
     # Get both main and fallback documents from the faceted search
     main_docs_data, fallback_docs_data = documents_for(
