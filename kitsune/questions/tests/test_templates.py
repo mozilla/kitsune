@@ -214,14 +214,6 @@ class AnswersTemplateTestCase(TestCase):
         # Common vote test
         self.common_vote()
 
-    def test_question_anonymous_vote(self):
-        """Anonymous user vote."""
-        # Log out
-        self.client.logout()
-
-        # Common vote test
-        self.common_vote(2)
-
     def common_answer_vote(self):
         """Helper method for answer vote tests."""
         # Check that there are no votes and vote form renders
@@ -259,16 +251,28 @@ class AnswersTemplateTestCase(TestCase):
         self.common_answer_vote()
 
     def test_answer_anonymous_vote(self):
-        """Anonymous user answer vote."""
+        """Anonymous users cannot vote on answers and voting UI is hidden."""
         # Log out
         self.client.logout()
 
-        # Common vote test
-        self.common_answer_vote()
+        # Check that voting form does not render for anonymous users
+        response = get(self.client, "questions.details", args=[self.question.id])
+        doc = pq(response.content)
+        self.assertEqual(0, len(doc('form.helpful button[name="helpful"]')))
+
+        # Attempting to vote should redirect to login
+        response = self.client.post(
+            reverse("questions.answer_vote", args=[self.question.id, self.answer.id]),
+            {"helpful": "y"},
+        )
+        self.assertEqual(302, response.status_code)
+        self.assertIn(settings.LOGIN_URL, response.url)
 
     def test_can_vote_on_asker_reply(self):
-        """An answer posted by the asker can be voted on."""
-        self.client.logout()
+        """An answer posted by the asker can be voted on by authenticated users."""
+        # Log in as a different user
+        u = UserFactory()
+        self.client.login(username=u.username, password="testpass")
         # Post a new answer by the asker => two votable answers
         q = self.question
         Answer.objects.create(question=q, creator=q.creator, content="test")
@@ -307,7 +311,9 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/questions/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
+            "/{}{}?next=/en-US/questions/{}/delete".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id
+            ),
             redirect[0],
         )
 
@@ -315,7 +321,9 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/questions/{}/delete".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
+            "/{}{}?next=/en-US/questions/{}/delete".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id
+            ),
             redirect[0],
         )
 
@@ -350,7 +358,9 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/questions/{}/delete/{}".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
+            "/{}{}?next=/en-US/questions/{}/delete/{}".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id
+            ),
             redirect[0],
         )
 
@@ -358,7 +368,9 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/questions/{}/delete/{}".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
+            "/{}{}?next=/en-US/questions/{}/delete/{}".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id
+            ),
             redirect[0],
         )
 
@@ -480,7 +492,9 @@ class AnswersTemplateTestCase(TestCase):
         redirect = response.redirect_chain[0]
         self.assertEqual(302, redirect[1])
         self.assertEqual(
-            "/{}{}?next=/en-US/questions/{}/lock".format(settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id),
+            "/{}{}?next=/en-US/questions/{}/lock".format(
+                settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id
+            ),
             redirect[0],
         )
 
@@ -618,9 +632,9 @@ class AnswersTemplateTestCase(TestCase):
             {"email": "some@bo.dy", "event_type": "reply"},
             args=[self.question.id],
         )
-        assert QuestionReplyEvent.is_notifying(
-            "some@bo.dy", self.question
-        ), "Watch was not created"
+        assert QuestionReplyEvent.is_notifying("some@bo.dy", self.question), (
+            "Watch was not created"
+        )
 
         attrs_eq(
             mail.outbox[0],
@@ -647,9 +661,9 @@ class AnswersTemplateTestCase(TestCase):
             {"email": "some@bo.dy", "event_type": "reply"},
             args=[self.question.id],
         )
-        assert not QuestionReplyEvent.is_notifying(
-            "some@bo.dy", self.question
-        ), "Watch was created"
+        assert not QuestionReplyEvent.is_notifying("some@bo.dy", self.question), (
+            "Watch was created"
+        )
         self.assertContains(r, "Could not send a message to that email")
 
     def test_watch_replies_wrong_secret(self):
@@ -700,9 +714,9 @@ class AnswersTemplateTestCase(TestCase):
             {"email": "some@bo.dy", "event_type": "solution"},
             args=[self.question.id],
         )
-        assert QuestionSolvedEvent.is_notifying(
-            "some@bo.dy", self.question
-        ), "Watch was not created"
+        assert QuestionSolvedEvent.is_notifying("some@bo.dy", self.question), (
+            "Watch was not created"
+        )
 
         attrs_eq(
             mail.outbox[0],
@@ -1280,8 +1294,7 @@ class AAQTemplateTestCase(TestCase):
         "ff_version": "3.6.6",
         "os": "Intel Mac OS X 10.6",
         "plugins": "* Shockwave Flash 10.1 r53",
-        "useragent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8.3) "
-        "Gecko/20120221 Firefox/18.0",
+        "useragent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8.3) Gecko/20120221 Firefox/18.0",
         "troubleshooting": """{
                 "accessibility": {
                     "isActive": true
@@ -1406,6 +1419,9 @@ class ProductForumTemplateTestCase(TestCase):
         doc = pq(response.content)
         self.assertEqual(2, len(doc(".product-list .product")))
         product_list_html = doc(".product-list").html()
+        assert firefox.title in product_list_html
+        assert android.title in product_list_html
+        assert mza.title not in product_list_html
         assert firefox.title in product_list_html
         assert android.title in product_list_html
         assert mza.title not in product_list_html

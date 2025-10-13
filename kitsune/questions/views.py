@@ -1036,6 +1036,7 @@ def question_vote(request, question_id):
 
 
 @require_POST
+@login_required
 @ratelimit("answer-vote", "1/h")
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
@@ -1057,18 +1058,13 @@ def answer_vote(request, question_id, answer_id):
             return HttpResponseRedirect(answer.get_absolute_url())
 
     if not answer.has_voted(request):
-        vote = AnswerVote(answer=answer)
+        vote = AnswerVote(answer=answer, creator=request.user)
 
         if "helpful" in request.POST:
             vote.helpful = True
             message = _("Glad to hear it!")
         else:
             message = _("Sorry to hear that.")
-
-        if request.user.is_authenticated:
-            vote.creator = request.user
-        else:
-            vote.anonymous_id = request.anonymous.anonymous_id
 
         vote.save()
 
