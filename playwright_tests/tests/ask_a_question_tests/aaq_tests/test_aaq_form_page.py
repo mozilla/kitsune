@@ -415,7 +415,7 @@ def test_system_details_information(page: Page, create_user_factory):
     with allure.step("Navigating to each product aaq form and and adding data without "
                      "submitting the form"):
         for product in utilities.general_test_data["freemium_products"]:
-            if product == "Thunderbird" or product == "Thunderbird for Android":
+            if product in ("Thunderbird", "Thunderbird for Android", "Mozilla Monitor"):
                 continue
             else:
                 utilities.navigate_to_link(
@@ -452,9 +452,6 @@ def test_system_details_information(page: Page, create_user_factory):
                     sumo_pages.question_page.click_on_question_details_button()
                     assert sumo_pages.question_page.get_system_details_information(
                     ) == troubleshooting_info
-
-                with allure.step("Deleting the posted question"):
-                    sumo_pages.aaq_flow.deleting_question_flow()
 
 
 # T5696704

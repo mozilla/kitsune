@@ -6,15 +6,15 @@
     "Firefox for Enterprise",
     "Thunderbird",
     "Thunderbird for Android",
-    "Firefox Focus"
+    "Firefox Focus",
+    "Mozilla Monitor"
   ],
   "premium_products": [
     "MDN Plus",
     "Mozilla VPN",
     "Firefox Relay",
     "Pocket",
-    "Mozilla Account",
-    "Mozilla Monitor"
+    "Mozilla Account"
   ],
   "kb_article_categories": [
     "Troubleshooting",
