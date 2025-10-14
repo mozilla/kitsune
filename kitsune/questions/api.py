@@ -35,6 +35,25 @@ from kitsune.users.api import ProfileFKSerializer
 from kitsune.users.models import Profile
 
 
+def get_or_create_profile(user):
+    """
+    Get or create a Profile for a User.
+
+    This helper ensures Users without Profiles don't cause serialization failures.
+    Follows Django's get_or_create naming pattern.
+
+    Args:
+        user: User instance (can be None for optional fields)
+
+    Returns:
+        Profile instance if user is provided, None otherwise
+    """
+    if user is None:
+        return None
+    profile, _ = Profile.objects.get_or_create(user=user)
+    return profile
+
+
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
     question = serializers.PrimaryKeyRelatedField(
         required=False, write_only=True, queryset=Question.objects.all()
@@ -99,30 +118,34 @@ class QuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_involved(self, obj):
-        involved = {obj.creator.profile}
-        involved.update(a.creator.profile for a in obj.answers.all())
-        return ProfileFKSerializer(involved, many=True).data
+        involved_profiles = []
+        creator_profile = get_or_create_profile(obj.creator)
+        involved_profiles.append(creator_profile)
+
+        for answer in obj.answers.all():
+            answer_profile = get_or_create_profile(answer.creator)
+            if answer_profile not in involved_profiles:
+                involved_profiles.append(answer_profile)
+
+        return ProfileFKSerializer(involved_profiles, many=True).data
 
     def get_solved_by(self, obj):
-        if obj.solution:
-            return ProfileFKSerializer(obj.solution.creator.profile).data
-        else:
+        if not obj.solution:
             return None
+        profile = get_or_create_profile(obj.solution.creator)
+        return ProfileFKSerializer(profile).data
 
     def get_creator(self, obj):
-        return ProfileFKSerializer(obj.creator.profile).data
+        profile = get_or_create_profile(obj.creator)
+        return ProfileFKSerializer(profile).data
 
     def get_taken_by(self, obj):
-        if obj.taken_by:
-            return ProfileFKSerializer(obj.taken_by.profile).data
-        else:
-            return None
+        profile = get_or_create_profile(obj.taken_by)
+        return ProfileFKSerializer(profile).data if profile else None
 
     def get_updated_by(self, obj):
-        if obj.updated_by:
-            return ProfileFKSerializer(obj.updated_by.profile).data
-        else:
-            return None
+        profile = get_or_create_profile(obj.updated_by)
+        return ProfileFKSerializer(profile).data if profile else None
 
     def get_tags(self, obj):
         return [{"name": tag.name, "slug": tag.slug} for tag in obj.tags.all()]
@@ -446,11 +469,12 @@ class AnswerSerializer(serializers.ModelSerializer):
         )
 
     def get_creator(self, obj):
-        return ProfileFKSerializer(Profile.objects.get(user=obj.creator)).data
+        profile = get_or_create_profile(obj.creator)
+        return ProfileFKSerializer(profile).data
 
     def get_updated_by(self, obj):
-        updated_by = Profile.objects.get(user=obj.updated_by) if obj.updated_by else None
-        return ProfileFKSerializer(updated_by).data if updated_by else None
+        profile = get_or_create_profile(obj.updated_by)
+        return ProfileFKSerializer(profile).data if profile else None
 
     def validate(self, data):
         user = self.context.get("request").user
