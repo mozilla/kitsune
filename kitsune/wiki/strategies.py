@@ -332,8 +332,7 @@ class TranslationStrategyFactory:
     def select_best_strategy(self, l10n_request: TranslationRequest) -> TranslationStrategy:
         """Select the best strategy based on business rules."""
         method = self.get_method_for_document(
-            l10n_request.revision.document,
-            l10n_request.target_locale
+            l10n_request.revision.document, l10n_request.target_locale
         )
         return self.get_strategy(method)
 
@@ -342,21 +341,24 @@ class TranslationStrategyFactory:
         if l10n_request.method == TranslationMethod.MANUAL:
             manual_result = self.get_strategy(TranslationMethod.MANUAL).translate(l10n_request)
             if manual_result.success:
-                for locales, method in [
-                    (settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
-                    (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID),
-                ]:
-                    for locale in locales:
-                        self.execute(
-                            TranslationRequest(
-                                revision=l10n_request.revision,
-                                trigger=TranslationTrigger.TRANSLATE,
-                                target_locale=locale,
-                                method=method,
-                                user=l10n_request.user,
-                                asynchronous=True,
+                # Only trigger automatic translations if we just marked the latest revision.
+                doc = l10n_request.revision.document
+                if doc.latest_localizable_revision_id == l10n_request.revision.id:
+                    for locales, method in [
+                        (settings.AI_ENABLED_LOCALES, TranslationMethod.AI),
+                        (settings.HYBRID_ENABLED_LOCALES, TranslationMethod.HYBRID),
+                    ]:
+                        for locale in locales:
+                            self.execute(
+                                TranslationRequest(
+                                    revision=l10n_request.revision,
+                                    trigger=TranslationTrigger.TRANSLATE,
+                                    target_locale=locale,
+                                    method=method,
+                                    user=l10n_request.user,
+                                    asynchronous=True,
+                                )
                             )
-                        )
             return manual_result
         # For explicit AI/Hybrid requests, use existing single-strategy logic
         strategy = self.select_best_strategy(l10n_request)
