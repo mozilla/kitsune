@@ -235,6 +235,21 @@ def job_process_stale_translations():
     "cron",
     month="*",
     day="*",
+    hour="*/4",
+    minute="0",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_CREATE_MISSING_TRANSLATIONS)
+def job_create_missing_translations():
+    call_command("create_missing_translations")
+
+
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
     hour="01",
     minute="11",
     max_instances=1,
