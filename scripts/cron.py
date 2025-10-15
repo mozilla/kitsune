@@ -140,6 +140,22 @@ def job_update_product_details():
     call_command("update_product_details")
 
 
+# Every 6 hours, 10 minutes after updating product details.
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="*/6",
+    minute="10",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_SYNC_PRODUCT_VERSIONS)
+def job_sync_product_versions():
+    call_command("sync_product_versions")
+
+
 @scheduled_job(
     "cron",
     month="*",
