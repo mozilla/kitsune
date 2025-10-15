@@ -16,6 +16,7 @@ class SyncProductVersionsTests(TestCase):
             slug="firefox-enterprise", title="Firefox for Enterprise"
         )
         self.mobile = ProductFactory(slug="mobile", title="Firefox for Android")
+        self.ios = ProductFactory(slug="ios", title="Firefox for iOS")
         self.thunderbird = ProductFactory(slug="thunderbird", title="Thunderbird")
 
     def _mock_product_details(self):
@@ -136,6 +137,23 @@ class SyncProductVersionsTests(TestCase):
         self.assertTrue(v143.default)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
+    def test_sync_ios_versions(self, mock_product_details):
+        """Test syncing Firefox for iOS versions."""
+        mock_product_details.configure_mock(**self._mock_product_details().__dict__)
+
+        out = StringIO()
+        call_command("sync_product_versions", "--product=ios", stdout=out)
+
+        # Check that versions were created
+        versions = Version.objects.filter(product=self.ios)
+        self.assertGreater(versions.count(), 0)
+
+        # Check latest version
+        v143 = Version.objects.get(product=self.ios, slug="ios143")
+        self.assertEqual(v143.name, "Version 143")
+        self.assertTrue(v143.default)
+
+    @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_sync_thunderbird_versions(self, mock_product_details):
         """Test syncing Thunderbird versions."""
         mock_product_details.configure_mock(**self._mock_product_details().__dict__)
@@ -251,6 +269,7 @@ class SyncProductVersionsTests(TestCase):
         self.assertGreater(Version.objects.filter(product=self.firefox).count(), 0)
         self.assertGreater(Version.objects.filter(product=self.firefox_enterprise).count(), 0)
         self.assertGreater(Version.objects.filter(product=self.mobile).count(), 0)
+        self.assertGreater(Version.objects.filter(product=self.ios).count(), 0)
         self.assertGreater(Version.objects.filter(product=self.thunderbird).count(), 0)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")

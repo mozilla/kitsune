@@ -15,7 +15,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--product",
             type=str,
-            help="Sync only this product (slug). Options: firefox, firefox-enterprise, mobile, thunderbird",
+            help="Sync only this product (slug). Options: firefox, firefox-enterprise, mobile, ios, thunderbird",
         )
         parser.add_argument(
             "--dry-run",
@@ -82,6 +82,15 @@ class Command(BaseCommand):
                 "slug_prefix": "m",
                 "version_data": product_details.mobile_versions,
                 "version_key": "version",
+                "history_data": product_details.firefox_history_major_releases,
+                "esr_keys": [],
+                "esr_only": False,
+            },
+            "ios": {
+                "name": "Firefox for iOS",
+                "slug_prefix": "ios",
+                "version_data": product_details.firefox_versions,
+                "version_key": "LATEST_FIREFOX_VERSION",
                 "history_data": product_details.firefox_history_major_releases,
                 "esr_keys": [],
                 "esr_only": False,
