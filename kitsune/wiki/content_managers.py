@@ -226,7 +226,7 @@ class WikiContentManager:
         revision.save()
 
         if notification_types:
-            self.fire_notifications(revision, notification_types)
+            self.fire_notifications(revision, notification_types, comment)
         return revision
 
     def fire_notifications(

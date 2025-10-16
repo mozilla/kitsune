@@ -825,7 +825,7 @@ def review_revision(request, document_slug, revision_id):
                     _execute_l10n_strategy(rev, TranslationTrigger.REVIEW_REVISION, request.user)
                 case (True, False):
                     ManualContentManager().fire_notifications(
-                        rev, [NotificationType.TRANSLATION_WORKFLOW], [rev.creator, request.user]
+                        rev, [NotificationType.TRANSLATION_WORKFLOW]
                     )
                 case _:
                     pass

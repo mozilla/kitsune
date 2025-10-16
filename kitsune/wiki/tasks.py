@@ -69,7 +69,14 @@ def send_reviewed_notification(revision_id: int, message: str):
         "host": Site.objects.get_current().domain,
     }
 
-    msgs = []
+    # Skip if creator is a system account
+    if hasattr(revision.creator, "profile") and revision.creator.profile.is_system_account:
+        return
+
+    if hasattr(revision.creator, "profile"):
+        locale = revision.creator.profile.locale
+    else:
+        locale = settings.WIKI_DEFAULT_LANGUAGE
 
     @email_utils.safe_translation
     def _make_mail(locale, user):
@@ -88,19 +95,10 @@ def send_reviewed_notification(revision_id: int, message: str):
             to_email=user.email,
         )
 
-        msgs.append(mail)
+        return mail
 
-    for user in [revision.creator, revision.reviewer]:
-        if hasattr(user, "profile"):
-            if user.profile.is_system_account:
-                continue
-            locale = user.profile.locale
-        else:
-            locale = settings.WIKI_DEFAULT_LANGUAGE
-
-        _make_mail(locale, user)
-
-    email_utils.send_messages(msgs)
+    mail = _make_mail(locale, revision.creator)
+    email_utils.send_messages([mail])
 
 
 @shared_task
