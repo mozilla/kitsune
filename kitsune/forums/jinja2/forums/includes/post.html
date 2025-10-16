@@ -30,7 +30,7 @@
   </div>
 
   <div class="mzp-c-menu-list">
-    <span class="icon-button" data-has-dropdown>more options</span>
+    <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
     <ul class="mzp-c-menu-list-list">
       {% if post.author != user %}
       <li class="mzp-c-menu-list-item clear-button-styles">{{ private_message(post.author) }}</li>

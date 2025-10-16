@@ -320,7 +320,7 @@
 
           <select id="products-topics-dropdown">
             <option value="{% if topic_navigation %}{{ url('questions.list', product_slug='all') }}{% else %}{{ questions_url(topic=None) }}{% endif %}" {% if selected_topic_slug is none %}selected{% endif %}>
-              All Topics
+              {{ _('All Topics') }}
             </option>
             {% for topic in topic_list %}
               {% if topic_navigation %}
