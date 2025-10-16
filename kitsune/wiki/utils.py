@@ -123,11 +123,11 @@ def get_pinned_articles(
     qs = PinnedArticleConfig.objects
 
     if fetch_for_aaq:
-        qs = qs.filter(
-            product__isnull=True, aaq_config__product=product, aaq_config__is_active=True
-        )
+        qs = qs.filter(aaq_configs__product=product, aaq_configs__is_active=True)
+    elif product:
+        qs = qs.filter(products=product)
     else:
-        qs = qs.filter(product=product, aaq_config__isnull=True)
+        qs = qs.filter(use_for_home_page=True)
 
     if not (config := qs.first()):
         return Document.objects.none()
@@ -180,6 +180,23 @@ def get_featured_articles(
     if len(pinned_articles) == limit:
         return pinned_articles
 
+    # Here are some key points about the following query:
+    # (1) It will include all KB articles that are visible to the provided user. This
+    #     means that if the user has permission to view restricted articles, those
+    #     restricted articles will be included in the query. If the user is None, the
+    #     user is considered anonymous in terms of viewing permissions.
+    # (2) It uses the annotated "root_id", which will be the id of the parent, to filter
+    #     for articles matching the given product or one of the given topics, because
+    #     only the products and topics of an article's parent should be considered. It
+    #     also use "root_id" to get an article's Google Analytics pageviews, so only
+    #     the pageviews of a localized article's parent are used.
+    # (3) We're excluding templates, archived articles, redirects, as well as any pinned
+    #     articles since the pinned articles are handled separately.
+    # (4) If no product was provided, we're effectively asking for featured articles for
+    #     the home page, and in that case we also exclude articles associated with the
+    #     products defined in settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES.
+    # (5) We're only using the most-visited articles, limited to a number that depends
+    #     on the provided "limit".
     qs = (
         Document.objects.visible(user, locale=locale, is_template=False, is_archived=False)
         .exclude(html__startswith=REDIRECT_HTML)

@@ -61,13 +61,22 @@ class ArchivedFilter(admin.SimpleListFilter):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("title", "slug", "display_order", "visible", "codename", "is_archived")
+    list_display = (
+        "title",
+        "slug",
+        "display_order",
+        "visible",
+        "codename",
+        "is_archived",
+        "pinned_article_config",
+    )
     list_display_links = ("title", "slug")
     list_editable = ("display_order", "visible", "is_archived")
     readonly_fields = ("id",)
     prepopulated_fields = {"slug": ("title",)}
     list_filter = (ArchivedFilter,)
     form = MetadataForm
+    autocomplete_fields = ("pinned_article_config",)
 
     def changelist_view(self, request, extra_context=None):
         if "is_archived" not in request.GET:

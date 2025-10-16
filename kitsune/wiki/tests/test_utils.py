@@ -217,8 +217,10 @@ class FeaturedArticlesTestCase(TestCase):
             )
 
         # Create a pinned-article config for the first product.
-        self.config1 = PinnedArticleConfig.objects.create(product=self.product1)
+        self.config1 = PinnedArticleConfig.objects.create(title="Group1")
         self.config1.pinned_articles.add(self.d_pinned)
+        self.product1.pinned_article_config = self.config1
+        self.product1.save()
 
     def test_get_featured_articles(self):
         with self.subTest("with defaults"):
@@ -997,6 +999,8 @@ class GetPinnedArticlesTests(TestCase):
         self.user_g1 = UserFactory(groups=[group1])
         self.product1 = ProductFactory(slug="firefox")
         self.product2 = ProductFactory(slug="mobile")
+        self.aaq_config1 = AAQConfigFactory(product=self.product1)
+        self.aaq_config2 = AAQConfigFactory(product=self.product2)
 
         self.en_doc = ApprovedRevisionFactory(
             document__locale="en-US",
@@ -1052,23 +1056,26 @@ class GetPinnedArticlesTests(TestCase):
             document__restrict_to_groups=[group1],
         ).document
 
-        # Create a config for Firefox.
-        self.config1 = PinnedArticleConfig.objects.create(product=self.product1)
+        # Create some pinned-article configs.
+        self.config1 = PinnedArticleConfig.objects.create(title="Group1")
         self.config1.pinned_articles.add(self.en_doc)
         self.config1.pinned_articles.add(self.en_restricted_doc)
         self.config1.pinned_articles.add(self.de_parent_doc)
         self.config1.pinned_articles.add(self.fr_restricted_parent_doc)
+        # This one will be used for the Home Page.
+        self.config2 = PinnedArticleConfig.objects.create(title="Group2", use_for_home_page=True)
+        self.config2.pinned_articles.add(self.en_restricted_doc)
+        self.config2.pinned_articles.add(self.fr_restricted_parent_doc)
+        self.config3 = PinnedArticleConfig.objects.create(title="Group3")
+        self.config3.pinned_articles.add(self.en_restricted_doc)
 
-        # Create a config for the Home Page (product is NULL).
-        self.config_home = PinnedArticleConfig.objects.create(product=None)
-        self.config_home.pinned_articles.add(self.en_restricted_doc)
-        self.config_home.pinned_articles.add(self.fr_restricted_parent_doc)
-
-        # Create a config for the Firefox AAQ Configuration.
-        self.config_aaq = PinnedArticleConfig.objects.create(
-            product=None, aaq_config=AAQConfigFactory(product=self.product1)
-        )
-        self.config_aaq.pinned_articles.add(self.en_restricted_doc)
+        # Associate the configs with products/AAQ-configs.
+        self.product1.pinned_article_config = self.config1
+        self.product1.save()
+        self.product2.pinned_article_config = self.config2
+        self.product2.save()
+        self.aaq_config1.pinned_article_config = self.config3
+        self.aaq_config1.save()
 
     def test_when_no_config_for_product(self):
         """
@@ -1087,6 +1094,9 @@ class GetPinnedArticlesTests(TestCase):
         result = get_pinned_articles(product=self.product1)
         self.assertEqual(list(result), [self.en_doc])
 
+        result = get_pinned_articles(product=self.product2)
+        self.assertEqual(result.count(), 0)
+
         result = get_pinned_articles(product=self.product1, fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
@@ -1098,6 +1108,9 @@ class GetPinnedArticlesTests(TestCase):
 
         result = get_pinned_articles(user=self.user_g1, product=self.product1)
         self.assertEqual(set(result), {self.en_doc, self.en_restricted_doc})
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product2)
+        self.assertEqual(list(result), [self.en_restricted_doc])
 
         result = get_pinned_articles(user=self.user_g1, product=self.product1, fetch_for_aaq=True)
         self.assertEqual(list(result), [self.en_restricted_doc])
@@ -1141,6 +1154,9 @@ class GetPinnedArticlesTests(TestCase):
         result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="de")
         self.assertEqual(set(result), {self.de_doc, self.de_parent_doc, self.de_restricted_doc})
 
+        result = get_pinned_articles(user=self.user_g1, product=self.product2, locale="de")
+        self.assertEqual(list(result), [self.de_restricted_doc])
+
         result = get_pinned_articles(
             user=self.user_g1, product=self.product1, locale="de", fetch_for_aaq=True
         )
@@ -1149,6 +1165,9 @@ class GetPinnedArticlesTests(TestCase):
         result = get_pinned_articles(user=self.user, product=self.product1, locale="fr")
         self.assertEqual(list(result), [self.fr_doc])
 
+        result = get_pinned_articles(user=self.user, product=self.product2, locale="fr")
+        self.assertEqual(result.count(), 0)
+
         result = get_pinned_articles(
             user=self.user, product=self.product1, locale="fr", fetch_for_aaq=True
         )
@@ -1156,6 +1175,9 @@ class GetPinnedArticlesTests(TestCase):
 
         result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="fr")
         self.assertEqual(set(result), {self.fr_doc, self.fr_restricted_parent_doc})
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product2, locale="fr")
+        self.assertEqual(list(result), [self.fr_restricted_parent_doc])
 
         result = get_pinned_articles(
             user=self.user_g1, product=self.product1, locale="fr", fetch_for_aaq=True

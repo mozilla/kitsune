@@ -1,8 +1,6 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from django.urls import reverse
-from django.utils.html import format_html
 
 from kitsune.questions.models import AAQConfig, QuestionLocale
 from kitsune.sumo.utils import PrettyJSONEncoder
@@ -48,31 +46,18 @@ class QuestionLocaleAdmin(admin.TabularInline):
 
 class AAQConfigAdmin(admin.ModelAdmin):
     form = AAQConfigForm
-    list_display = ("title", "product", "is_active", "pinned_articles")
+    list_display = ("title", "product", "is_active", "pinned_article_config")
     list_editable = ("is_active",)
     inlines = [QuestionLocaleAdmin]
     fields = (
         "title",
         "product",
         "is_active",
+        "pinned_article_config",
         "associated_tags",
         "extra_fields",
-        "pinned_articles",
     )
-    readonly_fields = ("pinned_articles",)
-
-    @admin.display(description="Pinned Articles")
-    def pinned_articles(self, obj):
-        """
-        Show a link to the related PinnedArticleConfig if there is one.
-        """
-        if config := obj.pinned_article_config.first():
-            url = reverse("admin:wiki_pinnedarticleconfig_change", args=[config.pk])
-            return format_html(f'<a href="{url}">{config}</a>')
-
-        return format_html(
-            f'<a class="addlink" href="{reverse("admin:wiki_pinnedarticleconfig_add")}">Add</a>'
-        )
+    autocomplete_fields = ("pinned_article_config",)
 
 
 admin.site.register(AAQConfig, AAQConfigAdmin)

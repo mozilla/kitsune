@@ -1,5 +1,8 @@
+import itertools
+
 from django.contrib import admin
-from django.db.models import F
+from django.urls import reverse
+from django.utils.html import format_html_join
 
 from kitsune.wiki.models import Document, ImportantDate, Locale, PinnedArticleConfig
 
@@ -105,24 +108,36 @@ admin.site.register(Locale, LocaleAdmin)
 
 
 class PinnedArticleConfigAdmin(admin.ModelAdmin):
-    list_display = ("display_name",)
-    ordering = (
-        F("product__title").asc(nulls_first=True),
-        F("aaq_config__product__title").asc(nulls_first=True),
-        "id",
-    )
+    list_display = ("title", "use_for_home_page", "used_by")
+    ordering = ("title", "id")
     autocomplete_fields = ("pinned_articles",)
+    search_fields = ("title", "pinned_articles__title")
+    readonly_fields = ("used_by",)
 
-    @admin.display(description="Home, Product Landing, and AAQ Product Pages")
-    def display_name(self, obj):
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("products", "aaq_configs")
+
+    @admin.display(description="Used By")
+    def used_by(self, obj):
         """
-        Return the display name for this configuration.
+        Return links to the products and AAQ configs associated with this configuration.
         """
-        if obj.product:
-            return f"{obj.product.title} Product Landing Page"
-        elif obj.aaq_config:
-            return f"{obj.aaq_config.product.title} AAQ Product Page"
-        return "Home Page"
+        return format_html_join(
+            ", ",
+            '<a href="{}">{}</a>',
+            (
+                itertools.chain(
+                    (
+                        (reverse("admin:products_product_change", args=[p.pk]), p.title)
+                        for p in obj.products.all()
+                    ),
+                    (
+                        (reverse("admin:questions_aaqconfig_change", args=[a.pk]), a.title)
+                        for a in obj.aaq_configs.all()
+                    ),
+                )
+            ),
+        )
 
 
 admin.site.register(PinnedArticleConfig, PinnedArticleConfigAdmin)
