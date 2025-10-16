@@ -1,4 +1,5 @@
 import re
+from contextlib import nullcontext
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -14,7 +15,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--product",
             type=str,
-            help="Sync only this product (slug). Options: firefox, mobile, thunderbird",
+            help="Sync only this product (slug). Options: firefox, firefox-enterprise, mobile, ios, thunderbird",
         )
         parser.add_argument(
             "--dry-run",
@@ -63,7 +64,18 @@ class Command(BaseCommand):
                 "version_data": product_details.firefox_versions,
                 "version_key": "LATEST_FIREFOX_VERSION",
                 "history_data": product_details.firefox_history_major_releases,
+                "esr_keys": [],
+                "esr_only": False,
+            },
+            "firefox-enterprise": {
+                "name": "Firefox for Enterprise",
+                "slug_prefix": "fx",
+                "version_data": product_details.firefox_versions,
+                "version_key": "LATEST_FIREFOX_VERSION",
+                "history_data": product_details.firefox_history_major_releases,
                 "esr_keys": ["FIREFOX_ESR", "FIREFOX_ESR115"],
+                "esr_major_versions": [52, 60, 68, 78, 91, 102, 115, 128, 140],
+                "esr_only": True,
             },
             "mobile": {
                 "name": "Firefox for Android",
@@ -72,6 +84,16 @@ class Command(BaseCommand):
                 "version_key": "version",
                 "history_data": product_details.firefox_history_major_releases,
                 "esr_keys": [],
+                "esr_only": False,
+            },
+            "ios": {
+                "name": "Firefox for iOS",
+                "slug_prefix": "ios",
+                "version_data": product_details.firefox_versions,
+                "version_key": "LATEST_FIREFOX_VERSION",
+                "history_data": product_details.firefox_history_major_releases,
+                "esr_keys": [],
+                "esr_only": False,
             },
             "thunderbird": {
                 "name": "Thunderbird",
@@ -80,6 +102,7 @@ class Command(BaseCommand):
                 "version_key": "LATEST_THUNDERBIRD_VERSION",
                 "history_data": product_details.thunderbird_history_major_releases,
                 "esr_keys": ["THUNDERBIRD_ESR"],
+                "esr_only": False,
             },
         }
 
@@ -96,20 +119,19 @@ class Command(BaseCommand):
         if verbosity >= 1:
             self.stdout.write(f"\nSyncing {product.title} (latest: {latest_version})...")
 
-        history_data = config["history_data"]
-        available_versions = self._get_available_versions(history_data, latest_major)
+        esr_only = config.get("esr_only", False)
 
-        if not dry_run:
-            with transaction.atomic():
+        # Use transaction only if not dry-run
+        context = transaction.atomic() if not dry_run else nullcontext()
+
+        with context:
+            # Only sync regular versions if not ESR-only
+            if not esr_only:
+                history_data = config["history_data"]
+                available_versions = self._get_available_versions(history_data, latest_major)
                 self._create_or_update_versions(
                     product, config, available_versions, dry_run, verbosity
                 )
-                self._handle_esr_versions(product, config, dry_run, verbosity)
-                self._update_visibility(product, dry_run, verbosity)
-        else:
-            self._create_or_update_versions(
-                product, config, available_versions, dry_run, verbosity
-            )
             self._handle_esr_versions(product, config, dry_run, verbosity)
             self._update_visibility(product, dry_run, verbosity)
 
@@ -181,21 +203,28 @@ class Command(BaseCommand):
     def _handle_esr_versions(self, product: Product, config: dict, dry_run: bool, verbosity: int):
         """Create or update ESR versions."""
         esr_keys = config.get("esr_keys", [])
-        if not esr_keys:
+        esr_major_versions = config.get("esr_major_versions", [])
+
+        # Collect ESR major versions from keys
+        esr_majors_from_keys = set()
+        if esr_keys:
+            version_data = config["version_data"]
+            for esr_key in esr_keys:
+                esr_version_str = version_data.get(esr_key)
+                if esr_version_str:
+                    esr_major = self._parse_major_version(esr_version_str)
+                    if esr_major is not None:
+                        esr_majors_from_keys.add(esr_major)
+
+        # Combine with explicit esr_major_versions
+        all_esr_majors = esr_majors_from_keys | set(esr_major_versions)
+
+        if not all_esr_majors:
             return
 
-        version_data = config["version_data"]
         slug_prefix = config["slug_prefix"]
 
-        for esr_key in esr_keys:
-            esr_version_str = version_data.get(esr_key)
-            if not esr_version_str:
-                continue
-
-            esr_major = self._parse_major_version(esr_version_str)
-            if esr_major is None:
-                continue
-
+        for esr_major in sorted(all_esr_majors):
             slug = f"{slug_prefix}{esr_major}-esr"
             name = f"Version {esr_major} ESR"
             min_version = float(esr_major)
@@ -252,7 +281,7 @@ class Command(BaseCommand):
 
         for version in all_versions:
             should_be_visible = version in top_10 or version in esr_versions
-            should_be_default = regular_versions and version == regular_versions[0]
+            should_be_default = bool(regular_versions) and version == regular_versions[0]
 
             if version.visible != should_be_visible or version.default != should_be_default:
                 changes = []
