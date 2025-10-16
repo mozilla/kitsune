@@ -171,7 +171,7 @@
         </div>
 
         <div class="mzp-c-menu-list">
-          <span class="icon-button" data-has-dropdown>more options</span>
+          <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
           <ul class="mzp-c-menu-list-list">
             {% if user.is_authenticated and question.allows_flag(user) %}
               <li class="mzp-c-menu-list-item">{{ flag_form(url('questions.flag', question.id), question.id, content_moderation=True) }}</li>

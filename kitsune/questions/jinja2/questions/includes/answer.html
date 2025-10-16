@@ -35,7 +35,7 @@
     </div>
     {% if answer.id %}
     <div class="mzp-c-menu-list">
-      <span class="icon-button" data-has-dropdown>more options</span>
+      <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
       <ul class="mzp-c-menu-list-list">
         {% if user.is_authenticated and answer.allows_flag(user, question) %}
           <li class="mzp-c-menu-list-item">
@@ -117,7 +117,7 @@
           <h4 class="document-vote--heading">{{ _('Helpful?') }}</h4>
           <div class="document-vote--buttons">
             <button type="submit" class="btn helpful-button" name="helpful" {% if answer.has_voted(request) %}disabled{% endif %}>
-              <span class="hidden-text">Yes</span>
+              <span class="hidden-text">{{ _('Yes') }}</span>
               {% if answer.num_votes != 0 %}
               <strong class="helpful-count">{{ answer.num_helpful_votes }}</strong>
               {% endif %}
@@ -127,7 +127,7 @@
               {% if answer.num_votes != 0 %}
               <strong class="helpful-count">{{ answer.num_unhelpful_votes }}</strong>
               {% endif %}
-              <span class="hidden-text">No</span>
+              <span class="hidden-text">{{ _('No') }}</span>
               <span class="emoji">👎</span>
             </button>
           </div>
