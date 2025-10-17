@@ -1,6 +1,10 @@
-from django.contrib import admin
+import itertools
 
-from kitsune.wiki.models import Document, ImportantDate, Locale
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html_join
+
+from kitsune.wiki.models import Document, ImportantDate, Locale, PinnedArticleConfig
 
 
 class DocumentAdmin(admin.ModelAdmin):
@@ -101,3 +105,39 @@ class LocaleAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Locale, LocaleAdmin)
+
+
+class PinnedArticleConfigAdmin(admin.ModelAdmin):
+    list_display = ("title", "use_for_home_page", "used_by")
+    ordering = ("title", "id")
+    autocomplete_fields = ("pinned_articles",)
+    search_fields = ("title", "pinned_articles__title")
+    readonly_fields = ("used_by",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("products", "aaq_configs")
+
+    @admin.display(description="Used By")
+    def used_by(self, obj):
+        """
+        Return links to the products and AAQ configs associated with this configuration.
+        """
+        return format_html_join(
+            ", ",
+            '<a href="{}">{}</a>',
+            (
+                itertools.chain(
+                    (
+                        (reverse("admin:products_product_change", args=[p.pk]), p.title)
+                        for p in obj.products.all()
+                    ),
+                    (
+                        (reverse("admin:questions_aaqconfig_change", args=[a.pk]), a.title)
+                        for a in obj.aaq_configs.all()
+                    ),
+                )
+            ),
+        )
+
+
+admin.site.register(PinnedArticleConfig, PinnedArticleConfigAdmin)

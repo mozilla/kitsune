@@ -51,7 +51,6 @@ from kitsune.questions.forms import (
 )
 from kitsune.questions.models import AAQConfig, Answer, AnswerVote, Question, QuestionVote
 from kitsune.questions.utils import (
-    get_featured_articles,
     get_ga_submit_event_parameters_as_json,
     get_mobile_product_from_ua,
 )
@@ -75,7 +74,7 @@ from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
-from kitsune.wiki.utils import build_topics_data, get_kb_visited
+from kitsune.wiki.utils import build_topics_data, get_featured_articles, get_kb_visited
 
 log = logging.getLogger("k.questions")
 
@@ -604,7 +603,9 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
 
-        context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
+        context["featured"] = get_featured_articles(
+            user=request.user, product=product, locale=request.LANGUAGE_CODE, fetch_for_aaq=True
+        )
         context["topics"] = build_topics_data(request, product, topics)
 
     elif step == 3:
@@ -1490,10 +1491,7 @@ def answer_preview_async(request):
         except Question.DoesNotExist:
             pass
 
-    return render(request, template, {
-        "answer_preview": answer,
-        "question": question
-    })
+    return render(request, template, {"answer_preview": answer, "question": question})
 
 
 def metrics(request, locale_code=None):

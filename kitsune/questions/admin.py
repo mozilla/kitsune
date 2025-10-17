@@ -46,18 +46,18 @@ class QuestionLocaleAdmin(admin.TabularInline):
 
 class AAQConfigAdmin(admin.ModelAdmin):
     form = AAQConfigForm
-    list_display = ("title", "product", "is_active")
-    autocomplete_fields = ("pinned_articles",)
+    list_display = ("title", "product", "is_active", "pinned_article_config")
     list_editable = ("is_active",)
     inlines = [QuestionLocaleAdmin]
     fields = (
         "title",
         "product",
         "is_active",
-        "pinned_articles",
+        "pinned_article_config",
         "associated_tags",
         "extra_fields",
     )
+    autocomplete_fields = ("pinned_article_config",)
 
 
 admin.site.register(AAQConfig, AAQConfigAdmin)

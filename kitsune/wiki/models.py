@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
-from django.db.models import Q
+from django.db.models import Q, Value
 from django.db.models.functions import Now
 from django.urls import is_valid_path
 from django.utils import translation
@@ -1145,6 +1145,36 @@ class DocumentImage(ModelBase):
 
     def __str__(self):
         return "<DocumentImage: {doc} includes {img}>".format(doc=self.document, img=self.image)
+
+
+class PinnedArticleConfig(ModelBase):
+    """
+    A reusable set of pinned Documents that can be referenced from a Product instance for
+    its product landing page, and/or an AAQ configuration for its AAQ product page, and/or
+    configured for use on the home page.
+    """
+
+    title = models.CharField(max_length=255)
+    use_for_home_page = models.BooleanField(default=False)
+    pinned_articles = models.ManyToManyField(
+        Document,
+        limit_choices_to=Q(parent__isnull=True),
+    )
+
+    class Meta:
+        verbose_name = "Pinned Article Configuration"
+        ordering = ("title", "id")
+        constraints = [
+            # Ensure there is only one config associated with the home page.
+            models.UniqueConstraint(
+                Value(1, output_field=models.IntegerField()),
+                condition=Q(use_for_home_page=True),
+                name="unique_pinned_article_config_home_page",
+            ),
+        ]
+
+    def __str__(self):
+        return self.title
 
 
 def get_locale_and_slug_from_document_url(url, required_locale=None):

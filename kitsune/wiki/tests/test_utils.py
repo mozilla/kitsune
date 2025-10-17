@@ -11,8 +11,10 @@ from requests.exceptions import HTTPError
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.wiki.models import PinnedArticleConfig
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -26,6 +28,7 @@ from kitsune.wiki.utils import (
     generate_short_url,
     get_featured_articles,
     get_kb_visited,
+    get_pinned_articles,
     get_visible_document_or_404,
     has_visited_kb,
     num_active_contributors,
@@ -127,7 +130,6 @@ class GenerateShortUrlTestCase(TestCase):
 
 
 class FeaturedArticlesTestCase(TestCase):
-
     def setUp(self):
         super().setUp()
         self.product1 = product1 = ProductFactory()
@@ -143,12 +145,10 @@ class FeaturedArticlesTestCase(TestCase):
         self.d2 = d2 = ApprovedRevisionFactory(
             document__products=[product1], document__topics=[topic1, topic2]
         ).document
-        ApprovedRevisionFactory(
+        self.d_pinned = ApprovedRevisionFactory(
             document__products=[product1, product2], document__topics=[topic2]
         ).document
-        ApprovedRevisionFactory(
-            document__products=[product2], document__topics=[topic2, topic3]
-        ).document
+        ApprovedRevisionFactory(document__products=[product2], document__topics=[topic2, topic3])
         # These will not have a current revision.
         d3 = RevisionFactory().document
         d4 = RevisionFactory().document
@@ -185,7 +185,7 @@ class FeaturedArticlesTestCase(TestCase):
             document__locale="de",
             document__parent__products=[product2],
             document__parent__topics=[topic2, topic3],
-        ).document
+        )
         # These will not have a current revision.
         de3 = DocumentFactory(locale="de", parent=DocumentFactory())
         de4 = DocumentFactory(locale="de", parent=DocumentFactory())
@@ -216,6 +216,12 @@ class FeaturedArticlesTestCase(TestCase):
                 document=doc.parent, visits=(60 + i), period=LAST_7_DAYS
             )
 
+        # Create a pinned-article config for the first product.
+        self.config1 = PinnedArticleConfig.objects.create(title="Group1")
+        self.config1.pinned_articles.add(self.d_pinned)
+        self.product1.pinned_article_config = self.config1
+        self.product1.save()
+
     def test_get_featured_articles(self):
         with self.subTest("with defaults"):
             featured = get_featured_articles()
@@ -227,15 +233,18 @@ class FeaturedArticlesTestCase(TestCase):
 
         with self.subTest("with product"):
             featured = get_featured_articles(product=self.product1)
-            self.assertEqual(len(featured), 3)
+            self.assertEqual(len(featured), 4)
             self.assertEqual(
-                {d.id for d in featured}, {self.d1.id, self.d2.id, self.de1.parent.id}
+                {d.id for d in featured},
+                {self.d_pinned.id, self.d1.id, self.d2.id, self.de1.parent.id},
             )
 
         with self.subTest("with product and topic"):
             featured = get_featured_articles(product=self.product1, topics=[self.topic2])
-            self.assertEqual(len(featured), 2)
-            self.assertEqual({d.id for d in featured}, {self.d2.id, self.de1.parent.id})
+            self.assertEqual(len(featured), 3)
+            self.assertEqual(
+                {d.id for d in featured}, {self.d_pinned.id, self.d2.id, self.de1.parent.id}
+            )
 
         with self.subTest("with locale"):
             featured = get_featured_articles(locale="de")
@@ -264,10 +273,8 @@ class RemoveExpiredFromKBVisitedTests(TestCase):
             remove_expired_from_kb_visited(None)
         except Exception as err:
             self.fail(
-
-                    "remove_expired_from_kb_visited() raised an "
-                    f"exception with a session of None: {err}"
-
+                "remove_expired_from_kb_visited() raised an "
+                f"exception with a session of None: {err}"
             )
 
     def test_session_without_kb_visited(self):
@@ -455,9 +462,7 @@ class GetKBVisitedTests(TestCase):
         }
         self.session.modified = False
         visits = get_kb_visited(self.session, self.product1, ttl=10)
-        self.assertEqual(
-            set(visits), {self.doc1.get_absolute_url(), self.doc3.get_absolute_url()}
-        )
+        self.assertEqual(set(visits), {self.doc1.get_absolute_url(), self.doc3.get_absolute_url()})
         self.assertEqual(
             self.session["kb-visited"],
             {
@@ -981,3 +986,230 @@ class GetVisibleDocumentTests(TestCase):
                 allow_discussion=True,
                 look_for_translation_via_parent=True,
             )
+
+
+class GetPinnedArticlesTests(TestCase):
+    """
+    Test suite for the get_pinned_articles utility function.
+    """
+
+    def setUp(self):
+        self.user = UserFactory()
+        group1 = GroupFactory(name="group1")
+        self.user_g1 = UserFactory(groups=[group1])
+        self.product1 = ProductFactory(slug="firefox")
+        self.product2 = ProductFactory(slug="mobile")
+        self.aaq_config1 = AAQConfigFactory(product=self.product1)
+        self.aaq_config2 = AAQConfigFactory(product=self.product2)
+
+        self.en_doc = ApprovedRevisionFactory(
+            document__locale="en-US",
+            document__slug="test-document",
+            is_ready_for_localization=True,
+        ).document
+
+        self.de_doc = TranslatedRevisionFactory(
+            document__locale="de",
+            document__slug="test-document-de",
+            document__parent=self.en_doc,
+            based_on=self.en_doc.current_revision,
+        ).document
+
+        self.fr_doc = TranslatedRevisionFactory(
+            document__locale="fr",
+            document__slug="test-document-fr",
+            document__parent=self.en_doc,
+            based_on=self.en_doc.current_revision,
+        ).document
+
+        self.es_doc = RevisionFactory(
+            creator=self.user,
+            document__locale="es",
+            document__slug="test-document-es",
+            document__parent=self.en_doc,
+            based_on=self.en_doc.current_revision,
+        ).document
+
+        self.en_restricted_doc = ApprovedRevisionFactory(
+            document__locale="en-US",
+            document__slug="test-restricted-document",
+            document__restrict_to_groups=[group1],
+        ).document
+
+        self.de_restricted_doc = TranslatedRevisionFactory(
+            document__locale="de",
+            document__slug="test-restricted-document-de",
+            document__parent=self.en_restricted_doc,
+            based_on=self.en_restricted_doc.current_revision,
+        ).document
+
+        self.de_parent_doc = ApprovedRevisionFactory(
+            document__locale="de",
+            document__parent=None,
+            document__slug="test-parent-document-de",
+        ).document
+
+        self.fr_restricted_parent_doc = ApprovedRevisionFactory(
+            document__locale="fr",
+            document__parent=None,
+            document__slug="test-parent-restricted-document-fr",
+            document__restrict_to_groups=[group1],
+        ).document
+
+        # Create some pinned-article configs.
+        self.config1 = PinnedArticleConfig.objects.create(title="Group1")
+        self.config1.pinned_articles.add(self.en_doc)
+        self.config1.pinned_articles.add(self.en_restricted_doc)
+        self.config1.pinned_articles.add(self.de_parent_doc)
+        self.config1.pinned_articles.add(self.fr_restricted_parent_doc)
+        # This one will be used for the Home Page.
+        self.config2 = PinnedArticleConfig.objects.create(title="Group2", use_for_home_page=True)
+        self.config2.pinned_articles.add(self.en_restricted_doc)
+        self.config2.pinned_articles.add(self.fr_restricted_parent_doc)
+        self.config3 = PinnedArticleConfig.objects.create(title="Group3")
+        self.config3.pinned_articles.add(self.en_restricted_doc)
+
+        # Associate the configs with products/AAQ-configs.
+        self.product1.pinned_article_config = self.config1
+        self.product1.save()
+        self.product2.pinned_article_config = self.config2
+        self.product2.save()
+        self.aaq_config1.pinned_article_config = self.config3
+        self.aaq_config1.save()
+
+    def test_when_no_config_for_product(self):
+        """
+        Test when a product has no pinned articles.
+        """
+        result = get_pinned_articles(user=self.user, product=self.product2)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, product=self.product2, fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+    def test_for_default_locale(self):
+        """
+        Test for pinned articles in the default locale.
+        """
+        result = get_pinned_articles(product=self.product1)
+        self.assertEqual(list(result), [self.en_doc])
+
+        result = get_pinned_articles(product=self.product2)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(product=self.product1, fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(list(result), [self.en_doc])
+
+        result = get_pinned_articles(user=self.user, product=self.product1, fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product1)
+        self.assertEqual(set(result), {self.en_doc, self.en_restricted_doc})
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product2)
+        self.assertEqual(list(result), [self.en_restricted_doc])
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product1, fetch_for_aaq=True)
+        self.assertEqual(list(result), [self.en_restricted_doc])
+
+        result = get_pinned_articles()
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user_g1)
+        self.assertEqual(list(result), [self.en_restricted_doc])
+
+        result = get_pinned_articles(user=self.user_g1, fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+    def test_for_non_default_locale(self):
+        """
+        Test for pinned articles in a non-English locale.
+        """
+        result = get_pinned_articles(product=self.product1, locale="de")
+        self.assertEqual(set(result), {self.de_doc, self.de_parent_doc})
+
+        result = get_pinned_articles(product=self.product1, locale="de", fetch_for_aaq=True)
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, product=self.product1, locale="de")
+        self.assertEqual(set(result), {self.de_doc, self.de_parent_doc})
+
+        result = get_pinned_articles(
+            user=self.user, product=self.product1, locale="de", fetch_for_aaq=True
+        )
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="de")
+        self.assertEqual(set(result), {self.de_doc, self.de_parent_doc, self.de_restricted_doc})
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product2, locale="de")
+        self.assertEqual(list(result), [self.de_restricted_doc])
+
+        result = get_pinned_articles(
+            user=self.user_g1, product=self.product1, locale="de", fetch_for_aaq=True
+        )
+        self.assertEqual(list(result), [self.de_restricted_doc])
+
+        result = get_pinned_articles(user=self.user, product=self.product1, locale="fr")
+        self.assertEqual(list(result), [self.fr_doc])
+
+        result = get_pinned_articles(user=self.user, product=self.product2, locale="fr")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(
+            user=self.user, product=self.product1, locale="fr", fetch_for_aaq=True
+        )
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="fr")
+        self.assertEqual(set(result), {self.fr_doc, self.fr_restricted_parent_doc})
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product2, locale="fr")
+        self.assertEqual(list(result), [self.fr_restricted_parent_doc])
+
+        result = get_pinned_articles(
+            user=self.user_g1, product=self.product1, locale="fr", fetch_for_aaq=True
+        )
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(product=self.product1, locale="es")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, product=self.product1, locale="es")
+        self.assertEqual(list(result), [self.es_doc])
+
+        result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="es")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(locale="de")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, locale="de")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, locale="fr")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user, locale="es")
+        self.assertEqual(result.count(), 0)
+
+        result = get_pinned_articles(user=self.user_g1, locale="de")
+        self.assertEqual(list(result), [self.de_restricted_doc])
+
+        result = get_pinned_articles(user=self.user_g1, locale="fr")
+        self.assertEqual(list(result), [self.fr_restricted_parent_doc])
+
+        result = get_pinned_articles(user=self.user_g1, locale="es")
+        self.assertEqual(result.count(), 0)
