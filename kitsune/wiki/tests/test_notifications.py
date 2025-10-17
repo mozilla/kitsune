@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core import mail
+from django.test import override_settings
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase, post
@@ -44,6 +45,7 @@ def _set_up_ready_watcher():
     return ready_watcher
 
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 class ReviewTests(TestCase):
     """Tests for notifications sent during revision review"""
 
@@ -99,8 +101,8 @@ class ReviewTests(TestCase):
         notification and Approved watchers an Approved one."""
         _set_up_ready_watcher()
         self._review_revision(is_ready=True, significance=MEDIUM_SIGNIFICANCE)
-        # 1 mail to each watcher, 1 to the creator, and one to the reviewer
-        self.assertEqual(4, len(mail.outbox))
+        # 1 mail to each watcher and 1 to the creator
+        self.assertEqual(3, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
         _assert_approved_mail(mail.outbox[1])
         _assert_creator_mail(mail.outbox[2])
@@ -118,9 +120,9 @@ class ReviewTests(TestCase):
             significance=MEDIUM_SIGNIFICANCE,
             document__restrict_to_groups=[self.group],
         )
-        # 1 mail to the approved watcher, 1 to the creator, and 1 to the reviewer, but
+        # 1 mail to the approved watcher and 1 to the creator, but
         # none to the ready watcher, since that user is not a member of self.group.
-        self.assertEqual(3, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         _assert_approved_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
 
@@ -135,9 +137,9 @@ class ReviewTests(TestCase):
             significance=MEDIUM_SIGNIFICANCE,
             document__restrict_to_groups=[other_group],
         )
-        # 1 mail to the ready watcher, 1 to the creator, and 1 to the reviewer, but none
+        # 1 mail to the ready watcher and 1 to the creator, but none
         # to the approved watcher, since that user is not a member of the "other" group.
-        self.assertEqual(3, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
 
@@ -153,27 +155,27 @@ class ReviewTests(TestCase):
         doc = DocumentFactory(parent=parent, locale="es")
         parent.products.add(ProductFactory(slug="firefox"))
 
-        # Review a revision. There should be 3 new emails:
-        # 1 to the creator, 1 to the reviewer and 1 to the 'es' watcher.
+        # Review a revision. There should be 2 new emails:
+        # 1 to the creator and 1 to the 'es' watcher.
         self._review_revision(document=doc, is_ready=True, significance=MEDIUM_SIGNIFICANCE)
-        self.assertEqual(3, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         _assert_approved_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
 
         # Add firefox-os to the document's products and review a new revision.
-        # There should be 4 new emails now (the same 3 from before plus one
+        # There should be 3 new emails now (the same 2 from before plus one
         # for the firefox-os watcher).
         parent.products.add(ProductFactory(slug="firefox-os"))
         self._review_revision(document=doc, is_ready=True, significance=MEDIUM_SIGNIFICANCE)
-        self.assertEqual(7, len(mail.outbox))
+        self.assertEqual(5, len(mail.outbox))
+        _assert_approved_mail(mail.outbox[2])
         _assert_approved_mail(mail.outbox[3])
-        _assert_approved_mail(mail.outbox[4])
-        _assert_creator_mail(mail.outbox[5])
+        _assert_creator_mail(mail.outbox[4])
 
-        # Add a Firefox watcher. This time there should be 5 new emails.
+        # Add a Firefox watcher. This time there should be 4 new emails.
         ApproveRevisionInLocaleEvent.notify(UserFactory(), product="firefox", locale="es")
         self._review_revision(document=doc, is_ready=True, significance=MEDIUM_SIGNIFICANCE)
-        self.assertEqual(12, len(mail.outbox))
+        self.assertEqual(9, len(mail.outbox))
 
     def test_typo_significance_ignore(self):
         # Create the first approved revision for the document. This one will
@@ -185,15 +187,15 @@ class ReviewTests(TestCase):
         self._review_revision(is_ready=True, document=r.document, significance=TYPO_SIGNIFICANCE)
         # This is the same as test_ready, except we miss 1 mail, that is the
         # localization mail.
-        self.assertEqual(3, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
 
     def test_approved(self):
         """Show that an approved rev mails Ready watchers nothing and Approved
         watchers an Approved notification."""
         _set_up_ready_watcher()
         self._review_revision(is_ready=False)
-        # 1 mail to Approved watcher, 1 to creator, 1 for reviewer
-        self.assertEqual(3, len(mail.outbox))
+        # 1 mail to Approved watcher and 1 to creator
+        self.assertEqual(2, len(mail.outbox))
         assert "new approved revision" in mail.outbox[0].subject
         assert "Your revision has been approved" in mail.outbox[1].subject
 
@@ -210,19 +212,18 @@ class ReviewTests(TestCase):
         )
         self.assertEqual(0, len(mail.outbox))
         self._review_revision(r=r2)
-        # 1 mail for each watcher, 1 for creator, and one for reviewer.
-        self.assertEqual(4, len(mail.outbox))
+        # 1 mail for the watcher and 1 for creator.
+        self.assertEqual(3, len(mail.outbox))
         assert "has a new approved revision" in mail.outbox[0].subject
         assert "Your revision has been approved" in mail.outbox[1].subject
-        assert "Your revision has been approved" in mail.outbox[2].subject
-        assert "A revision you contributed to has" in mail.outbox[3].subject
+        assert "A revision you contributed to has" in mail.outbox[2].subject
 
     def test_neither(self):
         """Show that neither an Approved nor a Ready mail is sent if a rev is
         rejected."""
         _set_up_ready_watcher()
         self._review_revision(is_approved=False)
-        self.assertEqual(2, len(mail.outbox))  # 1 mail to creator, one to the reviewer.
+        self.assertEqual(1, len(mail.outbox))  # 1 mail to creator.
         assert mail.outbox[0].subject.startswith("Your revision has been reviewed")
 
     def test_user_watching_both(self):
@@ -233,8 +234,8 @@ class ReviewTests(TestCase):
         ReadyRevisionEvent.notify(self.approved_watcher)
 
         self._review_revision(is_ready=True, significance=MEDIUM_SIGNIFICANCE)
-        # 1 mail to watcher, 1 to creator, 1 to reviewer
-        self.assertEqual(3, len(mail.outbox))
+        # 1 mail to watcher and 1 to creator
+        self.assertEqual(2, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
 
@@ -256,6 +257,7 @@ class ReviewTests(TestCase):
         self.assertEqual(MAJOR_SIGNIFICANCE, r.significance)
 
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 class ReadyForL10nTests(TestCase):
     """Tests for notifications sent during ready for l10n"""
 
@@ -324,6 +326,7 @@ class ReadyForL10nTests(TestCase):
         self.assertEqual(6, len(mail.outbox))
 
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 class ReviewableRevisionInLocaleEventTests(TestCase):
     """Tests notifications when a revision is created."""
 
