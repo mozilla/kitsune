@@ -40,7 +40,9 @@ jobs:
     steps:
       - id: set_ref_id
         name: Set the REF_ID
-        run: echo "REF_ID=${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref }}" >> $GITHUB_ENV
+        env:
+          REF_ID: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref }}
+        run: echo "REF_ID=$REF_ID" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
       - name: Create version.json
@@ -153,11 +155,15 @@ jobs:
 
       - id: upload-assets
         name: upload static assets
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+          DEPLOYMENT_REALM: ${{ needs.build.outputs.deployment_realm }}
+          DEPLOYMENT_ENV: ${{ needs.build.outputs.deployment_env }}
         run: |-
           TMP_DIR=static-upload
           TMP_DIR_HASHED=static-upload-hashed
 
-          docker create --name tmp $GAR_LOCATION-docker.pkg.dev/$GCP_PROJECT_ID/$GAR_REPOSITORY/$IMAGE_NAME:${{ needs.build.outputs.image_tag }}
+          docker create --name tmp $GAR_LOCATION-docker.pkg.dev/$GCP_PROJECT_ID/$GAR_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG
 
           mkdir -p ./$TMP_DIR ./$TMP_DIR_HASHED
 
@@ -165,7 +171,7 @@ jobs:
 
           find $TMP_DIR -maxdepth 1 -type f -regextype sed -regex ".*\.[0-9a-f]\{16\}\..*" -exec mv -t $TMP_DIR_HASHED {} +
 
-          gsutil -m rsync -r ./$TMP_DIR_HASHED/ gs://$APP-${{ needs.build.outputs.deployment_realm }}-${{ needs.build.outputs.deployment_env }}-assets-bucket/static/
-          gsutil -m rsync -r ./$TMP_DIR/ gs://$APP-${{ needs.build.outputs.deployment_realm }}-${{ needs.build.outputs.deployment_env }}-assets-bucket/static/
+          gsutil -m rsync -r ./$TMP_DIR_HASHED/ gs://$APP-$DEPLOYMENT_REALM-$DEPLOYMENT_ENV-assets-bucket/static/
+          gsutil -m rsync -r ./$TMP_DIR/ gs://$APP-$DEPLOYMENT_REALM-$DEPLOYMENT_ENV-assets-bucket/static/
 
           docker rm tmp
