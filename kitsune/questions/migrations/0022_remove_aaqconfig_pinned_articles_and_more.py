@@ -38,23 +38,6 @@ def migrate_pinned_articles(apps, schema_editor):
         )
 
 
-def reverse_migrate_pinned_articles(apps, schema_editor):
-    """
-    Reverses the operation above by moving any pinned articles within
-    PinnedArticleConfig objects back into their associated AAQConfig
-    objects, and then deleting all PinnedArticleConfig objects.
-    """
-    PinnedArticleConfig = apps.get_model("wiki", "PinnedArticleConfig")
-
-    # Move any pinned articles within PinnedArticleConfig objects back
-    # into their associated AAQConfig objects.
-    for pinned_article_config in PinnedArticleConfig.objects.filter(
-        pinned_articles__isnull=False, aaq_configs__isnull=False
-    ).prefetch_related("aaq_configs", "pinned_articles"):
-        for aaq_config in pinned_article_config.aaq_configs.all():
-            aaq_config.pinned_articles.set(pinned_article_config.pinned_articles.all())
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("wiki", "0019_pinnedarticleconfig_and_more"),
@@ -77,7 +60,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             migrate_pinned_articles,
-            reverse_migrate_pinned_articles,
+            migrations.RunPython.noop,
         ),
         migrations.RemoveField(
             model_name="aaqconfig",
