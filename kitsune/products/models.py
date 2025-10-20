@@ -49,7 +49,7 @@ class Product(BaseProductTopic):
         null=True,
         blank=True,
         max_length=settings.MAX_FILEPATH_LENGTH,
-        help_text=("Used everywhere except the home " "page. Must be 96x96."),
+        help_text="Used everywhere except the home page. Must be 96x96.",
     )
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None, null=True, editable=False)
@@ -57,6 +57,16 @@ class Product(BaseProductTopic):
 
     # Platforms this Product runs on.
     platforms = models.ManyToManyField("Platform")
+
+    pinned_article_config = models.ForeignKey(
+        "wiki.PinnedArticleConfig",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="products",
+        verbose_name="Pinned article configuration",
+        help_text="Pinned article configuration for this product's landing page.",
+    )
 
     # Override default manager
     objects = models.Manager()
