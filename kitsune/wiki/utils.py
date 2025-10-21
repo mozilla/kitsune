@@ -174,11 +174,14 @@ def get_featured_articles(
             product=product,
             locale=locale,
             fetch_for_aaq=fetch_for_aaq,
-        )[:limit]
+        )
     )
 
-    if len(pinned_articles) == limit:
+    if (num_pinned_articles := len(pinned_articles)) == limit:
         return pinned_articles
+
+    elif num_pinned_articles > limit:
+        return random.sample(pinned_articles, limit)
 
     # Here are some key points about the following query:
     # (1) It will include all KB articles that are visible to the provided user. This
