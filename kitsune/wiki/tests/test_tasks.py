@@ -127,8 +127,8 @@ class ReviewMailTestCase(TestCase):
         msg = "great work!"
         self._approve_and_send(rev, self.user, msg)
 
-        # Two emails will be sent, one each for the reviewer and the reviewed.
-        self.assertEqual(2, len(mail.outbox))
+        # Only one email will be sent to the revision creator.
+        self.assertEqual(1, len(mail.outbox))
         self.assertEqual(
             "Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject
         )
@@ -159,8 +159,8 @@ class ReviewMailTestCase(TestCase):
         msg = "foo"
         self._approve_and_send(rev, self.user, msg)
 
-        # Two emails will be sent, one each for the reviewer and the reviewed.
-        self.assertEqual(2, len(mail.outbox))
+        # Only one email will be sent to the revision creator.
+        self.assertEqual(1, len(mail.outbox))
         self.assertEqual(
             "Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject
         )
@@ -175,8 +175,8 @@ class ReviewMailTestCase(TestCase):
         msg = 'foo & "bar"'
         self._approve_and_send(rev, self.user, msg)
 
-        # Two emails will be sent, one each for the reviewer and the reviewed.
-        self.assertEqual(2, len(mail.outbox))
+        # Only one email will be sent to the revision creator.
+        self.assertEqual(1, len(mail.outbox))
         self.assertEqual(
             "Your revision has been approved: {}".format(doc.title), mail.outbox[0].subject
         )
