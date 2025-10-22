@@ -1213,3 +1213,59 @@ class GetPinnedArticlesTests(TestCase):
 
         result = get_pinned_articles(user=self.user_g1, locale="es")
         self.assertEqual(result.count(), 0)
+
+    def test_articles_transitioning_to_invalid_states(self):
+        from kitsune.wiki.config import (
+            ADMINISTRATION_CATEGORY,
+            CANNED_RESPONSES_CATEGORY,
+            HOW_TO_CATEGORY,
+            NAVIGATION_CATEGORY,
+            TEMPLATES_CATEGORY,
+        )
+
+        valid_doc = ApprovedRevisionFactory(
+            document__locale="en-US",
+            document__slug="valid-article",
+        ).document
+
+        config = PinnedArticleConfig.objects.create(title="TestTransitions")
+        config.pinned_articles.add(valid_doc)
+        self.product1.pinned_article_config = config
+        self.product1.save()
+
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(list(result), [valid_doc])
+
+        valid_doc.is_archived = True
+        valid_doc.save()
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(result.count(), 0)
+
+        valid_doc.is_archived = False
+        valid_doc.category = ADMINISTRATION_CATEGORY
+        valid_doc.save()
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(result.count(), 0)
+
+        valid_doc.category = NAVIGATION_CATEGORY
+        valid_doc.save()
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(result.count(), 0)
+
+        valid_doc.category = TEMPLATES_CATEGORY
+        valid_doc.title = "Template:" + valid_doc.title
+        valid_doc.save()
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(result.count(), 0)
+
+        valid_doc.category = CANNED_RESPONSES_CATEGORY
+        valid_doc.title = valid_doc.title.replace("Template:", "")
+        valid_doc.save()
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(result.count(), 0)
+
+        valid_doc.category = HOW_TO_CATEGORY
+        valid_doc.save()
+        RedirectRevisionFactory(document=valid_doc)
+        result = get_pinned_articles(user=self.user, product=self.product1)
+        self.assertEqual(result.count(), 0)
