@@ -36,6 +36,7 @@ from kitsune.wiki.config import (
     DOC_HTML_CACHE_KEY,
     MAJOR_SIGNIFICANCE,
     MEDIUM_SIGNIFICANCE,
+    PINNED_ARTICLE_LIMIT_Q,
     REDIRECT_CONTENT,
     REDIRECT_HTML,
     REDIRECT_SLUG,
@@ -1158,13 +1159,7 @@ class PinnedArticleConfig(ModelBase):
     use_for_home_page = models.BooleanField(default=False)
     pinned_articles = models.ManyToManyField(
         Document,
-        limit_choices_to=Q(
-            parent__isnull=True,
-            is_template=False,
-            is_archived=False,
-            category__in=settings.IA_DEFAULT_CATEGORIES,
-        )
-        & ~Q(html__startswith=REDIRECT_HTML),
+        limit_choices_to=PINNED_ARTICLE_LIMIT_Q,
     )
 
     class Meta:
