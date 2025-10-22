@@ -7,7 +7,11 @@ from kitsune.sumo.utils import PrettyJSONEncoder
 
 
 class AAQConfigForm(forms.ModelForm):
-    extra_fields = forms.JSONField(encoder=PrettyJSONEncoder)
+    extra_fields = forms.JSONField(
+        initial=list,
+        required=False,
+        encoder=PrettyJSONEncoder,
+    )
 
     class Meta:
         model = AAQConfig
