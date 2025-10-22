@@ -7,7 +7,7 @@ requires-python = ">=3.11, <3.12"
 license = "BSD-3-Clause"
 dependencies = [
     "APScheduler>=3.10.4,<4",
-    "Django>=4.2.25,<5",
+    "Django>=4.2.22,<5",
     "babis>=0.2.4,<0.3",
     "Pillow>=11.0.0,<12",
     "bleach[css]>=6.1.0,<7",
