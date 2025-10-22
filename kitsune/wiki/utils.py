@@ -16,7 +16,7 @@ from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.config import PINNED_ARTICLE_LIMIT_Q, REDIRECT_HTML
+from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, PinnedArticleConfig, Revision
 
@@ -132,7 +132,7 @@ def get_pinned_articles(
     if not (config := qs.first()):
         return Document.objects.none()
 
-    pinned_articles = config.pinned_articles.filter(PINNED_ARTICLE_LIMIT_Q)
+    pinned_articles = config.pinned_articles.all()
 
     condition = Q(id__in=pinned_articles)
 
