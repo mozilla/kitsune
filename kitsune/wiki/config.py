@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _lazy
 
 TEMPLATE_TITLE_PREFIX = "Template:"
@@ -111,14 +109,3 @@ REDIRECT_SLUG = _lazy("%(old)s-redirect-%(number)i")
 DOC_HTML_CACHE_KEY = "doc_html:{locale}:{slug}"
 
 SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
-
-# Q object for filtering valid pinned articles.
-# This is used in both the admin UI (via limit_choices_to) and in runtime
-# filtering (via get_pinned_articles()) to ensure consistency.
-# Excludes: templates, archived, redirects, and non-IA categories.
-PINNED_ARTICLE_LIMIT_Q = Q(
-    parent__isnull=True,
-    is_template=False,
-    is_archived=False,
-    category__in=settings.IA_DEFAULT_CATEGORIES,
-) & ~Q(html__startswith=REDIRECT_HTML)
