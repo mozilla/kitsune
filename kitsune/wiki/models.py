@@ -1158,7 +1158,13 @@ class PinnedArticleConfig(ModelBase):
     use_for_home_page = models.BooleanField(default=False)
     pinned_articles = models.ManyToManyField(
         Document,
-        limit_choices_to=Q(parent__isnull=True),
+        limit_choices_to=Q(
+            parent__isnull=True,
+            is_template=False,
+            is_archived=False,
+            category__in=settings.IA_DEFAULT_CATEGORIES,
+        )
+        & ~Q(html__startswith=REDIRECT_HTML),
     )
 
     class Meta:
