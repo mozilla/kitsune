@@ -1,3 +1,5 @@
+import re
+
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from django.utils.html import escape, strip_tags
@@ -10,6 +12,13 @@ from kitsune.sumo.feeds import Feed
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.models import SumoTag
+
+
+def _sanitize_for_xml(text):
+    """Remove control characters invalid in XML 1.0 (preserves tab, newline, carriage return)."""
+    if not text:
+        return text
+    return re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]", "", text)
 
 
 class QuestionsFeed(Feed):
@@ -66,10 +75,10 @@ class QuestionsFeed(Feed):
         return qs.select_related("creator").order_by("-updated")[: config.QUESTIONS_PER_PAGE]
 
     def item_title(self, item):
-        return item.title
+        return _sanitize_for_xml(item.title)
 
     def item_description(self, item):
-        return escape(item.content_parsed)
+        return _sanitize_for_xml(escape(item.content_parsed))
 
     def item_author_name(self, item):
         return item.creator
@@ -102,7 +111,7 @@ class AnswersFeed(Feed):
         return get_object_or_404(Question, pk=question_id)
 
     def title(self, question):
-        return _("Recent answers to %s") % question.title
+        return _("Recent answers to %s") % _sanitize_for_xml(question.title)
 
     def link(self, question):
         return question.get_absolute_url()
@@ -118,10 +127,10 @@ class AnswersFeed(Feed):
         )
 
     def item_title(self, item):
-        return strip_tags(item.content_parsed)[:100]
+        return _sanitize_for_xml(strip_tags(item.content_parsed)[:100])
 
     def item_description(self, item):
-        return escape(item.content_parsed)
+        return _sanitize_for_xml(escape(item.content_parsed))
 
     def item_author_name(self, item):
         return item.creator

@@ -4,9 +4,9 @@ from django.core.cache import cache
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.feeds import QuestionsFeed, TaggedQuestionsFeed
+from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.models import Question
-from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -102,3 +102,62 @@ class ForumTestFeeds(TestCase):
         self.assertEqual("Perguntas atualizadas recentemente", feed.attrib["title"])
         self.assertEqual(urlparams("/pt-BR/questions/feed?product=all"), feed.attrib["href"])
         self.assertEqual(200, self.client.get(feed.attrib["href"]).status_code)
+
+    def test_question_feed_with_control_characters(self):
+        """Test that feeds properly handle control characters in titles/content."""
+        u = UserFactory()
+        q = Question(
+            title="Test\x0bQuestion\x0cWith\x1fControl\x7fChars",
+            content="Content\x0bwith\x0ccontrol\x1fchars",
+            creator=u,
+        )
+        q.save()
+
+        feed = QuestionsFeed()
+        items = feed.items({})
+        self.assertIn(q, items)
+
+        item_title = feed.item_title(q)
+        self.assertNotIn("\x0b", item_title)
+        self.assertNotIn("\x0c", item_title)
+        self.assertNotIn("\x1f", item_title)
+        self.assertNotIn("\x7f", item_title)
+        self.assertEqual("TestQuestionWithControlChars", item_title)
+
+        item_description = feed.item_description(q)
+        self.assertNotIn("\x0b", item_description)
+        self.assertNotIn("\x0c", item_description)
+        self.assertNotIn("\x1f", item_description)
+
+        url = reverse("questions.feed")
+        res = self.client.get(url)
+        self.assertEqual(200, res.status_code)
+
+    def test_answers_feed_with_control_characters(self):
+        """Test that answer feeds properly handle control characters."""
+        q = QuestionFactory(title="Question\x0bwith\x0ccontrol\x1fchars")
+        a = AnswerFactory(
+            question=q, content="Answer\x0bcontent\x0cwith\x1fcontrol\x7fchars", creator=q.creator
+        )
+
+        feed = AnswersFeed()
+        feed_title = feed.title(q)
+        self.assertNotIn("\x0b", feed_title)
+        self.assertNotIn("\x0c", feed_title)
+        self.assertNotIn("\x1f", feed_title)
+
+        item_title = feed.item_title(a)
+        self.assertNotIn("\x0b", item_title)
+        self.assertNotIn("\x0c", item_title)
+        self.assertNotIn("\x1f", item_title)
+        self.assertNotIn("\x7f", item_title)
+
+        item_description = feed.item_description(a)
+        self.assertNotIn("\x0b", item_description)
+        self.assertNotIn("\x0c", item_description)
+        self.assertNotIn("\x1f", item_description)
+        self.assertNotIn("\x7f", item_description)
+
+        url = reverse("questions.answers.feed", args=[q.id])
+        res = self.client.get(url)
+        self.assertEqual(200, res.status_code)
