@@ -3,7 +3,9 @@ import time
 from datetime import date, timedelta
 from unittest import mock
 
+from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
+from django.db.models import Q
 from django.http import Http404
 from django.test.utils import override_settings
 from requests.exceptions import HTTPError
@@ -29,6 +31,7 @@ from kitsune.wiki.utils import (
     get_featured_articles,
     get_kb_visited,
     get_pinned_articles,
+    get_q_object_for_parent,
     get_visible_document_or_404,
     has_visited_kb,
     num_active_contributors,
@@ -233,21 +236,18 @@ class FeaturedArticlesTestCase(TestCase):
 
         with self.subTest("with product"):
             featured = get_featured_articles(product=self.product1)
-            # Old simple version returns top visited, exact IDs may vary due to randomization
-            self.assertTrue(len(featured) <= 4)
-            # All returned docs should be for product1
-            for doc in featured:
-                self.assertIn(self.product1, doc.products.all() | doc.parent.products.all() if doc.parent else doc.products.all())
+            self.assertEqual(len(featured), 4)
+            self.assertEqual(
+                {d.id for d in featured},
+                {self.d_pinned.id, self.d1.id, self.d2.id, self.de1.parent.id},
+            )
 
         with self.subTest("with product and topic"):
             featured = get_featured_articles(product=self.product1, topics=[self.topic2])
-            # Old simple version returns top visited, exact IDs and count may vary
-            self.assertTrue(len(featured) <= 4)
-            # All returned docs should match product1 and topic2
-            for doc in featured:
-                parent_or_self = doc.parent if doc.parent else doc
-                self.assertIn(self.product1, parent_or_self.products.all())
-                self.assertIn(self.topic2, parent_or_self.topics.all())
+            self.assertEqual(len(featured), 3)
+            self.assertEqual(
+                {d.id for d in featured}, {self.d_pinned.id, self.d2.id, self.de1.parent.id}
+            )
 
         with self.subTest("with locale"):
             featured = get_featured_articles(locale="de")
@@ -1272,3 +1272,90 @@ class GetPinnedArticlesTests(TestCase):
         RedirectRevisionFactory(document=valid_doc)
         result = get_pinned_articles(user=self.user, product=self.product1)
         self.assertEqual(result.count(), 0)
+
+
+class GetQObjectForParentTests(TestCase):
+    """
+    Test suite for the "get_q_object_for_parent" utility function.
+    """
+
+    def test_default_locale_single_kwarg(self):
+        """
+        Tests the simple path when the locale is the default.
+        It should return a single Q object with no 'parent__' prefix.
+        """
+        result = get_q_object_for_parent(
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+        )
+        self.assertEqual(result, Q(is_archived=False))
+
+    def test_non_default_locale_single_kwarg(self):
+        """
+        Tests the complex path for non-default locales.
+        It should return the combined OR query.
+        """
+        result = get_q_object_for_parent(locale="es", is_archived=False)
+
+        parent_q = Q(is_archived=False)
+        child_q = Q(parent__is_archived=False)
+        expected = (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
+
+        self.assertEqual(result, expected)
+
+    def test_none_locale_follows_non_default_path(self):
+        """
+        Tests that when locale is None (the default), the complex path is used.
+        """
+        result = get_q_object_for_parent(is_archived=False)
+
+        parent_q = Q(is_archived=False)
+        child_q = Q(parent__is_archived=False)
+        expected = (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
+
+        self.assertEqual(result, expected)
+
+    def test_default_locale_multiple_kwargs(self):
+        """
+        Tests the simple path with multiple keyword arguments.
+        """
+        result = get_q_object_for_parent(
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            category=5,
+        )
+        self.assertEqual(result, Q(is_archived=False, category=5))
+
+    def test_non_default_locale_multiple_kwargs(self):
+        """
+        Tests the complex path with multiple keyword arguments.
+        """
+        result = get_q_object_for_parent(locale="it", is_archived=False, category=5)
+
+        parent_q = Q(is_archived=False, category=5)
+        child_q = Q(parent__is_archived=False, parent__category=5)
+        expected = (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
+
+        self.assertEqual(result, expected)
+
+    def test_default_locale_no_kwargs(self):
+        """
+        Tests the simple path with no keyword arguments.
+        Should return an empty, non-filtering Q object.
+        """
+        result = get_q_object_for_parent(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        self.assertEqual(result, Q())
+
+    def test_non_default_locale_no_kwargs(self):
+        """
+        Tests the complex path with no keyword arguments.
+        The result should be a Q object that matches all rows
+        (i.e., parent is null OR parent is not null).
+        """
+        result = get_q_object_for_parent(locale="fr")
+        expected = Q(parent__isnull=True) | Q(parent__isnull=False)
+        self.assertEqual(result, expected)
+
+        # Test the None locale case as well
+        result = get_q_object_for_parent()
+        self.assertEqual(result, expected)
