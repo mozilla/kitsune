@@ -2,7 +2,6 @@ import allure
 import pytest
 from playwright.sync_api import Page, expect
 from pytest_check import check
-
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_tools.kb_dashboard_messages import (
     KBDashboardPageMessages,
@@ -335,7 +334,8 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page, create_use
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
-        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button(
+            article_details['first_revision_id'])
 
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):
@@ -508,8 +508,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
         utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             second_revision["revision_id"])
-        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
-        utilities.wait_for_given_timeout(2000)
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button(
+            second_revision["revision_id"])
 
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             "inside the KB dashboard (Yes)"):
@@ -549,7 +549,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
         utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             third_revision["revision_id"])
-        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button(
+            third_revision["revision_id"])
 
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
