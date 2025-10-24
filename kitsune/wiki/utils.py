@@ -6,14 +6,13 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.base import SessionBase
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import Q
 from django.db.models.functions import Now
 from django.db.models.query import QuerySet
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
 
 from kitsune.dashboards import LAST_7_DAYS
-from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import PINNED_ARTICLE_LIMIT_Q, REDIRECT_HTML
@@ -156,51 +155,64 @@ def get_featured_articles(
 ):
     """Returns up to 4 random articles from the most visited.
 
-    REVERTED to simple pre-3d20c307d version for production stability.
-    The complex Coalesce + Exists subqueries caused 100% DB CPU.
-
     Args:
-        user: Optional user for visibility (currently ignored, uses old simple logic)
+        user: Optional user for visibility
         product: Optional product to filter by
         topics: Optional iterable of topics to filter by
         locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
         fetch_for_aaq: Optional boolean (currently ignored)
-        limit: Optional integer to limit the number of articles (currently ignored, returns 4)
+        limit: Optional integer to limit the number of articles
     """
-    parent_prefix = "parent__" if locale != settings.WIKI_DEFAULT_LANGUAGE else ""
+    pinned_articles = list(
+        get_pinned_articles(
+            user=user,
+            product=product,
+            locale=locale,
+            fetch_for_aaq=fetch_for_aaq,
+        )
+    )
 
-    filter_kwargs = {
-        f"{parent_prefix}restrict_to_groups__isnull": True,
-    }
+    if len(pinned_articles) >= limit:
+        return random.sample(pinned_articles, limit)
+
+    filter_kwargs = {"category__in": settings.IA_DEFAULT_CATEGORIES}
 
     if product:
-        filter_kwargs[f"{parent_prefix}products"] = product
+        filter_kwargs.update(products=product)
 
     if topics:
-        filter_kwargs[f"{parent_prefix}topics__in"] = topics
+        filter_kwargs.update(topics__in=topics)
 
-    excluded_product_slugs = settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES
+    def q_for_parent(**kwargs):
+        """
+        Return a Q object that ensures that each of the
+        provided conditions is applied only on the parent.
+        """
+        parent_q = Q(**kwargs)
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            return parent_q
+        # Non-English documents can be parents too.
+        child_q = Q(**{f"parent__{k}": v for k, v in kwargs.items()})
+        return (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
+
+    qs = Document.objects.visible(
+        user,
+        locale=locale,
+        is_template=False,
+        is_archived=False,
+        current_revision__isnull=False,
+    ).filter(q_for_parent(**filter_kwargs))
+
+    if (not product) and (excluded_slugs := settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES):
+        # If we're not filtering by a specific product, exclude the products
+        # that have been configured for exclusion from featured articles.
+        qs = qs.exclude(q_for_parent(products__slug__in=excluded_slugs))
 
     qs = (
-        Document.objects.filter(
-            locale=locale,
-            is_template=False,
-            is_archived=False,
-            current_revision__isnull=False,
-            **filter_kwargs,
-        )
-        .exclude(**{f"{parent_prefix}products__slug__in": excluded_product_slugs})
+        qs.filter(visits__period=LAST_7_DAYS)
         .exclude(html__startswith=REDIRECT_HTML)
         .select_related("current_revision")
-        .annotate(
-            num_visits=Subquery(
-                WikiDocumentVisits.objects.filter(
-                    document=OuterRef(f"{parent_prefix}pk"), period=LAST_7_DAYS
-                ).values("visits")
-            )
-        )
-        .exclude(num_visits__isnull=True)
-        .order_by("-num_visits")
+        .order_by("-visits__visits")
     )
 
     if topics:
@@ -208,12 +220,15 @@ def get_featured_articles(
         # so remove any duplicates when we're matching by topics.
         qs = qs.distinct()
 
-    # Only include the ten most visited articles for sampling.
-    docs = list(qs[:10])
+    # Only include the "limit * 2" most visited articles for sampling.
+    docs = list(qs[: limit * 2])
 
-    if len(docs) <= 4:
-        return docs
-    return random.sample(docs, 4)
+    remaining_limit = limit - len(pinned_articles)
+
+    if len(docs) > remaining_limit:
+        docs = random.sample(docs, remaining_limit)
+
+    return pinned_articles + docs
 
 
 def get_visible_document_or_404(

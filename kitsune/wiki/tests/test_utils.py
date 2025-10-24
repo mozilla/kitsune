@@ -233,21 +233,18 @@ class FeaturedArticlesTestCase(TestCase):
 
         with self.subTest("with product"):
             featured = get_featured_articles(product=self.product1)
-            # Old simple version returns top visited, exact IDs may vary due to randomization
-            self.assertTrue(len(featured) <= 4)
-            # All returned docs should be for product1
-            for doc in featured:
-                self.assertIn(self.product1, doc.products.all() | doc.parent.products.all() if doc.parent else doc.products.all())
+            self.assertEqual(len(featured), 4)
+            self.assertEqual(
+                {d.id for d in featured},
+                {self.d_pinned.id, self.d1.id, self.d2.id, self.de1.parent.id},
+            )
 
         with self.subTest("with product and topic"):
             featured = get_featured_articles(product=self.product1, topics=[self.topic2])
-            # Old simple version returns top visited, exact IDs and count may vary
-            self.assertTrue(len(featured) <= 4)
-            # All returned docs should match product1 and topic2
-            for doc in featured:
-                parent_or_self = doc.parent if doc.parent else doc
-                self.assertIn(self.product1, parent_or_self.products.all())
-                self.assertIn(self.topic2, parent_or_self.topics.all())
+            self.assertEqual(len(featured), 3)
+            self.assertEqual(
+                {d.id for d in featured}, {self.d_pinned.id, self.d2.id, self.de1.parent.id}
+            )
 
         with self.subTest("with locale"):
             featured = get_featured_articles(locale="de")
