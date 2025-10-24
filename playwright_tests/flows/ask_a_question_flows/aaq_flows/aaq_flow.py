@@ -41,8 +41,9 @@ class AAQFlow:
             # Waiting for submitted question reply button visibility.
             self.question_page.is_post_reply_button_visible()
             current_page_url = self.page.url
+            question_id = self.question_page.get_question_id()
             return {"aaq_subject": question_subject, "question_page_url": current_page_url,
-                    "question_body": body}
+                    "question_body": body, "question_id": question_id}
 
     # Populating the aaq form fields for freemium products with given values without submitting the
     # form.

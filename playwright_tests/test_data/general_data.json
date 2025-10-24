@@ -97,7 +97,8 @@
     "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/firefox-enterprise",
     "Firefox Focus": "https://support.allizom.org/en-US/questions/focus-firefox",
     "Thunderbird": "https://support.allizom.org/en-US/questions/thunderbird",
-    "Thunderbird for Android": "https://support.allizom.org/en-US/questions/thunderbird-android"
+    "Thunderbird for Android": "https://support.allizom.org/en-US/questions/thunderbird-android",
+    "All Products Forum": "https://support.allizom.org/en-US/questions/all"
   },
   "dashboard_links": {
     "recent_revisions": "https://support.allizom.org/en-US/kb/revisions",

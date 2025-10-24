@@ -41,6 +41,7 @@ on:
                     - contributorDiscussions
                     - contributorDiscussionsThreads
                     - userDeletion
+                    - communityForums
                     - smokeTest
 
 env:
@@ -90,7 +91,7 @@ jobs:
         run: |
             source ../.venv/bin/activate
             declare dispatch_test_suite="${{inputs.TestSuite}}"
-            declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "contributorForumSearch" "userGroupsTests" "antiSpamTests" "contributorDiscussions" "contributorDiscussionsThreads" "userDeletion")
+            declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "contributorForumSearch" "userGroupsTests" "antiSpamTests" "contributorDiscussions" "contributorDiscussionsThreads" "userDeletion" "communityForums")
             if [ "$dispatch_test_suite" == "All" ] ; then
                 for test in "${all_test_suites[@]}"; do
                     if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
