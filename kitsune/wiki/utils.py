@@ -1,7 +1,6 @@
 import random
 import time
 from itertools import chain, islice
-from typing import Any
 
 import requests
 from django.conf import settings
@@ -173,10 +172,8 @@ def get_featured_articles(
         )
     )
 
-    if (num_pinned_articles := len(pinned_articles)) >= limit:
-        if num_pinned_articles > limit:
-            pinned_articles = random.sample(pinned_articles, limit)
-        return pinned_articles
+    if len(pinned_articles) >= limit:
+        return random.sample(pinned_articles, limit)
 
     filter_kwargs = {"category__in": settings.IA_DEFAULT_CATEGORIES}
 
@@ -186,23 +183,30 @@ def get_featured_articles(
     if topics:
         filter_kwargs.update(topics__in=topics)
 
+    def q_for_parent(**kwargs):
+        """
+        Return a Q object that ensures that each of the
+        provided conditions is applied only on the parent.
+        """
+        parent_q = Q(**kwargs)
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            return parent_q
+        # Non-English documents can be parents too.
+        child_q = Q(**{f"parent__{k}": v for k, v in kwargs.items()})
+        return (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
+
     qs = Document.objects.visible(
         user,
         locale=locale,
         is_template=False,
         is_archived=False,
         current_revision__isnull=False,
-    ).filter(get_q_object_for_parent(locale=locale, **filter_kwargs))
+    ).filter(q_for_parent(**filter_kwargs))
 
     if (not product) and (excluded_slugs := settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES):
         # If we're not filtering by a specific product, exclude the products
         # that have been configured for exclusion from featured articles.
-        qs = qs.exclude(
-            get_q_object_for_parent(
-                locale=locale,
-                products__slug__in=excluded_slugs,
-            )
-        )
+        qs = qs.exclude(q_for_parent(products__slug__in=excluded_slugs))
 
     qs = (
         qs.filter(visits__period=LAST_7_DAYS)
@@ -455,17 +459,3 @@ def get_kb_visited(
             urls.extend(visits.keys())
 
     return urls
-
-
-def get_q_object_for_parent(locale: str | None = None, **kwargs: dict[str, Any]) -> Q:
-    """
-    Returns a Django Q object that ensures that each of the provided keyword
-    arguments is applied only on the parent. Provide the "locale" argument only
-    if already filtering for that locale.
-    """
-    parent_q = Q(**kwargs)
-    if locale == settings.WIKI_DEFAULT_LANGUAGE:
-        return parent_q
-    # Non-English documents can be parents too.
-    child_q = Q(**{f"parent__{k}": v for k, v in kwargs.items()})
-    return (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
