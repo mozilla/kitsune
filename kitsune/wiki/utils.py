@@ -203,6 +203,9 @@ def get_featured_articles(
         current_revision__isnull=False,
     ).filter(q_for_parent(**filter_kwargs))
 
+    if pinned_articles:
+        qs = qs.exclude(id__in=[doc.id for doc in pinned_articles])
+
     if (not product) and (excluded_slugs := settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES):
         # If we're not filtering by a specific product, exclude the products
         # that have been configured for exclusion from featured articles.
