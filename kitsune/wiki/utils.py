@@ -113,11 +113,11 @@ def _active_contributors_id(from_date, to_date, locale, product):
 
 
 def get_pinned_articles(
-    user=None, product=None, locale=settings.WIKI_DEFAULT_LANGUAGE, fetch_for_aaq=False
+    product=None, locale=settings.WIKI_DEFAULT_LANGUAGE, fetch_for_aaq=False
 ) -> QuerySet[Document]:
     """
     Given the product, locale, and whether or not we're getting pinned articles for the
-    AAQ, returns a queryset of the pinned articles that are visible to the given user.
+    AAQ, returns a queryset of the pinned articles.
     """
     qs = PinnedArticleConfig.objects
 
@@ -139,24 +139,16 @@ def get_pinned_articles(
         condition = condition | Q(parent__in=pinned_articles)
 
     return (
-        Document.objects.visible(user, locale=locale)
-        .filter(condition)
-        .select_related("current_revision")
+        Document.objects.filter(locale=locale).filter(condition).select_related("current_revision")
     )
 
 
 def get_featured_articles(
-    user=None,
-    product=None,
-    topics=None,
-    locale=settings.WIKI_DEFAULT_LANGUAGE,
-    fetch_for_aaq=False,
-    limit=4,
+    product=None, topics=None, locale=settings.WIKI_DEFAULT_LANGUAGE, fetch_for_aaq=False, limit=4
 ):
     """Returns up to 4 random articles from the most visited.
 
     Args:
-        user: Optional user for visibility
         product: Optional product to filter by
         topics: Optional iterable of topics to filter by
         locale: Locale to get articles for, defaults to WIKI_DEFAULT_LANGUAGE
@@ -164,18 +156,16 @@ def get_featured_articles(
         limit: Optional integer to limit the number of articles
     """
     pinned_articles = list(
-        get_pinned_articles(
-            user=user,
-            product=product,
-            locale=locale,
-            fetch_for_aaq=fetch_for_aaq,
-        )
+        get_pinned_articles(product=product, locale=locale, fetch_for_aaq=fetch_for_aaq)
     )
 
     if len(pinned_articles) >= limit:
         return random.sample(pinned_articles, limit)
 
-    filter_kwargs = {"category__in": settings.IA_DEFAULT_CATEGORIES}
+    filter_kwargs = {
+        "restrict_to_groups__isnull": True,
+        "category__in": settings.IA_DEFAULT_CATEGORIES,
+    }
 
     if product:
         filter_kwargs.update(products=product)
@@ -195,8 +185,7 @@ def get_featured_articles(
         child_q = Q(**{f"parent__{k}": v for k, v in kwargs.items()})
         return (Q(parent__isnull=True) & parent_q) | (Q(parent__isnull=False) & child_q)
 
-    qs = Document.objects.visible(
-        user,
+    qs = Document.objects.filter(
         locale=locale,
         is_template=False,
         is_archived=False,
@@ -295,7 +284,7 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     topics_data: list[dict] = []
 
     featured_articles = get_featured_articles(
-        user=request.user, product=product, topics=topics, locale=request.LANGUAGE_CODE
+        product=product, topics=topics, locale=request.LANGUAGE_CODE
     )
 
     # Get both main and fallback documents from the faceted search

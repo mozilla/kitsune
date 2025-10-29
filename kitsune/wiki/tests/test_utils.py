@@ -1081,10 +1081,10 @@ class GetPinnedArticlesTests(TestCase):
         """
         Test when a product has no pinned articles.
         """
-        result = get_pinned_articles(user=self.user, product=self.product2)
+        result = get_pinned_articles(product=self.product2)
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user, product=self.product2, fetch_for_aaq=True)
+        result = get_pinned_articles(product=self.product2, fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
     def test_for_default_locale(self):
@@ -1100,37 +1100,16 @@ class GetPinnedArticlesTests(TestCase):
         result = get_pinned_articles(product=self.product1, fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user, product=self.product1)
-        self.assertEqual(list(result), [self.en_doc])
-
-        result = get_pinned_articles(user=self.user, product=self.product1, fetch_for_aaq=True)
-        self.assertEqual(result.count(), 0)
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product1)
-        self.assertEqual(set(result), {self.en_doc, self.en_restricted_doc})
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product2)
-        self.assertEqual(list(result), [self.en_restricted_doc])
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product1, fetch_for_aaq=True)
-        self.assertEqual(list(result), [self.en_restricted_doc])
-
         result = get_pinned_articles()
         self.assertEqual(result.count(), 0)
 
         result = get_pinned_articles(fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user)
+        result = get_pinned_articles()
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user, fetch_for_aaq=True)
-        self.assertEqual(result.count(), 0)
-
-        result = get_pinned_articles(user=self.user_g1)
-        self.assertEqual(list(result), [self.en_restricted_doc])
-
-        result = get_pinned_articles(user=self.user_g1, fetch_for_aaq=True)
+        result = get_pinned_articles(fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
     def test_for_non_default_locale(self):
@@ -1143,75 +1122,28 @@ class GetPinnedArticlesTests(TestCase):
         result = get_pinned_articles(product=self.product1, locale="de", fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user, product=self.product1, locale="de")
-        self.assertEqual(set(result), {self.de_doc, self.de_parent_doc})
-
-        result = get_pinned_articles(
-            user=self.user, product=self.product1, locale="de", fetch_for_aaq=True
-        )
+        result = get_pinned_articles(product=self.product2, locale="de")
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="de")
-        self.assertEqual(set(result), {self.de_doc, self.de_parent_doc, self.de_restricted_doc})
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product2, locale="de")
-        self.assertEqual(list(result), [self.de_restricted_doc])
-
-        result = get_pinned_articles(
-            user=self.user_g1, product=self.product1, locale="de", fetch_for_aaq=True
-        )
-        self.assertEqual(list(result), [self.de_restricted_doc])
-
-        result = get_pinned_articles(user=self.user, product=self.product1, locale="fr")
+        result = get_pinned_articles(product=self.product1, locale="fr")
         self.assertEqual(list(result), [self.fr_doc])
 
-        result = get_pinned_articles(user=self.user, product=self.product2, locale="fr")
+        result = get_pinned_articles(product=self.product2, locale="fr")
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(
-            user=self.user, product=self.product1, locale="fr", fetch_for_aaq=True
-        )
-        self.assertEqual(result.count(), 0)
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="fr")
-        self.assertEqual(set(result), {self.fr_doc, self.fr_restricted_parent_doc})
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product2, locale="fr")
-        self.assertEqual(list(result), [self.fr_restricted_parent_doc])
-
-        result = get_pinned_articles(
-            user=self.user_g1, product=self.product1, locale="fr", fetch_for_aaq=True
-        )
+        result = get_pinned_articles(product=self.product1, locale="fr", fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
         result = get_pinned_articles(product=self.product1, locale="es")
-        self.assertEqual(result.count(), 0)
-
-        result = get_pinned_articles(user=self.user, product=self.product1, locale="es")
         self.assertEqual(list(result), [self.es_doc])
-
-        result = get_pinned_articles(user=self.user_g1, product=self.product1, locale="es")
-        self.assertEqual(result.count(), 0)
 
         result = get_pinned_articles(locale="de")
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user, locale="de")
+        result = get_pinned_articles(locale="fr")
         self.assertEqual(result.count(), 0)
 
-        result = get_pinned_articles(user=self.user, locale="fr")
-        self.assertEqual(result.count(), 0)
-
-        result = get_pinned_articles(user=self.user, locale="es")
-        self.assertEqual(result.count(), 0)
-
-        result = get_pinned_articles(user=self.user_g1, locale="de")
-        self.assertEqual(list(result), [self.de_restricted_doc])
-
-        result = get_pinned_articles(user=self.user_g1, locale="fr")
-        self.assertEqual(list(result), [self.fr_restricted_parent_doc])
-
-        result = get_pinned_articles(user=self.user_g1, locale="es")
+        result = get_pinned_articles(locale="es")
         self.assertEqual(result.count(), 0)
 
     def test_articles_transitioning_to_invalid_states(self):
@@ -1233,39 +1165,39 @@ class GetPinnedArticlesTests(TestCase):
         self.product1.pinned_article_config = config
         self.product1.save()
 
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(list(result), [valid_doc])
 
         valid_doc.is_archived = True
         valid_doc.save()
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
 
         valid_doc.is_archived = False
         valid_doc.category = ADMINISTRATION_CATEGORY
         valid_doc.save()
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
 
         valid_doc.category = NAVIGATION_CATEGORY
         valid_doc.save()
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
 
         valid_doc.category = TEMPLATES_CATEGORY
         valid_doc.title = "Template:" + valid_doc.title
         valid_doc.save()
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
 
         valid_doc.category = CANNED_RESPONSES_CATEGORY
         valid_doc.title = valid_doc.title.replace("Template:", "")
         valid_doc.save()
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
 
         valid_doc.category = HOW_TO_CATEGORY
         valid_doc.save()
         RedirectRevisionFactory(document=valid_doc)
-        result = get_pinned_articles(user=self.user, product=self.product1)
+        result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)

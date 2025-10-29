@@ -68,9 +68,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "topics": build_topics_data(request, product, topics),
             "search_params": {"product": slug},
             "latest_version": latest_version,
-            "featured": get_featured_articles(
-                user=request.user, product=product, locale=request.LANGUAGE_CODE
-            ),
+            "featured": get_featured_articles(product=product, locale=request.LANGUAGE_CODE),
             "has_aaq_config": has_aaq_config(product),
         },
     )

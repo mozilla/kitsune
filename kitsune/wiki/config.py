@@ -61,7 +61,7 @@ SIGNIFICANCES = [
     ),
     (
         MAJOR_SIGNIFICANCE,
-        _lazy("Major content changes that will make older translations " "inaccurate"),
+        _lazy("Major content changes that will make older translations inaccurate"),
     ),
 ]
 
@@ -115,10 +115,11 @@ SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
 # Q object for filtering valid pinned articles.
 # This is used in both the admin UI (via limit_choices_to) and in runtime
 # filtering (via get_pinned_articles()) to ensure consistency.
-# Excludes: templates, archived, redirects, and non-IA categories.
+# Excludes: templates, archived, restricted, redirects, and non-IA categories.
 PINNED_ARTICLE_LIMIT_Q = Q(
     parent__isnull=True,
     is_template=False,
     is_archived=False,
+    restrict_to_groups__isnull=True,
     category__in=settings.IA_DEFAULT_CATEGORIES,
 ) & ~Q(html__startswith=REDIRECT_HTML)
