@@ -952,11 +952,6 @@ TIDINGS_REVERSE = "kitsune.sumo.urlresolvers.reverse"
 
 
 # Google Analytics settings.
-# GA_KEY is expected b64 encoded.
-GA_KEY = config("GA_KEY", default=None)  # Google API client key
-GA_ACCOUNT = config(
-    "GA_ACCOUNT", "something@developer.gserviceaccount.com"
-)  # Google API Service Account email address
 GA_PROPERTY_ID = config("GA_PROPERTY_ID", default="123456789")
 GTM_CONTAINER_ID = config("GTM_CONTAINER_ID", default="")  # Google container ID
 GA_DEBUG_MODE = config("GA_DEBUG_MODE", default=False, cast=bool)

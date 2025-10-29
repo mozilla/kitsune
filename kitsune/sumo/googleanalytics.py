@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 
 from django.conf import settings
@@ -15,7 +14,6 @@ from google.analytics.data_v1beta.types import (
     RunReportRequest,
 )
 from google.api_core.retry import Retry
-from google.oauth2 import service_account
 
 from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEAR
 
@@ -39,11 +37,13 @@ def get_client():
     """
     Returns an authenticated client for making requests to the GA4 data API.
     """
-    credentials = service_account.Credentials.from_service_account_info(
-        json.loads(settings.GA_KEY),
-        scopes=["https://www.googleapis.com/auth/analytics.readonly"],
-    )
-    return BetaAnalyticsDataClient(credentials=credentials)
+    # Our stage and production GKE service accounts, created within our sumo-nonprod and
+    # sumo-prod GCP projects, have already been given read-only access to our stage and
+    # production GA4 SUMO properties, so we can use "workload" identity when running
+    # within our GKE clusters. The GA_PROPERTY_ID and GOOGLE_CLOUD_PROJECT settings must
+    # be defined properly. When running locally, you'll also need to impersonate one of
+    # the GKE service accounts as well as define GOOGLE_APPLICATION_CREDENTIALS.
+    return BetaAnalyticsDataClient()
 
 
 def run_report(date_range, create_report_request, limit=10000, verbose=False):
