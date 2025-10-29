@@ -604,7 +604,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         topics = topics_for(request.user, product, parent=None)
 
         context["featured"] = get_featured_articles(
-            user=request.user, product=product, locale=request.LANGUAGE_CODE, fetch_for_aaq=True
+            product=product, locale=request.LANGUAGE_CODE, fetch_for_aaq=True
         )
         context["topics"] = build_topics_data(request, product, topics)
 
