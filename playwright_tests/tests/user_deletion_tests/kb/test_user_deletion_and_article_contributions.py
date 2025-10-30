@@ -153,7 +153,7 @@ def test_localization_revisions_are_assigned_to_system_account(page: Page, creat
                      " status is kept"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(article_details["article_url"] + "/history")
-        expect(sumo_pages.kb_article_show_history_page.get_ready_for_localization_status(
+        expect(sumo_pages.kb_article_show_history_page.ready_for_localization_status(
             article_details["first_revision_id"])).to_be_visible()
 
     with allure.step("Deleting the article"):
