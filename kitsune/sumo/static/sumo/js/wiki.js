@@ -568,7 +568,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       var doc_slug = $doc.data('slug');
       var url = window.location.toString();
       // Modify the current url, so we get the right locale.
-      url = url.replace(/edit/, 'steal_lock');
+      url = url.replace(/edit/, 'steal-lock');
 
       let xhr = new XMLHttpRequest();
       let csrf = document.querySelector('#steal-lock-form input[name=csrfmiddlewaretoken]').value;

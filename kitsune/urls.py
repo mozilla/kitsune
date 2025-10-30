@@ -13,6 +13,7 @@ from kitsune.sumo.i18n import i18n_patterns
 # Note: This must come before importing admin because it patches the
 # admin.
 from kitsune.sumo.monkeypatch import patch
+from kitsune.sumo.views import redirect_to
 
 patch()
 
@@ -21,7 +22,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = i18n_patterns(
-    path("kb", include("kitsune.wiki.urls")),
+    re_path(r"^kb$", redirect_to, {"url": "products.product", "slug": "firefox"}, name="wiki.landing"),
+    path("kb/", include("kitsune.wiki.urls")),
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
     path("questions/", include("kitsune.questions.urls")),
