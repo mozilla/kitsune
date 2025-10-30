@@ -75,3 +75,4 @@ chromedriver.log
 .cursor
 .gk/
 gcloud/
+.claude
