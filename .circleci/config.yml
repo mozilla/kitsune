@@ -4,7 +4,8 @@ jobs:
     docker:
       - image: cimg/python:3.11-node
     steps:
-      - checkout
+      - checkout:
+         method: blobless
       - run:
           name: Install Node.js dependencies
           command: npm ci
@@ -17,7 +18,8 @@ jobs:
     docker:
       - image: cimg/python:3.11
     steps:
-      - checkout
+      - checkout:
+         method: blobless
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
