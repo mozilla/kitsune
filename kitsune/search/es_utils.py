@@ -1,14 +1,18 @@
 import importlib
 import inspect
+from datetime import datetime
+from math import ceil
 
 from celery import shared_task
 from django.conf import settings
+from django.db import connection, reset_queries
 from elasticsearch import Elasticsearch
 from elasticsearch.dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
 
 from kitsune.search import config
+from kitsune.sumo.utils import BasicLoggerProtocol, NullLogger
 
 
 def _insert_custom_filters(analyzer_name, filter_list, char=False):
@@ -236,3 +240,79 @@ def delete_object(doc_type_name, obj_id):
     doc = doc_type()
     doc.meta.id = obj_id
     doc.to_action("delete")
+
+
+def reindex(
+    limit_to_doc_types: list[str] | None = None,
+    percentage_per_doc_type: float = 100.0,
+    count_per_doc_type: int | None = None,
+    sql_chunk_size: int = settings.ES_DEFAULT_SQL_CHUNK_SIZE,
+    elastic_chunk_size: int = settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
+    timeout: float = settings.ES_BULK_DEFAULT_TIMEOUT,
+    before: datetime | None = None,
+    after: datetime | None = None,
+    log_query_count: bool = False,
+    logger: BasicLoggerProtocol | None = None,
+) -> None:
+    """
+    Utility function for reindexing all or a specified subset of items in ES.
+    """
+    log = logger if logger else NullLogger()
+
+    doc_types = get_doc_types()
+
+    if limit_to_doc_types:
+        doc_types = [dt for dt in doc_types if dt.__name__ in limit_to_doc_types]
+
+    for dt in doc_types:
+        log.info(f"Reindexing: {dt.__name__}")
+
+        model = dt.get_model()
+
+        if before or after:
+            try:
+                qs = model.objects_range(before=before, after=after)
+            except NotImplementedError:
+                log.warning(
+                    f"{model} hasn't implemeneted an `updated_column_name` property."
+                    "No documents will be indexed of this type."
+                )
+                continue
+        else:
+            qs = model._default_manager.all()
+
+        total = qs.count()
+
+        if count_per_doc_type:
+            count = min(count_per_doc_type, total)
+            qs = qs[:count]
+            log.info(f"Indexing {count} documents out of {total}")
+        else:
+            if percentage_per_doc_type < 100.0:
+                count = int(total * percentage_per_doc_type / 100)
+                qs = qs[:count]
+            else:
+                count = total
+            log.info(f"Indexing {percentage_per_doc_type}%, so {count} documents out of {total}")
+
+        id_list = list(qs.values_list("pk", flat=True))
+
+        # slice the list of ids into chunks of `sql_chunk_size` and send a task to celery
+        # to process each chunk. we do this so as to not OOM on celery when processing
+        # tens of thousands of documents
+        for x in range(ceil(count / sql_chunk_size)):
+            start = x * sql_chunk_size
+            end = start + sql_chunk_size
+            index_objects_bulk.delay(
+                dt.__name__,
+                id_list[start:end],
+                timeout=timeout,
+                # elastic_chunk_size determines how many documents get sent to elastic
+                # in each bulk request, the limiting factor here is the performance of
+                # our elastic cluster
+                elastic_chunk_size=elastic_chunk_size,
+            )
+            if log_query_count:
+                log.info(f"{len(connection.queries)} SQL queries executed")
+                reset_queries()
+            log.info(f"Indexed {min(end, count)} out of {count}")

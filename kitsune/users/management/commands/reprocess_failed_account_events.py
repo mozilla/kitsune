@@ -18,4 +18,4 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        process_unprocessed_account_events.delay(options["within_hours"])
+        process_unprocessed_account_events(options["within_hours"])

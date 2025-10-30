@@ -1,10 +1,8 @@
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from kitsune.dashboards.models import PERIODS, WikiDocumentVisits
+from kitsune.dashboards.tasks import reload_wiki_traffic_stats
 
 
 class Command(BaseCommand):
     def handle(self, **options):
-        for period, _ in PERIODS:
-            WikiDocumentVisits.reload_period_from_analytics(period, verbose=settings.DEBUG)
+        reload_wiki_traffic_stats(verbose=options.get("verbosity", 1) >= 1)

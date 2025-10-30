@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from sentry_sdk import capture_exception
 
 from kitsune.llm.tasks import process_moderation_queue
 
@@ -19,12 +18,7 @@ class Command(BaseCommand):
         batch_size = options["batch_size"]
 
         self.stdout.write(
-            f"Starting async processing of stale moderation queue with batch size {batch_size}..."
+            f"Starting processing of stale moderation queue with batch size {batch_size}..."
         )
 
-        try:
-            task = process_moderation_queue.delay(batch_size)
-        except Exception as e:
-            capture_exception(e)
-        else:
-            self.stdout.write(self.style.SUCCESS(f"Task queued successfully. Task ID: {task.id}"))
+        process_moderation_queue(batch_size)
