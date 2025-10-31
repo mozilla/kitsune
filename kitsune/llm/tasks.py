@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.questions.classifiers import classify_question
+from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.models import Profile
 
 shared_task_with_retry = shared_task(
@@ -38,6 +39,7 @@ def question_classifier(question_id):
 
 
 @shared_task_with_retry
+@skip_if_read_only_mode
 def process_moderation_queue(batch_size=10):
     """
     Process flagged objects in the moderation queue through the LLM pipeline.

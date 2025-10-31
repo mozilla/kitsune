@@ -1,11 +1,9 @@
-from math import ceil
-
 from dateutil.parser import parse as dateutil_parse
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection, reset_queries
 
-from kitsune.search.es_utils import get_doc_types, index_objects_bulk
+from kitsune.search.es_utils import reindex
+from kitsune.sumo.utils import CommandLogger
 
 
 class Command(BaseCommand):
@@ -68,67 +66,16 @@ class Command(BaseCommand):
             help="Print the number of SQL statements executed",
         )
 
-    def handle(self, *args, **kwargs):
-        doc_types = get_doc_types()
-
-        limit = kwargs["limit"]
-        if limit:
-            doc_types = [dt for dt in doc_types if dt.__name__ in limit]
-
-        progress_msg = "Indexed {progress} out of {count}"
-
-        for dt in doc_types:
-            self.stdout.write("Reindexing: {}".format(dt.__name__))
-
-            model = dt.get_model()
-
-            before = kwargs["updated_before"]
-            after = kwargs["updated_after"]
-            if before or after:
-                try:
-                    qs = model.objects_range(before=before, after=after)
-                except NotImplementedError:
-                    print(
-                        f"{model} hasn't implemeneted an `updated_column_name` property."
-                        "No documents will be indexed of this type."
-                    )
-                    continue
-            else:
-                qs = model._default_manager.all()
-
-            total = qs.count()
-            count = kwargs["count"]
-
-            percentage = kwargs["percentage"]
-            if count:
-                print("Indexing {} documents out of {}".format(count, total))
-            else:
-                if percentage < 100:
-                    count = int(total * percentage / 100)
-                    qs = qs[:count]
-                else:
-                    count = total
-                print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
-
-            id_list = list(qs.values_list("pk", flat=True))
-            sql_chunk_size = kwargs["sql_chunk_size"]
-
-            # slice the list of ids into chunks of `sql_chunk_size` and send a task to celery
-            # to process each chunk. we do this so as to not OOM on celery when processing
-            # tens of thousands of documents
-            for x in range(ceil(count / sql_chunk_size)):
-                start = x * sql_chunk_size
-                end = start + sql_chunk_size
-                index_objects_bulk.delay(
-                    dt.__name__,
-                    id_list[start:end],
-                    timeout=kwargs["timeout"],
-                    # elastic_chunk_size determines how many documents get sent to elastic
-                    # in each bulk request, the limiting factor here is the performance of
-                    # our elastic cluster
-                    elastic_chunk_size=kwargs["elastic_chunk_size"],
-                )
-                if kwargs["print_sql_count"]:
-                    print("{} SQL queries executed".format(len(connection.queries)))
-                    reset_queries()
-                print(progress_msg.format(progress=min(end, count), count=count))
+    def handle(self, *args, **options):
+        reindex(
+            limit_to_doc_types=options["limit"] or None,
+            percentage_per_doc_type=options["percentage"],
+            count_per_doc_type=options["count"],
+            sql_chunk_size=options["sql_chunk_size"],
+            elastic_chunk_size=options["elastic_chunk_size"],
+            timeout=options["timeout"],
+            before=options["updated_before"],
+            after=options["updated_after"],
+            log_query_count=options["print_sql_count"],
+            logger=CommandLogger(self, options),
+        )

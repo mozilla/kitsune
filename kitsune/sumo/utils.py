@@ -3,6 +3,7 @@ import re
 import sys
 from datetime import datetime
 from functools import lru_cache
+from typing import Any, Protocol
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -29,6 +30,61 @@ class PrettyJSONEncoder(json.JSONEncoder):
     def __init__(self, *args, **kwargs):
         kwargs.update(indent=2, sort_keys=True)
         super().__init__(*args, **kwargs)
+
+
+class BasicLoggerProtocol(Protocol):
+    """A protocol for objects that provide the basic methods of logging.Logger."""
+
+    def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+    def error(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+
+
+class NullLogger:
+    """A logger that satisfies the BasicLoggerProtocol but does nothing."""
+
+    def info(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        pass
+
+    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        pass
+
+
+class CommandLogger:
+    """
+    Adapter class to make a BaseCommand object satsify the
+    kitsune.search.es_utils.BasicLoggerProtocol. It maps logging
+    methods to stdout/stderr and respects verbosity.
+    """
+
+    def __init__(self, command, options):
+        self.command = command
+        self.verbosity = options.get("verbosity", 1)
+
+    def info(self, msg):
+        if self.verbosity >= 1:
+            self.command.stdout.write(self.command.style.SUCCESS(msg))
+
+    def warning(self, msg):
+        if self.verbosity >= 1:
+            self.command.stdout.write(self.command.style.WARNING(msg))
+
+    def error(self, msg):
+        self.command.stderr.write(self.command.style.ERROR(msg))
+
+    def debug(self, msg):
+        if self.verbosity >= 2:
+            self.command.stdout.write(msg)
 
 
 def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, **kwargs):
@@ -179,7 +235,7 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     # Make a copy, so that we don't modify the original
     dupe = json.loads(orig)
     if len(dupe[key]) < diff:
-        raise TruncationException("Can't truncate enough to satisfy " "`max_length`.")
+        raise TruncationException("Can't truncate enough to satisfy `max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
 

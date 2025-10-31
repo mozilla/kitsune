@@ -1,13 +1,9 @@
-import waffle
 from django.core.management.base import BaseCommand
 
-from kitsune.wiki import tasks
+from kitsune.sumo.utils import CommandLogger
+from kitsune.wiki.tasks import run_rebuild_kb
 
 
 class Command(BaseCommand):
     def handle(self, **options):
-        # If rebuild on demand switch is on, do nothing.
-        if waffle.switch_is_active("wiki-rebuild-on-demand"):
-            return
-
-        tasks.rebuild_kb()
+        run_rebuild_kb(logger=CommandLogger(self, options))
