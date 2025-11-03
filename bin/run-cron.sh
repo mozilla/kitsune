@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec run-program python manage.py runscript cron
+exec python manage.py runscript cron
