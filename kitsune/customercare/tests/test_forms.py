@@ -1,9 +1,10 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser
 
 from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_CATEGORIES_LOGINLESS
 from kitsune.customercare.forms import ZendeskForm
+from kitsune.customercare.models import SupportTicket
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -75,12 +76,9 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(form.product, self.vpn_product)
         self.assertEqual(form.user, self.user)
 
-    @patch('kitsune.customercare.forms.ZendeskClient')
-    def test_send_collects_all_tags_from_selected_category(self, mock_client_class):
+    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    def test_send_collects_all_tags_from_selected_category(self, mock_task):
         """Test that send() method collects all tags from selected category."""
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
-
         form = ZendeskForm(
             data={
                 'email': 'test@example.com',
@@ -94,7 +92,7 @@ class ZendeskFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
-        form.send(self.user, self.vpn_product)
+        submission = form.send(self.user, self.vpn_product)
 
         expected_tags = [
             "technical",  # legacy
@@ -103,15 +101,22 @@ class ZendeskFormTests(TestCase):
             "t3-connection-failure",  # tier3
             "ssa-connection-issues-automation"  # automation
         ]
-        self.assertEqual(form.cleaned_data["zendesk_tags"], expected_tags)
-        mock_client.create_ticket.assert_called_once_with(self.user, form.cleaned_data)
 
-    @patch('kitsune.customercare.forms.ZendeskClient')
-    def test_send_handles_categories_with_segmentation_tags(self, mock_client_class):
+        self.assertIsInstance(submission, SupportTicket)
+        self.assertEqual(submission.zendesk_tags, expected_tags)
+        self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
+        self.assertEqual(submission.subject, 'Test subject')
+        self.assertEqual(submission.description, 'Test description')
+        self.assertEqual(submission.category, 'vpn-connection-issues')
+        self.assertEqual(submission.email, 'test@example.com')
+        self.assertEqual(submission.country, 'US')
+        self.assertEqual(submission.product, self.vpn_product)
+        self.assertEqual(submission.user, self.user)
+        mock_task.assert_called_once_with(submission.id)
+
+    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    def test_send_handles_categories_with_segmentation_tags(self, mock_task):
         """Test that segmentation tags are included when present."""
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
-
         form = ZendeskForm(
             data={
                 'email': 'test@example.com',
@@ -124,7 +129,7 @@ class ZendeskFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
-        form.send(self.user, self.relay_product)
+        submission = form.send(self.user, self.relay_product)
 
         expected_tags = [
             "technical",  # legacy
@@ -133,14 +138,15 @@ class ZendeskFormTests(TestCase):
             "t3-email-masking",  # tier3
             "seg-relay-no-fwd-deliver"  # segmentation
         ]
-        self.assertEqual(form.cleaned_data["zendesk_tags"], expected_tags)
 
-    @patch('kitsune.customercare.forms.ZendeskClient')
-    def test_send_handles_categories_with_only_some_tags(self, mock_client_class):
+        self.assertIsInstance(submission, SupportTicket)
+        self.assertEqual(submission.zendesk_tags, expected_tags)
+        self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
+        mock_task.assert_called_once_with(submission.id)
+
+    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    def test_send_handles_categories_with_only_some_tags(self, mock_task):
         """Test that only non-null tags are collected."""
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
-
         form = ZendeskForm(
             data={
                 'email': 'test@example.com',
@@ -153,20 +159,21 @@ class ZendeskFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
-        form.send(self.user, self.vpn_product)
+        submission = form.send(self.user, self.vpn_product)
 
         expected_tags = [
             "payments",
             "t1-billing-and-subscriptions"
         ]
-        self.assertEqual(form.cleaned_data["zendesk_tags"], expected_tags)
 
-    @patch('kitsune.customercare.forms.ZendeskClient')
-    def test_send_with_no_category_selected(self, mock_client_class):
+        self.assertIsInstance(submission, SupportTicket)
+        self.assertEqual(submission.zendesk_tags, expected_tags)
+        self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
+        mock_task.assert_called_once_with(submission.id)
+
+    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    def test_send_with_no_category_selected(self, mock_task):
         """Test that no tags are collected when no category is selected."""
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
-
         form = ZendeskForm(
             data={
                 'email': 'test@example.com',
@@ -182,9 +189,15 @@ class ZendeskFormTests(TestCase):
                 'email': 'test@example.com',
                 'subject': 'Test subject',
                 'description': 'Test description',
+                'category': '',  # Empty category
             }
-        form.send(self.user, self.vpn_product)
-        self.assertNotIn("zendesk_tags", form.cleaned_data)
+        submission = form.send(self.user, self.vpn_product)
+
+        self.assertIsInstance(submission, SupportTicket)
+        self.assertEqual(submission.zendesk_tags, [])
+        self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
+        self.assertEqual(submission.category, '')
+        mock_task.assert_called_once_with(submission.id)
 
     def test_product_without_categories_gets_empty_choices(self):
         """Test that products not in our categories dict get empty choices."""
@@ -218,12 +231,9 @@ class ZendeskFormTests(TestCase):
         self.assertIsNone(payments_category["tags"]["segmentation"])
 
     @patch('django.conf.settings.LOGIN_EXCEPTIONS', ['mozilla-account'])
-    @patch('kitsune.customercare.forms.ZendeskClient')
-    def test_loginless_send_uses_stored_categories(self, mock_client_class):
+    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    def test_loginless_send_uses_stored_categories(self, mock_task):
         """Test that loginless send() uses categories stored in init."""
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
-
         anonymous_user = AnonymousUser()
         form = ZendeskForm(
             data={
@@ -237,7 +247,7 @@ class ZendeskFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
-        form.send(anonymous_user, self.accounts_product)
+        submission = form.send(anonymous_user, self.accounts_product)
 
         expected_tags = [
             "accounts",
@@ -246,4 +256,10 @@ class ZendeskFormTests(TestCase):
             "t3-two-factor-lockout",
             "ssa-2fa-automation"
         ]
-        self.assertEqual(form.cleaned_data["zendesk_tags"], expected_tags)
+
+        self.assertIsInstance(submission, SupportTicket)
+        self.assertEqual(submission.zendesk_tags, expected_tags)
+        self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
+        self.assertEqual(submission.user, None)  # Anonymous users don't have a user
+        self.assertEqual(submission.email, 'test@example.com')
+        mock_task.assert_called_once_with(submission.id)

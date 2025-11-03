@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.llm.questions.classifiers import classify_question
+from kitsune.llm.support.classifiers import classify_question
 from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.models import Profile
 
@@ -95,4 +95,5 @@ def process_moderation_queue(batch_size=10):
         flagged_obj.handled = timezone.now()
         flagged_obj.save()
 
+    return f"Processed {processed_count} stale flagged objects"
     return f"Processed {processed_count} stale flagged objects"

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_CATEGORIES_LOGINLESS
-from kitsune.customercare.zendesk import ZendeskClient
+from kitsune.customercare.models import SupportTicket
 from kitsune.products import PRODUCT_SLUG_ALIASES
 
 PRODUCTS_WITH_OS = ["mozilla-vpn"]
@@ -66,16 +66,9 @@ class ZendeskForm(forms.Form):
             self.fields["os"].widget = forms.HiddenInput()
 
     def send(self, user, product):
-        client = ZendeskClient()
-        zendesk_product = (
-            ZENDESK_PRODUCT_SLUGS.get(product.slug, product.slug)
-            if product.slug == "mozilla-vpn"
-            else product.slug
-        )
-        self.cleaned_data["product"] = zendesk_product
-        self.cleaned_data["product_title"] = product.title
-
+        """Create a SupportTicket record and trigger async classification."""
         selected_category_slug = self.cleaned_data.get("category")
+        zendesk_tags = []
         if selected_category_slug:
             selected_category_data = None
             for category in self.product_categories:
@@ -84,15 +77,31 @@ class ZendeskForm(forms.Form):
                     break
 
             if selected_category_data:
-                tags = []
                 tag_data = selected_category_data["tags"]
 
                 for tag_value in tag_data.values():
                     if tag_value:
                         if isinstance(tag_value, list):
-                            tags.extend(tag_value)
+                            zendesk_tags.extend(tag_value)
                         else:
-                            tags.append(tag_value)
+                            zendesk_tags.append(tag_value)
 
-                self.cleaned_data["zendesk_tags"] = tags
-        return client.create_ticket(user, self.cleaned_data)
+        submission = SupportTicket.objects.create(
+            subject=self.cleaned_data["subject"],
+            description=self.cleaned_data["description"],
+            category=self.cleaned_data.get("category", ""),
+            email=self.cleaned_data["email"],
+            os=self.cleaned_data.get("os", ""),
+            country=self.cleaned_data.get("country", ""),
+            product=product,
+            user=user if user.is_authenticated else None,
+            zendesk_tags=zendesk_tags,
+            status=SupportTicket.STATUS_PENDING,
+        )
+
+        # Trigger async classification task
+        from kitsune.customercare.tasks import zendesk_submission_classifier
+
+        zendesk_submission_classifier.delay(submission.id)
+
+        return submission

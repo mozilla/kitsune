@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from parameterized import parameterized
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.llm.questions.classifiers import ModerationAction
+from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.models import Topic
 from kitsune.products.tests import TopicFactory
 from kitsune.questions.models import Answer, Question
