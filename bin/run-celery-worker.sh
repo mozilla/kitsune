@@ -10,4 +10,4 @@ else
     CONCURRENCY=""
 fi
 
-exec newrelic-admin run-program celery -A kitsune worker -Q $QUEUE $CONCURRENCY --loglevel INFO --max-tasks-per-child=${CELERY_WORKER_MAX_TASKS_PER_CHILD:-25}
+exec celery -A kitsune worker -Q $QUEUE $CONCURRENCY --loglevel INFO --max-tasks-per-child=${CELERY_WORKER_MAX_TASKS_PER_CHILD:-25}
