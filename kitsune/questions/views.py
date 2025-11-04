@@ -86,32 +86,39 @@ IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 FILTER_GROUPS = {
     "all": OrderedDict(
         [
+            # L10n: This is a question filter option for the All tab.
             ("recently-unanswered", _lazy("Recently unanswered")),
         ]
     ),
     "needs-attention": OrderedDict(
         [
+            # L10n: This is a question filter option for the Attention needed tab.
             ("new", _lazy("New")),
+            # L10n: This is a question filter option for the Attention needed tab.
             ("unhelpful-answers", _lazy("Answers didn't help")),
         ]
     ),
     "responded": OrderedDict(
         [
+            # L10n: This is a question filter option for the Responded tab.
             ("needsinfo", _lazy("Needs info")),
+            # L10n: This is a question filter option for the Responded tab.
             ("solution-provided", _lazy("Solution provided")),
         ]
     ),
     "done": OrderedDict(
         [
+            # L10n: This is a question filter option for the Done tab.
             ("solved", _lazy("Solved")),
+            # L10n: This is a question filter option for the Done tab.
             ("locked", _lazy("Locked")),
         ]
     ),
     "spam": OrderedDict(
         [
-            # L10n: This filter option is for the Spam tab, thus "marked" refers to "marked as spam".
+            # L10n: This is a question filter option for the Spam tab, thus "marked" refers to "marked as spam".
             ("detected-spam", _lazy("Marked automatically")),
-            # L10n: This filter option is for the Spam tab, thus "marked" refers to "marked as spam".
+            # L10n: This is a question filter option for the Spam tab, thus "marked" refers to "marked as spam".
             ("undetected-spam", _lazy("Marked manually")),
         ]
     ),
@@ -119,9 +126,13 @@ FILTER_GROUPS = {
 
 ORDER_BY = OrderedDict(
     [
+        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
         ("updated", ("updated", _lazy("Updated"))),
+        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
         ("views", ("questionvisits__visits", _lazy("Views"))),
+        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
         ("votes", ("num_votes_past_week", _lazy("Votes"))),
+        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
         ("replies", ("num_answers", _lazy("Replies"))),
     ]
 )
