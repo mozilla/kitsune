@@ -1,13 +1,19 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+from django.contrib.auth.models import Group
+from django.core import mail
 from django.db.models.signals import post_save
 from django.test import override_settings
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.badges import QUESTIONS_BADGES
 from kitsune.questions.models import QuestionVote, send_vote_update_task
-from kitsune.questions.tasks import cleanup_old_spam, update_question_vote_chunk
+from kitsune.questions.tasks import (
+    cleanup_old_spam,
+    report_employee_answers,
+    update_question_vote_chunk,
+)
 from kitsune.questions.tests import AnswerFactory, QuestionFactory, QuestionVoteFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -89,3 +95,47 @@ class TestMaybeAwardBadge(TestCase):
 
         AnswerFactory(creator=a1.creator)
         self.assertTrue(badge.is_awarded_to(a1.creator))
+
+
+class TestReportEmployeeAnswers(TestCase):
+    def test_report_employee_answers(self):
+        # Note: This depends on two groups that are created in migrations.
+        # If we fix the tests to not run migrations, we'll need to create the
+        # two groups here: 'Support Forum Tracked', 'Support Forum Metrics'
+
+        tracked_group, _ = Group.objects.get_or_create(name="Support Forum Tracked")
+        tracked_user = UserFactory()
+        tracked_user.groups.add(tracked_group)
+
+        report_group, _ = Group.objects.get_or_create(name="Support Forum Metrics")
+        report_user = UserFactory()
+        report_user.groups.add(report_group)
+
+        # An unanswered question that should get reported
+        QuestionFactory(created=datetime.now() - timedelta(days=2))
+
+        # An answered question that should get reported
+        q = QuestionFactory(created=datetime.now() - timedelta(days=2))
+        AnswerFactory(question=q)
+
+        # A question answered by a tracked user that should get reported
+        q = QuestionFactory(created=datetime.now() - timedelta(days=2))
+        AnswerFactory(creator=tracked_user, question=q)
+
+        # More questions that shouldn't get reported
+        q = QuestionFactory(created=datetime.now() - timedelta(days=3))
+        AnswerFactory(creator=tracked_user, question=q)
+        q = QuestionFactory(created=datetime.now() - timedelta(days=1))
+        AnswerFactory(question=q)
+        QuestionFactory()
+
+        report_employee_answers()
+
+        # Get the last email and verify contents
+        email = mail.outbox[len(mail.outbox) - 1]
+
+        assert "Number of questions asked: 3" in email.body
+        assert "Number of questions answered: 2" in email.body
+        assert "{username}: 1".format(username=tracked_user.username) in email.body
+
+        self.assertEqual([report_user.email], email.to)

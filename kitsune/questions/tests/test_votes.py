@@ -1,6 +1,5 @@
-from django.core.management import call_command
-
 from kitsune.questions.models import Question
+from kitsune.questions.tasks import update_weekly_votes
 from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory
 from kitsune.sumo.tests import TestCase
 
@@ -26,7 +25,7 @@ class TestVotes(TestCase):
         q.num_votes_past_week = 0
         q.save()
 
-        call_command("update_weekly_votes")
+        update_weekly_votes()
 
         q = Question.objects.get(pk=q.pk)
         self.assertEqual(1, q.num_votes_past_week)

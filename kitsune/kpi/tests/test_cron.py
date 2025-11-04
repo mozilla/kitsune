@@ -20,6 +20,7 @@ from kitsune.kpi.models import (
     Cohort,
     Metric,
 )
+from kitsune.kpi.tasks import cohort_analysis, update_l10n_metric
 from kitsune.kpi.tests import MetricFactory, MetricKindFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo import googleanalytics
@@ -71,7 +72,7 @@ class CohortAnalysisTests(TestCase):
                 creator=a.creator, created=self.start_of_first_week + timedelta(weeks=2, days=5)
             )
 
-        call_command("cohort_analysis")
+        cohort_analysis()
 
     def test_contributor_cohort_analysis(self):
         c1 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week)
@@ -222,7 +223,7 @@ class CronJobTests(TestCase):
 
         # Run it and verify results.
         # Value should be 75% (1/1 * 25/100 + 1/1 * 50/100)
-        call_command("update_l10n_metric")
+        update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         self.assertEqual(1, len(metrics))
         self.assertEqual(75, metrics[0].value)
@@ -233,7 +234,7 @@ class CronJobTests(TestCase):
             document=doc, significance=TYPO_SIGNIFICANCE, is_ready_for_localization=True
         )
         Metric.objects.all().delete()
-        call_command("update_l10n_metric")
+        update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         self.assertEqual(1, len(metrics))
         self.assertEqual(75, metrics[0].value)
@@ -244,7 +245,7 @@ class CronJobTests(TestCase):
             document=doc, significance=MEDIUM_SIGNIFICANCE, is_ready_for_localization=True
         )
         Metric.objects.all().delete()
-        call_command("update_l10n_metric")
+        update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         self.assertEqual(1, len(metrics))
         self.assertEqual(62, metrics[0].value)
@@ -255,7 +256,7 @@ class CronJobTests(TestCase):
             document=doc, significance=MEDIUM_SIGNIFICANCE, is_ready_for_localization=True
         )
         Metric.objects.all().delete()
-        call_command("update_l10n_metric")
+        update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         self.assertEqual(1, len(metrics))
         self.assertEqual(50, metrics[0].value)
@@ -268,7 +269,7 @@ class CronJobTests(TestCase):
         m1.delete()
         m2.delete()
         Metric.objects.all().delete()
-        call_command("update_l10n_metric")
+        update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
         self.assertEqual(1, len(metrics))
         self.assertEqual(50, metrics[0].value)

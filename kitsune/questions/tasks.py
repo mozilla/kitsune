@@ -1,9 +1,11 @@
 import logging
+import textwrap
 from datetime import date, datetime, timedelta
 
 from celery import shared_task
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
+from django.core.mail import send_mail
 from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce, Now
 from sentry_sdk import capture_exception
@@ -11,11 +13,16 @@ from sentry_sdk import capture_exception
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
+from kitsune.questions.models import QuestionVisits
+from kitsune.search.es_utils import index_objects_bulk
+from kitsune.sumo.decorators import skip_if_read_only_mode
+from kitsune.sumo.utils import chunked
 
 log = logging.getLogger("k.task")
 
 
 @shared_task(rate_limit="1/s")
+@skip_if_read_only_mode
 def update_question_votes(question_id):
     from kitsune.questions.models import Question
 
@@ -30,7 +37,8 @@ def update_question_votes(question_id):
 
 
 @shared_task(rate_limit="4/s")
-def update_question_vote_chunk(question_ids):
+@skip_if_read_only_mode
+def update_question_vote_chunk(question_ids: list[int]) -> None:
     """Given a list of questions, update the "num_votes_past_week" attribute of each one."""
     from kitsune.questions.models import Question, QuestionVote
 
@@ -58,6 +66,7 @@ def update_question_vote_chunk(question_ids):
 
 
 @shared_task(rate_limit="4/m")
+@skip_if_read_only_mode
 def update_answer_pages(question_id: int):
     from kitsune.questions.models import Question
 
@@ -67,9 +76,7 @@ def update_answer_pages(question_id: int):
         capture_exception(err)
         return
 
-    log.debug(
-        "Recalculating answer page numbers for question {}: {}".format(question.pk, question.title)
-    )
+    log.debug(f"Recalculating answer page numbers for question {question.pk}: {question.title}")
 
     i = 0
     answers = question.answers.using("default").order_by("created")
@@ -80,6 +87,7 @@ def update_answer_pages(question_id: int):
 
 
 @shared_task
+@skip_if_read_only_mode
 def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
@@ -115,7 +123,8 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
 
 
 @shared_task
-def cleanup_old_spam():
+@skip_if_read_only_mode
+def cleanup_old_spam() -> None:
     """Clean up spam Questions and Answers older than the configured cutoff period."""
     from kitsune.questions.handlers import OldSpamCleanupHandler
 
@@ -126,12 +135,141 @@ def cleanup_old_spam():
         result = handler.cleanup_old_spam()
     except Exception as err:
         capture_exception(err)
+        log.error(str(err))
     else:
         log.info(
-            "Spam cleanup completed: deleted %d questions and %d answers marked as spam before %s",
-            result["questions_deleted"],
-            result["answers_deleted"],
-            result["cutoff_date"],
+            f"Spam cleanup completed: deleted {result['questions_deleted']} questions"
+            f" and {result['answers_deleted']} answers marked as spam"
+            f" before {result['cutoff_date']}"
         )
 
-        return result
+
+@shared_task
+@skip_if_read_only_mode
+def report_employee_answers() -> None:
+    """
+    We report on the users in the "Support Forum Tracked" group.
+    We send the email to the users in the "Support Forum Metrics" group.
+    """
+    from kitsune.questions.models import Answer, Question
+
+    tracked_group = Group.objects.get(name="Support Forum Tracked")
+    report_group = Group.objects.get(name="Support Forum Metrics")
+
+    tracked_users = tracked_group.user_set.all()
+    report_recipients = report_group.user_set.all()
+
+    if len(tracked_users) == 0 or len(report_recipients) == 0:
+        return
+
+    yesterday = date.today() - timedelta(days=1)
+    day_before_yesterday = yesterday - timedelta(days=1)
+
+    # Total number of questions asked the day before yesterday
+    questions = Question.objects.filter(
+        creator__is_active=True, created__gte=day_before_yesterday, created__lt=yesterday
+    )
+    num_questions = questions.count()
+
+    # Total number of answered questions day before yesterday
+    num_answered = questions.filter(num_answers__gt=0).count()
+
+    # Total number of questions answered by user in tracked_group
+    num_answered_by_tracked = {}
+    for user in tracked_users:
+        num_answered_by_tracked[user.username] = (
+            Answer.objects.filter(question__in=questions, creator=user)
+            .values_list("question_id")
+            .distinct()
+            .count()
+        )
+
+    email_subject = "Support Forum answered report for {date}".format(date=day_before_yesterday)
+
+    email_body_tmpl = textwrap.dedent(
+        """\
+        Date: {date}
+        Number of questions asked: {num_questions}
+        Number of questions answered: {num_answered}
+        """
+    )
+    email_body = email_body_tmpl.format(
+        date=day_before_yesterday, num_questions=num_questions, num_answered=num_answered
+    )
+
+    for username, count in list(num_answered_by_tracked.items()):
+        email_body += "Number of questions answered by {username}: {count}\n".format(
+            username=username, count=count
+        )
+
+    email_addresses = [u.email for u in report_recipients]
+
+    send_mail(
+        email_subject,
+        email_body,
+        settings.TIDINGS_FROM_ADDRESS,
+        email_addresses,
+        fail_silently=False,
+    )
+
+
+@shared_task
+@skip_if_read_only_mode
+def update_weekly_votes() -> None:
+    from kitsune.questions.models import Question, QuestionVote
+
+    # Get all questions (id) with a vote in the last week.
+    recent = datetime.now() - timedelta(days=7)
+    q = QuestionVote.objects.filter(created__range=(recent, Now()))
+    q = q.values_list("question_id", flat=True).order_by("question")
+    q = q.distinct()
+    q_with_recent_votes = list(q)
+
+    # Get all questions with num_votes_past_week > 0
+    q = Question.objects.filter(num_votes_past_week__gt=0)
+    q = q.values_list("id", flat=True)
+    q_with_nonzero_votes = list(q)
+
+    # Union.
+    qs_to_update = list(set(q_with_recent_votes + q_with_nonzero_votes))
+
+    log.info(f"Started update of {len(qs_to_update)} questions.")
+
+    # Chunk them for tasks.
+    for chunk in chunked(qs_to_update, 50):
+        update_question_vote_chunk.delay(chunk)
+
+
+@shared_task
+@skip_if_read_only_mode
+def auto_archive_old_questions() -> None:
+    from kitsune.questions.models import Answer, Question
+
+    # Get a list of ids of questions we're going to go change. We need
+    # a list of ids so that we can feed it to the update, but then
+    # also know what we need to update in the index.
+    days_180 = datetime.now() - timedelta(days=180)
+    q_ids = list(
+        Question.objects.filter(is_archived=False)
+        # Use "__range" to ensure the database index is used in Postgres.
+        .filter(created__range=(datetime.min, days_180))
+        .values_list("id", flat=True)
+    )
+
+    if q_ids:
+        log.info(f"Updating {len(q_ids)} questions")
+
+        Question.objects.filter(id__in=q_ids).update(is_archived=True)
+
+        if settings.ES_LIVE_INDEXING:
+            answer_ids = list(
+                Answer.objects.filter(question_id__in=q_ids).values_list("id", flat=True)
+            )
+            index_objects_bulk.delay("QuestionDocument", q_ids)
+            index_objects_bulk.delay("AnswerDocument", answer_ids)
+
+
+@shared_task
+@skip_if_read_only_mode
+def reload_question_traffic_stats(verbose: bool = True) -> None:
+    QuestionVisits.reload_from_analytics(verbose=verbose)

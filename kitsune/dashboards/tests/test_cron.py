@@ -1,13 +1,20 @@
 from datetime import date, timedelta
 
 from django.conf import settings
-from django.core.management import call_command
 
-from kitsune.dashboards.management.commands.cache_most_unhelpful_kb_articles import (
+from kitsune.dashboards.models import (
+    L10N_ALL_CODE,
+    L10N_TOP20_CODE,
+    L10N_TOP100_CODE,
+    WikiMetric,
+)
+from kitsune.dashboards.tasks import (
     _get_current_unhelpful,
     _get_old_unhelpful,
+    cache_most_unhelpful_kb_articles,
+    update_l10n_contributor_metrics,
+    update_l10n_coverage_metrics,
 )
-from kitsune.dashboards.models import L10N_ALL_CODE, L10N_TOP20_CODE, L10N_TOP100_CODE, WikiMetric
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase
@@ -143,7 +150,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
 
     def test_no_articles(self):
         """No articles returns no unhelpful articles."""
-        call_command("cache_most_unhelpful_kb_articles")
+        cache_most_unhelpful_kb_articles()
         self.assertEqual(0, self.redis.llen(self.REDIS_KEY))
 
     def test_caching_unhelpful(self):
@@ -156,7 +163,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        call_command("cache_most_unhelpful_kb_articles")
+        cache_most_unhelpful_kb_articles()
 
         self.assertEqual(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
@@ -176,7 +183,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 0, 3)
 
-        call_command("cache_most_unhelpful_kb_articles")
+        cache_most_unhelpful_kb_articles()
 
         self.assertEqual(0, self.redis.llen(self.REDIS_KEY))
 
@@ -196,7 +203,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        call_command("cache_most_unhelpful_kb_articles")
+        cache_most_unhelpful_kb_articles()
 
         self.assertEqual(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
@@ -235,7 +242,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 91):
             _add_vote_in_past(r3, 0, 3)
 
-        call_command("cache_most_unhelpful_kb_articles")
+        cache_most_unhelpful_kb_articles()
 
         self.assertEqual(3, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 3)
@@ -277,7 +284,7 @@ class L10nMetricsTests(TestCase):
             RevisionFactory(document=d, based_on=r, is_approved=True)
 
         # Call the management command
-        call_command("update_l10n_coverage_metrics")
+        update_l10n_coverage_metrics()
 
         # Verify es metrics.
         self.assertEqual(6, WikiMetric.objects.filter(locale="es").count())
@@ -396,7 +403,7 @@ class L10nMetricsTests(TestCase):
         RevisionFactory(document=d, created=day)
 
         # Call the command.
-        call_command("update_l10n_contributor_metrics", str(day))
+        update_l10n_contributor_metrics(str(day))
 
         self.assertEqual(
             3.0, WikiMetric.objects.get(locale="en-US", product=None, date=start_date).value

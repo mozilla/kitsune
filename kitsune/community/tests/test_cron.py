@@ -4,9 +4,9 @@ from unittest import mock
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.core.management import call_command
 from django.test.utils import override_settings
 
+from kitsune.community.tasks import send_welcome_emails
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase, attrs_eq
 from kitsune.users.tests import UserFactory
@@ -32,7 +32,7 @@ class WelcomeEmailsTests(TestCase):
         # Clear out the notifications that were sent
         mail.outbox = []
         # Send email(s) for welcome messages
-        call_command("send_welcome_emails")
+        send_welcome_emails()
 
         # There should be an email for u3 only.
         # u1 was the asker, and so did not make a contribution.
@@ -46,10 +46,7 @@ class WelcomeEmailsTests(TestCase):
 
         # Check that no links used the wrong host.
         assert "support.mozilla.org" not in mail.outbox[0].body
-        assert (
-            "say hi and introduce"
-            in mail.outbox[0].body
-        )
+        assert "say hi and introduce" in mail.outbox[0].body
         # Assumption: links will be done consistently, and so this is enough testing.
 
         # u3's flag should now be set.
@@ -73,7 +70,7 @@ class WelcomeEmailsTests(TestCase):
         # Clear out the notifications that were sent
         mail.outbox = []
         # Send email(s) for welcome messages
-        call_command("send_welcome_emails")
+        send_welcome_emails()
 
         # There should be an email for u1 only.
         # u2 has already recieved the email

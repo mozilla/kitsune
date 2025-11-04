@@ -37,6 +37,22 @@ services:
     depends_on:
       - web
 
+  beat:
+    build:
+      context: .
+      target: dev
+    command: ./bin/run-celery-beat.sh
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+      - /app/.venv
+    user: ${UID:-kitsune}
+    depends_on:
+      - postgres
+      - redis
+    profiles:
+      - beat
+
   celery:
     build:
       context: .
@@ -50,6 +66,24 @@ services:
     depends_on:
       - postgres
       - redis
+
+  flower:
+    build:
+      context: .
+      target: dev
+    command: bash -c "source /app/.venv/bin/activate && python -m celery -A kitsune flower"
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+      - /app/.venv
+    user: ${UID:-kitsune}
+    depends_on:
+      - redis
+      - celery
+    ports:
+      - "5555:5555"
+    profiles:
+      - beat
 
   postgres:
     image: postgres:15.3

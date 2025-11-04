@@ -1,11 +1,16 @@
 import json
+import logging
 from datetime import datetime, timedelta
 
 import waffle
 from celery import shared_task
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils import timezone
 
 from kitsune.products.models import Product
+from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import AccountEvent
 from kitsune.users.utils import anonymize_user, delete_user_pipeline
@@ -13,6 +18,8 @@ from kitsune.users.utils import anonymize_user, delete_user_pipeline
 shared_task_with_retry = shared_task(
     acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs={"max_retries": 3}
 )
+
+log = logging.getLogger("k.task")
 
 
 @shared_task_with_retry
@@ -116,6 +123,7 @@ def process_event_profile_change(event_id):
 
 
 @shared_task
+@skip_if_read_only_mode
 def process_unprocessed_account_events(within_hours):
     """
     Attempt to process all unprocessed account events that have been
@@ -135,3 +143,33 @@ def process_unprocessed_account_events(within_hours):
                 process_event_password_change.delay(event.id)
             case AccountEvent.PROFILE_CHANGE:
                 process_event_profile_change.delay(event.id)
+
+
+@shared_task
+@skip_if_read_only_mode
+def cleanup_old_account_events() -> None:
+    """Deletes account events that are older than two years."""
+    two_years_ago = timezone.now() - timedelta(days=730)  # 2 years * 365 days
+    deleted_count = AccountEvent.objects.filter(created_at__lt=two_years_ago).delete()[0]
+    log.info(f"Successfully deleted {deleted_count} old account events")
+
+
+@shared_task
+@skip_if_read_only_mode
+def cleanup_expired_users() -> None:
+    """Delete users who haven't logged-in for more than settings.USER_INACTIVITY_DAYS days."""
+    if not waffle.switch_is_active("cleanup-expired-users"):
+        log.info("The cleanup of expired users is not enabled.")
+        return
+
+    User = get_user_model()
+    expiration_date = timezone.now() - timedelta(days=settings.USER_INACTIVITY_DAYS)
+
+    expired_users = User.objects.filter(last_login__lt=expiration_date)
+    log.info(f"Found {expired_users.count()} expired users")
+
+    for user in expired_users:
+        delete_user_pipeline(user)
+        log.info(f"Deleted user {user.username}")
+
+    log.info(f"Successfully processed {expired_users.count()} expired users")

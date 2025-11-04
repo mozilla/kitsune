@@ -94,14 +94,16 @@ class RebuildTestCase(TestCase):
         assert not get.called
         assert not delay.called
 
-    @mock.patch.object(_rebuild_kb_chunk, "apply_async")
-    def test_rebuild_chunk(self, apply_async):
+    @mock.patch.object(_rebuild_kb_chunk, "delay")
+    def test_rebuild_chunk(self, delay):
         cache.set(settings.WIKI_REBUILD_TOKEN, True)
         rebuild_kb()
         assert not cache.get(settings.WIKI_REBUILD_TOKEN)
-        assert "args" in apply_async.call_args[1]
+        assert delay.called
+        assert delay.call_args.args
+        self.assertEqual(len(delay.call_args.args), 1)
         # There should be 4 documents with an approved revision
-        self.assertEqual(4, len(apply_async.call_args[1]["args"][0]))
+        self.assertEqual(4, len(delay.call_args.args[0]))
 
 
 class ReviewMailTestCase(TestCase):
