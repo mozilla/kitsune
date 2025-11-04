@@ -77,7 +77,7 @@
     "imagemin-svgo": "^10.0.1",
     "jsdom": "^21.1.0",
     "kss": "^3.1.0",
-    "locutus": "^2.0.16",
+    "locutus": "^2.0.32",
     "mini-css-extract-plugin": "^2.9.2",
     "mocha": "^10.2.0",
     "onchange": "^7.1.0",
