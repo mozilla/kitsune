@@ -107,7 +107,7 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
             return {"action": action, "product_result": {}}
 
         # Maybe misclassified - check product reassignment
-        product_result_dict = classify_product(payload, only_with_forums=False)
+        product_result_dict = classify_product(payload, only_with_forums=False, current_product=product)
         product_result = product_result_dict["product_result"]
         new_product = product_result.get("product")
 

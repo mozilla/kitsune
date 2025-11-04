@@ -6,7 +6,7 @@ from kitsune.llm.prompt import ADDITIONAL_FORMAT_INSTRUCTIONS, USER_CONTENT_TEMP
 
 PRODUCT_INSTRUCTIONS = """
 # Role and Goal
-You are a specialized product reclassification agent for Mozilla's support forums.
+You are a specialized product reclassification agent for Mozilla's support.
 Your task is to evaluate user-submitted content previously flagged as spam and determine
 if it should instead be reassigned to a specific Mozilla product category.
 
@@ -122,15 +122,48 @@ class TopicResult(BaseModel):
 product_pydantic_parser = PydanticOutputParser(pydantic_object=ProductResult)
 product_parser = product_pydantic_parser | model_to_dict
 
-product_prompt = ChatPromptTemplate(
-    (
-        ("system", PRODUCT_INSTRUCTIONS),
-        ("human", USER_CONTENT_TEMPLATE),
+
+def build_product_prompt(current_product=None):
+    """Build a product classification prompt for the given product.
+
+    Args:
+        current_product: Optional Product object. If provided and slug is "mozilla-account",
+            additional instructions are added for handling lockout scenarios.
+    Returns:
+        ChatPromptTemplate with appropriate instructions.
+    """
+    instructions = PRODUCT_INSTRUCTIONS
+
+    # Add special instructions for Mozilla Accounts
+    if current_product and hasattr(current_product, 'slug') and current_product.slug == "mozilla-account":
+        mozilla_accounts_instructions = """
+
+# Special Considerations for Mozilla Accounts
+The current submission is for Mozilla Accounts, which handles user authentication and account management.
+Users may be locked out of their accounts and may submit requests that are not actually related to Mozilla Accounts.
+
+When evaluating submissions for Mozilla Accounts:
+- **Apply stricter reassignment criteria**: Require higher confidence (minimum 80) before reassigning to a different product.
+- **Explicit product mentions**: The content MUST explicitly mention specific product features, error messages, or workflows that are unique to the target product. Generic support requests are likely legitimate Mozilla Accounts issues.
+- **Lockout scenarios**: Users who cannot access their accounts may submit requests about other Mozilla products thinking it will help. Only reassign if the content clearly demonstrates knowledge of the specific product's features or contains product-specific error messages.
+- **When in doubt**: Do NOT reassign. It is safer to flag for manual review than to incorrectly reassign a legitimate Mozilla Accounts support request.
+"""
+        instructions = PRODUCT_INSTRUCTIONS + mozilla_accounts_instructions
+
+    product_prompt = ChatPromptTemplate(
+        (
+            ("system", instructions),
+            ("human", USER_CONTENT_TEMPLATE),
+        )
+    ).partial(
+        format_instructions=product_pydantic_parser.get_format_instructions()
+        + ADDITIONAL_FORMAT_INSTRUCTIONS
     )
-).partial(
-    format_instructions=product_pydantic_parser.get_format_instructions()
-    + ADDITIONAL_FORMAT_INSTRUCTIONS
-)
+    return product_prompt
+
+
+# Legacy product_prompt for backward compatibility (used by existing code)
+product_prompt = build_product_prompt()
 
 DEFAULT_PRODUCT_RESULT = ProductResult(
     product=None,
