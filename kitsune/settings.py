@@ -1072,6 +1072,7 @@ WAFFLE_OVERRIDE = config("WAFFLE_OVERRIDE", default=DEBUG, cast=bool)
 
 if config("SENTRY_DSN", None):
     import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import ignore_logger
 
@@ -1087,52 +1088,16 @@ if config("SENTRY_DSN", None):
 
     sentry_sdk.init(
         dsn=config("SENTRY_DSN"),
-        integrations=[DjangoIntegration()],
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(monitor_beat_tasks=True),
+        ],
         release=config("GIT_SHA", default=None),
         server_name=PLATFORM_NAME,
         environment=config("SENTRY_ENVIRONMENT", default=""),
         before_send=filter_exceptions,
         sample_rate=config("SENTRY_SAMPLE_RATE", 0.25),
     )
-
-# Dead Man Snitches
-DMS_ENQUEUE_LAG_MONITOR_TASK = config("DMS_ENQUEUE_LAG_MONITOR_TASK", default=None)
-DMS_SEND_WELCOME_EMAILS = config("DMS_SEND_WELCOME_EMAILS", default=None)
-DMS_UPDATE_PRODUCT_DETAILS = config("DMS_UPDATE_PRODUCT_DETAILS", default=None)
-DMS_GENERATE_MISSING_SHARE_LINKS = config("DMS_GENERATE_MISSING_SHARE_LINKS", default=None)
-DMS_REBUILD_KB = config("DMS_REBUILD_KB", default=None)
-DMS_UPDATE_TOP_CONTRIBUTORS = config("DMS_UPDATE_TOP_CONTRIBUTORS", default=None)
-DMS_UPDATE_L10N_COVERAGE_METRICS = config("DMS_UPDATE_L10N_COVERAGE_METRICS", default=None)
-# DMS_CALCULATE_CSAT_METRICS = config("DMS_CALCULATE_CSAT_METRICS", default=None)
-DMS_REPORT_EMPLOYEE_ANSWERS = config("DMS_REPORT_EMPLOYEE_ANSWERS", default=None)
-DMS_UPDATE_WEEKLY_VOTES = config("DMS_UPDATE_WEEKLY_VOTES", default=None)
-DMS_UPDATE_SEARCH_CTR_METRIC = config("DMS_UPDATE_SEARCH_CTR_METRIC", default=None)
-DMS_UPDATE_CONTRIBUTOR_METRICS = config("DMS_UPDATE_CONTRIBUTOR_METRICS", default=None)
-DMS_AUTO_ARCHIVE_OLD_QUESTIONS = config("DMS_AUTO_ARCHIVE_OLD_QUESTIONS", default=None)
-DMS_REINDEX = config("DMS_REINDEX", default=None)
-DMS_REINDEX_ES = config("DMS_REINDEX_ES", default=None)
-# DMS_PROCESS_EXIT_SURVEYS = config("DMS_PROCESS_EXIT_SURVEYS", default=None)
-# DMS_SURVEY_RECENT_ASKERS = config("DMS_SURVEY_RECENT_ASKERS", default=None)
-# DMS_UPDATE_VISITORS_METRIC = config('DMS_UPDATE_VISITORS_METRIC', default=None)
-DMS_UPDATE_L10N_METRIC = config("DMS_UPDATE_L10N_METRIC", default=None)
-DMS_RELOAD_WIKI_TRAFFIC_STATS = config("DMS_RELOAD_WIKI_TRAFFIC_STATS", default=None)
-DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES = config("DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES", default=None)
-DMS_RELOAD_QUESTION_TRAFFIC_STATS = config("DMS_RELOAD_QUESTION_TRAFFIC_STATS", default=None)
-DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST = config(
-    "DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST", default=None
-)
-DMS_FIX_CURRENT_REVISIONS = config("DMS_FIX_CURRENT_REVISIONS", default=None)
-DMS_COHORT_ANALYSIS = config("DMS_COHORT_ANALYSIS", default=None)
-DMS_UPDATE_L10N_CONTRIBUTOR_METRICS = config("DMS_UPDATE_L10N_CONTRIBUTOR_METRICS", default=None)
-DMS_CLEANUP_EXPIRED_USERS = config("DMS_CLEANUP_EXPIRED_USERS", default=None)
-DMS_CLEANUP_OLD_ACCOUNT_EVENTS = config("DMS_CLEANUP_OLD_ACCOUNT_EVENTS", default=None)
-DMS_CLEANUP_OLD_SPAM = config("DMS_CLEANUP_OLD_SPAM", default=None)
-DMS_REPROCESS_FAILED_ACCOUNT_EVENTS = config("DMS_REPROCESS_FAILED_ACCOUNT_EVENTS", default=None)
-DMS_PROCESS_STALE_MODERATION_QUEUE = config("DMS_PROCESS_MODERATION_QUEUE", default=None)
-DMS_PROCESS_STALE_TRANSLATIONS = config("DMS_PROCESS_STALE_TRANSLATIONS", default=None)
-DMS_PUBLISH_PENDING_TRANSLATIONS = config("DMS_PUBLISH_PENDING_TRANSLATIONS", default=None)
-DMS_CREATE_MISSING_TRANSLATIONS = config("DMS_CREATE_MISSING_TRANSLATIONS", default=None)
-DMS_SYNC_PRODUCT_VERSIONS = config("DMS_SYNC_PRODUCT_VERSIONS", default=None)
 
 PROD_DETAILS_CACHE_NAME = "product-details"
 PROD_DETAILS_STORAGE = config(
