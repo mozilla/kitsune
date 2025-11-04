@@ -133,7 +133,7 @@ def update_header_comments(filename):
         ),
         (
             re.compile(r"^# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.$", flags=re.MULTILINE),
-            f"# FIRST AUTHOR <EMAIL@ADDRESS>, {current_year}.",
+            "",
         ),
     ]
     pot_file = Path(filename)
