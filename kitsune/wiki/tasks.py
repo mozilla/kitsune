@@ -200,7 +200,7 @@ def schedule_rebuild_kb():
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
-        log.debug("Rebuild task already scheduled.")
+        log.info("Rebuild task already scheduled.")
         return
 
     cache.set(settings.WIKI_REBUILD_TOKEN, True)
@@ -213,7 +213,6 @@ def schedule_rebuild_kb():
 def run_rebuild_kb() -> None:
     """Try to run a KB rebuild, if we're allowed to."""
     if waffle.switch_is_active("wiki-rebuild-on-demand"):
-        log.info("Already rebuilding KB on-demand.")
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
@@ -251,7 +250,7 @@ def add_short_links(doc_ids):
 @skip_if_read_only_mode
 def generate_missing_share_links() -> None:
     """Generate share links for documents without them."""
-    document_ids = (
+    document_ids = list(
         Document.objects.filter(
             share_link="",
             is_template=False,
@@ -263,9 +262,8 @@ def generate_missing_share_links() -> None:
         .exclude(html__startswith=REDIRECT_HTML)
         .values_list("id", flat=True)
     )
-    document_ids = list(document_ids)
     log.info(f"Generating share links for {len(document_ids)} documents")
-    add_short_links.delay(document_ids)
+    add_short_links(document_ids)
 
 
 @shared_task(rate_limit="3/h")
