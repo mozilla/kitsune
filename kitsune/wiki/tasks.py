@@ -1,5 +1,6 @@
 import logging
 from datetime import date, datetime
+from itertools import chain
 
 import waffle
 from celery import shared_task
@@ -10,22 +11,31 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
-from django.db.models import Subquery
+from django.db.models import F, ObjectDoesNotExist, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.urls import reverse as django_reverse
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.kbadge.utils import get_or_create_badge
+from kitsune.products.models import Product
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
+from kitsune.wiki.config import (
+    HOW_TO_CATEGORY,
+    REDIRECT_HTML,
+    TEMPLATES_CATEGORY,
+    TROUBLESHOOTING_CATEGORY,
+)
 from kitsune.wiki.models import (
     Document,
+    Locale,
     Revision,
     SlugCollision,
     TitleCollision,
@@ -190,12 +200,28 @@ def schedule_rebuild_kb():
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
-        log.debug("Rebuild task already scheduled.")
+        log.info("Rebuild task already scheduled.")
         return
 
     cache.set(settings.WIKI_REBUILD_TOKEN, True)
 
     rebuild_kb.delay()
+
+
+@shared_task
+@skip_if_read_only_mode
+def run_rebuild_kb() -> None:
+    """Try to run a KB rebuild, if we're allowed to."""
+    if waffle.switch_is_active("wiki-rebuild-on-demand"):
+        return
+
+    if cache.get(settings.WIKI_REBUILD_TOKEN):
+        log.info("Rebuild task already scheduled.")
+        return
+
+    cache.set(settings.WIKI_REBUILD_TOKEN, True)
+
+    rebuild_kb()
 
 
 @shared_task
@@ -220,9 +246,29 @@ def add_short_links(doc_ids):
         pass
 
 
+@shared_task
+@skip_if_read_only_mode
+def generate_missing_share_links() -> None:
+    """Generate share links for documents without them."""
+    document_ids = list(
+        Document.objects.filter(
+            share_link="",
+            is_template=False,
+            is_archived=False,
+            parent__isnull=True,
+            current_revision__isnull=False,
+            category__in=settings.IA_DEFAULT_CATEGORIES,
+        )
+        .exclude(html__startswith=REDIRECT_HTML)
+        .values_list("id", flat=True)
+    )
+    log.info(f"Generating share links for {len(document_ids)} documents")
+    add_short_links(document_ids)
+
+
 @shared_task(rate_limit="3/h")
 @skip_if_read_only_mode
-def rebuild_kb():
+def rebuild_kb() -> None:
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
 
@@ -232,19 +278,21 @@ def rebuild_kb():
         .values_list("id", flat=True)
     )
 
+    log.info(f"Started rebuild of {d.count()} documents.")
+
     for chunk in chunked(d, 50):
-        _rebuild_kb_chunk.apply_async(args=[chunk])
+        _rebuild_kb_chunk.delay(chunk)
 
 
 @shared_task(rate_limit="5/m")
-def _rebuild_kb_chunk(data):
+def _rebuild_kb_chunk(data: list[int]) -> None:
     """Re-render a chunk of documents.
 
     Note: Don't use host components when making redirects to wiki pages; those
     redirects won't be auto-pruned when they're 404s.
 
     """
-    log.info("Rebuilding {} documents.".format(len(data)))
+    log.info(f"Rebuilding {len(data)} documents.")
 
     messages = []
     for pk in data:
@@ -256,7 +304,7 @@ def _rebuild_kb_chunk(data):
             # link to a document but the document isn't there), log an error:
             url = document.redirect_url()
             if url and resolves_to_document_view(url) and not document.redirect_document():
-                log.warn("Invalid redirect document: %d" % pk)
+                log.warning(f"Invalid redirect document: {pk}")
 
             html = document.parse_and_calculate_links()
             if document.html != html:
@@ -431,3 +479,106 @@ def publish_pending_translations() -> None:
     from kitsune.wiki.services import HybridTranslationService
 
     HybridTranslationService().publish_pending_translations(log=log)
+
+
+@shared_task
+@skip_if_read_only_mode
+def send_weekly_ready_for_review_digest() -> None:
+    """Sends out the weekly "Ready for review" digest email."""
+
+    @email_utils.safe_translation
+    def _make_digest_mail(locale, user, context):
+        subject = _("[Reviews Pending: %s] SUMO needs your help!") % locale
+
+        return email_utils.make_mail(
+            subject=subject,
+            text_template="wiki/email/ready_for_review_weekly_digest.ltxt",
+            html_template="wiki/email/ready_for_review_weekly_digest.html",
+            context_vars=context,
+            from_email=settings.TIDINGS_FROM_ADDRESS,
+            to_email=user.email,
+        )
+
+    # Get the list of revisions ready for review
+    categories = (HOW_TO_CATEGORY, TROUBLESHOOTING_CATEGORY, TEMPLATES_CATEGORY)
+
+    revs = Revision.objects.filter(
+        reviewed=None, document__is_archived=False, document__category__in=categories
+    )
+
+    revs = revs.filter(
+        Q(document__current_revision_id__lt=F("id")) | Q(document__current_revision_id=None)
+    )
+
+    locales = revs.values_list("document__locale", flat=True).distinct()
+    products = Product.active.all()
+
+    messages = []
+
+    for loc in locales:
+        doc_ids = revs.filter(document__locale=loc).values_list("document", flat=True).distinct()
+
+        try:
+            leaders = Locale.objects.get(locale=loc).leaders.all()
+            reviewers = Locale.objects.get(locale=loc).reviewers.all()
+            users = {user for user in chain(leaders, reviewers) if user.is_active}
+        except ObjectDoesNotExist:
+            # Locale does not exist, so skip to the next locale
+            continue
+
+        for user in users:
+            docs_list = []
+            docs = Document.objects.unrestricted(user, id__in=doc_ids)
+            for product in products:
+                product_docs = docs.filter(
+                    Q(parent=None, products__in=[product]) | Q(parent__products__in=[product])
+                )
+                if product_docs:
+                    docs_list.append(
+                        {
+                            "product": pgettext("DB: products.Product.title", product.title),
+                            "docs": product_docs,
+                        }
+                    )
+
+            product_docs = docs.filter(Q(parent=None, products=None) | Q(parent__products=None))
+
+            if product_docs:
+                docs_list.append({"product": _("Other products"), "docs": product_docs})
+
+            messages.append(
+                _make_digest_mail(
+                    loc,
+                    user,
+                    {
+                        "host": Site.objects.get_current().domain,
+                        "locale": loc,
+                        "recipient": user,
+                        "docs_list": docs_list,
+                        "products": products,
+                    },
+                )
+            )
+
+    email_utils.send_messages(messages)
+
+
+@shared_task
+@skip_if_read_only_mode
+def fix_current_revisions() -> None:
+    """Fixes documents that have the current_revision set incorrectly."""
+    # Reduce memory usage by only loading the columns we need.
+    docs = Document.objects.all().values("id", "current_revision_id")
+
+    for d in docs.iterator():
+        revs = Revision.objects.filter(document_id=d["id"], is_approved=True)
+        revs = revs.order_by(F("reviewed").desc(nulls_last=True)).values_list("id", flat=True)[:1]
+
+        if len(revs):
+            rev_id = revs[0]
+
+            if d["current_revision_id"] != rev_id:
+                doc = Document.objects.get(id=d["id"])
+                doc.current_revision_id = rev_id
+                doc.save()
+                log.info(doc.get_absolute_url())

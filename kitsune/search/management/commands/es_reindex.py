@@ -75,10 +75,8 @@ class Command(BaseCommand):
         if limit:
             doc_types = [dt for dt in doc_types if dt.__name__ in limit]
 
-        progress_msg = "Indexed {progress} out of {count}"
-
         for dt in doc_types:
-            self.stdout.write("Reindexing: {}".format(dt.__name__))
+            self.stdout.write(f"Reindexing: {dt.__name__}")
 
             model = dt.get_model()
 
@@ -88,9 +86,11 @@ class Command(BaseCommand):
                 try:
                     qs = model.objects_range(before=before, after=after)
                 except NotImplementedError:
-                    print(
-                        f"{model} hasn't implemeneted an `updated_column_name` property."
-                        "No documents will be indexed of this type."
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"{model} hasn't implemeneted an `updated_column_name` property."
+                            "No documents will be indexed of this type."
+                        )
                     )
                     continue
             else:
@@ -101,14 +101,16 @@ class Command(BaseCommand):
 
             percentage = kwargs["percentage"]
             if count:
-                print("Indexing {} documents out of {}".format(count, total))
+                count = min(count, total)
+                qs = qs[:count]
+                self.stdout.write(f"Indexing {count} documents out of {total}")
             else:
                 if percentage < 100:
                     count = int(total * percentage / 100)
                     qs = qs[:count]
                 else:
                     count = total
-                print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
+                self.stdout.write(f"Indexing {percentage}%, so {count} documents out of {total}")
 
             id_list = list(qs.values_list("pk", flat=True))
             sql_chunk_size = kwargs["sql_chunk_size"]
@@ -129,6 +131,6 @@ class Command(BaseCommand):
                     elastic_chunk_size=kwargs["elastic_chunk_size"],
                 )
                 if kwargs["print_sql_count"]:
-                    print("{} SQL queries executed".format(len(connection.queries)))
+                    self.stdout.write(f"{len(connection.queries)} SQL queries executed")
                     reset_queries()
-                print(progress_msg.format(progress=min(end, count), count=count))
+                self.stdout.write(f"Indexed {min(end, count)} out of {count}")

@@ -179,7 +179,7 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     # Make a copy, so that we don't modify the original
     dupe = json.loads(orig)
     if len(dupe[key]) < diff:
-        raise TruncationException("Can't truncate enough to satisfy " "`max_length`.")
+        raise TruncationException("Can't truncate enough to satisfy `max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
 

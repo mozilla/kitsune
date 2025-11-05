@@ -5,7 +5,6 @@ from unittest import mock
 import waffle
 from actstream.models import Action, Follow
 from django.contrib.contenttypes.models import ContentType
-from django.core.management import call_command
 from django.db.models import Q
 
 import kitsune.sumo.models
@@ -22,7 +21,7 @@ from kitsune.questions.models import (
     _has_beta,
     _tenths_version,
 )
-from kitsune.questions.tasks import update_answer_pages
+from kitsune.questions.tasks import auto_archive_old_questions, update_answer_pages
 from kitsune.questions.tests import (
     AnswerFactory,
     AnswerVoteFactory,
@@ -571,7 +570,7 @@ class OldQuestionsArchiveTest(ElasticTestCase):
             updated=last_updated,
         )
 
-        call_command("auto_archive_old_questions")
+        auto_archive_old_questions()
 
         # There are three questions.
         self.assertEqual(len(list(Question.objects.all())), 3)

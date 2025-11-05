@@ -54,7 +54,7 @@ npm run stylelint          # Lint SCSS files
 
 **Primary Applications:**
 - `wiki/` - Knowledge Base articles and documentation
-- `questions/` - Support questions and answers (Q&A system)  
+- `questions/` - Support questions and answers (Q&A system)
 - `forums/` - Discussion forums
 - `users/` - User profiles, authentication, and account management
 - `search/` - Elasticsearch-powered search functionality
@@ -78,7 +78,7 @@ npm run stylelint          # Lint SCSS files
 - **Backend:** Django 4.2+, Python 3.11
 - **Package Management:** uv (replaced poetry in July 2025)
 - **Database:** PostgreSQL
-- **Search:** Elasticsearch 9.0+  
+- **Search:** Elasticsearch 9.0+
 - **Cache:** Redis
 - **Task Queue:** Celery with Redis broker
 - **Frontend:** Webpack, SCSS, vanilla JavaScript + jQuery
@@ -89,7 +89,7 @@ npm run stylelint          # Lint SCSS files
 
 Essential environment variables are defined in `.env-dist`. Key ones include:
 - `DATABASE_URL` - PostgreSQL connection
-- `ES_URLS` - Elasticsearch endpoints  
+- `ES_URLS` - Elasticsearch endpoints
 - `REDIS_*` - Redis configuration for cache and Celery
 - `DEBUG`, `DEV` - Development mode flags
 
@@ -155,7 +155,7 @@ npm run browser-sync      # Live reload server
 - All user-facing strings should be marked for translation with `_()` or `_lazy()`
 - Cache keys use app-specific prefixes (defined in individual apps)
 
-### Testing Guidelines  
+### Testing Guidelines
 
 - Python tests live in `tests/` directories within each app
 - Use factories from `factory_boy` for test data creation
@@ -165,10 +165,10 @@ npm run browser-sync      # Live reload server
 
 ### Key Configuration Files
 
-- `pyproject.toml` - Python dependencies and ruff configuration  
+- `pyproject.toml` - Python dependencies and ruff configuration
 - `uv.lock` - Locked dependency versions (replaces poetry.lock)
 - `package.json` - Node.js dependencies, build scripts
-- `webpack.*.js` - Frontend build configuration  
+- `webpack.*.js` - Frontend build configuration
 - `Makefile` - Development commands wrapper
 - `docker-compose.yml` - Local development stack
 - `.github/dependabot.yml` - Automated dependency updates for uv and npm
@@ -245,7 +245,7 @@ Kitsune uses Django's i18n URL patterns with specific routing conventions:
 - `run-web-bootstrap.sh` - Initial Django setup (migrations, collectstatic)
 - `run-node-bootstrap.sh` - Node.js dependency installation
 - `run-celery-worker.sh` - Background task worker
-- `run-cron.sh` - Scheduled task runner
+- `run-celery-beat.sh` - Scheduled task runner
 
 ### Development Best Practices
 

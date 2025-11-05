@@ -2,7 +2,6 @@ import json
 from datetime import date, datetime, timedelta
 
 from django.core.cache import cache
-from django.core.management import call_command
 
 from kitsune.kpi.models import (
     EXIT_SURVEY_DONT_KNOW_CODE,
@@ -15,6 +14,7 @@ from kitsune.kpi.models import (
     VISITORS_METRIC_CODE,
     Metric,
 )
+from kitsune.kpi.tasks import update_contributor_metrics
 from kitsune.kpi.tests import MetricFactory, MetricKindFactory
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory, QuestionFactory
@@ -259,7 +259,7 @@ class KpiApiTests(TestCase):
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
-        call_command("update_contributor_metrics", str(date.today() + timedelta(days=1)))
+        update_contributor_metrics(str(date.today() + timedelta(days=1)))
 
         r = self._get_api_result("api.kpi.contributors")
 
@@ -281,7 +281,7 @@ class KpiApiTests(TestCase):
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
-        call_command("update_contributor_metrics", str(date.today() + timedelta(days=1)))
+        update_contributor_metrics(str(date.today() + timedelta(days=1)))
 
         r = self._get_api_result("api.kpi.contributors")
         self.assertEqual(r["objects"][0]["support_forum"], 0)
@@ -292,7 +292,7 @@ class KpiApiTests(TestCase):
         cache.clear()  # We need to clear the cache for new results.
 
         Metric.objects.all().delete()
-        call_command("update_contributor_metrics", str(date.today() + timedelta(days=1)))
+        update_contributor_metrics(str(date.today() + timedelta(days=1)))
 
         r = self._get_api_result("api.kpi.contributors")
         self.assertEqual(r["objects"][0]["support_forum"], 1)
