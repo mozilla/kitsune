@@ -1723,7 +1723,6 @@ dependencies = [
     { name = "mkdocs" },
     { name = "mkdocs-material" },
     { name = "mozilla-django-oidc" },
-    { name = "newrelic" },
     { name = "oauthlib" },
     { name = "parameterized" },
     { name = "pillow" },
@@ -1844,7 +1843,6 @@ requires-dist = [
     { name = "mkdocs", specifier = ">=1.5.3,<2" },
     { name = "mkdocs-material", specifier = ">=9.5.3,<10" },
     { name = "mozilla-django-oidc", specifier = "==4.0.0" },
-    { name = "newrelic", specifier = ">=9.5.0,<10" },
     { name = "oauthlib", specifier = ">=3.2.2,<4" },
     { name = "parameterized", specifier = ">=0.8.1,<0.9" },
     { name = "pillow", specifier = ">=11.0.0,<12" },
@@ -2162,18 +2160,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/36/7c/bba6e158f70ee6308c49b5cfe67e66328da79edd71d45b9f0d43288b1766/mozilla-django-oidc-4.0.0.tar.gz", hash = "sha256:7eb9d05a033ac61a74ea3be33d3f822818bc8dcab81c471fef94c0d65c7cbe1c", size = 48935, upload-time = "2024-01-11T15:23:05.892Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/70/8d/7b097654fa3e0ec7f3e53766714c8b5a39926f7f6be5477acec56072c3ba/mozilla_django_oidc-4.0.0-py2.py3-none-any.whl", hash = "sha256:01a4ab19341503ec06fcbe6ea12329ed709d4226bf1d2c7541b0b1c4c4e8a738", size = 29041, upload-time = "2024-01-11T15:23:03.912Z" },
-]
-
-[[package]]
-name = "newrelic"
-version = "9.13.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3c/4c/7784be621acb9868c21e3d7b1a184a65cd8ce1123776c724cf81099e06a4/newrelic-9.13.0.tar.gz", hash = "sha256:7405bfc65d6d983a738e756044956f06c366a234fdde0ccf7cf0d52fedfd72e4", size = 1174155, upload-time = "2024-08-08T21:59:10.437Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/00/f6/2431327cb411261733d8c4bbc34de97f056501e301535b3341510847aff7/newrelic-9.13.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:dbfe4a0f2d34d8d9ef31cee7c73a49d3fe2b9a92129d70819058f1df736cdd38", size = 832223, upload-time = "2024-08-08T21:58:17.725Z" },
-    { url = "https://files.pythonhosted.org/packages/c4/73/b73dcd50eecaa45c9517f8985c5983372f0576132b94a3371833f915b964/newrelic-9.13.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:db3cc230970902c2548e5d747ce96d38bc009d087cf49bef4ce8679cdedc57c1", size = 830722, upload-time = "2024-08-08T21:58:20.336Z" },
-    { url = "https://files.pythonhosted.org/packages/c2/5d/76e9916947f2c919868f8d087707cd3101c98b7e1c90647fdac33e431c7c/newrelic-9.13.0-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:d5fe36aae1154610d2d03cd8cdfc52b6ea3f63a0b672b14185e4e1532016f826", size = 846460, upload-time = "2024-08-08T21:58:23.573Z" },
-    { url = "https://files.pythonhosted.org/packages/8d/fe/b1b028796e5563225ffd7c5b0677bc8a1c0eb157862e7d8cae63bbdace0a/newrelic-9.13.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:f9ab59b30729532bab64497910c1051665269814366be8ee3fde2391032dd9f6", size = 846457, upload-time = "2024-08-08T21:58:26.114Z" },
 ]
 
 [[package]]

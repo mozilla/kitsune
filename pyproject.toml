@@ -19,7 +19,6 @@ dependencies = [
     "elasticsearch>=9.0.2,<10",
     "gunicorn>=22.0.0,<23",
     "gevent>=23.9.1,<24",
-    "newrelic>=9.5.0,<10",
     "django-waffle>=3.0.0,<4",
     "python-decouple~=3.8",
     "sentry-sdk>=2.43.0,<3",
