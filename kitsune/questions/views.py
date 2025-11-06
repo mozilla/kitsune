@@ -1547,6 +1547,9 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
         QuestionReplyEvent.is_notifying(request.user, question)
         or QuestionSolvedEvent.is_notifying(request.user, question)
     )
+
+    tags = question.my_tags
+
     return {
         "question": question,
         "product": question.product,
@@ -1558,6 +1561,8 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
         "feeds": feed_urls,
         "frequencies": frequencies,
         "is_watching_question": is_watching_question,
+        "tags": tags,
+        "tag_ids": {t.id for t in tags},
         "can_tag": request.user.has_perm("questions.tag_question"),
         "can_create_tags": request.user.has_perm("taggit.add_tag"),
     }

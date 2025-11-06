@@ -396,7 +396,6 @@
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Tags') }}</li>
       <li id="tags-list">
         <div class="folder">
-          {% set tags = question.my_tags %}
           {% if tags or can_tag %}
             <div class="sidebox tight cf" id="tags">
               <div class="tags"{% if can_tag %} data-tag-vocab-json="{{ tag_vocab() }}"{% endif %}>
@@ -413,7 +412,7 @@
                         {% for tag in all_tags %}
                           <option value="{{ tag.id }}"
                                   data-url="{{ url('questions.list', product.slug if product else 'all')|urlparams(tagged=tag.slug) }}"
-                                  {% if tag in question.tags.all() %}selected{% endif %}>
+                                  {% if tag.id in tag_ids %}selected{% endif %}>
                             {{ tag.name }}
                           </option>
                         {% endfor %}
