@@ -309,7 +309,6 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
             formatted = format_datetime(
                 convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
             )
-
         case _:
             # Unknown format
             raise DateTimeFormatError
