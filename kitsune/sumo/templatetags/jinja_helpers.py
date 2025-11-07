@@ -278,35 +278,34 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
     if use_naturaltime and (django_now().astimezone(convert_tzinfo) - convert_value).days < 30:
         return naturaltime(convert_value)
 
-    match format:
-        case "shortdatetime" | "shortdate":
-            # Check if the date is today
-            today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
-            kwargs = {"format": "short", "tzinfo": convert_tzinfo, "locale": locale}
-            if convert_value.toordinal() == today:
-                formatted = _lazy("Today at %s") % format_time(convert_value, **kwargs)
-            elif format == "shortdatetime":
-                formatted = format_datetime(convert_value, **kwargs)
-            else:
-                del kwargs["tzinfo"]
-                formatted = format_date(convert_value, **kwargs)
-        case "longdatetime":
-            formatted = format_datetime(
-                convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
-            )
-        case "date":
-            formatted = format_date(convert_value, locale=locale)
-        case "time":
-            formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
-        case "datetime":
-            formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
-        case "year":
-            formatted = format_datetime(
-                convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
-            )
-        case _:
-            # Unknown format
-            raise DateTimeFormatError
+    if format == "shortdatetime" or format == "shortdate":
+        # Check if the date is today
+        today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
+        kwargs = {"format": "short", "tzinfo": convert_tzinfo, "locale": locale}
+        if convert_value.toordinal() == today:
+            formatted = _lazy("Today at %s") % format_time(convert_value, **kwargs)
+        elif format == "shortdatetime":
+            formatted = format_datetime(convert_value, **kwargs)
+        else:
+            del kwargs["tzinfo"]
+            formatted = format_date(convert_value, **kwargs)
+    elif format == "longdatetime":
+        formatted = format_datetime(
+            convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
+        )
+    elif format == "date":
+        formatted = format_date(convert_value, locale=locale)
+    elif format == "time":
+        formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
+    elif format == "datetime":
+        formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
+    elif format == "year":
+        formatted = format_datetime(
+            convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
+        )
+    else:
+        # Unknown format
+        raise DateTimeFormatError
     return Markup('<time datetime="{}">{}</time>'.format(convert_value.isoformat(), formatted))
 
 
