@@ -278,34 +278,47 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
     if use_naturaltime and (django_now().astimezone(convert_tzinfo) - convert_value).days < 30:
         return naturaltime(convert_value)
 
-    if format == "shortdatetime" or format == "shortdate":
-        # Check if the date is today
-        today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
-        kwargs = {"format": "short", "tzinfo": convert_tzinfo, "locale": locale}
-        if convert_value.toordinal() == today:
-            formatted = _lazy("Today at %s") % format_time(convert_value, **kwargs)
-        elif format == "shortdatetime":
-            formatted = format_datetime(convert_value, **kwargs)
-        else:
-            del kwargs["tzinfo"]
-            formatted = format_date(convert_value, **kwargs)
-    elif format == "longdatetime":
-        formatted = format_datetime(
-            convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
-        )
-    elif format == "date":
-        formatted = format_date(convert_value, locale=locale)
-    elif format == "time":
-        formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
-    elif format == "datetime":
-        formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
-    elif format == "year":
-        formatted = format_datetime(
-            convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
-        )
-    else:
-        # Unknown format
-        raise DateTimeFormatError
+    match format:
+        case "shortdatetime" | "shortdate":
+            today_date = datetime.datetime.now(tz=convert_tzinfo).date()
+
+            def _as_date_in_tz(v, tz):
+                import datetime as _dt
+                if isinstance(v, _dt.date) and not isinstance(v, _dt.datetime):
+                    return v
+                if tz is None:
+                    return v.date()
+                if v.tzinfo is None:
+                    return v.replace(tzinfo=tz).date()
+                return v.astimezone(tz).date()
+
+            value_date = _as_date_in_tz(convert_value, convert_tzinfo)
+
+            kwargs_dt = {"format": "short", "tzinfo": convert_tzinfo, "locale": locale}
+            if value_date == today_date:
+                formatted = _lazy("Today at %s") % format_time(convert_value, **kwargs_dt)
+            elif format == "shortdatetime":
+                formatted = format_datetime(convert_value, **kwargs_dt)
+            else:  # shortdate
+                formatted = format_date(convert_value, format="short", locale=locale)
+
+        case "longdatetime":
+            formatted = format_datetime(
+                convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
+            )
+        case "date":
+            formatted = format_date(convert_value, locale=locale)
+        case "time":
+            formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
+        case "datetime":
+            formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
+        case "year":
+            formatted = format_datetime(
+                convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
+            )
+        case _:
+            raise DateTimeFormatError
+
     return Markup('<time datetime="{}">{}</time>'.format(convert_value.isoformat(), formatted))
 
 
