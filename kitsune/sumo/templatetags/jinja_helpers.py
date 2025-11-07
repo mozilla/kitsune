@@ -290,21 +290,16 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
             else:
                 del kwargs["tzinfo"]
                 formatted = format_date(convert_value, **kwargs)
-
         case "longdatetime":
             formatted = format_datetime(
                 convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
             )
-
         case "date":
             formatted = format_date(convert_value, locale=locale)
-
         case "time":
             formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
-
         case "datetime":
             formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
-
         case "year":
             formatted = format_datetime(
                 convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
@@ -312,8 +307,6 @@ def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False
         case _:
             # Unknown format
             raise DateTimeFormatError
-
-
     return Markup('<time datetime="{}">{}</time>'.format(convert_value.isoformat(), formatted))
 
 
