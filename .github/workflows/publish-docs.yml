@@ -25,24 +25,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.x
           cache: pip
       - id: pages
         uses: actions/configure-pages@v5
-      - run: pip install mkdocs-material 
-      - run: mkdocs build -d dist
-      - run: npm ci
-      - run: npm run build:styleguide && mkdir dist/_kss && cp -r styleguide/build/. dist/_kss/
-      - uses: actions/upload-pages-artifact@v3
+      - name: Build docs
+        run: |
+          pip install mkdocs-material
+          mkdocs build -d site
+      - name: Build styleguide
+        run: |
+          npm ci
+          npm run build:styleguide
+          mkdir site/_kss
+          cp -r styleguide/build/. site/_kss/
+      - uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: site
   deploy:
     environment:
       name: github-pages
