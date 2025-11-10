@@ -61,7 +61,7 @@ https://testserver/{locale}questions/{question_id}?utm_campaign=\
 questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
-If this answer solves your problem, please mark it as "solved":"""
+If this answer solves your problem, please mark it as a solution:"""
 
 SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
 {replier} has found a solution to a Firefox question that you're following.

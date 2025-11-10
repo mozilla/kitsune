@@ -16,7 +16,7 @@ https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
 {{ _('If this doesn\'t solve your problem, let {answerer} know by replying on the website:')|f(answerer=display_name(answerer)) }}
 https://{{ host }}{{ answer_url }}
 
-{{ _('If this answer solves your problem, please mark it as "solved":') }}
+{{ _('If this answer solves your problem, please mark it as a solution:') }}
 https://{{ host }}{{ solution_url }}
 
 {{ _('This will help other Firefox users find good answers to their questions!') }}
