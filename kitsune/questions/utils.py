@@ -6,11 +6,12 @@ from typing import Any
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
+from django.db import models
 from sentry_sdk import capture_exception
 
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.flagit.models import FlaggedObject
-from kitsune.llm.questions.classifiers import ModerationAction
+from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Answer, Question
 from kitsune.users.models import Profile
@@ -120,17 +121,18 @@ def get_ga_submit_event_parameters_as_json(
     return json.dumps(data)
 
 
-def flag_question(
-    question: Question,
+def flag_object(
+    obj: models.Model,
     by_user: User,
     notes: str,
     status: int = FlaggedObject.FLAG_ACCEPTED,
     reason: str = FlaggedObject.REASON_SPAM,
 ) -> None:
-    content_type = ContentType.objects.get_for_model(question)
+    """Flag any object for moderation."""
+    content_type = ContentType.objects.get_for_model(obj)
     flagged_object, created = FlaggedObject.objects.get_or_create(
         content_type=content_type,
-        object_id=question.id,
+        object_id=obj.id,
         creator=by_user,
         defaults={
             "reason": reason,
@@ -143,6 +145,17 @@ def flag_question(
         flagged_object.status = status
         flagged_object.notes = notes
         flagged_object.save()
+
+
+def flag_question(
+    question: Question,
+    by_user: User,
+    notes: str,
+    status: int = FlaggedObject.FLAG_ACCEPTED,
+    reason: str = FlaggedObject.REASON_SPAM,
+) -> None:
+    """Flag a question for moderation."""
+    flag_object(question, by_user, notes, status, reason)
 
 
 def get_most_specific(topic_title):

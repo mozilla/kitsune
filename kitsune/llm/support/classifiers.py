@@ -1,0 +1,144 @@
+from typing import TYPE_CHECKING, Any
+
+from kitsune.llm.categorization.classifiers import classify_product, classify_topic
+from kitsune.llm.spam.classifier import (
+    ModerationAction,
+    classify_spam,
+    determine_action_from_spam_result,
+)
+from kitsune.products.utils import get_taxonomy
+
+if TYPE_CHECKING:
+    from kitsune.customercare.models import SupportTicket
+    from kitsune.questions.models import Question
+
+
+def classify_question(question: "Question") -> dict[str, Any]:
+    """
+    Analyze a question for spam and, if not spam or low confidence, classify the topic.
+    Returns a dict with keys: action, spam_result, topic_result (optional).
+    """
+    product = question.product
+    payload: dict[str, Any] = {
+        "subject": question.title,
+        "content": question.content,
+        "product": product,
+        "topics": get_taxonomy(
+            product, include_metadata=["description", "examples"], output_format="JSON"
+        ),
+    }
+
+    # First classify for spam
+    spam_result_dict = classify_spam(payload)
+    spam_result = spam_result_dict["spam_result"]
+
+    def handle_spam(payload: dict[str, Any], spam_result: dict[str, Any]) -> dict[str, Any]:
+        """Handle spam classification with potential product reclassification."""
+        action = determine_action_from_spam_result(spam_result)
+
+        if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
+            return {"action": action, "product_result": {}}
+
+        # Maybe misclassified - check product reassignment
+        product_result_dict = classify_product(payload, only_with_forums=True)
+        product_result = product_result_dict["product_result"]
+        new_product = product_result.get("product")
+
+        if new_product and new_product != product.title:
+            # Reassign product and reclassify topic with new product
+            # Note: We'd need to fetch the new product object, but for now
+            # reclassify with current product (processing will handle reassignment)
+            topic_result_dict = classify_topic(payload)
+            return {
+                "action": ModerationAction.NOT_SPAM,
+                "product_result": product_result,
+                "topic_result": topic_result_dict["topic_result"],
+            }
+        else:
+            return {
+                "action": ModerationAction.SPAM,
+                "product_result": product_result,
+            }
+
+    def decision_lambda(payload: dict[str, Any]) -> dict[str, Any]:
+        is_spam: bool = spam_result.get("is_spam", False)
+
+        base_result = {
+            "spam_result": spam_result,
+            "product_result": {},
+            "topic_result": {},
+        }
+
+        if is_spam:
+            spam_handling = handle_spam(payload, spam_result)
+            return {**base_result, **spam_handling}
+
+        # Not spam - classify topic
+        topic_result_dict = classify_topic(payload)
+        return {**base_result, "topic_result": topic_result_dict["topic_result"]}
+
+    result = decision_lambda(payload)
+    if "action" not in result:
+        result["action"] = determine_action_from_spam_result(spam_result)
+    return result
+
+
+def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
+    """
+    Analyze a support ticket for spam and product classification.
+    Returns a dict with keys: action, spam_result.
+    """
+    product = submission.product
+    payload: dict[str, Any] = {
+        "subject": submission.subject,
+        "content": submission.description,
+        "product": product,
+    }
+
+    # First classify for spam
+    spam_result_dict = classify_spam(payload)
+    spam_result = spam_result_dict["spam_result"]
+
+    def handle_spam(payload: dict[str, Any], spam_result: dict[str, Any]) -> dict[str, Any]:
+        """Handle spam classification with potential product reclassification."""
+        action = determine_action_from_spam_result(spam_result)
+
+        if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
+            return {"action": action, "product_result": {}}
+
+        # Maybe misclassified - check product reassignment
+        product_result_dict = classify_product(payload, only_with_forums=False, current_product=product)
+        product_result = product_result_dict["product_result"]
+        new_product = product_result.get("product")
+
+        if new_product and new_product != product.title:
+            # If reassigned to different product, flag for review
+            return {
+                "action": ModerationAction.FLAG_REVIEW,
+                "product_result": product_result,
+            }
+        else:
+            return {
+                "action": ModerationAction.SPAM,
+                "product_result": product_result,
+            }
+
+    def decision_lambda(payload: dict[str, Any]) -> dict[str, Any]:
+        is_spam: bool = spam_result.get("is_spam", False)
+
+        base_result = {
+            "spam_result": spam_result,
+            "product_result": {},
+        }
+
+        if is_spam:
+            spam_handling = handle_spam(payload, spam_result)
+            return {**base_result, **spam_handling}
+
+        # Not spam
+        return {**base_result, "action": ModerationAction.NOT_SPAM}
+
+    result = decision_lambda(payload)
+    if "action" not in result:
+        result["action"] = determine_action_from_spam_result(spam_result)
+    return result

@@ -30,8 +30,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
-from sentry_sdk import capture_exception
-from zenpy.lib.exception import APIException
 
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
@@ -653,26 +651,20 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             )
 
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
-                try:
-                    zendesk_form.send(request.user, product)
-                    email = zendesk_form.cleaned_data["email"]
-                    messages.add_message(
-                        request,
-                        messages.SUCCESS,
-                        _(
-                            "Done! Thank you for reaching out Mozilla Support."
-                            " We've sent a confirmation email to {email}"
-                        ).format(email=email),
-                    )
+                zendesk_form.send(request.user, product)
+                email = zendesk_form.cleaned_data["email"]
 
-                    url = reverse("products.product", args=[product.slug])
-                    return HttpResponseRedirect(url)
+                messages.add_message(
+                    request,
+                    messages.SUCCESS,
+                    _(
+                        "Thank you for reaching out to Mozilla Support. "
+                        "We're reviewing your submission and will send a confirmation email to {email} shortly."
+                    ).format(email=email),
+                )
 
-                except APIException as err:
-                    messages.add_message(
-                        request, messages.ERROR, _("That didn't work. Please try again.")
-                    )
-                    capture_exception(err)
+                url = reverse("products.product", args=[product.slug])
+                return HttpResponseRedirect(url)
 
             if getattr(request, "limited", False):
                 messages.add_message(

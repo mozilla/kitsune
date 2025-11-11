@@ -18,6 +18,8 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import group_required, login_required, permission_required
+from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.utils import send_support_ticket_to_zendesk
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions.events import QuestionReplyEvent
@@ -301,6 +303,14 @@ def update(request, flagged_object_id):
         flagged.assignee = None
         flagged.assigned_timestamp = None
         flagged.save()
+
+        if (
+            str(new_status) == str(FlaggedObject.FLAG_REJECTED)
+            and flagged.reason == FlaggedObject.REASON_SPAM
+            and isinstance(flagged.content_object, SupportTicket)
+            and flagged.content_object.status == SupportTicket.STATUS_FLAGGED
+        ):
+            send_support_ticket_to_zendesk(flagged.content_object)
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
         question = flagged.content_object
         question.moderation_timestamp = timezone.now()
