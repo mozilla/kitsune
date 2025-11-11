@@ -86,6 +86,9 @@ class ZendeskForm(forms.Form):
                         else:
                             zendesk_tags.append(tag_value)
 
+        if settings.STAGE:
+            zendesk_tags.append("stage")
+
         submission = SupportTicket.objects.create(
             subject=self.cleaned_data["subject"],
             description=self.cleaned_data["description"],
