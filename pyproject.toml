@@ -73,7 +73,7 @@ dependencies = [
     "mkdocs-material>=9.5.3,<10",
     "dockerflow>=2022.8.0,<2023",
     "google-analytics-data==0.18.7",
-    "pyparsing==3.2.4",
+    "pyparsing==3.2.5",
     "django-silk>=5.1.0,<6",
     "requests>=2.32.4,<3",
     "fuzzywuzzy>=0.18.0,<0.19",
