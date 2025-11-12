@@ -19,6 +19,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
 from markupsafe import Markup
+from tower import ugettext_lazy
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.dashboards.models import WikiDocumentVisits
@@ -45,7 +46,7 @@ MOST_VIEWED = 1
 MOST_RECENT = 2
 REVIEW_STATUSES = {
     1: (_lazy("Review Needed"), "wiki.document_revisions", "review"),
-    0: (_lazy("Updated"), "", "ok"),
+    0: (ugettext_lazy("Updated", context="article l10n status"), "", "ok"),
 }
 SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),

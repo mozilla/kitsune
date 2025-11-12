@@ -31,6 +31,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
+from tower import ugettext_lazy
 from zenpy.lib.exception import APIException
 
 from kitsune.access.decorators import login_required, permission_required
@@ -126,13 +127,13 @@ FILTER_GROUPS = {
 
 ORDER_BY = OrderedDict(
     [
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
-        ("updated", ("updated", _lazy("Updated"))),
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
+        ("updated", ("updated", ugettext_lazy("Updated", context="question sort option"))),
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("views", ("questionvisits__visits", _lazy("Views"))),
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("votes", ("num_votes_past_week", _lazy("Votes"))),
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("replies", ("num_answers", _lazy("Replies"))),
     ]
 )
