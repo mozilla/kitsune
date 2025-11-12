@@ -24,7 +24,7 @@ SPAM_CRITERIA_TEMPLATE = Template("""- Attempts to sell, advertise, or promote p
 - Contains QR codes or links/images directing users off-site.
 - Clearly unrelated to Mozilla's "{{ product }}" product features, functionality or purpose.""")
 
-SPAM_INSTRUCTIONS_BASE = """
+SPAM_INSTRUCTIONS = """
 # Role and goal
 You are a content moderation agent specialized in Mozilla's "{product}" product {content_type}.
 Your task is to determine whether a user-submitted {content_name} should be classified as spam.
@@ -81,25 +81,19 @@ def build_spam_prompt(product):
         product=product.title, content_name=content_name, has_ticketing=has_ticketing
     )
 
-    spam_pydantic_parser = PydanticOutputParser(pydantic_object=SpamResult)
-    format_instructions = (
-        spam_pydantic_parser.get_format_instructions() + ADDITIONAL_FORMAT_INSTRUCTIONS
-    )
-
-    spam_instructions = SPAM_INSTRUCTIONS_BASE.format(
+    prompt = ChatPromptTemplate(
+        (
+            ("system", SPAM_INSTRUCTIONS),
+            ("human", USER_CONTENT_TEMPLATE),
+        )
+    ).partial(
         product=product.title,
         content_type=content_type,
         content_name=content_name,
         criteria=criteria,
         content_fields=content_fields,
-        format_instructions=format_instructions,
-    )
-
-    prompt = ChatPromptTemplate(
-        (
-            ("system", spam_instructions),
-            ("human", USER_CONTENT_TEMPLATE),
-        )
+        format_instructions=spam_pydantic_parser.get_format_instructions()
+        + ADDITIONAL_FORMAT_INSTRUCTIONS,
     )
 
     return prompt
