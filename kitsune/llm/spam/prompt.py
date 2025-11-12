@@ -87,6 +87,7 @@ def build_spam_prompt(product):
     )
 
     spam_instructions = SPAM_INSTRUCTIONS_BASE.format(
+        product=product.title,
         content_type=content_type,
         content_name=content_name,
         criteria=criteria,
