@@ -2,6 +2,7 @@ import json
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
@@ -107,6 +108,15 @@ class EditQuestionForm(forms.ModelForm):
         for field in self.fields.values():
             if not field.required:
                 field.label_suffix = _lazy(" (optional):")
+
+    def clean_content(self):
+        """Validate that content field contains actual text, not just HTML markup."""
+        content = self.cleaned_data.get("content", "")
+        text_only = strip_tags(content).strip()
+
+        if len(text_only) < 5:
+            raise forms.ValidationError(_("Question content cannot be empty."))
+        return content
 
     @property
     def metadata_field_keys(self):
