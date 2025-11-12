@@ -30,6 +30,10 @@ class KBArticleShowHistoryPage(BasePage):
             f"tr#{revision_id} td[class='date'] a time")
         self.revision_status = lambda revision_id: page.locator(
             f"tr#{revision_id} td[class='status'] span")
+        self.revision_current_status = lambda revision_id: page.locator(
+            f"//tr[@id='{revision_id}']/td[@class='status']/span[@class='current']")
+        self.revision_ready_for_l10n_status = lambda revision_id: page.locator(
+            f"//tr[@id='{revision_id}']/td[@class='l10n']/a[@class='yes']")
         self.revision = lambda revision_id: page.locator(f"tr#{revision_id}")
         self.reviewable_revision = lambda revision_id: page.locator(
             f"tr#{revision_id} td[class='status'] a")
@@ -73,9 +77,6 @@ class KBArticleShowHistoryPage(BasePage):
             "div[class='submit'] a")
 
     # Page actions.
-    def get_l10n_modal_locator(self) -> Locator:
-        return self.l10n_modal
-
     def get_show_history_page_banner(self) -> str:
         return self._get_text_of_element(self.show_history_page_banner)
 
@@ -97,18 +98,19 @@ class KBArticleShowHistoryPage(BasePage):
     def click_on_ready_for_l10n_option(self, revision_id: str):
         self._click(self.ready_for_localization_button(revision_id))
 
-    def get_ready_for_localization_status(self, revision_id: str) -> Locator:
-        return self.ready_for_localization_status(revision_id)
-
-    def click_on_submit_l10n_readiness_button(self):
-        self._click(self.ready_for_l10_modal_submit_button)
+    def click_on_submit_l10n_readiness_button(self, revision_id: str):
+        """
+        Click on the submit button for the ready for l10n panel.
+        Args:
+            revision_id (str): The revision ID. Used to check if the l10n status for that revision
+            was changed or not.
+        """
+        self._click(self.ready_for_l10_modal_submit_button,
+                    expected_locator=self.revision_ready_for_l10n_status(revision_id))
 
     # Delete document actions.
     def click_on_delete_this_document_button(self):
         self._click(self.delete_this_document_button)
-
-    def get_delete_this_document_button_locator(self) -> Locator:
-        return self.delete_this_document_button
 
     def is_delete_button_displayed(self) -> bool:
         return self._is_element_visible(self.delete_this_document_button)
@@ -118,10 +120,6 @@ class KBArticleShowHistoryPage(BasePage):
 
     def click_on_confirmation_cancel_button(self):
         self._click(self.delete_this_document_confirmation_cancel_button)
-
-    def is_article_deleted_confirmation_messages_displayed(self) -> Locator:
-        self._wait_for_locator(self.article_deleted_confirmation_message)
-        return self.article_deleted_confirmation_message
 
     def get_last_revision_id(self) -> str:
         self._wait_for_locator(self.article_revision_list_items.first)
@@ -143,8 +141,13 @@ class KBArticleShowHistoryPage(BasePage):
     def get_revision_status(self, revision_id) -> str:
         return self._get_text_of_element(self.revision_status(revision_id))
 
-    def get_a_particular_revision_locator(self, revision_id) -> Locator:
-        return self.revision(revision_id)
+    def is_revision_current(self, revision_id: str) -> bool:
+        """
+        Return whether the given revision id is the current one or not.
+        Args:
+            revision_id (str): The revision id.
+        """
+        return self._is_element_visible(self.revision_current_status(revision_id))
 
     # For unreviewed revisions but user session permits review.
     def get_status_of_reviewable_revision(self, revision_id):
@@ -152,9 +155,6 @@ class KBArticleShowHistoryPage(BasePage):
 
     def click_on_review_revision(self, revision_id):
         self._click(self.reviewable_revision(revision_id))
-
-    def get_delete_revision_button_locator(self, revision_id) -> Locator:
-        return self.delete_revision(revision_id)
 
     def click_on_delete_revision_button(self, revision_id):
         return self._click(self.delete_revision(revision_id))
@@ -171,9 +171,6 @@ class KBArticleShowHistoryPage(BasePage):
     # Article contribution actions.
     def click_on_edit_contributors_option(self):
         self._click(self.edit_contributors_option)
-
-    def get_edit_contributors_option_locator(self) -> Locator:
-        return self.edit_contributors_option
 
     def add_a_new_contributor_inside_the_contributor_field(self, text: str):
         # Adding contributor username inside the contributor field.
@@ -202,9 +199,6 @@ class KBArticleShowHistoryPage(BasePage):
 
     def click_on_delete_contributor_confirmation_page_confirm_button(self):
         self._click(self.delete_contributor_confirmation_page_submit_button)
-
-    def get_all_contributors_locator(self) -> Locator:
-        return self.all_contributors_list_items
 
     def get_revision_significance(self, revision_id: str) -> str:
         return self._get_text_of_element(self.revision_significance(revision_id)).strip()

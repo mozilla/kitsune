@@ -155,13 +155,16 @@ class BasePage:
         return locator.is_disabled()
 
     def _click(self, element: str | Locator | ElementHandle, expected_locator=None,
-               expected_url=None, with_force=False, retries=3, delay=2000):
+               expected_locator_to_be_hidden=None, expected_url=None, with_force=False, retries=3,
+               delay=2000):
         """
         This helper function clicks on a given element locator.
 
         Args:
         element (Union[str, Locator, ElementHandle]): The element locator to click on.
-        expected_locator (str): The expected locator to wait for after the click.
+        expected_locator (str): The expected locator to be visible after the click event.
+        expected_locator_to_be_hidden (str): The locator which is expected to be hidden after the
+        click event.
         expected_url (str): The expected URL to wait for after the click.
         with_force (bool): Whether to force the click.
         """
@@ -173,12 +176,16 @@ class BasePage:
                 element_locator.click(force=with_force)
                 if expected_locator:
                     self._wait_for_locator(expected_locator, timeout=3000)
+                if expected_locator_to_be_hidden:
+                    self._wait_for_locator_to_be_hidden(expected_locator_to_be_hidden)
                 if expected_url:
                     self.page.wait_for_url(expected_url, timeout=10000)
                 break
             except PlaywrightTimeoutError:
                 if expected_locator:
                     print(f"Expected locator {expected_locator} not found. Retrying...")
+                if expected_locator_to_be_hidden:
+                    print(f"Locator {expected_locator_to_be_hidden} is not hidden yet")
                 if expected_url:
                     print(f"Expected URL {expected_url} not found. Retrying...")
                 if attempt < retries - 1:
@@ -294,9 +301,32 @@ class BasePage:
         """
         This helper function waits for a given element locator to be visible based on a given
         timeout.
+
+        Args:
+            locator (Locator): The locator.
+            timeout (int): Timeout.
+            raise_exception (bool): Whether to raise the exception or not.
         """
         try:
             locator.wait_for(state="visible", timeout=timeout)
+        except PlaywrightTimeoutError:
+            print(f"{locator} is not displayed")
+            if raise_exception:
+                raise
+
+    def _wait_for_locator_to_be_hidden(self, locator: Locator, timeout=3500,
+                                       raise_exception=False):
+        """
+        This helper function waits for a given element locator to be hidden based on a given
+        timeout.
+
+        Args:
+            locator (Locator): The locator.
+            timeout (int): Timeout.
+            raise_exception (bool): Whether to raise the exception or not.
+        """
+        try:
+            locator.wait_for(state="hidden", timeout=timeout)
         except PlaywrightTimeoutError:
             print(f"{locator} is not displayed")
             if raise_exception:
