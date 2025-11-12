@@ -126,13 +126,13 @@ FILTER_GROUPS = {
 
 ORDER_BY = OrderedDict(
     [
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("updated", ("updated", _lazy("Updated"))),
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("views", ("questionvisits__visits", _lazy("Views"))),
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("votes", ("num_votes_past_week", _lazy("Votes"))),
-        # L10n: This is a question order option. It is a part of a drop-down menu with no heading.
+        # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("replies", ("num_answers", _lazy("Replies"))),
     ]
 )
