@@ -34,8 +34,8 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
     }
 
     try:
-        ticket = client.create_ticket(submission.user, ticket_fields)
-        submission.zendesk_ticket_id = str(ticket.id)
+        ticket_audit = client.create_ticket(submission.user, ticket_fields)
+        submission.zendesk_ticket_id = str(ticket_audit.ticket.id)
         submission.status = SupportTicket.STATUS_SENT
         submission.save(update_fields=["zendesk_ticket_id", "status"])
         return True
