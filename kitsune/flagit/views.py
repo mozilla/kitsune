@@ -53,11 +53,13 @@ def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, pr
     return queryset
 
 
-def set_form_action_for_objects(objects, reason=None, product_slug=None):
+def set_form_action_for_objects(objects, reason=None, product_slug=None, content_type=None):
     """Generate form action URLs for flagged objects."""
     for obj in objects:
         base_url = reverse("flagit.update", args=[obj.id])
-        obj.form_action = urlparams(base_url, reason=reason, product=product_slug)
+        obj.form_action = urlparams(
+            base_url, reason=reason, product=product_slug, content_type=content_type
+        )
     return objects
 
 
@@ -122,13 +124,34 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
 def flagged_queue(request):
     """Display the flagged queue with optimized queries."""
     reason = request.GET.get("reason")
+    content_type_id = request.GET.get("content_type")
+
+    content_type = None
+    if content_type_id:
+        try:
+            content_type = ContentType.objects.get(id=int(content_type_id))
+        except (ValueError, ContentType.DoesNotExist):
+            pass
 
     objects = (
-        get_flagged_objects(reason=reason, exclude_reason=FlaggedObject.REASON_CONTENT_MODERATION)
+        get_flagged_objects(
+            reason=reason,
+            exclude_reason=FlaggedObject.REASON_CONTENT_MODERATION,
+            content_model=content_type,
+        )
         .select_related("content_type", "creator")
         .prefetch_related("content_object")
     )
-    objects = set_form_action_for_objects(objects, reason=reason)
+    objects = set_form_action_for_objects(objects, reason=reason, content_type=content_type_id)
+
+    # Get unique content types for the filter dropdown
+    content_types = (
+        FlaggedObject.objects.pending()
+        .exclude(reason=FlaggedObject.REASON_CONTENT_MODERATION)
+        .values_list("content_type__id", "content_type__model")
+        .distinct()
+        .order_by("content_type__model")
+    )
 
     return render(
         request,
@@ -138,6 +161,8 @@ def flagged_queue(request):
             "locale": request.LANGUAGE_CODE,
             "reasons": FlaggedObject.REASONS,
             "selected_reason": reason,
+            "content_types": content_types,
+            "selected_content_type": content_type_id,
         },
     )
 
@@ -290,6 +315,7 @@ def update(request, flagged_object_id):
     new_status = request.POST.get("status")
     reason = request.GET.get("reason")
     product = request.GET.get("product")
+    content_type = request.GET.get("content_type")
     ct = flagged.content_type
 
     if new_status:
@@ -318,4 +344,6 @@ def update(request, flagged_object_id):
         if "hx-request" in request.headers:
             return HttpResponse(status=202)
         return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))
-    return HttpResponseRedirect(urlparams(reverse("flagit.flagged_queue"), reason=reason))
+    return HttpResponseRedirect(
+        urlparams(reverse("flagit.flagged_queue"), reason=reason, content_type=content_type)
+    )

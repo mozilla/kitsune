@@ -62,11 +62,15 @@
         color: p.$color-dark-gray-80;
     }
 
-
     &__title,
     &__text {
         font-size: 1.1rem;
         color: p.$color-dark-gray-80;
+    }
+
+    .compact-info {
+        margin: p.$spacing-xs 0;
+        font-size: 1rem;
     }
 
     &__topic-update {
@@ -95,6 +99,7 @@
     }
 }
 
+#content-type-filter-form,
 #assignee-filter-form {
     margin-top: p.$spacing-md;
 }

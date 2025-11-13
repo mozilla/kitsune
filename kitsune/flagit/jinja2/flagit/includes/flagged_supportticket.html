@@ -1,0 +1,25 @@
+{% from 'flagit/includes/macros.html' import date_by_user with context %}
+<div class="flagged-content">
+  <h3 class="flagged-content__heading">{{ _('Subject:') }}</h3>
+  <p class="flagged-content__title">{{ object.content_object.subject }}</p>
+
+  <h3 class="flagged-content__subheading">{{ _('Description:') }}</h3>
+  <div class="flagged-content__text">{{ object.content_object.description }}</div>
+
+  <p class="compact-info"><strong>{{ _('Email:') }}</strong> {{ object.content_object.email }}</p>
+  <p class="compact-info"><strong>{{ _('Product:') }}</strong> {{ object.content_object.product }}</p>
+  <p class="compact-info"><strong>{{ _('Category:') }}</strong> {{ object.content_object.category }}</p>
+  <p class="compact-info"><strong>{{ _('Status:') }}</strong> {{ object.content_object.get_status_display() }}</p>
+
+  <h3 class="flagged-content__subheading">{{ _('Created:') }}</h3>
+  {% if object.content_object.user %}
+    <p>{{ date_by_user(object.content_object.created, object.content_object.user) }}</p>
+  {% else %}
+    <p>{{ datetimeformat(object.content_object.created, format='longdatetime') }}</p>
+  {% endif %}
+
+  <h3 class="flagged-content__subheading">{{ _('Flagged:') }}</h3>
+  <p>{{ date_by_user(object.created, object.creator) }}</p>
+</div>
+
+<a class="sumo-button button-sm" href="{{ url('admin:customercare_supportticket_change', object.content_object.id) }}">{{ _('View in Admin') }}</a>
