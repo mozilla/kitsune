@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const myQueueUnassign = document.getElementById('my-queue-unassign');
     const flaggedQueue = document.getElementById('flagged-queue');
     initializeFilterDropdown('flagit-reason-filter', 'reason');
+    initializeFilterDropdown('flagit-content-type-filter', 'content_type');
     initializeFilterDropdown('flagit-product-filter', 'product');
     initializeFilterDropdown('flagit-assignee-filter', 'assignee', (selectedValue) => {
         myQueueTools.hidden = selectedValue !== myQueueTools.dataset.currentUsername;

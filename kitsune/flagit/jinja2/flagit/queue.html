@@ -48,5 +48,6 @@
 {% endblock %}
 
 {% block filter_dropdown %}
-  {{ filter_dropdown("reason-filter-form", "flagit-reason-filter", "Filter by reason:", "reason", "All reasons", reasons, selected_reason) }} 
+  {{ filter_dropdown("reason-filter-form", "flagit-reason-filter", "Filter by reason:", "reason", "All reasons", reasons, selected_reason) }}
+  {{ filter_dropdown("content-type-filter-form", "flagit-content-type-filter", "Filter by type:", "content_type", "All types", content_types, selected_content_type) }}
 {% endblock %}
