@@ -135,7 +135,11 @@ def build_product_prompt(current_product=None):
     instructions = PRODUCT_INSTRUCTIONS
 
     # Add special instructions for Mozilla Accounts
-    if current_product and hasattr(current_product, 'slug') and current_product.slug == "mozilla-account":
+    if (
+        current_product
+        and hasattr(current_product, "slug")
+        and current_product.slug == "mozilla-account"
+    ):
         mozilla_accounts_instructions = """
 
 # Special Considerations for Mozilla Accounts
@@ -181,15 +185,15 @@ DEFAULT_TOPIC_RESULT = TopicResult(
 ).model_dump()
 
 
-def build_topic_prompt(product_title: str):
-    """Build a topic classification prompt for the given product."""
+def build_topic_prompt():
+    """Build a topic classification prompt."""
     topic_prompt = ChatPromptTemplate(
         (
-            ("system", TOPIC_INSTRUCTIONS.format(product=product_title)),
+            ("system", TOPIC_INSTRUCTIONS),
             ("human", USER_CONTENT_TEMPLATE),
         )
     ).partial(
         format_instructions=topic_pydantic_parser.get_format_instructions()
-        + ADDITIONAL_FORMAT_INSTRUCTIONS
+        + ADDITIONAL_FORMAT_INSTRUCTIONS,
     )
     return topic_prompt
