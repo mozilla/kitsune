@@ -45,7 +45,7 @@ MOST_VIEWED = 1
 MOST_RECENT = 2
 REVIEW_STATUSES = {
     1: (_lazy("Review Needed"), "wiki.document_revisions", "review"),
-    0: (_lazy("Updated"), "", "ok"),
+    0: (_lazy("Up to Date"), "", "ok"),
 }
 SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),
