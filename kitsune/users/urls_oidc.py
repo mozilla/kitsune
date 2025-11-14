@@ -1,12 +1,24 @@
 from django.urls import include, path, re_path
 from django.views.decorators.cache import never_cache
+from sentry_sdk import capture_exception
 
 from kitsune.users import views
+
+real_fxa_callback = views.FXAAuthenticationCallbackView.as_view()
+
+
+def fxa_callback_wrapper(request, *args, **kwargs):
+    try:
+        return real_fxa_callback(request, *args, **kwargs)
+    except Exception as err:
+        capture_exception(err)
+        raise err
+
 
 urlpatterns = [
     path(
         "fxa/callback/",
-        never_cache(views.FXAAuthenticationCallbackView.as_view()),
+        never_cache(fxa_callback_wrapper),
         name="users.fxa_authentication_callback",
     ),
     path(
