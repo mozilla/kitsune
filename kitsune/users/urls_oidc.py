@@ -1,8 +1,12 @@
+import logging
+
 from django.urls import include, path, re_path
 from django.views.decorators.cache import never_cache
 from sentry_sdk import capture_exception
 
 from kitsune.users import views
+
+log = logging.getLogger("k.fxa")
 
 real_fxa_callback = views.FXAAuthenticationCallbackView.as_view()
 
@@ -11,6 +15,7 @@ def fxa_callback_wrapper(request, *args, **kwargs):
     try:
         return real_fxa_callback(request, *args, **kwargs)
     except Exception as err:
+        log.error(err)
         capture_exception(err)
         raise err
 
