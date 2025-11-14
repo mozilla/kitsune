@@ -12,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
-from django.db.models import F, Q
+from django.db.models import Exists, F, OuterRef, Q
 from django.db.models.functions import Now
 from django.http import (
     Http404,
@@ -47,7 +47,13 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import AAQConfig, Answer, AnswerVote, Question, QuestionVote
+from kitsune.questions.models import (
+    AAQConfig,
+    Answer,
+    AnswerVote,
+    Question,
+    QuestionVote,
+)
 from kitsune.questions.utils import (
     get_ga_submit_event_parameters_as_json,
     get_mobile_product_from_ua,
@@ -246,7 +252,15 @@ def question_list(request, product_slug=None, topic_slug=None):
             if show == "spam":
                 question_qs = question_qs.spam()
 
-    question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
+    question_qs = question_qs.select_related(
+        "creator",
+        "last_answer",
+        "last_answer__creator",
+        "solution",
+        "solution__creator",
+        "topic",
+        "product",
+    )
     # Exclude questions over 90 days old without an answer or older than 2 years or created
     # by deactivated users. Use "__range" to ensure the database index is used in Postgres.
     today = date.today()
@@ -258,7 +272,10 @@ def question_list(request, product_slug=None, topic_slug=None):
         .filter(updated__range=(today - timedelta(days=365 * 2), Now()))
     )
 
-    question_qs = question_qs.prefetch_related("topic", "product")
+    question_qs = question_qs.prefetch_related("tags")
+
+    # Annotate with visit counts to avoid N+1 queries
+    question_qs = question_qs.annotate(visits_count=F("questionvisits__visits"))
 
     if not request.user.has_perm("flagit.can_moderate") or show != "spam":
         question_qs = question_qs.filter(is_spam=False)
@@ -268,6 +285,16 @@ def question_list(request, product_slug=None, topic_slug=None):
         question_qs = question_qs.filter(criteria).distinct()
     else:
         owner = None
+
+    # Annotate with is_contributor for authenticated users to avoid N+1 queries
+    if request.user.is_authenticated:
+        contributor_subquery = Answer.objects.filter(
+            question=OuterRef('pk'),
+            creator=request.user
+        )
+        question_qs = question_qs.annotate(
+            user_is_contributor=Exists(contributor_subquery) | Q(creator=request.user)
+        )
 
     feed_urls = (
         (

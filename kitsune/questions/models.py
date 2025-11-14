@@ -383,6 +383,8 @@ class Question(AAQBase):
     def is_contributor(self, user):
         """Did the passed in user contribute to this question?"""
         if user.is_authenticated:
+            if hasattr(self, 'user_is_contributor'):
+                return self.user_is_contributor
             return user.id in self.contributors
 
         return False
@@ -512,6 +514,10 @@ class Question(AAQBase):
     @property
     def num_visits(self):
         """Get the number of visits for this question."""
+        # Use annotation if it exists (from question_list view optimization)
+        if hasattr(self, 'visits_count'):
+            return self.visits_count
+
         if not hasattr(self, "_num_visits"):
             try:
                 self._num_visits = QuestionVisits.objects.get(question=self).visits
