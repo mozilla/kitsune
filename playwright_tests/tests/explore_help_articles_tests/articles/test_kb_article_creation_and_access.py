@@ -701,14 +701,10 @@ def test_edit_non_approved_articles(page: Page, create_user_factory):
 
     with allure.step("Verifying that both the first and second revisions are displayed"):
         expect(
-            sumo_pages.kb_article_show_history_page.get_a_particular_revision_locator(
-                article_details['first_revision_id']
-            )
+            sumo_pages.kb_article_show_history_page.revision(article_details['first_revision_id'])
         ).to_be_visible()
         expect(
-            sumo_pages.kb_article_show_history_page.get_a_particular_revision_locator(
-                second_revision['revision_id']
-            )
+            sumo_pages.kb_article_show_history_page.revision(second_revision['revision_id'])
         ).to_be_visible()
 
 

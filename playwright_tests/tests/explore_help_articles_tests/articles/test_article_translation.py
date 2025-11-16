@@ -116,11 +116,11 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page,
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
-        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button()
+        sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button(
+            revision_id=article_details['first_revision_id'])
 
     with allure.step("Navigating to the localization dashboard and verifying that the article is"
                      " displayed with the correct status"):
-        utilities.wait_for_given_timeout(2000)
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
@@ -161,7 +161,8 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
 
     with allure.step("Navigating to the localization dashboard and verifying that the correct"
                      " status is displayed"):
-        utilities.wait_for_given_timeout(2000)
+        expect(sumo_pages.kb_article_show_history_page.revision_status(
+            article_details["first_revision_id"])).to_be_visible()
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
@@ -184,7 +185,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
 
     with allure.step("Navigating to the localization dashboard and verifying that the correct"
                      " status is displayed"):
-        utilities.wait_for_given_timeout(2000)
+        sumo_pages.kb_article_show_history_page.is_revision_current(translation['revision_id'])
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
@@ -203,7 +204,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
 
     with allure.step("Navigating to the localization dashboard an verifying that the correct"
                      " status is displayed"):
-        utilities.wait_for_given_timeout(2000)
+        sumo_pages.kb_article_show_history_page.is_revision_current(translation['revision_id'])
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
@@ -252,10 +253,10 @@ def test_revisions_cannot_be_marked_as_ready_for_l10n_if_lacking_permissions(pag
             article_details['first_revision_id']
         )
         utilities.wait_for_given_timeout(2000)
-        expect(sumo_pages.kb_article_show_history_page.get_l10n_modal_locator()).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.l10n_modal).to_be_hidden()
 
         expect(
-            sumo_pages.kb_article_show_history_page.get_ready_for_localization_status(
+            sumo_pages.kb_article_show_history_page.ready_for_localization_status(
                 article_details['first_revision_id']
             )
         ).to_be_hidden()
