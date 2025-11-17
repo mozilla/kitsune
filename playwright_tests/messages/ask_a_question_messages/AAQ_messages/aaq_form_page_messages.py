@@ -11,5 +11,5 @@ class AAQFormMessages:
     LOGINLESS_RATELIMIT_REACHED_MESSAGE = "You've exceeded the number of submissions for today."
 
     def get_premium_ticket_submission_success_message(self, user_email: str) -> str:
-        return (f"Done! Thank you for reaching out Mozilla Support. We've sent a confirmation "
-                f"email to {user_email}")
+        return (f"Thank you for reaching out to Mozilla Support. We're reviewing your submission "
+                f"and will send a confirmation email to {user_email} shortly.")

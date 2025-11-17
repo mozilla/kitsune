@@ -1,15 +1,17 @@
-from playwright.sync_api import ElementHandle, Locator, Page
-
+from playwright.sync_api import ElementHandle, Page
 from playwright_tests.core.basepage import BasePage
 
 
 class QuestionPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
-        # Breadcrumb locators.
+
+        """Locators belonging to the page breadcrumbs."""
         self.question_breadcrumb = lambda question_title: page.locator(
             "ol#breadcrumbs").get_by_role("listitem", name=question_title, exact=True)
-        # "Posted successfully" green banner locators.
+        self.aaq_page_breadcrumbs = page.locator("ol#breadcrumbs li a")
+
+        """Locators belonging to the 'Posted successfully' green banner."""
         self.posted_questions_success_banner_message = page.locator(
             "ul[class='user-messages'] li p")
         self.posted_questions_success_banner_my_questions_link = page.locator(
@@ -26,7 +28,7 @@ class QuestionPage(BasePage):
         self.problem_solved_banner_text = page.locator(
             "li[class='mzp-c-notification-bar mzp-t-success'] p")
 
-        # Problem solved locators.
+        """Locators belonging to the problem solved section."""
         self.problem_solved_reply_text = page.locator("div[class='reply'] p")
         self.problem_solved_reply_section = page.locator("div[class='solution card elevation-00']")
         self.problem_solved_reply_section_header = page.locator("h4[class='is-solution']")
@@ -37,7 +39,7 @@ class QuestionPage(BasePage):
         self.reply_solution_header = lambda reply_id: page.locator(
             f"div#{reply_id} h3[class='is-solution']")
 
-        # Question locators.
+        """Genera question locators."""
         self.question_author = page.locator("div[class='question'] span[class='display-name']")
         self.questions_header = page.locator(
             "h2[class='sumo-callout-heading summary no-product-heading']")
@@ -45,14 +47,11 @@ class QuestionPage(BasePage):
         self.modified_question_section = page.locator("p[class='edited text-body-sm']")
         self.question = lambda question_id: page.locator(f"div#{question_id}")
 
-        # Progress bar locators.
+        """Locators belonging to the progress bar section."""
         self.complete_progress_items_label = page.locator(
             "li[class='progress--item is-complete'] span[class='progress--label']")
 
-        # Breadcrumbs locators.
-        self.aaq_page_breadcrumbs = page.locator("ol#breadcrumbs li a")
-
-        # Question details locators.
+        """Locators belonging to the question details section."""
         self.question_details_button = page.locator("button[aria-controls='question-details']")
         self.question_details_product = page.locator("//div[@id='question-details']//span"
                                                      "[text()='Product:']/following-sibling::span")
@@ -67,11 +66,11 @@ class QuestionPage(BasePage):
             "div[class='about-support'] p").get_by_text(text, exact=True)
         self.question_section = page.locator("article div[class='question']")
 
-        # Searchbar locators.
+        """Locators belonging to the searchbar section."""
         self.search_support_searchbar = page.locator("form#support-search-sidebar input")
         self.search_support_search_button = page.locator("form#support-search-sidebar button")
 
-        # Question Tools locators.
+        """Locators belonging to the Question Tools section."""
         self.edit_this_question_option = page.locator("ul#related-content li[class='edit'] a")
         self.stop_email_updates_option = page.locator("ul#related-content li[class='email'] a")
         self.subscribe_to_feed_option = page.locator("ul#related-content li[class='rss'] a")
@@ -81,7 +80,7 @@ class QuestionPage(BasePage):
         self.system_details_options = page.locator("div#system-details ul[class='system'] li")
         self.mark_as_spam_option = page.locator("ul#related-content form[class='spam-form cf'] a")
 
-        # Tags section locators.
+        """Locators belonging to the tags section."""
         self.question_tags_options_for_non_moderators = page.locator("li[class='tag'] a")
         self.question_tags_options_for_moderators = page.locator("div[class='ts-control'] div")
         self.add_a_tag_input_field = page.locator("input[id*='tag-select']")
@@ -94,7 +93,7 @@ class QuestionPage(BasePage):
             "//a[@class='tag-name' and normalize-space(text())='test']/following-sibling::"
             "a[@class='remove']")
 
-        # Post a reply section locators.
+        """Locators belonging to the post a reply section."""
         self.post_a_reply_section_heading = page.locator("h3[class='sumo-card-heading']")
         self.post_a_reply_textarea = page.locator("textarea#id_content")
         self.post_a_reply_textarea_bold_button = page.locator("button[title='Bold']")
@@ -129,7 +128,7 @@ class QuestionPage(BasePage):
         self.username_of_posted_quote_owner = lambda reply_id: page.locator(
             f"div#{reply_id} div[class='content'] em p")
         self.posted_reply_said_link = lambda reply_id: page.locator(
-            f"div#{reply_id} div[class='content'] a")
+            f"//div[@id='{reply_id}']//div[@class='content']//a[text()='said']")
         self.blockquote_reply = lambda reply_id: page.locator(
             f"div#{reply_id} div[class='content'] blockquote")
         self.modified_by_text = lambda reply_id: page.locator(
@@ -160,7 +159,7 @@ class QuestionPage(BasePage):
             f"div#{reply_id} button[name='not-helpful'] strong[class='helpful-count']")
         self.response_time = lambda reply_id: page.locator(f"div#{reply_id} time time")
 
-        # Common Responses locators.
+        """Locators belonging to the Common Responses section."""
         self.common_responses_option = page.locator("a[title='Common responses']")
         self.common_responses_search_field = page.locator("input#filter-responses-field")
         self.common_responses_modal_close_button = page.locator("div#media-modal a")
@@ -179,32 +178,34 @@ class QuestionPage(BasePage):
         self.response_option = lambda option: page.locator(
             "ul[class='sidebar-nav'] li").get_by_text(option, exact=True)
 
-        # I have this problem too locators.
+        """Locators belonging to the 'I have this problem too' section.'"""
         self.i_have_this_problem_too_button = page.locator("div[class='me-too'] button")
         self.i_have_this_problem_too_counter = page.locator(
             "span[class='forum--meta-val have-problem']")
+        self.i_have_this_problem_too_no_thanks_button = page.locator(
+            "//section[@id='vote-thanks']//a[text()='No Thanks']")
 
-        # Needs more information from the user locators.
+        """Locators belonging to the 'Needs more information from' section."""
         self.needs_more_information_from_the_user_checkbox = page.locator("input#id_needs_info")
         self.more_information_panel_header = page.locator(
             "section#more-system-details").get_by_role("heading").filter(
             has_text="More Information")
 
-        # Attached image locators.
+        """Locators belonging to the attached image section."""
         self.attached_image = page.locator("a[class='image'] img")
         self.add_image_button = page.locator("div[class='field add-attachment']")
 
-        # Preview Reply button locators.
+        """Locators belonging to the preview reply button section."""
         self.preview_reply_button = page.locator("input#preview")
 
-        # Post Reply button locators.
+        """Locators belonging to the post reply button."""
         self.post_reply_button = page.get_by_role("button", name="Post Reply", exact=True)
 
-        # Delete question locators.
+        """Locators belonging to the delete question section."""
         self.delete_question_delete_button = page.locator("input[value='Delete']")
         self.delete_question_cancel_button = page.get_by_role("link").filter(has_text="Cancel")
 
-        # Report abuse section.
+        """Locators belonging to the report abuse section."""
         self.report_abuse_submit_button = page.locator(
             "div[class='mzp-c-modal-inner'] button[type='submit']")
         self.report_abuse_textarea = page.locator("div[class='mzp-c-modal-inner'] textarea")
@@ -215,7 +216,7 @@ class QuestionPage(BasePage):
         self.report_answer_as_abuse = lambda answer_id: page.locator(
             f"div#{answer_id}").get_by_role("link", name="Report Abuse", exact=True)
 
-        # Signed out card locators.
+        """Locators belonging to the signed out card."""
         self.log_in_to_your_account_signed_out_card_option = page.locator(
             "div[class='question-tools ask-a-question card is-shaded'] p").get_by_role(
             "link", name="log in to your account", exact=True)
@@ -229,14 +230,14 @@ class QuestionPage(BasePage):
             "div[class='question-tools ask-a-question card is-shaded']").get_by_role(
             "button", name="I have this problem, too", exact=True)
 
-    # Spam marked banner actions.
+    """Actions against the spam marked banner locators."""
     def get_text_of_spam_marked_banner(self) -> str:
         return self._get_text_of_element(self.reply_flagged_as_spam_banner)
 
     def is_spam_marked_banner_displayed(self) -> bool:
         return self._is_element_visible(self.reply_flagged_as_spam_banner)
 
-    # Report abuse actions.
+    """Actions against the report abuse section locators."""
     def click_abuse_modal_close_button(self):
         self._click(self.report_abuse_modal_close_button)
 
@@ -249,26 +250,16 @@ class QuestionPage(BasePage):
     def click_on_report_abuse_submit_button(self):
         self._click(self.report_abuse_submit_button)
 
-    # Breadcrumbs actions.
-    def get_current_breadcrumb_locator(self, question_title: str) -> Locator:
-        return self.question_breadcrumb(question_title)
-
+    """Actions against the breadcrumbs locators."""
     def click_on_breadcrumb(self, breadcrumb_xpath: str):
         self._click(breadcrumb_xpath)
 
-    # Get email updates actions.
-    def get_email_updates_option(self) -> Locator:
-        return self.stop_email_updates_option
-
-    # Problem solved actions.
+    """Actions against the Problem solved section locators."""
     def get_problem_solved_section_header_text(self) -> str:
         return self._get_text_of_element(self.problem_solved_reply_section_header)
 
     def click_on_undo_button(self):
         self._click(self.undo_solves_problem)
-
-    def get_undo_button_locator(self) -> Locator:
-        return self.undo_solves_problem
 
     def click_read_this_answer_in_context_link(self):
         self._click(self.problem_solved_reply_reply_link)
@@ -276,38 +267,30 @@ class QuestionPage(BasePage):
     def get_chosen_solution_text(self) -> str:
         return self._get_text_of_element(self.problem_solved_reply_text)
 
-    def get_chosen_solution_section_locator(self) -> Locator:
-        return self.problem_solved_reply_section
-
     def is_solution_section_displayed(self) -> bool:
         return self._is_element_visible(self.problem_solved_reply_section)
 
     def get_solved_problem_banner_text(self) -> str:
         return self._get_text_of_element(self.problem_solved_banner_text)
 
-    def get_solved_the_problem_button_locator(self, target_reply_id: str) -> Locator:
-        return self.reply_solves_the_problem(target_reply_id)
-
     def get_chosen_solution_reply_message(self, reply_id: str) -> str:
         return self._get_text_of_element(self.reply_solution_header(reply_id))
 
-    def get_chosen_solution_reply_message_locator(self, reply_id: str) -> Locator:
-        return self.reply_solution_header(reply_id)
-
-    # I have this problem too actions.
-    def get_i_have_this_problem_too_locator(self) -> Locator:
-        return self.i_have_this_problem_too_button
-
+    """Actions against the I have this problem too locators."""
     def click_i_have_this_problem_too_button(self):
-        self._click(self.i_have_this_problem_too_button)
+        self._click(self.i_have_this_problem_too_button,
+                    expected_locator=self.i_have_this_problem_too_no_thanks_button)
 
     def get_i_have_this_problem_too_counter(self) -> int:
         return int(self._get_text_of_element(self.i_have_this_problem_too_counter))
 
+    def click_on_i_have_this_problem_no_thanks_button(self):
+        self._click(self.i_have_this_problem_too_no_thanks_button)
+
     def get_last_reply_by_text(self) -> str:
         return self._get_text_of_element(self.last_reply_by)
 
-    # Page content actions.
+    """Actions against the general page locators."""
     def get_question_header(self) -> str:
         return self._get_text_of_element(self.questions_header)
 
@@ -323,14 +306,8 @@ class QuestionPage(BasePage):
     def get_question_id(self) -> str:
         return self._get_element_attribute_value(self.question_section, 'id')
 
-    def get_modified_question_locator(self) -> Locator:
-        return self.modified_question_section
-
     def get_modified_by_text(self) -> str:
         return self._get_text_of_element(self.modified_question_section)
-
-    def get_add_image_section_locator(self) -> Locator:
-        return self.add_image_button
 
     def click_on_my_questions_banner_option(self):
         self._click(self.posted_questions_success_banner_my_questions_link)
@@ -351,52 +328,27 @@ class QuestionPage(BasePage):
     def get_display_name_of_question_reply_author(self, reply_id: str) -> str:
         return self._get_text_of_element(self.reply_author_display_name(reply_id))
 
-    def get_displayed_user_title_of_question_reply_locator(self, reply_id: str) -> Locator:
-        return self.reply_user_title(reply_id)
-
     def get_displayed_user_title_of_question_reply(self, reply_id: str) -> str:
         return self._get_text_of_element(self.reply_user_title(reply_id))
 
-    # Question tag actions.
+    """Actions against the question tag section locators."""
     def get_question_tag_options(self, is_moderator: bool) -> list[str]:
         return [tag.replace("\n×", "") for tag in self._get_text_of_elements(
             self.question_tags_options_for_moderators if is_moderator else self
             .question_tags_options_for_non_moderators)]
-
-    def get_remove_tag_button_locator(self, tag_name: str) -> Locator:
-        return self.delete_tag(tag_name)
 
     def add_text_to_add_a_tag_input_field(self, text: str):
         self._fill(self.add_a_tag_input_field, text)
         self._wait_for_given_timeout(2000)
         self._press_a_key(self.add_a_tag_input_field, "Enter")
 
-    def get_add_a_tag_input_field(self) -> Locator:
-        return self.add_a_tag_input_field
-
     def click_on_a_certain_tag(self, tag_name: str, expected_locator):
         self._click(self.tag_by_name(tag_name), expected_locator=expected_locator)
-
-    def get_a_certain_tag(self, tag_name: str) -> Locator:
-        return self.tag(tag_name)
 
     def click_on_tag_remove_button(self, tag_name: str):
         self._click(self.delete_tag(tag_name))
 
-    # Attached image actions.
-    def get_attached_image(self) -> Locator:
-        return self.attached_image
-
-    # Question more information actions.
-    def get_more_information_with_text_locator(self, text: str) -> Locator:
-        return self.more_information_with_text(text)
-
-    def get_question_details_button_locator(self) -> Locator:
-        return self.question_details_button
-
-    def get_more_information_locator(self) -> Locator:
-        return self.more_information_panel_header
-
+    """Actions against the more information section locators."""
     def get_user_agent_information(self) -> str:
         self._wait_for_locator(self.more_system_details_modal)
         return self._get_text_of_element(self.user_agent_information)
@@ -419,32 +371,17 @@ class QuestionPage(BasePage):
     def click_on_the_additional_system_panel_close(self):
         self._click(self.close_additional_system_details_button)
 
-    def get_reply_section_locator(self, answer_id: str) -> Locator:
-        return self.reply_section(answer_id)
-
     def click_on_reply_more_options_button(self, answer_id: str):
         self._click(self.more_options_for_answer(answer_id))
 
     def click_on_report_abuse_for_a_certain_reply(self, answer_id: str):
         self._click(self.report_answer_as_abuse(answer_id))
 
-    def get_click_on_report_abuse_reply_locator(self, answer_id: str) -> Locator:
-        return self.report_answer_as_abuse(answer_id)
-
     def click_on_quote_for_a_certain_reply(self, answer_id: str):
         self._click(self.quote_reply(answer_id))
 
-    def get_quote_reply_locator(self, answer_id: str) -> Locator:
-        return self.quote_reply(answer_id)
-
     def click_on_mark_as_spam_for_a_certain_reply(self, answer_id: str):
         self._click(self.mark_reply_as_spam(answer_id))
-
-    def get_mark_as_spam_reply_locator(self, answer_id: str) -> Locator:
-        return self.mark_reply_as_spam(answer_id)
-
-    def get_marked_as_spam_locator(self, answer_id: str) -> Locator:
-        return self.marked_as_spam(answer_id)
 
     def get_marked_as_spam_text(self, answer_id: str) -> str:
         return self._get_text_of_element(self.marked_as_spam(answer_id))
@@ -452,36 +389,24 @@ class QuestionPage(BasePage):
     def click_on_edit_this_post_for_a_certain_reply(self, answer_id: str):
         self._click(self.edit_this_post_for_answer(answer_id))
 
-    def get_edit_this_post_reply_locator(self, answer_id: str) -> Locator:
-        return self.edit_this_post_for_answer(answer_id)
-
     def click_on_delete_this_post_for_a_certain_reply(self, answer_id: str):
         self._click(self.delete_this_post_for_answer(answer_id))
-
-    def get_delete_this_post_reply_locator(self, answer_id: str) -> Locator:
-        return self.delete_this_post_for_answer(answer_id)
 
     def click_on_cancel_delete_button(self):
         self._click(self.delete_question_cancel_button)
 
-    # Post a reply actions.
+    """Actions against the post a reply section locators."""
     def add_text_to_post_a_reply_textarea(self, text: str):
         self._fill(self.post_a_reply_textarea, text)
 
     def type_inside_the_post_a_reply_textarea(self, text: str):
         self._type(self.post_a_reply_textarea, text, 100)
 
-    def get_post_a_reply_textarea_locator(self) -> Locator:
-        return self.post_a_reply_textarea
-
     def get_post_a_reply_textarea_text(self) -> str:
         return self._get_text_of_element(self.post_a_reply_textarea)
 
     def get_post_a_reply_textarea_value(self) -> str:
         return self._get_element_input_value(self.post_a_reply_textarea)
-
-    def get_posted_reply_locator(self, question_id: str) -> Locator:
-        return self.question(question_id)
 
     def get_posted_reply_text(self, reply_id: str) -> str:
         return self._get_text_of_element(self.posted_reply_text(reply_id))
@@ -498,45 +423,18 @@ class QuestionPage(BasePage):
     def get_posted_reply_modified_by_text(self, reply_id: str) -> str:
         return self._get_text_of_element(self.modified_by_text(reply_id))
 
-    def get_posted_reply_modified_by_locator(self, reply_id: str) -> Locator:
-        return self.modified_by_text(reply_id)
-
     def click_on_post_reply_button(self, repliant_username) -> str:
         self._click(self.post_reply_button,
                     expected_locator=self.repliant_username(repliant_username))
         return self._get_element_attribute_value(self.answer_by_username(repliant_username), "id")
 
-    # Question Tools actions.
-    def get_edit_this_question_option_locator(self) -> Locator:
-        return self.edit_this_question_option
-
-    def get_delete_this_question_locator(self) -> Locator:
-        return self.delete_this_question_option
-
-    def get_lock_this_question_locator(self) -> Locator:
-        return self.lock_this_question_option
-
-    # Stands for archived banner as well
+    """Actions against the question tools section locators."""
     def get_thread_locked_text(self) -> str:
+        # Stands for archived banner as well
         return self._get_text_of_element(self.lock_this_thread_banner)
-
-    def get_thread_locked_locator(self) -> Locator:
-        return self.lock_this_thread_banner
 
     def is_thread_locked_banner_displayed(self) -> bool:
         return self._is_element_visible(self.lock_this_thread_banner)
-
-    def get_archive_this_question_locator(self) -> Locator:
-        return self.archive_this_question_option
-
-    def get_needs_more_information_checkbox_locator(self) -> Locator:
-        return self.needs_more_information_from_the_user_checkbox
-
-    def get_mark_as_spam_locator(self) -> Locator:
-        return self.mark_as_spam_option
-
-    def get_marked_as_spam_banner_locator(self) -> Locator:
-        return self.marked_as_spam_banner
 
     def get_marked_as_spam_banner_text(self) -> str:
         return self._get_text_of_element(self.marked_as_spam_banner)
@@ -571,10 +469,7 @@ class QuestionPage(BasePage):
     def is_reply_with_content_displayed(self, reply_content: str) -> bool:
         return self._is_element_visible(self.reply_by_content(reply_content))
 
-    # Votes reply section
-    def get_reply_votes_section_locator(self, reply_id: str) -> Locator:
-        return self.reply_vote_section(reply_id)
-
+    """Actions against the reply votes section locators."""
     def get_reply_vote_heading(self, reply_id: str) -> str:
         return self._get_text_of_element(self.reply_vote_heading(reply_id))
 
@@ -584,11 +479,6 @@ class QuestionPage(BasePage):
     def get_thumbs_up_vote_message(self, reply_id: str) -> str:
         return self._get_text_of_element(self.reply_vote_thumbs_up_message(reply_id))
 
-    def get_thumbs_up_button_locator(self, reply_id: str) -> Locator:
-        return self.reply_vote_thumbs_up(reply_id)
-
-    def get_thumbs_down_button_locator(self, reply_id: str) -> Locator:
-        return self.reply_vote_thumbs_down(reply_id)
 
     def click_reply_vote_thumbs_down_button(self, reply_id):
         self._click(self.reply_vote_thumbs_down(reply_id))
@@ -599,7 +489,7 @@ class QuestionPage(BasePage):
     def get_not_helpful_count(self, reply_id) -> str:
         return self._get_text_of_element(self.unhelpful_count(reply_id))
 
-    # Signed out card actions.
+    """Actions against the signed out card locators."""
     def click_on_log_in_to_your_account_signed_out_card_link(self):
         self._click(self.log_in_to_your_account_signed_out_card_option)
 
@@ -609,17 +499,10 @@ class QuestionPage(BasePage):
     def click_on_ask_a_question_signed_out_card_option(self):
         self._click(self.ask_a_question_signed_out_card_option)
 
-    def ask_a_question_signed_out_card_option_locator(self) -> Locator:
-        return self.ask_a_question_signed_out_card_option
-
     def click_on_i_have_this_problem_too_signed_out_card_option(self):
         self._click(self.i_have_this_problem_too_signed_out_card_option)
 
-    def get_i_have_this_problem_too_signed_out_card_locator(self) -> Locator:
-        return self.i_have_this_problem_too_signed_out_card_option
-
-    # Common responses actions.
-
+    """Actions against the common responses section locators."""
     def click_on_common_responses_option(self):
         self._click(self.common_responses_option)
 
@@ -641,8 +524,8 @@ class QuestionPage(BasePage):
     def click_on_a_particular_response_option(self, option: str):
         self._click(self.response_option(option))
 
-    # Removing both newline characters and link syntax format.
     def get_text_of_response_editor_textarea_field(self) -> str:
+        # Removing both newline characters and link syntax format.
         return (self._get_element_input_value(self.common_responses_textarea_field)
                 .replace("\n", "")
                 .replace("[", "")

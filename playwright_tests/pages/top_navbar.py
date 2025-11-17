@@ -1,18 +1,20 @@
 from playwright.sync_api import ElementHandle, Locator, Page
-
 from playwright_tests.core.basepage import BasePage
+from playwright_tests.pages.contribute.contributor_tools_pages.recent_revisions_page import \
+    RecentRevisions
 
 
 class TopNavbar(BasePage):
     def __init__(self, page: Page):
+        self.recent_revisions = RecentRevisions(page)
         super().__init__(page)
 
-        # General page locators
+        """General page locators."""
         self.menu_titles = page.locator("div#main-navigation a.mzp-c-menu-title")
         self.sumo_nav_logo = page.locator(
             "div.sumo-nav--logo").get_by_role("link").get_by_role("img")
 
-        # Locators belonging to the 'Explore Help Articles' top-navbar section.
+        """Locators belonging to the 'Explore Help Articles' top-navbar section."""
         self.explore_by_topic_top_navbar_header = page.locator(
             "h4.mzp-c-menu-item-title").filter(has_text="Explore by topic")
         self.explore_by_product_top_navbar_header = page.locator(
@@ -27,7 +29,7 @@ class TopNavbar(BasePage):
         self.explore_by_topic_top_navbar_options = page.locator(
             "//h4[text()='Explore by topic']/../following-sibling::ul/li/a")
 
-        # Locators belonging to the 'Ask a Question' top-navbar section.
+        """Locators belonging to the 'Ask a Question' top-navbar section."""
         self.ask_a_question_top_navbar = page.locator(
             "li[class='mzp-c-menu-category mzp-has-drop-down mzp-js-expandable']").filter(
             has_text="Ask a Question")
@@ -41,7 +43,7 @@ class TopNavbar(BasePage):
         self.browse_all_products_option = page.locator(
             "div#main-navigation").get_by_role("link", name="View all", exact=True)
 
-        # Locators belonging to the 'Community Forums' top-navbar section.
+        """Locators belonging to the 'Community Forums' top-navbar section."""
         self.browse_by_product_top_navbar_header = page.locator(
             "h4.mzp-c-menu-item-title").filter(has_text="Browse by product")
         self.browse_all_forum_threads_by_topic_top_navbar_header = page.locator(
@@ -55,7 +57,7 @@ class TopNavbar(BasePage):
         self.firefox_desktop_option = page.locator("//a[text()='Firefox desktop']")
         self.view_all_forums = page.locator("//a[normalize-space(text())='View all forums']")
 
-        # Locators belonging to the 'Contribute' top-navbar section.
+        """Locators belonging to the 'Contribute' top-navbar section."""
         self.contribute_option = page.get_by_role("link").filter(has_text="Contribute")
         self.contributor_discussions_top_navbar_header = page.locator(
             "h4.mzp-c-menu-item-title").filter(has_text="Contributor discussions")
@@ -83,7 +85,7 @@ class TopNavbar(BasePage):
             "ul[class='mzp-c-menu-item-list sumo-nav--sublist']").get_by_role("link").filter(
             has_text="Community hub")
 
-        # Locators belonging to the 'Sign In/Up' top-navbar section.
+        """Locators belonging to the 'Sign in/up' top-navbar section."""
         self.signin_signup_button = page.locator("div#profile-navigation").get_by_role(
             "link").filter(has_text="Sign In/Up")
         self.signed_in_username = page.locator("span.sumo-nav--username")
@@ -102,9 +104,7 @@ class TopNavbar(BasePage):
             "div#profile-navigation div.avatar-container-message-alert")
         self.unread_message_count = page.locator("span.message-count-alert")
 
-    """
-        Actions against the top-navbar logo.
-    """
+    """Actions against the top-navbar logo."""
     def get_sumo_nav_logo(self) -> ElementHandle:
         """Get sumo nav logo element handle"""
         return self._get_element_handle(self.sumo_nav_logo)
@@ -113,9 +113,7 @@ class TopNavbar(BasePage):
         """Click on the sumo nav logo"""
         self._click(self.sumo_nav_logo)
 
-    """
-        Actions against the 'Explore Help Articles' top-navbar section.
-    """
+    """Actions against the 'Explore Help Articles' top-navbar section."""
     def hover_over_explore_by_product_top_navbar_option(self):
         """Hover over the 'Explore by product' top-navbar option"""
         self._hover_over_element(self.explore_help_articles_top_navbar_option)
@@ -135,9 +133,8 @@ class TopNavbar(BasePage):
         """Click on the 'View all products' option"""
         self.hover_over_explore_by_product_top_navbar_option()
         self._click(self.explore_our_help_articles_view_all_option)
-    """
-        Actions against the 'Community Forums' top-navbar section.
-    """
+
+    """Actions against the 'Community Forums' top-navbar section."""
     def hover_over_community_forums_top_navbar_option(self):
         """Hover over the 'Community Forums' top-navbar option"""
         self._hover_over_element(self.community_forums_top_navbar_option)
@@ -163,10 +160,7 @@ class TopNavbar(BasePage):
         self.hover_over_community_forums_top_navbar_option()
         self._click(self.view_all_forums)
 
-
-    """
-        Actions against the 'Ask a Question' top-navbar section.
-    """
+    """Actions against the 'Ask a Question' top-navbar section."""
     def hover_over_ask_a_question_top_navbar(self):
         """Hover over the 'Ask a Question' top-navbar option"""
         self._hover_over_element(self.ask_a_question_top_navbar)
@@ -182,9 +176,7 @@ class TopNavbar(BasePage):
         self.hover_over_ask_a_question_top_navbar()
         self._click(self.browse_all_products_option)
 
-    """
-        Actions against the 'Contribute' top-navbar section.
-    """
+    """Actions against the 'Contribute' top-navbar section."""
     def hover_over_contribute_top_navbar(self):
         """Hover over the 'Contribute' top-navbar option"""
         self._hover_over_element(self.contribute_option)
@@ -209,7 +201,7 @@ class TopNavbar(BasePage):
         self.hover_over_contribute_top_navbar()
         self._click(self.article_discussions_option)
 
-    # Contributor tools
+    """Actions against the Contributor Tools."""
     def click_on_moderate_forum_content_option(self):
         """Click on the 'Moderate forum content' option"""
         self.hover_over_contribute_top_navbar()
@@ -219,6 +211,7 @@ class TopNavbar(BasePage):
         """Click on the 'Recent revisions' option"""
         self.hover_over_contribute_top_navbar()
         self._click(self.recent_revisions_option)
+        self._wait_for_locator(self.recent_revisions.revisions_table, 5000)
 
     def click_on_dashboards_option(self):
         """Click on the 'Knowledge base dashboards' option"""
@@ -240,9 +233,7 @@ class TopNavbar(BasePage):
         self.hover_over_contribute_top_navbar()
         self._click(self.community_hub_option)
 
-    """
-        Actions against the sign-in/sign-up top-navbar section.
-    """
+    """Actions against the sign-in/sign-up top-navbar section."""
     def click_on_signin_signup_button(self):
         """Click on the 'Sign In/Up' button"""
         self._click(self.signin_signup_button)
@@ -257,17 +248,7 @@ class TopNavbar(BasePage):
         self.mouse_over_profile_avatar()
         self._click(self.sign_out_button)
 
-    def sign_in_up_button_displayed_element(self) -> Locator:
-        """Get the 'Sign In/Up' button displayed element locator"""
-        return self.signin_signup_button
-
-    def is_sign_in_up_button_displayed(self) -> bool:
-        """Check if the 'Sign In/Up' button is displayed"""
-        return self._is_element_visible(self.signin_signup_button)
-
-    """
-        Actions against the user profile top-navbar section.
-    """
+    """Actions against the user profile top-navbar section."""
     def click_on_view_profile_option(self):
         """Click on the 'View Profile' option"""
         self.mouse_over_profile_avatar()
@@ -312,21 +293,11 @@ class TopNavbar(BasePage):
         """Get the text of the logged in username"""
         return self._get_text_of_element(self.signed_in_username)
 
-    def is_unread_message_notification_displayed(self) -> bool:
-        """Check if the unread message notification is displayed"""
-        return self._is_element_visible(self.unread_message_profile_notification)
-
     def get_unread_message_notification_counter_value(self) -> int:
         """Get the unread message notification counter value"""
         return int(self._get_text_of_element(self.unread_message_count))
 
-    def is_unread_message_notification_counter_visible(self) -> bool:
-        """Check if the unread message notification counter is visible"""
-        return self._is_element_visible(self.unread_message_count)
-
-    """
-        General actions against the top-navbar section.
-    """
+    """General actions against the top-navbar section."""
     def get_available_menu_titles(self) -> list[str]:
         """Get the available menu titles"""
         return self._get_text_of_elements(self.menu_titles)

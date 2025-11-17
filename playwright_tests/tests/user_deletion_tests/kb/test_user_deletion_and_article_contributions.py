@@ -19,8 +19,8 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
 
     with allure.step("Signing in with the first test user and creating a new kb article"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
-            page=page, approve_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
 
     with allure.step("Signing in with the second account and creating a new revision"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -70,7 +70,6 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
     with allure.step("Deleting the test article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-
 # C2952003, C2952016
 @pytest.mark.smokeTest
 @pytest.mark.userDeletion
@@ -82,7 +81,7 @@ def test_unreviewed_revisions_are_not_assigned_to_system_account(page: Page, cre
 
     with allure.step("Signing in with the first test user and creating a new kb article"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
         sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with allure.step("Navigating to the 'Edit profile' and delete the account via the "
@@ -102,12 +101,11 @@ def test_deferred_revisions_are_not_assigned_to_system_account(page:Page, create
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
-    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
 
     with allure.step("Creating a new article and approving it's first revision"):
         utilities.start_existing_session(cookies=test_user_two)
-        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
-            page=page, approve_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
 
     with allure.step("Signing in with a different user and submitting a new article revision "
                      "without approving it"):
@@ -126,10 +124,6 @@ def test_deferred_revisions_are_not_assigned_to_system_account(page:Page, create
         assert not sumo_pages.kb_article_show_history_page.is_revision_displayed(
             second_revision["revision_id"])
 
-    with allure.step("Deleting the article"):
-        utilities.start_existing_session(session_file_name=staff_user)
-        sumo_pages.kb_article_deletion_flow.delete_kb_article()
-
 
 #  C2979501, C2979502
 @pytest.mark.smokeTest
@@ -141,10 +135,10 @@ def test_localization_revisions_are_assigned_to_system_account(page: Page, creat
     staff = utilities.username_extraction_from_email(utilities.staff_user)
 
     with allure.step("Signing in with the KB reviewer and creating a new kb article, approving "
-                     "it's first revision and markit it as ready for localization"):
+                     "it's first revision and marking it as ready for localization"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
-            page=page, approve_revision=True, ready_for_l10n=True)
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True, ready_for_localization=True)
 
     with allure.step("Deleting the user"):
         sumo_pages.edit_profile_flow.close_account()
@@ -159,7 +153,6 @@ def test_localization_revisions_are_assigned_to_system_account(page: Page, creat
     with allure.step("Deleting the article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-
 # C2979502
 @pytest.mark.userDeletion
 def test_reviewed_by_assignment_to_system_account(page: Page, create_user_factory):
@@ -167,11 +160,10 @@ def test_reviewed_by_assignment_to_system_account(page: Page, create_user_factor
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
-    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
 
     with allure.step("Signing in and creating a new kb article"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
+        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
     with allure.step("Signing in with a KB reviewer and approving the revision"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -202,6 +194,5 @@ def test_reviewed_by_assignment_to_system_account(page: Page, create_user_factor
             second_revision["revision_id"])
         assert sumo_pages.kb_article_preview_revision_page.get_reviewed_by_text() == "SumoBot"
 
-    with allure.step("Deleting the revision"):
-        utilities.start_existing_session(session_file_name=staff_user)
+    with allure.step("Deleting the article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()

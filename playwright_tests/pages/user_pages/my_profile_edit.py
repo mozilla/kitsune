@@ -1,5 +1,5 @@
-from playwright.sync_api import Locator, Page
-
+import re
+from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,15 +7,15 @@ class MyProfileEdit(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Access denied section
+        """Locators belonging to the Access Denied section."""
         self.access_denied_main_header = page.locator("article#error-page h1")
         self.access_denied_subheading_message = page.locator("div[class='center-on-mobile'] p")
 
-        # Navbar section
+        """Locators belonging to the navbar section."""
         self.my_profile_user_navbar_options = page.locator("ul#user-nav li a")
         self.my_profile_user_navbar_selected_element = page.locator("a[class='selected']")
 
-        # Edit profile page
+        """Locators belonging to the edit profile page."""
         self.edit_my_profile_edit_input_form = page.locator("article#edit-profile form")
         self.edit_my_profile_main_header = page.locator("h1[class='sumo-page-heading']")
         self.manage_firefox_account_button = page.get_by_role("link").filter(
@@ -45,7 +45,7 @@ class MyProfileEdit(BasePage):
         self.update_my_profile_button = page.get_by_role("button").filter(
             has_text="Update My Profile")
 
-        # Locators belonging to the close account modal.
+        """Locators belonging to the close account modal."""
         self.close_account_and_delete_all_profile_information_link = page.locator(
             "p.delete-account-link a")
         self.close_account_username_modal = page.locator("input#delete-profile-confirmation-input")
@@ -285,8 +285,7 @@ class MyProfileEdit(BasePage):
 
     def click_close_account_button(self):
         """Click the close account button in the close account modal"""
-        self._click(self.close_account_delete_button,
-                    expected_url="https://support.allizom.org/en-US/users/close_account",
+        self._click(self.close_account_delete_button, expected_url=re.compile(r"close_account$"),
                     retries=2)
 
     def is_delete_your_account_button_disabled(self) -> bool:
@@ -308,7 +307,3 @@ class MyProfileEdit(BasePage):
     def is_make_email_visible_checkbox_selected(self) -> bool:
         """Return True if the make email visible checkbox is selected"""
         return self._is_checkbox_checked(self.make_email_visible_to_logged_in_users_checkbox)
-
-    def get_my_profile_edit_form_locator(self) -> Locator:
-        """Return the locator of the edit profile form"""
-        return self.edit_my_profile_edit_input_form

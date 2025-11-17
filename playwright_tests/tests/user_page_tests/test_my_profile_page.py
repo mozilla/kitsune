@@ -60,13 +60,12 @@ def test_my_profile_sign_out_button_functionality(page: Page, create_user_factor
         expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
     with allure.step("Verify that the 'Sign in/Up' button from the page header is displayed"):
-        expect(sumo_pages.top_navbar.sign_in_up_button_displayed_element()).to_be_visible()
+        expect(sumo_pages.top_navbar.signin_signup_button).to_be_visible()
 
 
 # C2108828, C891410
 @pytest.mark.userProfile
-def test_provided_solutions_number_is_successfully_displayed(page: Page,
-                                                             create_user_factory):
+def test_provided_solutions_number_is_successfully_displayed(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -83,54 +82,40 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page,
                 subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
                 topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
                 expected_locator=sumo_pages.question_page.questions_header
             )
         )
 
-    with allure.step("Navigating to the user profile page and extracting the original number "
-                     "of posted question solutions"):
-        sumo_pages.top_navbar.click_on_view_profile_option()
-        if sumo_pages.my_profile_page.is_solutions_displayed():
-            original_number_of_solutions = utilities.number_extraction_from_string(
-                sumo_pages.my_profile_page.get_my_profile_solutions_text()
-            )
-        else:
-            original_number_of_solutions = 0
-
-    with allure.step("Navigating to the previously posted question and posting a reply to it"):
-        utilities.navigate_to_link(question_info["question_page_url"])
-        question_test_data = utilities.question_test_data
-        sumo_pages.question_page.add_text_to_post_a_reply_textarea(
-            question_test_data["question_reply_solution"]
-        )
-        answer_id = sumo_pages.question_page.click_on_post_reply_button(
-            repliant_username=test_user["username"]
+    with allure.step("Posting a reply to the question"):
+        utilities.start_existing_session(cookies=second_user)
+        answer_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=second_user["username"],
+            reply=utilities.question_test_data["question_reply_solution"]
         )
 
     with allure.step("Marking the reply as the question solution"):
+        utilities.start_existing_session(cookies=test_user)
         sumo_pages.question_page.click_on_solves_the_problem_button(target_reply_id=answer_id)
 
     with check, allure.step("Accessing the 'My profile' page of the account which provided the"
                             " solution and verifying that the original number of solutions has "
                             "incremented"):
-        sumo_pages.top_navbar.click_on_view_profile_option()
-        utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_solutions_text()
-        )
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_solutions_text()
-        ) == original_number_of_solutions + 1)
-
-    with allure.step(f"Signing in with a user that has the 'Can delete question' perm "
-                     f"({second_user['username']}), Deleting the posted question and verifying "
-                     f"that we are redirected to the product support forum page after deletion"):
-        utilities.navigate_to_link(question_info["question_page_url"])
         utilities.start_existing_session(cookies=second_user)
-        sumo_pages.question_page.click_delete_this_question_question_tools_option()
-        sumo_pages.question_page.click_delete_this_question_button()
-        expect(sumo_pages.product_support_page.product_product_title_element()).to_be_visible()
+        sumo_pages.top_navbar.click_on_view_profile_option()
+
+        assert sumo_pages.my_profile_page.get_my_profile_solutions_text() == "1 solution"
+
+    with allure.step("Signing in with the OP and undoing the solution"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(question_info["question_page_url"])
+        sumo_pages.question_page.click_on_undo_button()
+
+    with allure.step("Signing in back with the user that has provided the solution and verifying "
+                     "that the solution counter is not displayed"):
+        utilities.start_existing_session(cookies=second_user)
+        sumo_pages.top_navbar.click_on_view_profile_option()
+        assert not sumo_pages.my_profile_page.is_solutions_displayed()
 
 
 # C1318760
@@ -150,8 +135,8 @@ def test_number_of_answers_and_questions_for_contributor_thread_contributions(pa
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body'])
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
+        )
 
     with allure.step("Creating a new thread reply"):
         sumo_pages.contributor_thread_flow.post_thread_reply(
@@ -166,8 +151,7 @@ def test_number_of_answers_and_questions_for_contributor_thread_contributions(pa
 
 # C890832,  C2094281, C891410, C2245210, C2245211, C2245212, C2245209
 @pytest.mark.userProfile
-def test_number_of_my_profile_answers_is_successfully_displayed(page: Page,
-                                                                create_user_factory):
+def test_number_of_my_profile_answers_is_successfully_displayed(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -184,28 +168,21 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page,
                 subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
                 topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.
-                aaq_question_test_data["valid_firefox_question"]["question_body"],
+                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
                 expected_locator=sumo_pages.question_page.questions_header
             )
         )
 
     with allure.step("Posting a reply for the question"):
-        question_test_data = utilities.question_test_data
-        reply_text = question_test_data["non_solution_reply"]
-        sumo_pages.question_page.add_text_to_post_a_reply_textarea(reply_text)
-        answer_id = sumo_pages.question_page.click_on_post_reply_button(
-            repliant_username=test_user["username"]
+        reply_text = utilities.question_test_data["non_solution_reply"]
+        answer_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=test_user["username"], reply=reply_text
         )
 
     with check, allure.step("Accessing the 'My profile' page and verifying that the number of"
                             " answers has incremented successfully"):
         sumo_pages.question_page.click_on_the_reply_author(answer_id)
-        utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_answers_text()
-        )
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_answers_text()) == 1)
+        assert sumo_pages.my_profile_page.get_my_profile_answers_text() == "1 answer"
 
     with check, allure.step("Clicking on the my profile answers and verifying that the posted"
                             " answer is successfully displayed inside the list"):
@@ -216,23 +193,18 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page,
 
     with allure.step("Updating the question title and question reply"):
         sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
-        sumo_pages.question_page.click_on_edit_this_question_question_tools_option()
         updated_title_text = ("Updated Question Title " + utilities.
                               generate_random_number(1,1000))
         updated_reply_text = "Updated reply"
-        sumo_pages.aaq_flow.editing_question_flow(
-            subject=updated_title_text,
-            submit_edit=True
+        sumo_pages.aaq_flow.editing_question_flow(subject=updated_title_text, submit_edit=True)
+        sumo_pages.aaq_flow.editing_reply_flow(
+            answer_id=answer_id, reply_body=updated_reply_text, submit_reply=True
         )
-        sumo_pages.question_page.click_on_reply_more_options_button(answer_id)
-        sumo_pages.question_page.click_on_edit_this_post_for_a_certain_reply(answer_id)
-        sumo_pages.aaq_flow.editing_reply_flow(reply_body=updated_reply_text, submit_reply=True)
 
     with check, allure.step("Navigating back to the answers page from the profile section and"
                             " verifying that the updates are reflected"):
         sumo_pages.question_page.click_on_the_reply_author(answer_id)
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_answers_text()) == 1)
+        assert sumo_pages.my_profile_page.get_my_profile_answers_text() == "1 answer"
 
         sumo_pages.my_profile_page.click_my_profile_answers_link()
         assert (updated_reply_text == sumo_pages.my_answers_page.get_my_answer_text(
@@ -243,16 +215,14 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page,
     with allure.step("Navigating back to the posted question and posting a reply to it"):
         sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
         reply_text = "A new reply"
-        sumo_pages.question_page.add_text_to_post_a_reply_textarea(reply_text)
-        second_answer_id = sumo_pages.question_page.click_on_post_reply_button(
-            repliant_username=test_user["username"]
+        second_answer_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=test_user["username"], reply=reply_text
         )
 
     with check, allure.step("Navigating back to the answers page from the profile section and"
                             " verifying that the updates are reflected"):
         sumo_pages.question_page.click_on_the_reply_author(second_answer_id)
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_answers_text()) == 2)
+        assert sumo_pages.my_profile_page.get_my_profile_answers_text() == "2 answers"
         sumo_pages.my_profile_page.click_my_profile_answers_link()
         assert (reply_text == sumo_pages.my_answers_page.get_my_answer_text(
             answer_id=second_answer_id))
@@ -262,8 +232,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page,
 
 #  C2094285, C2094284, C891309, C891410, C2245213
 @pytest.mark.userProfile
-def test_number_of_posted_articles_is_successfully_displayed(page: Page,
-                                                             create_user_factory):
+def test_number_of_posted_articles_is_successfully_displayed(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -277,8 +246,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page,
     with check, allure.step("Accessing the profile page and verifying that the number of posted"
                             " documents has incremented"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_documents_text()) == 1)
+        assert sumo_pages.my_profile_page.get_my_profile_documents_text() == "1 document"
 
     with check, allure.step("Clicking on my posted documents link and verifying that the posted"
                             " document is listed"):
@@ -295,8 +263,7 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page,
     with check, allure.step("Accessing the profile page and verifying that the number of posted"
                             " documents is the same"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_documents_text()) == 1)
+        assert sumo_pages.my_profile_page.get_my_profile_documents_text() == "1 document"
 
     with allure.step("Clicking on my posted documents link and verifying that the new document"
                      " title is listed"):
@@ -308,7 +275,6 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page,
 @pytest.mark.userProfile
 def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: Page,
                                                                           create_user_factory):
-
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(username="tes@tU.se-r4")

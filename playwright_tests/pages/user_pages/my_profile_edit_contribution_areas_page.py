@@ -1,5 +1,4 @@
-from playwright.sync_api import Locator, Page
-
+from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,7 +6,7 @@ class MyProfileEditContributionAreasPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # My profile contribution areas page locators.
+        """Locators belonging to the my profile contribution areas page."""
         self.edit_contribution_areas_page_header = page.locator("h3[class='sumo-page-heading']")
         self.edit_contribution_areas_checkboxes = page.locator("input[type='checkbox']")
         self.edit_contribution_areas_kb_contributors = page.locator(
@@ -27,7 +26,7 @@ class MyProfileEditContributionAreasPage(BasePage):
         self.edit_contribution_areas_preferences_saved_banner_close_button = page.locator(
             "ul[class='user-messages'] li button")
 
-    # My profile contribution areas page actions.
+    """Actions against the my profile contribution areas page locators."""
     def edit_con_areas_pref_banner_txt(self) -> str:
         """Get the display pref banner text"""
         return self._get_text_of_element(
@@ -65,10 +64,6 @@ class MyProfileEditContributionAreasPage(BasePage):
     def click_on_edit_cont_pref_banner_close_button(self):
         """Click on the close button of the edit contribution areas preferences saved banner"""
         self._click(self.edit_contribution_areas_preferences_saved_banner_close_button)
-
-    def is_edit_cont_pref_banner_displayed(self) -> Locator:
-        """Check if the edit contribution areas preferences saved banner is displayed"""
-        return self.edit_contribution_areas_preferences_saved_banner
 
     def is_kb_contributors_checkbox_checked(self) -> bool:
         """Check if the kb contributors checkbox is checked"""
