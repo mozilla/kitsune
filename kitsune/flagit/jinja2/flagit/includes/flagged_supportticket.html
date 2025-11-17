@@ -22,4 +22,6 @@
   <p>{{ date_by_user(object.created, object.creator) }}</p>
 </div>
 
-<a class="sumo-button button-sm" href="{{ url('admin:customercare_supportticket_change', object.content_object.id) }}">{{ _('View in Admin') }}</a>
+{% if user.is_staff and user.has_perm('customercare.change_supportticket') %}
+  <a class="sumo-button button-sm" href="{{ url('admin:customercare_supportticket_change', object.content_object.id) }}">{{ _('View in Admin') }}</a>
+{% endif %}
