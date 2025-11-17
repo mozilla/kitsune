@@ -22,8 +22,8 @@
 
       {% endif %}
     {% endif %}
-    <a class="image" href="{{ image.file.url }}">
-      <img src="{{ image.thumbnail_if_set().url }}"/>
+    <a class="image" href="{{ safe_file_url(image.file) }}">
+      <img src="{{ safe_file_url(image.thumbnail_if_set()) }}"/>
     </a>
   </div>
 {%- endmacro %}
