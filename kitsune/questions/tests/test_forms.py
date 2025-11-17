@@ -117,3 +117,38 @@ class TestNewQuestionForm(TestCase):
         }
         actual = form.cleaned_metadata
         self.assertDictEqual(actual, expected)
+
+    def test_clean_content_with_html_entities(self):
+        """Test that content with only HTML entities is rejected."""
+        topic = TopicFactory(slug="cookies", products=[self.product], in_aaq=True)
+        base_data = {"title": "Test Question", "email": "t@t.com", "category": topic.id}
+
+        # Test with nbsp entities (common case from WYSIWYG editors)
+        data = {**base_data, "content": "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>"}
+        form = NewQuestionForm(product=self.product, data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("content", form.errors)
+        self.assertEqual("Question content cannot be empty.", form.errors["content"][0])
+
+        # Test with numeric HTML entities
+        data = {**base_data, "content": "<b>&#160;&#160;</b>"}
+        form = NewQuestionForm(product=self.product, data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("content", form.errors)
+
+        # Test with empty bold tag (original bug scenario)
+        data = {**base_data, "content": "<b></b>"}
+        form = NewQuestionForm(product=self.product, data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("content", form.errors)
+
+        # Test with valid content containing entities should pass
+        data = {**base_data, "content": "<p>This is&nbsp;valid content with entities</p>"}
+        form = NewQuestionForm(product=self.product, data=data)
+        self.assertTrue(form.is_valid())
+
+        # Test with content that's just under 5 chars after decoding
+        data = {**base_data, "content": "<p>test</p>"}
+        form = NewQuestionForm(product=self.product, data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("content", form.errors)

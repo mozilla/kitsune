@@ -1,3 +1,4 @@
+import html
 import json
 
 from django import forms
@@ -112,7 +113,8 @@ class EditQuestionForm(forms.ModelForm):
     def clean_content(self):
         """Validate that content field contains actual text, not just HTML markup."""
         content = self.cleaned_data.get("content", "")
-        text_only = strip_tags(content).strip()
+        text_only = strip_tags(content)
+        text_only = html.unescape(text_only).strip()
 
         if len(text_only) < 5:
             raise forms.ValidationError(_("Question content cannot be empty."))
