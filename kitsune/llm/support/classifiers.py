@@ -75,12 +75,13 @@ def classify_question(question: "Question") -> dict[str, Any]:
 
         # Not spam - classify topic
         topic_result_dict = classify_topic(payload)
-        return {**base_result, "topic_result": topic_result_dict["topic_result"]}
+        return {
+            **base_result,
+            "action": ModerationAction.NOT_SPAM,
+            "topic_result": topic_result_dict["topic_result"],
+        }
 
-    result = decision_lambda(payload)
-    if "action" not in result:
-        result["action"] = determine_action_from_spam_result(spam_result)
-    return result
+    return decision_lambda(payload)
 
 
 def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
@@ -107,7 +108,9 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
             return {"action": action, "product_result": {}}
 
         # Maybe misclassified - check product reassignment
-        product_result_dict = classify_product(payload, only_with_forums=False, current_product=product)
+        product_result_dict = classify_product(
+            payload, only_with_forums=False, current_product=product
+        )
         product_result = product_result_dict["product_result"]
         new_product = product_result.get("product")
 
@@ -138,7 +141,4 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
         # Not spam
         return {**base_result, "action": ModerationAction.NOT_SPAM}
 
-    result = decision_lambda(payload)
-    if "action" not in result:
-        result["action"] = determine_action_from_spam_result(spam_result)
-    return result
+    return decision_lambda(payload)
