@@ -125,7 +125,7 @@ class ZendeskClient:
 
         tags = []
         # If this is the normal, athenticated form we want to use the category field
-        if user.is_authenticated:
+        if user and user.is_authenticated:
             custom_fields.append(
                 {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": ticket_fields.get("category")},
             )
