@@ -72,7 +72,9 @@ class AnonymousIdentity:
         md5 = hashlib.md5()
         md5.update(
             (
-                "{}{}{}{}".format(randrange(0, MAX_ANONYMOUS_ID), pid, time.time(), settings.SECRET_KEY)
+                "{}{}{}{}".format(
+                    randrange(0, MAX_ANONYMOUS_ID), pid, time.time(), settings.SECRET_KEY
+                )
             ).encode()
         )
         return md5.hexdigest()
@@ -101,6 +103,9 @@ class AnonymousIdentityMiddleware(MiddlewareMixin):
                     request.anonymous.anonymous_id,
                     max_age=max_age,
                     expires=expires,
+                    secure=getattr(settings, "ANONYMOUS_COOKIE_SECURE", not settings.DEBUG),
+                    httponly=True,
+                    samesite="Lax",
                 )
 
         return response
