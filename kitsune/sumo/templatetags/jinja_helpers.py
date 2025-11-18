@@ -12,6 +12,7 @@ from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.db.models.fields.files import FieldFile
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
@@ -553,3 +554,17 @@ def slug_to_title(slug):
     Convert a slug to a title.
     """
     return slug.replace("-", " ").capitalize()
+
+
+@library.global_function
+def safe_file_url(file: FieldFile) -> str | None:
+    """
+    Returns the URL of the given file field or None if its underlying file does not exist.
+    """
+    if not file:
+        return None
+
+    try:
+        return file.url
+    except (AttributeError, ValueError):
+        return None
