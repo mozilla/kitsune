@@ -331,12 +331,15 @@ def update(request, flagged_object_id):
         flagged.save()
 
         if (
-            str(new_status) == str(FlaggedObject.FLAG_REJECTED)
-            and flagged.reason == FlaggedObject.REASON_SPAM
-            and isinstance(flagged.content_object, SupportTicket)
+            isinstance(flagged.content_object, SupportTicket)
             and flagged.content_object.status == SupportTicket.STATUS_FLAGGED
         ):
-            send_support_ticket_to_zendesk(flagged.content_object)
+            if str(new_status) == str(FlaggedObject.FLAG_REJECTED):
+                send_support_ticket_to_zendesk(flagged.content_object)
+            elif str(new_status) == str(FlaggedObject.FLAG_ACCEPTED):
+                flagged.content_object.status = SupportTicket.STATUS_REJECTED
+                flagged.content_object.save(update_fields=["status"])
+
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
         question = flagged.content_object
         question.moderation_timestamp = timezone.now()
