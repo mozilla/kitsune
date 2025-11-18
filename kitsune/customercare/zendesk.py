@@ -28,7 +28,7 @@ class ZendeskClient:
         # 2. No Django User, ZD User -> Get Existing ZD User Using Email
         # 3. Django User, No ZD User -> Create ZD User from Django User
         # 4. Django User, ZD User -> Get ZD User, Update Django User with Zendesk ID
-        if not user.is_authenticated:
+        if not user or not user.is_authenticated:
             # If the user already exists in Zendesk return
             # the Zendesk user object
             # instead of creating a new one
@@ -83,7 +83,7 @@ class ZendeskClient:
 
         # We can't save anything to AnonymousUser Profile
         # as it has none
-        if user.is_authenticated:
+        if user and user.is_authenticated:
             user.profile.zendesk_id = str(zendesk_user.id)
             user.profile.save(update_fields=["zendesk_id"])
 
@@ -153,7 +153,7 @@ class ZendeskClient:
         ticket_kwargs.update({"custom_fields": custom_fields})
         ticket = Ticket(**ticket_kwargs)
 
-        if user.is_authenticated:
+        if user and user.is_authenticated:
             if user.profile.zendesk_id:
                 # TODO: is this necessary if we're
                 # updating users as soon as they're updated locally?

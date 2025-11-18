@@ -47,7 +47,7 @@ class ZendeskForm(forms.Form):
         self.product = product
         self.user = user
 
-        if product.slug in settings.LOGIN_EXCEPTIONS and not user.is_authenticated:
+        if product.slug in settings.LOGIN_EXCEPTIONS and (not user or not user.is_authenticated):
             self.fields["email"].widget = forms.EmailInput()
             categories_dict = ZENDESK_CATEGORIES_LOGINLESS
         else:
@@ -97,7 +97,7 @@ class ZendeskForm(forms.Form):
             os=self.cleaned_data.get("os", ""),
             country=self.cleaned_data.get("country", ""),
             product=product,
-            user=user if user.is_authenticated else None,
+            user=user if (user and user.is_authenticated) else None,
             zendesk_tags=zendesk_tags,
             status=SupportTicket.STATUS_PENDING,
         )
