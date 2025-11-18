@@ -1,14 +1,91 @@
-from typing import Any
+import re
+from typing import Any, cast
 
 import waffle
 
+from kitsune.customercare import ZENDESK_CATEGORIES
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.spam.classifier import ModerationAction
+from kitsune.products.models import Topic
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+
+def _topic_to_tag(text: str) -> str:
+    """Convert topic title to tag format: lowercase, remove punctuation, spaces to dashes."""
+    tag = text.lower()
+    tag = re.sub(r"[,.]", "", tag)
+    tag = re.sub(r"\s+", "-", tag)
+    return tag
+
+
+def generate_classification_tags(submission: SupportTicket, result: dict[str, Any]) -> list[str]:
+    """
+    Generate Zendesk tags from LLM classification results.
+
+    Returns tier tags (t1-, t2-, t3-) and automation tags based on the classified topic.
+    If product was reassigned, includes "other" tag.
+    """
+    product_slug = submission.product.slug
+    topic_result = result.get("topic_result", {})
+    product_result = result.get("product_result", {})
+
+    tags = []
+
+    # If product reassignment, add "other" tag
+    if product_result.get("product"):
+        tags.append("other")
+
+    # Get topic title from classification
+    topic_title = topic_result.get("topic")
+
+    # If no topic or "Undefined", return current tags
+    if not topic_title:
+        return ["undefined", *tags]
+
+    if topic_title == "Undefined":
+        return tags
+
+    # Find topic in database and build tier tags
+    try:
+        topic = Topic.objects.filter(
+            title=topic_title, products__slug=product_slug, is_archived=False
+        ).first()
+
+        if not topic:
+            return ["undefined", *tags]
+
+        # Build path from topic to root
+        path = [topic]
+        current = topic
+        while current.parent:
+            current = current.parent
+            path.insert(0, current)
+
+        # Convert to tier tags
+        tier_tags = []
+        for i, t in enumerate(path, start=1):
+            tier_tags.append(f"t{i}-{_topic_to_tag(t.title)}")
+
+        tags.extend(tier_tags)
+
+        # Find matching automation tag
+        categories = cast(list, ZENDESK_CATEGORIES.get(product_slug, []))
+        for category in categories:
+            category_tiers = category.get("tags", {}).get("tiers", [])
+            if set(tier_tags) == set(category_tiers):
+                automation = category.get("tags", {}).get("automation")
+                if automation:
+                    tags.append(automation)
+                break
+
+    except Exception:
+        return ["undefined", *tags]
+
+    return tags
 
 
 def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
@@ -113,6 +190,18 @@ def process_zendesk_classification_result(
                 reason=FlaggedObject.REASON_CONTENT_MODERATION,
             )
         case ModerationAction.NOT_SPAM:
+            # Preserve system tags
+            system_tags = [
+                tag for tag in submission.zendesk_tags if tag in ["loginless_ticket", "stage"]
+            ]
+
+            # Generate classification tags
+            classification_tags = generate_classification_tags(submission, result)
+
+            # Replace with system tags + classification tags
+            submission.zendesk_tags = system_tags + classification_tags
+            submission.save(update_fields=["zendesk_tags"])
+
             send_support_ticket_to_zendesk(submission)
         case _:
             flag_submission(
