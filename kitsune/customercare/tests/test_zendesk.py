@@ -182,3 +182,38 @@ class ZendeskClientTests(TestCase):
 
         if hasattr(call_args, "tags"):
             self.assertIn(call_args.tags, [[], None])
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    @patch("django.conf.settings.ZENDESK_CONTACT_LABEL_ID", 127)
+    @patch("django.conf.settings.ZENDESK_TICKET_FORM_ID", 456)
+    def test_create_ticket_with_none_user(self, mock_zenpy):
+        """Test that create_ticket works with user=None (loginless ticket)."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+
+        client = ZendeskClient()
+        client.create_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "mozilla-account",
+            "product_title": "Mozilla Accounts",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "fxa-2fa-lockout",
+            "email": "test@example.com",
+            "zendesk_tags": ["accounts"],
+        }
+
+        # This should not raise AttributeError
+        client.create_ticket(None, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        # Should include loginless tag
+        self.assertIn(LOGINLESS_TAG, call_args.tags)
