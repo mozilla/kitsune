@@ -24,6 +24,8 @@ LOG_LEVEL = config("LOG_LEVEL", default=logging.INFO)
 # Set to 'json' for MozLog format (https://wiki.mozilla.org/Firefox/Services/Logging)
 LOG_FORMAT = config("LOG_FORMAT", default="")
 
+ENABLE_REMOTE_ADDR_LOGGING = config("ENABLE_REMOTE_ADDR_LOGGING", default=False, cast=bool)
+
 SYSLOG_TAG = "http_sumo_app"
 
 # Repository directory.
@@ -392,7 +394,7 @@ STORAGES = {
 # of the proxies is assumed to append its IP to the "X-Forwarded-For" HTTP header
 # after the real client IP. The real client IP can be preceded by untrusted IPs,
 # so "X-Forwarded-For: untrusted-client-ip, ..., real-client-ip, proxy-ip, ...".
-TRUSTED_PROXY_COUNT = config("TRUSTED_PROXY_COUNT", cast=int, default=1)
+TRUSTED_PROXY_COUNT = config("TRUSTED_PROXY_COUNT", cast=int, default=2)
 
 
 def immutable_file_test(path, url):
@@ -474,7 +476,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "kitsune.sumo.middleware.SetRemoteAddrFromForwardedFor",
+    "kitsune.sumo.middleware.SetRemoteAddr",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
     # VaryNoCacheMiddleware must be above LocaleMiddleware
     # so that it can see the response has a vary on accept-language.

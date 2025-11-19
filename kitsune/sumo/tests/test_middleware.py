@@ -7,7 +7,7 @@ from kitsune.sumo.middleware import (
     CacheHeadersMiddleware,
     EnforceHostIPMiddleware,
     PlusToSpaceMiddleware,
-    SetRemoteAddrFromForwardedFor,
+    SetRemoteAddr,
 )
 from kitsune.sumo.tests import TestCase
 
@@ -169,29 +169,61 @@ class PlusToSpaceTestCase(TestCase):
 class SetRemoteAddrFromForwardedForMiddlewareTestCase(TestCase):
     def test_when_no_trusted_proxies(self):
         with self.settings(TRUSTED_PROXY_COUNT=0), self.assertRaises(MiddlewareNotUsed):
-            SetRemoteAddrFromForwardedFor(lambda *args, **kwargs: HttpResponse())
+            SetRemoteAddr(lambda *args, **kwargs: HttpResponse())
 
     def test_when_one_or_more_trusted_proxies(self):
         rf = RequestFactory()
-        mw = SetRemoteAddrFromForwardedFor(lambda *args, **kwargs: HttpResponse())
-        for proxy_count, forwarded_for, expected in [
-            (1, " ", "127.0.0.1"),
-            (1, "1.1.1.1", "127.0.0.1"),
-            (1, "684D:1:2:3:4:55:6:7", "127.0.0.1"),
-            (1, "1.1.1.1, 2.2.2.2", "1.1.1.1"),
-            (1, "684D:1:2:3:4:55:6:7, 2001:DB8::FF00:42:8329", "684d:1:2:3:4:55:6:7"),
-            (1, "3.3.3.3, 2001:DB8::FF00:42:8329, 684D:1:2:3:4:55:6:7", "2001:db8::ff00:42:8329"),
-            (1, " yädâ , yädâ.ÿådá.😜.🤪 , yädâ", "127.0.0.1"),
-            (1, " yädâ , yädâ, ,1.1.1.1, 2.2.2.2", "1.1.1.1"),
-            (2, "3.3.3.3", "127.0.0.1"),
-            (2, "2.2.2.2,  3.3.3.3,  4.4.4.4", "2.2.2.2"),
-            (2, "3.3.3.3, 4.4.4.4,5.5.5.5", "3.3.3.3"),
-            (2, "999.255.255.1, 4.4.4.4,5.5.5.5", "127.0.0.1"),
+        mw = SetRemoteAddr(lambda *args, **kwargs: HttpResponse())
+        for fastly_client_ip, proxy_count, forwarded_for, expected in [
+            (None, 1, " ", "127.0.0.1"),
+            (None, 1, "1.1.1.1", "127.0.0.1"),
+            (None, 1, "684D:1:2:3:4:55:6:7", "127.0.0.1"),
+            (None, 1, "1.1.1.1, 2.2.2.2", "1.1.1.1"),
+            (None, 1, "684D:1:2:3:4:55:6:7, 2001:DB8::FF00:42:8329", "684d:1:2:3:4:55:6:7"),
+            (
+                None,
+                1,
+                "3.3.3.3, 2001:DB8::FF00:42:8329, 684D:1:2:3:4:55:6:7",
+                "2001:db8::ff00:42:8329",
+            ),
+            (None, 1, " yädâ , yädâ.ÿådá.😜.🤪 , yädâ", "127.0.0.1"),
+            (None, 1, " yädâ , yädâ, ,1.1.1.1, 2.2.2.2", "1.1.1.1"),
+            (None, 2, "3.3.3.3", "127.0.0.1"),
+            (None, 2, "2.2.2.2,  3.3.3.3,  4.4.4.4", "2.2.2.2"),
+            (None, 2, "3.3.3.3, 4.4.4.4,5.5.5.5", "3.3.3.3"),
+            (None, 2, "999.255.255.1, 4.4.4.4,5.5.5.5", "127.0.0.1"),
+            (None, 2, None, "127.0.0.1"),
+            ("3.3.3.3", 1, "1.1.1.1, 2.2.2.2", "3.3.3.3"),
+            (
+                "684D:1:2:3:4:55:6:5",
+                1,
+                "684D:1:2:3:4:55:6:7, 2001:DB8::FF00:42:8329",
+                "684d:1:2:3:4:55:6:5",
+            ),
+            (
+                "2001:DB8::FF00:42:8327",
+                1,
+                "3.3.3.3, 2001:DB8::FF00:42:8329, 684D:1:2:3:4:55:6:7",
+                "2001:db8::ff00:42:8327",
+            ),
+            ("4.4.4.4", 1, " yädâ , yädâ.ÿådá.😜.🤪 , yädâ", "4.4.4.4"),
+            ("yädâ", 1, " yädâ , yädâ.ÿådá.😜.🤪 , yädâ", "127.0.0.1"),
+            ("yädâ", 1, None, "127.0.0.1"),
+            ("yädâ", 1, " yädâ , yädâ, ,1.1.1.1, 2.2.2.2", "1.1.1.1"),
+            ("4.4.4.4", 2, "3.3.3.3", "4.4.4.4"),
+            ("5.5.5.5", 2, "2.2.2.2,  3.3.3.3,  4.4.4.4", "5.5.5.5"),
+            ("yädâ", 2, "3.3.3.3, 4.4.4.4,5.5.5.5", "3.3.3.3"),
+            ("yädâ", 2, "999.255.255.1, 4.4.4.4,5.5.5.5", "127.0.0.1"),
         ]:
             with (
                 self.settings(TRUSTED_PROXY_COUNT=proxy_count),
-                self.subTest(f"{proxy_count} with {forwarded_for}"),
+                self.subTest(f"{fastly_client_ip} with {proxy_count} and {forwarded_for}"),
             ):
-                request = rf.get("/", HTTP_X_FORWARDED_FOR=forwarded_for)
+                kwargs = {}
+                if forwarded_for:
+                    kwargs["HTTP_X_FORWARDED_FOR"] = forwarded_for
+                if fastly_client_ip:
+                    kwargs["HTTP_FASTLY_CLIENT_IP"] = fastly_client_ip
+                request = rf.get("/", **kwargs)
                 mw(request)
                 self.assertEqual(request.META["REMOTE_ADDR"], expected)
