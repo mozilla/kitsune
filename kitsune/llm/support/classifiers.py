@@ -115,7 +115,7 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
         action = determine_action_from_spam_result(spam_result)
 
         if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
-            return {"action": action, "product_result": {}, "topic_result": {}}
+            return {"action": action, "product_result": {}}
 
         # Maybe misclassified - check product reassignment
         product_result_dict = classify_product(
