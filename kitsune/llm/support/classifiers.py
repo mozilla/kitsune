@@ -6,6 +6,7 @@ from kitsune.llm.spam.classifier import (
     classify_spam,
     determine_action_from_spam_result,
 )
+from kitsune.products.models import Product
 from kitsune.products.utils import get_taxonomy
 
 if TYPE_CHECKING:
@@ -42,12 +43,18 @@ def classify_question(question: "Question") -> dict[str, Any]:
         # Maybe misclassified - check product reassignment
         product_result_dict = classify_product(payload, only_with_forums=True)
         product_result = product_result_dict["product_result"]
-        new_product = product_result.get("product")
+        new_product_title = product_result.get("product")
 
-        if new_product and new_product != product.title:
-            # Reassign product and reclassify topic with new product
-            # Note: We'd need to fetch the new product object, but for now
-            # reclassify with current product (processing will handle reassignment)
+        if (
+            new_product_title
+            and (new_product_title != product.title)
+            and (new_product := Product.active.filter(title=new_product_title).first())
+        ):
+            # This wasn't spam. It was a question asked under the wrong product. Reassign
+            # the payload's product, clear its existing topics so they'll be regenerated
+            # from the new product, and then run the topic classification.
+            payload["product"] = new_product
+            payload.pop("topics", None)
             topic_result_dict = classify_topic(payload)
             return {
                 "action": ModerationAction.NOT_SPAM,
@@ -108,7 +115,7 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
         action = determine_action_from_spam_result(spam_result)
 
         if not ((action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified")):
-            return {"action": action, "product_result": {}, "topic_result": {}}
+            return {"action": action, "product_result": {}}
 
         # Maybe misclassified - check product reassignment
         product_result_dict = classify_product(
