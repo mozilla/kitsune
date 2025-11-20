@@ -125,7 +125,12 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
         new_product_title = product_result.get("product")
 
         if new_product_title and new_product_title != product.title:
-            # If reassigned to different product, flag for review
+            if product.has_ticketing_support:
+                return {
+                    "action": ModerationAction.NOT_SPAM,
+                    "product_result": product_result,
+                    "topic_result": {},
+                }
             return {
                 "action": ModerationAction.FLAG_REVIEW,
                 "product_result": product_result,
