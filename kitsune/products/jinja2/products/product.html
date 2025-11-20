@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles, announcement_bar %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
 {% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
+{% set announcement_product = product %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set classes = 'product-landing' %}
 {% set search_params = {'product': product.slug} %}
@@ -112,14 +113,6 @@
   </div>
 </section>
 {% endblock %}
-
-<div id="announcements">
-  {% for announ in get_product_announcements(request, product) %}
-    {% call announcement_bar(announ.id, 'warning', close_memory="session") %}
-      {{ announ.content | wiki_to_html }}
-    {% endcall %}
-  {% endfor %}
-</div>
 
 {% block contentwrap %}
 <div id="main-content">

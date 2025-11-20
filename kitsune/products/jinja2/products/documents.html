@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'products/includes/product_macros.html' import product_dropdown %}
-{% from 'includes/common_macros.html' import download_firefox, sumo_banner, announcement_bar %}
+{% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
 {% from 'wiki/includes/document_macros.html' import document_metadata with context %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% if product %}
+  {% set announcement_product = product %}
   {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
   {% if subtopic %}
     {% set ga_content_group = "product-and-topic-and-subtopic-home" %}
@@ -50,16 +51,6 @@
 {% endblock %}
 
 {% block content %}
-    {% if product %}
-      <div id="announcements">
-        {% for announ in get_product_announcements(request, product) %}
-          {% call announcement_bar(announ.id, 'warning', close_memory="session") %}
-            {{ announ.content | wiki_to_html }}
-          {% endcall %}
-        {% endfor %}
-      </div>
-    {% endif %}
-
     <article id="document-list">
       {% if topic_navigation %}
         {% include 'products/includes/topic_documents.html' %}
