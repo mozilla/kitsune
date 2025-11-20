@@ -190,6 +190,15 @@ def process_zendesk_classification_result(
                 reason=FlaggedObject.REASON_CONTENT_MODERATION,
             )
         case ModerationAction.NOT_SPAM:
+            # Find and set topic if classified
+            topic_title = result.get("topic_result", {}).get("topic")
+            if topic_title and topic_title != "Undefined":
+                topic = Topic.objects.filter(
+                    title=topic_title, products=submission.product, is_archived=False
+                ).first()
+                if topic:
+                    submission.topic = topic
+
             # Preserve system tags
             system_tags = [
                 tag for tag in submission.zendesk_tags if tag in ["loginless_ticket", "stage"]
@@ -200,7 +209,7 @@ def process_zendesk_classification_result(
 
             # Replace with system tags + classification tags
             submission.zendesk_tags = system_tags + classification_tags
-            submission.save(update_fields=["zendesk_tags"])
+            submission.save(update_fields=["zendesk_tags", "topic"])
 
             send_support_ticket_to_zendesk(submission)
         case _:

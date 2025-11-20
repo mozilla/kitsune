@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function findUpdateButton(questionId) {
-        return document.querySelector(`form.update.inline-form input[id="update-status-button-${questionId}"]`);
+    function findUpdateButton(contentId) {
+        return document.querySelector(`form.update.inline-form input[id="update-status-button-${contentId}"]`);
     }
 
     function updateStatusSelect(updateButton) {
@@ -65,19 +65,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeDropdownsAndTags() {
         document.querySelectorAll('.topic-dropdown, .tag-select, select[name="status"]').forEach(dropdown => {
             const questionId = dropdown.dataset.questionId;
+            const ticketId = dropdown.dataset.ticketId;
+            const contentId = questionId || ticketId;
 
             dropdown.addEventListener('change', async function () {
                 const form = this.closest('form');
-                const updateButton = findUpdateButton(questionId);
+                const updateButton = findUpdateButton(contentId);
 
                 enableUpdateButton(updateButton);
 
                 // Update topic
                 if (this.classList.contains('topic-dropdown')) {
-                    const url = `/en-US/questions/${questionId}/edit`;
+                    let url;
+                    if (questionId) {
+                        url = `/en-US/questions/${questionId}/edit`;
+                    } else if (ticketId) {
+                        url = `/en-US/customercare/support-tickets/${ticketId}/update-topic`;
+                    }
                     const response = await fetchData(url, { method: 'POST', body: { topic: this.value } });
                     if (response) {
-                        const currentTopic = document.getElementById(`current-topic-${questionId}`);
+                        const currentTopic = document.getElementById(`current-topic-${contentId}`);
                         currentTopic.textContent = response.updated_topic;
                         currentTopic.classList.add('updated');
                         updateStatusSelect(updateButton);
@@ -106,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const url = `/en-US/questions/${questionId}/remove-tag-async`;
                         const response = await fetchData(url, { method: 'POST', body: { tagId } });
                         if (response) {
-                            const updateButton = findUpdateButton(questionId);
+                            const updateButton = findUpdateButton(contentId);
                             updateStatusSelect(updateButton);
                             enableUpdateButton(updateButton);
                         }
