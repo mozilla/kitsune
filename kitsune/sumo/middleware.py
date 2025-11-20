@@ -1,4 +1,5 @@
 import contextlib
+import logging
 import re
 import time
 from functools import wraps
@@ -30,22 +31,45 @@ from kitsune.sumo.i18n import get_language_from_user, normalize_language, normal
 from kitsune.sumo.views import handle403
 from kitsune.users.auth import FXAAuthBackend
 
+log = logging.getLogger("k.middleware")
 
-class SetRemoteAddrFromForwardedFor:
+
+def validate_ip(client_ip: str | None) -> str | None:
+    if not client_ip:
+        return None
+
+    try:
+        return str(ip_address(client_ip))
+    except ValueError:
+        return None
+
+
+class SetRemoteAddr:
     def __init__(self, get_response):
         self.get_response = get_response
         if not settings.TRUSTED_PROXY_COUNT:
             raise MiddlewareNotUsed
 
     def __call__(self, request):
-        if x_forwarded_for := request.headers.get("x-forwarded-for"):
+        x_forwarded_for = request.headers.get("x-forwarded-for")
+        fastly_client_ip = request.headers.get("fastly-client-ip")
+
+        client_ip = validate_ip(fastly_client_ip)
+
+        # If the Fastly-Client-IP header is missing, fall back to using X-Forwarded-For.
+        if (not client_ip) and x_forwarded_for:
             ips = x_forwarded_for.replace(",", " ").split()
             if len(ips) > settings.TRUSTED_PROXY_COUNT:
-                client_ip = ips[-(settings.TRUSTED_PROXY_COUNT + 1)]
-                try:
-                    request.META["REMOTE_ADDR"] = str(ip_address(client_ip))
-                except ValueError:
-                    pass
+                client_ip = validate_ip(ips[-(settings.TRUSTED_PROXY_COUNT + 1)])
+
+        if client_ip:
+            request.META["REMOTE_ADDR"] = client_ip
+
+        if settings.ENABLE_REMOTE_ADDR_LOGGING:
+            log.info(
+                f"SetRemoteAddr: client_ip={client_ip}, fastly-client-ip={fastly_client_ip},"
+                f" x-forwarded-for={x_forwarded_for}"
+            )
 
         return self.get_response(request)
 
@@ -337,12 +361,13 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
 
 class ClientHintsMiddleware:
     """Middleware to request client hints for better platform detection."""
+
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
-        response['Accept-CH'] = 'Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version'
+        response["Accept-CH"] = "Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version"
         return response
 
 
