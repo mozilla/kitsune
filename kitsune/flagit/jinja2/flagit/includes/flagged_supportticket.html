@@ -20,6 +20,28 @@
 
   <h3 class="flagged-content__subheading">{{ _('Flagged:') }}</h3>
   <p>{{ date_by_user(object.created, object.creator) }}</p>
+
+  {% if object.reason == 'content_moderation' and user.has_perm('customercare.change_supportticket')  %}
+    <h3 class="flagged-content__subheading">{{ _('Take Action:') }}</h3>
+    <div class="flagged-content__topic-update">
+      <label> {{ _('Current topic:') }} </label>
+      <p id="current-topic-{{ object.content_object.id }}" class="current-topic">{{ object.content_object.topic }}</p>
+
+      <form id="topic-update-form-{{ object.content_object.id }}" method="POST">
+        {% csrf_token %}
+        <div class="dropdown-wrapper">
+          <label for="topic-dropdown-{{ object.content_object.id }}">{{ _('Change Topic:') }}</label>
+          <select id="topic-dropdown-{{ object.content_object.id }}" class="topic-dropdown" name="topic" data-ticket-id="{{ object.content_object.id }}">
+            {% for topic in object.available_topics %}
+              <option value="{{ topic.id }}" {% if object.content_object.topic and topic.id == object.content_object.topic.id %}selected{% endif %}>
+                {{ topic.title|safe}}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+    </div>
+  {% endif %}
 </div>
 
 {% if user.is_staff and user.has_perm('customercare.change_supportticket') %}

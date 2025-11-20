@@ -303,6 +303,9 @@ def moderate_content(request):
             obj.available_topics = product_topics_cache.get(question.product.id, [])
             obj.available_tags = available_tags
             obj.saved_tags = {tag.id for tag in question.tags.all()}
+        elif obj.content_type == ct_support_ticket:
+            ticket = obj.content_object
+            obj.available_topics = product_topics_cache.get(ticket.product.id, [])
 
     return render(
         request,
@@ -362,9 +365,10 @@ def update(request, flagged_object_id):
                 flagged.content_object.save(update_fields=["status"])
 
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
-        question = flagged.content_object
-        question.moderation_timestamp = timezone.now()
-        question.save()
+        content_object = flagged.content_object
+        if hasattr(content_object, "moderation_timestamp"):
+            content_object.moderation_timestamp = timezone.now()
+            content_object.save()
         if "hx-request" in request.headers:
             return HttpResponse(status=202)
         return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))

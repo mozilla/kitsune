@@ -27,6 +27,7 @@ urlpatterns = i18n_patterns(
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
     path("questions/", include("kitsune.questions.urls")),
+    path("customercare/", include("kitsune.customercare.urls")),
     path("upload/", include("kitsune.upload.urls")),
     path("gallery/", include("kitsune.gallery.urls")),
     path("chat", RedirectView.as_view(url="questions/new")),

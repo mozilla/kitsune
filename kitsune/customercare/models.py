@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic
 from kitsune.sumo.models import ModelBase
 
 
@@ -28,6 +28,9 @@ class SupportTicket(ModelBase):
     os = models.CharField(max_length=50, blank=True, default="")
     country = models.CharField(max_length=255, blank=True, default="")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="support_tickets")
+    topic = models.ForeignKey(
+        Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name="support_tickets"
+    )
     user = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="support_tickets"
     )
