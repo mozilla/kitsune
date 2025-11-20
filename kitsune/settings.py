@@ -1355,6 +1355,7 @@ STALE_TRANSLATION_THRESHOLD_DAYS = config(
     "STALE_TRANSLATION_THRESHOLD_DAYS", default=180, cast=int
 )
 STALE_TRANSLATION_BATCH_SIZE = config("STALE_TRANSLATION_BATCH_SIZE", default=10, cast=int)
+HYBRID_QUOTA_PER_LOCALE = config("HYBRID_QUOTA_PER_LOCALE", default=2, cast=int)
 HYBRID_REVIEW_GRACE_PERIOD = config("HYBRID_REVIEW_GRACE_PERIOD", default=72, cast=int)  # Hours
 
 # Celery beat configuration

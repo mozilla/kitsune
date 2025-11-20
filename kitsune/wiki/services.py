@@ -89,26 +89,38 @@ class TranslationQueryBuilder:
     def get_stale_docs_hybrid(self, limit: int | None = None) -> list[tuple[Document, Document, str]]:
         """Find non-archived stale translations in HYBRID locales.
 
+        Distributes evenly across locales to avoid overloading reviewers.
+
         Args:
             limit: Maximum number of candidates to return
 
         Returns:
             List of tuples: (english_document, translation_document, target_locale)
         """
+        if limit is None:
+            limit = settings.STALE_TRANSLATION_BATCH_SIZE
+
         cutoff_date = timezone.now() - timedelta(days=settings.STALE_TRANSLATION_THRESHOLD_DAYS)
+        result: list[tuple[Document, Document, str]] = []
 
-        queryset = (
-            self._base_stale_translations(settings.HYBRID_ENABLED_LOCALES, cutoff_date)
-            .filter(parent__is_archived=False)
-        )
+        for locale in settings.HYBRID_ENABLED_LOCALES:
+            if len(result) >= limit:
+                break
 
-        if limit:
-            queryset = queryset[:limit]
+            remaining = limit - len(result)
+            fetch_count = min(settings.HYBRID_QUOTA_PER_LOCALE, remaining)
 
-        return [
-            (translation_doc.parent, translation_doc, translation_doc.locale)
-            for translation_doc in queryset
-        ]
+            queryset = (
+                self._base_stale_translations([locale], cutoff_date)
+                .filter(parent__is_archived=False)[:fetch_count]
+            )
+
+            result.extend(
+                (translation_doc.parent, translation_doc, translation_doc.locale)
+                for translation_doc in queryset
+            )
+
+        return result
 
     def get_stale_docs_ai(self, limit: int | None = None) -> list[tuple[Document, Document, str]]:
         """Find stale translations for AI flow.
@@ -148,33 +160,37 @@ class TranslationQueryBuilder:
     def get_missing_docs_hybrid(self, limit: int | None = None) -> list[tuple[Document, None, str]]:
         """Find non-archived English docs without translations in HYBRID locales.
 
+        Distributes evenly across locales to avoid overloading reviewers.
+
         Args:
             limit: Maximum number of candidates to return
 
         Returns:
             List of tuples: (english_document, None, target_locale)
         """
-        missing_translations: list[tuple[Document, None, str]] = []
+        if limit is None:
+            limit = settings.STALE_TRANSLATION_BATCH_SIZE
+
+        result: list[tuple[Document, None, str]] = []
 
         for locale in settings.HYBRID_ENABLED_LOCALES:
-            if limit is not None and len(missing_translations) >= limit:
+            if len(result) >= limit:
                 break
+
+            remaining = limit - len(result)
+            fetch_count = min(settings.HYBRID_QUOTA_PER_LOCALE, remaining)
 
             docs = (
                 self._base_english_docs()
                 .filter(is_archived=False)
                 .exclude(translations__locale=locale)
                 .select_related("latest_localizable_revision")
-                .order_by("-latest_localizable_revision__created")
+                .order_by("-latest_localizable_revision__created")[:fetch_count]
             )
 
-            remaining_limit = limit - len(missing_translations) if limit else None
-            if remaining_limit:
-                docs = docs[:remaining_limit]
+            result.extend((doc, None, locale) for doc in docs)
 
-            missing_translations.extend((doc, None, locale) for doc in docs)
-
-        return missing_translations
+        return result
 
     def get_missing_docs_ai(self, limit: int | None = None) -> list[tuple[Document, None, str]]:
         """Find English docs without translations for AI flow.
