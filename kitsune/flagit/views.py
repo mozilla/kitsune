@@ -1,9 +1,11 @@
 import json
+from functools import reduce
 
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
+from django.db.models import Q, prefetch_related_objects
 from django.db.models.functions import Now
 from django.http import (
     HttpResponse,
@@ -30,7 +32,7 @@ from kitsune.sumo.utils import paginate
 from kitsune.tags.models import SumoTag
 
 
-def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, product_slug=None):
+def get_flagged_objects(reason=None, exclude_reason=None, content_types=None, product_slug=None):
     """Retrieve pending flagged objects with optional filtering, eager loading related fields."""
     queryset = FlaggedObject.objects.pending().select_related("content_type", "creator")
 
@@ -38,17 +40,22 @@ def get_flagged_objects(reason=None, exclude_reason=None, content_model=None, pr
         queryset = queryset.exclude(reason=exclude_reason)
     if reason:
         queryset = queryset.filter(reason=reason)
-    if content_model:
-        queryset = queryset.filter(content_type=content_model)
+    if content_types:
+        conditions = []
 
-        if product_slug:
-            model_class = content_model.model_class()
+        for content_type in content_types:
+            condition = Q(content_type=content_type)
 
-            if hasattr(model_class, "product"):
-                matching_objects = model_class.objects.filter(product__slug=product_slug)
-                matching_ids = matching_objects.values_list("id", flat=True)
+            if product_slug:
+                model_class = content_type.model_class()
+                if hasattr(model_class, "product"):
+                    matching_objects = model_class.objects.filter(product__slug=product_slug)
+                    condition &= Q(object_id__in=matching_objects.values_list("id", flat=True))
 
-                queryset = queryset.filter(object_id__in=matching_ids)
+            conditions.append(condition)
+
+        # Logically OR all of the conditions.
+        queryset = queryset.filter(reduce(lambda x, y: x | y, conditions))
 
     return queryset
 
@@ -126,10 +133,10 @@ def flagged_queue(request):
     reason = request.GET.get("reason")
     content_type_id = request.GET.get("content_type")
 
-    content_type = None
+    content_types = None
     if content_type_id:
         try:
-            content_type = ContentType.objects.get(id=int(content_type_id))
+            content_types = [ContentType.objects.get(id=int(content_type_id))]
         except (ValueError, ContentType.DoesNotExist):
             pass
 
@@ -137,7 +144,7 @@ def flagged_queue(request):
         get_flagged_objects(
             reason=reason,
             exclude_reason=FlaggedObject.REASON_CONTENT_MODERATION,
-            content_model=content_type,
+            content_types=content_types,
         )
         .select_related("content_type", "creator")
         .prefetch_related("content_object")
@@ -224,15 +231,22 @@ def moderate_content(request):
     ):
         return HttpResponseNotFound()
 
-    content_type = ContentType.objects.get_for_model(Question)
+    ct_question = ContentType.objects.get_for_model(Question)
+
+    content_types = [ct_question]
+
+    if show_support_tickets := request.user.has_perm("customercare.view_supportticket"):
+        ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
+        content_types.append(ct_support_ticket)
+
     objects = (
         get_flagged_objects(
             reason=FlaggedObject.REASON_CONTENT_MODERATION,
-            content_model=content_type,
+            content_types=content_types,
             product_slug=product_slug,
         )
         .select_related("content_type", "creator", "assignee")
-        .prefetch_related("content_object__product", "content_object__tags")
+        .prefetch_related("content_object", "content_object__product")
     )
 
     if request.method == "POST":
@@ -260,27 +274,35 @@ def moderate_content(request):
     # default ordering for flagged objects is by ascending created date.
     objects = paginate(request, objects)
 
+    questions = [obj.content_object for obj in objects if obj.content_type == ct_question]
+
+    # Only prefetch the tags, topic, and creator for questions.
+    prefetch_related_objects(questions, "tags", "topic", "creator")
+
+    if show_support_tickets:
+        support_tickets = [
+            obj.content_object for obj in objects if obj.content_type == ct_support_ticket
+        ]
+        # Prefetch the user for support tickets.
+        prefetch_related_objects(support_tickets, "user")
+
     objects = set_form_action_for_objects(
         objects, reason=FlaggedObject.REASON_CONTENT_MODERATION, product_slug=product_slug
     )
     available_tags = SumoTag.objects.segmentation_tags().values("id", "name")
 
     product_topics_cache = {}
-    unique_products = set()
-
-    for obj in objects:
-        question = obj.content_object
-        if question.product:
-            unique_products.add(question.product)
+    unique_products = {obj.content_object.product for obj in objects if obj.content_object.product}
 
     for product in unique_products:
         product_topics_cache[product.id] = get_hierarchical_topics(product)
 
     for obj in objects:
-        question = obj.content_object
-        obj.available_topics = product_topics_cache.get(question.product.id, [])
-        obj.available_tags = available_tags
-        obj.saved_tags = question.tags.values_list("id", flat=True)
+        if obj.content_type == ct_question:
+            question = obj.content_object
+            obj.available_topics = product_topics_cache.get(question.product.id, [])
+            obj.available_tags = available_tags
+            obj.saved_tags = {tag.id for tag in question.tags.all()}
 
     return render(
         request,
