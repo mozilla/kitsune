@@ -40,6 +40,14 @@ class Announcement(ModelBase):
     platforms = models.ManyToManyField(
         "products.Platform", related_name="announcements", blank=True
     )
+    product = models.ForeignKey(
+        "products.Product",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="announcements",
+        help_text="If set, this announcement will only display on this product's landing page.",
+    )
     send_email = models.BooleanField(
         default=False,
         help_text=(
@@ -66,9 +74,12 @@ class Announcement(ModelBase):
         platform_slugs: Iterable[str] | None = None,
         group_ids: Iterable[int] | None = None,
         locale_name: str | None = None,
+        product_slug: str | None = None,
     ):
         """Returns all visible announcements that satisfy the given filters."""
-        return cls._visible_query(platforms=platform_slugs, groups=group_ids, locale=locale_name)
+        return cls._visible_query(
+            platforms=platform_slugs, groups=group_ids, locale=locale_name, product=product_slug
+        )
 
     @classmethod
     def _visible_query(cls, **query_kwargs):
@@ -83,6 +94,7 @@ class Announcement(ModelBase):
         platforms = query_kwargs.pop("platforms", None)
         groups = query_kwargs.pop("groups", None)
         locale = query_kwargs.pop("locale", None)
+        product = query_kwargs.pop("product", None)
 
         if platforms and "web" not in platforms:
             has_web_announcements = query.filter(platforms__slug="web").exists()
@@ -98,6 +110,13 @@ class Announcement(ModelBase):
             query = query.filter(Q(locale__isnull=True) | Q(locale__locale=locale))
         else:
             query = query.filter(locale__isnull=True)
+
+        if product:
+            query = query.filter(
+                Q(product__isnull=True) | Q(product__slug=product, product__is_archived=False)
+            )
+        else:
+            query = query.filter(product__isnull=True)
 
         if query_kwargs:
             query = query.filter(**query_kwargs)
