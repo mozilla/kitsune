@@ -6,6 +6,7 @@
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% if product %}
+  {% set announcement_product = product %}
   {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
   {% if subtopic %}
     {% set ga_content_group = "product-and-topic-and-subtopic-home" %}

@@ -4,11 +4,19 @@ from kitsune.announcements.models import Announcement
 
 
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "get_groups", "get_platforms", "locale", "creator", "is_visible"]
+    list_display = [
+        "__str__",
+        "get_groups",
+        "get_platforms",
+        "locale",
+        "product",
+        "creator",
+        "is_visible",
+    ]
     exclude = ["created"]
     readonly_fields = ["creator"]
     date_hierarchy = "created"
-    list_filter = ["created", "groups", "platforms", "locale"]
+    list_filter = ["created", "groups", "platforms", "locale", "product"]
     search_fields = ["creator__username"]
 
     def get_groups(self, obj):
@@ -41,6 +49,11 @@ class AnnouncementAdmin(admin.ModelAdmin):
         if not obj.pk:
             obj.creator = request.user
         obj.save()
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "product":
+            kwargs["queryset"] = db_field.related_model.objects.filter(is_archived=False)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 admin.site.register(Announcement, AnnouncementAdmin)

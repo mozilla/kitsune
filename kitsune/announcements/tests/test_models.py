@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.tests import AnnouncementFactory
-from kitsune.products.tests import PlatformFactory
+from kitsune.products.tests import PlatformFactory, ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import LocaleFactory
@@ -249,3 +249,99 @@ class AnnouncementModelTests(TestCase):
         self.assertEqual(2, announcements.count())
         self.assertIn(site_wide_ann, announcements)
         self.assertIn(mac_ann, announcements)
+
+    def test_product_filtering(self):
+        """Test product-specific announcement filtering."""
+        firefox = ProductFactory(slug="firefox", title="Firefox")
+        thunderbird = ProductFactory(slug="thunderbird", title="Thunderbird")
+
+        global_ann = AnnouncementFactory()
+        firefox_ann = AnnouncementFactory(product=firefox)
+        thunderbird_ann = AnnouncementFactory(product=thunderbird)
+
+        firefox_announcements = Announcement.get_site_wide(product_slug="firefox")
+        self.assertEqual(2, firefox_announcements.count())
+        self.assertIn(global_ann, firefox_announcements)
+        self.assertIn(firefox_ann, firefox_announcements)
+        self.assertNotIn(thunderbird_ann, firefox_announcements)
+
+        thunderbird_announcements = Announcement.get_site_wide(product_slug="thunderbird")
+        self.assertEqual(2, thunderbird_announcements.count())
+        self.assertIn(global_ann, thunderbird_announcements)
+        self.assertIn(thunderbird_ann, thunderbird_announcements)
+        self.assertNotIn(firefox_ann, thunderbird_announcements)
+
+        global_only = Announcement.get_site_wide()
+        self.assertEqual(1, global_only.count())
+        self.assertIn(global_ann, global_only)
+        self.assertNotIn(firefox_ann, global_only)
+        self.assertNotIn(thunderbird_ann, global_only)
+
+    def test_product_with_combined_filtering(self):
+        """Test product filtering combined with other filters."""
+        firefox = ProductFactory(slug="firefox", title="Firefox")
+        mac_platform = PlatformFactory(slug="mac", name="macOS")
+        group1 = GroupFactory()
+
+        global_ann = AnnouncementFactory()
+        firefox_ann = AnnouncementFactory(product=firefox)
+        firefox_mac_ann = AnnouncementFactory(product=firefox)
+        firefox_mac_ann.platforms.add(mac_platform)
+
+        firefox_group_ann = AnnouncementFactory(product=firefox)
+        firefox_group_ann.groups.add(group1)
+
+        firefox_locale_ann = AnnouncementFactory(product=firefox, locale=self.locale)
+
+        announcements = Announcement.get_site_wide(product_slug="firefox")
+        self.assertEqual(3, announcements.count())
+        self.assertIn(global_ann, announcements)
+        self.assertIn(firefox_ann, announcements)
+        self.assertIn(firefox_mac_ann, announcements)
+
+        mac_announcements = Announcement.get_site_wide(
+            product_slug="firefox", platform_slugs=["mac"]
+        )
+        self.assertEqual(3, mac_announcements.count())
+        self.assertIn(global_ann, mac_announcements)
+        self.assertIn(firefox_ann, mac_announcements)
+        self.assertIn(firefox_mac_ann, mac_announcements)
+
+        group_announcements = Announcement.get_site_wide(
+            product_slug="firefox", group_ids=[group1.id]
+        )
+        self.assertEqual(4, group_announcements.count())
+        self.assertIn(global_ann, group_announcements)
+        self.assertIn(firefox_ann, group_announcements)
+        self.assertIn(firefox_mac_ann, group_announcements)
+        self.assertIn(firefox_group_ann, group_announcements)
+
+        locale_announcements = Announcement.get_site_wide(
+            product_slug="firefox", locale_name=self.locale.locale
+        )
+        self.assertEqual(4, locale_announcements.count())
+        self.assertIn(global_ann, locale_announcements)
+        self.assertIn(firefox_ann, locale_announcements)
+        self.assertIn(firefox_mac_ann, locale_announcements)
+        self.assertIn(firefox_locale_ann, locale_announcements)
+
+    def test_archived_product_filtering(self):
+        """Test that announcements for archived products are not shown."""
+        firefox = ProductFactory(slug="firefox", title="Firefox", is_archived=False)
+        archived_product = ProductFactory(
+            slug="old-product", title="Old Product", is_archived=True
+        )
+
+        global_ann = AnnouncementFactory()
+        firefox_ann = AnnouncementFactory(product=firefox)
+        archived_product_ann = AnnouncementFactory(product=archived_product)
+
+        firefox_announcements = Announcement.get_site_wide(product_slug="firefox")
+        self.assertEqual(2, firefox_announcements.count())
+        self.assertIn(global_ann, firefox_announcements)
+        self.assertIn(firefox_ann, firefox_announcements)
+
+        archived_announcements = Announcement.get_site_wide(product_slug="old-product")
+        self.assertEqual(1, archived_announcements.count())
+        self.assertIn(global_ann, archived_announcements)
+        self.assertNotIn(archived_product_ann, archived_announcements)
