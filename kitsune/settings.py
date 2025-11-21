@@ -1356,7 +1356,9 @@ STALE_TRANSLATION_THRESHOLD_DAYS = config(
 )
 STALE_TRANSLATION_BATCH_SIZE = config("STALE_TRANSLATION_BATCH_SIZE", default=10, cast=int)
 HYBRID_QUOTA_PER_LOCALE = config("HYBRID_QUOTA_PER_LOCALE", default=2, cast=int)
-HYBRID_REVIEW_GRACE_PERIOD = config("HYBRID_REVIEW_GRACE_PERIOD", default=72, cast=int)  # Hours
+HYBRID_REVIEW_GRACE_PERIOD = config(
+    "HYBRID_REVIEW_GRACE_PERIOD", default=168, cast=int
+)  # Hours - 7 days
 
 # Celery beat configuration
 DJANGO_CELERY_BEAT_TZ_AWARE = False  # This should match USE_TZ.
