@@ -9,7 +9,6 @@ HIGHEST_RANKING = 100
 
 # Special tag names:
 NEEDS_INFO_TAG_NAME = "needsinfo"
-OFFTOPIC_TAG_NAME = "offtopic"
 
 # How long until a question is automatically taken away from a user
 TAKE_TIMEOUT = 600

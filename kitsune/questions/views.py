@@ -288,10 +288,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     # Annotate with is_contributor for authenticated users to avoid N+1 queries
     if request.user.is_authenticated:
-        contributor_subquery = Answer.objects.filter(
-            question=OuterRef('pk'),
-            creator=request.user
-        )
+        contributor_subquery = Answer.objects.filter(question=OuterRef("pk"), creator=request.user)
         question_qs = question_qs.annotate(
             user_is_contributor=Exists(contributor_subquery) | Q(creator=request.user)
         )
@@ -1543,7 +1540,20 @@ def metrics(request, locale_code=None):
 
 def _answers_data(request, question_id, form=None, watch_form=None, answer_preview=None):
     """Return a map of the minimal info necessary to draw an answers page."""
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(
+        Question.objects.select_related(
+            "creator",
+            "updated_by",
+            "last_answer",
+            "last_answer__creator",
+            "solution",
+            "marked_as_spam_by",
+            "taken_by",
+            "product",
+            "topic",
+        ).prefetch_related("tags", "metadata_set"),
+        pk=question_id,
+    )
     answers_ = question.answers.all()
 
     # Remove spam flag if an answer passed the moderation queue
@@ -1567,7 +1577,9 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
         or QuestionSolvedEvent.is_notifying(request.user, question)
     )
 
-    tags = question.my_tags
+    # Sort the tags without modifying the query, so we ensure that
+    # the prefetch cache is used.
+    tags = sorted(question.tags.all(), key=lambda t: t.name)
 
     return {
         "question": question,
