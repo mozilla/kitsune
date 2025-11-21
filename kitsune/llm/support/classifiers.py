@@ -124,15 +124,14 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
         product_result = product_result_dict["product_result"]
         new_product_title = product_result.get("product")
 
-        if new_product_title and new_product_title != product.title:
-            if product.has_ticketing_support:
-                return {
-                    "action": ModerationAction.NOT_SPAM,
-                    "product_result": product_result,
-                    "topic_result": {},
-                }
+        if (
+            new_product_title
+            and (new_product_title != product.title)
+            and (new_product := Product.active.filter(title=new_product_title).first())
+            and new_product.has_ticketing_support
+        ):
             return {
-                "action": ModerationAction.FLAG_REVIEW,
+                "action": ModerationAction.NOT_SPAM,
                 "product_result": product_result,
                 "topic_result": {},
             }
