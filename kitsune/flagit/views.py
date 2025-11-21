@@ -358,11 +358,7 @@ def update(request, flagged_object_id):
             isinstance(flagged.content_object, SupportTicket)
             and flagged.content_object.status == SupportTicket.STATUS_FLAGGED
         ):
-            if str(new_status) == str(FlaggedObject.FLAG_REJECTED):
-                send_support_ticket_to_zendesk(flagged.content_object)
-            elif str(new_status) == str(FlaggedObject.FLAG_ACCEPTED):
-                flagged.content_object.status = SupportTicket.STATUS_REJECTED
-                flagged.content_object.save(update_fields=["status"])
+            send_support_ticket_to_zendesk(flagged.content_object)
 
     if flagged.reason == FlaggedObject.REASON_CONTENT_MODERATION:
         content_object = flagged.content_object
