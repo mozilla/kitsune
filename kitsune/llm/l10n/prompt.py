@@ -44,10 +44,17 @@ A `wiki-external-link` is a string that case-sensitively matches the regular exp
 r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\\x00-\\x20\\x7f]*)\\s*(?P<description>.*?)\\]"
 ```
 
+## Definition of `wiki-ui-element`
+A `wiki-ui-element` is a string that case-sensitively matches the regular expression pattern that follows:
+
+```python
+r"\\{(button|menu|pref) [^}]*\\}"
+```
+
 ## Definition of `prior-translation-wiki-map`
 - The `prior-translation-wiki-map` is a Python `dict` built from the "prior translation", if it is provided.
 - A Python `dict` maps keys to their values.
-- **IMPORTANT**: Extract **ALL** `wiki-hook`, `wiki-article-link`, and `wiki-external-link` elements from the **ENTIRE** {{ source_language }} text of the "prior translation". Each element becomes a key in the `prior-translation-wiki-map`, and each key's value is its corresponding translation found in the {{ target_language }} text of the "prior translation".
+- **IMPORTANT**: Extract **ALL** `wiki-hook`, `wiki-article-link`, `wiki-external-link`, and `wiki-ui-element` elements from the **ENTIRE** {{ source_language }} text of the "prior translation". Each element becomes a key in the `prior-translation-wiki-map`, and each key's value is its corresponding translation found in the {{ target_language }} text of the "prior translation".
 - This `prior-translation-wiki-map` preserves human-localized wiki elements, which **must be reused** whenever those elements appear anywhere in your translation, regardless of whether they appear in changed or unchanged sections.
 - If no "prior translation" is provided, the `prior-translation-wiki-map` should be set to an empty `dict`.
 
@@ -63,23 +70,23 @@ r"\\[((mailto:|git://|irc://|https?://|ftp://|/)[^<>\\]\\[\\x00-\\x20\\x7f]*)\\s
 2. **Preserve unchanged** each string that case-sensitively matches the following regular expression:
 
     ```python
-    r"\\{(for|key|filepath|button|menu|pref) [^}]*\\}"
+    r"\\{(for|key|filepath) [^}]*\\}"
     ```
 
     - In other words, preserve unchanged both the tags and the text inside the tags.
-    - For example, each of the strings `{button Allow}` and `{menu Settings}` and `{pref Name}` should be preserved unchanged.
+    - For example, each of the strings `{for win10}` and `{key Ctrl+T}` and `{filepath file}` should be preserved unchanged.
 
-3. **CRITICAL RULE**: For **every** wiki element (`wiki-hook`, `wiki-article-link`, or `wiki-external-link`) you encounter **anywhere** in the text (whether in same or different parts), you **MUST** perform the following steps in order:
+3. **CRITICAL RULE**: For **every** wiki element (`wiki-hook`, `wiki-article-link`, `wiki-external-link`, or `wiki-ui-element`) you encounter **anywhere** in the text (whether in same or different parts), you **MUST** perform the following steps in order:
     - **FIRST**: Check if the element exists as a key within the `prior-translation-wiki-map`.
     - **If found in the map**: Use its value from the `prior-translation-wiki-map` as its translation. This preserves human localization. **Do NOT translate it freshly**.
     - **ONLY if NOT found in the map**:
-        - For `wiki-hook`: **preserve it unchanged**
+        - For `wiki-hook` and `wiki-ui-element`: **preserve it unchanged**
         - For `wiki-article-link` and `wiki-external-link`: translate only the `description` text if present (**remember to obey rule #1 above**), and **preserve the rest unchanged**. If there is no `description`, preserve the entire element unchanged.
     - **NEVER** translate a wiki element freshly if it exists in the `prior-translation-wiki-map`. Always prefer the map value.
 
 # Task Instructions
 1. **Build the `prior-translation-wiki-map`**:
-   - If a "prior translation" is provided, extract **ALL** wiki elements (`wiki-hook`, `wiki-article-link`, `wiki-external-link`) from the **ENTIRE** {{ source_language }} text of the "prior translation" and map each to its corresponding translation in the {{ target_language }} text.
+   - If a "prior translation" is provided, extract **ALL** wiki elements (`wiki-hook`, `wiki-article-link`, `wiki-external-link`, and `wiki-ui-element`) from the **ENTIRE** {{ source_language }} text of the "prior translation" and map each to its corresponding translation in the {{ target_language }} text.
    - This map must include wiki elements from **both** the unchanged AND changed sections of the prior translation.
    - If no "prior translation" is provided, set the `prior-translation-wiki-map` to an empty `dict`.
 2. **Compare** the {{ source_language }} text you've been asked to translate with the {{ source_language }} text of the "prior translation", if provided, and **determine which parts are the same and which parts are different**. If no "prior translation" was provided, consider the entire {{ source_language }} text you've been asked to translate as different.
