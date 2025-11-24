@@ -26,7 +26,7 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
     """
     Generate Zendesk tags from LLM classification results.
 
-    Returns tier tags (t1-, t2-, t3-) and automation tags based on the classified topic.
+    Returns tier tags (t1-, t2-, t3-), legacy tags, and automation tags based on the classified topic.
     If product was reassigned, includes "other" tag.
     """
     product_slug = submission.product.slug
@@ -72,11 +72,14 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
 
         tags.extend(tier_tags)
 
-        # Find matching automation tag
+        # Find matching automation and legacy tags
         categories = cast(list, ZENDESK_CATEGORIES.get(product_slug, []))
         for category in categories:
             category_tiers = category.get("tags", {}).get("tiers", [])
             if set(tier_tags) == set(category_tiers):
+                legacy = category.get("tags", {}).get("legacy")
+                if legacy:
+                    tags.append(legacy)
                 automation = category.get("tags", {}).get("automation")
                 if automation:
                     tags.append(automation)
