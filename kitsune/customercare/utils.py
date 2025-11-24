@@ -76,7 +76,7 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
         categories = cast(list, ZENDESK_CATEGORIES.get(product_slug, []))
         for category in categories:
             category_tiers = category.get("tags", {}).get("tiers", [])
-            if set(tier_tags) == set(category_tiers):
+            if set(tier_tags) & set(category_tiers):
                 legacy = category.get("tags", {}).get("legacy")
                 if legacy:
                     tags.append(legacy)
