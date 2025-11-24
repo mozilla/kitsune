@@ -292,7 +292,7 @@ class ProcessClassificationResultTests(TestCase):
             FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
         )
         self.assertEqual(question.topic, self.topic1)
-        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic1.slug})
+        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic1.slug})
 
         process_classification_result(question, classification_result)
 
@@ -300,7 +300,7 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic2)
-        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic2.slug})
+        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic2.slug})
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,
@@ -329,7 +329,7 @@ class ProcessClassificationResultTests(TestCase):
             FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
         )
         self.assertIsNone(question.topic)
-        self.assertFalse(question.my_tags)
+        self.assertFalse(question.tags.count())
 
         process_classification_result(question, classification_result)
 
@@ -337,7 +337,7 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic2)
-        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic2.slug})
+        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic2.slug})
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,
@@ -366,7 +366,7 @@ class ProcessClassificationResultTests(TestCase):
             FlaggedObject.objects.filter(content_type=q_ct, object_id=question.id).exists()
         )
         self.assertEqual(question.topic, self.topic1)
-        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic1.slug})
+        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic1.slug})
 
         process_classification_result(question, classification_result)
 
@@ -374,7 +374,7 @@ class ProcessClassificationResultTests(TestCase):
 
         self.assertFalse(question.is_spam)
         self.assertEqual(question.topic, self.topic1)
-        self.assertEqual({tag.name for tag in question.my_tags}, {self.topic1.slug})
+        self.assertEqual({tag.name for tag in question.tags.all()}, {self.topic1.slug})
         self.assertTrue(
             FlaggedObject.objects.filter(
                 content_type=q_ct,

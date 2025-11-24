@@ -383,7 +383,7 @@ class Question(AAQBase):
     def is_contributor(self, user):
         """Did the passed in user contribute to this question?"""
         if user.is_authenticated:
-            if hasattr(self, 'user_is_contributor'):
+            if hasattr(self, "user_is_contributor"):
                 return self.user_is_contributor
             return user.id in self.contributors
 
@@ -405,10 +405,6 @@ class Question(AAQBase):
     def is_solved(self):
         return self.solution_id is not None
 
-    @property
-    def is_offtopic(self):
-        return config.OFFTOPIC_TAG_NAME in [t.name for t in self.my_tags]
-
     @cached_property
     def created_after_failed_kb_deflection(self) -> bool:
         """
@@ -427,16 +423,6 @@ class Question(AAQBase):
         except QuestionMetaData.DoesNotExist:
             return []
         return json.loads(metadata.value)
-
-    @property
-    def my_tags(self):
-        """A caching wrapper around self.tags.all()."""
-        cache_key = self.tags_cache_key % self.id
-        tags = cache.get(cache_key)
-        if tags is None:
-            tags = list(self.tags.all().order_by("name"))
-            cache.add(cache_key, tags, settings.CACHE_MEDIUM_TIMEOUT)
-        return tags
 
     @classmethod
     def get_serializer(cls, serializer_type="full"):
@@ -515,7 +501,7 @@ class Question(AAQBase):
     def num_visits(self):
         """Get the number of visits for this question."""
         # Use annotation if it exists (from question_list view optimization)
-        if hasattr(self, 'visits_count'):
+        if hasattr(self, "visits_count"):
             return self.visits_count
 
         if not hasattr(self, "_num_visits"):

@@ -223,9 +223,8 @@
               </ul>
               <div class="forum--content">
                 <aside class="forum--meta question-meta {% if not question.num_answers %}urgent{% endif %}">
-                  {% set tags = question.my_tags %}
                   <ul class="tag-list push-right">
-                  {% for tag in tags %}
+                  {% for tag in question.tags.all()|sort(attribute='name') %}
                     <li class="tag"><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
                   {% endfor %}
                   {% if question.is_spam %}
