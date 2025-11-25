@@ -229,3 +229,24 @@ ZENDESK_CATEGORIES_LOGINLESS = {
         },
     ]
 }
+
+
+ZENDESK_LEGACY_MAPPING: dict[str, set] = {
+    "accounts": {
+        "t1-accounts",
+        "t1-passwords-and-sign-in",
+    },
+    "technical": {
+        "t1-accessibility",
+        "t1-backup-recovery-and-sync",
+        "t1-browse",
+        "t1-download-and-save",
+        "t1-email-and-messaging",
+        "t1-installation-and-updates",
+        "t1-performance-and-connectivity",
+        "t1-privacy-and-security",
+        "t1-search-tag-and-share",
+        "t1-settings",
+    },
+    "payment": {"t1-billing-and-subscriptions"},
+}

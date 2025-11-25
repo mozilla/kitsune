@@ -3,7 +3,7 @@ from typing import Any, cast
 
 import waffle
 
-from kitsune.customercare import ZENDESK_CATEGORIES
+from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_LEGACY_MAPPING
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
@@ -72,18 +72,23 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
 
         tags.extend(tier_tags)
 
-        # Find matching automation and legacy tags
+        # Find matching automation tags
         categories = cast(list, ZENDESK_CATEGORIES.get(product_slug, []))
         for category in categories:
             category_tiers = category.get("tags", {}).get("tiers", [])
-            if set(tier_tags) & set(category_tiers):
-                legacy = category.get("tags", {}).get("legacy")
-                if legacy:
-                    tags.append(legacy)
+            if set(tier_tags) == set(category_tiers):
                 automation = category.get("tags", {}).get("automation")
                 if automation:
                     tags.append(automation)
                 break
+
+        # Find matching legacy tag or fallback to "general" legacy tag.
+        for legacy_tag, topic_tags in ZENDESK_LEGACY_MAPPING.items():
+            if set(tier_tags) & topic_tags:
+                tags.append(legacy_tag)
+                break
+        else:
+            tags.append("general")
 
     except Exception:
         return ["undefined", *tags]

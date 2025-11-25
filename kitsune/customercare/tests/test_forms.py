@@ -15,20 +15,10 @@ class ZendeskFormTests(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.vpn_product = ProductFactory(
-            title="Mozilla VPN",
-            slug="mozilla-vpn",
-            codename="vpn"
-        )
-        self.relay_product = ProductFactory(
-            title="Firefox Relay",
-            slug="relay",
-            codename="relay"
-        )
+        self.vpn_product = ProductFactory(title="Mozilla VPN", slug="mozilla-vpn", codename="vpn")
+        self.relay_product = ProductFactory(title="Firefox Relay", slug="relay", codename="relay")
         self.accounts_product = ProductFactory(
-            title="Mozilla Accounts",
-            slug="mozilla-account",
-            codename="accounts"
+            title="Mozilla Accounts", slug="mozilla-account", codename="accounts"
         )
         self.user = UserFactory(email="test@example.com")
 
@@ -56,7 +46,7 @@ class ZendeskFormTests(TestCase):
         self.assertIn("I want to change my Relay email domain", relay_topics)
         self.assertNotIn("I want to change my Relay email domain", vpn_topics)
 
-    @patch('django.conf.settings.LOGIN_EXCEPTIONS', ['mozilla-account'])
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
     def test_loginless_form_gets_loginless_categories(self):
         """Test that loginless users get FxA-specific categories."""
         anonymous_user = AnonymousUser()
@@ -76,19 +66,19 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(form.product, self.vpn_product)
         self.assertEqual(form.user, self.user)
 
-    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_send_collects_all_tags_from_selected_category(self, mock_task):
         """Test that send() method collects all tags from selected category."""
         form = ZendeskForm(
             data={
-                'email': 'test@example.com',
-                'category': 'vpn-connection-issues',
-                'subject': 'Test subject',
-                'description': 'Test description',
-                'country': 'US'
+                "email": "test@example.com",
+                "category": "vpn-connection-issues",
+                "subject": "Test subject",
+                "description": "Test description",
+                "country": "US",
             },
             product=self.vpn_product,
-            user=self.user
+            user=self.user,
         )
 
         self.assertTrue(form.is_valid())
@@ -99,33 +89,33 @@ class ZendeskFormTests(TestCase):
             "t1-performance-and-connectivity",  # tier1
             "t2-connectivity",  # tier2
             "t3-connection-failure",  # tier3
-            "ssa-connection-issues-automation"  # automation
+            "ssa-connection-issues-automation",  # automation
         ]
 
         self.assertIsInstance(submission, SupportTicket)
         self.assertEqual(submission.zendesk_tags, expected_tags)
         self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
-        self.assertEqual(submission.subject, 'Test subject')
-        self.assertEqual(submission.description, 'Test description')
-        self.assertEqual(submission.category, 'vpn-connection-issues')
-        self.assertEqual(submission.email, 'test@example.com')
-        self.assertEqual(submission.country, 'US')
+        self.assertEqual(submission.subject, "Test subject")
+        self.assertEqual(submission.description, "Test description")
+        self.assertEqual(submission.category, "vpn-connection-issues")
+        self.assertEqual(submission.email, "test@example.com")
+        self.assertEqual(submission.country, "US")
         self.assertEqual(submission.product, self.vpn_product)
         self.assertEqual(submission.user, self.user)
         mock_task.assert_called_once_with(submission.id)
 
-    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_send_handles_categories_with_segmentation_tags(self, mock_task):
         """Test that segmentation tags are included when present."""
         form = ZendeskForm(
             data={
-                'email': 'test@example.com',
-                'category': 'relay-email-forwarding',
-                'subject': 'Test subject',
-                'description': 'Test description',
+                "email": "test@example.com",
+                "category": "relay-email-forwarding",
+                "subject": "Test subject",
+                "description": "Test description",
             },
             product=self.relay_product,
-            user=self.user
+            user=self.user,
         )
 
         self.assertTrue(form.is_valid())
@@ -136,7 +126,7 @@ class ZendeskFormTests(TestCase):
             "t1-privacy-and-security",  # tier1
             "t2-masking",  # tier2
             "t3-email-masking",  # tier3
-            "seg-relay-no-fwd-deliver"  # segmentation
+            "seg-relay-no-fwd-deliver",  # segmentation
         ]
 
         self.assertIsInstance(submission, SupportTicket)
@@ -144,67 +134,62 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
         mock_task.assert_called_once_with(submission.id)
 
-    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_send_handles_categories_with_only_some_tags(self, mock_task):
         """Test that only non-null tags are collected."""
         form = ZendeskForm(
             data={
-                'email': 'test@example.com',
-                'category': 'payments',
-                'subject': 'Test subject',
-                'description': 'Test description',
+                "email": "test@example.com",
+                "category": "payments",
+                "subject": "Test subject",
+                "description": "Test description",
             },
             product=self.vpn_product,
-            user=self.user
+            user=self.user,
         )
 
         self.assertTrue(form.is_valid())
         submission = form.send(self.user, self.vpn_product)
 
-        expected_tags = [
-            "payments",
-            "t1-billing-and-subscriptions"
-        ]
+        expected_tags = ["payments", "t1-billing-and-subscriptions"]
 
         self.assertIsInstance(submission, SupportTicket)
         self.assertEqual(submission.zendesk_tags, expected_tags)
         self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
         mock_task.assert_called_once_with(submission.id)
 
-    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_send_with_no_category_selected(self, mock_task):
         """Test that no tags are collected when no category is selected."""
         form = ZendeskForm(
             data={
-                'email': 'test@example.com',
-                'subject': 'Test subject',
-                'description': 'Test description',
+                "email": "test@example.com",
+                "subject": "Test subject",
+                "description": "Test description",
             },
             product=self.vpn_product,
-            user=self.user
+            user=self.user,
         )
 
         if not form.is_valid():
             form.cleaned_data = {
-                'email': 'test@example.com',
-                'subject': 'Test subject',
-                'description': 'Test description',
-                'category': '',  # Empty category
+                "email": "test@example.com",
+                "subject": "Test subject",
+                "description": "Test description",
+                "category": "",  # Empty category
             }
         submission = form.send(self.user, self.vpn_product)
 
         self.assertIsInstance(submission, SupportTicket)
         self.assertEqual(submission.zendesk_tags, [])
         self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
-        self.assertEqual(submission.category, '')
+        self.assertEqual(submission.category, "")
         mock_task.assert_called_once_with(submission.id)
 
     def test_product_without_categories_gets_empty_choices(self):
         """Test that products not in our categories dict get empty choices."""
         unknown_product = ProductFactory(
-            title="Unknown Product",
-            slug="unknown-product",
-            codename="unknown"
+            title="Unknown Product", slug="unknown-product", codename="unknown"
         )
 
         form = ZendeskForm(product=unknown_product, user=self.user)
@@ -224,26 +209,27 @@ class ZendeskFormTests(TestCase):
                 break
 
         self.assertIsNotNone(payments_category)
-        self.assertEqual(payments_category["topic"], "I need help with a billing or subscription question")
-        self.assertEqual(payments_category["tags"]["legacy"], "payments")
+        self.assertEqual(
+            payments_category["topic"], "I need help with a billing or subscription question"
+        )
         self.assertEqual(payments_category["tags"]["tiers"], ["t1-billing-and-subscriptions"])
         self.assertIsNone(payments_category["tags"]["automation"])
         self.assertIsNone(payments_category["tags"]["segmentation"])
 
-    @patch('django.conf.settings.LOGIN_EXCEPTIONS', ['mozilla-account'])
-    @patch('kitsune.customercare.tasks.zendesk_submission_classifier.delay')
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_loginless_send_uses_stored_categories(self, mock_task):
         """Test that loginless send() uses categories stored in init."""
         anonymous_user = AnonymousUser()
         form = ZendeskForm(
             data={
-                'email': 'test@example.com',
-                'category': 'fxa-2fa-lockout',
-                'subject': 'Test subject',
-                'description': 'Test description',
+                "email": "test@example.com",
+                "category": "fxa-2fa-lockout",
+                "subject": "Test subject",
+                "description": "Test description",
             },
             product=self.accounts_product,
-            user=anonymous_user
+            user=anonymous_user,
         )
 
         self.assertTrue(form.is_valid())
@@ -254,12 +240,12 @@ class ZendeskFormTests(TestCase):
             "t1-passwords-and-sign-in",
             "t2-two-factor-authentication",
             "t3-two-factor-lockout",
-            "ssa-2fa-automation"
+            "ssa-2fa-automation",
         ]
 
         self.assertIsInstance(submission, SupportTicket)
         self.assertEqual(submission.zendesk_tags, expected_tags)
         self.assertEqual(submission.status, SupportTicket.STATUS_PENDING)
         self.assertEqual(submission.user, None)  # Anonymous users don't have a user
-        self.assertEqual(submission.email, 'test@example.com')
+        self.assertEqual(submission.email, "test@example.com")
         mock_task.assert_called_once_with(submission.id)
