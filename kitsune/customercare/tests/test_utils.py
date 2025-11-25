@@ -79,7 +79,7 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-settings"])
+        self.assertEqual(tags, ["t1-settings", "technical"])
 
     def test_two_tier_topic(self):
         """Test generating tags for a tier 2 topic."""
@@ -93,7 +93,7 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-settings", "t2-notifications"])
+        self.assertEqual(tags, ["t1-settings", "t2-notifications", "technical"])
 
     def test_three_tier_topic(self):
         """Test generating tags for a tier 3 topic."""
@@ -111,7 +111,9 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-settings", "t2-addons-extensions-and-themes", "t3-extensions"])
+        self.assertEqual(
+            tags, ["t1-settings", "t2-addons-extensions-and-themes", "t3-extensions", "technical"]
+        )
 
     @patch("kitsune.customercare.utils.ZENDESK_CATEGORIES")
     def test_automation_tag_included_when_matched(self, mock_categories):
@@ -139,6 +141,7 @@ class GenerateClassificationTagsTests(TestCase):
         self.assertIn("ssa-sign-in-failure-automation", tags)
         self.assertIn("t1-passwords-and-sign-in", tags)
         self.assertIn("t2-sign-in", tags)
+        self.assertIn("accounts", tags)
 
     @patch("kitsune.customercare.utils.ZENDESK_CATEGORIES")
     def test_no_automation_tag_when_not_matched(self, mock_categories):
@@ -153,15 +156,15 @@ class GenerateClassificationTagsTests(TestCase):
             }
         ]
 
-        tier1 = TopicFactory(title="Settings", parent=None, is_archived=False)
+        tier1 = TopicFactory(title="Billing and subscriptions", parent=None, is_archived=False)
         tier1.products.add(self.product)
 
         submission = Mock(product=self.product)
-        result = {"topic_result": {"topic": "Settings"}}
+        result = {"topic_result": {"topic": "Billing and subscriptions"}}
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-settings"])
+        self.assertEqual(tags, ["t1-billing-and-subscriptions", "payment"])
         self.assertNotIn("some-automation", tags)
 
     def test_product_reassignment_includes_other_tag(self):
@@ -179,6 +182,7 @@ class GenerateClassificationTagsTests(TestCase):
 
         self.assertIn("other", tags)
         self.assertIn("t1-settings", tags)
+        self.assertIn("technical", tags)
 
     def test_archived_topic_returns_undefined(self):
         """Test that archived topics are not found and return ['undefined']."""
