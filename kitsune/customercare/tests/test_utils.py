@@ -43,31 +43,31 @@ class GenerateClassificationTagsTests(TestCase):
         self.product = ProductFactory(slug="firefox", title="Firefox")
 
     def test_no_topic_result_returns_undefined(self):
-        """Test that missing topic_result returns ['undefined']."""
+        """Test that missing topic_result returns ['undefined', 'general']."""
         submission = Mock(product=self.product)
         result = {}
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["undefined"])
+        self.assertEqual(tags, ["undefined", "general"])
 
     def test_undefined_topic_returns_empty_list(self):
-        """Test that 'Undefined' topic returns empty list."""
+        """Test that 'Undefined' topic returns ['undefined', 'general']."""
         submission = Mock(product=self.product)
         result = {"topic_result": {"topic": "Undefined"}}
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, [])
+        self.assertEqual(tags, ["undefined", "general"])
 
     def test_topic_not_found_in_db_returns_undefined(self):
-        """Test that topic not found in database returns ['undefined']."""
+        """Test that topic not found in database returns ['undefined', 'general']."""
         submission = Mock(product=self.product)
         result = {"topic_result": {"topic": "Nonexistent Topic"}}
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["undefined"])
+        self.assertEqual(tags, ["undefined", "general"])
 
     def test_single_tier_topic(self):
         """Test generating tags for a tier 1 topic."""
@@ -185,7 +185,7 @@ class GenerateClassificationTagsTests(TestCase):
         self.assertIn("technical", tags)
 
     def test_archived_topic_returns_undefined(self):
-        """Test that archived topics are not found and return ['undefined']."""
+        """Test that archived topics are not found and return ['undefined', 'general']."""
         topic = TopicFactory(title="Settings", parent=None, is_archived=True)
         topic.products.add(self.product)
 
@@ -194,5 +194,4 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["undefined"])
-        self.assertEqual(tags, ["undefined"])
+        self.assertEqual(tags, ["undefined", "general"])

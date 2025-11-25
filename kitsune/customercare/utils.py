@@ -40,24 +40,19 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
         tags.append("other")
 
     # Get topic title from classification
-    topic_title = topic_result.get("topic")
-
-    # If no topic or "Undefined", return current tags
-    if not topic_title:
-        return ["undefined", *tags]
-
-    if topic_title == "Undefined":
-        return tags
+    topic_title = topic_result.get("topic", "")
 
     # Find topic in database and build tier tags
+    topic = Topic.objects.filter(
+        title=topic_title, products__slug=product_slug, is_archived=False
+    ).first()
+
+    # If no topic or "Undefined" or topic not found in DB
+    # return current tags and legacy tag "general"
+    if not topic_title or topic_title == "Undefined" or not topic:
+        return ["undefined", "general", *tags]
+
     try:
-        topic = Topic.objects.filter(
-            title=topic_title, products__slug=product_slug, is_archived=False
-        ).first()
-
-        if not topic:
-            return ["undefined", *tags]
-
         # Build path from topic to root
         path = [topic]
         current = topic
