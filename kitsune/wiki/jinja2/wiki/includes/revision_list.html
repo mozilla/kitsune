@@ -27,6 +27,7 @@
             {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
             <th class="l10n"><abbr title="{{ _('Ready for localization') }}">{{ pgettext("First letter of 'Ready for localization'", 'R') }}</abbr></th>
             {% endif %}
+            {# L10n: A noun. There are comments for articles in general (on https://support.mozilla.org/contributors/need-changes) and every article revision. #}
             <th class="comment">{{ _('Comment') }}</th>
             <th class="edit"></th>
             {% if document.current_revision != rev and document.allows(user, 'delete_revision') %}
@@ -68,6 +69,7 @@
              {% if document.current_revision == rev %}
                <span class="current">{{ _('Current') }}</span>
              {% elif rev.is_approved %}
+               {# L10n: This refers to article revisions. #}
                <span class="approved">{{ _('Approved') }}</span>
              {% else %}
                <span class="rejected">{{ _('Reviewed') }}</span>

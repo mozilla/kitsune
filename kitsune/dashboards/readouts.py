@@ -44,11 +44,24 @@ log = logging.getLogger("k.dashboards.readouts")
 MOST_VIEWED = 1
 MOST_RECENT = 2
 REVIEW_STATUSES = {
+    # L10n: This is a KB article localization status. It may be displayed on
+    # https://support.mozilla.org/localization or
+    # https://support.mozilla.org/localization/most-visited-translations (for non-en-US locales).
+    # Note: the article may already be translated; the status is displayed if there is at least one unreviewed revision.
     1: (_lazy("Review Needed"), "wiki.document_revisions", "review"),
+    # L10n: This is a KB article localization status. It may be displayed on
+    # https://support.mozilla.org/localization or
+    # https://support.mozilla.org/localization/most-visited-translations (for non-en-US locales).
     0: (_lazy("Up to Date"), "", "ok"),
 }
 SIGNIFICANCE_STATUSES = {
+    # L10n: This is a KB article localization status. It may be displayed on
+    # https://support.mozilla.org/localization or
+    # https://support.mozilla.org/localization/most-visited-translations (for non-en-US locales).
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),
+    # L10n: This is a KB article localization status. It may be displayed on
+    # https://support.mozilla.org/localization or
+    # https://support.mozilla.org/localization/most-visited-translations (for non-en-US locales).
     MAJOR_SIGNIFICANCE: (_lazy("Immediate Update Needed"), "wiki.edit_document", "out-of-date"),
 }
 MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY = Subquery(
@@ -114,6 +127,9 @@ def row_to_dict_with_out_of_dateness(
         slug = eng_slug
         title = eng_title
         locale = settings.WIKI_DEFAULT_LANGUAGE
+        # L10n: This is a KB article localization status. It may be displayed on
+        # https://support.mozilla.org/localization or
+        # https://support.mozilla.org/localization/most-visited-translations (for non-en-US locales).
         status = _("Translation Needed")
         # When calling the translate view, specify locale to translate to:
         status_url = reverse("wiki.translate", args=[slug], locale=readout_locale)
@@ -376,56 +392,59 @@ def l10n_overview_rows(locale, product=None, user=None):
 
     return {
         "top-20": {
+            # L10n: This is an entry header for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
             "title": _("Top 20 Articles"),
             "numerator": top_20_translated,
             "denominator": 20 if total_docs > 20 else total_docs,
             "percent": percent_or_100(top_20_translated, 20 if total_docs > 20 else total_docs),
-            "description": _(
-                "These are the top 20 most visited articles "
-                "in the last 30 days, which account for over "
-                "50% of the traffic to the Knowledge Base."
-            ),
+            # L10n: This is an entry description for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
+            "description": _("These are the top 20 most visited articles in the last 30 days, which account for over 50% of the traffic to the Knowledge Base."),
         },
         "top-50": {
+            # L10n: This is an entry header for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
             "title": _("Top 50 Articles"),
             "numerator": top_50_translated,
             "denominator": 50 if total_docs > 50 else total_docs,
             "percent": percent_or_100(top_50_translated, 50 if total_docs > 50 else total_docs),
+            # L10n: This is an entry description for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
             "description": _("These are the top 50 most visited articles " "in the last 30 days."),
         },
         "top-100": {
+            # L10n: This is an entry header for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
             "title": _("Top 100 Articles"),
             "numerator": top_100_translated,
             "denominator": 100 if total_docs > 100 else total_docs,
             "percent": percent_or_100(top_100_translated, 100 if total_docs > 100 else total_docs),
-            "description": _(
-                "These are the top 100 most visited articles "
-                "in the last 30 days, which account for over "
-                "99% of the traffic to the Knowledge Base."
-            ),
+            # L10n: This is an entry description for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
+            "description": _("These are the top 100 most visited articles in the last 30 days, which account for over 99% of the traffic to the Knowledge Base."),
         },
         "templates": {
+            # This string is reused in different contexts, so we should avoid providing an l10n comment.
             "title": _("Templates"),
             "url": "#" + TemplateTranslationsReadout.slug,
             "numerator": translated_templates,
             "denominator": total_templates,
             "percent": percent_or_100(translated_templates, total_templates),
-            "description": _(
-                "Templates are a way of reusing pieces of "
-                "content across KB articles. You can create and "
-                "update a set of instructions in one place, and "
-                "then refer to it in other pages."
-            ),
+            # L10n: This is an entry description for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
+            "description": _("Templates are a way of reusing pieces of content across KB articles. You can create and update a set of instructions in one place, and then refer to it in other pages."),
         },
         "all": {
+            # L10n: This is an entry header for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
             "title": _("All Knowledge Base Articles"),
             "numerator": translated_docs,
             "denominator": total_docs,
             "percent": percent_or_100(translated_docs, total_docs),
-            "description": _(
-                "This is the number of all Knowledge Base "
-                "articles that are ready to be localized."
-            ),
+            # L10n: This is an entry description for the Overview table, displayed on
+            # https://support.mozilla.org/localization (for non-en-US locales).
+            "description": _("This is the number of all Knowledge Base articles that are ready to be localized."),
         },
     }
 
@@ -442,9 +461,17 @@ class Readout:
     # short_title= = _lazy(u'Short Title of Readout for In-Page Links')
     # slug = 'Unique URL slug for detail page'
     # details_link_text = _lazy(u'All articles from this readout...')
+
+    # L10n: This is a column header for an abstract Localization Dashboard table. It refers to articles.
     column3_label = _lazy("Visits in last 30 days")
+    # This string is reused in different contexts, so we should avoid providing an l10n comment.
     column4_label = _lazy("Status")
-    modes = [(MOST_VIEWED, _lazy("Most Viewed")), (MOST_RECENT, _lazy("Most Recent"))]
+    modes = [
+        # L10n: This is a sorting option for an abstract Localization Dashboard table. It refers to articles.
+        (MOST_VIEWED, _lazy("Most Viewed")),
+        # L10n: This is a sorting option for an abstract Localization Dashboard table. It refers to articles.
+        (MOST_RECENT, _lazy("Most Recent")),
+    ]
     default_mode: int | None = MOST_VIEWED
 
     def __init__(self, request, locale=None, mode=None, product=None):
@@ -546,10 +573,14 @@ class Readout:
 class MostVisitedDefaultLanguageReadout(Readout):
     """Most-Visited readout for the default language"""
 
+    # L10n: This refers to articles.
     title = _lazy("Most Visited")
     # No short_title; the Contributors dash lacks an Overview readout
+    # L10n: Unused. A link to be displayed under the Most Visited overview table,
+    # which redirects users to the full Most Visited table (https://support.mozilla.org/contributors/most-visited).
     details_link_text = _lazy("All knowledge base articles...")
     slug = "most-visited"
+    # L10n: This is a table column header that refers to article visit count.
     column3_label = _lazy("Visits")
     modes = PERIODS
     default_mode = LAST_30_DAYS
@@ -616,6 +647,7 @@ class CategoryReadout(Readout):
     """Abstract class representing a readout ordered by visits and intended
     to be filtered by category."""
 
+    # L10n: This is a table column header that refers to article visit count.
     column3_label = _lazy("Visits")
     modes = []
     default_mode = None
@@ -671,9 +703,15 @@ class CategoryReadout(Readout):
         if needs_review:
             status, view_name, _ = REVIEW_STATUSES[needs_review]
         elif needs_changes:
+            # L10n: This is a KB article status. It may be displayed on
+            # https://support.mozilla.org/localization#template-translations,
+            # https://support.mozilla.org/contributors/templates,
+            # https://support.mozilla.org/contributors/how-to-contribute or
+            # https://support.mozilla.org/contributors/administration.
             status = _lazy("Changes Needed")
             view_name = "wiki.document_revisions"
         elif unready_for_l10n:
+            # L10n: This refers to articles.
             status = _lazy("Changes Not Ready For Localization")
             view_name = "wiki.document_revisions"
         else:
@@ -689,22 +727,36 @@ class CategoryReadout(Readout):
 
 
 class TemplateReadout(CategoryReadout):
+    # This string is reused in different contexts, so we should avoid providing an l10n comment.
     title = _lazy("Templates")
     slug = "templates"
+    # The following l10n comment duplicates a comment from a different context.
+    # We can do that since the string is not displayed at all for this class.
+    # L10n: This is a link displayed under the Templates overview table
+    # (https://support.mozilla.org/localization#template-translations for non-en-US locales),
+    # which redirects users to the full Templates table (https://support.mozilla.org/localization/template-translations).
     details_link_text = _lazy("All templates...")
     filter_kwargs = {"is_template": True}
 
 
 class HowToContributeReadout(CategoryReadout):
+    # L10n: This is a table header displayed on
+    # https://support.mozilla.org/contributors/how-to-contribute. It refers to the article topic.
     title = _lazy("How To Contribute")
     slug = "how-to-contribute"
+    # L10n: Unused. A link to be displayed under the How To Contribute overview table,
+    # which redirects users to the full How To Contribute table.
     details_link_text = _lazy("All How To Contribute articles...")
     filter_kwargs = {"category": HOW_TO_CONTRIBUTE_CATEGORY}
 
 
 class AdministrationReadout(CategoryReadout):
+    # L10n: This is a table header displayed on
+    # https://support.mozilla.org/contributors/administration. It refers to the article topic.
     title = _lazy("Administration")
     slug = "administration"
+    # L10n: Unused. A link to be displayed under the Administration overview table,
+    # which redirects users to the full Administration table.
     details_link_text = _lazy("All Administration articles...")
     filter_kwargs = {"category": ADMINISTRATION_CATEGORY}
 
@@ -720,8 +772,13 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
     """
 
+    # L10n: This refers to articles.
     short_title = _lazy("Most Visited")
     slug = "most-visited-translations"
+    # L10n: This is a link displayed under the Most Visited overview table
+    # (https://support.mozilla.org/uk/localization#most-visited-translations for non-en-US locales),
+    # which redirects users to the full Most Visited table
+    # (https://support.mozilla.org/localization/most-visited-translations for non-en-US locales).
     details_link_text = _lazy("All translations...")
 
     def get_queryset(self, max=None):
@@ -837,9 +894,13 @@ class TemplateTranslationsReadout(Readout):
 
     """
 
+    # This string is reused in different contexts, so we should avoid providing an l10n comment.
     title = _lazy("Templates")
     short_title = _lazy("Templates")
     slug = "template-translations"
+    # L10n: This is a link displayed under the Templates overview table
+    # (https://support.mozilla.org/localization#template-translations for non-en-US locales),
+    # which redirects users to the full Templates table (https://support.mozilla.org/localization/template-translations).
     details_link_text = _lazy("All templates...")
     column3_label = ""
     modes = []
@@ -918,13 +979,28 @@ class TemplateTranslationsReadout(Readout):
 
 
 class UnreviewedReadout(Readout):
-    # L10n: Not just changes to translations but also unreviewed changes to
-    # docs in this locale that are not translations
+    # L10n: This is a table header displayed on
+    # https://support.mozilla.org/localization#unreviewed (for non-en-US locales)
+    # and https://support.mozilla.org/localization/unreviewed.
+    # It refers not just to changes to translations but also to unreviewed changes to
+    # docs in this locale that are not translations.
     title = _lazy("Unreviewed Changes")
 
+    # L10n: Unused. This is a short name for the Unreviewed Changes table,
+    # displayed on https://support.mozilla.org/localization#unreviewed (for non-en-US locales)
+    # and https://support.mozilla.org/localization/unreviewed.
+    # It refers not just to changes to translations but also to unreviewed changes to
+    # docs in this locale that are not translations.
     short_title = pgettext_lazy("document", "Unreviewed")
+    # L10n: This is a link displayed under the Unreviewed Changes overview table
+    # (https://support.mozilla.org/localization#unreviewed for non-en-US locales),
+    # which redirects users to the full Unreviewed Changes table (https://support.mozilla.org/localization/unreviewed).
     details_link_text = _lazy("All articles requiring review...")
     slug = "unreviewed"
+    # L10n: This is a column header for the Unreviewed Changes table, displayed on
+    # https://support.mozilla.org/localization#unreviewed (for non-en-US locales)
+    # and https://support.mozilla.org/localization/unreviewed.
+    # It refers to the time an article was last changed.
     column4_label = _lazy("Changed")
 
     def get_queryset(self, max=None):
@@ -987,12 +1063,23 @@ class UnreviewedReadout(Readout):
 
 
 class UnhelpfulReadout(Readout):
+    # L10n: This is a table header displayed on https://support.mozilla.org/contributors/unhelpful.
     title = _lazy("Unhelpful Documents")
 
+    # L10n: Unused. This is a short name for the Unhelpful Documents table,
+    # displayed on https://support.mozilla.org/contributors/unhelpful.
     short_title = pgettext_lazy("document", "Unhelpful")
+    # L10n: Unused. This is a link to be displayed under the Unhelpful Documents overview table,
+    # which redirects users to the full Unhelpful Documents table (https://support.mozilla.org/contributors/unhelpful).
     details_link_text = _lazy("All unhelpful articles...")
     slug = "unhelpful"
+    # L10n: This is a column header for the Unhelpful Documents table, displayed on
+    # https://support.mozilla.org/contributors/unhelpful.
+    # It refers to the article's helpful/unhelpful vote count.
     column3_label = _lazy("Total Votes")
+    # L10n: This is a column header for the Unhelpful Documents table, displayed on
+    # https://support.mozilla.org/contributors/unhelpful.
+    # It refers to the article's helpful vote percentage (out of total helpful/unhelpful vote count).
     column4_label = _lazy("Helpfulness")
     modes = []
     default_mode = None
@@ -1049,14 +1136,17 @@ class UnreadyForLocalizationReadout(Readout):
     """Articles which have approved but unready revisions newer than their
     latest ready-for-l10n ones"""
 
+    # L10n: This refers to articles.
     title = _lazy("Changes Not Ready For Localization")
-    description = _lazy(
-        "Articles which have approved revisions newer than "
-        "the latest ready-for-localization one"
-    )
+    # L10n: Unused. This is a description for the Changes Not Ready For Localization table,
+    # displayed on https://support.mozilla.org/contributors/unready.
+    description = _lazy("Articles which have approved revisions newer than the latest ready-for-localization one")
     # No short_title; the Contributors dash lacks an Overview readout
-    details_link_text = _lazy("All articles with changes not ready for " "localization...")
+    # L10n: Unused. This is a link to be displayed under the Changes Not Ready For Localization overview table,
+    # which redirects users to the full Changes Not Ready For Localization table (https://support.mozilla.org/contributors/unready).
+    details_link_text = _lazy("All articles with changes not ready for localization...")
     slug = "unready"
+    # L10n: This refers to article revisions.
     column4_label = _lazy("Approved")
 
     def get_queryset(self, max=None):
@@ -1125,14 +1215,18 @@ class UnreadyForLocalizationReadout(Readout):
 class NeedsChangesReadout(Readout):
     """Articles which need change."""
 
+    # L10n: This is a table header displayed on https://support.mozilla.org/contributors/need-changes.
     title = _lazy("Need Changes")
+    # L10n: Unused. This is a description for the Need Changes table,
+    # displayed on https://support.mozilla.org/contributors/need-changes.
     description = _lazy("Articles that require changes.")
     # No short_title; the Contributors dash lacks an Overview readout
+    # L10n: Unused. This is a link to be displayed under the Need Changes overview table,
+    # which redirects users to the full Need Changes table (https://support.mozilla.org/contributors/need-changes).
     details_link_text = _lazy("All articles that require changes...")
     slug = "need-changes"
+    # L10n: A noun. There are comments for articles in general (on https://support.mozilla.org/contributors/need-changes) and every article revision.
     column4_label = _lazy("Comment")
-    modes = [(MOST_VIEWED, _lazy("Most Viewed"))]
-    default_mode = MOST_VIEWED
 
     def get_queryset(self, max=None):
         qs = Document.objects.visible(
@@ -1169,9 +1263,13 @@ class NeedsChangesReadout(Readout):
 
 
 class CannedResponsesReadout(Readout):
+    # This string is reused in different contexts, so we should avoid providing an l10n comment.
     title = _lazy("Canned Responses")
+    # L10n: Unused. This is a description for the Canned Responses table.
     description = _lazy("Localization status of all canned responses")
     slug = "canned-responses"
+    # L10n: Unused. This is a link to be displayed under the Canned Responses overview table,
+    # which redirects users to the full Canned Responses table.
     details_link_text = _lazy("All canned responses articles...")
 
     @classmethod
