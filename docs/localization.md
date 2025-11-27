@@ -59,6 +59,8 @@ Example:
                 #'url': 'http://www.google.com/'  # Not supported yet
             })
 
+**Attention:** Multi-line strings will not preserve localization comments! Make sure to avoid such strings.
+
 ## Adding Context with msgctxt
 
 Strings may be the same in English, but different in other languages.
