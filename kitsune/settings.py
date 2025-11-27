@@ -1092,7 +1092,7 @@ if config("SENTRY_DSN", None):
         dsn=config("SENTRY_DSN"),
         integrations=[
             DjangoIntegration(),
-            CeleryIntegration(monitor_beat_tasks=True),
+            CeleryIntegration(),
         ],
         release=config("GIT_SHA", default=None),
         server_name=PLATFORM_NAME,
