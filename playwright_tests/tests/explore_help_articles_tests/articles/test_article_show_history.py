@@ -40,7 +40,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
     with allure.step("Verifying that the delete button is not available for the only kb "
                      "revision"):
         expect(
-            sumo_pages.kb_article_show_history_page.get_delete_revision_button_locator(
+            sumo_pages.kb_article_show_history_page.delete_revision(
                 article_details['first_revision_id']
             )
         ).to_be_hidden()
@@ -58,8 +58,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
     with allure.step("Navigating back and verifying that the delete button for the article "
                      "is not displayed"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
-        expect(sumo_pages.kb_article_show_history_page.get_delete_this_document_button_locator(
-        )).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.delete_this_document_button).to_be_hidden()
 
     with allure.step("Verifying that manually navigating to the delete endpoint returns 403"):
         with page.expect_navigation() as navigation_info:
@@ -95,12 +94,11 @@ def test_kb_article_removal(page: Page, create_user_factory):
     with allure.step("Navigating back and verifying that the delete button is not available "
                      "for the only revision"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
-        expect(sumo_pages.kb_article_show_history_page.get_delete_revision_button_locator(
+        expect(sumo_pages.kb_article_show_history_page.delete_revision(
             article_details['first_revision_id'])).to_be_hidden()
 
     with allure.step("Verifying that the delete button for the article is not displayed"):
-        expect(sumo_pages.kb_article_show_history_page.get_delete_this_document_button_locator(
-        )).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.delete_this_document_button).to_be_hidden()
 
     with allure.step("Signing in with the user that has the necessary permissions to delete "
                      "the revision"):
@@ -148,10 +146,10 @@ def test_kb_article_removal(page: Page, create_user_factory):
             article_details['first_revision_id']
         )
         sumo_pages.kb_article_show_history_page.click_on_confirmation_delete_button()
-        expect(sumo_pages.kb_article_show_history_page.get_a_particular_revision_locator(
+        expect(sumo_pages.kb_article_show_history_page.revision(
             article_details['first_revision_id'])).to_be_hidden()
 
-        expect(sumo_pages.kb_article_show_history_page.get_a_particular_revision_locator(
+        expect(sumo_pages.kb_article_show_history_page.revision(
             second_revision['revision_id'])).to_be_visible()
 
     with allure.step("Deleting the article, navigating to the article and verifying that the "
@@ -222,8 +220,7 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
     article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
 
     with allure.step("Verifying that no users are added inside the contributors list"):
-        expect(sumo_pages.kb_article_show_history_page.get_all_contributors_locator()
-               ).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_list_items).to_be_hidden()
 
     with allure.step("Clicking on the Article menu option and verifying that the user is not "
                      "displayed inside the article contributors section"):
@@ -263,8 +260,7 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
                      "Contributors' option is not displayed for users which don't have the "
                      "necessary permissions"):
         second_revision_info = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
-        expect(sumo_pages.kb_article_show_history_page.get_edit_contributors_option_locator()
-               ).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.edit_contributors_option).to_be_hidden()
 
     with allure.step("Manually navigating to the deletion link and verifying that 403 is "
                      "returned"):
@@ -284,8 +280,7 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
                      "and verifying that the 'Edit Contributors' options is not displayed"):
         sumo_pages.kb_article_page.click_on_show_history_option()
         utilities.delete_cookies()
-        expect(sumo_pages.kb_article_show_history_page.get_edit_contributors_option_locator()
-               ).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.edit_contributors_option).to_be_hidden()
 
     with allure.step("Manually navigating to the deletion link and the user is redirected to the "
                      "auth page"):

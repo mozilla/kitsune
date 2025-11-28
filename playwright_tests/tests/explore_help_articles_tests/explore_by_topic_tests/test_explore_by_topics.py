@@ -69,7 +69,7 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
         for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
             product = product.strip()
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
-            time.sleep(2)
+            utilities.wait_for_given_timeout(2000)
             with allure.step("Verifying the correct AAQ widget text is displayed for products"):
                 if product == "All Products":
                     assert (sumo_pages.common_web_elements
@@ -110,8 +110,7 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
             product = product.strip()
             current_url = utilities.get_page_url()
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
-            print(f"This is the product: {product}")
-            time.sleep(2)
+            utilities.wait_for_given_timeout(2000)
             with page.expect_navigation() as navigation_info:
                 sumo_pages.common_web_elements.click_on_aaq_button()
             response = navigation_info.value

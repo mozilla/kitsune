@@ -79,8 +79,8 @@ def test_edit_profile_field_validation_with_symbols(page: Page, create_user_fact
                                 " navbar"):
             assert sumo_pages.top_navbar.get_text_of_logged_in_username() == value
 
-        with allure.step("Access a previously posted question and verify that the display name "
-                         "has changed"):
+        with check, allure.step("Access a previously posted question and verify that the display"
+                                " name has changed"):
             utilities.navigate_to_link(article_details["question_page_url"])
             assert sumo_pages.question_page.get_question_author_name() == value
             sumo_pages.top_navbar.click_on_edit_profile_option()
