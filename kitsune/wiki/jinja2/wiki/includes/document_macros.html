@@ -24,7 +24,7 @@
        <img class="pencil" src="{{ webpack_static('sumo/img/pencil.svg') }}" />
        <strong>{% if is_first_revision %}{{ _("Created") }}{% else %}{{ _("Last updated") }}{% endif %}:</strong>
         <span class="time">
-          {{ datetimeformat(created_date, format="shortdate", use_naturaltime=True) }}
+          {{ datetimeformat(created_date, format="shortdate", use_timesince=True) }}
         </span>
       </span>
     {% endif %}
