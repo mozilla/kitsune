@@ -249,3 +249,75 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(submission.user, None)  # Anonymous users don't have a user
         self.assertEqual(submission.email, "test@example.com")
         mock_task.assert_called_once_with(submission.id)
+
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
+    def test_invalid_email_with_trailing_numbers(self):
+        """Test that emails with trailing numbers are rejected (issue 2669)."""
+        anonymous_user = AnonymousUser()
+        form = ZendeskForm(
+            data={
+                "email": "frvv4@gmail.com8050262430",
+                "category": "fxa-2fa-lockout",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.accounts_product,
+            user=anonymous_user,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("email", form.errors)
+        self.assertIn("valid email address", str(form.errors["email"]))
+
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
+    def test_invalid_email_with_multiple_at_signs(self):
+        """Test that emails with multiple @ signs are rejected."""
+        anonymous_user = AnonymousUser()
+        form = ZendeskForm(
+            data={
+                "email": "test@@example.com",
+                "category": "fxa-2fa-lockout",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.accounts_product,
+            user=anonymous_user,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("email", form.errors)
+
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
+    def test_invalid_email_with_spaces(self):
+        """Test that emails with spaces are rejected."""
+        anonymous_user = AnonymousUser()
+        form = ZendeskForm(
+            data={
+                "email": "test @example.com",
+                "category": "fxa-2fa-lockout",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.accounts_product,
+            user=anonymous_user,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("email", form.errors)
+
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
+    def test_valid_email_passes_validation(self):
+        """Test that valid emails pass validation."""
+        anonymous_user = AnonymousUser()
+        form = ZendeskForm(
+            data={
+                "email": "valid.email+tag@example.com",
+                "category": "fxa-2fa-lockout",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.accounts_product,
+            user=anonymous_user,
+        )
+
+        self.assertTrue(form.is_valid())

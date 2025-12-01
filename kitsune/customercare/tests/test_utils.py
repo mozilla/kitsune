@@ -1,6 +1,13 @@
 from unittest.mock import Mock, patch
 
-from kitsune.customercare.utils import _topic_to_tag, generate_classification_tags
+from zenpy.lib.exception import APIException
+
+from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.utils import (
+    _topic_to_tag,
+    generate_classification_tags,
+    send_support_ticket_to_zendesk,
+)
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import TestCase
 
@@ -195,3 +202,102 @@ class GenerateClassificationTagsTests(TestCase):
         tags = generate_classification_tags(submission, result)
 
         self.assertEqual(tags, ["undefined", "general"])
+
+
+class SendSupportTicketToZendeskTests(TestCase):
+    """Tests for send_support_ticket_to_zendesk error handling."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.product = ProductFactory(slug="mozilla-vpn", title="Mozilla VPN")
+        self.submission = Mock(spec=SupportTicket)
+        self.submission.product = self.product
+        self.submission.user = None
+        self.submission.subject = "Test"
+        self.submission.description = "Test description"
+        self.submission.category = "test"
+        self.submission.email = "test@example.com"
+        self.submission.os = "win10"
+        self.submission.country = "US"
+        self.submission.zendesk_tags = []
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_suspended_user_error_auto_rejects(self, mock_zendesk_client):
+        """Test that UserSuspended errors result in auto-rejection (issue 2670)."""
+        mock_client = mock_zendesk_client.return_value
+        error = APIException(
+            '{"error": "RecordInvalid", "description": "Record validation errors", "details": {"requester": [{"description": "Requester: test@example.com is suspended.", "error": "UserSuspended"}]}}'
+        )
+        mock_client.create_ticket.side_effect = error
+
+        result = send_support_ticket_to_zendesk(self.submission)
+
+        self.assertFalse(result)
+        self.assertEqual(self.submission.status, SupportTicket.STATUS_REJECTED)
+        self.submission.save.assert_called_with(update_fields=["status"])
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_record_invalid_email_error_auto_rejects(self, mock_zendesk_client):
+        """Test that RecordInvalid errors for email result in auto-rejection (issue 2669)."""
+        mock_client = mock_zendesk_client.return_value
+        error = APIException(
+            '{"error": "RecordInvalid", "description": "Record validation errors", "details": {"email": ["Email is not properly formatted"]}}'
+        )
+        mock_client.create_ticket.side_effect = error
+
+        result = send_support_ticket_to_zendesk(self.submission)
+
+        self.assertFalse(result)
+        self.assertEqual(self.submission.status, SupportTicket.STATUS_REJECTED)
+        self.submission.save.assert_called_with(update_fields=["status"])
+
+    @patch("kitsune.customercare.utils.flag_object")
+    @patch("kitsune.customercare.utils.Profile")
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_other_api_exception_flags_for_review(
+        self, mock_zendesk_client, mock_profile, mock_flag_object
+    ):
+        """Test that other APIExceptions are flagged for manual review."""
+        mock_client = mock_zendesk_client.return_value
+        error = APIException("Some other API error")
+        mock_client.create_ticket.side_effect = error
+
+        result = send_support_ticket_to_zendesk(self.submission)
+
+        self.assertFalse(result)
+        self.assertEqual(self.submission.status, SupportTicket.STATUS_FLAGGED)
+        self.submission.save.assert_called_with(update_fields=["status"])
+        mock_flag_object.assert_called_once()
+
+    @patch("kitsune.customercare.utils.flag_object")
+    @patch("kitsune.customercare.utils.Profile")
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_generic_exception_flags_for_review(
+        self, mock_zendesk_client, mock_profile, mock_flag_object
+    ):
+        """Test that generic exceptions are flagged for manual review."""
+        mock_client = mock_zendesk_client.return_value
+        error = Exception("Unexpected error")
+        mock_client.create_ticket.side_effect = error
+
+        result = send_support_ticket_to_zendesk(self.submission)
+
+        self.assertFalse(result)
+        self.assertEqual(self.submission.status, SupportTicket.STATUS_FLAGGED)
+        self.submission.save.assert_called_with(update_fields=["status"])
+        mock_flag_object.assert_called_once()
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_successful_submission(self, mock_zendesk_client):
+        """Test successful ticket submission."""
+        mock_client = mock_zendesk_client.return_value
+        mock_ticket_audit = Mock()
+        mock_ticket_audit.ticket.id = 12345
+        mock_client.create_ticket.return_value = mock_ticket_audit
+
+        result = send_support_ticket_to_zendesk(self.submission)
+
+        self.assertTrue(result)
+        self.assertEqual(self.submission.zendesk_ticket_id, "12345")
+        self.assertEqual(self.submission.status, SupportTicket.STATUS_SENT)
+        self.submission.save.assert_called_with(update_fields=["zendesk_ticket_id", "status"])
