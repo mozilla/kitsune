@@ -50,7 +50,7 @@
 
 // With locales where Zilla Slab and Metropolis have partial support, we just use Inter for everything
 // to avoid only some characters falling back to a different font within a word/sentence:
-[lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
+[lang="de"], [lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --heading-font-family-moz: var(--base-font-family);
   --heading-font-family: var(--base-font-family);
