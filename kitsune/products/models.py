@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
-from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.managers import NonArchivedManager, ProductManager
 from kitsune.sumo.fields import ImagePlusField
@@ -26,7 +25,7 @@ class BaseProductTopic(ModelBase):
     metadata = models.JSONField(
         default=dict,
         encoder=PrettyJSONEncoder,
-        help_text=_lazy("Data useful for things like LLM prompts."),
+        help_text="Data useful for things like LLM prompts.",
     )
 
     class Meta:
@@ -121,11 +120,11 @@ class Topic(BaseProductTopic):
 
     # Whether or not this topic is used in the AAQ.
     in_aaq = models.BooleanField(
-        default=False, help_text=_lazy("Whether this topic is shown to users in the AAQ or not.")
+        default=False, help_text="Whether this topic is shown to users in the AAQ or not."
     )
     # Whether or not this topic is displayed in navigation menus
     in_nav = models.BooleanField(
-        default=False, help_text=_lazy("Whether this topic is shown in navigation menus.")
+        default=False, help_text="Whether this topic is shown in navigation menus."
     )
 
     class Meta:
