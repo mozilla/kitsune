@@ -70,10 +70,6 @@ class QuestionManager(Manager):
         )
         return qs.exclude(last_answer__creator=F("creator"))
 
-    def solution_provided(self):
-        qs = self.filter(solution__isnull=True, is_locked=False)
-        return qs.exclude(last_answer__creator=F("creator"))
-
     def locked(self):
         return self.filter(is_locked=True)
 
