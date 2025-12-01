@@ -6,22 +6,23 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET, require_http_methods
-from django.views.generic.list import ListView
 
 from kitsune.kbadge.models import Award, Badge
+from kitsune.sumo.utils import paginate
 
 
-class BadgesListView(ListView):
+def badges_list(request):
     """Badges list page"""
+    qs = Badge.objects.order_by("-created")
+    badges_page = paginate(request, qs, per_page=settings.BADGE_PAGE_SIZE)
 
-    model = Badge
-    paginate_by = settings.BADGE_PAGE_SIZE
-    template_name = "badger/badges_list.html"
-    template_object_name = "badge"
-
-    def get_queryset(self):
-        qs = Badge.objects.order_by("-created")
-        return qs
+    return render(
+        request,
+        "badger/badges_list.html",
+        {
+            "badges": badges_page
+        },
+    )
 
 
 @require_http_methods(["HEAD", "GET"])
@@ -43,30 +44,25 @@ def detail(request, slug):
     )
 
 
-class AwardsListView(ListView):
-    model = Award
-    paginate_by = settings.BADGE_PAGE_SIZE
-    template_name = "badger/awards_list.html"
-    template_object_name = "award"
+def awards_list(request, slug=None):
+    """Awards list page"""
+    qs = Award.objects.order_by("-modified")
 
-    def get_badge(self):
-        if not hasattr(self, "badge"):
-            self._badge = get_object_or_404(Badge, slug=self.kwargs.get("slug", None))
-        return self._badge
+    badge = None
+    if slug is not None:
+        badge = get_object_or_404(Badge, slug=slug)
+        qs = qs.filter(badge=badge)
 
-    def get_queryset(self):
-        qs = Award.objects.order_by("-modified")
-        if self.kwargs.get("slug", None) is not None:
-            qs = qs.filter(badge=self.get_badge())
-        return qs
+    awards_page = paginate(request, qs, per_page=settings.BADGE_PAGE_SIZE)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.kwargs.get("slug", None) is None:
-            context["badge"] = None
-        else:
-            context["badge"] = self.get_badge()
-        return context
+    return render(
+        request,
+        "badger/awards_list.html",
+        {
+            "badge": badge,
+            "awards": awards_page,
+        },
+    )
 
 
 @require_GET
