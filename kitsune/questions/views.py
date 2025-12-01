@@ -106,8 +106,6 @@ FILTER_GROUPS = {
         [
             # L10n: This is a question filter option for the Responded tab.
             ("needsinfo", _lazy("Needs info")),
-            # L10n: This is a question filter option for the Responded tab.
-            ("solution-provided", _lazy("Solution provided")),
         ]
     ),
     "done": OrderedDict(
@@ -230,8 +228,6 @@ def question_list(request, product_slug=None, topic_slug=None):
             question_qs = question_qs.unhelpful_answers()
         case "needsinfo":
             question_qs = question_qs.needs_info()
-        case "solution-provided":
-            question_qs = question_qs.solution_provided()
         case "solved":
             question_qs = question_qs.solved()
         case "locked":
