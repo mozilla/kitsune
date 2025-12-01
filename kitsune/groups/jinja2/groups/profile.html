@@ -78,20 +78,8 @@
           {% endfor %}
         </ul>
       </div>
-      {% if is_paginated %}
-      <div class="pagination">
-        <span class="step-links">
-        {% if members.has_previous() %}
-			<a href="?page={{ members.previous_page_number() }}">{{ _('previous') }}</a>
-        {% endif %}
-			<span class="current">
-			{{ _('Page {0} of {1}.')|fe(members.number, members.paginator.num_pages) }}
-			  </span>
-		{% if members.has_next() %}
-			<a href="?page={{ members.next_page_number() }}">{{ _('next') }}</a>
-        {% endif %}
-		    </span>
-	  </div>
+      {% if members.object_list %}
+        {{ members|paginator }}
       {% endif %}
     </section>
   </article>
