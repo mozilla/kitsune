@@ -54,9 +54,9 @@ class Profile(ModelBase):
     """Profile model for django users."""
 
     class AccountType(models.TextChoices):
-        REGULAR = "regular", _lazy("Regular User Account")
-        SYSTEM = "system", _lazy("System Account")
-        ADMIN = "admin", _lazy("Admin Account")
+        REGULAR = "regular", "Regular User Account"
+        SYSTEM = "system", "System Account"
+        ADMIN = "admin", "Admin Account"
 
     # Override the default manager to exclude system accounts
     objects = RegularProfileManager()
@@ -66,14 +66,14 @@ class Profile(ModelBase):
         User,
         on_delete=models.CASCADE,
         primary_key=True,
-        verbose_name=_lazy("User"),
+        verbose_name="User",
         related_name="profile",
     )
     account_type = models.CharField(
         max_length=255,
         choices=AccountType.choices,
         default=AccountType.REGULAR,
-        verbose_name=_lazy("Account Type"),
+        verbose_name="Account Type",
     )
     name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name=_lazy("Display name")
@@ -128,10 +128,10 @@ class Profile(ModelBase):
     city = models.CharField(max_length=255, null=True, blank=True, verbose_name=_lazy("City"))
     locale = LocaleField(default=settings.LANGUAGE_CODE, verbose_name=_lazy("Preferred language"))
     first_answer_email_sent = models.BooleanField(
-        default=False, help_text=_lazy("Has been sent a first answer contribution email.")
+        default=False, help_text="Has been sent a first answer contribution email."
     )
     first_l10n_email_sent = models.BooleanField(
-        default=False, help_text=_lazy("Has been sent a first revision contribution email.")
+        default=False, help_text="Has been sent a first revision contribution email."
     )
     involved_from = models.DateField(
         null=True, blank=True, verbose_name=_lazy("Involved with Mozilla from")
@@ -139,7 +139,7 @@ class Profile(ModelBase):
     csat_email_sent = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_lazy("When the user was sent a community " "health survey"),
+        verbose_name="When the user was sent a community health survey",
     )
     is_fxa_migrated = models.BooleanField(default=False)
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
@@ -288,11 +288,11 @@ class Setting(ModelBase):
     """User specific value per setting"""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name=_lazy("User"), related_name="settings"
+        User, on_delete=models.CASCADE, verbose_name="User", related_name="settings"
     )
 
     name = models.CharField(max_length=100)
-    value = models.CharField(blank=True, max_length=60, verbose_name=_lazy("Value"))
+    value = models.CharField(blank=True, max_length=60, verbose_name="Value")
 
     class Meta:
         unique_together = (("user", "name"),)
@@ -329,13 +329,13 @@ class RegistrationProfile(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, unique=True, verbose_name=_lazy("user")
+        User, on_delete=models.CASCADE, unique=True, verbose_name="user"
     )
-    activation_key = models.CharField(verbose_name=_lazy("activation key"), max_length=40)
+    activation_key = models.CharField(verbose_name="activation key", max_length=40)
 
     class Meta:
-        verbose_name = _lazy("registration profile")
-        verbose_name_plural = _lazy("registration profiles")
+        verbose_name = "registration profile"
+        verbose_name_plural = "registration profiles"
 
     def __str__(self):
         return "Registration information for {}".format(self.user)
@@ -366,9 +366,9 @@ class EmailChange(models.Model):
     ACTIVATED = "ALREADY_ACTIVATED"
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, unique=True, verbose_name=_lazy("user")
+        User, on_delete=models.CASCADE, unique=True, verbose_name="user"
     )
-    activation_key = models.CharField(verbose_name=_lazy("activation key"), max_length=40)
+    activation_key = models.CharField(verbose_name="activation key", max_length=40)
     email = models.EmailField(db_index=True, null=True)
 
     def __str__(self):
@@ -379,12 +379,12 @@ class Deactivation(models.Model):
     """Stores user deactivation logs."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name=_lazy("user"), related_name="+"
+        User, on_delete=models.CASCADE, verbose_name="user", related_name="+"
     )
     moderator = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name=_lazy("moderator"),
+        verbose_name="moderator",
         related_name="deactivations",
     )
     date = models.DateTimeField(default=datetime.now)
