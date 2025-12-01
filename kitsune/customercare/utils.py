@@ -2,6 +2,7 @@ import re
 from typing import Any, cast
 
 import waffle
+from zenpy.lib.exception import APIException
 
 from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_LEGACY_MAPPING
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
@@ -94,6 +95,19 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
 def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
     """Send a support ticket to Zendesk. Returns True if successful."""
 
+    def _handle_zendesk_exception(error: Exception) -> bool:
+        """Flag a support ticket for manual review when Zendesk submission fails."""
+        submission.status = SupportTicket.STATUS_FLAGGED
+        submission.save(update_fields=["status"])
+        flag_object(
+            submission,
+            by_user=Profile.get_sumo_bot(),
+            notes=f"Failed to send to Zendesk: {error!s}",
+            status=FlaggedObject.FLAG_PENDING,
+            reason=FlaggedObject.REASON_OTHER,
+        )
+        return False
+
     zendesk_product = (
         ZENDESK_PRODUCT_SLUGS.get(submission.product.slug, submission.product.slug)
         if submission.product.slug == "mozilla-vpn"
@@ -119,18 +133,15 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         submission.status = SupportTicket.STATUS_SENT
         submission.save(update_fields=["zendesk_ticket_id", "status"])
         return True
+    except APIException as e:
+        error_str = str(e)
+        if "UserSuspended" in error_str or "RecordInvalid" in error_str:
+            submission.status = SupportTicket.STATUS_REJECTED
+            submission.save(update_fields=["status"])
+            return False
+        return _handle_zendesk_exception(e)
     except Exception as e:
-        # If sending fails, flag for review
-        submission.status = SupportTicket.STATUS_FLAGGED
-        submission.save(update_fields=["status"])
-        flag_object(
-            submission,
-            by_user=Profile.get_sumo_bot(),
-            notes=f"Failed to send to Zendesk: {e!s}",
-            status=FlaggedObject.FLAG_PENDING,
-            reason=FlaggedObject.REASON_OTHER,
-        )
-        return False
+        return _handle_zendesk_exception(e)
 
 
 def process_zendesk_classification_result(

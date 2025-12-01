@@ -1,5 +1,9 @@
+import re
+
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_CATEGORIES_LOGINLESS
@@ -64,6 +68,29 @@ class ZendeskForm(forms.Form):
         self.label_suffix = ""
         if product.slug not in PRODUCTS_WITH_OS:
             self.fields["os"].widget = forms.HiddenInput()
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if not email:
+            return email
+
+        is_invalid = False
+
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            is_invalid = True
+
+        if re.search(r"\.[a-zA-Z]{2,}\d+", email):
+            is_invalid = True
+
+        if email.count("@") != 1 or " " in email:
+            is_invalid = True
+
+        if is_invalid:
+            raise forms.ValidationError(_lazy("Please enter a valid email address."))
+
+        return email
 
     def send(self, user, product):
         """Create a SupportTicket record and trigger async classification."""
