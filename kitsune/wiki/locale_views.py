@@ -68,10 +68,29 @@ def add_to_locale(request, locale_code, role):
     if form.is_valid():
         for user in form.cleaned_data["users"]:
             getattr(locale, ROLE_ATTRS[role]).add(user)
-        msg = _("{users} added successfully!").format(users=request.POST.get("users"))
+        users_added = request.POST.get("users").replace(",", ", ")
+        # Create a message about successfully added users, ensuring l10n
+        match role:
+            case "leader":
+                # L10n: A message displayed after adding users to locale leaders (only accounts with corresponding permissions can do that!).
+                # {users} is a list of usernames separated by commas, {locale} is a locale code.
+                msg = _("{users} added to {locale} leaders successfully!").format(users=users_added, locale=locale)
+            case "reviewer":
+                # L10n: A message displayed after adding users to locale reviewers (only accounts with corresponding permissions can do that!).
+                # {users} is a list of usernames separated by commas, {locale} is a locale code.
+                msg = _("{users} added to {locale} reviewers successfully!").format(users=users_added, locale=locale)
+            case "editor":
+                # L10n: A message displayed after adding users to locale editors (only accounts with corresponding permissions can do that!).
+                # {users} is a list of usernames separated by commas, {locale} is a locale code.
+                msg = _("{users} added to {locale} editors successfully!").format(users=users_added, locale=locale)
+            case _:
+                # L10n: A message displayed after adding users to a locale role (only accounts with corresponding permissions can do that!).
+                # {users} is a list of usernames separated by commas.
+                msg = _("{users} added successfully!").format(users=users_added)
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(locale.get_absolute_url())
 
+    # L10n: A message displayed in case of errors when adding users to locale role (only accounts with corresponding permissions can do that!).
     msg = _("There were errors adding users, see below.")
     messages.add_message(request, messages.ERROR, msg)
     return locale_details(request, locale_code, **{role + "_form": form})
@@ -89,7 +108,24 @@ def remove_from_locale(request, locale_code, user_id, role):
 
     if request.method == "POST":
         getattr(locale, ROLE_ATTRS[role]).remove(user)
-        msg = _("{user} removed from successfully!").format(user=user.username)
+        # Create a message about successfully removed users, ensuring l10n
+        match role:
+            case "leader":
+                # L10n: A message displayed after removing a user from locale leaders (only accounts with corresponding permissions can do that!).
+                # {user} is a username, {locale} is a locale code.
+                msg = _("{user} removed from {locale} leaders successfully!").format(user=user.username, locale=locale)
+            case "reviewer":
+                # L10n: A message displayed after removing a user from locale reviewers (only accounts with corresponding permissions can do that!).
+                # {user} is a username, {locale} is a locale code.
+                msg = _("{user} removed from {locale} reviewers successfully!").format(user=user.username, locale=locale)
+            case "editor":
+                # L10n: A message displayed after removing a user from locale editors (only accounts with corresponding permissions can do that!).
+                # {user} is a username, {locale} is a locale code.
+                msg = _("{user} removed from {locale} editors successfully!").format(user=user.username, locale=locale)
+            case _:
+                # L10n: A message displayed after removing a user from a locale role (only accounts with corresponding permissions can do that!).
+                # {user} is a username.
+                msg = _("{user} removed successfully!").format(user=user.username)
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(locale.get_absolute_url())
 
