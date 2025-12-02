@@ -3,7 +3,6 @@ from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
@@ -13,7 +12,7 @@ from kitsune.access.decorators import login_required
 from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.tasks import _create_image_thumbnail
 
 
@@ -25,17 +24,9 @@ def list(request):
 def profile(request, group_slug, member_form=None, leader_form=None):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     leaders = prof.leaders.all().select_related("profile")
-    members_list = prof.group.user_set.all().select_related("profile")
-    paginator = Paginator(members_list, 30)
-    page = request.GET.get("page")
-    try:
-        members = paginator.page(page)
-    except PageNotAnInteger:
-        members = paginator.page(1)
-    except EmptyPage:
-        members = paginator.page(paginator.num_pages)
+    members_qs = prof.group.user_set.all().select_related("profile")
+    members = paginate(request, members_qs, per_page=30)
 
-    is_paginated = paginator.num_pages > 1
     user_can_edit = _user_can_edit(request.user, prof)
     user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
     return render(
@@ -47,7 +38,6 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "members": members,
             "user_can_edit": user_can_edit,
             "user_can_manage_leaders": user_can_manage_leaders,
-            "is_paginated": is_paginated,
             "member_form": member_form or AddUserForm(),
             "leader_form": leader_form or AddUserForm(),
         },
