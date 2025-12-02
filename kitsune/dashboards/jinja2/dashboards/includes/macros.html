@@ -151,6 +151,7 @@
             {% endif %}
           </tr>
           {{ print_checkbox_row(_('Waiting for review'), on_default_locale, is_watching_default_locale, is_watching_other_locale, 'wiki.locale_watch', 'wiki.locale_unwatch', default_locale, show_default=show_default_waiting, product=product) }}
+          {# L10n: This refers to article revisions. #}
           {{ print_checkbox_row(_('Approved'), on_default_locale, is_watching_default_approved, is_watching_other_approved, 'wiki.approved_watch', 'wiki.approved_unwatch', default_locale, show_default=show_default_approved, product=product) }}
           {{ print_checkbox_row(_('Ready for localization'), on_default_locale, is_watching_default_ready, False, 'wiki.ready_watch', 'wiki.ready_unwatch', default_locale, show_other=False, product=product) }}
         </table>
