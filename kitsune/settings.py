@@ -1141,15 +1141,28 @@ EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
 SUMO_BANNER_STRING = config("SUMO_BANNER_STRING", default="", cast=Csv())
 
 # List of domains that links are allowed
-ALLOW_LINKS_FROM = [
+MOZILLA_DOMAINS = [
     "mozilla.org",
     "mozilla.com",
     "mozilla.ai",
     "mozillafoundation.org",
+    "firefox.com",
     "getpocket.com",
     "thunderbird.net",
 ]
-MOZILLA_DOMAINS = ALLOW_LINKS_FROM
+ALLOW_LINKS_FROM = [
+    *MOZILLA_DOMAINS,
+    "webcompat.com",
+    "mozillazine.org",
+    "support.google.com",
+    "microsoft.com",
+    "apple.com",
+    "ubuntu.com",
+    "debian.org",
+    "fedoraproject.org",
+    "archlinux.org",
+    "linuxmint.com",
+]
 
 # Regexes
 TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")
