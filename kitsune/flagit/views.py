@@ -1,6 +1,7 @@
 import json
 from functools import reduce
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -140,6 +141,8 @@ def flagged_queue(request):
         except (ValueError, ContentType.DoesNotExist):
             pass
 
+    ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
+
     objects = (
         get_flagged_objects(
             reason=reason,
@@ -148,13 +151,16 @@ def flagged_queue(request):
         )
         .select_related("content_type", "creator")
         .prefetch_related("content_object")
+        .exclude(content_type=ct_support_ticket)
     )
     objects = set_form_action_for_objects(objects, reason=reason, content_type=content_type_id)
 
     # Get unique content types for the filter dropdown
+    # Exclude SupportTickets (handled in separate Zendesk spam queue)
     content_types = (
         FlaggedObject.objects.pending()
         .exclude(reason=FlaggedObject.REASON_CONTENT_MODERATION)
+        .exclude(content_type=ct_support_ticket)
         .values_list("content_type__id", "content_type__model")
         .distinct()
         .order_by("content_type__model")
@@ -326,6 +332,34 @@ def moderate_content(request):
             ),
             "selected_assignee": assignee,
             "current_username": request.user.username,
+        },
+    )
+
+
+@group_required(settings.STAFF_GROUP)
+def zendesk_spam_queue(request):
+    """Display Zendesk spam tickets for review by Staff members."""
+    ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
+
+    objects = (
+        get_flagged_objects(
+            reason=FlaggedObject.REASON_SPAM,
+            content_types=[ct_support_ticket],
+        )
+        .select_related("content_type", "creator")
+        .prefetch_related("content_object", "content_object__product", "content_object__user", "content_object__topic")
+    )
+
+    objects = paginate(request, objects)
+
+    objects = set_form_action_for_objects(objects, reason=FlaggedObject.REASON_SPAM)
+
+    return render(
+        request,
+        "flagit/zendesk_spam.html",
+        {
+            "objects": objects,
+            "locale": request.LANGUAGE_CODE,
         },
     )
 

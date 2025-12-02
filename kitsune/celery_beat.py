@@ -53,6 +53,12 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.products.tasks.sync_product_versions",
         "schedule": crontab(hour="*/6", minute="10"),
     },
+    # Customer Care Periodic Tasks
+    # Daily at 03:30.
+    "auto_reject_old_zendesk_spam": {
+        "task": "kitsune.customercare.tasks.auto_reject_old_zendesk_spam",
+        "schedule": crontab(hour="3", minute="30"),
+    },
     # Questions Periodic Tasks
     # Daily at 04:00.
     "auto_archive_old_questions": {
