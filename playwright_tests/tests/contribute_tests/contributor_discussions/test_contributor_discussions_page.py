@@ -108,8 +108,6 @@ def test_contributor_discussions_forums_title_redirect(page: Page, create_user_f
                 forum = "forum moderator discussions"
             elif forum == "Off Topic":
                 forum = forum + " discussions"
-            elif forum == "Mobile Support forum discussions":
-                forum = "Mobile support discussions"
             elif forum == "Lost Threads":
                 forum = "Lost thread discussions"
 
