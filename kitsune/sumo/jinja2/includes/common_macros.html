@@ -747,6 +747,15 @@
     {{ _('Localization discussions') }}
   </a>
 </li>
+{% if user.has_perm('flagit.can_moderate') %}
+  <li>
+    <a href="{{ url('forums.threads', 'forum-moderators') }}" {% if active == "forum-moderators" %} class="selected" {% endif %}
+      data-event-name="link_click"
+      data-event-parameters='{"link_name": "{{ context + '.forum-moderator-discussions' }}"}'>
+      {{ _('Forum moderator discussions') }}
+    </a>
+  </li>
+{% endif %}
 {% if context == "main-menu" %}
   <li>
     <a class="color-link" href="{{ url('forums.forums') }}"
@@ -764,15 +773,6 @@
       {{ _('Knowledge base discussions') }}
     </a>
   </li>
-{% if user.has_perm('flagit.can_moderate') %}
-  <li>
-    <a href="{{ url('forums.threads', 'forum-moderators') }}" {% if active == "forum-moderators" %} class="selected" {% endif %}
-      data-event-name="link_click"
-      data-event-parameters='{"link_name": "{{ context + '.forum-moderator-discussions' }}"}'>
-      {{ _('Forum moderator discussions') }}
-    </a>
-  </li>
-{% endif %}
   <li>
     <a href="{{ url('forums.threads', 'off-topic') }}" {% if active == "off-topic" %} class="selected" {% endif %}
       data-event-name="link_click"
