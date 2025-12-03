@@ -116,7 +116,7 @@
   </section>
 
 
-  {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') and not profile.is_system_account %}
+  {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') and not profile.is_system_account and not profile.user.is_superuser %}
     {% if profile.user.is_active %}
       <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
         {% csrf_token %}
