@@ -67,7 +67,7 @@ def auto_reject_old_zendesk_spam() -> None:
         content_type=ct_support_ticket,
         status=FlaggedObject.FLAG_PENDING,
         created__lt=cutoff_date,
-    ).select_related("content_object")
+    ).prefetch_related("content_object")
 
     rejected_count = 0
 
@@ -81,6 +81,5 @@ def auto_reject_old_zendesk_spam() -> None:
         flag.save(update_fields=["status"])
 
     log.info(
-        f"Auto-rejected {rejected_count} old Zendesk spam tickets "
-        f"older than {cutoff_date.date()}"
+        f"Auto-rejected {rejected_count} old Zendesk spam tickets older than {cutoff_date.date()}"
     )
