@@ -39,6 +39,7 @@
   {% else %}
     <p>{{ _('There is no content pending moderation.') }}</p>
   {% endfor %}
+  {{ objects|paginator }}
 {% endblock %}
 
 {% block deactivation_log %}

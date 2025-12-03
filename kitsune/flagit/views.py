@@ -153,6 +153,8 @@ def flagged_queue(request):
         .prefetch_related("content_object")
         .exclude(content_type=ct_support_ticket)
     )
+
+    objects = paginate(request, objects)
     objects = set_form_action_for_objects(objects, reason=reason, content_type=content_type_id)
 
     # Get unique content types for the filter dropdown
