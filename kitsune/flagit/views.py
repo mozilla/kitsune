@@ -411,6 +411,13 @@ def update(request, flagged_object_id):
         if "hx-request" in request.headers:
             return HttpResponse(status=202)
         return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))
+
+    # Check if this is a spam-flagged SupportTicket (Zendesk spam queue)
+    if flagged.reason == FlaggedObject.REASON_SPAM and isinstance(
+        flagged.content_object, SupportTicket
+    ):
+        return HttpResponseRedirect(reverse("flagit.zendesk_spam_queue"))
+
     return HttpResponseRedirect(
         urlparams(reverse("flagit.flagged_queue"), reason=reason, content_type=content_type)
     )
