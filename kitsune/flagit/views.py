@@ -414,10 +414,8 @@ def update(request, flagged_object_id):
             return HttpResponse(status=202)
         return HttpResponseRedirect(urlparams(reverse("flagit.moderate_content"), product=product))
 
-    # Check if this is a spam-flagged SupportTicket (Zendesk spam queue)
-    if flagged.reason == FlaggedObject.REASON_SPAM and isinstance(
-        flagged.content_object, SupportTicket
-    ):
+    # Check if this is a SupportTicket (Zendesk spam queue)
+    if isinstance(flagged.content_object, SupportTicket):
         return HttpResponseRedirect(reverse("flagit.zendesk_spam_queue"))
 
     return HttpResponseRedirect(
