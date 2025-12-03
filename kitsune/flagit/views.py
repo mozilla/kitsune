@@ -222,7 +222,7 @@ def get_hierarchical_topics(product, cache_timeout=3600):
     return hierarchical
 
 
-@group_required("Content Moderators")
+@group_required(settings.STAFF_GROUP)
 @require_http_methods(["GET", "POST"])
 def moderate_content(request):
     """Display flagged content that needs moderation."""
@@ -232,18 +232,15 @@ def moderate_content(request):
     if (
         assignee
         and not User.objects.filter(
-            is_active=True, username=assignee, groups__name="Content Moderators"
+            is_active=True, username=assignee, groups__name=settings.STAFF_GROUP
         ).exists()
     ):
         return HttpResponseNotFound()
 
     ct_question = ContentType.objects.get_for_model(Question)
+    ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
 
-    content_types = [ct_question]
-
-    if show_support_tickets := request.user.has_perm("customercare.view_supportticket"):
-        ct_support_ticket = ContentType.objects.get_for_model(SupportTicket)
-        content_types.append(ct_support_ticket)
+    content_types = [ct_question, ct_support_ticket]
 
     objects = (
         get_flagged_objects(
@@ -280,18 +277,6 @@ def moderate_content(request):
     # default ordering for flagged objects is by ascending created date.
     objects = paginate(request, objects)
 
-    questions = [obj.content_object for obj in objects if obj.content_type == ct_question]
-
-    # Only prefetch the tags, topic, and creator for questions.
-    prefetch_related_objects(questions, "tags", "topic", "creator")
-
-    if show_support_tickets:
-        support_tickets = [
-            obj.content_object for obj in objects if obj.content_type == ct_support_ticket
-        ]
-        # Prefetch the user for support tickets.
-        prefetch_related_objects(support_tickets, "user")
-
     objects = set_form_action_for_objects(
         objects, reason=FlaggedObject.REASON_CONTENT_MODERATION, product_slug=product_slug
     )
@@ -302,6 +287,19 @@ def moderate_content(request):
 
     for product in unique_products:
         product_topics_cache[product.id] = get_hierarchical_topics(product)
+
+    questions = []
+    support_tickets = []
+    for obj in objects:
+        if obj.content_type == ct_question:
+            questions.append(obj.content_object)
+        elif obj.content_type == ct_support_ticket:
+            support_tickets.append(obj.content_object)
+
+    # Only prefetch the tags, topic, and creator for questions.
+    prefetch_related_objects(questions, "tags", "topic", "creator")
+    # Prefetch the user for support tickets.
+    prefetch_related_objects(support_tickets, "user")
 
     for obj in objects:
         if obj.content_type == ct_question:
@@ -327,7 +325,7 @@ def moderate_content(request):
                 (user.username, user.get_full_name() or user.username)
                 for user in User.objects.filter(
                     is_active=True,
-                    groups__name="Content Moderators",
+                    groups__name=settings.STAFF_GROUP,
                 ).distinct()
             ),
             "selected_assignee": assignee,
@@ -347,7 +345,12 @@ def zendesk_spam_queue(request):
             content_types=[ct_support_ticket],
         )
         .select_related("content_type", "creator")
-        .prefetch_related("content_object", "content_object__product", "content_object__user", "content_object__topic")
+        .prefetch_related(
+            "content_object",
+            "content_object__product",
+            "content_object__user",
+            "content_object__topic",
+        )
     )
 
     objects = paginate(request, objects)
