@@ -183,7 +183,7 @@ def close_account(request):
 @permission_required("users.deactivate_users")
 def deactivate(request, mark_spam=False):
     user = get_object_or_404(User, id=request.POST["user_id"], is_active=True)
-    if user.profile.is_system_account:
+    if user.profile.is_system_account or user.is_superuser:
         raise Http404
     deactivate_user(user, request.user)
 
