@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.models import ModelBase
@@ -15,10 +14,10 @@ class SupportTicket(ModelBase):
     STATUS_REJECTED = "rejected"
 
     STATUS_CHOICES = (
-        (STATUS_PENDING, _lazy("Pending")),
-        (STATUS_SENT, _lazy("Sent")),
-        (STATUS_FLAGGED, _lazy("Flagged for Review")),
-        (STATUS_REJECTED, _lazy("Rejected")),
+        (STATUS_PENDING, "Ticket Pending Classification"),
+        (STATUS_SENT, "Ticket Sent"),
+        (STATUS_FLAGGED, "Ticket under Review"),
+        (STATUS_REJECTED, "Ticket Rejected"),
     )
 
     subject = models.CharField(max_length=255)
