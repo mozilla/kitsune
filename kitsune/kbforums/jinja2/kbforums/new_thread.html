@@ -30,7 +30,7 @@
           {{ field.label_tag()|safe }}
           {% if field.name == 'content' %}
             <div class="content-box">
-              {{ content_editor(field) }}
+              {{ content_editor(field, mention_rules=true) }}
             </div>
           {% else %}
             {{ field|safe }}

@@ -26,6 +26,7 @@
           <form class="update inline-form" action="{{ object.form_action }}" method="post">
             {% csrf_token %}
             <select name="status">
+              {# L10n: A default option for dropdown menus (displayed when none of the actual options is selected). #}
               <option value="">{{ _('Please select...') }}</option>
               <option value="1">{{ _('Removed spam content.') }}</option>
               <option value="2">{{ _('No spam found.') }}</option>

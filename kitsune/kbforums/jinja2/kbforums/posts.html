@@ -92,7 +92,7 @@
           {% endif %}
 
           <div id="thread-reply">
-            {{ content_editor(form.content) }}
+            {{ content_editor(form.content, mention_rules=true) }}
           </div>
 
           <div class="editor-actions sumo-button-wrap reverse-on-desktop align-end">
