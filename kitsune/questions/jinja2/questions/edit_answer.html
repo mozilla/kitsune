@@ -49,7 +49,7 @@
           {{ errorlist(form) }}
 
           <div class="form-widget{% if form.content.errors %} invalid{% endif %}">
-            {{ content_editor(form.content) }}
+            {{ content_editor(form.content, mention_rules=true) }}
           </div>
 
           {{ attachments_form('questions.Answer', answer.pk, answer.images.all(), settings, request.user) }}

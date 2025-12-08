@@ -2,7 +2,9 @@
 {% from 'includes/common_macros.html' import featured_articles, scam_banner %}
 
 {% macro select_product(products) -%}
+  {# L10n: A header, displayed when asking a new question (on https://support.mozilla.org/questions/new and in Premium product question forms). #}
   <h1 class="sumo-page-heading">{{ _('Contact Support') }}</h1>
+  {# L10n: A subheader, displayed when asking a new question (on https://support.mozilla.org/questions/new). #}
   <h2 class="sumo-page-subheading">{{ _('Which product do you need help with?') }}</h2>
   <div class="sumo-page-section--inner">
     <div id="product-picker" class="sumo-card-grid stack-on-mobile">
@@ -30,6 +32,7 @@
           </div>
         {% endfor %}
         <div class="card card--centered-button">
+          {# L10n: A button, displayed when asking a new question (on https://support.mozilla.org/questions/new). #}
           <a class="sumo-button primary-button button-lg" href="{{ url('questions.home') }}">{{ _('Browse All Product Forums')}}</a>
         </div>
       </div>
@@ -49,8 +52,10 @@
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
           {% if step > 1 and step < 4 %}
+            {# L10n: A label, displayed in a progress bar when asking a new question (when a product is selected, e.g., on https://support.mozilla.org/questions/new/firefox). #}
             <span class="progress--label">{{ _('Change Product') }}</span>
           {% else %}
+            {# L10n: A label, displayed in a progress bar when asking a new question (on https://support.mozilla.org/questions/new/). #}
             <span class="progress--label">{{ _('Select Product') }}</span>
           {% endif %}
         </span>
@@ -65,6 +70,7 @@
         {% endif %}>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
+          {# L10n: A label, displayed in a progress bar when asking a new question (e.g., on https://support.mozilla.org/questions/new/). #}
           <span class="progress--label">{{ _('Explore Solutions') }}</span>
         </span>
       </a>
@@ -104,18 +110,23 @@
     {% if aaq_context %}
       {% if request.user.is_authenticated %}
         {% if is_ticketed %}
+          {# L10n: Text for the Ask a Question CTA widget (case: Premium products; the user is signed in). #}
           <p>{{ _('Still need help? Continue to contact our support team.') }}</p>
         {% else %}
+          {# L10n: Text for the Ask a Question CTA widget (case: Freemium products; the user is signed in). #}
           <p>{{ _('Still need help? Continue to ask your question on our forums.') }}</p>
         {% endif %}
      {% else %}
         {% if is_ticketed %}
+          {# L10n: Text for the Ask a Question CTA widget (case: Premium products; the user is not signed in). #}
           <p>{{ _('Still need help? Sign in to contact our support team.') }}</p>
         {% else %}
+          {# L10n: Text for the Ask a Question CTA widget (case: Freemium products; the user is not signed in). #}
           <p>{{ _('Still need help? Sign in to ask your question on our forums.') }}</p>
         {% endif %}
       {% endif %}
     {% else %}
+      {# L10n: Text for the Ask a Question CTA widget (case: Ask-a-question workflow is not configured). #}
       <p>{{ _('Still need help? Continue to ask your question and get help.') }}</p>
     {% endif %}
 
@@ -135,6 +146,7 @@
         "link_name": "{{ link_name }}",
         "link_detail": "{{ link_detail }}"
       }'>
+      {# L10n: A button. #}
       {{ _('Continue')}}
     </a>
     </div>
@@ -153,13 +165,16 @@
 
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main home-search-section--content">
-        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="{{ product.title }} logo">
+        {# L10n: Alt text for a product logo. #}
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="{{ _('{product} logo')|f(product=product.title) }}">
         <h1 class="sumo-page-heading ">
-          <span class="product-title-text">{{ product.title }} {{ _('Solutions') }}</span>
+          {# L10n: A header, displayed when asking a new question with a product selected (e.g., on https://support.mozilla.org/questions/new/firefox). #}
+          <span class="product-title-text">{{ _('{product} Solutions')|f(product=product.title) }}</span>
         </h1>
         {{ search_box(settings, id='question-search-masthead', params=search_params) }}
 
         <p class="page-heading--intro-text">
+            {# L10n: Introduction, displayed when asking a new question with a product selected (e.g., on https://support.mozilla.org/questions/new/firefox). #}
             {{ _('Browse our self-help options first or continue to ask your question and get help.') }}
         </p>
       </div>
@@ -191,31 +206,50 @@
 
 {% macro troubleshooting_instructions(field) %}
   <div>
-    <div id="api-section">
-      <div id="troubleshooting-button" class="sumo-button-wrap">
-        <button class="sumo-button" id="share-data" type="button">
-          {{ _('Share Data') }}
-        </button>
-      </div>
-      <p id="troubleshooting-manual" class="hide-until-expanded">
-        {# L10n: Deprecated #}
-        {% set deprecated_share_data_fallback %}
-          {% trans %}
-            We can't automatically get your browser's troubleshooting data, please
-            <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
-          {% endtrans %}
-        {% endset %}
-        {# L10n: Try these manual steps refers to https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox #}
+    <div id="troubleshooting-button" class="sumo-button-wrap">
+      <button class="sumo-button" id="share-data" type="button" aria-describedby="{{ field.help_id }}">
+        {# L10n: A button for sharing troubleshooting data when asking a new question (displayed, e,g., on https://support.mozilla.org/questions/new/firefox/form). #}
+        {{ _('Share Data') }}
+      </button>
+    </div>
+    <div id="troubleshooting-manual" class="hide-until-expanded" class="field-help-text">
+      {# L10n: Deprecated #}
+      {% set deprecated_share_data_fallback %}
+        {% trans %}
+          We can't automatically get your browser's troubleshooting data, please
+          <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
+        {% endtrans %}
+      {% endset %}
+      {# L10n: Deprecated. Try these manual steps refers to https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox #}
+      {% set deprecated_share_data_fallback_2 %}
         {% trans a_open='<a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox" target="_blank">'|safe, a_close='</a>'|safe %}
           We can't automatically get your browser's troubleshooting data, please {{ a_open }}try these manual steps{{ a_close }}.
         {% endtrans %}
-      </p>
-      <div id="troubleshooting-field" class="hide-until-expanded field full-width">
-        {{ field }}
-      </div>
-      <p>
-        {{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}
-      </p>
+      {% endset %}
+      {# L10n: Try these manual steps refers to https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox #}
+      {% trans a_open='<a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox" target="_blank">'|safe, a_close='</a>'|safe %}
+        We’re unable to pull your browser’s troubleshooting data – please {{ a_open }}try these manual steps{{ a_close }}.
+      {% endtrans %}
+    </div>
+    <div id="troubleshooting-field" class="hide-until-expanded field full-width">
+      {{ field }}
     </div>
   </div>
+{% endmacro %}
+
+{% macro helpful_tip() %}
+  <h3 class="sumo-card-heading">
+    {# L10n: Alt text for the helpful tip icon displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). Source: https://assets-prod.sumo.prod.webservices.mozgcp.net/static/highlight.975d9eebb1f0b621.svg #}
+    <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/highlight.svg') }}" alt="{{ _('Helpful Tip icon') }}" />
+    {# L10n: A header for the Helpful Tip card displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). #}
+    {{ _('Helpful Tip!')}}
+  </h3>
+  {# L10n: Text for the Helpful Tip card displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). #}
+  <p>
+    {% trans %}
+      Follow through. Sometimes, our volunteers would ask you for
+      more information or to test out certain scenarios. The sooner
+      you can do this, the sooner they would know how to fix it.
+    {% endtrans %}
+  </p>
 {% endmacro %}

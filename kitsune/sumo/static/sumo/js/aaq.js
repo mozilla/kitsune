@@ -7,7 +7,7 @@ import RemoteTroubleshooting from "./remote";
 
 export default class AAQSystemInfo {
   static slugs = {
-    desktop: ["/firefox/", "/firefox-enterprise/"],
+    desktop: ["/firefox/", "/firefox-enterprise/", "/thunderbird/"],
     mobile: ["/mobile/", "/ios/", "/focus-firefox/", "/thunderbird-android/"],
   };
 
@@ -15,7 +15,10 @@ export default class AAQSystemInfo {
     this.form = form;
 
     // Autofill the user agent
-    form.querySelector('input[name="useragent"]').value = navigator.userAgent;
+    let userAgentInput = form.querySelector('input[name="useragent"]');
+    if (userAgentInput) {
+      userAgentInput.value = navigator.userAgent;
+    }
 
     this.setupTroubleshootingInfo();
   }
@@ -36,10 +39,13 @@ export default class AAQSystemInfo {
 
     this.form.querySelector('input[name="os"]').value = platform.toString();
 
-    const browser = await detect.getBrowser();
-    if (browser.mozilla) {
-      this.form.querySelector('input[name="ff_version"]').value =
-        browser.version.toString();
+    let ffVersionField = this.form.querySelector('input[name="ff_version"]');
+    if (ffVersionField) {
+      const browser = await detect.getBrowser();
+      if (browser.mozilla) {
+        ffVersionField.value =
+          browser.version.toString();
+      }
     }
   }
 
@@ -66,6 +72,13 @@ export default class AAQSystemInfo {
             "none";
           this.form.querySelector("#troubleshooting-manual").style.display =
             "block";
+          let widget = this.form.querySelector("#id_troubleshooting");
+          const widget_ariaDescribedby = widget.getAttribute("aria-describedby");
+          if (widget_ariaDescribedby) {
+            widget.setAttribute("aria-describedby", widget_ariaDescribedby + " troubleshooting-manual");
+          } else {
+            widget.setAttribute("aria-describedby", "troubleshooting-manual");
+          }
         }
         this.form.querySelector("#troubleshooting-field").style.display =
           "block";

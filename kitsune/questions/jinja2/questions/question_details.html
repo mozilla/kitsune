@@ -262,7 +262,7 @@
           {{ errorlist(form) }}
 
           <div class="main-content">
-            {{ content_editor(form.content) }}
+            {{ content_editor(form.content, mention_rules=true) }}
             {% if question.needs_info %}
             <div class="field checkbox">
               <input id="id_info_provided" type="checkbox" name="clear_needsinfo" {% if user == question.creator %}checked="checked"{% endif %}>
@@ -509,19 +509,19 @@
                 <section id="more-system-details" class="mzp-u-modal-content text-body-md" title="{{ _('Additional System Details') }}" data-target="#show-more-details">
                   <h2 class="sumo-page-subheading">{{ _('Additional System Details') }}</h2>
                   {% if question.metadata.crash_id %}
-                  <h3 class="sumo-card-heading">{{ _('Crash ID') }}</h3>
+                  <h3 class="sumo-card-heading">{{ crash_id_label }}</h3>
                   <p>{{ question.metadata.crash_id }}</p>
                   {% endif %}
                   {% if question.metadata.frequency %}
-                  <h3 class="sumo-card-heading">{{ _('This happened') }}</h3>
+                  <h3 class="sumo-card-heading">{{ frequency_label }}</h3>
                   <p>{{ frequencies[question.metadata.frequency] }}</p>
                   {% endif %}
                   {% if question.metadata.started %}
-                  <h3 class="sumo-card-heading">{{ _('This started when...') }}</h3>
+                  <h3 class="sumo-card-heading">{{ started_label }}</h3>
                   <p>{{ question.metadata.started }}</p>
                   {% endif %}
                   {% if question.metadata.plugins %}
-                  <h3 class="sumo-card-heading">{{ _('Installed Plug-ins') }}</h3>
+                  <h3 class="sumo-card-heading">{{ plugins_label }}</h3>
                   <p><span class="plugins">
                     {{ question.metadata.plugins|wiki_to_html }}
                   </span></p>
