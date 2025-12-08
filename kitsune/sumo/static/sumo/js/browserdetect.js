@@ -260,7 +260,7 @@ export default class BrowserDetect {
 
   async getOS() {
     let os = await this.uaDetector.os();
-    if (os.name === "Windows" && os.version === "10") {
+    if (os.name === "Windows" && os.version === "10/11") {
       // could be windows 11
       let browser = await this.uaDetector.browser();
       if (browser.mozilla && !os.mobile) {
