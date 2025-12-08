@@ -43,9 +43,12 @@ FREQUENCY_CHOICES = [
     ("EVERY_TIME", _lazy("Every time Firefox opened")),
 ]
 STARTED_LABEL = _lazy("This started when...")
-TITLE_LABEL = _lazy("Subject")
+TITLE_LABEL = _lazy("Summarize your question")
+TITLE_HELP_TEXT = _lazy("Please summarize your question in one sentence:")
 CONTENT_LABEL = _lazy("How can we help?")
+CONTENT_HELP_TEXT = _lazy('Please include as much detail as possible. Also, remember to follow our <a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">rules and guidelines</a>.')
 FF_VERSION_LABEL = _lazy("Firefox version")
+TB_VERSION_LABEL = _lazy("Thunderbird version")
 OS_LABEL = _lazy("Operating system")
 PLUGINS_LABEL = _lazy("Installed plugins")
 ADDON_LABEL = _lazy("Extension/plugin you are having trouble with")
@@ -60,9 +63,9 @@ EMAIL_PLACEHOLDER = _lazy("Enter your email address here.")
 class EditQuestionForm(forms.ModelForm):
     """Form to edit an existing question"""
 
-    title = forms.CharField(label=TITLE_LABEL, min_length=5)
+    title = forms.CharField(label=TITLE_LABEL, help_text=TITLE_HELP_TEXT, min_length=5)
 
-    content = forms.CharField(label=CONTENT_LABEL, min_length=5, widget=forms.Textarea())
+    content = forms.CharField(label=CONTENT_LABEL, help_text=CONTENT_HELP_TEXT, min_length=5, widget=forms.Textarea())
 
     class Meta:
         model = Question
@@ -75,6 +78,7 @@ class EditQuestionForm(forms.ModelForm):
         form fields to include depend on the selected product/category.
         """
         super().__init__(*args, **kwargs)
+        self.label_suffix = None
 
         #  Extra fields required by product/category selected
         extra_fields = []
@@ -86,6 +90,12 @@ class EditQuestionForm(forms.ModelForm):
         if "ff_version" in extra_fields:
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL,
+                required=False,
+            )
+
+        if "tb_version" in extra_fields:
+            self.fields["tb_version"] = forms.CharField(
+                label=TB_VERSION_LABEL,
                 required=False,
             )
 
@@ -109,6 +119,15 @@ class EditQuestionForm(forms.ModelForm):
         for field in self.fields.values():
             if not field.required:
                 field.label_suffix = _lazy(" (optional):")
+
+        for name, field in self.fields.items():
+            if field.help_text:
+                bound = self[name]
+                bound.help_id = f"{bound.id_for_label}_help"
+                if field.widget.attrs.get("aria-describedby"):
+                    field.widget.attrs["aria-describedby"] += " " + bound.help_id
+                else:
+                    field.widget.attrs["aria-describedby"] = bound.help_id
 
     def clean_content(self):
         """Validate that content field contains actual text, not just HTML markup."""
