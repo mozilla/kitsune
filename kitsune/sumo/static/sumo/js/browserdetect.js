@@ -234,6 +234,10 @@ export class TroubleshootingDetector extends GenericDetector {
       os.name = "Windows";
       os.version = "11";
     }
+    else if (osVersion.includes("Windows_NT 10.0")) {
+      os.name = "Windows";
+      os.version = "10";
+    }
     return os;
   }
 

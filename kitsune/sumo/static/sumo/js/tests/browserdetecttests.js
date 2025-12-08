@@ -42,7 +42,7 @@ describe("BrowserDetect", () => {
       },
       os: {
         name: "Windows",
-        version: "10",
+        version: "10/11",
       },
     },
     {
@@ -264,7 +264,7 @@ describe("BrowserDetect", () => {
       },
       os: {
         name: "Windows",
-        version: "10",
+        version: "10/11",
       },
     },
     {
