@@ -49,6 +49,7 @@ CONTENT_LABEL = _lazy("How can we help?")
 CONTENT_HELP_TEXT = _lazy('Please include as much detail as possible. Also, remember to follow our <a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">rules and guidelines</a>.')
 FF_VERSION_LABEL = _lazy("Firefox version")
 TB_VERSION_LABEL = _lazy("Thunderbird version")
+TB_VERSION_PLACEHOLDER = _lazy("e.g., 140.5.0esr, 146.1.0 release or 147.0b4")
 OS_LABEL = _lazy("Operating system")
 PLUGINS_LABEL = _lazy("Installed plugins")
 ADDON_LABEL = _lazy("Extension/plugin you are having trouble with")
@@ -97,6 +98,7 @@ class EditQuestionForm(forms.ModelForm):
             self.fields["tb_version"] = forms.CharField(
                 label=TB_VERSION_LABEL,
                 required=False,
+                widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER}),
             )
 
         if "os" in extra_fields:
