@@ -22,7 +22,7 @@
       <div class="form-widget{% if form.content.errors %} invalid{% endif %}">
         {{ form.content.label_tag()|safe }}
         <div class="content-box">
-          {{ content_editor(form.content) }}
+          {{ content_editor(form.content, mention_rules=true) }}
         </div>
       </div>
 

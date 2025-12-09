@@ -190,24 +190,19 @@
 
 {% macro troubleshooting_instructions(field) %}
   <div>
-    <div id="api-section">
-      <div id="troubleshooting-button" class="sumo-button-wrap">
-        <button class="sumo-button" id="share-data" type="button">
-          {{ _('Share Data') }}
-        </button>
-      </div>
-      <p id="troubleshooting-manual" class="hide-until-expanded">
-        {% trans %}
-          We can't automatically get your browser's troubleshooting data, please
-          <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
-        {% endtrans %}
-      </p>
-      <div id="troubleshooting-field" class="hide-until-expanded field full-width">
-        {{ field }}
-      </div>
-      <p>
-        {{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}
-      </p>
+    <div id="troubleshooting-button" class="sumo-button-wrap">
+      <button class="sumo-button" id="share-data" type="button" aria-describedby="{{ field.help_id }}">
+        {{ _('Share Data') }}
+      </button>
+    </div>
+    <div id="troubleshooting-manual" class="hide-until-expanded" class="field-help-text">
+      {% trans %}
+        We can't automatically get your browser's troubleshooting data, please
+        <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
+      {% endtrans %}
+    </div>
+    <div id="troubleshooting-field" class="hide-until-expanded field full-width">
+      {{ field }}
     </div>
   </div>
 {% endmacro %}

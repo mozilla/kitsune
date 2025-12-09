@@ -1,0 +1,5 @@
+@use 'protocol/css/includes/lib' as p;
+
+.field-help-text {
+  margin-bottom: p.$spacing-sm;
+}
