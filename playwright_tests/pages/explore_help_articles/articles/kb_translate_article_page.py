@@ -1,21 +1,32 @@
-from playwright.sync_api import Locator, Page
-
+from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
 
 class TranslateArticlePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
+
+        """General page locators."""
         self.translating_an_unready_article_banner = page.locator("ul[class='user-messages'] li")
         self.article_translation_page_title = page.locator("h1[class='sumo-page-heading']")
+
+        """Locators belonging to the title and slug sections."""
         self.translation_title_field = page.locator("input#id_title")
         self.translation_slug_field = page.locator("input#id_slug")
+
+        """Locators belonging to the allow comments section."""
         self.allow_article_comments_label = page.locator("label[for='id_allow_discussion']")
+
+        """Locators belonging to the keywords and search summary sections."""
         self.translation_keyword_field = page.locator("input#id_keywords")
         self.translation_summary_field = page.locator("textarea#id_summary")
+
+        """Locators belonging to the translation content sections."""
         self.translation_english_readonly_field = page.locator("div#content-or-diff textarea")
         self.translation_text = page.locator("textarea#id_content")
         self.change_body_view = page.locator("div#editor_wrapper + a")
+
+        """Locators belonging to the action buttons section."""
         self.send_translation_for_approval_button = page.locator(
             "button[class*='btn-submit']").first
         self.save_translation_as_draft_button = page.locator("button[class*='btn-draft']").first
@@ -31,9 +42,6 @@ class TranslateArticlePage(BasePage):
 
     def get_text_of_article_unready_for_translation_banner(self) -> str:
         return self._get_text_of_element(self.translating_an_unready_article_banner)
-
-    def get_unready_for_translation_banner(self) -> Locator:
-        return self.translating_an_unready_article_banner
 
     def get_translate_page_title(self) -> str:
         return self._get_text_of_element(self.article_translation_page_title)
@@ -72,6 +80,3 @@ class TranslateArticlePage(BasePage):
 
     def click_on_save_translation_as_draft_button(self):
         self.save_translation_as_draft_button.first.click()
-
-    def get_draft_success_message_locator(self) -> Locator:
-        return self.draft_saved_successfully_message

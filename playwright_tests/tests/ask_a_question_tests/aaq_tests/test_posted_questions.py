@@ -19,7 +19,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C2191086, C2191094, C2191263,  C2191263, C2191087, C2191088
 @pytest.mark.postedQuestions
-@pytest.mark.parametrize("user_type", ['simple user', ''])
+@pytest.mark.parametrize("user_type", ['Simple User', ''])
 def test_posted_question_details(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
@@ -34,10 +34,10 @@ def test_posted_question_details(page: Page, user_type, create_user_factory):
         utilities.delete_cookies()
 
     with allure.step("Verifying that the scam banner is displayed"):
-        expect(sumo_pages.product_solutions_page.get_scam_banner_locator()).to_be_visible()
+        expect(sumo_pages.product_solutions_page.support_scams_banner).to_be_visible()
 
     with allure.step("Verifying that the still need help banner is displayed"):
-        expect(sumo_pages.common_web_elements.get_still_need_help_locator()).to_be_visible()
+        expect(sumo_pages.common_web_elements.still_need_help_subheading).to_be_visible()
 
     with check, allure.step("Verifying that the Learn More button contains the correct link"):
         assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
@@ -46,8 +46,8 @@ def test_posted_question_details(page: Page, user_type, create_user_factory):
     with allure.step("Signing in with a Forum Moderator and verifying that the scam banner is "
                      "displayed and the still need help banner is displayed"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.product_solutions_page.get_scam_banner_locator()).to_be_visible()
-        expect(sumo_pages.common_web_elements.get_still_need_help_locator()).to_be_visible()
+        expect(sumo_pages.product_solutions_page.support_scams_banner).to_be_visible()
+        expect(sumo_pages.common_web_elements.still_need_help_subheading).to_be_visible()
 
     with check, allure.step("Verifying that the Learn More button contains the correct link"):
         assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
@@ -68,28 +68,26 @@ def test_edit_this_question_functionality_not_signed_in(page: Page, create_user_
     with allure.step("Deleting user session and verifying that the 'edit this question' nav "
                      "option is not available"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_edit_this_question_option_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.edit_this_question_option).to_be_hidden()
 
     with allure.step("Navigating to the edit endpoint and verifying that the user is "
                      "redirected to the auth page"):
         utilities.navigate_to_link(
             utilities.get_page_url() + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT
         )
-        assert (
-            FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
-        )
+        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
 
-# C2191262, C2436105,  C2191263
+# C2191262, C2436105, C2191263
 # To add image tests
 @pytest.mark.postedQuestions
 @pytest.mark.parametrize("user_type", ['Simple User', 'Forum Moderator'])
-def test_cancel_edit_this_question_functionality(page: Page, user_type,
-                                                 create_user_factory):
+def test_cancel_edit_this_question_functionality(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
     test_user_three = create_user_factory(groups=["Forum Moderators"])
+
     with allure.step("Signing in with a simple user account and posting a Firefox product "
                      "question"):
         posted_question = post_firefox_product_question_flow(page, test_user)
@@ -112,8 +110,7 @@ def test_cancel_edit_this_question_functionality(page: Page, user_type,
 
     with allure.step("Editing the question with new data"):
         sumo_pages.aaq_flow.editing_question_flow(
-            subject=utilities.aaq_question_test_data['valid_firefox_question']
-            ['subject_updated'],
+            subject=utilities.aaq_question_test_data['valid_firefox_question']['subject_updated'],
             body=utilities.aaq_question_test_data['valid_firefox_question']['body_updated'],
             troubleshoot=utilities.aaq_question_test_data['troubleshooting_information'],
             submit_edit=False
@@ -122,24 +119,22 @@ def test_cancel_edit_this_question_functionality(page: Page, user_type,
     with check, allure.step("Clicking on the 'Cancel' button and verifying that the modified "
                             "text is not displayed"):
         sumo_pages.aaq_form_page.click_aaq_form_cancel_button()
-        expect(sumo_pages.question_page.get_modified_question_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.modified_question_section).to_be_hidden()
         assert sumo_pages.question_page.get_question_header(
         ) == posted_question['question_details']['aaq_subject']
         assert sumo_pages.question_page.get_question_body(
-        ) == posted_question['question_details']['question_body'] + '\n'
+        ) == utilities.strip_wiki_syntax(posted_question['question_details']['question_body']
+                                         ) + "\n"
 
     if user_type == 'Simple User':
         with allure.step("Verifying that the additional question details option is hidden"):
-            expect(sumo_pages.question_page.get_question_details_button_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.question_details_button).to_be_hidden()
     elif user_type == "Forum Moderator":
         with allure.step("Verifying that the more information section from the 'More System "
                          "Details' is not displayed"):
             sumo_pages.question_page.click_on_question_details_button()
             sumo_pages.question_page.click_on_more_system_details_option()
-            expect(sumo_pages.question_page.get_more_information_locator()).to_be_hidden()
-
-        with allure.step("Closing the more information panel"):
-            sumo_pages.question_page.click_on_the_additional_system_panel_close()
+            expect(sumo_pages.question_page.more_information_panel_header).to_be_hidden()
 
 
 # C2191263
@@ -156,15 +151,14 @@ def test_edit_other_user_question_non_admin(page: Page, create_user_factory):
     with allure.step("Signing in with a non Forum Moderator user account and verifying that the "
                      "'Edit this question' option is not available"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.question_page.get_edit_this_question_option_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.edit_this_question_option).to_be_hidden()
 
     with check, allure.step("Manually navigating to the '/edit' endpoint and verifying that "
                             "403 is returned"):
         with page.expect_navigation() as navigation_info:
-            utilities.navigate_to_link(
-                posted_question['question_details']
-                ['question_page_url'] + QuestionPageMessages.
-                EDIT_QUESTION_URL_ENDPOINT)
+            utilities.navigate_to_link(posted_question['question_details']
+                                       ['question_page_url'] + QuestionPageMessages.
+                                       EDIT_QUESTION_URL_ENDPOINT)
         response = navigation_info.value
         assert response.status == 403
 
@@ -200,12 +194,11 @@ def test_edit_this_question_functionality(page: Page, user_type, create_user_fac
                             "modified text is displayed and the username is displayed inside"
                             " the modified text"):
         sumo_pages.aaq_flow.editing_question_flow(
-            subject=utilities.aaq_question_test_data['valid_firefox_question']
-            ['subject_updated'],
+            subject=utilities.aaq_question_test_data['valid_firefox_question']['subject_updated'],
             body=utilities.aaq_question_test_data['valid_firefox_question']['body_updated'],
             troubleshoot=utilities.aaq_question_test_data['troubleshooting_information']
         )
-        expect(sumo_pages.question_page.get_modified_question_locator()).to_be_visible()
+        expect(sumo_pages.question_page.modified_question_section).to_be_visible()
 
         username = (test_user["username"] if user_type == "Simple User" else test_user_two
                     ["username"])
@@ -217,18 +210,14 @@ def test_edit_this_question_functionality(page: Page, user_type, create_user_fac
 
     if user_type == 'Simple User':
         with allure.step("Verifying that the additional question details option is hidden"):
-            expect(sumo_pages.question_page.get_question_details_button_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.question_details_button).to_be_hidden()
     else:
         with allure.step("Verifying that the more information section displays the updated "
                          "information"):
             sumo_pages.question_page.click_on_question_details_button()
             sumo_pages.question_page.click_on_more_system_details_option()
-            expect(sumo_pages.question_page.get_more_information_with_text_locator(
-                utilities.aaq_question_test_data['troubleshooting_information']
-            )
-            ).to_be_visible()
-
-        sumo_pages.question_page.click_on_the_additional_system_panel_close()
+            expect(sumo_pages.question_page.more_information_with_text(
+                utilities.aaq_question_test_data['troubleshooting_information'])).to_be_visible()
 
 
 # T5696750, T5696779, T5696752
@@ -250,7 +239,7 @@ def test_delete_question_cancel_button(page: Page, create_user_factory):
     with allure.step("Navigating to the posted question by a different user an verifying "
                      "that the 'Delete this question' option is not available"):
         utilities.navigate_to_link(posted_question_one['question_details']['question_page_url'])
-        expect(sumo_pages.question_page.get_delete_this_question_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.delete_this_question_option).to_be_hidden()
 
     with check, allure.step("Manually navigating to the delete endpoint and verifying that "
                             "403 is returned"):
@@ -264,7 +253,7 @@ def test_delete_question_cancel_button(page: Page, create_user_factory):
     with allure.step("Navigating to the posted question by self and verifying that the "
                      "'Delete this question' option is not available"):
         utilities.navigate_to_link(posted_question_two['question_details']['question_page_url'])
-        expect(sumo_pages.question_page.get_delete_this_question_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.delete_this_question_option).to_be_hidden()
 
     with check, allure.step("Manually navigating to the delete endpoint and verifying that "
                             "403 is returned"):
@@ -307,8 +296,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
         question_info_two = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]
-            ["simple_body_text"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -319,11 +307,11 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
     if status == "locked":
         with allure.step("Verifying that the 'Lock this question' option is not available for "
                          "other posted questions"):
-            expect(sumo_pages.question_page.get_lock_this_question_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.lock_this_question_option).to_be_hidden()
     elif status == "archived":
         with allure.step("Verifying that the 'Archive this question' option is not available "
                          "for other posted questions"):
-            expect(sumo_pages.question_page.get_archive_this_question_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.archive_this_question_option).to_be_hidden()
 
     with allure.step("Navigating to the question posted by self"):
         utilities.navigate_to_link(question_info_two['question_page_url'])
@@ -331,11 +319,11 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
     if status == "locked":
         with allure.step("Verifying that the 'Lock this question is not available for self "
                          "posted questions"):
-            expect(sumo_pages.question_page.get_lock_this_question_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.lock_this_question_option).to_be_hidden()
     elif status == "archived":
         with allure.step("Verifying that the 'Archive this question' is not available for "
                          "self posted questions"):
-            expect(sumo_pages.question_page.get_archive_this_question_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.archive_this_question_option).to_be_hidden()
 
     with allure.step("Signing in with a superuser account"):
         utilities.start_existing_session(
@@ -372,32 +360,32 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
 
     if status == "locked":
         with allure.step("Verifying that the 'Unlock this question option' is not available'"):
-            expect(sumo_pages.question_page.get_lock_this_question_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.lock_this_question_option).to_be_hidden()
     elif status == "archived":
         with allure.step("Verifying that the 'Archive this question' options is not "
                          "available"):
-            expect(sumo_pages.question_page.get_archive_this_question_locator()).to_be_hidden()
+            expect(sumo_pages.question_page.archive_this_question_option).to_be_hidden()
 
     with allure.step("Verifying that the post a reply textarea field is not displayed"):
-        expect(sumo_pages.question_page.get_post_a_reply_textarea_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.post_a_reply_textarea).to_be_hidden()
 
     with allure.step("Verifying that the 'needs more information from the user' checkbox is "
                      "not displayed"):
-        expect(sumo_pages.question_page.get_needs_more_information_checkbox_locator()
+        expect(sumo_pages.question_page.needs_more_information_from_the_user_checkbox
                ).to_be_hidden()
 
     with allure.step("Verifying that the 'Add images section is not displayed'"):
-        expect(sumo_pages.question_page.get_add_image_section_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.add_image_button).to_be_hidden()
 
     with allure.step("Signing in with a superuser account and verifying that the 'needs more"
                      " information from the user' checkbox is available"):
         utilities.start_existing_session(
             session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
-        expect(sumo_pages.question_page.get_needs_more_information_checkbox_locator()
+        expect(sumo_pages.question_page.needs_more_information_from_the_user_checkbox
                ).to_be_visible()
 
     with allure.step("Verifying that the 'Add images' section is available"):
-        expect(sumo_pages.question_page.get_add_image_section_locator()).to_be_visible()
+        expect(sumo_pages.question_page.add_image_button).to_be_visible()
 
     with allure.step("Submitting a reply to the question and verifying that the posted reply "
                      "is visible"):
@@ -405,12 +393,12 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
             repliant_username=utilities.username_extraction_from_email(utilities.staff_user),
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
-        expect(sumo_pages.question_page.get_posted_reply_locator(reply_id)).to_be_visible()
+        expect(sumo_pages.question_page.question(reply_id)).to_be_visible()
 
     with allure.step("Signing in with a normal user account and verifying that the admin's "
                      "reply is visible"):
         utilities.start_existing_session(test_user)
-        expect(sumo_pages.question_page.get_posted_reply_locator(reply_id)).to_be_visible()
+        expect(sumo_pages.question_page.question(reply_id)).to_be_visible()
 
     with allure.step("Signing in with a superuser account"):
         utilities.start_existing_session(
@@ -426,7 +414,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
     with allure.step("Signing in with a non-admin account and verifying that the 'Thread "
                      "locked' banner is not displayed"):
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.question_page.get_thread_locked_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.lock_this_thread_banner).to_be_hidden()
 
     with allure.step("Submitting a reply to the question and verifying that the posted reply "
                      "is visible"):
@@ -434,7 +422,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
             repliant_username=test_user["username"],
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
-        expect(sumo_pages.question_page.get_posted_reply_locator(reply_id_two)).to_be_visible()
+        expect(sumo_pages.question_page.question(reply_id_two)).to_be_visible()
 
 
 # T5696750, T5696783, T5696752, T5696764
@@ -455,8 +443,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox, create_user_factory):
         question_info_one = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]
-            ["simple_body_text"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -469,8 +456,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox, create_user_factory):
         question_info_two = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]
-            ["simple_body_text"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -581,12 +567,12 @@ def test_mark_as_spam_functionality(page: Page, create_user_factory):
     with allure.step("Deleting user session and verifying that the 'Mark as spam' option is "
                      "not displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_mark_as_spam_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.mark_as_spam_option).to_be_hidden()
 
     with allure.step("Signing in with a user account and verifying that the 'Mark as spam' option"
                      " is not displayed"):
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.question_page.get_mark_as_spam_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.mark_as_spam_option).to_be_hidden()
 
     with check, allure.step("Signing in with a Forum Moderator account, clicking on the 'mark as "
                             "spam' option and verifying that the correct spam banner message"
@@ -617,17 +603,17 @@ def test_mark_as_spam_functionality(page: Page, create_user_factory):
                      "option and verifying that the 'Mark as spam' banner is not displayed"):
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.question_page.click_on_mark_as_spam_option()
-        expect(sumo_pages.question_page.get_marked_as_spam_banner_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam_banner).to_be_hidden()
 
     with allure.step("Deleting the user session and verifying that the 'Marked as spam' "
                      "banner is not displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_marked_as_spam_banner_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam_banner).to_be_hidden()
 
     with allure.step("Signing in with user account and verifying that the 'Marked as spam'"
                      " banner is not displayed"):
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.question_page.get_marked_as_spam_banner_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam_banner).to_be_hidden()
 
 
 # T5696756, T5696758, T5696760
@@ -645,7 +631,7 @@ def test_question_topics(page: Page, user_type, create_user_factory):
         posted_question = post_firefox_product_question_flow(page, test_user_three)
 
     with allure.step("Verifying that Tags cannot be added by OP user"):
-        expect(sumo_pages.question_page.get_add_a_tag_input_field()).to_be_hidden()
+        expect(sumo_pages.question_page.add_a_tag_input_field).to_be_hidden()
 
     with allure.step("Deleting user session"):
         utilities.delete_cookies()
@@ -656,11 +642,11 @@ def test_question_topics(page: Page, user_type, create_user_factory):
 
     with allure.step("Verifying that the 'Add a tag' input field is not displayed for "
                      "permissionless accounts"):
-        expect(sumo_pages.question_page.get_add_a_tag_input_field()).to_be_hidden()
+        expect(sumo_pages.question_page.add_a_tag_input_field).to_be_hidden()
 
     with allure.step("Verifying that the remove tag button is not displayed"):
         for tag in sumo_pages.question_page.get_question_tag_options(is_moderator=False):
-            expect(sumo_pages.question_page.get_remove_tag_button_locator(tag)).to_be_hidden()
+            expect(sumo_pages.question_page.delete_tag(tag)).to_be_hidden()
 
     with allure.step("Signing in with a Forum Moderator account, adding data inside the 'Add a "
                      "tag' input field"):
@@ -712,7 +698,7 @@ def test_question_topics(page: Page, user_type, create_user_factory):
         utilities.wait_for_given_timeout(1000)
 
     with allure.step("Verifying that the tag was removed"):
-        expect(sumo_pages.question_page.get_a_certain_tag(
+        expect(sumo_pages.question_page.tag(
             utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
         ).to_be_hidden()
@@ -725,7 +711,7 @@ def test_question_topics(page: Page, user_type, create_user_factory):
             utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Verifying that the tag was removed"):
-        expect(sumo_pages.question_page.get_a_certain_tag(
+        expect(sumo_pages.question_page.tag(
             utilities.aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
         ).to_be_hidden()
@@ -747,17 +733,17 @@ def test_email_updates_option_visibility(page: Page, create_user_factory):
     with allure.step("Deleting user session and verifying that the 'Get  email updates' "
                      "option is displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_email_updates_option()).to_be_visible()
+        expect(sumo_pages.question_page.stop_email_updates_option).to_be_visible()
 
     with allure.step("Signing in with another user account and verifying that the 'Get email"
                      " updates' option is displayed"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.question_page.get_email_updates_option()).to_be_visible()
+        expect(sumo_pages.question_page.stop_email_updates_option).to_be_visible()
 
     with allure.step("Signing in with a Forum Moderator and verifying that the 'Get email "
                      "updated' options is displayed"):
         utilities.start_existing_session(cookies=test_user_three)
-        expect(sumo_pages.question_page.get_email_updates_option()).to_be_visible()
+        expect(sumo_pages.question_page.stop_email_updates_option).to_be_visible()
 
     with allure.step("Deleting the posted question"):
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -794,14 +780,14 @@ def test_mark_reply_as_spam(page: Page, create_user_factory):
     with allure.step("Clicking on the self reply menu and verifying that the 'mark as spam' "
                      "option is not displayed for non-admin users"):
         sumo_pages.question_page.click_on_reply_more_options_button(reply_id_two)
-        expect(sumo_pages.question_page.get_mark_as_spam_reply_locator(reply_id_two)
+        expect(sumo_pages.question_page.mark_reply_as_spam(reply_id_two)
                ).to_be_hidden()
         sumo_pages.question_page.click_on_reply_more_options_button(reply_id_two)
 
     with allure.step("Clicking on other user posted reply menu and verifying that the 'mark "
                      "as spam' option is not displayed for non-admin users"):
         sumo_pages.question_page.click_on_reply_more_options_button(reply_id_one)
-        expect(sumo_pages.question_page.get_mark_as_spam_reply_locator(reply_id_one)
+        expect(sumo_pages.question_page.mark_reply_as_spam(reply_id_one)
                ).to_be_hidden()
         sumo_pages.question_page.click_on_reply_more_options_button(reply_id_one)
 
@@ -816,47 +802,47 @@ def test_mark_reply_as_spam(page: Page, create_user_factory):
     with allure.step("Deleting user session and verifying that the reply marked as spam is "
                      "no longer displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_reply_section_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.reply_section(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with a simple user and verifying that reply marked as spam "
                      "is no longer displayed"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.question_page.get_reply_section_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.reply_section(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with the reply OP user account and verifying that the reply "
                      "marked as spam is no longer displayed"):
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.question_page.get_reply_section_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.reply_section(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with the Forum Moderator, unmarking the reply from spam and "
                      "verifying that the 'Marked as spam' message is no longer displayed"):
         utilities.start_existing_session(cookies=test_user_three)
         sumo_pages.aaq_flow.spam_marking_a_reply(reply_id_one)
-        expect(sumo_pages.question_page.get_marked_as_spam_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam(reply_id_one)).to_be_hidden()
 
     with allure.step("Deleting the user session and verifying that the reply is visible to "
                      "the logged out users"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_reply_section_locator(reply_id_one)).to_be_visible()
+        expect(sumo_pages.question_page.reply_section(reply_id_one)).to_be_visible()
 
     with allure.step("Verifying that the 'Marked as spam' message is no longer displayed"):
-        expect(sumo_pages.question_page.get_marked_as_spam_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with a different simple user and verifying that the reply is "
                      "visible again"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.question_page.get_reply_section_locator(reply_id_one)).to_be_visible()
+        expect(sumo_pages.question_page.reply_section(reply_id_one)).to_be_visible()
 
     with allure.step("Verifying that the 'Marked as spam' message is no longer displayed"):
-        expect(sumo_pages.question_page.get_marked_as_spam_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam(reply_id_one)).to_be_hidden()
 
     with allure.step("Signing in with the reply OP and verifying that the reply is visible "
                      "again"):
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.question_page.get_reply_section_locator(reply_id_one)).to_be_visible()
+        expect(sumo_pages.question_page.reply_section(reply_id_one)).to_be_visible()
 
     with allure.step("Verifying that the 'Marked as spam' message is no longer displayed"):
-        expect(sumo_pages.question_page.get_marked_as_spam_locator(reply_id_one)).to_be_hidden()
+        expect(sumo_pages.question_page.marked_as_spam(reply_id_one)).to_be_hidden()
 
 
 # Need to expand this to contain additional text format.
@@ -899,8 +885,7 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
         with allure.step("Clicking on the more options for the reply posted by another user "
                          "and verifying that the 'edit this post' option is not displayed"):
             sumo_pages.question_page.click_on_reply_more_options_button(reply_id)
-            expect(sumo_pages.question_page.get_edit_this_post_reply_locator(reply_id)
-                   ).to_be_hidden()
+            expect(sumo_pages.question_page.edit_this_post_for_answer(reply_id)).to_be_hidden()
 
         with check, allure.step("Manually navigating to edit reply endpoint and verifying "
                                 "that 403 is returned"):
@@ -917,17 +902,12 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
             utilities.navigate_to_link(page_url)
             reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user_two["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['question_reply']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
             )
             assert sumo_pages.question_page.get_display_name_of_question_reply_author(
                 reply_id
             ) == test_user_two["username"]
-            expect(
-                sumo_pages.question_page.get_displayed_user_title_of_question_reply_locator(
-                    reply_id
-                )
-            ).to_be_hidden()
+            expect(sumo_pages.question_page.reply_user_title(reply_id)).to_be_hidden()
     else:
         utilities.start_existing_session(cookies=test_user_three)
         user_two = test_user_three["username"]
@@ -941,9 +921,8 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
 
     with allure.step("Editing the question reply"):
         sumo_pages.aaq_flow.editing_reply_flow(
-            reply_body=utilities.aaq_question_test_data['valid_firefox_question']
-            ['updated_reply'],
-            submit_reply=False
+            reply_body=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
+            submit_reply=False, answer_id=reply_id
         )
 
     with check, allure.step("Verifying that the question reply is the original one"):
@@ -952,8 +931,7 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
 
     with allure.step("Verifying that the 'Modified by' message is not displayed for the "
                      "reply"):
-        expect(sumo_pages.question_page.get_posted_reply_modified_by_locator(reply_id)
-               ).to_be_hidden()
+        expect(sumo_pages.question_page.modified_by_text(reply_id)).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Edit this post option' and verifying that the "
                             "textarea contains the original reply"):
@@ -965,8 +943,8 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
     with check, allure.step("Editing the reply and verifying that the reply contains the "
                             "updated text"):
         sumo_pages.aaq_flow.editing_reply_flow(
-            reply_body=utilities.aaq_question_test_data['valid_firefox_question']
-            ['updated_reply']
+            reply_body=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
+            answer_id=reply_id
         )
         assert sumo_pages.question_page.get_posted_reply_text(reply_id).strip(
         ) == utilities.aaq_question_test_data['valid_firefox_question']['updated_reply']
@@ -998,8 +976,7 @@ def test_delete_reply(page: Page, user_type, create_user_factory):
             repliant_username=test_user["username"],
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
-        expect(sumo_pages.question_page.get_delete_this_post_reply_locator(reply_id)
-               ).to_be_hidden()
+        expect(sumo_pages.question_page.delete_this_post_for_answer(reply_id)).to_be_hidden()
 
     with check, allure.step("Verifying that manually navigating to the delete page for the "
                             "posted reply returns 403"):
@@ -1018,14 +995,13 @@ def test_delete_reply(page: Page, user_type, create_user_factory):
             utilities.start_existing_session(cookies=test_user_two)
             sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user_two["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['question_reply']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
             )
 
             with allure.step("Verifying that the 'Delete this post' option is not available "
                              "for replies posted by others"):
                 sumo_pages.question_page.click_on_reply_more_options_button(reply_id)
-                expect(sumo_pages.question_page.get_delete_this_post_reply_locator(reply_id)
+                expect(sumo_pages.question_page.delete_this_post_for_answer(reply_id)
                        ).to_be_hidden()
 
             with check, allure.step("Verifying that manually navigating to the delete page "
@@ -1044,15 +1020,14 @@ def test_delete_reply(page: Page, user_type, create_user_factory):
                      "delete reply confirmation box and verifying that the reply was not deleted"):
         utilities.start_existing_session(cookies=test_user_three)
         sumo_pages.aaq_flow.delete_question_reply(answer_id=reply_id, delete_reply=False)
-        expect(sumo_pages.question_page.get_posted_reply_locator(reply_id)).to_be_visible()
+        expect(sumo_pages.question_page.question(reply_id)).to_be_visible()
 
     with allure.step("Deleting the reply and verifying that the reply is no longer displayed"):
         sumo_pages.aaq_flow.delete_question_reply(answer_id=reply_id, delete_reply=True)
-        expect(sumo_pages.question_page.get_posted_reply_locator(reply_id)).to_be_hidden()
+        expect(sumo_pages.question_page.question(reply_id)).to_be_hidden()
 
 
 # T5696788, T5696767
-# Need to re-verify this for signed out case before submitting this
 @pytest.mark.postedQuestions
 def test_i_have_this_problem_too(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -1068,7 +1043,7 @@ def test_i_have_this_problem_too(page: Page, create_user_factory):
     with allure.step("Verifying that the 'I have this problem too' button is not displayed "
                      "for self posted questions"):
         problem_counter = sumo_pages.question_page.get_i_have_this_problem_too_counter()
-        expect(sumo_pages.question_page.get_i_have_this_problem_too_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.i_have_this_problem_too_button).to_be_hidden()
 
     with check, allure.step("Deleting the user session, clicking on the 'I have this problem "
                             "too' button and verifying tha the 'have this problem' counter "
@@ -1090,7 +1065,7 @@ def test_i_have_this_problem_too(page: Page, create_user_factory):
 
     with allure.step("Verifying that the 'I have this problem too' button is no longer "
                      "displayed"):
-        expect(sumo_pages.question_page.get_i_have_this_problem_too_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.i_have_this_problem_too_button).to_be_hidden()
 
     with check, allure.step("Signing in with an Forum Moderator account, clicking on the 'I have "
                             "this problem too' and verifying that the 'have this problem' counter "
@@ -1103,7 +1078,7 @@ def test_i_have_this_problem_too(page: Page, create_user_factory):
 
     with allure.step("Verifying that the 'I have this problem too' button is no longer "
                      "displayed"):
-        expect(sumo_pages.question_page.get_i_have_this_problem_too_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.i_have_this_problem_too_button).to_be_hidden()
 
 
 # T5696789
@@ -1129,14 +1104,12 @@ def test_solves_this_problem(page: Page, create_user_factory):
     with allure.step("Deleting user session and verifying that the 'Solved the problem' "
                      "button is not displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.question_page.get_solved_the_problem_button_locator(reply_id)
-               ).to_be_hidden()
+        expect(sumo_pages.question_page.reply_solves_the_problem(reply_id)).to_be_hidden()
 
     with allure.step("Signing in with a different user account and verifying that the "
                      "'Solved the problem' button is not displayed"):
         utilities.start_existing_session(cookies=test_user_two)
-        expect(sumo_pages.question_page.get_solved_the_problem_button_locator(reply_id)
-               ).to_be_hidden()
+        expect(sumo_pages.question_page.reply_solves_the_problem(reply_id)).to_be_hidden()
 
     with check, allure.step("Signing in with the first username, clicking on the 'Solved the "
                             "problem' button and verifying that the correct banner is "
@@ -1174,15 +1147,15 @@ def test_solves_this_problem(page: Page, create_user_factory):
         ) == QuestionPageMessages.UNDOING_A_SOLUTION
 
     with allure.step("Verifying that the 'Solved the problem' option is not displayed"):
-        expect(sumo_pages.question_page.get_chosen_solution_section_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.problem_solved_reply_section).to_be_hidden()
 
     with allure.step("Verifying that the 'Chosen solution' banner is not displayed for the "
                      "previously provided solution"):
-        expect(sumo_pages.question_page.get_chosen_solution_reply_message_locator(reply_id)
+        expect(sumo_pages.question_page.reply_solution_header(reply_id)
                ).to_be_hidden()
 
     with allure.step("Verifying that the 'Undo' option is not available"):
-        expect(sumo_pages.question_page.get_undo_button_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.undo_solves_problem).to_be_hidden()
 
     with check, allure.step("Signing in with a Forum Moderator, clicking on the 'solved this "
                             "problem option' and verifying the chosen solution text"):
@@ -1206,15 +1179,22 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
     # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
     with allure.step("Signing in with a non admin user account and posting a Firefox product "
                      "question"):
-        posted_question = post_firefox_product_question_flow(page, test_user)
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
+            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]["body_updated"],
+            attach_image=False,
+            expected_locator=sumo_pages.question_page.questions_header
+        )
     question_id = sumo_pages.question_page.get_question_id()
 
     if quote_on == "reply":
         with allure.step("Posting a reply to the question"):
             reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['question_reply']
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
             )
     with allure.step("Signing in with a simple user"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -1223,8 +1203,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user_two["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['updated_reply'],
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=reply_id
             )
@@ -1232,8 +1211,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         with allure.step("Posting a quoted reply for question"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user_two["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['updated_reply'],
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=question_id
             )
@@ -1253,7 +1231,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         with check, allure.step("Verifying that the question details is displayed inside the "
                                 "quote"):
             assert (utilities.aaq_question_test_data['valid_firefox_question']
-                    ['simple_body_text'] == sumo_pages.question_page
+                    ['body_updated'] == sumo_pages.question_page
                     .get_blockquote_reply_text(quote_id).strip())
 
     with check, allure.step("Verifying that the new reply text is also displayed"):
@@ -1267,12 +1245,12 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
     if quote_on == "reply":
         with check, allure.step("Verifying that the correct url is displayed"):
             expect(page).to_have_url(
-                posted_question['question_details']['question_page_url'] + "#" + reply_id
+                question_details['question_page_url'] + "#" + reply_id
             )
     else:
         with check, allure.step("Verifying that the correct url is displayed"):
             expect(page).to_have_url(
-                posted_question['question_details']['question_page_url'] + "#" + question_id
+                question_details['question_page_url'] + "#" + question_id
             )
 
     with allure.step("Signing in with a Forum Moderator account"):
@@ -1282,8 +1260,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user_two["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['updated_reply'],
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=reply_id
             )
@@ -1291,8 +1268,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         with allure.step("Posting a quoted reply for question reply"):
             quote_id = sumo_pages.aaq_flow.post_question_reply_flow(
                 repliant_username=test_user_two["username"],
-                reply=utilities.aaq_question_test_data['valid_firefox_question']
-                ['updated_reply'],
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['updated_reply'],
                 quoted_reply=True,
                 reply_for_id=question_id
             )
@@ -1311,7 +1287,7 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
     else:
         with check, allure.step("Verifying that the question is displayed inside the quote"):
             assert (utilities.aaq_question_test_data['valid_firefox_question']
-                    ['simple_body_text'] == sumo_pages.question_page
+                    ['body_updated'] == sumo_pages.question_page
                     .get_blockquote_reply_text(quote_id).strip())
 
     with check, allure.step("Verifying that the new reply text is also displayed"):
@@ -1325,12 +1301,12 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
     if quote_on == "reply":
         with allure.step("Verifying that the correct url is displayed"):
             expect(page).to_have_url(
-                posted_question['question_details']['question_page_url'] + "#" + reply_id
+                question_details['question_page_url'] + "#" + reply_id
             )
     else:
         with allure.step("Verifying that the correct url is displayed"):
             expect(page).to_have_url(
-                posted_question['question_details']['question_page_url'] + "#" + question_id
+                question_details['question_page_url'] + "#" + question_id
             )
 
 
@@ -1357,14 +1333,13 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
             posted_question['question_details']['question_page_url'] + "#question-reply")
 
     with allure.step("Verifying that the reply textarea field is not displayed"):
-        expect(sumo_pages.question_page.get_post_a_reply_textarea_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.post_a_reply_textarea).to_be_hidden()
 
     with allure.step("Verifying that the 'Ask a question' signed out card is not displayed"):
-        expect(sumo_pages.question_page.ask_a_question_signed_out_card_option_locator()
-               ).to_be_hidden()
+        expect(sumo_pages.question_page.ask_a_question_signed_out_card_option).to_be_hidden()
 
     with allure.step("Verifying that the 'I have this problem, too' option is not displayed"):
-        expect(sumo_pages.question_page.get_i_have_this_problem_too_signed_out_card_locator()
+        expect(sumo_pages.question_page.i_have_this_problem_too_signed_out_card_option
                ).to_be_hidden()
 
     with allure.step("Clicking on the 'start a new question' signed out card link and "
@@ -1392,14 +1367,13 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
         )
 
     with allure.step("Verifying that the reply textarea field is not displayed"):
-        expect(sumo_pages.question_page.get_post_a_reply_textarea_locator()).to_be_hidden()
+        expect(sumo_pages.question_page.post_a_reply_textarea).to_be_hidden()
 
     with allure.step("Verifying that the 'Ask a question' signed out card is displayed"):
-        expect(sumo_pages.question_page.ask_a_question_signed_out_card_option_locator()
-               ).to_be_visible()
+        expect(sumo_pages.question_page.ask_a_question_signed_out_card_option).to_be_visible()
 
     with allure.step("Verifying that the 'I have this problem, too' option is displayed"):
-        expect(sumo_pages.question_page.get_i_have_this_problem_too_signed_out_card_locator()
+        expect(sumo_pages.question_page.i_have_this_problem_too_signed_out_card_option
                ).to_be_visible()
 
     with allure.step("Clicking on the 'Ask a question' and verifying that we are redirected "
@@ -1420,7 +1394,7 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
         expect(page).to_have_url(posted_question['question_details']['question_page_url'])
 
     with allure.step("Verifying that the textarea field is displayed"):
-        expect(sumo_pages.question_page.get_post_a_reply_textarea_locator()).to_be_visible()
+        expect(sumo_pages.question_page.post_a_reply_textarea).to_be_visible()
 
 
 # T5696770
@@ -1447,7 +1421,7 @@ def test_question_reply_votes(page: Page, create_user_factory):
         reply_id = sumo_pages.question_page.click_on_post_reply_button(test_user["username"])
 
     with allure.step("Verifying the vote reply is not available for self posted questions"):
-        expect(sumo_pages.question_page.get_reply_votes_section_locator(reply_id)).to_be_hidden()
+        expect(sumo_pages.question_page.reply_vote_section(reply_id)).to_be_hidden()
 
     with check, allure.step("Signing in a different user and verifying that the correct vote "
                             "header is displayed"):
@@ -1475,11 +1449,11 @@ def test_question_reply_votes(page: Page, create_user_factory):
                     get_not_helpful_count(reply_id)) == number_of_thumbs_down_votes)
 
     with allure.step("Verifying that the thumbs up button contains the disabled attribute"):
-        expect(sumo_pages.question_page.get_thumbs_up_button_locator(reply_id)
+        expect(sumo_pages.question_page.reply_vote_thumbs_up(reply_id)
                ).to_have_attribute(name="disabled", value="")
 
     with allure.step("Verifying that the thumbs down button contains the disabled attribute"):
-        expect(sumo_pages.question_page.get_thumbs_down_button_locator(reply_id)
+        expect(sumo_pages.question_page.reply_vote_thumbs_down(reply_id)
                ).to_have_attribute(name="disabled",value="")
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
@@ -1510,11 +1484,11 @@ def test_question_reply_votes(page: Page, create_user_factory):
                     get_not_helpful_count(reply_id)) == number_of_thumbs_down_votes)
 
     with allure.step("Verifying that the thumbs up button contains the disabled attribute"):
-        expect(sumo_pages.question_page.get_thumbs_up_button_locator(reply_id)
+        expect(sumo_pages.question_page.reply_vote_thumbs_up(reply_id)
                ).to_have_attribute(name="disabled", value="")
 
     with allure.step("Verifying that the thumbs down button contains the disabled attribute"):
-        expect(sumo_pages.question_page.get_thumbs_down_button_locator(reply_id)
+        expect(sumo_pages.question_page.reply_vote_thumbs_down(reply_id)
                ).to_have_attribute(name="disabled", value="")
 
     with check, allure.step("Refreshing the page and verifying that the correct number of "
@@ -1585,7 +1559,7 @@ def test_report_abuse(page: Page, flagged_content, user_type, create_user_factor
                 sumo_pages.question_page.get_question_id()
             )
             expect(
-                sumo_pages.question_page.get_click_on_report_abuse_reply_locator(
+                sumo_pages.question_page.report_answer_as_abuse(
                     sumo_pages.question_page.get_question_id()
                 )
             ).to_be_hidden()
@@ -1594,8 +1568,7 @@ def test_report_abuse(page: Page, flagged_content, user_type, create_user_factor
         with allure.step("Clicking on the more options for the reply and verifying that the "
                          "report abuse options is not displayed for signed out users"):
             sumo_pages.question_page.click_on_reply_more_options_button(reply_id)
-            expect(sumo_pages.question_page.get_click_on_report_abuse_reply_locator(
-                reply_id)).to_be_hidden()
+            expect(sumo_pages.question_page.report_answer_as_abuse(reply_id)).to_be_hidden()
 
     if user_type == "Forum Moderator":
         with allure.step("Signing in with a Forum Moderator account"):
@@ -1626,15 +1599,17 @@ def test_report_abuse(page: Page, flagged_content, user_type, create_user_factor
     with allure.step("Navigating to 'Moderate forum content page' and verifying that the "
                      "question exists inside the moderate forum content page"):
         sumo_pages.top_navbar.click_on_moderate_forum_content_option()
+        if sumo_pages.moderate_forum_content_page.is_paginator_visible():
+            sumo_pages.moderate_forum_content_page.click_on_last_pagination_element()
         if flagged_content == "question_content":
             expect(
-                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                sumo_pages.moderate_forum_content_page.flagged_question(
                     posted_question['question_details']['aaq_subject']
                 )
             ).to_be_visible()
         else:
             expect(
-                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                sumo_pages.moderate_forum_content_page.flagged_question(
                     reply_content
                 )
             ).to_be_visible()
@@ -1656,21 +1631,19 @@ def test_report_abuse(page: Page, flagged_content, user_type, create_user_factor
                 posted_question['question_details']['aaq_subject']
             )
         else:
-            sumo_pages.moderate_forum_content_page.click_on_the_update_button(
-                reply_content
-            )
+            sumo_pages.moderate_forum_content_page.click_on_the_update_button(reply_content)
 
     with allure.step("Verifying that the question no longer exists inside the moderate forum "
                      "content page"):
         if flagged_content == "question_content":
             expect(
-                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                sumo_pages.moderate_forum_content_page.flagged_question(
                     posted_question['question_details']['aaq_subject']
                 )
             ).to_be_hidden()
         else:
             expect(
-                sumo_pages.moderate_forum_content_page.get_flagged_question_locator(
+                sumo_pages.moderate_forum_content_page.flagged_question(
                     reply_content
                 )
             ).to_be_hidden()
@@ -1767,8 +1740,7 @@ def post_firefox_product_question_flow(page: Page, user: Union[dict, str]):
         username = user["username"]
     else:
         username = utilities.username_extraction_from_email(user)
-        utilities.start_existing_session(
-            session_file_name=username)
+        utilities.start_existing_session(session_file_name=username)
 
     with allure.step("Posting a Firefox product question"):
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
@@ -1776,8 +1748,7 @@ def post_firefox_product_question_flow(page: Page, user: Union[dict, str]):
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]
-            ["simple_body_text"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )

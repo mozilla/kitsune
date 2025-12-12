@@ -7,14 +7,14 @@ class MyProfileAnswersPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # My Profile Answers locators.
+        """Locators belonging to the Answers page."""
         self.my_answers_page_header = page.locator("h2[class='sumo-page-subheading']")
         self.my_answers_question_subject_links = page.locator("article#profile li a")
         self.answer_by_id = lambda id: page.locator(f"article#profile a[href*='{id}']")
         self.answer_text = lambda id: page.locator(
             f"//article[@id='profile']//a[contains(@href, '{id}')]/following-sibling::blockquote")
 
-    # My Profile Answers actions.
+    """Actions against the profile answers page locators."""
     def get_page_header(self) -> str:
         """Get the header of the My Profile Answers page."""
         return self._get_text_of_element(self.my_answers_page_header)

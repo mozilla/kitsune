@@ -2,19 +2,17 @@ from playwright_tests.core.basepage import BasePage
 
 
 class EditThreadTitle(BasePage):
-    """
-        This class contains the locators and actions for the Edit Thread Title page.
-    """
+    """This class contains the locators and actions for the Edit Thread Title page."""
 
     def __init__(self, page):
         super().__init__(page)
 
-        # Locators related to the breadcrumbs section.
+        """Locators belonging to the page breadcrumbs section."""
         self.edit_thread_title_breadcrumbs = page.locator("ol#breadcrumbs li a")
         self.edit_thread_title_breadcrumb = lambda breadcrumb : page.locator(
             "ol#breadcrumbs li").get_by_role("link", name=breadcrumb)
 
-        # Locators related to the edit thread title page.
+        """Locators belonging to the edit thread title page."""
         self.edit_thread_title_page_title = page.locator("div#edit-thread h1")
         self.edit_thread_title_input_field = page.locator("input#id_title")
         self.edit_thread_title_update_thread_button = page.get_by_role(

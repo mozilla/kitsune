@@ -1,8 +1,6 @@
 import random
 from typing import Literal
-
-from playwright.sync_api import Locator, Page
-
+from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
 
@@ -10,16 +8,16 @@ class CommonWebElements(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Avoid spam banner locators.
+        """Locators belonging to the spam banner."""
         self.scam_banner = page.locator("div#id_scam_alert")
         self.scam_banner_text = page.locator("div#id_scam_alert p[class='heading']")
         self.learn_more_button = page.locator("div#id_scam_alert").get_by_role("link")
 
-        # Still need help widget locators.
+        """Locators belonging to the Still need help widget."""
         self.aaq_button = page.locator("div[class*='aaq-widget']").get_by_role("link")
         self.still_need_help_subheading = page.locator("div.aaq-widget p")
 
-        # Learn more card locators.
+        """Locators belonging to the Learn more card."""
         self.volunteer_learn_more_card_heading = page.locator(
             "//div[@class='card--details']//a[text()='Learn More']//../../../h3")
         self.volunteer_learn_more_card_text = page.locator(
@@ -28,6 +26,9 @@ class CommonWebElements(BasePage):
             "div[class='card--details']").get_by_role("link", name="Learn More")
 
         # Frequent Topics locators applicable to product & product solutions pages.
+        """Locators belonging to the Frequent Topics applicable to product & product solutions
+         pages.
+         """
         self.frequent_topics_section_title = page.get_by_role(
             "heading", name="Topics", exact=True)
         self.frequent_topics_section_subtitle = page.get_by_role(
@@ -48,7 +49,7 @@ class CommonWebElements(BasePage):
             f"//div[@class='card--topic']/div[@class='topic-header']/h3[@class='card--title']/a"
             f"[normalize-space(text())='{card_title}']/../../following-sibling::a")
 
-        # Pagination page locators
+        """Locators belonging to the pagination elements."""
         self.pagination_item = lambda pagination_item: page.locator(
             "ol[class='pagination']").get_by_role("link").filter(has_text=pagination_item)
         self.selected_pagination_item = page.locator(
@@ -58,12 +59,12 @@ class CommonWebElements(BasePage):
         self.next_pagination_item= page.locator(
             "//ol[@class='pagination']//span[text()='Next']/..")
 
-    # Actions against the Avoid Spam Banner
+    """Actions against the Avoid Spam banner locators."""
     def get_scam_banner_text(self) -> str:
         """Returns the scam banner text."""
         return self._get_text_of_element(self.scam_banner_text)
 
-    # Actions against the Still Need Help Widget
+    """Actions against the Still Need Help widget locators."""
     def click_on_aaq_button(self):
         """Click on the 'Still Need Help?' button."""
         self._click(self.aaq_button)
@@ -75,13 +76,7 @@ class CommonWebElements(BasePage):
     def get_aaq_widget_button_name(self) -> str:
         return self._get_text_of_element(self.aaq_button)
 
-    def get_still_need_help_locator(self) -> Locator:
-        return self.still_need_help_subheading
-
-    # Actions against the Learn More card
-    def get_learn_more_button_locator(self) -> Locator:
-        return self.learn_more_button
-
+    """Actions against the learn more section locators."""
     def click_on_volunteer_learn_more_link(self):
         self._click(self.volunteer_learn_more_link)
 
@@ -97,7 +92,7 @@ class CommonWebElements(BasePage):
         """
         return self._get_text_of_element(self.volunteer_learn_more_card_heading)
 
-    # Actions against the Frequent Topics Section.
+    """Actions against the Frequent Topics Section locators."""
     def is_frequent_topics_section_displayed(self) -> bool:
         """Check if the frequent topics section is displayed on the page."""
         return self._is_element_visible(self.frequent_topics_section_title)

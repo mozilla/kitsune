@@ -1,6 +1,7 @@
+import random
+import string
 from typing import Any
 from playwright.sync_api import Page
-from slugify import slugify
 from playwright_tests.core.utilities import Utilities, retry_on_502
 from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_media_flow import (
     AddKbMediaFlow,
@@ -40,7 +41,8 @@ class AddKbArticleFlow:
     def submit_simple_kb_article(self, article_title=None, article_slug=None,
                                  article_category=None, article_keyword=None,
                                  allow_discussion=True, allow_translations=True,
-                                 selected_product=True, selected_topics=True, search_summary=None,
+                                 selected_product=True, selected_topics=True, article_topic=None,
+                                 product=None, search_summary=None,
                                  article_content=None, article_content_image=False,
                                  submit_article=True, is_template=False, expiry_date=None,
                                  restricted_to_groups: list[str] = None, single_group="",
@@ -57,8 +59,9 @@ class AddKbArticleFlow:
 
         kb_article_title = (article_title if article_title is not None else
                             kb_article_test_data[
-                                "kb_template_title" if is_template else "kb_article_title"] + self.
-                            utilities.generate_random_number(0, 5000))
+                                "kb_template_title" if is_template else "kb_article_title"
+                            ]+ ''.join(random.choice(string.ascii_lowercase + string.digits
+                                                     ) for _ in range(10)))
 
         if kb_article_title != "":
             self.submit_kb_article_page.add_text_to_article_form_title_field(
@@ -71,9 +74,13 @@ class AddKbArticleFlow:
             self.submit_kb_article_page.add_text_to_article_slug_field(kb_article_slug)
 
         if article_category is None:
-            article_category = kb_article_test_data[
-                "kb_template_category" if is_template else "category_options"
-            ]
+            article_category = (kb_article_test_data["category_options"]
+            ["60" if is_template else "10"])
+        else:
+            try:
+                article_category = kb_article_test_data["category_options"][f"{article_category}"]
+            except KeyError as e:
+                article_category = article_category
         self.submit_kb_article_page.select_category_option_by_text(article_category)
 
         if article_slug == "":
@@ -82,23 +89,28 @@ class AddKbArticleFlow:
         if not allow_translations:
             self.submit_kb_article_page.check_allow_translations_checkbox()
 
-        product = kb_article_test_data["relevant_to_product"]
+        if not product:
+            product = kb_article_test_data["relevant_to_product"]
         if selected_product is True:
             self.submit_kb_article_page.click_on_a_particular_product(product)
 
-        article_topic = [
-            kb_article_test_data["selected_parent_topic"],
-            kb_article_test_data["selected_child_topic"]
-        ]
-
-        # Adding Article topic
-        if selected_topics is True:
+        if not article_topic:
+            article_topic = [
+                kb_article_test_data["selected_parent_topic"],
+                kb_article_test_data["selected_child_topic"]
+            ]
+            # Adding Article topic
+            if selected_topics is True:
+                self.submit_kb_article_page.click_on_a_particular_parent_topic_checkbox(
+                    article_topic[0]
+                )
+                self.submit_kb_article_page.click_on_a_particular_child_topic_checkbox(
+                    article_topic[0],
+                    article_topic[1],
+                )
+        else:
             self.submit_kb_article_page.click_on_a_particular_parent_topic_checkbox(
-                article_topic[0]
-            )
-            self.submit_kb_article_page.click_on_a_particular_child_topic_checkbox(
-                article_topic[0],
-                article_topic[1],
+                article_topic
             )
 
         # Interacting with Allow Discussion checkbox
@@ -172,7 +184,8 @@ class AddKbArticleFlow:
                 "keyword": keyword,
                 "search_results_summary": summary,
                 "expiry_date": kb_article_test_data["expiry_date"],
-                "article_url": article_url,
+                "article_url": article_url.removesuffix("/history"),
+                "article_show_history_url":article_url,
                 "first_revision_id": first_revision_id
                 }
 
@@ -256,73 +269,6 @@ class AddKbArticleFlow:
         return {"revision_id": revision_id,
                 "revision_time": revision_time,
                 "changes_description": self.utilities.kb_article_test_data['changes_description']
-                }
-
-    def kb_article_creation_via_api(self, page: Page, approve_revision=False, is_template=False,
-                                    product=None, topic=None, category=None, ready_for_l10n=False,
-                                    significance_type='') -> dict[str, Any]:
-        """
-        Create a new KB article via API.
-        :param page: Page object.
-        :param approve_revision: Approve the first revision of the article.
-        :param ready_for_l10n: Mark the revision as ready for localization.
-        :param significance_type: Add the significance type of the revision.
-        :param is_template: Create a KB template.
-        :param product: Product ID.
-        :param topic: Topic ID.
-        :param category: Category ID.
-        """
-        kb_article_test_data = self.utilities.kb_article_test_data
-        self.utilities.navigate_to_link(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
-
-        category = category or ("60" if is_template else "10")
-        kb_title = (
-            kb_article_test_data[
-                "kb_template_title" if category == "60" else "kb_article_title"] + self.utilities.
-            generate_random_number(0, 5000))
-
-        topic = topic if topic is not None else "383"
-        product = product if product is not None else "1"
-        slug = slugify(kb_title)
-
-        form_data = {
-            "csrfmiddlewaretoken": self.utilities.get_csrfmiddlewaretoken(),
-            "title": kb_title,
-            "slug": slug,
-            "category": category,
-            "is_localizable": "on",
-            "products": product,
-            "topics": topic,
-            "allow_discussion": "on",
-            "keywords": kb_article_test_data["keywords"],
-            "summary": kb_article_test_data["search_result_summary"],
-            "content": kb_article_test_data["article_content"],
-            "expires": "",
-            "based_on": "",
-            "comment": kb_article_test_data["changes_description"]
-        }
-
-        response = self.utilities.post_api_request(
-            page, KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL, data=form_data
-        )
-
-        print(response)
-        self.utilities.navigate_to_link(response.url)
-
-        first_revision_id = self.kb_article_show_history_page.get_last_revision_id()
-        if approve_revision:
-            self.approve_kb_revision(revision_id=first_revision_id, ready_for_l10n=ready_for_l10n)
-
-
-        return {"article_title": kb_title,
-                "article_content": kb_article_test_data["article_content"],
-                "article_slug": slug,
-                "keyword": kb_article_test_data["keywords"],
-                "search_results_summary": kb_article_test_data["search_result_summary"],
-                "article_url": response.url.removesuffix("/history"),
-                "article_show_history_url": self.utilities.get_page_url(),
-                "first_revision_id": first_revision_id,
-                "article_review_description": kb_article_test_data["changes_description"]
                 }
 
     def defer_revision(self, revision_id: str):

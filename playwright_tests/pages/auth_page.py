@@ -7,7 +7,7 @@ class AuthPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Auth page content
+        """Locators belonging to the general content of the auth page."""
         self.auth_page_section = page.locator("section.sumo-auth--wrap")
         self.fxa_sign_in_page_header = page.locator("h1.fxa-signin-password-header")
         self.auth_page_main_header = page.locator("h1.sumo-page-heading")
