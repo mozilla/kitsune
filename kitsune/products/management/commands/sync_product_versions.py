@@ -63,6 +63,8 @@ class Command(BaseCommand):
                 "slug_prefix": "fx",
                 "version_data": product_details.firefox_versions,
                 "version_key": "LATEST_FIREFOX_VERSION",
+                "beta_version_key": "LATEST_FIREFOX_RELEASED_DEVEL_VERSION",
+                "alpha_version_key": "FIREFOX_NIGHTLY",
                 "history_data": product_details.firefox_history_major_releases,
                 "esr_keys": [],
                 "esr_only": False,
@@ -82,6 +84,8 @@ class Command(BaseCommand):
                 "slug_prefix": "m",
                 "version_data": product_details.mobile_versions,
                 "version_key": "version",
+                "beta_version_key": "beta_version",
+                "alpha_version_key": "nightly_version",
                 "history_data": product_details.firefox_history_major_releases,
                 "esr_keys": [],
                 "esr_only": False,
@@ -91,6 +95,8 @@ class Command(BaseCommand):
                 "slug_prefix": "ios",
                 "version_data": product_details.firefox_versions,
                 "version_key": "LATEST_FIREFOX_VERSION",
+                "beta_version_key": "LATEST_FIREFOX_RELEASED_DEVEL_VERSION",
+                "alpha_version_key": "FIREFOX_NIGHTLY",
                 "history_data": product_details.firefox_history_major_releases,
                 "esr_keys": [],
                 "esr_only": False,
@@ -100,6 +106,8 @@ class Command(BaseCommand):
                 "slug_prefix": "tb",
                 "version_data": product_details.thunderbird_versions,
                 "version_key": "LATEST_THUNDERBIRD_VERSION",
+                "beta_version_key": "LATEST_THUNDERBIRD_DEVEL_VERSION",
+                "alpha_version_key": "LATEST_THUNDERBIRD_NIGHTLY_VERSION",
                 "history_data": product_details.thunderbird_history_major_releases,
                 "esr_keys": ["THUNDERBIRD_ESR"],
                 "esr_only": False,
@@ -117,7 +125,7 @@ class Command(BaseCommand):
             return
 
         if verbosity >= 1:
-            self.stdout.write(f"\nSyncing {product.title} (latest: {latest_version})...")
+            self.stdout.write(f"\nSyncing {product.title} (latest release: {latest_version})...")
 
         esr_only = config.get("esr_only", False)
 
@@ -129,11 +137,22 @@ class Command(BaseCommand):
             if not esr_only:
                 history_data = config["history_data"]
                 available_versions = self._get_available_versions(history_data, latest_major)
+
+                beta_version = config["version_data"].get(config["beta_version_key"])
+                beta_major = self._parse_major_version(beta_version) if beta_version else None
+                if beta_major:
+                    available_versions.append(beta_major)
+
+                alpha_version = config["version_data"].get(config["alpha_version_key"])
+                alpha_major = self._parse_major_version(alpha_version) if alpha_version else None
+                if alpha_major:
+                    available_versions.append(alpha_major)
+
                 self._create_or_update_versions(
                     product, config, available_versions, dry_run, verbosity
                 )
             self._handle_esr_versions(product, config, dry_run, verbosity)
-            self._update_visibility(product, dry_run, verbosity)
+            self._update_visibility(product, latest_major, dry_run, verbosity)
 
     def _get_available_versions(self, history_data: dict, latest_major: int) -> list:
         """Get list of available major version numbers from history."""
@@ -269,18 +288,19 @@ class Command(BaseCommand):
                     if verbosity >= 1:
                         self.stdout.write(f"  Created ESR {slug}")
 
-    def _update_visibility(self, product: Product, dry_run: bool, verbosity: int):
+    def _update_visibility(self, product: Product, latest_major: int, dry_run: bool, verbosity: int):
         """Update visibility and default flags for all versions of a product."""
         all_versions = list(Version.objects.filter(product=product).order_by("-max_version"))
         if not all_versions:
             return
 
         esr_versions = [v for v in all_versions if v.slug.endswith("-esr")]
-        regular_versions = [v for v in all_versions if not v.slug.endswith("-esr")]
+        regular_versions = [v for v in all_versions if not v.slug.endswith("-esr") and v.min_version <= latest_major]
+        prerelease_versions = [v for v in all_versions if not v.slug.endswith("-esr") and v.min_version > latest_major]
         top_10 = regular_versions[:10]
 
         for version in all_versions:
-            should_be_visible = version in top_10 or version in esr_versions
+            should_be_visible = version in top_10 or version in esr_versions or version in prerelease_versions
             should_be_default = bool(regular_versions) and version == regular_versions[0]
 
             if version.visible != should_be_visible or version.default != should_be_default:
