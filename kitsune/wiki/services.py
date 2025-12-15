@@ -439,18 +439,23 @@ class HybridTranslationService:
         if not (settings.HYBRID_REVIEW_GRACE_PERIOD and settings.HYBRID_ENABLED_LOCALES):
             return
 
-        grace_period = f"{settings.HYBRID_REVIEW_GRACE_PERIOD} hour(s)"
-        pending_revisions = self.query_builder.get_pending_translations()
+        grace_period = settings.HYBRID_REVIEW_GRACE_PERIOD
+        if grace_period <= 72:
+            grace_period_string = f"{grace_period} hour{'s' if grace_period > 1 else ''}"
+        else:
+            grace_period = grace_period // 24
+            grace_period_string = f"{grace_period} day{'s' if grace_period > 1 else ''}"
 
+        pending_revisions = self.query_builder.get_pending_translations()
         for revision in pending_revisions:
             rev = self.content_manager.publish_revision(
                 revision,
                 comment=(
-                    f"Automatically approved because it was not reviewed within {grace_period}."
+                    f"Automatically approved because it was not reviewed within {grace_period_string}."
                 ),
             )
             if log:
                 log.info(
                     f"Automatically approved {rev.get_absolute_url()} because it was not"
-                    f" reviewed within {grace_period}."
+                    f" reviewed within {grace_period_string}."
                 )
