@@ -190,19 +190,31 @@
 
 {% macro troubleshooting_instructions(field) %}
   <div>
-    <div id="troubleshooting-button" class="sumo-button-wrap">
-      <button class="sumo-button" id="share-data" type="button" aria-describedby="{{ field.help_id }}">
-        {{ _('Share Data') }}
-      </button>
-    </div>
-    <div id="troubleshooting-manual" class="hide-until-expanded" class="field-help-text">
-      {% trans %}
-        We can't automatically get your browser's troubleshooting data, please
-        <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
-      {% endtrans %}
-    </div>
-    <div id="troubleshooting-field" class="hide-until-expanded field full-width">
-      {{ field }}
+    <div id="api-section">
+      <div id="troubleshooting-button" class="sumo-button-wrap">
+        <button class="sumo-button" id="share-data" type="button">
+          {{ _('Share Data') }}
+        </button>
+      </div>
+      <p id="troubleshooting-manual" class="hide-until-expanded">
+        {# L10n: Deprecated #}
+        {% set deprecated_share_data_fallback %}
+          {% trans %}
+            We can't automatically get your browser's troubleshooting data, please
+            <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
+          {% endtrans %}
+        {% endset %}
+        {# L10n: Try these manual steps refers to https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox #}
+        {% trans a_open='<a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox" target="_blank">'|safe, a_close='</a>'|safe %}
+          We can't automatically get your browser's troubleshooting data, please {{ a_open }}try these manual steps{{ a_close }}.
+        {% endtrans %}
+      </p>
+      <div id="troubleshooting-field" class="hide-until-expanded field full-width">
+        {{ field }}
+      </div>
+      <p>
+        {{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}
+      </p>
     </div>
   </div>
 {% endmacro %}

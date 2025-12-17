@@ -16,7 +16,7 @@ from kitsune.wiki.services import (
 from kitsune.wiki.strategies import TranslationMethod, TranslationStrategyFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
-APPROVED_MSG = "Automatically approved because it was not reviewed within 72 hour(s)."
+APPROVED_MSG = "Automatically approved because it was not reviewed within 72 hours."
 REJECTED_MSG = "No longer relevant."
 
 

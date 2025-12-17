@@ -2813,7 +2813,7 @@ class RevisionDeleteTestCase(TestCase):
         response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
         self.assertEqual(200, response.status_code)
         self.assertEqual(
-            "Unable to delete only revision of the document",
+            "Unable to delete the only revision of the document",
             pq(response.content)("h1.title").text(),
         )
 

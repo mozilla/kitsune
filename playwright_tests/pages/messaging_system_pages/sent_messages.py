@@ -1,4 +1,4 @@
-from playwright.sync_api import ElementHandle, Locator, Page
+from playwright.sync_api import ElementHandle, Page
 
 from playwright_tests.core.basepage import BasePage
 
@@ -6,8 +6,6 @@ from playwright_tests.core.basepage import BasePage
 class SentMessagePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
-
-        # Sent messages page locators.
 
         """Locators belonging to the breadcrumbs section."""
         self.all_breadcrumbs = page.locator("ol#breadcrumbs li")
@@ -162,22 +160,6 @@ class SentMessagePage(BasePage):
         """Click on the cancel button on the delete message page."""
         self._click(self.delete_confirmation_cancel_button)
 
-    def sent_messages_by_username(self, username: str) -> Locator:
-        """Get the locator of the sent messages by the username of the recipient.
-
-        Args:
-            username (str): The username of the recipient.
-        """
-        return self.sender_username(username)
-
-    def sent_messages_by_excerpt_locator(self, excerpt: str) -> Locator:
-        """Get the locator of the sent messages by the excerpt of the message.
-
-        Args:
-            excerpt (str): The excerpt of the message.
-        """
-        return self.sent_message_by_subject(excerpt)
-
     def sent_messages_by_excerpt_element_handles(self, excerpt: str) -> list[ElementHandle]:
         """Get the element handle list of the sent messages by the excerpt of the message.
 
@@ -186,19 +168,6 @@ class SentMessagePage(BasePage):
         """
         return list(self._get_element_handles(
             self.sent_message_by_subject(excerpt)))
-
-    def sent_messages_to_group(self, group: str, excerpt: str) -> Locator:
-        """Get the locator of the sent message by the group name of the recipient and the excerpt
-
-        Args:
-            group (str): The name of the group.
-            excerpt (str): The excerpt of the message.
-        """
-        return self.sent_message_by_group(group, excerpt)
-
-    def sent_message_banner(self) -> Locator:
-        """Get the locator of the sent message banner."""
-        return self.banner_text
 
     def are_sent_messages_displayed(self) -> bool:
         """Check if the sent messages are displayed."""

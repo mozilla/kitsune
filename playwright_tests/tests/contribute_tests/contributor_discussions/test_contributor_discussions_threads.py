@@ -104,8 +104,7 @@ def test_new_thread_creation_cancel_button(page: Page, create_user_factory):
     with allure.step("Adding valid data to both title and body fields and clicking on the 'Cancel'"
                      " button"):
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body'],
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body'],
             cancel=True
         )
 
@@ -134,8 +133,7 @@ def test_thread_title_edit(page: Page, create_user_factory):
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     thread_url = urlsplit(utilities.get_page_url())._replace(query="").geturl()
@@ -218,8 +216,7 @@ def test_thread_deletion(page: Page, create_user_factory):
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     thread_url = urlsplit(utilities.get_page_url())._replace(query="").geturl()
@@ -275,8 +272,7 @@ def test_thread_locking(page: Page, create_user_factory):
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     thread_url = utilities.get_page_url()
@@ -367,8 +363,7 @@ def test_sticky_this_thread(page: Page, create_user_factory):
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     thread_link = utilities.get_page_url()
@@ -455,8 +450,7 @@ def test_thread_breadcrumbs(page: Page, create_user_factory):
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     with check, allure.step("Verifying that the thread title is displayed inside the list of "
@@ -495,8 +489,7 @@ def test_forum_post_side_navbar_redirects(page: Page, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     navbar_items = sumo_pages.forum_thread_page.get_contributor_discussions_side_navbar_items()
@@ -518,7 +511,7 @@ def test_forum_post_side_navbar_redirects(page: Page, create_user_factory):
 
 # C3010846
 @pytest.mark.contributorDiscussionsThreads
-@pytest.mark.parametrize("user_type", [None, 'simple_user', 'moderator'])
+@pytest.mark.parametrize("user_type", [None, 'Simple User', 'Forum Moderator'])
 def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, user_type,
                                                                   create_user_factory):
     sumo_pages = SumoPages(page)
@@ -536,14 +529,13 @@ def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, us
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     utilities.delete_cookies()
 
-    if user_type in ['simple_user', None]:
-        account = test_user if user_type == 'simple_user' else None
+    if user_type in ['Simple User', None]:
+        account = test_user if user_type == 'Simple User' else None
         if account:
             utilities.start_existing_session(cookies=account)
         with check, allure.step("Verifying that the 'Forum Moderators' forum is not available "
@@ -560,7 +552,7 @@ def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, us
 
 # C3016247
 @pytest.mark.contributorDiscussionsThreads
-@pytest.mark.parametrize("user_type", ['simple_user', 'moderator'])
+@pytest.mark.parametrize("user_type", ['Simple User', 'Forum Moderator'])
 def test_edit_own_forum_post(page: Page, user_type, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
@@ -568,7 +560,7 @@ def test_edit_own_forum_post(page: Page, user_type, create_user_factory):
     test_user_two = create_user_factory(groups=["forum-contributors", "Forum Moderators"])
 
     with allure.step("Signing in to SUMO"):
-        account = test_user if user_type == 'simple_user' else test_user_two
+        account = test_user if user_type == 'Simple User' else test_user_two
         utilities.start_existing_session(cookies=account)
 
     with allure.step("Creating a new forum thread"):
@@ -576,15 +568,11 @@ def test_edit_own_forum_post(page: Page, user_type, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     with allure.step("Editing the own forum thread post"):
-        sumo_pages.contributor_thread_flow.edit_thread_post(
-            thread_id,
-            "Edited thread body"
-        )
+        sumo_pages.contributor_thread_flow.edit_thread_post(thread_id, "Edited thread body")
 
     with check, allure.step("Verifying that the edited post is displayed"):
         assert sumo_pages.forum_thread_page.is_thread_post_by_name_visible("Edited thread body")
@@ -610,8 +598,7 @@ def test_edit_forum_posts(page: Page, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
         thread_url = utilities.get_page_url()
 
@@ -666,8 +653,7 @@ def test_delete_this_post(page: Page, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
         thread_url = utilities.get_page_url()
 
@@ -734,8 +720,7 @@ def test_delete_this_post_option_availability(page: Page, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         first_thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     with allure.step("Creating a new thread post"):
@@ -774,8 +759,7 @@ def test_quote_this_post(page: Page, create_user_factory):
             utilities.generate_random_number(1, 1000))
         thread_body = utilities.discussion_thread_data['thread_body']
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=thread_body
+            thread_title=thread_title, thread_body=thread_body
         )
 
     with check, allure.step("Signing in with a different account and quoting the first post"):
@@ -814,8 +798,7 @@ def test_link_to_this_post_option(page: Page, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     with check, allure.step("Signing in with a different user and clicking on the 'Link to this "
@@ -846,8 +829,7 @@ def test_private_message_option(page: Page, create_user_factory):
         thread_title = utilities.discussion_thread_data['thread_title'] + (
             utilities.generate_random_number(1, 1000))
         thread_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title,
-            thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
         )
         thread_url = utilities.get_page_url()
 
@@ -857,21 +839,19 @@ def test_private_message_option(page: Page, create_user_factory):
 
         sumo_pages.forum_thread_page.click_on_private_message_option(thread_id)
         sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
-            message_body=message,
-            expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
+            message_body=message, expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
         )
 
     with check, allure.step("Verifying that the sent message is displayed inside the sent "
                             "messages page"):
         sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
-        expect(sumo_pages.sent_message_page.sent_messages_by_excerpt_locator(message)
-               ).to_be_visible()
+        expect(sumo_pages.sent_message_page.sent_message_by_subject(message)).to_be_visible()
 
     with check, allure.step("Signing in with the receiver account and verifying that the message "
                             "is displayed inside the inbox section"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_inbox_option()
-        expect(sumo_pages.inbox_page.get_inbox_message_locator_based_on_excerpt(message)).to_be_visible()
+        expect(sumo_pages.inbox_page.inbox_message_by_excerpt(message)).to_be_visible()
 
     with check, allure.step("Navigating back to the thread, signing out and verifying that the "
                             "'Private message' option redirects the user to the auth page"):
