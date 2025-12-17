@@ -26,8 +26,6 @@ class SyncProductVersionsTests(TestCase):
         # Firefox versions data
         mock_pd.firefox_versions = {
             "LATEST_FIREFOX_VERSION": "143.0.4",
-            "LATEST_FIREFOX_RELEASED_DEVEL_VERSION": "144.0b7",
-            "FIREFOX_NIGHTLY": "145.0a2",
             "FIREFOX_ESR": "140.3.1esr",
             "FIREFOX_ESR115": "115.20.0esr",
         }
@@ -43,15 +41,11 @@ class SyncProductVersionsTests(TestCase):
         # Mobile versions data
         mock_pd.mobile_versions = {
             "version": "143.0",
-            "beta_version": "144.0b2",
-            "nightly_version": "145.0a3",
         }
 
         # Thunderbird versions data
         mock_pd.thunderbird_versions = {
             "LATEST_THUNDERBIRD_VERSION": "128.5.0",
-            "LATEST_THUNDERBIRD_DEVEL_VERSION": "129.0b2",
-            "LATEST_THUNDERBIRD_NIGHTLY_VERSION": "130.0a1",
             "THUNDERBIRD_ESR": "128.5.0esr",
         }
 
@@ -83,26 +77,11 @@ class SyncProductVersionsTests(TestCase):
         self.assertEqual(v140.min_version, 140.0)
         self.assertEqual(v140.max_version, 141.0)
 
-        # Check latest Release version
         v143 = Version.objects.get(product=self.firefox, slug="fx143")
         self.assertEqual(v143.name, "Version 143")
         self.assertEqual(v143.min_version, 143.0)
         self.assertEqual(v143.max_version, 144.0)
         self.assertTrue(v143.default)
-
-        # Check latest Beta version
-        v144 = Version.objects.get(product=self.firefox, slug="fx144")
-        self.assertEqual(v144.name, "Version 144")
-        self.assertEqual(v144.min_version, 144.0)
-        self.assertEqual(v144.max_version, 145.0)
-        self.assertFalse(v144.default)
-
-        # Check latest Nightly version
-        v145 = Version.objects.get(product=self.firefox, slug="fx145")
-        self.assertEqual(v145.name, "Version 145")
-        self.assertEqual(v145.min_version, 145.0)
-        self.assertEqual(v145.max_version, 146.0)
-        self.assertFalse(v145.default)
 
         # ESR versions should NOT be created under Firefox product
         esr_versions = Version.objects.filter(product=self.firefox, slug__endswith="-esr")
@@ -152,20 +131,10 @@ class SyncProductVersionsTests(TestCase):
         versions = Version.objects.filter(product=self.mobile)
         self.assertGreater(versions.count(), 0)
 
-        # Check latest Release version
+        # Check latest version
         v143 = Version.objects.get(product=self.mobile, slug="m143")
         self.assertEqual(v143.name, "Version 143")
         self.assertTrue(v143.default)
-
-        # Check latest Beta version
-        v144 = Version.objects.get(product=self.mobile, slug="m144")
-        self.assertEqual(v144.name, "Version 144")
-        self.assertFalse(v144.default)
-
-        # Check latest Nightly version
-        v145 = Version.objects.get(product=self.mobile, slug="m145")
-        self.assertEqual(v145.name, "Version 145")
-        self.assertFalse(v145.default)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_sync_ios_versions(self, mock_product_details):
@@ -179,20 +148,10 @@ class SyncProductVersionsTests(TestCase):
         versions = Version.objects.filter(product=self.ios)
         self.assertGreater(versions.count(), 0)
 
-        # Check latest Release version
+        # Check latest version
         v143 = Version.objects.get(product=self.ios, slug="ios143")
         self.assertEqual(v143.name, "Version 143")
         self.assertTrue(v143.default)
-
-        # Check latest Beta version
-        v144 = Version.objects.get(product=self.ios, slug="ios144")
-        self.assertEqual(v144.name, "Version 144")
-        self.assertFalse(v144.default)
-
-        # Check latest Nightly version
-        v145 = Version.objects.get(product=self.ios, slug="ios145")
-        self.assertEqual(v145.name, "Version 145")
-        self.assertFalse(v145.default)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_sync_thunderbird_versions(self, mock_product_details):
@@ -206,20 +165,10 @@ class SyncProductVersionsTests(TestCase):
         versions = Version.objects.filter(product=self.thunderbird)
         self.assertGreater(versions.count(), 0)
 
-        # Check latest Release version
+        # Check latest version
         v128 = Version.objects.get(product=self.thunderbird, slug="tb128")
         self.assertEqual(v128.name, "Version 128")
         self.assertTrue(v128.default)
-
-        # Check latest Beta version
-        v129 = Version.objects.get(product=self.thunderbird, slug="tb129")
-        self.assertEqual(v129.name, "Version 129")
-        self.assertFalse(v129.default)
-
-        # Check latest Daily version
-        v130 = Version.objects.get(product=self.thunderbird, slug="tb130")
-        self.assertEqual(v130.name, "Version 130")
-        self.assertFalse(v130.default)
 
         # Check ESR
         esr128 = Version.objects.get(product=self.thunderbird, slug="tb128-esr")
@@ -228,7 +177,7 @@ class SyncProductVersionsTests(TestCase):
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_visibility_rules(self, mock_product_details):
-        """Test that only top 10 versions + ESR + beta/alpha are visible."""
+        """Test that only top 10 versions + ESR are visible."""
         mock_product_details.configure_mock(**self._mock_product_details().__dict__)
 
         out = StringIO()
@@ -236,18 +185,10 @@ class SyncProductVersionsTests(TestCase):
 
         visible_regular = Version.objects.filter(product=self.firefox, visible=True).exclude(
             slug__endswith="-esr"
-        ).exclude(
-            min_version__gt=143
         )
 
-        # Should have top 10 release visible (or fewer if less than 10 exist)
+        # Should have top 10 visible (or fewer if less than 10 exist)
         self.assertLessEqual(visible_regular.count(), 10)
-
-        # Beta/Nightly should always be visible
-        beta = Version.objects.get(product=self.firefox, slug="fx144")
-        self.assertTrue(beta.visible)
-        nightly = Version.objects.get(product=self.firefox, slug="fx145")
-        self.assertTrue(nightly.visible)
 
         # ESR versions should always be visible
         esr_versions = Version.objects.filter(product=self.firefox, slug__endswith="-esr")

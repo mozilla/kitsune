@@ -1,4 +1,5 @@
 from playwright.sync_api import ElementHandle, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,17 +7,17 @@ class WaysToContributePages(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the page breadcrumbs section."""
+        # Breadcrumbs
         self.interactable_breadcrumbs = page.locator("ol#breadcrumbs li a")
         self.all_breadcrumbs = page.locator("ol#breadcrumbs li")
 
-        """Locators belonging to the page content."""
+        # Page Content
         self.hero_main_header = page.locator("div[class*='hero'] div h1")
         self.hero_second_header = page.locator("div[class*='hero'] div h2")
         self.hero_text = page.locator("div[class*='hero'] div p")
         self.all_page_images = page.locator("div#svelte img")
 
-        """Locators belonging to the How to contribute messages section."""
+        # How to contribute_messages section
         self.how_to_contribute_header = page.locator("section[class='mzp-l-content'] > h2")
         self.all_how_to_contribute_option_links = page.locator("section.mzp-l-content div ol li a")
         self.start_answering_how_to_contribute_option_text = page.locator(
@@ -24,14 +25,14 @@ class WaysToContributePages(BasePage):
         self.first_fact_text = page.locator("//div[contains(@class,'fact')]/span[1]")
         self.second_fact_text = page.locator("//div[contains(@class,'fact')]/span[2]")
 
-        """Locators belonging to the other ways to contribute messages section."""
+        # Other ways to contribute_messages section
         self.other_ways_to_contribute_header = page.locator("//div[@id='svelte']/section[2]/h2")
         self.other_ways_to_contribute_card_titles = page.locator(
             "//div[@id='svelte']/section[2]//nav//span")
         self.other_ways_to_contribute_card_list = page.locator("//div[@id='svelte']/section[2]//"
                                                                "ul/a")
 
-    """Actions against the breadcrumbs locators."""
+    # Breadcrumbs
     def get_text_of_all_breadcrumbs(self) -> list[str]:
         return self._get_text_of_elements(self.all_breadcrumbs)
 
@@ -41,7 +42,7 @@ class WaysToContributePages(BasePage):
     def click_on_breadcrumb(self, element: ElementHandle):
         element.click()
 
-    """Actions against the page content locators."""
+    # Page content
     def get_hero_main_header_text(self) -> str:
         return self._get_text_of_element(self.hero_main_header)
 
@@ -54,7 +55,7 @@ class WaysToContributePages(BasePage):
     def get_all_page_image_links(self) -> list[ElementHandle]:
         return self._get_element_handles(self.all_page_images)
 
-    """Actions against the How to contribute messages section locators."""
+    # How to contribute_messages section
     def get_how_to_contribute_header_text(self) -> str:
         return self._get_text_of_element(self.how_to_contribute_header)
 
@@ -70,7 +71,7 @@ class WaysToContributePages(BasePage):
     def get_second_fact_text(self) -> str:
         return self._get_text_of_element(self.second_fact_text)
 
-    """Actions against the Other ways to contribute messages section locators."""
+    # Other ways to contribute_messages section
     def get_other_ways_to_contribute_header(self) -> str:
         return self._get_text_of_element(self.other_ways_to_contribute_header)
 

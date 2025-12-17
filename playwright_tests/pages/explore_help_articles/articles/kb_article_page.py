@@ -1,4 +1,5 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,7 +7,7 @@ class KBArticlePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """General locators belonging to the KB article page."""
+        # General page locators.
         self.article_breadcrumb = lambda breadcrumb_name: page.locator(
             "ol#breadcrumbs").get_by_role("link", name=f"{breadcrumb_name}")
         self.kb_article_heading = page.locator("h1.sumo-page-heading")
@@ -22,11 +23,11 @@ class KBArticlePage(BasePage):
             "div[class='document--contributors-list text-body-xs']").get_by_role(
             "link", name=f'{username}', exact=True)
 
-        """Locators belonging to the article metadata."""
+        # Article metadata locators.
         self.kb_article_helpfulness_count = page.locator(
             "div#document_metadata span[class='helpful-count']")
 
-        """Locators belonging to the editing tools options section."""
+        # Editing Tools options locators.
         self.editing_tools_article_option = page.get_by_role("link", name="Article",
                                                              exact=True)
         self.editing_tools_edit_article_option = page.get_by_role("link", name="Edit Article",
@@ -44,7 +45,7 @@ class KBArticlePage(BasePage):
         self.editing_tools_show_history_option = page.get_by_role("link", name="Show History",
                                                                   exact=True)
 
-        """Locators belonging to the helpfulness widget section."""
+        # Helpfulness widget section locators.
         self.helpfulness_widget = page.locator("form[class='document-vote--form helpful']")
         self.helpful_button = page.locator("button[class='btn helpful-button']")
         self.unhelpful_button = page.locator("button[class='btn not-helpful-button']")
@@ -56,7 +57,7 @@ class KBArticlePage(BasePage):
             "//div[@class='sumo-button-wrap align-full']/button[normalize-space(text())='Submit']")
         self.survey_message = page.locator("div[class='survey-message']")
 
-        """Locators belonging to the related articles section."""
+        # Related Articles section locators.
         self.related_articles_section = page.locator("section#related-documents")
         self.related_article_cards = page.locator("section#related-documents h3.card--title a")
         self.related_article = lambda article_title: page.locator(
@@ -64,7 +65,7 @@ class KBArticlePage(BasePage):
             f'text())="{article_title}"]'
         )
 
-    """Actions against the kb article page content locators."""
+    # KB Article page content actions.
     def click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
         self._click(self.article_breadcrumb(breadcrumb_name))
 
@@ -104,7 +105,7 @@ class KBArticlePage(BasePage):
     def is_article_content_image_displayed(self, image_title: str):
         return self._is_element_visible(self.kb_article_content_image(image_title))
 
-    """Actions against the kb article editing tools section locators."""
+    # KB Article editing tools section actions.
     def click_on_show_history_option(self):
         self._click(self.editing_tools_show_history_option)
 
@@ -135,13 +136,19 @@ class KBArticlePage(BasePage):
     def click_on_article_option(self):
         self._click(self.editing_tools_article_option)
 
+    def get_article_option_locator(self) -> Locator:
+        return self.editing_tools_article_option
+
+    def editing_tools_discussion_locator(self) -> Locator:
+        return self.editing_tools_discussion_option
+
     def click_on_editing_tools_discussion_option(self):
         self._click(self.editing_tools_discussion_option)
 
     def get_url(self) -> str:
         return self._get_current_page_url()
 
-    """Actions against the helpfulness widget locators."""
+    # Helpfulness widget actions.
     def is_helpfulness_widget_displayed(self) -> bool:
         return self._is_element_visible(self.helpfulness_widget)
 

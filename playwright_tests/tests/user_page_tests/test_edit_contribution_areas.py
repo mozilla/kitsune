@@ -48,6 +48,8 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
 
     with check, allure.step("Navigating to the user page and verifying that the user groups is"
                             " successfully displayed"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
+            first_user['username']))
         for option in contribution_options:
             assert option in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
 
@@ -74,5 +76,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
 
     with allure.step("Navigating to the my profile page and verifying that the added groups are "
                      "no longer displayed"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
+            first_user['username']))
         for option in contribution_options:
             assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())

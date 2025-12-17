@@ -35,8 +35,8 @@ def test_kb_editing_tools_visibility(page: Page, user_type, create_user_factory)
     if user_type == 'Simple user':
         utilities.start_existing_session(cookies=test_user_two)
         with allure.step("Verifying that only some editing tools options are displayed"):
-            expect(sumo_pages.kb_article_page.editing_tools_article_option).to_be_visible()
-            expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
             expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_visible()
             expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
             expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
@@ -48,8 +48,8 @@ def test_kb_editing_tools_visibility(page: Page, user_type, create_user_factory)
     elif user_type == '':
         utilities.delete_cookies()
         with allure.step("Verifying that all the editing tools options are not displayed"):
-            expect(sumo_pages.kb_article_page.editing_tools_article_option).to_be_hidden()
-            expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+            expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_hidden()
+            expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
             expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_hidden()
             expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_hidden()
             expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
@@ -60,8 +60,8 @@ def test_kb_editing_tools_visibility(page: Page, user_type, create_user_factory)
             expect(sumo_pages.kb_article_page.get_show_history_option_locator()).to_be_hidden()
     else:
         with (allure.step("Verifying that all the editing tools options are displayed")):
-            expect(sumo_pages.kb_article_page.editing_tools_article_option).to_be_visible()
-            expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_visible()
+            expect(sumo_pages.kb_article_page.get_article_option_locator()).to_be_visible()
+            expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
             expect(sumo_pages.kb_article_page.get_edit_article_option_locator()).to_be_visible()
             expect(sumo_pages.kb_article_page.get_edit_article_metadata_locator()).to_be_visible()
             expect(sumo_pages.kb_article_page.get_translate_article_option_locator()
@@ -282,7 +282,7 @@ def test_articles_discussions_allowed(page: Page, create_user_factory):
 
     with allure.step("Verifying that the posted thread is successfully displayed"):
         expect(
-            sumo_pages.kb_article_discussion_page.posted_thread(
+            sumo_pages.kb_article_discussion_page.get_posted_thread_locator(
                 thread_info['thread_id']
             )
         ).to_be_visible()
@@ -305,7 +305,7 @@ def test_articles_discussions_allowed(page: Page, create_user_factory):
     with allure.step("Deleting user session and verifying that the discussion editing tools "
                      "option is not available"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with allure.step("Manually navigating to the discuss endpoint and verifying that the "
                      "posted thread is successfully displayed"):
@@ -313,7 +313,7 @@ def test_articles_discussions_allowed(page: Page, create_user_factory):
             article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
         expect(
-            sumo_pages.kb_article_discussion_page.posted_thread(
+            sumo_pages.kb_article_discussion_page.get_posted_thread_locator(
                 thread_info['thread_id']
             )
         ).to_be_visible()
@@ -343,7 +343,7 @@ def test_articles_discussions_allowed(page: Page, create_user_factory):
             article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
         expect(
-            sumo_pages.kb_article_discussion_page.posted_thread(
+            sumo_pages.kb_article_discussion_page.get_posted_thread_locator(
                 thread_info['thread_id']
             )
         ).to_be_visible()
@@ -369,7 +369,9 @@ def test_articles_discussions_not_allowed(page: Page, create_user_factory):
                      "option is not displayed"):
         sumo_pages.kb_article_page.click_on_article_option()
         article_url = utilities.get_page_url()
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+        expect(
+            sumo_pages.kb_article_page.editing_tools_discussion_locator()
+        ).to_be_hidden()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
                             "that the 404 is displayed"):
@@ -393,7 +395,7 @@ def test_articles_discussions_not_allowed(page: Page, create_user_factory):
     with allure.step("Navigating back to the article page and verifying that the "
                      "'Discussion' option is not displayed"):
         utilities.navigate_to_link(article_url)
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
                             "that the 404 page is returned"):
@@ -410,7 +412,7 @@ def test_articles_discussions_not_allowed(page: Page, create_user_factory):
         utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Discussion' option is not displayed"):
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying "
                             "that the 404 page is displayed"):
@@ -729,7 +731,7 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
     with check, allure.step("Navigating to the 'Edit Article' form and verifying that the "
                             "edit keyword field is not displayed"):
         sumo_pages.kb_article_page.click_on_edit_article_option()
-        expect(sumo_pages.kb_edit_article_page.edit_article_keywords_field).to_be_hidden()
+        expect(sumo_pages.kb_edit_article_page.get_edit_keywords_field_locator()).to_be_hidden()
 
     with allure.step("Navigating back to the article"):
         sumo_pages.kb_article_page.click_on_article_option()
@@ -750,7 +752,9 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
         sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
             keywords=utilities.kb_article_test_data['updated_keywords'],
             search_result_summary=utilities.kb_article_test_data
-            ['updated_search_result_summary'], approve_revision=True, is_admin=True
+            ['updated_search_result_summary'],
+            approve_revision=True,
+            is_admin=True
         )
 
     with allure.step("Clicking on the top navbar sumo nav logo"):
@@ -925,7 +929,9 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
         )
 
     with allure.step("Selecting a different category"):
-        sumo_pages.edit_article_metadata_flow.edit_article_metadata(category="Templates")
+        sumo_pages.edit_article_metadata_flow.edit_article_metadata(
+            category="Templates"
+        )
 
     with check, allure.step("Verifying that the correct error message is displayed"):
         assert (sumo_pages.kb_article_edit_article_metadata_page.
@@ -942,7 +948,9 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
             [article_details['article_category']]
         )
         expect(
-            sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
+                article_details['article_title']
+            )
         ).to_be_hidden()
 
     with check, allure.step("Verifying that the article is displayed inside the new category"):
@@ -950,7 +958,9 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
             utilities.different_endpoints['kb_categories_links']["Navigation"]
         )
         expect(
-            sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
+                article_details['article_title']
+            )
         ).to_be_visible()
 
     article_template_title = "Template:" + article_details['article_title']
@@ -967,7 +977,9 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
             utilities.different_endpoints['kb_categories_links']["Navigation"]
         )
         expect(
-            sumo_pages.kb_category_page.article_from_list(article_template_title)
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
+                article_template_title
+            )
         ).to_be_hidden()
 
     with check, allure.step("Verifying that the article is displayed inside the new category"):
@@ -975,7 +987,9 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
             utilities.different_endpoints['kb_categories_links']["Templates"]
         )
         expect(
-            sumo_pages.kb_category_page.article_from_list(article_template_title)
+            sumo_pages.kb_category_page.get_a_particular_article_locator_from_list(
+                article_template_title
+            )
         ).to_be_visible()
 
 
@@ -1037,14 +1051,14 @@ def test_edit_metadata_article_discussions(page: Page, create_user_factory):
         )
 
     with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with allure.step(f"Signing in with {test_user['username']} and verifying that the discussion "
                      "options is visible"):
         utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Verifying that the 'Discussion' is visible for non-admin users"):
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with allure.step(f"Signing in with {test_user_two['username']} and disabling article "
                      f"discussions via edit article metadata form"):
@@ -1052,7 +1066,7 @@ def test_edit_metadata_article_discussions(page: Page, create_user_factory):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=False)
 
     with check, allure.step("Verifying that 'Discussion' is not displayed for admin users"):
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
                             "returned"):
@@ -1067,7 +1081,7 @@ def test_edit_metadata_article_discussions(page: Page, create_user_factory):
                             "non-admin users"):
         utilities.navigate_to_link(article_details['article_url'])
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_hidden()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_hidden()
 
     with check, allure.step("Navigating to the /discuss endpoint and verifying that 404 is "
                             "returned"):
@@ -1085,12 +1099,12 @@ def test_edit_metadata_article_discussions(page: Page, create_user_factory):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(discussions=True)
 
     with check, allure.step("Verifying that the 'Discussion' is visible for admin users"):
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
     with check, allure.step(f"Verifying that the 'Discussion' is visible for"
                             f" {test_user['username']}"):
         utilities.start_existing_session(cookies=test_user)
-        expect(sumo_pages.kb_article_page.editing_tools_discussion_option).to_be_visible()
+        expect(sumo_pages.kb_article_page.editing_tools_discussion_locator()).to_be_visible()
 
 
 # C2244014
@@ -1119,7 +1133,7 @@ def test_edit_metadata_article_multiple_users(page: Page, create_user_factory):
     with allure.step("Clicking on the 'Edit Article Metadata' option"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
-    with check, allure.step("Verifying that the correct warning message is displayed"):
+    with check, allure.step("Verifying that the correct error message is displayed"):
         assert (sumo_pages.kb_edit_article_page.
                 get_edit_article_warning_message() == kb_revision.
                 get_article_warning_message(test_user_two['username']))
@@ -1127,7 +1141,7 @@ def test_edit_metadata_article_multiple_users(page: Page, create_user_factory):
     with allure.step("Clicking on the 'Edit Anyway' option and verifying that the warning "
                      "banner is no longer displayed"):
         sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
-        expect(sumo_pages.kb_edit_article_page.edit_by_another_user_warning_banner).to_be_hidden()
+        expect(sumo_pages.kb_edit_article_page.get_warning_banner_locator()).to_be_hidden()
 
 
 # C2271119, C2243454
@@ -1263,8 +1277,8 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
                         is_frequent_topic_card_displayed(test_topic_card))
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Firefox", article_topic="Firefox test topic", approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="1", topic="506", approve_revision=True)
 
     with check, allure.step("Verifying that the article topic card and article is successfully "
                             "listed and the 'View all {x} counter' is the correct one"):
@@ -1280,8 +1294,8 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
                 get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
 
     with allure.step("Creating a new kb article and not approving the revision"):
-        second_article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Firefox", article_topic="Firefox test topic")
+        second_article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="1", topic="506")
 
     with check, allure.step("Verifying that the unapproved article is not listed inside the "
                             "topic card list and the 'View all {x} articles' counter has not "
@@ -1349,9 +1363,8 @@ def test_article_update_and_frequent_topics_cards(page: Page, create_user_factor
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Thunderbird", article_topic="Thunderbird test topic",
-            approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="8", topic="505", approve_revision=True)
 
     with allure.step("Updating the title of the article"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=new_article_name)
@@ -1378,9 +1391,8 @@ def test_obsolete_articles_and_frequent_topics_cards(page: Page, create_user_fac
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Thunderbird", article_topic="Thunderbird test topic",
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="8", topic="505", approve_revision=True)
 
     with allure.step("Marking the article as Obsolete via the 'Edit Article Metadata' page"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
@@ -1422,9 +1434,8 @@ def test_ignored_article_types_from_frequent_topics_cards(page: Page, category,
 
     with allure.step("Creating a new kb article of 'Canned Responses' type, under the Test Topic "
                      "and approving the revision"):
-        article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Pocket", article_topic="Pocket test topic", approve_first_revision=True,
-            article_category=category, is_template= (category == "60"))
+        article = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="19", topic="507", approve_revision=True, category=category)
 
     with check, allure.step("Verifying that the article is not displayed inside the topic card"):
         for link in ["product_support", "product_solutions"]:
@@ -1447,8 +1458,8 @@ def test_article_topic_and_product_change(page: Page, create_user_factory):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="19", topic="507", approve_revision=True)
 
     with allure.step("Updating the article metadata to add the MDN product and test topic"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
@@ -1500,7 +1511,8 @@ def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
         utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step(f"Sign in with {test_user['username']} user account"):
@@ -1558,7 +1570,8 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_fact
         utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step(f"Sign in with {test_user['username']} user account"):
@@ -1616,7 +1629,8 @@ def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory)
         utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step(f"Sign in with {test_user['username']} user account"):
@@ -1677,7 +1691,8 @@ def test_article_unhelpfulness_cancel_vote(page: Page, vote_type, create_user_fa
         utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step(f"Sign in with {test_user['username']} user account"):
@@ -1728,8 +1743,8 @@ def test_article_helpfulness_metadata_count(page: Page, create_user_factory):
         utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
-        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            article_topic="Browse", approve_first_revision=True)
+        article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page,topic=374, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step("Voting the article as helpful"):
@@ -1780,8 +1795,8 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
         utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Create a new simple article"):
-        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            article_topic="Browse", approve_first_revision=True)
+        article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, topic=374, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
 
     with allure.step("Sign in with a different user"):
@@ -1815,8 +1830,8 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
     with allure.step("Creating 3 test articles"):
         counter = 1
         while counter <= 3:
-            article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-                product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+            article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+                page=page, product="19", topic="507", approve_revision=True)
             test_article_titles.append(article_info["article_title"])
             test_articles_url.append(article_info["article_url"])
             counter += 1
@@ -1873,8 +1888,8 @@ def test_same_article_cannot_be_added_as_related_article(page: Page, create_user
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Creating a new KB article"):
-        article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+        article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, product="19", topic="507", approve_revision=True)
 
     with allure.step("Wait for ~1 minute until the kb article is available in search"):
         utilities.wait_for_given_timeout(90000)
@@ -1891,7 +1906,8 @@ def test_same_article_cannot_be_added_as_related_article(page: Page, create_user
 
 #  C3065910
 @pytest.mark.kbArticleCreationAndAccess
-def test_restricted_visibility_related_document_in_article_page(page: Page, create_user_factory):
+def test_restricted_visibility_related_document_in_article_page(page: Page,
+                                                                create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_articles_url = []
@@ -1906,8 +1922,8 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
     with allure.step("Creating 3 new articles"):
         counter = 1
         while counter <= 3:
-            article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-                product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+            article_info = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+                page=page, product="19", topic="507", approve_revision=True)
             test_article_titles.append(article_info["article_title"])
             test_articles_url.append(article_info["article_url"])
             counter += 1

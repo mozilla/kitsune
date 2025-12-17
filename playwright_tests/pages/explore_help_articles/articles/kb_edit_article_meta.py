@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,7 +7,7 @@ class KBArticleEditMetadata(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the edit article metadata page."""
+        # Edit article metadata page locators.
         self.edit_article_metadata_error = page.locator("ul[class='errorlist']")
         self.edit_article_metadata_page_header = page.locator("h1[class='sumo-page-heading']")
         self.restrict_visibility_input_field = page.locator(
@@ -44,7 +45,7 @@ class KBArticleEditMetadata(BasePage):
         self.relevant_product_checkbox = lambda product_name: page.locator(
             f"//section[@id='relevant-products']//label[normalize-space(text())='{product_name}']")
 
-    """Actions against the edit article metadata page locators."""
+    # Edit article metadata page actions.
     def get_error_message(self) -> str:
         return self._get_text_of_element(self.edit_article_metadata_error)
 

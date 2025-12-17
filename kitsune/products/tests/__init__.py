@@ -3,15 +3,7 @@ import factory.django
 import factory.fuzzy
 from django.template.defaultfilters import slugify
 
-from kitsune.products.models import (
-    Platform,
-    Product,
-    ProductSupportConfig,
-    Topic,
-    Version,
-    ZendeskConfig,
-    ZendeskTopic,
-)
+from kitsune.products.models import Platform, Product, Topic, Version
 from kitsune.sumo.tests import FuzzyUnicode
 
 
@@ -76,37 +68,3 @@ class PlatformFactory(factory.django.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
     visible = True
     display_order = factory.fuzzy.FuzzyInteger(10)
-
-
-class ZendeskConfigFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ZendeskConfig
-
-    name = FuzzyUnicode()
-    ticket_form_id = "360000417171"
-    enable_os_field = False
-
-
-class ZendeskTopicFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ZendeskTopic
-
-    zendesk_config = factory.SubFactory(ZendeskConfigFactory)
-    slug = FuzzyUnicode()
-    topic = FuzzyUnicode()
-    display_order = factory.fuzzy.FuzzyInteger(10)
-    legacy_tag = ""
-    tier_tags: list[str] = []
-    automation_tag = ""
-    segmentation_tag = ""
-    loginless_only = False
-
-
-class ProductSupportConfigFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ProductSupportConfig
-
-    product = factory.SubFactory(ProductFactory)
-    is_active = True
-    default_support_type = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-    group_default_support_type = None

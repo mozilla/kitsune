@@ -352,8 +352,8 @@ def test_quoted_first_post_is_moved_to_system_account(page: Page, create_user_fa
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
     test_user_two = create_user_factory()
-    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
     thread_title = "Test thread " + utilities.generate_random_number(1, 1000)
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
 
     with allure.step("Signing in to SUMO and posting a new contributor forum thread"):
         utilities.start_existing_session(cookies=test_user)
@@ -381,9 +381,9 @@ def test_quoted_first_post_is_moved_to_system_account(page: Page, create_user_fa
         assert (test_user["username"] in sumo_pages.forum_thread_page.
                 get_thread_post_mention_text(thread_reply_id))
 
-        with allure.step("Deleting the thread"):
-            utilities.start_existing_session(session_file_name=staff_user)
-            sumo_pages.contributor_thread_flow.delete_thread()
+    with allure.step("Deleting the thread"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.contributor_thread_flow.delete_thread()
 
 
 # C2952021
@@ -435,6 +435,6 @@ def test_quoted_replies_are_moved_to_system_account(page: Page, create_user_fact
         assert (test_user_two["username"] in sumo_pages.forum_thread_page.
                 get_thread_post_mention_text(third_thread_reply))
 
-        with allure.step("Deleting the thread"):
-            utilities.start_existing_session(session_file_name=staff_user)
-            sumo_pages.contributor_thread_flow.delete_thread()
+    with allure.step("Deleting the thread"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.contributor_thread_flow.delete_thread()

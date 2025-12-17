@@ -2,6 +2,7 @@ import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -30,6 +31,7 @@ def test_media_file_ownership_reassignment_to_system_account(page: Page, create_
         assert sumo_pages.media_gallery.get_image_creator_text() == test_user["username"]
 
     with allure.step("Deleting the test user account"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         sumo_pages.edit_profile_flow.close_account()
 
     with check, allure.step("Navigating back to the image preview and verifying that the system "

@@ -45,6 +45,7 @@ def test_ask_the_community_button_redirect(page: Page):
     with allure.step("Navigating to the all products community forums page"):
         sumo_pages.top_navbar.click_on_view_all_forums_option()
 
+
     with check, allure.step("Clicking on the 'Ask the Community' button for each community forum "
                             "and verifying that the user is redirected to the correct product "
                             "solutions page"):
@@ -77,7 +78,8 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -151,13 +153,15 @@ def test_spam_tab_filter_visibility(page: Page, create_user_factory):
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Forum Moderators"])
 
+
     with allure.step("Creating a question and marking it as spam"):
         utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -169,7 +173,7 @@ def test_spam_tab_filter_visibility(page: Page, create_user_factory):
         utilities.navigate_to_link(utilities.general_test_data['product_forums']
                                    ['All Products Forum'])
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("All")
-        assert len(sumo_pages.product_support_forum.is_spam_locator.all()) == 0
+        assert len(sumo_pages.product_support_forum.get_list_of_is_spam_locators()) == 0
 
     with check, allure.step("Clicking on the 'Spam' filter and verifying that the spam-marked"
                             " question is displayed with the correct spam tag"):
@@ -180,13 +184,13 @@ def test_spam_tab_filter_visibility(page: Page, create_user_factory):
     with check, allure.step("Signing out from SUMO and verifying that spam questions and the Spam"
                             " tab filter is not displayed"):
         utilities.delete_cookies()
-        assert len(sumo_pages.product_support_forum.is_spam_locator.all()) == 0
+        assert len(sumo_pages.product_support_forum.get_list_of_is_spam_locators()) == 0
         assert not sumo_pages.product_support_forum.is_tab_filter_displayed("Spam")
 
     with check, allure.step("Signing in with a normal user and verifying that the spam questions"
                             " and the spam tab filter is not displayed"):
         utilities.start_existing_session(cookies=test_user)
-        assert len(sumo_pages.product_support_forum.is_spam_locator.all()) == 0
+        assert len(sumo_pages.product_support_forum.get_list_of_is_spam_locators()) == 0
 
 
 # C3171622
@@ -203,7 +207,8 @@ def test_question_transitions_to_spam_tab_filter(page: Page, create_user_factory
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -272,7 +277,8 @@ def test_spam_marked_question_does_not_transition_from_spam_tab_filter(page: Pag
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -340,7 +346,8 @@ def test_questions_transitions_on_status_change(page: Page, create_user_factory,
         question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
             )

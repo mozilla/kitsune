@@ -1,21 +1,25 @@
 import re
+
 from playwright.sync_api import Page, ElementHandle
+
 from playwright_tests.core.basepage import BasePage
 
-"""This class contains the locators and actions for the {x} discussions page."""
+"""
+    This class contains the locators and actions for the {x} discussions page.
+"""
 
 
 class ForumDiscussionsPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the forum discussions page."""
+        # Locators related to the forum discussions page.
         self.forum_page_title = page.locator("article#threads h1")
         self.forum_side_nav_selected_option = page.locator(
             "nav#for-contributors-sidebar a.selected")
         self.post_a_new_thread_button = page.locator("a#new-thread")
 
-        """Locators belonging to the search section."""
+        # Locators related to the search section.
         self.search_this_forum_search_field = page.locator("form#find-thread input#search-q")
         self.search_this_forum_search_button = page.locator("form#find-thread input.search-button")
         self.search_results_headers = page.locator(
@@ -23,7 +27,7 @@ class ForumDiscussionsPage(BasePage):
         self.search_results_body = page.locator(
             "//div[@id='search-results']//div[@class='topic-article--text']/p")
 
-        """Locators belonging to the threads table section."""
+        # Locators related to the threads table.
         self.thread_title = lambda thread_name : page.locator(
             "tbody.threads td.title").get_by_role("link", name=thread_name, exact=True)
         self.thread_type = lambda thread_name, type_image: page.locator(

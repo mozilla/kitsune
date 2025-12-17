@@ -119,20 +119,22 @@ def test_contributor_discussions_forums_title_redirect(page: Page, create_user_f
 
 @pytest.mark.smokeTest
 @pytest.mark.contributorDiscussions
-@pytest.mark.parametrize("user", [None, 'Simple User', 'Forum Moderator'])
+@pytest.mark.parametrize("user", [None, 'simple_user', 'moderator'])
 def test_forum_moderators_availability(page: Page, user, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["forum-contributors", "Forum Moderators"])
-    user_map = {'Simple User': test_user, 'Forum Moderator': test_user_two}
 
-    utilities.start_existing_session(cookies=user_map.get(user))
+    if user == 'simple_user':
+        utilities.start_existing_session(cookies=test_user)
+    elif user == 'moderator':
+        utilities.start_existing_session(cookies=test_user_two)
 
     with allure.step("Navigating to the Contributor Discussions forum"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
 
-    if user == 'Simple User' or user is None:
+    if user == 'simple_user' or user is None:
         with check, allure.step("Verifying that the 'Forum Moderators' forum is not available"):
             assert (ForumModerators.PAGE_TITLE not in sumo_pages.contributor_discussions_page.
                     get_contributor_discussions_forums_titles())
@@ -187,7 +189,8 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
 
     with allure.step("Creating a new thread to the 'Off topic' forum"):
         post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     thread_link = utilities.get_page_url()
@@ -270,7 +273,8 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
 
     with allure.step("Creating a new thread to the 'Localization Discussions' forum"):
         post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
         )
 
     thread_link = utilities.get_page_url()
@@ -369,7 +373,8 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
                         generate_random_number(1, 1000))
         post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
-            thread_title=thread_title, thread_body=utilities.discussion_thread_data['thread_body']
+            thread_title=thread_title,
+            thread_body=utilities.discussion_thread_data['thread_body']
         )
     thread_link = utilities.get_page_url()
 

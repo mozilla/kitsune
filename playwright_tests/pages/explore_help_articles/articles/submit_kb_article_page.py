@@ -1,4 +1,5 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,7 +8,7 @@ class SubmitKBArticlePage(BasePage):
         super().__init__(page)
         self.kb_article_for_contributors_sidebar = page.locator("nav#for-contributors-sidebar")
 
-        """Locators belonging to the new kb article form."""
+        # New KB article form locators.
         self.kb_article_restrict_visibility_field = page.locator(
             "input#id_restrict_to_groups-ts-control")
         self.kb_article_restrict_visibility_delete_all_groups = page.locator(
@@ -23,7 +24,7 @@ class SubmitKBArticlePage(BasePage):
         self.kb_article_keyword_input = page.locator("input#id_keywords")
         self.kb_article_search_result_summary_textarea = page.locator("textarea#id_summary")
 
-        """Locators belonging to the new kb article content form locators."""
+        # New KB article content locators.
         self.kb_article_content_textarea = page.locator("textarea#id_content")
         self.kb_article_insert_media = page.locator("button[class*='btn-media']")
         self.kb_article_insert_media_modal_images = page.locator("div#media-modal img")
@@ -62,17 +63,27 @@ class SubmitKBArticlePage(BasePage):
             f"//section[@id='relevant-topics']//label[normalize-space(text())='{parent_topic}']/"
             f"../../..//label[normalize-space(text())='{child_topic_checkbox}']")
 
-    """Actions against the page error locators."""
+    # Page error actions.
     def get_all_kb_errors(self) -> list[str]:
         return self._get_text_of_elements(self.all_kb_errors)
+
+    def get_kb_title_error_locator(self) -> Locator:
+        return self.kb_title_error
 
     def get_kb_title_error_text(self) -> str:
         return self._get_text_of_element(self.kb_title_error)
 
+    def get_kb_slug_error(self) -> Locator:
+        return self.kb_slug_error
+
     def get_kb_slug_error_text(self) -> str:
         return self._get_text_of_element(self.kb_slug_error)
 
-    """Actions against the new KB form locators."""
+    # For Contributors side navbar actions.
+    def for_contributors_section(self) -> Locator:
+        return self.kb_article_for_contributors_sidebar
+
+    # New KB form actions.
     def add_and_select_restrict_visibility_group(self, group_name: str):
         self._fill(self.kb_article_restrict_visibility_field, group_name)
         self._click(self.restrict_visibility_to_group(group_name))
@@ -130,6 +141,12 @@ class SubmitKBArticlePage(BasePage):
     def click_on_changes_submit_button(self):
         self._click(self.kb_submit_changes_button)
 
+    def is_showfor_panel_displayed(self) -> Locator:
+        return self.kb_article_showfor_panel
+
+    def is_preview_content_section_displayed(self) -> Locator:
+        return self.kb_article_preview_content
+
     def get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:
         return self._get_text_of_element(self.relevant_to_product_checkbox(option_to_click))
 
@@ -139,8 +156,9 @@ class SubmitKBArticlePage(BasePage):
     def click_on_a_particular_parent_topic_checkbox(self, parent_topic_name: str):
         self._click(self.parent_topic_checkbox(parent_topic_name))
 
-    def click_on_a_particular_child_topic_checkbox(self, parent_topic: str,
-                                                   child_topic_checkbox: str):
+    def click_on_a_particular_child_topic_checkbox(
+        self, parent_topic: str, child_topic_checkbox: str
+    ):
         self._click(self.child_topic_checkbox(parent_topic, child_topic_checkbox))
 
     def click_on_insert_media_textarea_option(self):

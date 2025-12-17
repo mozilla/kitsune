@@ -1,17 +1,19 @@
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
-"""This class contains the locators and actions for the general "Contributor Discussions" page."""
+"""
+    This class contains the locators and actions for the general "Contributor Discussions" page.
+"""
 
 
 class ContributorDiscussionPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
-
-        """Locators belonging to the page breadcrumbs."""
+        # Contributor Discussions breadcrumb locators.
         self.contributor_discussions_page_breadcrumbs = page.locator('ol#breadcrumbs li')
 
-        """Locators belonging to the contributor discussions side-navbar."""
+        # Contributor Discussions side navbar locators.
         self.contributor_discussions_side_navbar_header = page.locator(
             "#for-contributors-sidebar ul li.sidebar-subheading")
         self.contributor_discussions_side_navbar_items = page.locator(
@@ -20,7 +22,7 @@ class ContributorDiscussionPage(BasePage):
             "#for-contributors-sidebar ul li:not(.sidebar-subheading)").get_by_role(
             "link", name=item_name, exact=True)
 
-        """Locators belonging to the contributor discussions forums list."""
+        # Contributor Discussions forums list locators.
         self.contributor_discussions_page_title = page.locator("div#forums h1")
         self.contributor_discussions_forum_names = page.locator("h5[class='sumo-card-heading']")
         self.contributor_discussions_forum_name = lambda forum: page.locator(
@@ -35,7 +37,7 @@ class ContributorDiscussionPage(BasePage):
             f"//h5[@class='sumo-card-heading']/a[text()='{forum}']/../../"
             f"following-sibling::td[@class='last-post']/a").nth(1)
 
-    """Actions against the Contributor Discussions breadcrumb locators."""
+    # Actions against the Contributor Discussions breadcrumb locators.
     def get_contributor_discussions_breadcrumbs(self) -> list[str]:
         """
         Get the text of all the breadcrumbs on the Contributor Discussions page.
@@ -50,7 +52,7 @@ class ContributorDiscussionPage(BasePage):
         """
         self._click(self.contributor_discussions_page_breadcrumbs.first)
 
-    """Actions against the Contributor Discussions forums list locators."""
+    # Actions against the Contributor Discussions forums list locators.
     def get_contributor_discussions_page_title(self) -> str:
         """
         Get the title of the Contributor Discussions page.
@@ -134,8 +136,7 @@ class ContributorDiscussionPage(BasePage):
         """
         self._click(self.contributor_discussions_forum_last_post_by(forum))
 
-
-    """Actions against the Contributor Discussions side-navbar locators."""
+    # Actions against the Contributor Discussions side navbar locators.
     def get_contributor_discussions_side_navbar_header(self) -> str:
         """
         Get the header text of the Contributor Discussions side navbar.

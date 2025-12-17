@@ -16,7 +16,6 @@ from playwright_tests.pages.sumo_pages import SumoPages
 def test_popular_topics_navbar(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-
     with allure.step("Navigating to product topics pages"):
         for product_topic in utilities.general_test_data["product_topics"]:
             topic_url = utilities.general_test_data["product_topics"][product_topic]

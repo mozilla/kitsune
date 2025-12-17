@@ -5,15 +5,13 @@ class NewThreadPage(BasePage):
     def __init__(self, page):
         super().__init__(page)
 
-        """Locators belonging to the create a new thread page."""
+        # Locators related to the create a new thread page
         self.title_input_field = page.locator("input#id_title")
         self.content_textarea_field = page.locator("textarea#id_content")
         self.cancel_button = page.get_by_role("link", name="Cancel")
         self.preview_button = page.locator("button#preview")
         self.post_thread_button = page.get_by_role("button").filter(has_text="Post Thread")
 
-
-    """Actions against the create a new thread page locators."""
     def fill_title_input_field(self, title: str):
         self._fill(self.title_input_field, title)
 

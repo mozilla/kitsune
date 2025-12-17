@@ -26,7 +26,7 @@ def test_username_field_is_automatically_populated(page: Page, create_user_facto
     with allure.step(f"Signing in with {test_user['username']} user account and navigating to the "
                      f"'Edit Profile' page"):
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.top_navbar.click_on_edit_profile_option()
+    sumo_pages.top_navbar.click_on_edit_profile_option()
 
     with allure.step("Verifying that username field is automatically populated with the correct "
                      "data"):
@@ -48,8 +48,10 @@ def test_edit_profile_field_validation_with_symbols(page: Page, create_user_fact
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         article_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            topic_name=utilities
+            .aaq_question_test_data["valid_firefox_question"]["topic_value"],
+            body=utilities.
+            aaq_question_test_data["valid_firefox_question"]["question_body"],
         )
 
     usernames = utilities.profile_edit_test_data["valid_user_edit_with_symbols"]
@@ -61,11 +63,12 @@ def test_edit_profile_field_validation_with_symbols(page: Page, create_user_fact
         with allure.step("Clearing the username, display name fields and inserting the new one"):
             sumo_pages.edit_my_profile_page.clear_username_field()
             sumo_pages.edit_my_profile_page.clear_display_name_field()
+
         sumo_pages.edit_my_profile_page.send_text_to_username_field(value)
 
         with allure.step("Clicking on the 'Update My Profile' button"):
             sumo_pages.edit_my_profile_page.click_update_my_profile_button(
-                expected_locator=sumo_pages.my_profile_page.display_name_by_username(value)
+                expected_locator=sumo_pages.my_profile_page.get_expected_header_locator(value)
             )
 
         with check, allure.step("Verify that the newly set username is successfully applied to the"
@@ -173,6 +176,7 @@ def test_cancel_profile_edit(page: Page, create_user_factory):
 @pytest.mark.editUserProfileTests
 def test_manage_firefox_account_redirects_to_firefox_account_settings_page(page: Page,
                                                                            create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -262,7 +266,8 @@ def test_profile_username_field_cannot_be_left_empty(page: Page, create_user_fac
 
 # C1491018, C891531,C1491021
 @pytest.mark.editUserProfileTests
-def test_username_can_contain_uppercase_and_lowercase_letters(page: Page, create_user_factory):
+def test_username_can_contain_uppercase_and_lowercase_letters(page: Page,
+                                                              create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -320,12 +325,16 @@ def test_display_name_replaces_the_username_text(page: Page, create_user_factory
             expected_url=MyProfileMessages.get_my_profile_stage_url(test_user["username"])
         )
 
-    with check, allure.step("Verifying that the top navbar username updates with the display "
-                            "name"):
+    with check, allure.step("Verifying that the top navbar username updates with the display"
+                            " name"):
         assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_display_name
 
     with check, allure.step(f"Verifying that the 'My profile' display name contains "
                             f"{new_display_name}"):
+        assert (sumo_pages.my_profile_page.
+                get_my_profile_display_name_header_text() == f"{new_display_name} ("
+                                                             f"{test_user['username']})")
+
         assert (sumo_pages.my_profile_page.
                 get_my_profile_display_name_header_text() == f"{new_display_name} ("
                                                              f"{test_user['username']})")
@@ -425,14 +434,18 @@ def test_email_visibility(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
-    with check, allure.step("Verifying that the email address is displayed"):
+    with check, allure.step("Accessing the previous user profile and verifying that the email"
+                            " address is displayed"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(staff_username))
         assert sumo_pages.my_profile_page.get_text_of_publicly_displayed_username() == staff_email
 
     with allure.step("Signing out"):
         utilities.delete_cookies()
 
-    with allure.step("Verifying that the email address is not displayed to signed out users"):
-        expect(sumo_pages.my_profile_page.displayed_email_address).to_be_hidden()
+    with allure.step("Accessing the previous user profile and verifying that the email "
+                     "address is not displayed to signed out users"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(staff_username))
+        expect(sumo_pages.my_profile_page.publicly_displayed_email_element()).to_be_hidden()
 
     with allure.step("Accessing the 'Edit My Profile' page and unchecking the make email "
                      "visible checkbox"):
@@ -447,14 +460,16 @@ def test_email_visibility(page: Page, create_user_factory):
             )
 
     with check, allure.step("Verifying that the email is not displayed"):
-        expect(sumo_pages.my_profile_page.displayed_email_address).to_be_hidden()
+        expect(sumo_pages.my_profile_page.publicly_displayed_email_element()).to_be_hidden()
 
     with allure.step("Signing in with a different non-admin user"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Accessing the previous user profile and verifying that the email "
                      "address is not displayed"):
-        expect(sumo_pages.my_profile_page.displayed_email_address).to_be_hidden()
+        # This also needs an update
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(staff_username))
+        expect(sumo_pages.my_profile_page.publicly_displayed_email_element()).to_be_hidden()
 
 
 # T5697918, T5697919, T5697921, T5697920, T5697922, T5697923, T5697924, T5697925
@@ -478,40 +493,11 @@ def test_profile_information(page: Page, create_user_factory):
         "country", "city", "involved_from_month", "involved_from_year"
     ]
 
-    profile_info_getters = {
-        "website": sumo_pages.my_profile_page.get_my_profile_website_text,
-        "twitter": sumo_pages.my_profile_page.get_my_profile_twitter_text,
-        "community_portal": sumo_pages.my_profile_page.get_my_profile_community_portal_text,
-        "people_directory": sumo_pages.my_profile_page.get_my_profile_people_directory_text,
-        "matrix_nickname": sumo_pages.my_profile_page.get_my_profile_matrix_text,
-        "country": sumo_pages.my_profile_page.get_my_profile_location_text,
-        "city": sumo_pages.my_profile_page.get_my_profile_location_text,
-        "involved_from_month": sumo_pages.my_profile_page.get_my_contributed_from_text,
-        "involved_from_year": sumo_pages.my_profile_page.get_my_contributed_from_text,
-    }
-
-    with check, allure.step("Verifying profile info as logged-in user"):
-        utilities.start_existing_session(cookies=test_user_two)
-        displayed_values = {
-            key: getter()
-            for key, getter in profile_info_getters.items()
-        }
-
-        for key in profile_info_keys:
-            assert profile_info[key] in displayed_values[key], \
-                f"Incorrect value for '{key}' when logged in."
-
-    with check, allure.step("Verifying profile info after logout"):
-        utilities.delete_cookies()
-
-        displayed_values = {
-            key: getter()
-            for key, getter in profile_info_getters.items()
-        }
-
-        for key in profile_info_keys:
-            assert profile_info[key] in displayed_values[key], \
-                f"Incorrect value for '{key}' when logged out."
+    for key in profile_info_keys:
+        with allure.step(f"Verifying that the correct {key.replace('_', ' ')} "
+                         f"information is displayed"):
+            assert (_validate_profile_info(page, key, profile_info[key],
+                                           test_user["username"], test_user_two))
 
 
 # T5697906, T5697929
@@ -519,6 +505,7 @@ def test_profile_information(page: Page, create_user_factory):
 @pytest.mark.editUserProfileTests
 def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Page,
                                                                        create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -529,7 +516,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
             test_user["username"]))
 
     with check, allure.step("Verifying that the 'Edit user profile' option is not displayed"):
-        expect(sumo_pages.my_profile_page.edit_user_profile_option).to_be_hidden()
+        expect(sumo_pages.my_profile_page.edit_user_profile_option_element()).to_be_hidden()
 
     with check, allure.step("Navigating to the profile edit link directly and verifying that the"
                             " user is redirected to the auth page"):
@@ -537,7 +524,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
             EditMyProfilePageMessages.get_url_of_other_profile_edit_page(test_user["username"])
         )
         assert sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
-        expect(sumo_pages.edit_my_profile_page.edit_my_profile_edit_input_form).to_be_hidden()
+        expect(sumo_pages.edit_my_profile_page.get_my_profile_edit_form_locator()).to_be_hidden()
 
     with allure.step(f"Signing in with {test_user_two['username']} user account and accessing "
                      f"another user account"):
@@ -547,7 +534,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
             test_user["username"]))
 
     with check, allure.step("Verifying that the 'Edit user profile' option is not displayed"):
-        expect(sumo_pages.my_profile_page.edit_user_profile_option).to_be_hidden()
+        expect(sumo_pages.my_profile_page.edit_user_profile_option_element()).to_be_hidden()
 
     with allure.step("Navigating to the profile edit link directly, verifying that the correct"
                      " message is displayed and that the edit form is not displayed"):
@@ -560,7 +547,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
         assert (sumo_pages.edit_my_profile_page.
                 get_access_denied_subheading_text() == EditMyProfilePageMessages.
                 PROFILE_ACCESS_DENIED_SUBHEADING)
-        expect(sumo_pages.edit_my_profile_page.edit_my_profile_edit_input_form).to_be_hidden()
+        expect(sumo_pages.edit_my_profile_page.get_my_profile_edit_form_locator()).to_be_hidden()
 
 
 # T5697928
@@ -568,6 +555,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
 @pytest.mark.editUserProfileTests
 def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: Page,
                                                                           create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -581,28 +569,32 @@ def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: 
         utilities.navigate_to_link(
             MyProfileMessages.get_my_profile_stage_url(test_user_two["username"])
         )
-        expect(sumo_pages.my_profile_page.report_abuse_profile_option).to_be_visible()
+        expect(sumo_pages.my_profile_page.is_report_user_option_displayed()).to_be_visible()
 
     with check, allure.step("Clicking on the 'Report Abuse' option and verifying that the report "
                             "abuse panel is displayed"):
         sumo_pages.my_profile_page.click_on_report_abuse_option()
-        expect(sumo_pages.my_profile_page.report_abuse_panel).to_be_visible()
+        expect(sumo_pages.my_profile_page.is_report_abuse_panel_displayed()).to_be_visible()
 
     with check, allure.step("Closing the report abuse panel and verifying that the report user "
                             "panel is no longer displayed"):
         sumo_pages.my_profile_page.click_on_report_abuse_close_button()
-        expect(sumo_pages.my_profile_page.report_abuse_panel).to_be_hidden()
+        expect(sumo_pages.my_profile_page.is_report_abuse_panel_displayed()).to_be_hidden()
 
     with allure.step("Signing out and verifying that the 'Report Abuse' option is not "
                      "displayed on user profiles"):
         utilities.delete_cookies()
-        expect(sumo_pages.my_profile_page.report_abuse_profile_option).to_be_hidden()
+        utilities.navigate_to_link(
+            MyProfileMessages.get_my_profile_stage_url(test_user_two["username"])
+        )
+        expect(sumo_pages.my_profile_page.is_report_user_option_displayed()).to_be_hidden()
 
 
 # T5697930
 @pytest.mark.editUserProfileTests
 def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(page: Page,
                                                                              create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -614,7 +606,9 @@ def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(pag
     with allure.step("Clicking on the 'Private Message' button and verifying that the non-signed "
                      "in user is redirected to the fxa page"):
         sumo_pages.my_profile_page.click_on_private_message_button()
-        assert sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
+        assert (
+            sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
+        ), "The auth page is not displayed! It should be!"
 
 
 # C916055, C916054
@@ -622,40 +616,52 @@ def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(pag
 @pytest.mark.editUserProfileTests
 def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: Page,
                                                                          create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
     test_user_two = create_user_factory()
-    test_user_with_deactivation_perms = create_user_factory(permissions=["deactivate_users"])
+    test_user_with_deactivation_perms = create_user_factory(
+        permissions=["deactivate_users"])
 
     with allure.step("Navigating ot a user profile while not signed in with a user"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
             test_user["username"]))
 
     with check, allure.step("Verifying that the deactivate user buttons are not displayed"):
-        expect(sumo_pages.my_profile_page.deactivate_this_user_button).to_be_hidden()
-        expect(sumo_pages.my_profile_page.deactivate_this_user_and_mark_all_content_as_spam
+        expect(sumo_pages.my_profile_page.is_deactivate_this_user_button_displayed()
+               ).to_be_hidden()
+
+        expect(sumo_pages.my_profile_page.deactivate_user_and_mark_content_as_spam_button()
                ).to_be_hidden()
 
     with allure.step(f"Signing in with {test_user_two['username']} user account"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
         utilities.start_existing_session(cookies=test_user_two)
 
     with check, allure.step("Accessing another user profile and verifying that the deactivate "
                             "buttons are not displayed"):
-        expect(sumo_pages.my_profile_page.deactivate_this_user_button).to_be_hidden()
-        expect(sumo_pages.my_profile_page.deactivate_this_user_and_mark_all_content_as_spam
+        utilities.navigate_to_link(
+            MyProfileMessages.get_my_profile_stage_url(test_user["username"])
+        )
+        expect(sumo_pages.my_profile_page.is_deactivate_this_user_button_displayed()
+               ).to_be_hidden()
+        expect(sumo_pages.my_profile_page.deactivate_user_and_mark_content_as_spam_button()
                ).to_be_hidden()
 
     with allure.step("Signing in with a user that has user deactivation permissions "
                      f"({test_user_with_deactivation_perms['username']})"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        utilities.delete_cookies()
         utilities.start_existing_session(cookies=test_user_with_deactivation_perms)
 
     with allure.step("Accessing another user profile and verifying that the deactivate user "
                      "buttons are displayed"):
         utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
             test_user["username"]))
-        expect(sumo_pages.my_profile_page.deactivate_this_user_button).to_be_visible()
-        expect(sumo_pages.my_profile_page.deactivate_this_user_and_mark_all_content_as_spam
+        expect(sumo_pages.my_profile_page.is_deactivate_this_user_button_displayed()
+               ).to_be_visible()
+        expect(sumo_pages.my_profile_page.deactivate_user_and_mark_content_as_spam_button()
                ).to_be_visible()
 
 
@@ -686,8 +692,10 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
         article_details = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            topic_name=utilities
+            .aaq_question_test_data["valid_firefox_question"]["topic_value"],
+            body=utilities.
+            aaq_question_test_data["valid_firefox_question"]["question_body"],
         )
 
     with allure.step("Accessing the 'Edit My Profile' page and changing the timezone to "
@@ -704,6 +712,8 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=test_user["username"], reply="Test test test")
 
+        print("Sumo returned time: ", sumo_pages.question_page.get_time_from_reply(reply_id))
+        print("Actual timezone time: ",normalize_time("Europe/Bucharest"))
         # Verifying that the time difference is less than 1 minute
         time_difference = abs(
             (datetime.datetime.strptime(
@@ -714,7 +724,7 @@ def test_timezone_preference_change(page: Page, create_user_factory):
                 normalize_time("Europe/Bucharest").replace("Today at ", ""),
                 "%I:%M %p")).total_seconds() / 60
         )
-
+        print("Time difference: ", time_difference)
         assert time_difference <= 1, (f"Time difference is more than 1 minute: {time_difference} "
                                       f"minutes")
 
@@ -731,6 +741,8 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         utilities.navigate_to_link(article_details["question_page_url"])
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=test_user["username"], reply="Test test test")
+        print("Sumo returned time: ", sumo_pages.question_page.get_time_from_reply(reply_id))
+        print("Actual timezone time: ", normalize_time("US/Central"))
 
         # Verifying that the time difference is less than 1 minute
         time_difference = abs(
@@ -782,5 +794,42 @@ def test_close_account_and_delete_profile_information(page:Page, create_user_fac
     with allure.step("Deleting the user via the 'Close account and delete all profile information'"
                      "modal"):
         sumo_pages.edit_profile_flow.close_account()
-        assert utilities.get_page_url() == utilities.profile_edit_test_data["close_account_page"]
-        assert sumo_pages.top_navbar.signin_signup_button.is_visible()
+        assert utilities.get_page_url() ==  utilities.profile_edit_test_data["close_account_page"]
+        assert sumo_pages.top_navbar.is_sign_in_up_button_displayed()
+
+
+def _validate_profile_info(page: Page, target: str, profile_info: str, username: str,
+                           second_user_session_cookies: dict) -> bool:
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+
+    profile_info_getters = {
+        "website": sumo_pages.my_profile_page.get_my_profile_website_text,
+        "twitter": sumo_pages.my_profile_page.get_my_profile_twitter_text,
+        "community_portal": sumo_pages.my_profile_page.get_my_profile_community_portal_text,
+        "people_directory": sumo_pages.my_profile_page.get_my_profile_people_directory_text,
+        "matrix_nickname": sumo_pages.my_profile_page.get_my_profile_matrix_text,
+        "country": sumo_pages.my_profile_page.get_my_profile_location_text,
+        "city": sumo_pages.my_profile_page.get_my_profile_location_text,
+        "involved_from_month": sumo_pages.my_profile_page.get_my_contributed_from_text,
+        "involved_from_year": sumo_pages.my_profile_page.get_my_contributed_from_text,
+    }
+
+    with allure.step("Signing in with a different non-admin user"):
+        utilities.start_existing_session(cookies=second_user_session_cookies)
+
+    with allure.step("Verifying that the correct information is displayed for the first user"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username))
+        print(profile_info_getters.get(target, lambda: None)())
+        print(profile_info)
+        if profile_info not in profile_info_getters.get(target, lambda: None)():
+            return False
+
+    with allure.step("Signing out and verifying the information again"):
+        utilities.delete_cookies()
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username))
+        if profile_info not in profile_info_getters.get(target, lambda: None)():
+            return False
+
+    utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username))
+    return True

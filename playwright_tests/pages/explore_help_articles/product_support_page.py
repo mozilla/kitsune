@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
 
 from playwright_tests.core.basepage import BasePage
 
@@ -6,14 +6,13 @@ from playwright_tests.core.basepage import BasePage
 class ProductSupportPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
-
-        """Locators belonging to the product support breadcrumbs."""
+        # Product support breadcrumb locators.
         self.home_breadcrumb = page.locator("ol#breadcrumbs li").get_by_role("link")
 
-        """General page content locators."""
+        # Page content locators.
         self.product_title = page.locator("span.product-title-text")
 
-        """Locators belonging to the featured articles cards."""
+        # Feature article locators.
         self.featured_article_section_title = page.get_by_role("heading").filter(
             has_text="Featured Articles")
         self.featured_articles_cards = page.locator(
@@ -22,7 +21,7 @@ class ProductSupportPage(BasePage):
             f'//h2[contains(text(),"Featured Articles")]/..//a[normalize-space(text())'
             f'="{card_title}"]')
 
-        """Locators belonging to the 'Still Need Help' widget."""
+        # Still need help widget locators.
         self.still_need_help_widget = page.locator(
             "section[class='support-callouts mzp-l-content sumo-page-section--inner']")
         self.still_need_help_widget_title = page.locator(
@@ -42,6 +41,10 @@ class ProductSupportPage(BasePage):
     def get_product_support_title_text(self) -> str:
         """Get the product title text on the product support page."""
         return self._get_text_of_element(self.product_title)
+
+    def product_product_title_element(self) -> Locator:
+        """Get the product title element locator on the product support page."""
+        return self.product_title
 
     def get_featured_articles_header_text(self) -> str:
         """Get the featured articles section title text."""

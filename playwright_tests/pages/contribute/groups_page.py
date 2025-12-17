@@ -1,4 +1,5 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,9 +7,11 @@ class GroupsPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """General locators belonging to the groups page."""
+        # General Groups Page Locators
         self.add_group_profile_button = page.get_by_role(
             "link", name="Add group profile", exact=True)
+
+        # Group Page Locators
         self.group_avatar_image = page.locator("section#avatar-area img")
         self.change_uploaded_group_image_option = page.locator(
             "section#avatar-area p").get_by_role("link", name="Change", exact=True)
@@ -47,7 +50,7 @@ class GroupsPage(BasePage):
         self.listed_group_leader = lambda username: page.locator(
             "div#group-leaders").get_by_role("link", name=username, exact=True)
 
-        """Locators belonging to the change avatar page."""
+        # Change Avatar Page Locators
         self.upload_avatar_page_header = page.locator("article#change-avatar h1")
         self.upload_avatar_image_preview = page.locator(
             "//input[@id='id_avatar']/preceding-sibling::img")
@@ -55,7 +58,7 @@ class GroupsPage(BasePage):
         self.upload_avatar_button = page.locator("input[type='submit']")
         self.upload_avatar_cancel_option = page.get_by_role("link", name="Cancel", exact=True)
 
-        """Locators belonging to the delete avatar page."""
+        # Delete Avatar Page Locators
         self.delete_uploaded_avatar_page_header = page.locator("article#avatar-delete h1")
         self.delete_uploaded_avatar_image_preview = page.locator("div#avatar-preview img")
         self.delete_uploaded_avatar_page_info = page.locator("form p")
@@ -63,7 +66,7 @@ class GroupsPage(BasePage):
         self.delete_uploaded_avatar_cancel_button = page.get_by_role(
             "link", name="Cancel", exact=True)
 
-        """Locators belonging to the remove user page."""
+        # Remove User Page Locators
         self.remove_leader_page_header = page.locator("article#remove-leader h1")
         self.remove_user_page_header = page.locator("article#remove-member h1")
         self.remove_leader_button = page.locator("input[value='Remove leader']")
@@ -78,7 +81,7 @@ class GroupsPage(BasePage):
             f"group']"
         )
 
-    """Actions against the all groups listing page locators."""
+    # Actions against the all groups page.
     def is_add_group_profile_button_visible(self) -> bool:
         """Check if the add group profile button is visible"""
         return self._is_element_visible(self.add_group_profile_button)
@@ -91,7 +94,7 @@ class GroupsPage(BasePage):
         """
         self._click(self.group_by_name(group_name))
 
-    """Actions against a specific group page locators."""
+    # Actions against the group page.
     def get_all_leaders_name(self) -> list[str]:
         """Get the names of all the leaders in the group"""
         return self._get_text_of_elements(self.group_leader_list)
@@ -99,6 +102,10 @@ class GroupsPage(BasePage):
     def get_all_members_name(self) -> list[str]:
         """Get the names of all the members in the group"""
         return self._get_text_of_elements(self.group_members_list)
+
+    def get_group_avatar_locator(self) -> Locator:
+        """Get the locator of the group avatar image"""
+        return self.group_avatar_image
 
     def is_change_avatar_button_visible(self) -> bool:
         """Check if the change avatar button is visible"""
@@ -175,10 +182,14 @@ class GroupsPage(BasePage):
         """
         self._click(self.pm_a_group_user(username))
 
-    """Actions against the add group member locators."""
+    # Add Group member
     def get_group_update_notification(self) -> str:
         """Get the text of the user added successfully message"""
         return self._get_text_of_element(self.user_notification)
+
+    def get_pm_group_members_button(self) -> Locator:
+        """Get the locator of the PM group members button"""
+        return self.private_message_group_members_button
 
     def click_on_change_uploaded_avatar_button(self):
         """Click on the change uploaded avatar button"""
@@ -197,7 +208,11 @@ class GroupsPage(BasePage):
         """Click on the edit group members option"""
         self._click(self.edit_group_members_option)
 
-    """Actions against the change avatar page locators."""
+    # Actions against the change avatar page.
+    def get_change_avatar_image_preview_locator(self) -> Locator:
+        """Get the locator of the change avatar image preview"""
+        return self.upload_avatar_image_preview
+
     def get_upload_avatar_page_header(self) -> str:
         """Get the text of the upload avatar page header"""
         return self._get_text_of_element(self.upload_avatar_page_header)
@@ -210,7 +225,11 @@ class GroupsPage(BasePage):
         """Click on the upload avatar cancel button"""
         self._click(self.upload_avatar_cancel_option)
 
-    """Actions against the delete avatar page locators."""
+    # Actions against the delete avatar page.
+    def get_delete_avatar_image_preview_locator(self) -> Locator:
+        """Get the locator of the delete avatar image preview"""
+        return self.delete_uploaded_avatar_image_preview
+
     def click_on_cancel_delete_avatar_button(self):
         """Click on the cancel delete avatar button"""
         self._click(self.delete_uploaded_avatar_cancel_button)
@@ -231,7 +250,7 @@ class GroupsPage(BasePage):
         """Click on the delete avatar button"""
         self._click(self.delete_uploaded_avatar_button)
 
-    """Actions against the removal or user addition related locators."""
+    # Actions against the removal or user addition
     def click_on_remove_a_user_from_group_button(self, username: str, from_leaders=False):
         """Click on the remove a user from group button
 

@@ -209,6 +209,7 @@ class BasePage:
         """
         This helper function fills a given text inside a given element locator.
         """
+        self.wait_for_dom_to_load()
         locator.fill(text, force=with_force)
 
     def _type(self, locator: Locator, text: str, delay: int):
@@ -229,16 +230,15 @@ class BasePage:
         """
         This helper function clears the given element locator input field.
         """
+        self.wait_for_dom_to_load()
         locator.clear()
 
-    def _select_option_by_label(self, locator: Locator, label_name: str, expected_locator=None):
+    def _select_option_by_label(self, locator: Locator, label_name: str):
         """
         This helper function selects an element from a given select box based on label.
         """
         self.wait_for_dom_to_load()
         locator.select_option(label=label_name)
-        if expected_locator:
-            self._wait_for_locator(expected_locator)
 
     def _select_option_by_value(self, locator: Locator, value: str):
         """

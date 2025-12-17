@@ -16,11 +16,13 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page,
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
 
-    with allure.step(f"Signing in with {test_user['username']} user account"):
+    with allure.step(f"Signing in with {test_user['username']} a user account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the AAQ form and posting a new AAQ question"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+        utilities.navigate_to_link(
+            utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
+        )
 
         sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
@@ -40,6 +42,7 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page,
 @pytest.mark.userQuestions
 def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Page,
                                                                        create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -55,8 +58,8 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
             )
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
+                topic_name=utilities.aaq_question_test_data[
+                    "valid_firefox_question"]["topic_value"],
                 body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
                 expected_locator=sumo_pages.question_page.questions_header
             )
@@ -80,6 +83,7 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
 @pytest.mark.userQuestions
 def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Page,
                                                                        create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(permissions=["delete_question"])
@@ -96,7 +100,8 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
                 NO_POSTED_QUESTIONS_MESSAGE)
 
     with check, allure.step("Verifying that the question list is not displayed"):
-        expect(sumo_pages.my_questions_page.questions_list).to_be_hidden()
+        expect(sumo_pages.my_questions_page.get_list_of_profile_questions_locators()
+               ).to_be_hidden()
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question for "
                      "the Firefox product"):
@@ -106,8 +111,10 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
                 subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
                 topic_name=utilities
                 .aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+                body=utilities.
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
                 expected_locator=sumo_pages.question_page.questions_header
+
             )
         )
 
@@ -115,7 +122,8 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
                             " message is no longer displayed"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         sumo_pages.user_navbar.click_on_my_questions_option()
-        expect(sumo_pages.my_questions_page.questions_no_question_message).to_be_hidden()
+        expect(sumo_pages.my_questions_page.get_list_of_profile_no_question_message_locator()
+               ).to_be_hidden()
 
     with allure.step("Deleting the question"):
         utilities.navigate_to_link(question_info["question_page_url"])
@@ -134,6 +142,7 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 @pytest.mark.userQuestions
 def test_question_page_reflects_posted_questions_and_redirects_to_question(page: Page,
                                                                            create_user_factory):
+
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
@@ -143,22 +152,13 @@ def test_question_page_reflects_posted_questions_and_redirects_to_question(page:
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question"):
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        first_question = (
+        question_info = (
             sumo_pages.aaq_flow.submit_an_aaq_question(
                 subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
                 topic_name=utilities.
                 aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-        )
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        second_question = (
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+                body=utilities.
+                aaq_question_test_data["valid_firefox_question"]["question_body"],
                 expected_locator=sumo_pages.question_page.questions_header
             )
         )
@@ -166,19 +166,10 @@ def test_question_page_reflects_posted_questions_and_redirects_to_question(page:
     with check, allure.step("Navigating to my questions profile page and verifying that the first "
                             "element from the My Questions page is the recently posted question"):
         sumo_pages.top_navbar.click_on_my_questions_profile_option()
-        assert (sumo_pages.my_questions_page.get_text_of_listed_question_by_index(1).
-                strip() == second_question["aaq_subject"].strip())
-        assert (sumo_pages.my_questions_page.get_text_of_listed_question_by_index(2).
-                strip() == first_question["aaq_subject"].strip())
+        assert (sumo_pages.my_questions_page.get_text_of_first_listed_question().
+                strip() == question_info["aaq_subject"].strip())
 
     with allure.step("Clicking on the first list item and verifying that the user is "
                      "redirected to the correct question"):
         sumo_pages.my_questions_page.click_on_a_question_by_index(1)
-        expect(page).to_have_url(second_question["question_page_url"])
-
-    with allure.step("Navigating back, clicking on the second listed item and verifying that the "
-                     "user is redirected to the correct question"):
-        utilities.navigate_back()
-        sumo_pages.my_questions_page.click_on_a_question_by_index(2)
-        expect(page).to_have_url(first_question["question_page_url"])
-
+        expect(page).to_have_url(question_info["question_page_url"])

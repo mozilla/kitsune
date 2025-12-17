@@ -15,14 +15,14 @@ from playwright._impl._errors import TimeoutError
 @pytest.fixture(autouse=True)
 def navigate_to_homepage(page: Page):
     """
-    This fixture is used in all functions.
-    1. Sets the default navigation timeout to 30 seconds.
-    2. Blocks all requests to pontoon in the current page context.
-    3. Handles 502 errors by reloading the page after 5 seconds.
-    4. It navigates to the SuMo homepage and returns the page object for further usage.
+    This fixture is used in all functions. It navigates to the SuMo homepage and returns the page
+    object.
     """
     utilities = Utilities(page)
+    # Set default navigation timeout to 30 seconds.
     page.set_default_navigation_timeout(30000)
+
+    # Block pontoon requests in the current page context.
     page.route("**/pontoon.mozilla.org/**", utilities.block_request)
 
     def handle_502_error(response):
@@ -43,7 +43,10 @@ def navigate_to_homepage(page: Page):
                     print("TimeoutError encountered after reload.")
 
     page.context.on("response", handle_502_error)
+
+    # Navigate to the SUMO stage homepage.
     page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
+
     return page
 
 @pytest.hookimpl(hookwrapper=True)
@@ -95,12 +98,12 @@ def create_user_factory(page: Page, request):
 
     def _create_user(username: str = None, groups: [str] = None, permissions: [str] = None):
         """
-        This helper function creates a test user account.
+        This helper function which creates a test user account.
 
         Args:
-            username (str): The username of the test user account.
-            groups (list[str]): The groups to which the user belongs.
-            permissions (list[str]): The permissions of the user.
+            username (str): The username of the test user account
+            groups (list[str]): The groups to which the user belongs
+            permissions (list[str]): The permissions of the user
         """
         if username is None:
             username = ''.join(random.choice(
@@ -132,9 +135,6 @@ def create_user_factory(page: Page, request):
                 utilities.wait_for_given_timeout(5000)
 
     def _cleanup():
-        """
-        Test finalizer function which triggers the deletion of the newly created test accounts.
-        """
         endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "users/api/trigger-delete"
         for username in created_users:
             print("Deleting created users")

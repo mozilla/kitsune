@@ -19,7 +19,6 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.topNavbarTests
 def test_number_of_options_not_signed_in(page: Page):
     sumo_pages = SumoPages(page)
-
     with check, allure.step("Verifying that the SUMO logo is successfully displayed"):
         image = sumo_pages.top_navbar.get_sumo_nav_logo()
         image_link = image.get_attribute("src")
@@ -64,11 +63,10 @@ def test_number_of_options_signed_in(page: Page, create_user_factory):
 def test_explore_by_product_redirects(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-
     with allure.step("Clicking on all options from the 'Explore Help Articles' and verifying the "
                      "redirect"):
-        for index, option in enumerate(
-            sumo_pages.top_navbar.get_all_explore_by_product_options_locators()):
+        for index, option in enumerate(sumo_pages.top_navbar
+                                       .get_all_explore_by_product_options_locators()):
             if index > 0:
                 sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
             current_option = re.sub(
@@ -95,7 +93,6 @@ def test_explore_by_product_redirects(page: Page):
 @pytest.mark.topNavbarTests
 def test_explore_by_topic_redirects(page: Page):
     sumo_pages = SumoPages(page)
-
     with allure.step("Clicking on all options from the 'Explore by topic' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar.get_all_explore_by_topic_locators()):
@@ -130,12 +127,13 @@ def test_browse_by_product_community_forum_redirect(page: Page, create_user_fact
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory()
+
     utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Clicking on all options from the 'Browse by product' and verifying the "
                      "redirect"):
-        for index, option in enumerate(
-            sumo_pages.top_navbar.get_all_browse_by_product_options_locators()):
+        for index, option in enumerate(sumo_pages.top_navbar
+                                       .get_all_browse_by_product_options_locators()):
             if index > 0:
                 sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
             current_option = re.sub(
@@ -164,12 +162,12 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page, create_user_fact
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory()
-    utilities.start_existing_session(cookies=test_user)
 
+    utilities.start_existing_session(cookies=test_user)
     with allure.step("Clicking on all options from the 'Browse all forum threads by topic' and "
                      "verifying the redirect"):
-        for index, option in enumerate(
-            sumo_pages.top_navbar.get_all_browse_all_forum_threads_by_topic_locators()):
+        for index, option in enumerate(sumo_pages.top_navbar
+                                       .get_all_browse_all_forum_threads_by_topic_locators()):
             if index > 0:
                 sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
             current_option = re.sub(
@@ -194,7 +192,6 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page, create_user_fact
 def test_ask_a_question_top_navbar_redirect(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
-
     with allure.step("Clicking on all options from the 'Ask a Question' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar.get_all_ask_a_question_locators()):
@@ -228,6 +225,7 @@ def test_contribute_top_navbar_redirects(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["forum-contributors"])
+
     utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar option and verifying "

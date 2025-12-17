@@ -1,22 +1,26 @@
 import re
 from datetime import datetime
+
 from playwright_tests.core.basepage import BasePage
 from playwright_tests.core.utilities import Utilities
 
-"""This class contains the locators and actions for the {x} discussions thread page."""
+"""
+    This class contains the locators and actions for the {x} discussions thread page.
+"""
+
 
 class ForumThreadPage(BasePage):
     def __init__(self, page):
         super().__init__(page)
         self.utilities = Utilities(page)
 
-        """Locators belonging to the page breadcrumbs."""
+        # Locators related to the page breadcrumb.
         self.breadcrumb_options = page.locator("ol#breadcrumbs li")
         self.breadcrumb_links = page.locator("ol#breadcrumbs li a")
         self.breadcrumb_link = lambda breadcrumb_name: page.locator(
             "ol#breadcrumbs li").get_by_role("link", name=breadcrumb_name)
 
-        """Locators belonging to the Contributor Discussions side-navbar section."""
+        # Locators related to the Contributor Discussions side navbar.
         self.contributor_discussions_side_navbar_header = page.locator(
             "#for-contributors-sidebar ul li.sidebar-subheading")
         self.contributor_discussions_side_navbar_items = page.locator(
@@ -25,7 +29,7 @@ class ForumThreadPage(BasePage):
             "#for-contributors-sidebar ul li:not(.sidebar-subheading)").get_by_role(
             "link", name=item_name, exact=True)
 
-        """Locators belonging to the thread-actions section."""
+        # Locators related to the thread-actions section.
         self.edit_thread_title_option = page.get_by_role("link", name="Edit Thread Title")
         self.delete_this_thread_option = page.get_by_role("link", name="Delete this thread")
         self.lock_this_thread_option = page.locator("//a[text()='Lock this thread']")
@@ -34,14 +38,14 @@ class ForumThreadPage(BasePage):
         self.sticky_this_thread_option = page.locator("//a[text()='Sticky this thread']")
         self.unsticky_this_thread_option = page.locator("//a[text()='Unsticky this thread']")
 
-        """Locators belonging to the delete thread page."""
+        # Delete thread page.
         self.delete_button = page.locator("input[value='Delete']")
 
-        """Locators belonging to the move thread section."""
+        # Locators related to the move thread section.
         self.move_thread_dropdown = page.locator("select[name='forum']")
         self.move_thread_button = page.locator("input[value='Move Thread']")
 
-        """General thread page locators."""
+        # Thread locators
         self.forum_title = page.locator("p#forum-title")
         self.thread_title = page.locator("h1.sumo-page-heading")
         self.thread_posted_thread_title = page.locator("h1#sumo-page-heading")
@@ -64,7 +68,7 @@ class ForumThreadPage(BasePage):
         self.quoted_thread_post_quote = lambda post_id: page.locator(
             f"li#post-{post_id} div.content blockquote")
 
-        """Locators belonging to the more options section from the thread post."""
+        # Thread post more options locators
         self.post_3_dotted_menu = lambda post_id: page.locator(f"li#post-{post_id}").get_by_role(
             "button", name="more options")
         self.post_3_dotted_menu_expanded = lambda post_id: page.locator(
@@ -88,13 +92,11 @@ class ForumThreadPage(BasePage):
             f"li#post-{post_id} li.mzp-c-menu-list-item").get_by_role(
             "link", name="Link to this post")
 
-        """Locators belonging to the post a reply section."""
+        # Post a reply locators
         self.post_reply_textarea = page.locator("textarea#id_content")
         self.preview_reply_button = page.locator("button#preview")
         self.post_reply_button = page.get_by_role("button", name="Post Reply")
 
-
-    """Actions against the page breadcrumbs locators."""
     def get_breadcrumb_options(self) -> list[str]:
         """
             Get the breadcrumb options.
@@ -119,7 +121,6 @@ class ForumThreadPage(BasePage):
         """
         return self._get_text_of_elements(self.breadcrumb_links)
 
-    """Actions against the general thread page locators."""
     def get_thread_meta_information(self) -> list[str]:
         return self._get_text_of_elements(self.thread_meta)
 

@@ -20,7 +20,8 @@ def test_join_our_community_card_learn_more_redirects_to_contribute_page(page: P
 
     with allure.step("Verifying that we are redirected to the 'Contribute' page successfully"):
         assert (
-            utilities.get_page_url() == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
+            utilities.get_page_url()
+            == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
         ), "We are not on the Contribute page!"
 
 
@@ -28,8 +29,9 @@ def test_join_our_community_card_learn_more_redirects_to_contribute_page(page: P
 @pytest.mark.homePageTests
 def test_join_our_community_card_has_the_correct_content(page: Page):
     sumo_pages = SumoPages(page)
-    with allure.step( "Verifying that the 'Join Our Community' card has the correct strings"
-                      " applied"):
+    with allure.step(
+        "Verifying that the 'Join Our Community' card has the correct strings applied"
+    ):
         assert (
             sumo_pages.common_web_elements.get_volunteer_learn_more_card_header()
             == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_TITLE

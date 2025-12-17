@@ -1,4 +1,5 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,7 +7,7 @@ class MyProfileEditSettingsPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the edit profile settings page."""
+        # My profile edit settings page locators.
         self.edit_settings_page_header = page.locator("h3[class='sumo-page-heading']")
         self.edit_settings_checkbox_options_label = page.locator(
             "div[class='field checkbox'] label")
@@ -33,7 +34,7 @@ class MyProfileEditSettingsPage(BasePage):
         self.my_profile_user_navbar = page.locator("ul#user-nav li")
         self.my_profile_user_navbar_selected_element = page.locator("a[class='selected']")
 
-    """Actions against the edit profile settings page locators."""
+    # My profile edit settings page actions.
     def get_edit_settings_page_header(self) -> str:
         """Get edit settings page header text"""
         return self._get_text_of_element(self.edit_settings_page_header)
@@ -106,6 +107,10 @@ class MyProfileEditSettingsPage(BasePage):
     def is_send_emails_for_private_messages_checkbox_checked(self) -> bool:
         """Check if send emails for private messages checkbox is checked"""
         return self._is_checkbox_checked(self.send_emails_for_private_messages_checkbox)
+
+    def notification_banner_element(self) -> Locator:
+        """Get the notification banner element"""
+        return self.your_settings_have_been_saved_notification_banner
 
     def are_all_checkbox_checked(self) -> bool:
         """Check if all checkboxes are checked"""

@@ -1,18 +1,10 @@
 {
   "kb_article_title": "Automation test article ",
   "kb_template_title": "Template: Automation test article",
+  "kb_template_category": "Templates",
   "updated_kb_article_title": "Updated test article",
   "different_slug": "different-slug-",
-  "category_options": {
-      "10": "Troubleshooting",
-      "20": "How To",
-      "30": "How to contribute",
-      "40": "Administration",
-      "50": "Navigation",
-      "60": "Templates",
-      "70": "Canned Responses",
-      "ro-translation-category": "Depanare"
-  },
+  "category_options": "Troubleshooting",
   "relevant_to_product": "Firefox",
   "selected_parent_topic": "Accounts",
   "selected_child_topic": "Profiles",

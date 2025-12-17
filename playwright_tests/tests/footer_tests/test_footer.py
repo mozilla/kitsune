@@ -14,6 +14,8 @@ def test_all_footer_links_are_working(page: Page):
         relative_url = link.get_attribute("href")
 
         if relative_url == "https://twitter.com/firefox":
+            print("Skipping Twitter link because it returned 400 due to custom user agent being"
+                  "used by playwright")
             continue
 
         # Verify if URL is absolute, and construct the full URL if it's not

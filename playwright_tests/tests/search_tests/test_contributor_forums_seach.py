@@ -1,4 +1,5 @@
 import random
+
 import allure
 import pytest
 from playwright.sync_api import Page
@@ -36,7 +37,7 @@ def test_by_thread_title(page: Page, create_user_factory):
 
 # C1350866, C1350867, C1350868
 @pytest.mark.contributorForumSearch
-def test_and_or_not_operators_in_community_hub(page: Page, create_user_factory):
+def test_and_or_not_operators_in_community_forums(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["forum-contributors"])
@@ -217,7 +218,7 @@ def test_searching_in_contributor_forums_return_results_only_to_that_forum(page,
             "Support Forum discussions")
 
     with check, allure.step("Searching this forum for the posted thread and verifying that the "
-                            "thread is not returned"):
+                            "thread is returned"):
         sumo_pages.forum_discussions_page.search_in_community_discussion(thread_title)
         assert (thread_title not in sumo_pages.forum_discussions_page.
                 get_all_thread_titles_from_search_results())

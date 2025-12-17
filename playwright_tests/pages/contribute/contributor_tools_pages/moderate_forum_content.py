@@ -1,4 +1,5 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,10 +7,10 @@ class ModerateForumContent(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the View All deactivated users page."""
+        # View all deactivated users button
         self.view_all_deactivated_users_button = page.locator("div[class='sumo-button-wrap'] a")
 
-        """Locators belonging to the flagged questions page."""
+        # Flagged questions
         self.flagged_question = lambda question_info: page.locator("p").get_by_text(
             question_info, exact=True)
         self.flagged_reason = lambda question_title: page.locator(
@@ -37,8 +38,9 @@ class ModerateForumContent(BasePage):
         self.update_status_button = lambda question_info: page.locator(
             f"//p[normalize-space(text())='{question_info}']/ancestor::div"
             f"[@class='flagged-item-content']//following-sibling::form/input[@value='Update']")
-        self.paginator_section = page.locator("//ol[@class='pagination cf']")
-        self.last_paginator_option = page.locator("//ol[@class='pagination cf']/li/a").last
+
+    def get_flagged_question_locator(self, question_info) -> Locator:
+        return self.flagged_question(question_info)
 
     def get_flag_reason(self, question_title: str) -> str:
         return self._get_text_of_element(self.flagged_reason(question_title))
@@ -75,10 +77,3 @@ class ModerateForumContent(BasePage):
 
     def click_view_all_deactivated_users_button(self):
         self._click(self.view_all_deactivated_users_button)
-
-    def is_paginator_visible(self) -> bool:
-        self.wait_for_dom_to_load()
-        return self._is_element_visible(self.paginator_section)
-
-    def click_on_last_pagination_element(self):
-        self._click(self.last_paginator_option)

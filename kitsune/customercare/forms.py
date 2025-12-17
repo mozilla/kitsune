@@ -6,9 +6,11 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_CATEGORIES_LOGINLESS
 from kitsune.customercare.models import SupportTicket
 from kitsune.products import PRODUCT_SLUG_ALIASES
-from kitsune.products.models import ProductSupportConfig, ZendeskTopic
+
+PRODUCTS_WITH_OS = ["mozilla-vpn"]
 
 OS_CHOICES = [
     (None, _lazy("Select platform")),
@@ -49,37 +51,23 @@ class ZendeskForm(forms.Form):
         self.product = product
         self.user = user
 
-        is_loginless = product.slug in settings.LOGIN_EXCEPTIONS and (
-            not user or not user.is_authenticated
-        )
-
-        if is_loginless:
+        if product.slug in settings.LOGIN_EXCEPTIONS and (not user or not user.is_authenticated):
             self.fields["email"].widget = forms.EmailInput()
+            categories_dict = ZENDESK_CATEGORIES_LOGINLESS
         else:
             self.fields["email"].initial = user.email
+            categories_dict = ZENDESK_CATEGORIES
 
-        try:
-            support_config = ProductSupportConfig.objects.get(product=product, is_active=True)
-        except ProductSupportConfig.DoesNotExist:
-            support_config = None
+        self.product_categories = categories_dict.get(product.slug, [])
 
-        if support_config and support_config.zendesk_config:
-            zendesk_config = support_config.zendesk_config
+        category_choices = [(None, _lazy("Select a reason for contacting"))]
+        for category in self.product_categories:
+            category_choices.append((category["slug"], category["topic"]))
 
-            topics = zendesk_config.topics.filter(loginless_only=is_loginless).order_by(
-                "display_order"
-            )
-
-            category_choices = [(None, _lazy("Select a reason for contacting"))]
-            for topic in topics:
-                category_choices.append((topic.slug, topic.topic))
-
-            self.fields["category"].choices = category_choices
-
-            if not zendesk_config.enable_os_field:
-                self.fields["os"].widget = forms.HiddenInput()
-
+        self.fields["category"].choices = category_choices
         self.label_suffix = ""
+        if product.slug not in PRODUCTS_WITH_OS:
+            self.fields["os"].widget = forms.HiddenInput()
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -108,31 +96,22 @@ class ZendeskForm(forms.Form):
         """Create a SupportTicket record and trigger async classification."""
         selected_category_slug = self.cleaned_data.get("category")
         zendesk_tags = []
-
         if selected_category_slug:
-            try:
-                support_config = ProductSupportConfig.objects.get(product=product, is_active=True)
-            except ProductSupportConfig.DoesNotExist:
-                support_config = None
+            selected_category_data = None
+            for category in self.product_categories:
+                if category["slug"] == selected_category_slug:
+                    selected_category_data = category
+                    break
 
-            if support_config and support_config.zendesk_config:
-                try:
-                    topic = ZendeskTopic.objects.get(
-                        zendesk_config=support_config.zendesk_config,
-                        slug=selected_category_slug,
-                    )
-                except ZendeskTopic.DoesNotExist:
-                    topic = None
+            if selected_category_data:
+                tag_data = selected_category_data["tags"]
 
-                if topic:
-                    tag_data = topic.tags_dict
-
-                    for tag_value in tag_data.values():
-                        if tag_value:
-                            if isinstance(tag_value, list):
-                                zendesk_tags.extend(tag_value)
-                            else:
-                                zendesk_tags.append(tag_value)
+                for tag_value in tag_data.values():
+                    if tag_value:
+                        if isinstance(tag_value, list):
+                            zendesk_tags.extend(tag_value)
+                        else:
+                            zendesk_tags.append(tag_value)
 
         if settings.STAGE:
             zendesk_tags.append("stage")
@@ -150,6 +129,7 @@ class ZendeskForm(forms.Form):
             status=SupportTicket.STATUS_PENDING,
         )
 
+        # Trigger async classification task
         from kitsune.customercare.tasks import zendesk_submission_classifier
 
         zendesk_submission_classifier.delay(submission.id)

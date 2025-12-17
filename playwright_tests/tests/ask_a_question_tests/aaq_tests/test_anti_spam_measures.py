@@ -2,6 +2,7 @@ import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import (
     QuestionPageMessages,
@@ -12,7 +13,7 @@ from playwright_tests.pages.sumo_pages import SumoPages
 
 # C946237
 @pytest.mark.antiSpamTests
-@pytest.mark.parametrize("user_type", ['', 'Simple User'])
+@pytest.mark.parametrize("user_type", ['', 'Simple user'])
 def test_anti_spam_banner(page: Page, user_type, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
@@ -26,7 +27,8 @@ def test_anti_spam_banner(page: Page, user_type, create_user_factory):
         question_info_one = sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -36,8 +38,8 @@ def test_anti_spam_banner(page: Page, user_type, create_user_factory):
     else:
         utilities.delete_cookies()
 
-    with check, allure.step("Navigating to each available product support forum and verifying that"
-                            " the scam banner is displayed"):
+    with allure.step("Navigating to each available product support forum and verifying that the "
+                     "scam banner is displayed"):
         for product, url in utilities.general_test_data["product_forums"].items():
             utilities.navigate_to_link(url)
             assert sumo_pages.common_web_elements.get_scam_banner_text() == (
@@ -68,7 +70,8 @@ def test_valid_tld_in_question_comment(page: Page, create_user_factory):
         sumo_pages.aaq_flow.submit_an_aaq_question(
             subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
             topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+            body=utilities.aaq_question_test_data["valid_firefox_question"]
+            ["simple_body_text"],
             attach_image=False,
             expected_locator=sumo_pages.question_page.questions_header
         )
@@ -79,7 +82,8 @@ def test_valid_tld_in_question_comment(page: Page, create_user_factory):
 
     with allure.step("Leaving a comment with an invalid TLD"):
         reply_one = sumo_pages.aaq_flow.post_question_reply_flow(
-            repliant_username=test_user_two["username"], reply=invalid_tld
+            repliant_username=test_user_two["username"],
+            reply=invalid_tld
         )
 
     with check, allure.step("Verifying that the invalid TLD comment is not marked as spam "
@@ -89,7 +93,8 @@ def test_valid_tld_in_question_comment(page: Page, create_user_factory):
 
     with allure.step("Leaving a comment with a valid TLD"):
         sumo_pages.aaq_flow.post_question_reply_flow(
-            repliant_username=test_user_two["username"], reply=valid_tld
+            repliant_username=test_user_two["username"],
+            reply=valid_tld
         )
 
     with check, allure.step("Verifying that the valid TLD comment is marked as spam and the "

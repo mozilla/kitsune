@@ -11,6 +11,7 @@ import wikimarkup.parser
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models.fields.files import FieldFile
 from django.http import QueryDict
 from django.template.loader import render_to_string
@@ -240,7 +241,7 @@ def _contextual_locale(context):
 
 @jinja2.pass_context
 @library.global_function
-def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
+def datetimeformat(context, value, format="shortdatetime", use_naturaltime=False):
     """
     Returns a formatted date/time using Babel's locale settings. Uses the
     timezone from settings.py, if the user has not been authenticated.
@@ -275,8 +276,8 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
 
-    if use_timesince and (django_now().astimezone(convert_tzinfo) - convert_value).days < 30:
-        return timesince(convert_value)
+    if use_naturaltime and (django_now().astimezone(convert_tzinfo) - convert_value).days < 30:
+        return naturaltime(convert_value)
 
     if format == "shortdatetime" or format == "shortdate":
         # Check if the date is today

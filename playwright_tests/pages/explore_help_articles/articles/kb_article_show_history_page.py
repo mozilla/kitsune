@@ -7,7 +7,7 @@ class KBArticleShowHistoryPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the show history section."""
+        # Show History page locators.
         self.show_history_page_header = page.locator("h1[class='title sumo-page-subheading']")
         self.show_history_category_link = page.locator(
             "//dt[text()='Category:']/following-sibling::dd/a")
@@ -42,7 +42,7 @@ class KBArticleShowHistoryPage(BasePage):
         self.revision_significance = lambda revision_id: page.locator(
             f"tr#{revision_id} td[class='significance']")
 
-        """Locators belonging to the document contributors section."""
+        # Document contributors locators
         self.show_history_page_banner = page.locator(
             "li[class='mzp-c-notification-bar mzp-t-success'] p")
         self.all_contributors_list_items = page.locator("ul[class='avatar-wrap'] li")
@@ -62,7 +62,7 @@ class KBArticleShowHistoryPage(BasePage):
         self.delete_contributor = lambda username: page.locator(
             f"//span[text()='{username}']/../..//a[@class='remove-button']")
 
-        """Locators belonging to the delete document locators."""
+        # Show History delete document section locators.
         self.delete_this_document_button = page.locator("div#delete-doc a")
         self.delete_this_document_confirmation_delete_button = page.locator(
             "div[class='submit'] input")
@@ -76,7 +76,7 @@ class KBArticleShowHistoryPage(BasePage):
         self.unable_to_delete_revision_page_go_back_to_document_history = page.locator(
             "div[class='submit'] a")
 
-    """Actions against the Show History page locators."""
+    # Page actions.
     def get_show_history_page_banner(self) -> str:
         return self._get_text_of_element(self.show_history_page_banner)
 
@@ -108,7 +108,7 @@ class KBArticleShowHistoryPage(BasePage):
         self._click(self.ready_for_l10_modal_submit_button,
                     expected_locator=self.revision_ready_for_l10n_status(revision_id))
 
-    """Actions against the delete document section locators."""
+    # Delete document actions.
     def click_on_delete_this_document_button(self):
         self._click(self.delete_this_document_button)
 
@@ -128,7 +128,7 @@ class KBArticleShowHistoryPage(BasePage):
             revisions[0], "id"
         )
 
-    """# For unreviewed revisions but user session doesn't permit review."""
+    # For unreviewed revisions but user session doesn't permit review.
     def click_on_a_revision_date(self, revision_id):
         self._click(self.revision_date(revision_id))
 
@@ -150,7 +150,6 @@ class KBArticleShowHistoryPage(BasePage):
         return self._is_element_visible(self.revision_current_status(revision_id))
 
     # For unreviewed revisions but user session permits review.
-    """# For unreviewed revisions but user session permits review."""
     def get_status_of_reviewable_revision(self, revision_id):
         return self._get_text_of_element(self.reviewable_revision(revision_id))
 
@@ -169,7 +168,7 @@ class KBArticleShowHistoryPage(BasePage):
     def click_go_back_to_document_history_option(self):
         self._click(self.unable_to_delete_revision_page_go_back_to_document_history)
 
-    """Actions against the article contribution section locators."""
+    # Article contribution actions.
     def click_on_edit_contributors_option(self):
         self._click(self.edit_contributors_option)
 

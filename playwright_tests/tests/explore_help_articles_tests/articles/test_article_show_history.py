@@ -32,7 +32,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
 
     utilities.start_existing_session(cookies=test_user)
 
-    article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+    article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
     revision_id_number = utilities.number_extraction_from_string(
         article_details['first_revision_id']
     )
@@ -41,7 +41,8 @@ def test_kb_article_removal(page: Page, create_user_factory):
                      "revision"):
         expect(
             sumo_pages.kb_article_show_history_page.delete_revision(
-                article_details['first_revision_id'])
+                article_details['first_revision_id']
+            )
         ).to_be_hidden()
 
     with allure.step("Verifying that manually navigating to the delete revision endpoint returns "
@@ -57,8 +58,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
     with allure.step("Navigating back and verifying that the delete button for the article "
                      "is not displayed"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
-        expect(sumo_pages.kb_article_show_history_page.delete_this_document_button
-        ).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.delete_this_document_button).to_be_hidden()
 
     with allure.step("Verifying that manually navigating to the delete endpoint returns 403"):
         with page.expect_navigation() as navigation_info:
@@ -217,7 +217,7 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
     test_user_two = create_user_factory(permissions=["add_revision"])
 
     utilities.start_existing_session(cookies=test_user)
-    article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+    article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
 
     with allure.step("Verifying that no users are added inside the contributors list"):
         expect(sumo_pages.kb_article_show_history_page.all_contributors_list_items).to_be_hidden()
@@ -390,7 +390,7 @@ def test_contributors_can_be_manually_added(page: Page, create_user_factory):
 
     with allure.step("Clicking on the 'Edit Contributors' option, adding and selecting the "
                      "username from the search field"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
         sumo_pages.kb_article_show_history_page.click_on_edit_contributors_option()
         (sumo_pages.kb_article_show_history_page
          .add_a_new_contributor_inside_the_contributor_field(test_user_two["username"]))
@@ -427,7 +427,7 @@ def test_kb_article_contributor_profile_access(page: Page, create_user_factory):
 
     utilities.start_existing_session(cookies=test_user)
 
-    sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+    sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page, approve_revision=True)
     sumo_pages.kb_article_page.click_on_article_option()
     article_url = utilities.get_page_url()
 
@@ -512,8 +512,8 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
     with allure.step(f"Signing in with {test_user['username']} account and creating a new "
                      f"article and approving it's first revision"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step(f"Signing in with {test_user_two['username']} user account"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -543,23 +543,25 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
 
     with allure.step("Verifying that the revision information content is expanded by default"):
         expect(
-            sumo_pages.kb_article_preview_revision_page.revision_information_content
-        ).to_be_visible()
+            sumo_pages.kb_article_preview_revision_page.get_revision_information_content_locator(
+            )).to_be_visible()
 
     with allure.step("Clicking on the 'Revision Information' foldout section and Verifying "
                      "that the revision information content is collapsed/no longer displayed"):
-        sumo_pages.kb_article_preview_revision_page.click_on_revision_information_foldout_section()
+        (sumo_pages.kb_article_preview_revision_page
+         .click_on_revision_information_foldout_section())
         expect(
-            sumo_pages.kb_article_preview_revision_page.revision_information_content
-            ).to_be_hidden()
+            sumo_pages.kb_article_preview_revision_page.get_revision_information_content_locator(
+            )).to_be_hidden()
 
     with allure.step("Clicking on the 'Revision Information' foldout section"):
-        sumo_pages.kb_article_preview_revision_page.click_on_revision_information_foldout_section()
+        (sumo_pages.kb_article_preview_revision_page
+         .click_on_revision_information_foldout_section())
 
     with allure.step("Verifying that the revision information content is displayed"):
         expect(
-            sumo_pages.kb_article_preview_revision_page.revision_information_content
-            ).to_be_visible()
+            sumo_pages.kb_article_preview_revision_page.get_revision_information_content_locator(
+            )).to_be_visible()
 
     with allure.step("Verifying that the revision id is the correct one"):
         assert (sumo_pages.kb_article_preview_revision_page.
@@ -593,13 +595,18 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
                 KB_ARTICLE_REVISION_NO_STATUS)
 
     with allure.step("Verifying that the reviewed by locator is hidden"):
-        expect(sumo_pages.kb_article_preview_revision_page.reviewed_by).to_be_hidden()
+        expect(
+            sumo_pages.kb_article_preview_revision_page.get_reviewed_by_locator()).to_be_hidden()
 
     with allure.step("Verifying that the is approved locator is hidden"):
-        expect(sumo_pages.kb_article_preview_revision_page.is_approved).to_be_hidden()
+        expect(
+            sumo_pages.kb_article_preview_revision_page.get_is_approved_text_locator()
+        ).to_be_hidden()
 
     with allure.step("Verifying that the is current revision locator is hidden"):
-        expect(sumo_pages.kb_article_preview_revision_page.is_current_revision).to_be_hidden()
+        expect(
+            sumo_pages.kb_article_preview_revision_page.is_current_revision_locator()
+        ).to_be_hidden()
 
     with allure.step("Verifying that the correct ready for localization locator is displayed"):
         assert (sumo_pages.kb_article_preview_revision_page.
@@ -607,16 +614,18 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
                 KB_ARTICLE_REVISION_NO_STATUS)
 
     with allure.step("Verifying that the readied for localization by is hidden"):
-        expect(sumo_pages.kb_article_preview_revision_page.readied_for_localization_by
-        ).to_be_hidden()
+        expect(sumo_pages.kb_article_preview_revision_page.readied_for_localization_by_locator(
+        )).to_be_hidden()
 
     with allure.step("Verifying that the 'Edit article based on this revision' is not "
                      "displayed"):
-        expect(sumo_pages.kb_article_preview_revision_page.edit_article_based_on_revision_link
-               ).to_be_hidden()
+        expect(
+            (sumo_pages.kb_article_preview_revision_page
+             .get_edit_article_based_on_this_revision_link_locator())).to_be_hidden()
 
     with allure.step("Verifying that the 'Revision Source' section is hidden by default"):
-        expect(sumo_pages.kb_article_preview_revision_page.revision_source_textarea).to_be_hidden()
+        expect((sumo_pages.kb_article_preview_revision_page
+                .get_preview_revision_source_textarea_locator())).to_be_hidden()
 
     with allure.step("Clicking on the 'Revision Source' foldout section option and verifying that "
                      "the 'Revision Source' textarea contains the correct details"):
@@ -626,14 +635,14 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
                 kb_article_test_data['updated_article_content'])
 
     with allure.step("Verifying that the 'Revision Content' section is hidden by default"):
-        expect(sumo_pages.kb_article_preview_revision_page.revision_content_html_section
-               ).to_be_hidden()
+        expect(sumo_pages.kb_article_preview_revision_page.get_revision_content_html_locator(
+        )).to_be_hidden()
 
     with allure.step("Clicking on the 'Revision Content' foldout option and verifying that "
                      "the 'Revision Content' section is visible"):
         sumo_pages.kb_article_preview_revision_page.click_on_revision_content_foldout_section()
-        expect(sumo_pages.kb_article_preview_revision_page.revision_content_html_section
-        ).to_be_visible()
+        expect(sumo_pages.kb_article_preview_revision_page.get_revision_content_html_locator(
+        )).to_be_visible()
 
     with allure.step(f"Signing in with {test_user['username']} user account and approving the "
                      f"revision"):
@@ -654,7 +663,8 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
                 KB_ARTICLE_REVISION_YES_STATUS)
 
     with allure.step("Verifying that the reviewed by date is displayed"):
-        expect(sumo_pages.kb_article_preview_revision_page.reviewed_time).to_be_visible()
+        expect((sumo_pages.kb_article_preview_revision_page
+                .get_preview_revision_reviewed_date_locator())).to_be_visible()
 
     with allure.step("Verifying that the correct 'Reviewed by' text is displayed"):
         assert (sumo_pages.kb_article_preview_revision_page.
@@ -675,7 +685,7 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
 
     with allure.step("Verifying that the 'Readied for localization' date is displayed"):
         expect(
-            sumo_pages.kb_article_preview_revision_page.readied_for_localization_date
+            sumo_pages.kb_article_preview_revision_page.ready_for_localization_date()
         ).to_be_visible()
 
     with allure.step("Verifying that the correct localization by text is displayed"):

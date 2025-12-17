@@ -42,7 +42,7 @@ def test_deleted_user_is_displayed_in_both_inbox_and_outbox(page: Page, create_u
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_inbox_option()
 
-    with check, allure.step("Verifying that sender of the message is the 'deleted user'"):
+    with check, allure.step("Verifying that sender of the message is the 'delete user'"):
         assert (sumo_pages.inbox_page.
                 get_sender_by_excerpt(second_message_body) == deleted_user_username)
 
@@ -60,6 +60,7 @@ def test_deleted_user_is_displayed_in_both_inbox_and_outbox(page: Page, create_u
 
     with check, allure.step("Navigating to the outbox and verifying that the 'delete user' is the "
                             "recipient of the sent message"):
+        utilities.wait_for_dom_to_load()
         sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
         assert (sumo_pages.sent_message_page.
                 get_deleted_user_recipient_based_on_excerpt(first_message_body
@@ -87,5 +88,5 @@ def test_messages_cannot_be_sent_to_system_user(page: Page, create_user_factory)
                      "user is not returned"):
         sumo_pages.new_message_page.type_into_to_input_field(
             utilities.general_test_data["system_account_name"])
-        expect(sumo_pages.new_message_page.no_user_search_results_text).to_be_visible(
+        expect(sumo_pages.new_message_page.get_no_user_message_locator()).to_be_visible(
             timeout=15000)

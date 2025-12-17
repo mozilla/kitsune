@@ -1,18 +1,19 @@
 from playwright.sync_api import Page
-from playwright_tests.core.basepage import BasePage
+
+from playwright_tests.core.basepage import BasePage, Locator
 
 
 class EditKBArticlePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the kb article edit page."""
+        # KB Article edit page locators.
         self.edit_article_page_header = page.locator("h1")
         self.edit_by_another_user_warning_banner = page.locator("div#locked-warning")
         self.edit_by_another_user_warning_message = page.locator("div#locked-warning p")
         self.edit_by_another_user_edit_anyway_option = page.locator("a#unlock-button")
 
-        """Locators belonging to the kb article edit page field section."""
+        # KB Article edit page field locators.
         self.edit_article_keywords_field = page.locator("input#id_keywords")
         self.edit_article_search_result_summary_field = page.locator("textarea#id_summary")
         self.edit_article_content_textarea_field = page.locator("textarea#id_content")
@@ -23,15 +24,17 @@ class EditKBArticlePage(BasePage):
             "article#edit-document").get_by_role(
             "button", name="Submit for Review", exact=True)
 
-        """Locators belonging to the submit your changes section."""
+        # Submit your changes locators.
         self.edit_article_submit_changes_panel_comment_field = page.locator("input#id_comment")
         self.edit_article_submit_changes_panel_submit_button = page.locator(
             "button#submit-document-form")
 
-    """Actions against the edit kb article page locators."""
     # Edit kb article page actions.
     def get_edit_article_page_header(self) -> str:
         return self._get_text_of_element(self.edit_article_page_header)
+
+    def get_warning_banner_locator(self) -> Locator:
+        return self.edit_by_another_user_warning_banner
 
     def get_edit_article_warning_message(self) -> str:
         paragraphs = self._get_text_of_elements(self.edit_by_another_user_warning_message)
@@ -43,13 +46,16 @@ class EditKBArticlePage(BasePage):
     def is_edit_anyway_option_visible(self) -> bool:
         return self._is_element_visible(self.edit_by_another_user_edit_anyway_option)
 
-    """Actions against the kb article page field locators."""
+    # Edit kb article page field actions.
     def get_edit_article_keywords_field_value(self) -> str:
         return self._get_element_input_value(self.edit_article_keywords_field)
 
     def fill_edit_article_keywords_field(self, text: str):
         self._clear_field(self.edit_article_keywords_field)
         self._fill(self.edit_article_keywords_field, text)
+
+    def get_edit_keywords_field_locator(self) -> Locator:
+        return self.edit_article_keywords_field
 
     def get_edit_article_search_result_summary_text(self) -> str:
         return self._get_text_of_element(self.edit_article_search_result_summary_field)
@@ -73,10 +79,11 @@ class EditKBArticlePage(BasePage):
     def fill_edit_article_expiry_date(self, text: str):
         self._type(self.edit_article_expiry_date_field, text, 0)
 
-    """Actions against the submit your changes section locators."""
+    # Edit kb button actions.
     def click_submit_for_review_button(self):
         self._click_on_first_item(self.edit_article_submit_for_review_button)
 
+    # Submit you changes panel actions.
     def fill_edit_article_changes_panel_comment(self, text: str):
         self._fill(self.edit_article_submit_changes_panel_comment_field, text)
 

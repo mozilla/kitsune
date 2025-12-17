@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,7 +7,6 @@ class KBArticleReviewRevisionPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """"General Review revision page locators."""
         self.revision_header = page.locator("h1[class='sumo-page-heading']")
         self.reviewing_revision_text = page.locator(
             "//article[@id='review-revision']//a[text()='Back to History']/..")
@@ -36,11 +36,11 @@ class KBArticleReviewRevisionPage(BasePage):
         self.defer_revision_button = page.locator("button#btn-reject")
         self.approve_revision_button = page.locator("button#btn-approve")
 
-        """Locators belonging to the defer revision modal."""
+        # Defer revision modal
         self.defer_button = page.locator("form#reject-modal button")
         self.cancel_defer = page.locator("form#reject-modal a")
 
-        """Locators belonging to the approve revision modal."""
+        # Approve revision modal
         self.accept_revision_modal_header = page.locator("div[class='kbox-title']")
 
         # Need to add locators for approving own edit revision warning.
@@ -51,12 +51,11 @@ class KBArticleReviewRevisionPage(BasePage):
         self.modal_accept_button = page.locator("form#approve-modal div button")
         self.modal_cancel_button = page.locator("form#approve-modal div a")
 
-        """Locators belonging to the revision significance section."""
+        # Revision significance
         self.minor_significance = page.locator("input#id_significance_0")
         self.normal_significance = page.locator("input#id_significance_1")
         self.major_significance = page.locator("input#id_significance_2")
 
-    """Actions against the general review revision page locators."""
     def get_revision_header(self) -> str:
         return self._get_text_of_element(self.revision_header)
 
@@ -116,7 +115,7 @@ class KBArticleReviewRevisionPage(BasePage):
     def click_on_approve_revision_button(self):
         self._click(self.approve_revision_button)
 
-    """Actions against the review revision modal locators."""
+    # Modal actions
     def get_accept_revision_modal_header(self) -> str:
         return self._get_text_of_element(self.accept_revision_modal_header)
 

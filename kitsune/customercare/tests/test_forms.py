@@ -2,14 +2,10 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser
 
+from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_CATEGORIES_LOGINLESS
 from kitsune.customercare.forms import ZendeskForm
 from kitsune.customercare.models import SupportTicket
-from kitsune.products.tests import (
-    ProductFactory,
-    ProductSupportConfigFactory,
-    ZendeskConfigFactory,
-    ZendeskTopicFactory,
-)
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -26,115 +22,16 @@ class ZendeskFormTests(TestCase):
         )
         self.user = UserFactory(email="test@example.com")
 
-        # Create ZendeskConfig for VPN
-        self.vpn_zendesk = ZendeskConfigFactory(name="Mozilla VPN Support")
-        ZendeskTopicFactory(
-            zendesk_config=self.vpn_zendesk,
-            slug="vpn-connection-issues",
-            topic="I can't connect to Mozilla VPN",
-            display_order=0,
-            legacy_tag="technical",
-            tier_tags=[
-                "t1-performance-and-connectivity",
-                "t2-connectivity",
-                "t3-connection-failure",
-            ],
-            automation_tag="ssa-connection-issues-automation",
-            segmentation_tag="",
-            loginless_only=False,
-        )
-        ZendeskTopicFactory(
-            zendesk_config=self.vpn_zendesk,
-            slug="vpn-server-selection",
-            topic="I can't choose a VPN location",
-            display_order=1,
-            legacy_tag="technical",
-            tier_tags=[
-                "t1-performance-and-connectivity",
-                "t2-connectivity",
-                "t3-cant-select-server",
-            ],
-            loginless_only=False,
-        )
-        ZendeskTopicFactory(
-            zendesk_config=self.vpn_zendesk,
-            slug="payments",
-            topic="I need help with a billing or subscription question",
-            display_order=2,
-            legacy_tag="payments",
-            tier_tags=["t1-billing-and-subscriptions"],
-            automation_tag="",
-            segmentation_tag="",
-            loginless_only=False,
-        )
-        ProductSupportConfigFactory(
-            product=self.vpn_product, zendesk_config=self.vpn_zendesk, forum_config=None
-        )
-
-        # Create ZendeskConfig for Relay
-        self.relay_zendesk = ZendeskConfigFactory(name="Firefox Relay Support")
-        ZendeskTopicFactory(
-            zendesk_config=self.relay_zendesk,
-            slug="relay-email-forwarding",
-            topic="I'm not receiving emails to my Relay mask",
-            display_order=0,
-            legacy_tag="technical",
-            tier_tags=["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
-            segmentation_tag="seg-relay-no-fwd-deliver",
-            loginless_only=False,
-        )
-        ZendeskTopicFactory(
-            zendesk_config=self.relay_zendesk,
-            slug="relay-domain-change",
-            topic="I want to change my Relay email domain",
-            display_order=1,
-            legacy_tag="technical",
-            tier_tags=["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
-            segmentation_tag="seg-relay-chg-domain",
-            loginless_only=False,
-        )
-        ProductSupportConfigFactory(
-            product=self.relay_product, zendesk_config=self.relay_zendesk, forum_config=None
-        )
-
-        # Create ZendeskConfig for Mozilla Account with loginless topics
-        self.accounts_zendesk = ZendeskConfigFactory(name="Mozilla Account Support")
-        ZendeskTopicFactory(
-            zendesk_config=self.accounts_zendesk,
-            slug="fxa-2fa-lockout",
-            topic="My security code isn't working or is lost",
-            display_order=0,
-            legacy_tag="accounts",
-            tier_tags=[
-                "t1-passwords-and-sign-in",
-                "t2-two-factor-authentication",
-                "t3-two-factor-lockout",
-            ],
-            automation_tag="ssa-2fa-automation",
-            loginless_only=True,
-        )
-        ZendeskTopicFactory(
-            zendesk_config=self.accounts_zendesk,
-            slug="fxa-reset-password",
-            topic="I forgot my password",
-            display_order=1,
-            legacy_tag="accounts",
-            tier_tags=["t1-passwords-and-sign-in", "t2-reset-passwords"],
-            automation_tag="ssa-emailverify-automation",
-            loginless_only=True,
-        )
-        ProductSupportConfigFactory(
-            product=self.accounts_product, zendesk_config=self.accounts_zendesk, forum_config=None
-        )
-
     def test_authenticated_form_gets_correct_categories(self):
         """Test that authenticated users get product-specific categories."""
         form = ZendeskForm(product=self.vpn_product, user=self.user)
 
+        expected_categories = ZENDESK_CATEGORIES["mozilla-vpn"]
+        self.assertEqual(form.product_categories, expected_categories)
+
         category_topics = [choice[1] for choice in form.fields["category"].choices if choice[0]]
         self.assertIn("I can't connect to Mozilla VPN", category_topics)
         self.assertIn("I can't choose a VPN location", category_topics)
-        self.assertEqual(len(category_topics), 3)  # 3 topics for VPN
 
     def test_different_products_get_different_categories(self):
         """Test that different products get different categories."""
@@ -155,10 +52,12 @@ class ZendeskFormTests(TestCase):
         anonymous_user = AnonymousUser()
         form = ZendeskForm(product=self.accounts_product, user=anonymous_user)
 
+        expected_categories = ZENDESK_CATEGORIES_LOGINLESS["mozilla-account"]
+        self.assertEqual(form.product_categories, expected_categories)
+
         category_topics = [choice[1] for choice in form.fields["category"].choices if choice[0]]
         self.assertIn("I forgot my password", category_topics)
         self.assertIn("My security code isn't working or is lost", category_topics)
-        self.assertEqual(len(category_topics), 2)  # 2 loginless topics for Mozilla Account
 
     def test_form_stores_product_and_user(self):
         """Test that form stores product and user for later use."""
@@ -288,7 +187,7 @@ class ZendeskFormTests(TestCase):
         mock_task.assert_called_once_with(submission.id)
 
     def test_product_without_categories_gets_empty_choices(self):
-        """Test that products without ProductSupportConfig get no choices."""
+        """Test that products not in our categories dict get empty choices."""
         unknown_product = ProductFactory(
             title="Unknown Product", slug="unknown-product", codename="unknown"
         )
@@ -296,20 +195,26 @@ class ZendeskFormTests(TestCase):
         form = ZendeskForm(product=unknown_product, user=self.user)
 
         category_choices = form.fields["category"].choices
-        # Without ProductSupportConfig, no categories are populated
-        self.assertEqual(len(category_choices), 0)
+        self.assertEqual(len(category_choices), 1)
+        self.assertEqual(category_choices[0][1], "Select a reason for contacting")
 
     def test_base_categories_are_properly_expanded(self):
-        """Test that topics are properly loaded from database."""
+        """Test that DRY base categories are properly expanded."""
         form = ZendeskForm(product=self.vpn_product, user=self.user)
 
-        category_choices = form.fields["category"].choices
-        category_dict = {slug: topic for slug, topic in category_choices if slug}
+        payments_category = None
+        for category in form.product_categories:
+            if category["slug"] == "payments":
+                payments_category = category
+                break
 
-        self.assertIn("payments", category_dict)
+        self.assertIsNotNone(payments_category)
         self.assertEqual(
-            category_dict["payments"], "I need help with a billing or subscription question"
+            payments_category["topic"], "I need help with a billing or subscription question"
         )
+        self.assertEqual(payments_category["tags"]["tiers"], ["t1-billing-and-subscriptions"])
+        self.assertIsNone(payments_category["tags"]["automation"])
+        self.assertIsNone(payments_category["tags"]["segmentation"])
 
     @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")

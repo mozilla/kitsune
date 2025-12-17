@@ -17,8 +17,8 @@ def test_article_thread_field_validation(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         sumo_pages.kb_article_page.click_on_article_option()
         sumo_pages.kb_article_page.click_on_editing_tools_discussion_option()
 
@@ -86,7 +86,7 @@ def test_article_thread_field_validation(page: Page, create_user_factory):
             utilities.kb_new_thread_test_data['new_thread_reduced_title']
         )
         sumo_pages.kb_article_discussion_page.click_on_cancel_new_thread_button()
-        expect(sumo_pages.kb_article_discussion_page.thread_by_title(
+        expect(sumo_pages.kb_article_discussion_page.get_thread_by_title_locator(
             utilities.kb_new_thread_test_data['new_thread_reduced_title']
         )
         ).to_be_hidden()
@@ -111,7 +111,7 @@ def test_article_thread_field_validation(page: Page, create_user_factory):
         )
         utilities.navigate_to_link(
             article_details["article_url"] + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT)
-        expect(sumo_pages.kb_article_discussion_page.posted_thread(thread_id)
+        expect(sumo_pages.kb_article_discussion_page.get_posted_thread_locator(thread_id)
                ).to_be_visible()
 
 
@@ -125,8 +125,8 @@ def test_thread_replies_counter_increment(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
 
     with allure.step("Manually navigating to the article endpoint and clicking on the "
                      "article option"):
@@ -174,8 +174,8 @@ def test_thread_replies_counter_decrement(page: Page, create_user_factory):
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         utilities.navigate_to_link(article_details["article_url"])
 
     with allure.step("Clicking on the 'Post a new thread button' and posting a new kb "
@@ -223,17 +223,18 @@ def test_thread_replies_counter_decrement(page: Page, create_user_factory):
 
 
 @pytest.mark.articleThreads
-@pytest.mark.parametrize("user_type", ['Simple User', 'Forum Moderator', ''])
+@pytest.mark.parametrize("user_type", ['Simple user', 'Forum Moderator', ''])
 def test_article_thread_author_filter(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Forum Moderators"], permissions=["review_revision"])
+    test_user = create_user_factory(groups=["Forum Moderators"],
+                                    permissions=["review_revision"])
     test_user_two = create_user_factory()
 
     with allure.step(f"Signing in with with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         utilities.navigate_to_link(article_details["article_url"])
 
     with allure.step("Posting a new kb article discussion thread"):
@@ -253,7 +254,7 @@ def test_article_thread_author_filter(page: Page, user_type, create_user_factory
     if user_type == 'Forum Moderator':
         with allure.step(f"Signing in with the {test_user['username']} user account"):
             utilities.start_existing_session(cookies=test_user)
-    elif user_type != 'Simple User':
+    elif user_type != 'Simple user':
         with allure.step("Signing out from SUMO"):
             utilities.delete_cookies()
 
@@ -271,17 +272,18 @@ def test_article_thread_author_filter(page: Page, user_type, create_user_factory
 
 
 @pytest.mark.articleThreads
-@pytest.mark.parametrize("user_type", ['Simple User', 'Forum Moderator', ''])
+@pytest.mark.parametrize("user_type", ['Simple user', 'Forum Moderator', ''])
 def test_article_thread_replies_filter(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Forum Moderators"], permissions=["review_revision"])
+    test_user = create_user_factory(groups=["Forum Moderators"],
+                                    permissions=["review_revision"])
     test_user_two = create_user_factory()
 
     with allure.step(f"Signing in with the {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
-        article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            approve_first_revision=True)
+        article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(
+            page=page, approve_revision=True)
         utilities.navigate_to_link(article_details["article_url"])
 
     with allure.step("Clicking on the 'Post a new thread button' and posting a new kb "
@@ -300,7 +302,7 @@ def test_article_thread_replies_filter(page: Page, user_type, create_user_factor
     with allure.step("Navigating back to the article discussion page"):
         utilities.navigate_to_link(thread_info['article_discussion_url'])
 
-    if user_type == "Simple User":
+    if user_type == "Simple user":
         with allure.step(f"Signing in with the {test_user_two['username']} account"):
             utilities.start_existing_session(cookies=test_user_two)
     elif user_type == '':
@@ -330,7 +332,7 @@ def test_article_lock_thread_non_admin_users(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account and creating a new"
                      f" article"):
         utilities.start_existing_session(cookies=test_user)
-    article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+    article_details = sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page)
 
     with allure.step(f"Signing in with the {test_user_two['username']} user account and approving"
                      f" the article"):
@@ -357,7 +359,8 @@ def test_article_lock_thread_non_admin_users(page: Page, create_user_factory):
         utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         sumo_pages.kb_article_discussion_page.click_on_a_particular_thread(
             thread_info_one['thread_id'])
-        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator()
+               ).to_be_hidden()
 
     with allure.step("Navigating back to the article discussions page, clicking on the "
                      "thread posted by self and verifying that the 'Lock thread' option is "
@@ -365,26 +368,30 @@ def test_article_lock_thread_non_admin_users(page: Page, create_user_factory):
         utilities.navigate_to_link(thread_info_one["article_discussion_url"])
         sumo_pages.kb_article_discussion_page.click_on_a_particular_thread(
             thread_info_two['thread_id'])
-        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator()
+               ).to_be_hidden()
 
     with allure.step("Deleting user sessions and verifying that the 'Lock thread' options is "
                      "not available"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator()
+               ).to_be_hidden()
 
 
 #  C2260810
 @pytest.mark.articleThreads
-@pytest.mark.parametrize("user_type", ['Forum Moderator', 'Simple User', ''])
+@pytest.mark.parametrize("user_type", ['Forum Moderator', 'Simple user', ''])
 def test_article_lock_thread_functionality(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Forum Moderators"], permissions=["review_revision"])
+    test_user = create_user_factory(groups=["Forum Moderators"],
+                                    permissions=["review_revision"])
     test_user_two = create_user_factory()
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page,
+                                                                      approve_revision=True)
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
@@ -408,7 +415,7 @@ def test_article_lock_thread_functionality(page: Page, user_type, create_user_fa
             thread_info_one['thread_id'])
         sumo_pages.kb_article_discussion_page.click_on_lock_this_article_thread_option()
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step("Signing in with a non-admin account and verifying that the correct"
                          " thread locked message is displayed"):
             utilities.start_existing_session(cookies=test_user_two)
@@ -420,11 +427,11 @@ def test_article_lock_thread_functionality(page: Page, user_type, create_user_fa
             utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Post a reply' textarea field is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.thread_post_a_reply_textarea_field
+        expect(sumo_pages.kb_article_discussion_page.get_thread_post_a_reply_textarea_field()
                ).to_be_hidden()
 
     with allure.step("Verifying that the 'Locked' status is displayed under article header"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_locked_status).to_be_visible()
+        expect(sumo_pages.kb_article_discussion_page.get_locked_article_status()).to_be_visible()
 
     with allure.step("Navigating back to the discussions page"):
         utilities.navigate_to_link(thread_info_one["article_discussion_url"])
@@ -439,7 +446,7 @@ def test_article_lock_thread_functionality(page: Page, user_type, create_user_fa
             thread_info_two['thread_id'])
         sumo_pages.kb_article_discussion_page.click_on_lock_this_article_thread_option()
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step("Signing in with a non-admin account and verifying that the correct"
                          " thread locked message is displayed"):
             utilities.start_existing_session(cookies=test_user_two)
@@ -450,27 +457,29 @@ def test_article_lock_thread_functionality(page: Page, user_type, create_user_fa
             utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Locked' status is displayed under article header"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_locked_status).to_be_visible()
+        expect(sumo_pages.kb_article_discussion_page.get_locked_article_status()).to_be_visible()
 
     with allure.step("Verifying that the 'Post a reply' textarea field is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.thread_post_a_reply_textarea_field
+        expect(sumo_pages.kb_article_discussion_page.get_thread_post_a_reply_textarea_field()
                ).to_be_hidden()
 
 
 # C2260810
 @pytest.mark.articleThreads
-@pytest.mark.parametrize("user_type", ['Forum Moderator', 'Simple User', ''])
+@pytest.mark.parametrize("user_type", ['Forum Moderator', 'Simple user', ''])
 def test_article_unlock_thread_functionality(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Forum Moderators"], permissions=["review_revision"])
+    test_user = create_user_factory(groups=["Forum Moderators"],
+                                    permissions=["review_revision"])
     test_user_two = create_user_factory()
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the article endpoint"):
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article(approve_first_revision=True)
+        sumo_pages.submit_kb_article_flow.kb_article_creation_via_api(page=page,
+                                                                      approve_revision=True)
 
     with allure.step("Posting a new kb article discussion thread"):
         thread_info_one = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
@@ -503,16 +512,18 @@ def test_article_unlock_thread_functionality(page: Page, user_type, create_user_
         assert (sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_option_text(
         ) == KBArticlePageMessages.KB_ARTICLE_UNLOCK_THIS_THREAD_OPTION)
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user_two['username']} user account and verifying"
                          f" that the 'Unlock this thread' option is not displayed"):
             utilities.start_existing_session(cookies=test_user_two)
-            expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator(
+            )).to_be_hidden()
     if user_type == '':
         with allure.step("Deleting user session and verifying that the 'Unlock this thread' "
                          "option is no displayed"):
             utilities.delete_cookies()
-            expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator(
+            )).to_be_hidden()
 
     if user_type != 'Forum Moderator':
         with allure.step(f"Signing in with {test_user['username']} user account"):
@@ -521,24 +532,25 @@ def test_article_unlock_thread_functionality(page: Page, user_type, create_user_
     with allure.step("Clicking on the 'Unlock this thread'"):
         sumo_pages.kb_article_discussion_page.click_on_lock_this_article_thread_option()
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user_two['username']} user account and verifying"
                          f" that the textarea field is available"):
             utilities.start_existing_session(cookies=test_user_two)
-            expect(sumo_pages.kb_article_discussion_page.thread_post_a_reply_textarea_field
-            ).to_be_visible()
+            expect(sumo_pages.kb_article_discussion_page.get_thread_post_a_reply_textarea_field(
+            )).to_be_visible()
     if user_type == '':
         with allure.step("Deleting user session and verifying that the textarea field is not "
                          "available"):
             utilities.delete_cookies()
-            expect(sumo_pages.kb_article_discussion_page.thread_post_a_reply_textarea_field
-            ).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_thread_post_a_reply_textarea_field(
+            )).to_be_hidden()
 
     with allure.step("Verifying that the 'Locked' header text is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_locked_status).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_locked_article_status()).to_be_hidden()
 
     with allure.step("Verifying that the 'Thread locked' page message is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_locked_message).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_text_of_locked_article_thread_locator(
+        )).to_be_hidden()
 
     if user_type != "Forum Moderator":
         with allure.step("Signing in with an admin account"):
@@ -560,16 +572,18 @@ def test_article_unlock_thread_functionality(page: Page, user_type, create_user_
         assert (sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_option_text(
         ) == KBArticlePageMessages.KB_ARTICLE_UNLOCK_THIS_THREAD_OPTION)
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user_two['username']} user account and verifying"
                          f" that the 'Unlock this thread' option is displayed"):
             utilities.start_existing_session(cookies=test_user_two)
-            expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator(
+            )).to_be_hidden()
     if user_type == '':
         with allure.step("Deleting the user session and verifying that the 'Unlock this "
                          "thread' option is not displayed"):
             utilities.delete_cookies()
-            expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_locator(
+            )).to_be_hidden()
 
     if user_type != 'Forum Moderator':
         with allure.step(f"Signing in with {test_user['username']} user account and clicking on"
@@ -577,33 +591,35 @@ def test_article_unlock_thread_functionality(page: Page, user_type, create_user_
             utilities.start_existing_session(cookies=test_user)
     sumo_pages.kb_article_discussion_page.click_on_lock_this_article_thread_option()
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user_two['username']} user account and verifying"
                          f" that the textarea field is available"):
             utilities.start_existing_session(cookies=test_user_two)
-            expect(sumo_pages.kb_article_discussion_page.thread_post_a_reply_textarea_field
-            ).to_be_visible()
+            expect(sumo_pages.kb_article_discussion_page.get_thread_post_a_reply_textarea_field(
+            )).to_be_visible()
     if user_type == '':
         with allure.step("Deleting user session and verifying that the textarea field is not "
                          "available"):
             utilities.delete_cookies()
-            expect(sumo_pages.kb_article_discussion_page.thread_post_a_reply_textarea_field
-            ).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_thread_post_a_reply_textarea_field(
+            )).to_be_hidden()
 
     with allure.step("Verifying that the 'Locked' header text is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_locked_status).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_locked_article_status()).to_be_hidden()
 
     with allure.step("Verifying that the 'Thread locked' page message is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_locked_message).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_text_of_locked_article_thread_locator(
+        )).to_be_hidden()
 
 
 # C2260811
 @pytest.mark.articleThreads
-@pytest.mark.parametrize("user_type", ['Forum Moderator', 'Simple User', ''])
+@pytest.mark.parametrize("user_type", ['Forum Moderator', 'Simple user', ''])
 def test_article_thread_sticky(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Forum Moderators"], permissions=["review_revision"])
+    test_user = create_user_factory(groups=["Forum Moderators"],
+                                    permissions=["review_revision"])
     test_user_two = create_user_factory()
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
@@ -627,7 +643,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
         )
 
     with allure.step("Verifying that the 'Sticky this thread' option is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.sticky_this_thread).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_sticky_this_thread_locator()
+               ).to_be_hidden()
 
     with allure.step("Navigating back to the discussions page"):
         utilities.navigate_to_link(thread_info_one['article_discussion_url'])
@@ -645,22 +662,25 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
         assert (sumo_pages.kb_article_discussion_page.get_text_of_sticky_this_thread_option(
         ) == KBArticlePageMessages.KB_ARTICLE_UNSTICKY_OPTION)
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user_two['username']} user account and "
                          f"verifying that the unsticky this thread option is not available"):
             utilities.start_existing_session(cookies=test_user_two)
-            expect(sumo_pages.kb_article_discussion_page.sticky_this_thread).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_sticky_this_thread_locator()
+                   ).to_be_hidden()
     if user_type == '':
         with allure.step("Deleting user session and verifying that the unsticky this thread "
                          "option is not available"):
             utilities.delete_cookies()
-            expect(sumo_pages.kb_article_discussion_page.sticky_this_thread).to_be_hidden()
+            expect(sumo_pages.kb_article_discussion_page.get_sticky_this_thread_locator()
+                   ).to_be_hidden()
 
     with allure.step("Verifying that the 'Sticky' status is displayed"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_sticky_status).to_be_visible()
+        expect(sumo_pages.kb_article_discussion_page.get_sticky_this_thread_status_locator()
+               ).to_be_visible()
 
     with allure.step("Navigating back to the discussions page and verifying that the sticky "
-                     "thread is displayed in top of the list"):
+                     "article is displayed in top of the list"):
         utilities.navigate_to_link(thread_info_one['article_discussion_url'])
         assert (
             sumo_pages.kb_article_discussion_page.
@@ -678,7 +698,7 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
         assert (sumo_pages.kb_article_discussion_page.get_text_of_sticky_this_thread_option(
         ) == KBArticlePageMessages.KB_ARTICLE_STICKY_THIS_THREAD_OPTION)
 
-    if user_type == 'Simple User':
+    if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user_two['username']} user account"):
             utilities.start_existing_session(cookies=test_user_two)
     if user_type == '':
@@ -686,7 +706,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
             utilities.delete_cookies()
 
     with allure.step("Verifying that the 'Sticky' status is not displayed"):
-        expect(sumo_pages.kb_article_discussion_page.article_thread_sticky_status).to_be_hidden()
+        expect(sumo_pages.kb_article_discussion_page.get_sticky_this_thread_status_locator()
+               ).to_be_hidden()
 
     with allure.step("Navigating back to the discussions page and verifying that the sticky"
                      " article is not displayed in top of the list"):
@@ -701,7 +722,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
 def test_article_thread_content_edit(page: Page, thread_author, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Forum Moderators"], permissions=["review_revision"])
+    test_user = create_user_factory(groups=["Forum Moderators"],
+                                    permissions=["review_revision"])
     test_user_two = create_user_factory()
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
@@ -745,7 +767,7 @@ def test_article_thread_content_edit(page: Page, thread_author, create_user_fact
     with allure.step("Deleting user session and verifying that the edit this thread option "
                      "is not displayed"):
         utilities.delete_cookies()
-        expect(sumo_pages.kb_article_discussion_page.article_thread_edit_this_thread
+        expect(sumo_pages.kb_article_discussion_page.get_edit_this_thread_locator()
                ).to_be_hidden()
 
     with allure.step(f"Signing in with {test_user['username']} user account"):

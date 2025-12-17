@@ -322,7 +322,7 @@ class Utilities:
 
         # In order to avoid test flakiness we are trying to delete the cookies again if the sign-in
         # sign-up button is not visible after page refresh.
-        if top_navbar.signin_signup_button.is_hidden() and not tried_once:
+        if not top_navbar.is_sign_in_up_button_displayed and not tried_once:
             self.delete_cookies(tried_once=True)
 
     def start_existing_session(self, cookies: dict = None, session_file_name: str = None,
@@ -345,12 +345,12 @@ class Utilities:
                 cookies_data = json.load(file)
             self.page.context.add_cookies(cookies=cookies_data['cookies'])
             self.refresh_page()
-            if top_navbar.signin_signup_button.is_visible() and not tried_once:
+            if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
                 self.start_existing_session(session_file_name=session_file_name, tried_once=True)
         elif cookies is not None:
             self.page.context.add_cookies(cookies=cookies['cookies'])
             self.refresh_page()
-            if top_navbar.signin_signup_button.is_visible() and not tried_once:
+            if top_navbar.is_sign_in_up_button_displayed() and not tried_once:
                 self.start_existing_session(cookies=cookies, tried_once=True)
 
 
@@ -672,17 +672,6 @@ class Utilities:
                 self.page.reload()
         else:
             return False
-
-    def strip_wiki_syntax(self, text: str) -> str:
-        # Handle wiki links.
-        text = re.sub(r"\[\[(?:[^\|\]]*\|)?([^\]]+)\]\]", r"\1", text)
-        # Handle external links.
-        text = re.sub(r"\[(https?://[^\s]+)\s+([^\]]+)\]", r"\2", text)
-        # Handle bold wiki.
-        text = re.sub(r"'''(.*?)'''", r"\1", text)
-        # Handle italic wiki.
-        text = re.sub(r"''(.*?)''", r"\1", text)
-        return " ".join(text.split())  # collapse whitespace
 
 
 def retry_on_502(func):

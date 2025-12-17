@@ -1,5 +1,7 @@
 import re
+
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
 """
@@ -10,18 +12,13 @@ from playwright_tests.core.basepage import BasePage
 class ExploreByTopicPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
-
-        """Locators belonging to the page breadcrumb section."""
-        self.product_breadcrumb = lambda product: page.locator(
-            f"//ol[@id='breadcrumbs']/li/a[text()='{product}']")
-
-        """Locators belonging to the page header section."""
+        # Locators belonging to the header section.
         self.explore_by_topic_page_header = page.locator("div.documents-product-title h1")
 
-        """Locators belonging to the listed KB articles."""
+        # Locators belonging to the listed KB articles.
         self.article_metadata_info = page.locator("div#document_metadata span.tooltip")
 
-        """Locators belonging to the page side-navbar section."""
+        # Locators belonging to the page side-navbar section.
         self.filter_by_product_dropdown = page.locator("select#products-topics-dropdown")
         self.filter_by_product_dropdown_selected_option = page.locator(
             "select#products-topics-dropdown option[selected]")
@@ -32,12 +29,16 @@ class ExploreByTopicPage(BasePage):
         self.topic_filter = lambda option: page.locator(
             "ul.sidebar-nav--list li").get_by_role("link", name=option, exact=True)
 
-    """Actions against the page header section."""
+    """
+        Actions against the page header section.
+    """
     def get_explore_by_topic_page_header(self) -> str:
         """Get the text of the page header."""
         return self._get_text_of_element(self.explore_by_topic_page_header)
 
-    """Actions against the listed KB articles."""
+    """
+       Actions against the listed KB articles.
+    """
     def get_metadata_of_all_listed_articles(self) -> list[list[str]]:
         """Get the metadata of all listed articles."""
         elements = [
@@ -47,7 +48,9 @@ class ExploreByTopicPage(BasePage):
         ]
         return elements
 
-    """Actions against the page side-navbar section."""
+    """
+        Actions against the page side-navbar section.
+    """
     def get_selected_topic_side_navbar_option(self) -> str:
         """Get the text of the selected topic in the side-navbar."""
         return self._get_text_of_element(self.all_topics_selected_option)
@@ -62,7 +65,7 @@ class ExploreByTopicPage(BasePage):
         Args:
             option (str): The topic filter to click on.
         """
-        self._click(self.topic_filter(option), expected_locator=self.explore_by_topic_page_header)
+        self._click(self.topic_filter(option))
 
     def get_current_product_filter_dropdown_option(self) -> str:
         """Get the text of the selected option in the product filter dropdown."""
@@ -79,5 +82,4 @@ class ExploreByTopicPage(BasePage):
         Args:
             option (str): The option to select in the dropdown
         """
-        self._select_option_by_label(self.filter_by_product_dropdown, option,
-                                     expected_locator=self.product_breadcrumb(option))
+        self._select_option_by_label(self.filter_by_product_dropdown, option)

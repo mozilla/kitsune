@@ -9,7 +9,7 @@
   <div class="grid_9">
     <article id="delete-revision">
       {% if only_revision %}
-        <h1 class="title">{{ _('Unable to delete the only revision of the document') }}</h1>
+        <h1 class="title">{{ _('Unable to delete only revision of the document') }}</h1>
         <p>{{ _('To delete the document, please notify an admin.') }}</p>
         <div class="submit">
           <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Go back to document history') }}</a>

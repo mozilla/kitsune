@@ -1,10 +1,11 @@
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _lazy
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 
-NO_RESPONSE = "No response provided."
+NO_RESPONSE = _lazy("No response provided.")
 LOGINLESS_TAG = "loginless_ticket"
 
 

@@ -1,4 +1,5 @@
 from playwright.sync_api import Page
+
 from playwright_tests.core.basepage import BasePage
 
 
@@ -6,11 +7,11 @@ class SupportForumsPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        """Locators belonging to the page heading section."""
+        # Locators belonging to the page heading section.
         self.page_main_heading = page.locator("h1[class='sumo-page-heading']")
         self.page_intro = page.locator("p[class='sumo-page-intro']")
 
-        """Locators belonging to the product community forum cards."""
+        # Locators belonging to the product community forums cards.
         self.product_card_titles = page.locator("h3[class='card--title']")
         self.product_card = lambda card_name: page.locator(
             f"//a[normalize-space(.)='{card_name}']")
@@ -19,7 +20,7 @@ class SupportForumsPage(BasePage):
         self.all_products_support_forum_button = page.get_by_role("link").filter(
             has_text="All Products Community Forums")
 
-    """Actions against the page heading locators."""
+    # Page heading actions.
     def get_page_heading_text(self) -> str:
         """Get the text of the page title."""
         return self._get_text_of_element(self.page_main_heading)
@@ -28,7 +29,7 @@ class SupportForumsPage(BasePage):
         """Get the text of the page subtitle."""
         return self._get_text_of_element(self.page_intro)
 
-    """Actions against the product cards section."""
+    # Product cards actions.
     def click_on_a_particular_product_card(self, card_name: str):
         """
         Click on a particular product community forum card.

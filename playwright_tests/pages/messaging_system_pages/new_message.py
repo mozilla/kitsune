@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
 
 from playwright_tests.core.basepage import BasePage
 
@@ -55,6 +55,10 @@ class NewMessagePage(BasePage):
         """Get the text of the targeted user from the 'To' field."""
         return self._get_text_of_element(self.added_to_user_text)
 
+    def get_no_user_message_locator(self) -> Locator:
+        """Get the locator of the no user message from the 'To' search field."""
+        return self.no_user_search_results_text
+
     def get_text_of_search_result_bolded_character(self) -> str:
         """Get the text of the search result bolded character."""
         return self._get_text_of_element(self.user_search_results_bolded_characters)
@@ -87,6 +91,10 @@ class NewMessagePage(BasePage):
     def get_characters_remaining_text(self) -> str:
         """Get the text of the characters remaining message from the New Message textarea."""
         return self._get_text_of_element(self.textarea_remaining_characters_message)
+
+    def get_characters_remaining_text_locator(self) -> Locator:
+        """Get the locator of the characters remaining message from the New Message textarea."""
+        return self.textarea_remaining_characters_message
 
     def click_cancel_button(self):
         """Click on the 'Cancel' button from the New Messages page."""
@@ -154,6 +162,18 @@ class NewMessagePage(BasePage):
         """Click on the internal link from the New Message preview section."""
         self._click(self.preview_internal_link)
 
+    def get_preview_section_locator(self) -> Locator:
+        """Get the locator of the message preview section."""
+        return self.preview_section
+
     def is_message_preview_time_displayed(self) -> bool:
         """Check if the message preview time is displayed."""
         return self._is_element_visible(self.preview_time)
+
+    def get_preview_internal_link_test_data_locator(self) -> Locator:
+        """Get the locator of the internal link displayed inside the New Message page preview."""
+        return self.preview_internal_link
+
+    def get_preview_external_link_test_data_locator(self) -> Locator:
+        """Get the locator of the external link displayed inside the New Message page preview"""
+        return self.preview_external_link
