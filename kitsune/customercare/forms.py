@@ -70,11 +70,6 @@ class ZendeskForm(forms.Form):
                 "display_order"
             )
 
-            if not topics.exists() and not is_loginless:
-                topics = zendesk_config.topics.filter(loginless_only=False).order_by(
-                    "display_order"
-                )
-
             category_choices = [(None, _lazy("Select a reason for contacting"))]
             for topic in topics:
                 category_choices.append((topic.slug, topic.topic))
