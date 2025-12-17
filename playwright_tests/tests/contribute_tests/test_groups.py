@@ -123,7 +123,7 @@ def test_change_group_avatar(page: Page, create_user_factory):
     with allure.step("Signing in with a group leader and accessing the test group"):
         utilities.start_existing_session(cookies=test_user)
         group_url = utilities.get_page_url()
-        utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
+        utilities.screenshot_the_locator(sumo_pages.user_groups.group_avatar_image,
                                          displayed_image)
 
     with allure.step("Clicking on the 'Change' avatar button, uploading the image and clicking on"
@@ -146,7 +146,7 @@ def test_change_group_avatar(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the uploaded image is successfully displayed inside "
                             "the group"):
-        utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
+        utilities.screenshot_the_locator(sumo_pages.user_groups.group_avatar_image,
                                          displayed_image)
         assert not utilities.are_images_different(displayed_image, first_uploaded_image)
 
@@ -154,11 +154,9 @@ def test_change_group_avatar(page: Page, create_user_factory):
                             "uploaded image is successfully displayed inside the image preview"):
         sumo_pages.user_groups.click_on_change_uploaded_avatar_button()
         utilities.screenshot_the_locator(
-            sumo_pages.user_groups.get_change_avatar_image_preview_locator(),
-            displayed_image
+            sumo_pages.user_groups.upload_avatar_image_preview, displayed_image
         )
-        assert not utilities.are_images_different(displayed_image,
-                                                  first_uploaded_image)
+        assert not utilities.are_images_different(displayed_image, first_uploaded_image)
 
     with check, allure.step("Verifying that the correct page header is displayed"):
         assert (sumo_pages.user_groups.get_upload_avatar_page_header() == UserGroupMessages.
@@ -178,7 +176,7 @@ def test_change_group_avatar(page: Page, create_user_factory):
                               second_uploaded_image)
         sumo_pages.user_groups.click_on_upload_avatar_button(expected_url=group_url)
 
-        utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
+        utilities.screenshot_the_locator(sumo_pages.user_groups.group_avatar_image,
                                          displayed_image)
         assert not utilities.are_images_different(displayed_image, second_uploaded_image)
 
@@ -192,13 +190,13 @@ def test_change_group_avatar(page: Page, create_user_factory):
                 DELETE_AVATAR_PAGE_INFO)
 
         utilities.screenshot_the_locator(
-            sumo_pages.user_groups.get_delete_avatar_image_preview_locator(), displayed_image)
+            sumo_pages.user_groups.delete_uploaded_avatar_image_preview, displayed_image)
         assert not utilities.are_images_different(displayed_image, second_uploaded_image)
 
     with allure.step("Clicking on the 'Cancel' button and verifying that the image was not "
                      "deleted"):
         sumo_pages.user_groups.click_on_cancel_delete_avatar_button()
-        utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
+        utilities.screenshot_the_locator(sumo_pages.user_groups.group_avatar_image,
                                          displayed_image)
         assert not utilities.are_images_different(displayed_image, second_uploaded_image)
 
@@ -206,7 +204,7 @@ def test_change_group_avatar(page: Page, create_user_factory):
                      "verifying that the image was deleted"):
         sumo_pages.user_groups.click_on_delete_uploaded_avatar_button()
         sumo_pages.user_groups.click_on_delete_avatar_button()
-        utilities.screenshot_the_locator(sumo_pages.user_groups.get_group_avatar_locator(),
+        utilities.screenshot_the_locator(sumo_pages.user_groups.group_avatar_image,
                                          displayed_image)
         assert utilities.are_images_different(displayed_image, second_uploaded_image)
 

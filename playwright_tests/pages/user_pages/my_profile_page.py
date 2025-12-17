@@ -1,5 +1,4 @@
-from playwright.sync_api import ElementHandle, Locator, Page
-
+from playwright.sync_api import ElementHandle, Page
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,11 +6,11 @@ class MyProfilePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Sidebar locators
+        """Locators belonging to the sidebar."""
         self.user_navbar_options = page.locator("ul#user-nav li a")
         self.user_navbar_selected_element = page.locator("a.selected")
 
-        # Admin/other user actions locators
+        """Locators available for admin & other users."""
         self.edit_user_profile_option = page.locator("div#admin-actions").get_by_role(
             "link").filter(has_text="Edit user profile")
         self.report_abuse_profile_option = page.locator("article#profile").get_by_role(
@@ -21,7 +20,7 @@ class MyProfilePage(BasePage):
             "input[value='Deactivate this user and mark all content as spam']")
         self.private_message_button = page.locator("p.pm").get_by_role("link")
 
-        # Report Abuse locators
+        """Locators belonging to the 'Report Abuse' section."""
         self.report_abuse_panel = page.locator("section#report-abuse-")
         self.spam_or_other_unrelated_content_option = page.locator("label").filter(
             has_text="Spam or other unrelated content")
@@ -36,7 +35,7 @@ class MyProfilePage(BasePage):
             "section#report-abuse- button[type='submit']")
         self.reported_user_confirmation_message = page.locator("span[class='message']")
 
-        # Contributions section locators
+        """Locators belonging to the contributions section."""
         self.questions_link = page.locator("section[class='contributions']").get_by_role(
             "link").filter(has_text="question")
         self.answers_link = page.locator("section[class='contributions']").get_by_role(
@@ -46,7 +45,7 @@ class MyProfilePage(BasePage):
         self.provided_documents_link = page.locator("section[class='contributions']").get_by_role(
             "link").filter(has_text="document")
 
-        # My Profile page details locators
+        """Locators belonging to the My profile page details section."""
         self.page_header = page.locator("h1[class='sumo-page-heading']")
         self.page_subheading = page.locator("article#profile h2[class*='sumo-page-subheading']")
         self.email_address = page.locator("p strong")
@@ -76,18 +75,10 @@ class MyProfilePage(BasePage):
         self.group_by_name = lambda group_name: page.locator(
             "section[class='groups']").get_by_role("link", name=group_name, exact=True)
 
-    # My profile page actions.
+    """Actions against the My Profile page locators."""
     def get_my_profile_display_name_header_text(self) -> str:
         """Get the display name header text."""
         return self._get_text_of_element(self.display_name_header)
-
-    def get_expected_header_locator(self, expected_username: str) -> Locator:
-        """Get the expected header locator.
-
-        Args:
-            expected_username (str): The expected username
-        """
-        return self.display_name_by_username(expected_username)
 
     def get_my_profile_display_name_username_text(self) -> str:
         """Get the display name username text."""
@@ -249,17 +240,9 @@ class MyProfilePage(BasePage):
         """
         self._click(self.private_message_button, expected_url=expected_url)
 
-    def publicly_displayed_email_element(self) -> Locator:
-        """Get the locator for the publicly displayed email element."""
-        return self.displayed_email_address
-
     def is_website_information_displayed(self) -> bool:
         """Check if the website information is displayed."""
         return self._is_element_visible(self.website_info)
-
-    def groups_section_element(self) -> Locator:
-        """Get the locator for the groups section."""
-        return self.groups_section
 
     def click_on_a_particular_profile_group(self, group_name: str):
         """Click on a particular profile group.
@@ -268,23 +251,3 @@ class MyProfilePage(BasePage):
             group_name (str): The name of the group to click on
         """
         self._click(self.group_by_name(group_name))
-
-    def edit_user_profile_option_element(self) -> Locator:
-        """Get the locator for the edit user profile option."""
-        return self.edit_user_profile_option
-
-    def is_report_user_option_displayed(self) -> Locator:
-        """Get the locator for the report user option."""
-        return self.report_abuse_profile_option
-
-    def is_report_abuse_panel_displayed(self) -> Locator:
-        """Get the locator for the report abuse panel."""
-        return self.report_abuse_panel
-
-    def is_deactivate_this_user_button_displayed(self) -> Locator:
-        """Get the locator for the deactivate this user button."""
-        return self.deactivate_this_user_button
-
-    def deactivate_user_and_mark_content_as_spam_button(self) -> Locator:
-        """Get the locator for the deactivate user and mark content as spam button."""
-        return self.deactivate_this_user_and_mark_all_content_as_spam

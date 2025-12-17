@@ -1,5 +1,4 @@
 from playwright.sync_api import Locator, Page
-
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,7 +6,7 @@ class KBDashboard(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Top-level filter locators
+        """Locators related to the top-level filter section."""
         self.products_filter_button = page.locator(
             "article#localize div[class='mzp-c-menu-list featured-dropdown is-details'] button")
         self.products_filter_complete_overview = page.locator("div#product-selector select")
@@ -34,10 +33,7 @@ class KBDashboard(BasePage):
             f"//td/a[text()='{article_name}']/../following-sibling::td/a[contains(text(),"
             f"'Show translations')]")
 
-    # KB Dashboard actions
-    def get_a_particular_article_title_locator(self, article_name: str) -> Locator:
-        return self.article_title(article_name)
-
+    """Actions against the kb dashboard locators."""
     def click_on_article_title(self, article_name: str):
         self._click(self.article_title(article_name))
 
@@ -61,9 +57,6 @@ class KBDashboard(BasePage):
 
     def get_existing_expiry_date(self, article_name: str) -> str:
         return self._get_text_of_element(self.expiry_date(article_name))
-
-    def get_expiry_date_locator(self, article_name: str) -> Locator:
-        return self.expiry_date(article_name)
 
     def click_on_show_translations_option(self, article_name: str):
         self._click(self.show_translations_option(article_name))

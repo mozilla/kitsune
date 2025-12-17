@@ -7,7 +7,7 @@ class SearchPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Locators belonging to the searchbar.
+        """Locators belonging to the searchbar."""
         self.searchbar_homepage = page.locator("form#support-search-masthead input#search-q")
         self.searchbar_aaq = page.locator("form#question-search-masthead input#search-q")
         self.searchbar_sidebar = page.locator("form#support-search-sidebar input#search-q")
@@ -19,7 +19,7 @@ class SearchPage(BasePage):
             "p[class='popular-searches']").get_by_role("link", name=option, exact=True)
         self.search_results_section = page.locator("main#search-results-list")
 
-        # Locators belonging to the search results filter
+        """Locators belonging to the search results filter."""
         self.selected_filter_locator = page.locator(
             "//ul[@id='doctype-filter']/li[@class='tabs--item']/a[@class='selected']/span")
         self.view_all_filter = page.locator(
@@ -31,7 +31,7 @@ class SearchPage(BasePage):
             "//ul[@id='doctype-filter']/li[@class='tabs--item']/a/span[text()='Community "
             "Discussion Only']")
 
-        # Locators belonging to the search results
+        """Locators belonging to the search results."""
         self.search_results_titles = page.locator(
             "section[class='topic-list content-box'] a[class='title']")
         self.search_results_articles_summary = page.locator("div[class='topic-article--text'] p")
@@ -48,7 +48,7 @@ class SearchPage(BasePage):
             "//ul[@class='topic-article--meta-list thread-meta']/li[contains(text(),"
             "'people have this problem')]")
 
-        # Locators belonging to the side navbar
+        """Locators belonging to the side navbar."""
         self.search_results_side_nav_header = page.locator("h3[class='sidebar-subheading']")
         self.search_results_side_nav_selected_item = page.locator(
             "ul#product-filter li[class='selected'] a")
@@ -56,16 +56,14 @@ class SearchPage(BasePage):
         self.search_results_side_nav_element = lambda product_name: page.locator(
             "ul#product-filter").get_by_role("link", name=product_name, exact=True)
 
-        # General page locators
+        """General page locators."""
         self.page_header = page.locator("h1[class='sumo-page-heading-xl']")
 
 
     def _wait_for_visibility_of_search_results_section(self):
         self._wait_for_locator(self.search_results_section)
 
-    """
-        Actions against the search results
-    """
+    """Actions against the search results."""
     def click_on_a_particular_popular_search(self, popular_search_option: str):
         """Click on a particular popular search option
 
@@ -164,9 +162,7 @@ class SearchPage(BasePage):
         """Check if the search content section is displayed"""
         return self._is_element_visible(self.search_results_content)
 
-    """
-        Actions against the search bar
-    """
+    """Actions against the search bar."""
 
     def get_text_of_searchbar_field(self) -> str:
         """Get the text of the search bar field"""
@@ -188,6 +184,7 @@ class SearchPage(BasePage):
         else:
             self.clear_the_searchbar()
             self._fill(self.searchbar_homepage, text)
+        self._wait_for_visibility_of_search_results_section()
 
     def clear_the_searchbar(self, is_aaq=False, is_sidebar=False):
         """Clear the search bar
@@ -219,9 +216,7 @@ class SearchPage(BasePage):
         """
         self._click(self.popular_search(popular_search_name))
 
-    """
-        Actions against the side navbar
-    """
+    """Actions against the side navbar."""
     def get_the_highlighted_side_nav_item(self) -> str:
         """Get the highlighted side nav item"""
         return self._get_text_of_element(self.search_results_side_nav_selected_item)
@@ -234,9 +229,7 @@ class SearchPage(BasePage):
         """
         self._click(self.search_results_side_nav_element(product_name))
 
-    """
-        General page actions
-    """
+    """General page actions."""
     def get_search_results_header(self) -> str:
         """Get the search results header"""
         self._wait_for_visibility_of_search_results_section()

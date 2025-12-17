@@ -1,5 +1,4 @@
-from playwright.sync_api import Locator, Page
-
+from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
 
@@ -7,7 +6,7 @@ class RecentRevisions(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-        # Right-side menu locators
+        """Locators related to the right-side menu."""
         self.kb_dashboard_option = page.get_by_role("link", name="KB Dashboard", exact=True)
         self.locale_metrics_option = page.get_by_role("link", name="Locale Metrics", exact=True)
         self.kb_team_option = page.get_by_role("link").filter(has_text="KB Team")
@@ -15,7 +14,8 @@ class RecentRevisions(BasePage):
             "li#editing-tools-sidebar li[class='selected'] a")
         self.aggregated_metrics = page.get_by_role("link", name="Aggregated Metrics", exact=True)
 
-        # Recent Revisions table locators.
+        """Locators related to the Recent Revisions table."""
+        self.revisions_table = page.locator("//div[@id='revisions-fragment']")
         self.locale_select_field = page.locator("select#id_locale")
         self.locale_tag = page.locator("span[class='locale']")
         self.all_editors = page.locator("div[class='creator'] a")
@@ -50,11 +50,13 @@ class RecentRevisions(BasePage):
             f"//div[@id='revisions-fragment']//div[@class='title']/a[text()='{article_title}']/../"
             f"../div[@class='creator']/a[contains(text(),'{username}')]/../../"
             f"div[@class='comment wider']")
+        self.loading_icon = page.locator(
+            "//article[@id='revision-list']/form/img[@class='loading']")
 
-        # Revision diff locators.
+        """Locators related to the revision diff section."""
         self.revision_diff_section = page.locator("div[class='revision-diff']")
 
-    # Right-side menu actions.
+    """Actions against the right-side menu locators."""
     def click_on_kb_dashboard_option(self):
         self._click(self.kb_dashboard_option)
 
@@ -70,7 +72,7 @@ class RecentRevisions(BasePage):
     def click_on_aggregated_metrics_option(self):
         self._click(self.aggregated_metrics)
 
-    # Recent Revisions table actions.
+    """Actions against the recent revisions table locators."""
     def get_all_revision_dates(self) -> list[str]:
         return self._get_text_of_elements(self.all_dates)
 
@@ -82,26 +84,29 @@ class RecentRevisions(BasePage):
 
     def select_locale_option(self, locale_value: str):
         self._select_option_by_value(self.locale_select_field, locale_value)
+        self._wait_for_locator(self.loading_icon, timeout=3000)
+        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
 
     def fill_in_users_field(self, username: str):
         self._fill(self.users_input_field, username)
         self._press_a_key(self.users_input_field, "Enter")
+        self._wait_for_locator(self.loading_icon, timeout=3000)
+        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
 
     def clearing_the_user_field(self):
         self._clear_field(self.users_input_field)
+        self._wait_for_locator(self.loading_icon, timeout=3000)
+        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
 
     def add_start_date(self, start_date: str):
         self._type(self.start_date_input_field, start_date, 0)
+        self._wait_for_locator(self.loading_icon, timeout=3000)
+        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
 
     def add_end_date(self, end_date: str):
         self._type(self.end_date_input_field, end_date, 0)
-
-    def get_recent_revision_based_on_article(self, title: str) -> Locator:
-        return self.recent_revision_based_on_article(title)
-
-    def get_recent_revision_based_on_article_title_and_user(self, title: str,
-                                                            username: str) -> Locator:
-        return self.recent_revisions_based_on_article_and_user(title, username)
+        self._wait_for_locator(self.loading_icon, timeout=3000)
+        self._wait_for_locator_to_be_hidden(self.loading_icon, timeout=5000)
 
     def click_on_article_title(self, article_title: str, creator: str):
         self._click(self.article_title(creator, article_title))
@@ -112,9 +117,6 @@ class RecentRevisions(BasePage):
     def click_on_show_diff_for_article(self, article_title: str, creator: str):
         self._click(self.show_diff(article_title, creator))
 
-    def get_show_diff_article_locator(self, article_title: str, creator: str) -> Locator:
-        return self.show_diff(article_title, creator)
-
     def click_on_hide_diff_for_article(self, article_title: str, creator: str):
         self._click(self.close_diff(article_title, creator))
 
@@ -124,10 +126,3 @@ class RecentRevisions(BasePage):
     def get_revision_comment(self, article_title: str, username: str) -> str:
         return self._get_element_inner_text_from_page(
             self.revision_comment(article_title, username))
-
-    def get_revision_and_username_locator(self, article_title: str, username: str) -> Locator:
-        return self.recent_revisions_based_on_article_and_user(article_title, username)
-
-    # Diff section actions
-    def get_diff_section_locator(self) -> Locator:
-        return self.revision_diff_section

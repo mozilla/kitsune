@@ -1,5 +1,4 @@
 from playwright.sync_api import ElementHandle, Locator, Page
-
 from playwright_tests.core.basepage import BasePage
 
 
@@ -83,10 +82,6 @@ class InboxPage(BasePage):
     def click_on_scam_alert_close_button(self):
         """Click on the close button of the scam alert banner."""
         self._click(self.scam_alert_close_button)
-
-    def get_scam_banner_message_locator(self) -> Locator:
-        """Get the locator of the inbox message scam banner."""
-        return self.scam_alert_banner_text
 
     """Actions against the general Inbox page locators."""
     def get_text_of_main_header(self) -> str:
@@ -235,22 +230,6 @@ class InboxPage(BasePage):
         """
         self._press_a_key(self.delete_confirmation_page_cancel_button, 'Enter')
 
-    def get_inbox_message_locator_based_on_sender(self, username: str) -> Locator:
-        """
-            Get the locator of the inbox message based on the sender's username.
-            Args:
-                username (str): The username of the message sender.
-        """
-        return self.sender_username(username)
-
-    def get_inbox_message_locator_based_on_excerpt(self, excerpt: str) -> Locator:
-        """
-            Get the locator of the inbox message based on the excerpt.
-            Args:
-                excerpt (str): The excerpt of the message.
-        """
-        return self.inbox_message_by_excerpt(excerpt)
-
 
     def get_inbox_message_element_handles_based_on_excerpt(self,
                                                            excerpt: str) -> list[ElementHandle]:
@@ -277,11 +256,6 @@ class InboxPage(BasePage):
         """
         inbox_checkbox = self.get_message_select_checkbox_element(excerpt)
         self._checkbox_interaction(inbox_checkbox[0], True)
-
-    def get_all_unread_messages(self) -> list[Locator]:
-        """Get all the unread messages."""
-        return self.all_unread_messages.all()
-
 
     """Actions against the read inbox message page."""
     def get_the_deleted_user_message_sender_text(self) -> str:
