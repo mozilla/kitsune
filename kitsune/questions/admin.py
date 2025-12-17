@@ -53,6 +53,7 @@ class AAQConfigAdmin(admin.ModelAdmin):
     list_display = ("title", "product", "is_active", "pinned_article_config")
     list_editable = ("is_active",)
     inlines = [QuestionLocaleAdmin]
+    search_fields = ("title", "product__title", "product__slug")
     fields = (
         "title",
         "product",
