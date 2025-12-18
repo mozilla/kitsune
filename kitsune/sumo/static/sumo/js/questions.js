@@ -86,7 +86,7 @@ function init() {
     new AjaxPreview($('#preview'));
   }
 
-  Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
+  Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question') && !$body.is('.edit-question')});
 
   // product selector page reloading
   $('#product-selector select').on('change', function() {
@@ -114,10 +114,11 @@ function init() {
 function initQuestion(action) {
   const questionForm = document.querySelector('#question-form');
   if (!questionForm) return;
+  let aaq = new AAQSystemInfo(questionForm);
   if (action === "editing") {
     questionForm.querySelector("#troubleshooting-field").style.display = "block";
   } else {
-    new AAQSystemInfo(questionForm).fillDetails();
+    aaq.fillDetails();
     hideDetails(questionForm);
   }
 }
