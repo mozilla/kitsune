@@ -72,6 +72,7 @@ def populate_zendesk_configs(apps, schema_editor):
         zendesk_config = zendesk_configs_by_slug.get(product.slug)
 
         config_data = None
+        is_active = False
 
         if zendesk_config:
             config_data = {
@@ -80,8 +81,9 @@ def populate_zendesk_configs(apps, schema_editor):
                 "zendesk_config": zendesk_config,
                 "default_support_type": "zendesk",
             }
+            is_active = True
         else:
-            aaq_config = AAQConfig.objects.filter(product=product).first()
+            aaq_config = AAQConfig.objects.filter(product=product, is_active=True).first()
             if aaq_config:
                 config_data = {
                     "product": product,
@@ -89,10 +91,11 @@ def populate_zendesk_configs(apps, schema_editor):
                     "zendesk_config": None,
                     "default_support_type": "forum",
                 }
+                is_active = True
 
         if config_data:
             ProductSupportConfig.objects.create(
-                is_active=True, group_default_support_type=None, **config_data
+                is_active=is_active, group_default_support_type=None, **config_data
             )
 
 
