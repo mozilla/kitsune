@@ -312,6 +312,34 @@ class UserProfileTests(TestCase):
         self.assertEqual(1, Question.objects.filter(creator=spam_user, is_spam=True).count())
         self.assertEqual(1, Answer.objects.filter(creator=spam_user, is_spam=True).count())
 
+    def test_cannot_deactivate_superuser(self):
+        """Test that superusers cannot be deactivated."""
+        self.client.login(username=self.user.username, password="testpass")
+        add_permission(self.user, Profile, "deactivate_users")
+
+        superuser = UserFactory(is_superuser=True)
+
+        url = reverse("users.deactivate", locale="en-US")
+        response = self.client.post(url, {"user_id": superuser.id})
+
+        self.assertEqual(404, response.status_code)
+        superuser.refresh_from_db()
+        self.assertTrue(superuser.is_active)
+
+    def test_cannot_deactivate_superuser_as_spam(self):
+        """Test that superusers cannot be deactivated with spam flag."""
+        self.client.login(username=self.user.username, password="testpass")
+        add_permission(self.user, Profile, "deactivate_users")
+
+        superuser = UserFactory(is_superuser=True)
+
+        url = reverse("users.deactivate-spam", locale="en-US")
+        response = self.client.post(url, {"user_id": superuser.id})
+
+        self.assertEqual(404, response.status_code)
+        superuser.refresh_from_db()
+        self.assertTrue(superuser.is_active)
+
 
 class ProfileNotificationTests(TestCase):
     """
