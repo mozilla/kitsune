@@ -16,7 +16,14 @@ from kitsune.wiki.config import (
     TEMPLATE_TITLE_PREFIX,
     TEMPLATES_CATEGORY,
 )
-from kitsune.wiki.models import Document, DraftRevision, HelpfulVote, Locale, Revision
+from kitsune.wiki.models import (
+    Document,
+    DraftRevision,
+    HelpfulVote,
+    Locale,
+    Revision,
+    RevisionAnchorRecord,
+)
 
 
 class DocumentFactory(factory.django.DjangoModelFactory):
@@ -169,6 +176,24 @@ class HelpfulVoteFactory(factory.django.DjangoModelFactory):
         model = HelpfulVote
 
     revision = factory.SubFactory(RevisionFactory)
+
+
+class RevisionAnchorRecordFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RevisionAnchorRecord
+
+    revision = factory.SubFactory(TranslatedRevisionFactory)
+    map: dict[str, str] = {}
+    explanation = FuzzyUnicode()
+
+    @factory.post_generation
+    def created(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.created = extracted
+            self.save()
 
 
 # Todo: This should probably be a non-Django factory class

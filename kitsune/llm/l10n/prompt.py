@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, TypedDict
 
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import AIMessage
@@ -7,11 +7,13 @@ from langchain_core.exceptions import OutputParserException
 
 from kitsune.llm.l10n.config import L10N_PROTECTED_TERMS
 
-DELIMITER = "<<<<translation-and-explanation-delimiter>>>>"
+TRANSLATION_DELIMITER = "<<<<translation-delimiter>>>>"
 TRANSLATION_PARSER_REGEX = re.compile(
-    rf"^(```wiki\s+)?\s*(?P<translation>.+?)(?(1)\s*```)\s*{DELIMITER}\s*(?P<explanation>.+)$",
+    rf"^(```wiki\s+)?\s*(?P<translation>.+?)(?(1)\s*```)\s*{TRANSLATION_DELIMITER}\s*(?P<explanation>.+)$",
     re.DOTALL,
 )
+ANCHOR_MAP_DELIMITER = "<<<<anchor-map-delimiter>>>>"
+ANCHOR_MAP_KEY_VALUE_DELIMITER = ">>>>"
 
 TRANSLATION_INSTRUCTIONS = """
 # Role and task
@@ -126,6 +128,42 @@ There is no prior translation.
 ```
 """
 
+ANCHOR_MAP_INSTRUCTIONS = """
+# Role and task
+- You are an expert in HTML and the translation of technical documents about Mozilla's products from {{ source_language }} to {{ target_language }}.
+- However, the definitions and task instructions provided below **take precedence over everything else**.
+- Your task is to create a mapping of the `id` of each heading element (the `h1` through `h6` tags) defined in the given {{ source_language }} HTML to the `id` of its equivalent heading element in the given {{ target_language }} translation, **strictly following** the definitions and task instructions provided below.
+
+# Definition of equivalency
+A heading element in the given {{ target_language }} translation is considered equivalent to a heading element in the given {{ source_language }} HTML only if **ALL** of the following conditions are satisfied:
+- Its tag is the same as the tag of the heading element in the given {{ source_language }} HTML. For example, a heading element in the {{ target_language }} translation with an `h2` tag would only match a heading element with an `h2` tag in the {{ source_language }} HTML.
+- Its element content is a valid {{ target_language }} translation of the element content within the {{ source_language }} heading element, or it is equal.
+
+# Task Instructions
+1. Start with an empty mapping.
+2. For each heading element in the given {{ source_language }} HTML, find its equivalent heading element in the given {{ target_language }} translation.
+3. If an equivalent is found, **and each heading element has an `id` attribute**, create an entry in your mapping where the key is the value of the `id` attribute of the {{ source_language }} heading element, and its value is the value of the `id` attribute of its equivalent {{ target_language }} heading element.
+4. Otherwise, **do not include the heading element in your mapping**.
+5. Your response should include the following, in the order listed, and nothing else:
+   - Your mapping as key-value pairs, with each key-value pair **on a separate line formatted as `key{{ key_value_delimiter }}value`**, or if your mapping is empty, simply use `None`. Your mapping **must not include any added commentary, formatting, markdown fences, or extra text of any kind**.
+   - The delimiter `{{ delimiter }}` on its own line.
+   - An explanation describing what you did for each step.
+"""
+
+SOURCE_AND_TRANSLATION = """
+# The {{ source_language }} HTML
+
+```html
+{{ source_html|safe }}
+```
+
+# The {{ target_language }} translation
+
+```html
+{{ target_html|safe }}
+```
+"""
+
 
 def translation_parser(message: AIMessage) -> dict[str, Any]:
     """
@@ -157,4 +195,64 @@ translation_prompt = ChatPromptTemplate(
         ("human", SOURCE_ARTICLE),
     ),
     template_format="jinja2",
-).partial(protected_terms=L10N_PROTECTED_TERMS, delimiter=DELIMITER)
+).partial(protected_terms=L10N_PROTECTED_TERMS, delimiter=TRANSLATION_DELIMITER)
+
+
+anchor_map_prompt = ChatPromptTemplate(
+    (
+        ("system", ANCHOR_MAP_INSTRUCTIONS),
+        ("human", SOURCE_AND_TRANSLATION),
+    ),
+    template_format="jinja2",
+).partial(delimiter=ANCHOR_MAP_DELIMITER, key_value_delimiter=ANCHOR_MAP_KEY_VALUE_DELIMITER)
+
+
+class AnchorMapResult(TypedDict):
+    map: dict[str, str]
+    explanation: str
+
+
+DEFAULT_ANCHOR_MAP_RESULT: AnchorMapResult = {
+    "map": {},
+    "explanation": "Error in LLM response - defaulting to an empty map",
+}
+
+
+def anchor_map_parser(message: AIMessage) -> AnchorMapResult:
+    """
+    Parses the result from the LLM invocation for an anchor map, and returns a
+    dictionary with the map and the explanation. Each key within the map is the
+    anchor of an English header with an equivalent header in the translation,
+    and each value is the anchor of its equivalent header in the translation.
+    """
+    result: AnchorMapResult = {"map": {}, "explanation": ""}
+    content = message.text()
+
+    exception = OutputParserException(
+        "The LLM response was not formatted correctly.",
+        observation="The response was not formatted correctly.",
+        llm_output=content,
+    )
+
+    if not (content and (ANCHOR_MAP_DELIMITER in content)):
+        raise exception
+
+    map_as_text, explanation = (p.strip() for p in content.split(ANCHOR_MAP_DELIMITER, maxsplit=1))
+
+    result["explanation"] = explanation
+
+    if (not map_as_text) or (map_as_text.lower() == "none"):
+        return result
+
+    for line in map_as_text.splitlines():
+        if not (line := line.strip()):
+            continue
+
+        if ANCHOR_MAP_KEY_VALUE_DELIMITER not in line:
+            raise exception
+
+        source_anchor, translation_anchor = line.split(ANCHOR_MAP_KEY_VALUE_DELIMITER, maxsplit=1)
+
+        result["map"][source_anchor] = translation_anchor
+
+    return result

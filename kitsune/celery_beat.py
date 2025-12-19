@@ -139,6 +139,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.wiki.tasks.run_rebuild_kb",
         "schedule": crontab(hour="0", minute="0"),
     },
+    # Every Sunday at 01:00.
+    "cleanup_old_anchor_records": {
+        "task": "kitsune.wiki.tasks.cleanup_old_anchor_records",
+        "schedule": crontab(hour="1", minute="0", day_of_week="0"),
+    },
 }
 
 # Periodic tasks only for the prod environment.
