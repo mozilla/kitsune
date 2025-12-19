@@ -372,6 +372,12 @@ class ZendeskConfig(ModelBase):
     enable_os_field = models.BooleanField(
         default=False, help_text="Show operating system selector in the support form"
     )
+    topics = models.ManyToManyField(
+        "ZendeskTopic",
+        through="ZendeskTopicConfiguration",
+        related_name="zendesk_configs",
+        help_text="Topics available for this Zendesk configuration"
+    )
 
     class Meta:
         verbose_name = "Zendesk configuration"
@@ -382,17 +388,15 @@ class ZendeskConfig(ModelBase):
 
 
 class ZendeskTopic(ModelBase):
-    """Zendesk support topic/category for the support form dropdown."""
+    """Zendesk support topic/category for the support form dropdown.
 
-    zendesk_config = models.ForeignKey(
-        ZendeskConfig, on_delete=models.CASCADE, related_name="topics"
-    )
-    slug = models.SlugField(max_length=100, help_text="Unique identifier for this topic")
+    Topics are reusable across multiple Zendesk configurations through
+    the ZendeskTopicConfiguration through table.
+    """
+
+    slug = models.SlugField(max_length=100, unique=True, help_text="Globally unique identifier for this topic")
     topic = models.CharField(
         max_length=255, help_text="User-facing topic text shown in the dropdown"
-    )
-    display_order = models.IntegerField(
-        default=0, help_text="Order in which topics appear (lower numbers first)"
     )
     legacy_tag = models.CharField(max_length=100, blank=True, help_text="Legacy Zendesk tag")
     tier_tags = models.JSONField(
@@ -405,22 +409,13 @@ class ZendeskTopic(ModelBase):
     segmentation_tag = models.CharField(
         max_length=100, blank=True, null=True, help_text="Segmentation tag for analytics"
     )
-    loginless_only = models.BooleanField(
-        default=False,
-        help_text="Only show this topic for loginless (unauthenticated) support flows",
-    )
 
     class Meta:
         verbose_name = "Zendesk topic"
-        ordering = ["display_order", "slug"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["zendesk_config", "slug"], name="unique_zendesk_topic_per_config"
-            )
-        ]
+        ordering = ["slug"]
 
     def __str__(self):
-        return f"{self.zendesk_config.name}: {self.topic}"
+        return f"{self.topic} ({self.slug})"
 
     @property
     def tags_dict(self):
@@ -431,3 +426,44 @@ class ZendeskTopic(ModelBase):
             "automation": self.automation_tag,
             "segmentation": self.segmentation_tag,
         }
+
+
+class ZendeskTopicConfiguration(ModelBase):
+    """
+    Through table connecting ZendeskConfig to ZendeskTopic with config-specific settings.
+
+    This allows topics to be reused across multiple configs with different
+    ordering and visibility settings.
+    """
+
+    zendesk_config = models.ForeignKey(
+        ZendeskConfig,
+        on_delete=models.CASCADE,
+        related_name="topic_configurations"
+    )
+    zendesk_topic = models.ForeignKey(
+        ZendeskTopic,
+        on_delete=models.CASCADE,
+        related_name="configurations"
+    )
+    display_order = models.IntegerField(
+        default=0,
+        help_text="Order in which this topic appears in this config (lower numbers first)"
+    )
+    loginless_only = models.BooleanField(
+        default=False,
+        help_text="Only show this topic for loginless flows in this config"
+    )
+
+    class Meta:
+        verbose_name = "Zendesk topic configuration"
+        ordering = ["display_order", "zendesk_topic__slug"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["zendesk_config", "zendesk_topic"],
+                name="unique_topic_per_config"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.zendesk_config.name}: {self.zendesk_topic.topic} (order {self.display_order})"
