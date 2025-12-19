@@ -201,11 +201,15 @@ class ZendeskTopicAdmin(admin.ModelAdmin):
 
 
 class ZendeskConfigAdmin(admin.ModelAdmin):
-    list_display = ("name", "ticket_form_id", "enable_os_field")
+    list_display = ("name", "ticket_form_id", "enable_os_field", "topic_count")
     list_display_links = ("name",)
     list_editable = ("enable_os_field",)
     search_fields = ("name",)
     inlines = [ZendeskTopicInline]
+
+    @admin.display(description="# Topics")
+    def topic_count(self, obj):
+        return obj.topics.count()
 
 
 class ProductSupportConfigAdmin(admin.ModelAdmin):
@@ -223,7 +227,13 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
     search_fields = ("product__title", "product__slug")
     filter_horizontal = ("hybrid_support_groups",)
     autocomplete_fields = ("product", "forum_config", "zendesk_config")
-    readonly_fields = ("is_hybrid", "enable_forum_support", "enable_zendesk_support")
+    readonly_fields = (
+        "is_hybrid",
+        "enable_forum_support",
+        "enable_zendesk_support",
+        "zendesk_topics_display",
+        "zendesk_config_link",
+    )
 
     fieldsets = (
         (
@@ -238,6 +248,8 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
                 "fields": (
                     "forum_config",
                     "zendesk_config",
+                    "zendesk_config_link",
+                    "zendesk_topics_display",
                     "enable_forum_support",
                     "enable_zendesk_support",
                     "is_hybrid",
@@ -274,6 +286,41 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Hybrid (Both)")
     def is_hybrid(self, obj):
         return obj.is_hybrid
+
+    @admin.display(description="Zendesk Config Details")
+    def zendesk_config_link(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+
+        if not obj.zendesk_config:
+            return "—"
+
+        url = reverse("admin:products_zendeskconfig_change", args=[obj.zendesk_config.pk])
+        return format_html(
+            '<a href="{}" target="_blank">{}</a> (click to edit topics)',
+            url,
+            obj.zendesk_config.name,
+        )
+
+    @admin.display(description="Available Topics")
+    def zendesk_topics_display(self, obj):
+        from django.utils.html import format_html
+
+        if not obj.zendesk_config:
+            return "—"
+
+        topics = obj.zendesk_config.topics.all().order_by("display_order")
+        if not topics:
+            return format_html("<em>No topics configured</em>")
+
+        topic_items = []
+        for topic in topics:
+            loginless_badge = " <span style='color: #666;'>(loginless only)</span>" if topic.loginless_only else ""
+            topic_items.append(
+                f"<li><strong>{topic.slug}</strong>: {topic.topic}{loginless_badge}</li>"
+            )
+
+        return format_html("<ul style='margin: 0; padding-left: 20px;'>{}</ul>", "".join(topic_items))
 
 
 admin.site.register(ZendeskTopic, ZendeskTopicAdmin)

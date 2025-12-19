@@ -6,7 +6,8 @@ from django.test.utils import override_settings
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.models import (
     AAQConfig,
     Answer,
@@ -37,7 +38,13 @@ class AAQSearchTests(ElasticTestCase):
         """Make sure posting new questions is ratelimited"""
         p = ProductFactory(slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
+        aaq_config = AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
+        ProductSupportConfigFactory(
+            product=p,
+            forum_config=aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+        )
         topic = TopicFactory(slug="troubleshooting", products=[p], in_aaq=True)
         data = {
             "title": "A test question",
@@ -86,7 +93,14 @@ class AAQTests(TestCase):
     def setUp(self):
         product = ProductFactory(title="Firefox", slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        AAQConfigFactory(product=product, enabled_locales=[locale], is_active=True)
+        aaq_config = AAQConfigFactory(product=product, enabled_locales=[locale], is_active=True)
+        # Create ProductSupportConfig for routing
+        ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+        )
 
     def test_non_authenticated_user(self):
         """

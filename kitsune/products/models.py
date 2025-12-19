@@ -96,8 +96,13 @@ class Product(BaseProductTopic):
 
     @property
     def has_ticketing_support(self):
-        """Return boolean if a product has subscriptions"""
-        return bool(self.codename)
+        """Return boolean if a product has Zendesk ticketing support"""
+        try:
+            config = self.support_configs.get(is_active=True)
+        except ProductSupportConfig.DoesNotExist:
+            return False
+        else:
+            return config.enable_zendesk_support
 
     def questions_enabled(self, locale):
         return self.aaq_configs.filter(is_active=True, enabled_locales__locale=locale).exists()
@@ -323,7 +328,11 @@ class ProductSupportConfig(ModelBase):
         constraints = [
             models.UniqueConstraint(
                 fields=["product", "is_active"], name="unique_active_support_config"
-            )
+            ),
+            models.CheckConstraint(
+                check=models.Q(forum_config__isnull=False) | models.Q(zendesk_config__isnull=False),
+                name="at_least_one_support_channel",
+            ),
         ]
 
     def __str__(self):

@@ -96,19 +96,20 @@
       {{ _('Ask a Question') }}
     </h2>
     {% set link_detail = aaq_context.product_slug if aaq_context else topic %}
-    {% set has_support = aaq_context.has_ticketing_support if aaq_context else False %}
+    {% set current_support = aaq_context.current_support_type if aaq_context else None %}
     {% set has_forum = aaq_context.has_public_forum if aaq_context else False %}
     {% set multiple_products = aaq_context.multiple_products if aaq_context else False %}
+    {% set is_ticketed = (current_support == 'zendesk') if current_support else False %}
 
     {% if aaq_context %}
       {% if request.user.is_authenticated %}
-        {% if has_support %}
+        {% if is_ticketed %}
           <p>{{ _('Still need help? Continue to contact our support team.') }}</p>
         {% else %}
           <p>{{ _('Still need help? Continue to ask your question on our forums.') }}</p>
         {% endif %}
      {% else %}
-        {% if has_support %}
+        {% if is_ticketed %}
           <p>{{ _('Still need help? Sign in to contact our support team.') }}</p>
         {% else %}
           <p>{{ _('Still need help? Sign in to ask your question on our forums.') }}</p>
@@ -118,11 +119,11 @@
       <p>{{ _('Still need help? Continue to ask your question and get help.') }}</p>
     {% endif %}
 
-    {% set link_name = "aaq-widget.community-support.kb-article" if not (has_support or has_forum)
+    {% set link_name = "aaq-widget.community-support.kb-article" if not (is_ticketed or has_forum)
                       else "aaq-widget.aaq-step-3" %}
 
-    {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) 
-                       if not (has_support or has_forum or topic)
+    {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1)
+                       if not (is_ticketed or has_forum or topic)
                        else url('questions.aaq_step3', product_slug=aaq_context.product_slug) 
                        if aaq_context and not multiple_products
                        else url('questions.aaq_step1') %}
@@ -139,14 +140,14 @@
     </div>
 {%- endmacro %}
 
-{% macro explore_solutions(product, search_box, featured, topics, has_ticketing_support=True) -%}
+{% macro explore_solutions(product, search_box, featured, topics, is_ticketed_support=True) -%}
 {% set search_params = {'product': product.slug} %}
 <section class="sumo-page-section question-masthead shade-bg">
   <div class="mzp-l-content">
 
     {{ progress_bar(2) }}
 
-    {% if not has_ticketing_support %}
+    {% if not is_ticketed_support %}
       {{ scam_banner() }}
     {% endif %}
 

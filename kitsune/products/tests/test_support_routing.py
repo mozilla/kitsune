@@ -286,20 +286,16 @@ class SupportRoutingTests(TestCase):
         self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_FORUM)
         self.assertFalse(can_switch)
 
-    def test_no_support_channels_enabled_raises_error(self):
-        """Config with neither forum nor Zendesk enabled raises ValueError."""
-        ProductSupportConfigFactory(
-            product=self.product,
-            forum_config=None,
-            zendesk_config=None,
-            is_active=True,
-        )
+    def test_no_support_channels_constraint(self):
+        """Database constraint prevents config with neither forum nor Zendesk."""
+        from django.db import IntegrityError
 
-        request = self.factory.get("/")
-        request.user = self.user
+        with self.assertRaises(IntegrityError) as context:
+            ProductSupportConfigFactory(
+                product=self.product,
+                forum_config=None,
+                zendesk_config=None,
+                is_active=True,
+            )
 
-        with self.assertRaises(ValueError) as context:
-            ProductSupportConfig.objects.route_support_request(request, self.product)
-
-        self.assertIn("No support channels enabled", str(context.exception))
-        self.assertIn("test-product", str(context.exception))
+        self.assertIn("at_least_one_support_channel", str(context.exception))
