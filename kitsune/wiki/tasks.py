@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from itertools import chain
 
 import waffle
@@ -14,6 +14,7 @@ from django.db import transaction
 from django.db.models import F, ObjectDoesNotExist, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.urls import reverse as django_reverse
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 from requests.exceptions import HTTPError
@@ -37,6 +38,7 @@ from kitsune.wiki.models import (
     Document,
     Locale,
     Revision,
+    RevisionAnchorRecord,
     SlugCollision,
     TitleCollision,
     resolves_to_document_view,
@@ -582,3 +584,23 @@ def fix_current_revisions() -> None:
                 doc.current_revision_id = rev_id
                 doc.save()
                 log.info(doc.get_absolute_url())
+
+
+@shared_task
+@skip_if_read_only_mode
+def cleanup_old_anchor_records() -> None:
+    """
+    Deletes all RevisionAnchorRecord entries that are stale -- the revision is no
+    longer the current revision for its document -- and that were created more than
+    settings.STALE_ANCHOR_RECORD_RETENTION_DAYS ago.
+    """
+    stale_retention_period = timezone.now() - timedelta(
+        days=settings.STALE_ANCHOR_RECORD_RETENTION_DAYS
+    )
+    num_deleted, _ = (
+        RevisionAnchorRecord.objects.exclude(revision=F("revision__document__current_revision"))
+        .filter(created__lt=stale_retention_period)
+        .delete()
+    )
+
+    log.info(f"Deleted {num_deleted} stale anchor record(s).")
