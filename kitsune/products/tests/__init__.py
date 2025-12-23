@@ -11,6 +11,7 @@ from kitsune.products.models import (
     Version,
     ZendeskConfig,
     ZendeskTopic,
+    ZendeskTopicConfiguration,
 )
 from kitsune.sumo.tests import FuzzyUnicode
 
@@ -91,14 +92,21 @@ class ZendeskTopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ZendeskTopic
 
-    zendesk_config = factory.SubFactory(ZendeskConfigFactory)
     slug = FuzzyUnicode()
     topic = FuzzyUnicode()
-    display_order = factory.fuzzy.FuzzyInteger(10)
     legacy_tag = ""
     tier_tags: list[str] = []
     automation_tag = ""
     segmentation_tag = ""
+
+
+class ZendeskTopicConfigurationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ZendeskTopicConfiguration
+
+    zendesk_config = factory.SubFactory(ZendeskConfigFactory)
+    zendesk_topic = factory.SubFactory(ZendeskTopicFactory)
+    display_order = factory.fuzzy.FuzzyInteger(10)
     loginless_only = False
 
 

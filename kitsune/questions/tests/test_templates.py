@@ -9,7 +9,8 @@ from django.contrib.auth.models import User
 from django.core import mail
 from pyquery import PyQuery as pq
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetadata
 from kitsune.questions.tests import AAQConfigFactory, AnswerFactory, QuestionFactory, tags_eq
@@ -1324,6 +1325,13 @@ class AAQTemplateTestCase(TestCase):
         self.user = UserFactory()
         self.product = ProductFactory(title="Firefox", slug="firefox")
         self.aaq_config = AAQConfigFactory(product=self.product, is_active=True)
+        # Create ProductSupportConfig for routing
+        ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=self.aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+        )
         self.client.login(username=self.user.username, password="testpass")
 
     def _post_new_question(self, locale=None):
