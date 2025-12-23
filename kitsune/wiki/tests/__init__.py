@@ -102,7 +102,9 @@ class TranslatedRevisionFactory(ApprovedRevisionFactory):
 
     document = factory.SubFactory(
         DocumentFactory,
-        locale=factory.fuzzy.FuzzyChoice(loc for loc in settings.SUMO_LANGUAGES if loc != "en-US"),
+        locale=factory.fuzzy.FuzzyChoice(
+            loc for loc in settings.SUMO_LANGUAGES if loc not in ("en-US", "xx")
+        ),
         parent=factory.SubFactory(DocumentFactory, locale=settings.WIKI_DEFAULT_LANGUAGE),
     )
     based_on = factory.SubFactory(
@@ -147,7 +149,9 @@ class DraftRevisionFactory(factory.django.DjangoModelFactory):
     content = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
     keywords = "test, test1"
-    locale = factory.fuzzy.FuzzyChoice(loc for loc in settings.SUMO_LANGUAGES if loc != "en-US")
+    locale = factory.fuzzy.FuzzyChoice(
+        loc for loc in settings.SUMO_LANGUAGES if loc not in ("en-US", "xx")
+    )
     summary = FuzzyUnicode()
     title = FuzzyUnicode()
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
