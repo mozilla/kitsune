@@ -86,6 +86,11 @@ Its configuration lives in `postcss.config.js`.
 When building a production bundle,
 [cssnano](https://cssnano.co/) minifies our CSS.
 
+### KSS styleguide
+
+Components and layouts are documented in [SUMO Styleguide](https://mozilla.github.io/kitsune/_kss/) using `kss-node`
+automation to generate the documentation from SCSS sources.
+
 ## Images
 
 Images directly imported in JS files,
