@@ -1,15 +1,22 @@
 {% extends "base.html" %}
+{# L10n: The 403 Access denied page title. #}
 {% set title = _('Access denied') %}
 
 {% block content %}
   <article id="error-page" class="main sumo-page-section">
     <h1 class="sumo-page-heading">{{ title }}</h1>
     <div class="center-on-mobile">
+      {# L10n: A message displayed on the 403 Access denied page. #}
       <p>{{ _('You do not have permission to access this page.') }}</p>
 
       {% if not user.is_authenticated %}
         <p>
-          {{ _('Please try to log in / sign up first with') }} <a rel="nofollow" href="{{ url('users.fxa_authentication_init') }}">{{ _('Mozilla accounts') }}</a>.
+          {# L10n: Deprecated. A message displayed for non-authenticated users on the 403 Access denied page. #}
+          {% set deprecated_403 = _('Please try to log in / sign up first with') %}
+          {# L10n: A message displayed for non-authenticated users on the 403 Access denied page. #}
+          {% trans a_open='<a rel="nofollow" href="'|safe + url('users.fxa_authentication_init') + '">'|safe, a_close='</a>'|safe %}
+            Please try to log in / sign up first with {{ a_open }}Mozilla accounts{{ a_close }}.
+          {% endtrans %}
         </p>
       {% endif %}
     </div>
