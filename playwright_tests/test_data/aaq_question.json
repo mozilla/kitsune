@@ -124,6 +124,12 @@
       "Search, tag, and share": "search-tag-and-share",
       "Settings": "settings",
       "default_slug": "focus-firefox"
+    },
+    "Mozilla Monitor": {
+      "Passwords and sign in": "passwords-and-sign-in",
+      "Privacy and security": "privacy-and-security",
+      "Settings": "settings",
+      "default_slug": "monitor"
     }
   }
 }

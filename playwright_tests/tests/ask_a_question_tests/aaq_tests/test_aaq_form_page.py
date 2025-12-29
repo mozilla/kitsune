@@ -395,7 +395,7 @@ def test_system_details_information(page: Page, create_user_factory):
     with allure.step("Navigating to each product aaq form and and adding data without "
                      "submitting the form"):
         for product in utilities.general_test_data["freemium_products"]:
-            if product == "Thunderbird" or product == "Thunderbird for Android":
+            if product in ("Thunderbird", "Thunderbird for Android", "Mozilla Monitor"):
                 continue
             else:
                 utilities.navigate_to_link(
