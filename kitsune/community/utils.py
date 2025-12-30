@@ -1,11 +1,11 @@
 import hashlib
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db.models import Count, Exists, IntegerField, Max, OuterRef, Q, Subquery
+from django.db.models import Count, Exists, F, Max, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce, Now
 from elasticsearch.dsl import A
 
@@ -183,66 +183,73 @@ def top_contributors_l10n(
             return cached
 
     if start is None:
-        start = date.today() - timedelta(days=DEFAULT_PERIOD_DAYS)
+        start = datetime.now() - timedelta(days=DEFAULT_PERIOD_DAYS)
+    elif type(start) is date:
+        start = datetime.combine(start, time.min)
 
-    # Get the user ids and contribution count of the top contributors.
-    revisions = Revision.objects.all()
-    revisions = revisions.filter(created__range=(start, end or Now()))
+    if end is None:
+        end = Now()
+    elif type(end) is date:
+        end = datetime.combine(end, time.max)
 
-    deleted_revisions = DeletedContribution.objects.filter(
+    revision_ct = ContentType.objects.get_for_model(Revision)
+
+    rev_subquery = Revision.objects.filter(creator=OuterRef("pk"), created__range=(start, end))
+
+    del_subquery = DeletedContribution.objects.filter(
+        content_type=revision_ct,
         contributor=OuterRef("pk"),
-        contribution_timestamp__range=(start, end or Now()),
-        content_type=ContentType.objects.get_for_model(Revision),
+        contribution_timestamp__range=(start, end),
     )
 
     if locale:
-        revisions = revisions.filter(document__locale=locale)
-        deleted_revisions = deleted_revisions.filter(locale=locale)
+        rev_subquery = rev_subquery.filter(document__locale=locale)
+        del_subquery = del_subquery.filter(locale=locale)
     else:
         # If there is no locale specified, exclude en-US only. The rest are l10n.
-        revisions = revisions.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-        deleted_revisions = deleted_revisions.exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        rev_subquery = rev_subquery.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+        del_subquery = del_subquery.exclude(locale=settings.WIKI_DEFAULT_LANGUAGE)
 
     if product:
-        if isinstance(product, Product):
-            product = product.slug
-        revisions = revisions.filter(
-            Q(document__products__slug=product) | Q(document__parent__products__slug=product)
+        slug = product.slug if isinstance(product, Product) else product
+        rev_subquery = rev_subquery.filter(
+            Q(document__products__slug=slug) | Q(document__parent__products__slug=slug)
         )
-        deleted_revisions = deleted_revisions.filter(products__slug=product)
+        del_subquery = del_subquery.filter(products__slug=slug)
 
     users = (
         User.objects.filter(is_active=True)
-        .filter(Q(created_revisions__in=revisions) | Exists(deleted_revisions))
+        .filter(Exists(rev_subquery) | Exists(del_subquery))
         .annotate(
-            deleted_revision_count=Subquery(
-                (
-                    deleted_revisions.order_by()
-                    .values("contributor")
-                    .annotate(total=Count("*"))
-                    .values("total")[:1]
+            rev_count=Coalesce(
+                Subquery(
+                    rev_subquery.values("creator").annotate(count=Count("pk")).values("count")[:1]
                 ),
-                output_field=IntegerField(),
+                0,
             ),
-            created_revision_count=Count(
-                "created_revisions", filter=Q(created_revisions__in=revisions)
+            del_count=Coalesce(
+                Subquery(
+                    del_subquery.values("contributor")
+                    .annotate(count=Count("pk"))
+                    .values("count")[:1]
+                ),
+                0,
             ),
         )
-        .annotate(
-            query_count=(
-                Coalesce("created_revision_count", 0) + Coalesce("deleted_revision_count", 0)
-            )
-        )
-        .order_by("-query_count", "id")
+        .annotate(contribution_count=F("rev_count") + F("del_count"))
+        .order_by("-contribution_count", "id")
         .select_related("profile")
+        .only("id", "username", "profile__name", "profile__fxa_avatar")
     )
 
     total = users.count()
+    offset = (page - 1) * count
+    paginated_users = users[offset : offset + count]
 
     results = [
         {
             "term": user.pk,
-            "count": user.query_count,
+            "count": user.contribution_count,
             "user": {
                 "id": user.pk,
                 "username": user.username,
@@ -250,7 +257,7 @@ def top_contributors_l10n(
                 "avatar": profile_avatar(user),
             },
         }
-        for user in users[(page - 1) * count : page * count]
+        for user in paginated_users
     ]
 
     if use_cache:
