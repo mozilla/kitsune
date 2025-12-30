@@ -262,7 +262,7 @@
           {{ errorlist(form) }}
 
           <div class="main-content">
-            {{ content_editor(form.content) }}
+            {{ content_editor(form.content, mention_rules=true) }}
             {% if question.needs_info %}
             <div class="field checkbox">
               <input id="id_info_provided" type="checkbox" name="clear_needsinfo" {% if user == question.creator %}checked="checked"{% endif %}>

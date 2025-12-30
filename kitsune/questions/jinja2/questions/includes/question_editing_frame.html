@@ -127,9 +127,13 @@ behaviors like editing them can be provided by overriding blocks.
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}
+                    {% if field.help_text and field.name != 'troubleshooting' %}
+                      <div id="{{ field.help_id }}" class="field-help-text">{{ field.help_text|safe }}</div>
+                    {% endif %}
                     {% if field.name == 'content' %}
                       {{ content_editor(field) }}
                     {% elif field.name == 'troubleshooting' %}
+                      <div id="{{ field.help_id }}">{{ field.help_text|safe }}</div>
                       {{ troubleshooting_instructions(field) }}
                     {% elif field.name == 'description' and is_loginless %}
                       <label for="{{ field.id_for_label }}">
@@ -146,10 +150,6 @@ behaviors like editing them can be provided by overriding blocks.
                       {{ field.as_widget(attrs=category_field_attrs)|safe }}
                     {% else %}
                       {{ field|safe }}
-                    {% endif %}
-
-                    {% if field.help_text and field.name != 'troubleshooting' %}
-                      <p>{{ field.help_text|safe }}</p>
                     {% endif %}
 
                     {% if field.name != 'content' %}
