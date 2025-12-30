@@ -26,7 +26,7 @@ help:
 	@echo "lint          - run pre-commit hooks"
 	@echo "test          - run python tests"
 	@echo "test-js       - run js tests"
-	@echo "docs          - generate Sphinx HTML documentation"
+	@echo "docs          - serve MkDocs documentation locally"
 
 .env:
 	@echo "Copying .env-dist to .env...";
@@ -88,7 +88,6 @@ test-js: .docker-build
 	${DC} run web npm run webpack:test
 
 docs: .docker-build
-	${DC} run web $(MAKE) -C docs/ clean
-	${DC} run web $(MAKE) -C docs/ html
+	${DC} run -p 8001:8001 web mkdocs serve -a 0.0.0.0:8001
 
 .PHONY: build rebuild run start init shell runshell djshell clean lint format test test-js docs
