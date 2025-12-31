@@ -8,7 +8,7 @@
 {% set meta = [('robots', 'noindex')] %}
 
 {% set classes = 'new-question' %}
-{% if not has_ticketing_support %}
+{% if current_support_type != SUPPORT_TYPE_ZENDESK %}
   {% set category_field_attrs = {"hx-get": "", "hx-swap": "none"}%}
 {% endif %}
 
@@ -24,7 +24,7 @@
 
 {% block contentwrap %}
   {% if current_step == 2 %}
-    {{ explore_solutions(current_product, search_box, featured, topics, has_ticketing_support) }}
+    {{ explore_solutions(current_product, search_box, featured, topics, is_ticketed_support=current_support_type == SUPPORT_TYPE_ZENDESK) }}
   {% else %}
     {{ super() }}
   {% endif %}
@@ -32,12 +32,30 @@
 
 {% block major_detail_instructions %}
   <h2 class="sumo-page-heading">
-    {% if has_ticketing_support %}
+    {% if current_support_type == SUPPORT_TYPE_ZENDESK %}
       {{ _('Contact Support') }}
     {% else %}
       {{ _('Ask your question') }}
     {% endif %}
   </h2>
+
+  {% if can_switch %}
+    <div class="support-type-switcher">
+      <p>
+        {% if current_support_type == SUPPORT_TYPE_ZENDESK %}
+          {{ _('You\'re contacting Mozilla Support directly.') }}
+          <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_FORUM }}">
+            {{ _('Ask the community instead') }}
+          </a>
+        {% else %}
+          {{ _('You\'re posting to the community forum.') }}
+          <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_ZENDESK }}">
+            {{ _('Contact Mozilla Support instead') }}
+          </a>
+        {% endif %}
+      </p>
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% block submit_button_value %}

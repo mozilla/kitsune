@@ -8,6 +8,7 @@ from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
     ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
     ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
@@ -28,11 +29,9 @@ class ZendeskFormTests(TestCase):
 
         # Create ZendeskConfig for VPN
         self.vpn_zendesk = ZendeskConfigFactory(name="Mozilla VPN Support")
-        ZendeskTopicFactory(
-            zendesk_config=self.vpn_zendesk,
+        vpn_topic1 = ZendeskTopicFactory(
             slug="vpn-connection-issues",
             topic="I can't connect to Mozilla VPN",
-            display_order=0,
             legacy_tag="technical",
             tier_tags=[
                 "t1-performance-and-connectivity",
@@ -41,30 +40,41 @@ class ZendeskFormTests(TestCase):
             ],
             automation_tag="ssa-connection-issues-automation",
             segmentation_tag="",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.vpn_zendesk,
+            zendesk_topic=vpn_topic1,
+            display_order=0,
             loginless_only=False,
         )
-        ZendeskTopicFactory(
-            zendesk_config=self.vpn_zendesk,
+        vpn_topic2 = ZendeskTopicFactory(
             slug="vpn-server-selection",
             topic="I can't choose a VPN location",
-            display_order=1,
             legacy_tag="technical",
             tier_tags=[
                 "t1-performance-and-connectivity",
                 "t2-connectivity",
                 "t3-cant-select-server",
             ],
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.vpn_zendesk,
+            zendesk_topic=vpn_topic2,
+            display_order=1,
             loginless_only=False,
         )
-        ZendeskTopicFactory(
-            zendesk_config=self.vpn_zendesk,
+        vpn_topic3 = ZendeskTopicFactory(
             slug="payments",
             topic="I need help with a billing or subscription question",
-            display_order=2,
             legacy_tag="payments",
             tier_tags=["t1-billing-and-subscriptions"],
             automation_tag="",
             segmentation_tag="",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.vpn_zendesk,
+            zendesk_topic=vpn_topic3,
+            display_order=2,
             loginless_only=False,
         )
         ProductSupportConfigFactory(
@@ -73,24 +83,30 @@ class ZendeskFormTests(TestCase):
 
         # Create ZendeskConfig for Relay
         self.relay_zendesk = ZendeskConfigFactory(name="Firefox Relay Support")
-        ZendeskTopicFactory(
-            zendesk_config=self.relay_zendesk,
+        relay_topic1 = ZendeskTopicFactory(
             slug="relay-email-forwarding",
             topic="I'm not receiving emails to my Relay mask",
-            display_order=0,
             legacy_tag="technical",
             tier_tags=["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
             segmentation_tag="seg-relay-no-fwd-deliver",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.relay_zendesk,
+            zendesk_topic=relay_topic1,
+            display_order=0,
             loginless_only=False,
         )
-        ZendeskTopicFactory(
-            zendesk_config=self.relay_zendesk,
+        relay_topic2 = ZendeskTopicFactory(
             slug="relay-domain-change",
             topic="I want to change my Relay email domain",
-            display_order=1,
             legacy_tag="technical",
             tier_tags=["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
             segmentation_tag="seg-relay-chg-domain",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.relay_zendesk,
+            zendesk_topic=relay_topic2,
+            display_order=1,
             loginless_only=False,
         )
         ProductSupportConfigFactory(
@@ -99,11 +115,9 @@ class ZendeskFormTests(TestCase):
 
         # Create ZendeskConfig for Mozilla Account with loginless topics
         self.accounts_zendesk = ZendeskConfigFactory(name="Mozilla Account Support")
-        ZendeskTopicFactory(
-            zendesk_config=self.accounts_zendesk,
+        accounts_topic1 = ZendeskTopicFactory(
             slug="fxa-2fa-lockout",
             topic="My security code isn't working or is lost",
-            display_order=0,
             legacy_tag="accounts",
             tier_tags=[
                 "t1-passwords-and-sign-in",
@@ -111,16 +125,24 @@ class ZendeskFormTests(TestCase):
                 "t3-two-factor-lockout",
             ],
             automation_tag="ssa-2fa-automation",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.accounts_zendesk,
+            zendesk_topic=accounts_topic1,
+            display_order=0,
             loginless_only=True,
         )
-        ZendeskTopicFactory(
-            zendesk_config=self.accounts_zendesk,
+        accounts_topic2 = ZendeskTopicFactory(
             slug="fxa-reset-password",
             topic="I forgot my password",
-            display_order=1,
             legacy_tag="accounts",
             tier_tags=["t1-passwords-and-sign-in", "t2-reset-passwords"],
             automation_tag="ssa-emailverify-automation",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.accounts_zendesk,
+            zendesk_topic=accounts_topic2,
+            display_order=1,
             loginless_only=True,
         )
         ProductSupportConfigFactory(
