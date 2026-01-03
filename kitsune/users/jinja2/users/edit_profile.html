@@ -30,6 +30,13 @@
       {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
         To change your email or avatar, visit the Mozilla accounts page. {{ a_open }} Learn more. {{ a_close }}
       {% endtrans %}
+      <br>
+      <small>
+        {% trans %}
+          <strong>Note:</strong> After changing your avatar, you'll need to log out and log back in to support.mozilla.org
+          for the change to appear.
+        {% endtrans %}
+      </small>
     </p>
 
     <div>
