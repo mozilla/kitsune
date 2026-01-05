@@ -12,13 +12,14 @@ class NonArchivedManager(Manager):
 class ProductManager(NonArchivedManager):
     def with_question_forums(self, language_code: str = ""):
         q_kwargs: dict[str, Any] = {
-            "aaq_configs__is_active": True,
+            "support_configs__is_active": True,
+            "support_configs__forum_config__isnull": False,
         }
 
         if language_code:
-            q_kwargs["aaq_configs__enabled_locales__locale"] = language_code
+            q_kwargs["support_configs__forum_config__enabled_locales__locale"] = language_code
 
-        return self.filter(**q_kwargs).filter(codename="").distinct()
+        return self.filter(**q_kwargs).distinct()
 
 
 class ProductSupportConfigManager(Manager):

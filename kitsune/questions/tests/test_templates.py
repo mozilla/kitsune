@@ -1330,7 +1330,7 @@ class AAQTemplateTestCase(TestCase):
             product=self.product,
             forum_config=self.aaq_config,
             is_active=True,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
         self.client.login(username=self.user.username, password="testpass")
 
@@ -1419,17 +1419,21 @@ class ProductForumTemplateTestCase(TestCase):
         mza = ProductFactory(title="Mozilla Account", slug="mozilla-account")
 
         lcl, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        AAQConfigFactory(product=firefox, is_active=True, enabled_locales=[lcl])
-        AAQConfigFactory(product=android, is_active=True, enabled_locales=[lcl])
+        firefox_forum_config = AAQConfigFactory(
+            product=firefox, is_active=True, enabled_locales=[lcl]
+        )
+        android_forum_config = AAQConfigFactory(
+            product=android, is_active=True, enabled_locales=[lcl]
+        )
+
+        ProductSupportConfigFactory(product=firefox, forum_config=firefox_forum_config)
+        ProductSupportConfigFactory(product=android, forum_config=android_forum_config)
 
         response = self.client.get(reverse("questions.home"))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         self.assertEqual(2, len(doc(".product-list .product")))
         product_list_html = doc(".product-list").html()
-        assert firefox.title in product_list_html
-        assert android.title in product_list_html
-        assert mza.title not in product_list_html
         assert firefox.title in product_list_html
         assert android.title in product_list_html
         assert mza.title not in product_list_html
