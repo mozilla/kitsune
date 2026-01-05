@@ -860,11 +860,14 @@ wheels = [
 
 [[package]]
 name = "django-waffle"
-version = "3.0.0"
+version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/61/6e/e1c87c9c35c890383ecfc672e156fa130d3574f1220dd6af328904b471f7/django-waffle-3.0.0.tar.gz", hash = "sha256:3acef6692cb745ed8109f0a3076c5a27da38a716deb70d64c5fb404d65ccd910", size = 34305, upload-time = "2022-08-30T17:29:07.475Z" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/22/e1/6f533da0d4ac89f427dfd9410e39bfc14ae3a23335ecd549d76be4b2a834/django_waffle-5.0.0.tar.gz", hash = "sha256:62f9d00eedf68dafb82657beab56e601bddedc1ea1ccfef91d83df8658708509", size = 37761, upload-time = "2025-06-12T07:38:54.895Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/74/245bc2092fbd02d7175f19cd3dd380525a52f2ba55db499c101421a898fc/django_waffle-3.0.0-py3-none-any.whl", hash = "sha256:dd8bcc62269b35000a05a7d87e8a000136b6b1568952e2e707ef450717b1cd9f", size = 47888, upload-time = "2022-08-30T17:29:05.993Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/d2/6f0d664bd35a3fdd0403655c7c32ec290704923f11541ef356b180cd8fbf/django_waffle-5.0.0-py3-none-any.whl", hash = "sha256:3312851d9d926b76b9e90712355781700a383b82b5bf2b61e1f1be97532c0f3d", size = 48137, upload-time = "2025-06-12T07:38:53.698Z" },
 ]
 
 [[package]]
@@ -1834,7 +1837,7 @@ requires-dist = [
     { name = "django-taggit", specifier = ">=6.1.0,<7" },
     { name = "django-timezone-field", specifier = "~=7.1" },
     { name = "django-user-agents", specifier = ">=0.4.0,<0.5" },
-    { name = "django-waffle", specifier = ">=3.0.0,<4" },
+    { name = "django-waffle", specifier = ">=3.0.0,<6" },
     { name = "django-watchman", specifier = "==1.3.0" },
     { name = "djangorestframework", specifier = ">=3.15.2,<4" },
     { name = "dockerflow", specifier = ">=2022.8.0,<2023" },
