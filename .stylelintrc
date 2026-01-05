@@ -1,11 +1,12 @@
 {
   "extends": "stylelint-config-recommended-scss",
   "plugins": [
-    "stylelint-order"
+    "stylelint-order",
+    "@stylistic/stylelint-plugin"
   ],
   "defaultSeverity": "warning",
   "rules": {
-    "indentation": 2,
+    "@stylistic/indentation": 2,
     "no-descending-specificity": null,
     "no-empty-source": null,
     "font-family-no-duplicate-names": null,
