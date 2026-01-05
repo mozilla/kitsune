@@ -15,6 +15,7 @@ from kitsune.products.models import (
     Version,
     ZendeskConfig,
     ZendeskTopic,
+    ZendeskTopicConfiguration,
 )
 
 
@@ -175,37 +176,39 @@ admin.site.register(Version, VersionAdmin)
 admin.site.register(TopicSlugHistory, TopicSlugHistoryAdmin)
 
 
-class ZendeskTopicInline(admin.StackedInline):
-    model = ZendeskTopic
+class ZendeskTopicConfigurationInline(admin.TabularInline):
+    """
+    Inline editor for topic-to-config associations.
+    Shows which topics are included in this config with their settings.
+    """
+    model = ZendeskTopicConfiguration
     extra = 1
-    classes = ("collapse",)
-    fields = (
-        "slug",
-        "topic",
-        "display_order",
-        "legacy_tag",
-        "tier_tags",
-        "automation_tag",
-        "segmentation_tag",
-        "loginless_only",
-    )
+    autocomplete_fields = ("zendesk_topic",)
+    fields = ("zendesk_topic", "display_order", "loginless_only")
+    ordering = ("display_order",)
 
 
 class ZendeskTopicAdmin(admin.ModelAdmin):
-    list_display = ("topic", "zendesk_config", "slug", "display_order", "loginless_only")
+    list_display = ("topic", "slug", "config_count")
     list_display_links = ("topic", "slug")
-    list_editable = ("display_order",)
-    list_filter = ("zendesk_config", "loginless_only")
-    search_fields = ("topic", "slug", "zendesk_config__name")
+    search_fields = ("topic", "slug")
     prepopulated_fields = {"slug": ("topic",)}
+
+    @admin.display(description="# Configs")
+    def config_count(self, obj):
+        return obj.zendesk_configs.count()
 
 
 class ZendeskConfigAdmin(admin.ModelAdmin):
-    list_display = ("name", "ticket_form_id", "enable_os_field")
+    list_display = ("name", "ticket_form_id", "enable_os_field", "topic_count")
     list_display_links = ("name",)
     list_editable = ("enable_os_field",)
     search_fields = ("name",)
-    inlines = [ZendeskTopicInline]
+    inlines = [ZendeskTopicConfigurationInline]
+
+    @admin.display(description="# Topics")
+    def topic_count(self, obj):
+        return obj.topic_configurations.count()
 
 
 class ProductSupportConfigAdmin(admin.ModelAdmin):
@@ -223,7 +226,13 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
     search_fields = ("product__title", "product__slug")
     filter_horizontal = ("hybrid_support_groups",)
     autocomplete_fields = ("product", "forum_config", "zendesk_config")
-    readonly_fields = ("is_hybrid", "enable_forum_support", "enable_zendesk_support")
+    readonly_fields = (
+        "is_hybrid",
+        "enable_forum_support",
+        "enable_zendesk_support",
+        "zendesk_topics_display",
+        "zendesk_config_link",
+    )
 
     fieldsets = (
         (
@@ -238,6 +247,8 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
                 "fields": (
                     "forum_config",
                     "zendesk_config",
+                    "zendesk_config_link",
+                    "zendesk_topics_display",
                     "enable_forum_support",
                     "enable_zendesk_support",
                     "is_hybrid",
@@ -275,7 +286,53 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
     def is_hybrid(self, obj):
         return obj.is_hybrid
 
+    @admin.display(description="Zendesk Config Details")
+    def zendesk_config_link(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+
+        if not obj.zendesk_config:
+            return "—"
+
+        url = reverse("admin:products_zendeskconfig_change", args=[obj.zendesk_config.pk])
+        return format_html(
+            '<a href="{}" target="_blank">{}</a> (click to edit topics)',
+            url,
+            obj.zendesk_config.name,
+        )
+
+    @admin.display(description="Available Topics")
+    def zendesk_topics_display(self, obj):
+        from django.utils.html import format_html
+
+        if not obj.zendesk_config:
+            return "—"
+
+        topic_configs = obj.zendesk_config.topic_configurations.all().select_related("zendesk_topic")
+        if not topic_configs:
+            return format_html("<em>No topics configured</em>")
+
+        topic_items = []
+        for topic_config in topic_configs:
+            topic = topic_config.zendesk_topic
+            loginless_badge = " <span style='color: #666;'>(loginless only)</span>" if topic_config.loginless_only else ""
+            topic_items.append(
+                f"<li><strong>{topic.slug}</strong>: {topic.topic}{loginless_badge}</li>"
+            )
+
+        return format_html("<ul style='margin: 0; padding-left: 20px;'>{}</ul>", "".join(topic_items))
+
+
+class ZendeskTopicConfigurationAdmin(admin.ModelAdmin):
+    list_display = ("zendesk_config", "zendesk_topic", "display_order", "loginless_only")
+    list_display_links = ("zendesk_config", "zendesk_topic")
+    list_filter = ("zendesk_config", "loginless_only")
+    list_editable = ("display_order", "loginless_only")
+    autocomplete_fields = ("zendesk_config", "zendesk_topic")
+    search_fields = ("zendesk_config__name", "zendesk_topic__topic", "zendesk_topic__slug")
+
 
 admin.site.register(ZendeskTopic, ZendeskTopicAdmin)
 admin.site.register(ZendeskConfig, ZendeskConfigAdmin)
+admin.site.register(ZendeskTopicConfiguration, ZendeskTopicConfigurationAdmin)
 admin.site.register(ProductSupportConfig, ProductSupportConfigAdmin)

@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.products import PRODUCT_SLUG_ALIASES
-from kitsune.products.models import ProductSupportConfig, ZendeskTopic
+from kitsune.products.models import ProductSupportConfig, ZendeskTopic, ZendeskTopicConfiguration
 
 OS_CHOICES = [
     (None, _lazy("Select platform")),
@@ -66,12 +66,14 @@ class ZendeskForm(forms.Form):
         if support_config and support_config.zendesk_config:
             zendesk_config = support_config.zendesk_config
 
-            topics = zendesk_config.topics.filter(loginless_only=is_loginless).order_by(
-                "display_order"
-            )
+            topic_configs = ZendeskTopicConfiguration.objects.filter(
+                zendesk_config=zendesk_config,
+                loginless_only=is_loginless
+            ).select_related("zendesk_topic").order_by("display_order")
 
             category_choices = [(None, _lazy("Select a reason for contacting"))]
-            for topic in topics:
+            for topic_config in topic_configs:
+                topic = topic_config.zendesk_topic
                 category_choices.append((topic.slug, topic.topic))
 
             self.fields["category"].choices = category_choices
@@ -117,10 +119,7 @@ class ZendeskForm(forms.Form):
 
             if support_config and support_config.zendesk_config:
                 try:
-                    topic = ZendeskTopic.objects.get(
-                        zendesk_config=support_config.zendesk_config,
-                        slug=selected_category_slug,
-                    )
+                    topic = ZendeskTopic.objects.get(slug=selected_category_slug)
                 except ZendeskTopic.DoesNotExist:
                     topic = None
 

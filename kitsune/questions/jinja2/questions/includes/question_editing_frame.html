@@ -21,7 +21,7 @@ behaviors like editing them can be provided by overriding blocks.
     {% if current_step %}
       {{ progress_bar(current_step, product_slug=current_product.slug) }}
 
-      {% if current_step > 1 and not has_ticketing_support %}
+      {% if current_step > 1 and current_support_type != SUPPORT_TYPE_ZENDESK %}
         {{ scam_banner() }}
       {% endif %}
     {% endif %}
@@ -46,7 +46,7 @@ behaviors like editing them can be provided by overriding blocks.
     {% endblock %}
     <div class="sumo-l-two-col">
       <aside class="sumo-l-two-col--sidebar">
-        {% if form and not has_ticketing_support %}
+        {% if form and current_support_type != SUPPORT_TYPE_ZENDESK %}
           <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
               <img class="card--img" src="{{ webpack_static('sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png') }}" alt="Illustration of community" />
               <div class="card--details">
@@ -77,7 +77,7 @@ behaviors like editing them can be provided by overriding blocks.
             <form id="question-form" method="post">
               {% csrf_token %}
 
-              {% if not has_ticketing_support %}
+              {% if current_support_type != SUPPORT_TYPE_ZENDESK %}
                 <p class="sumo-page-intro">
                   {% trans %}
                     Be nice. Our volunteers are Mozilla users just like you,
@@ -110,7 +110,7 @@ behaviors like editing them can be provided by overriding blocks.
                 {% set li_class='' %}
                 {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
-                  {% if not has_ticketing_support %}
+                  {% if current_support_type != SUPPORT_TYPE_ZENDESK %}
                     {% if field.name == 'ff_version' %}
                       <li class="system-details-info show">
                         <p>

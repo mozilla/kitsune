@@ -36,7 +36,7 @@ from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
-from kitsune.products.models import Product, Topic, TopicSlugHistory
+from kitsune.products.models import Product, ProductSupportConfig, Topic, TopicSlugHistory
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
@@ -604,18 +604,23 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
     # Return 404 if the products does not have an AAQ form or if it is archived
     product = None
-    products_with_aaqs = Product.active.filter(aaq_configs__is_active=True).distinct()
+    products_with_support = Product.active.filter(
+        support_configs__is_active=True
+    ).filter(
+        Q(support_configs__forum_config__isnull=False)
+        | Q(support_configs__zendesk_config__isnull=False)
+    )
     if product_slug:
         try:
             product = Product.active.get(slug=product_slug)
         except Product.DoesNotExist:
             raise Http404
         else:
-            if product not in products_with_aaqs:
+            if product not in products_with_support:
                 raise Http404
 
     context = {
-        "products": products_with_aaqs,
+        "products": products_with_support,
         "current_product": product,
         "current_step": step,
         "host": Site.objects.get_current().domain,
@@ -628,6 +633,34 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
         context["has_ticketing_support"] = product.has_ticketing_support
         context["ga_products"] = f"/{product_slug}/"
+
+        # Determine which support channel to show (runs at step 2 and 3)
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, product
+        )
+
+        # Handle missing config
+        if support_type is None:
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _(
+                    "Support is not configured for {product}. Please contact an administrator."
+                ).format(product=product.title),
+            )
+            return HttpResponseRedirect(reverse("products.product", args=[product.slug]))
+
+        # Add routing info to context
+        context["current_support_type"] = support_type
+        context["can_switch"] = can_switch
+        context["SUPPORT_TYPE_FORUM"] = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        context["SUPPORT_TYPE_ZENDESK"] = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
+
+        # Update session context with routed support type for widgets
+        if "aaq_context" in request.session:
+            aaq_ctx = request.session["aaq_context"].copy()
+            aaq_ctx["current_support_type"] = support_type
+            request.session["aaq_context"] = aaq_ctx
 
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
@@ -659,7 +692,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
             return HttpResponseRedirect(path)
 
-        if product.has_ticketing_support:
+        if support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK:
             zendesk_form = ZendeskForm(
                 data=request.POST or None,
                 product=product,
