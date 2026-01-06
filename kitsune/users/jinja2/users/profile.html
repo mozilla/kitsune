@@ -15,8 +15,21 @@
     <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
     <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
-      {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-        To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
+      {# L10n: Deprecated. Learn more refers to https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts #}
+      {% set deprecated_visit_moz_accounts %}
+        {% trans a_open='<a href="https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+          To change your email or avatar, visit the Mozilla account page. {{ a_open }} Learn more. {{ a_close }}
+        {% endtrans %}
+      {% endset %}
+      {# L10n: Learn more refers to https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts #}
+      {% trans a_open='<a href="https://support.mozilla.org/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+        To change your email or avatar, visit the Mozilla accounts page. {{ a_open }}Learn more.{{ a_close }}
+      {% endtrans %}
+    </p>
+    <p>
+      {# L10n: Mozilla Support refers to https://support.mozilla.org #}
+      {% trans a_open='<a href="https://support.mozilla.org">'|safe, a_close='</a>'|safe %}
+      After changing your avatar, you will have to sign in again to {{ a_open }}Mozilla Support{{ a_close }} for the changes to be applied.
       {% endtrans %}
     </p>
     <section class="avatar-group">
@@ -46,9 +59,17 @@
     </h2>
     <p>
       {% if is_owner %}
+        {# L10n: Deprecated. Edit your username refers to url("users.edit_my_profile"), which is https://support.mozilla.org/users/edit #}
+        {% set deprecated_edit_username %}
+          {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+            Your privacy is important to us. Your username is always visible to the public -
+            you can always {{ a_open }} edit your username {{ a_close }} if you would like to do so.
+          {% endtrans %}
+        {% endset %}
+        {# L10n: Edit your username refers to url("users.edit_my_profile"), which is https://support.mozilla.org/users/edit #}
         {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
-          Your privacy is important to us. Your username is always visible to the public -
-          you can always {{ a_open }} edit your username {{ a_close }} if you would like to do so.
+          Your privacy is important to us. Your username is always visible to the public –
+          you can always {{ a_open }}edit your username{{ a_close }} if you would like to do so.
         {% endtrans %}
       {% endif %}
     </p>
