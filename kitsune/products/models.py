@@ -105,7 +105,11 @@ class Product(BaseProductTopic):
             return config.enable_zendesk_support
 
     def questions_enabled(self, locale):
-        return self.aaq_configs.filter(is_active=True, enabled_locales__locale=locale).exists()
+        return self.support_configs.filter(
+            is_active=True,
+            forum_config__is_active=True,
+            forum_config__enabled_locales__locale=locale,
+        ).exists()
 
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})
@@ -330,7 +334,8 @@ class ProductSupportConfig(ModelBase):
                 fields=["product", "is_active"], name="unique_active_support_config"
             ),
             models.CheckConstraint(
-                check=models.Q(forum_config__isnull=False) | models.Q(zendesk_config__isnull=False),
+                check=models.Q(forum_config__isnull=False)
+                | models.Q(zendesk_config__isnull=False),
                 name="at_least_one_support_channel",
             ),
         ]
@@ -376,7 +381,7 @@ class ZendeskConfig(ModelBase):
         "ZendeskTopic",
         through="ZendeskTopicConfiguration",
         related_name="zendesk_configs",
-        help_text="Topics available for this Zendesk configuration"
+        help_text="Topics available for this Zendesk configuration",
     )
 
     class Meta:
@@ -394,7 +399,9 @@ class ZendeskTopic(ModelBase):
     the ZendeskTopicConfiguration through table.
     """
 
-    slug = models.SlugField(max_length=100, unique=True, help_text="Globally unique identifier for this topic")
+    slug = models.SlugField(
+        max_length=100, unique=True, help_text="Globally unique identifier for this topic"
+    )
     topic = models.CharField(
         max_length=255, help_text="User-facing topic text shown in the dropdown"
     )
@@ -437,22 +444,17 @@ class ZendeskTopicConfiguration(ModelBase):
     """
 
     zendesk_config = models.ForeignKey(
-        ZendeskConfig,
-        on_delete=models.CASCADE,
-        related_name="topic_configurations"
+        ZendeskConfig, on_delete=models.CASCADE, related_name="topic_configurations"
     )
     zendesk_topic = models.ForeignKey(
-        ZendeskTopic,
-        on_delete=models.CASCADE,
-        related_name="configurations"
+        ZendeskTopic, on_delete=models.CASCADE, related_name="configurations"
     )
     display_order = models.IntegerField(
         default=0,
-        help_text="Order in which this topic appears in this config (lower numbers first)"
+        help_text="Order in which this topic appears in this config (lower numbers first)",
     )
     loginless_only = models.BooleanField(
-        default=False,
-        help_text="Only show this topic for loginless flows in this config"
+        default=False, help_text="Only show this topic for loginless flows in this config"
     )
 
     class Meta:
@@ -460,10 +462,11 @@ class ZendeskTopicConfiguration(ModelBase):
         ordering = ["display_order", "zendesk_topic__slug"]
         constraints = [
             models.UniqueConstraint(
-                fields=["zendesk_config", "zendesk_topic"],
-                name="unique_topic_per_config"
+                fields=["zendesk_config", "zendesk_topic"], name="unique_topic_per_config"
             )
         ]
 
     def __str__(self):
-        return f"{self.zendesk_config.name}: {self.zendesk_topic.topic} (order {self.display_order})"
+        return (
+            f"{self.zendesk_config.name}: {self.zendesk_topic.topic} (order {self.display_order})"
+        )
