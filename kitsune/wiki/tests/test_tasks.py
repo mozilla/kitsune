@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest import mock
 
 import bleach
@@ -10,21 +10,27 @@ from django.core import mail
 from django.core.cache import cache
 from django.test import override_settings
 from django.test.client import RequestFactory
+from django.utils import timezone
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document, Revision, RevisionAnchorRecord
 from kitsune.wiki.tasks import (
     _rebuild_kb_chunk,
+    cleanup_old_anchor_records,
     rebuild_kb,
     render_document_cascade,
     schedule_rebuild_kb,
     send_reviewed_notification,
 )
-from kitsune.wiki.tests import ApprovedRevisionFactory, RevisionFactory
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    RevisionAnchorRecordFactory,
+    RevisionFactory,
+)
 from kitsune.wiki.tests.test_parser import doc_rev_parser
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
@@ -274,3 +280,34 @@ class TestMaybeAwardBadge(TestCase):
 
         ApprovedRevisionFactory(creator=rev1.creator, document__locale="fr")
         self.assertTrue(badge.is_awarded_to(rev1.creator))
+
+
+class CleanupOldAnchorRecordsTestCase(TestCase):
+    """Test the cleanup_old_anchor_records task."""
+
+    @override_settings(STALE_ANCHOR_RECORD_RETENTION_DAYS=30)
+    @mock.patch("kitsune.wiki.tasks.log")
+    def test_deletes_only_stale_records_created_past_the_retention_period(self, mock_log):
+        """Only stale anchor records older than retention period should be deleted."""
+        now = timezone.now()
+        pre_retention = now - timedelta(days=29)
+        post_retention = now - timedelta(days=31)
+
+        record_1 = RevisionAnchorRecordFactory(revision__is_approved=False, created=post_retention)
+        record_2 = RevisionAnchorRecordFactory(revision__is_approved=False, created=post_retention)
+        record_3 = RevisionAnchorRecordFactory(revision__is_approved=False, created=pre_retention)
+        record_4 = RevisionAnchorRecordFactory(created=post_retention)
+
+        cleanup_old_anchor_records()
+
+        # The first two records are stale, and outside the retention period.
+        self.assertFalse(
+            RevisionAnchorRecord.objects.filter(pk__in=(record_1.pk, record_2.pk)).exists()
+        )
+        # The third record is stale, but still within the retention period.
+        self.assertTrue(RevisionAnchorRecord.objects.filter(pk=record_3.pk).exists())
+        # The fourth record is not stale (it's the current revision for its document),
+        # and records that aren't stale are kept no matter how old they are.
+        self.assertTrue(RevisionAnchorRecord.objects.filter(pk=record_4.pk).exists())
+
+        mock_log.info.assert_called_once_with("Deleted 2 stale anchor record(s).")

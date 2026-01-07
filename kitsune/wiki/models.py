@@ -26,7 +26,7 @@ from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import in_staff_group
+from kitsune.sumo.utils import PrettyJSONEncoder, in_staff_group
 from kitsune.tags.models import BigVocabTaggableManager
 from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
@@ -1049,6 +1049,15 @@ class Revision(ModelBase, AbstractRevision):
         except IndexError:
             return None
 
+    @property
+    def anchor_map(self):
+        """
+        Returns the anchor map dict for this revision, or None if no mapping exists.
+        """
+        if hasattr(self, "anchor_record"):
+            return self.anchor_record.map
+        return None
+
 
 class DraftRevision(ModelBase, AbstractRevision):  # type: ignore
     based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
@@ -1057,6 +1066,36 @@ class DraftRevision(ModelBase, AbstractRevision):  # type: ignore
     slug = models.CharField(max_length=255, blank=True)
     summary = models.TextField(blank=True)
     title = models.CharField(max_length=255, blank=True)
+
+
+class RevisionAnchorRecord(ModelBase):
+    """
+    Holds anchor mappings for translated revisions.
+
+    Maps source (English) anchor IDs to target anchor IDs for a translated revision.
+
+    Only mappings for revisions that are the current revision of their document are
+    needed. Mappings for revisions that are no longer their document's current revision
+    are removed periodically by a Celery beat task.
+    """
+
+    revision = models.OneToOneField(
+        Revision,
+        on_delete=models.CASCADE,
+        related_name="anchor_record",
+        primary_key=True,
+        help_text="The translated revision to which this map belongs.",
+    )
+    map = models.JSONField(
+        default=dict,
+        encoder=PrettyJSONEncoder,
+        help_text="Map of source anchors to target anchors.",
+    )
+    explanation = models.TextField(help_text="The LLM explanation for this anchor map.")
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"<RevisionAnchorRecord: revision #{self.revision_id}>"
 
 
 class HelpfulVote(ModelBase):
