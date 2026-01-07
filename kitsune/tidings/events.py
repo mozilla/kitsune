@@ -1,3 +1,4 @@
+import itertools
 import random
 from smtplib import SMTPException
 
@@ -11,7 +12,7 @@ from django.db.models import Q
 from kitsune.sumo.email_utils import send_messages
 from kitsune.tidings.models import EmailUser, Watch, WatchFilter, multi_raw
 from kitsune.tidings.tasks import send_emails
-from kitsune.tidings.utils import collate, hash_to_unsigned
+from kitsune.tidings.utils import hash_to_unsigned
 
 
 class ActivationRequestFailed(Exception):
@@ -21,60 +22,57 @@ class ActivationRequestFailed(Exception):
         self.msgs = msgs
 
 
-def _unique_by_email(users_and_watches):
-    """Given a sequence of (User/EmailUser, [Watch, ...]) pairs
-    clustered by email address (which is never ''), yield from each
-    cluster a single pair like this::
-
-      (User/EmailUser, [Watch, Watch, ...]).
-
-    The User/Email is that of...
-    (1) the first incoming pair where the User has an email and is not
-        anonymous, or, if there isn't such a user...
-    (2) the first pair.
-
-    The list of Watches consists of all those found in the cluster.
-
-    Compares email addresses case-insensitively.
-
+def unique_by_email(*users_and_watches):
     """
+    Consolidate duplicate users and their respective watches by email address.
 
-    def ensure_user_has_email(user, cluster_email):
-        """Make sure the user in the user-watch pair has an email address.
+    This function merges multiple iterables of (user, [watches]) pairs into a
+    single stream of unique pairs. It handles deduplication across different
+    user object types (e.g., authenticated Users vs. EmailUsers) and ensures
+    that all watches associated with the same email are aggregated.
 
-        The caller guarantees us an email from either the user or the watch. If
-        the passed-in user has no email, we return an EmailUser instead having
-        the email address from the watch.
+    The consolidation logic follows these rules:
+    1. Email comparison is case-insensitive.
+    2. If multiple entries exist for the same email, an authenticated User
+       object is preferred over an EmailUser or unauthenticated User.
+    3. All watch lists associated with the same email are concatenated.
+    4. If a User object lacks an email, the email from the first watch is used
+       to create an EmailUser placeholder.
 
-        """
-        # Some of these cases shouldn't happen, but we're tolerant.
-        if not getattr(user, "email", ""):
-            user = EmailUser(cluster_email)
-        return user
+    Args:
+        *users_and_watches: One or more iterables containing
+            (User/EmailUser, [Watch, ...]) tuples.
 
-    # TODO: Do this instead with clever SQL that somehow returns just the
-    # best row for each email.
+    Yields:
+        tuple: A (User/EmailUser, [Watch, ...]) pair for each unique email,
+            sorted by email address in descending order.
+    """
+    by_email: dict[str, list] = {}
 
-    cluster_email = ""  # email of current cluster
-    favorite_user = None  # best user in cluster so far
-    watches = []  # all watches in cluster
-    for u, w in users_and_watches:
-        # w always has at least 1 Watch. All the emails are the same.
-        row_email = u.email or w[0].email
-        if cluster_email.lower() != row_email.lower():
-            # Starting a new cluster.
-            if cluster_email != "":
-                # Ship the favorites from the previous cluster:
-                yield (ensure_user_has_email(favorite_user, cluster_email), watches)
-            favorite_user, watches = u, []
-            cluster_email = row_email
-        elif (
-            (not favorite_user.email or not u.is_authenticated) and u.email and u.is_authenticated
-        ):
-            favorite_user = u
-        watches.extend(w)
-    if favorite_user is not None:
-        yield ensure_user_has_email(favorite_user, cluster_email), watches
+    for user, watches in itertools.chain(*users_and_watches):
+        if not getattr(user, "email", None):
+            if watches and getattr(watches[0], "email", None):
+                user = EmailUser(email=watches[0].email)
+            else:
+                continue
+
+        email_lower = user.email.lower()
+
+        if email_lower not in by_email:
+            by_email[email_lower] = [user, watches]
+        else:
+            current_data = by_email[email_lower]
+
+            # Prefer a real user over an EmailUser.
+            if user.is_authenticated and not current_data[0].is_authenticated:
+                current_data[0] = user
+
+            # Create a new combined list of watches, so we don't modify any existing lists.
+            current_data[1] = current_data[1] + watches
+
+    for email_lower in sorted(by_email, reverse=True):
+        user, watches = by_email[email_lower]
+        yield (user, watches)
 
 
 class Event:
@@ -223,7 +221,7 @@ class Event:
                     "AND f{n}.name=%s".format(n=n)
                 )
                 join_params.append(k)
-                wheres.append("(f{n}.value=%s " "OR f{n}.value IS NULL)".format(n=n))
+                wheres.append("(f{n}.value=%s OR f{n}.value IS NULL)".format(n=n))
                 where_params.append(hash_to_unsigned(v))
             return joins, wheres, join_params + where_params
 
@@ -238,7 +236,7 @@ class Event:
 
         # Constrain on other 1-to-1 attributes:
         if self.content_type:
-            wheres.append("(w.content_type_id IS NULL " "OR w.content_type_id=%s)")
+            wheres.append("(w.content_type_id IS NULL OR w.content_type_id=%s)")
             params.append(ContentType.objects.get_for_model(self.content_type).id)
         if object_id:
             wheres.append("(w.object_id IS NULL OR w.object_id=%s)")
@@ -248,7 +246,9 @@ class Event:
             if not all(e.id for e in exclude):
                 raise ValueError("Can't exclude an unsaved User.")
 
-            wheres.append("(u.id IS NULL OR u.id NOT IN ({}))".format(", ".join("%s" for e in exclude)))
+            wheres.append(
+                "(u.id IS NULL OR u.id NOT IN ({}))".format(", ".join("%s" for e in exclude))
+            )
             params.extend(e.id for e in exclude)
 
         def get_fields(model):
@@ -260,9 +260,7 @@ class Event:
                 return model._meta.fields
 
         User = get_user_model()
-        model_to_fields = {
-            m: [f.get_attname() for f in get_fields(m)] for m in [User, Watch]
-        }
+        model_to_fields = {m: [f.get_attname() for f in get_fields(m)] for m in [User, Watch]}
         query_fields = ["u.{}".format(field) for field in model_to_fields[User]]
         query_fields.extend(["w.{}".format(field) for field in model_to_fields[Watch]])
 
@@ -283,11 +281,7 @@ class Event:
         # IIRC, the DESC ordering was something to do with the placement of
         # NULLs. Track this down and explain it.
 
-        # Put watch in a list just for consistency. Once the pairs go through
-        # _unique_by_email, watches will be in a list, and EventUnion uses the
-        # same function to union already-list-enclosed pairs from individual
-        # events.
-        return _unique_by_email(
+        return unique_by_email(
             (u, [w]) for u, w in multi_raw(query, params, [User, Watch], model_to_fields)
         )
 
@@ -558,17 +552,7 @@ class EventUnion(Event):
         return self.events[0]._mails(users_and_watches)
 
     def _users_watching(self, **kwargs):
-        # Get a sorted iterable of user-watches pairs:
-        def email_key(pair):
-            user, watch = pair
-            return user.email.lower()
-
-        users_and_watches = collate(
-            *[e._users_watching(**kwargs) for e in self.events], key=email_key, reverse=True
-        )
-
-        # Pick the best User out of each cluster of identical email addresses:
-        return _unique_by_email(users_and_watches)
+        return unique_by_email(*[e._users_watching(**kwargs) for e in self.events])
 
 
 class InstanceEvent(Event):

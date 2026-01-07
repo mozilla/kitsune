@@ -153,7 +153,7 @@ class NotificationsTests(TestCase):
         # TODO: Too monolithic. Split this test into several.
         get_current.return_value.domain = "testserver"
 
-        u = UserFactory()
+        u = UserFactory(email="alan@example.com")
         q = self._toggle_watch_question("solution", u, turn_on=True)
         QuestionSolvedEvent.notify("anon@ymous.com", q)
 
