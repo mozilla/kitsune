@@ -228,21 +228,24 @@ def test_still_need_help_button_redirect(page: Page, create_user_factory):
                     with check, allure.step("Verifying that the correct still need help title is "
                                             "displayed"):
                         assert (sumo_pages.product_support_page.get_still_need_help_widget_title()
-                                ) == ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE
+                                ) == ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE, (
+                            f"Incorrect widget title displayed for the {card} product")
                     if card in utilities.general_test_data['premium_products']:
                         with check, allure.step("Verifying that the correct still need help "
                                                 "content is displayed"):
                             assert (sumo_pages.product_support_page
                                     .get_still_need_help_widget_content()
                                     ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_CONTENT_PREMIUM)
+                                          .STILL_NEED_HELP_WIDGET_CONTENT_PREMIUM), (
+                                f"Incorrect widget content displayed for the {card} product")
 
                         with check, allure.step("Verifying that the correct still need help "
                                                 "button text is displayed"):
                             assert (sumo_pages.product_support_page
                                     .get_still_need_help_widget_button_text()
                                     ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_PREMIUM)
+                                          .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_PREMIUM), (
+                                f"Incorrect widget button displayed for the {card} product")
                         with allure.step("Clicking on the still need help widget button"):
                             sumo_pages.product_support_page.click_still_need_help_widget_button()
                     else:
@@ -251,7 +254,8 @@ def test_still_need_help_button_redirect(page: Page, create_user_factory):
                             assert (sumo_pages.product_support_page
                                     .get_still_need_help_widget_content()
                                     ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_CONTENT_FREEMIUM)
+                                          .STILL_NEED_HELP_WIDGET_CONTENT_FREEMIUM), (
+                                f"Incorrect widget content displayed for the {card} product")
 
                         with check, allure.step("Verifying that the correct still need help "
                                                 "button text is displayed"):

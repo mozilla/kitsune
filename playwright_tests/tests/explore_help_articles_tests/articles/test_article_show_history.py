@@ -169,7 +169,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
 def test_kb_article_category_link_and_header(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory()
+    test_user = create_user_factory(permissions=["delete_revision", "delete_document"])
 
     utilities.start_existing_session(cookies=test_user)
     for category in utilities.general_test_data["kb_article_categories"]:
@@ -205,6 +205,10 @@ def test_kb_article_category_link_and_header(page: Page, create_user_factory):
             expect(
                 page
             ).to_have_url(utilities.different_endpoints['kb_categories_links'][category])
+
+        with allure.step("Deleting the document"):
+            utilities.navigate_to_link(article_info["article_show_history_url"])
+            sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2101637, C2489543, C2102169, C2489542
@@ -383,9 +387,9 @@ def test_contributors_can_be_manually_added(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     kb_show_history_page_messages = KBArticleShowHistoryPageMessages()
-    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"],
+                                    permissions=["delete_revision", "delete_document"])
     test_user_two = create_user_factory()
-
     utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Clicking on the 'Edit Contributors' option, adding and selecting the "
@@ -414,6 +418,9 @@ def test_contributors_can_be_manually_added(page: Page, create_user_factory):
         sumo_pages.kb_article_page.click_on_article_option()
         assert (test_user_two["username"] in sumo_pages.kb_article_page.
                 get_list_of_kb_article_contributors())
+
+    with allure.step("Deleting the document"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C2101634, C2489553, C2102186
