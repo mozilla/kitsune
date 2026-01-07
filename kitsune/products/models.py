@@ -106,7 +106,9 @@ class Product(BaseProductTopic):
 
     def questions_enabled(self, locale):
         return self.support_configs.filter(
-            is_active=True, forum_config__enabled_locales__locale=locale
+            is_active=True,
+            forum_config__is_active=True,
+            forum_config__enabled_locales__locale=locale,
         ).exists()
 
     def get_absolute_url(self):
