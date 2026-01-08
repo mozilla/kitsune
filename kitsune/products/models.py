@@ -105,11 +105,17 @@ class Product(BaseProductTopic):
             return config.enable_zendesk_support
 
     def questions_enabled(self, locale):
-        return self.support_configs.filter(
-            is_active=True,
-            forum_config__is_active=True,
-            forum_config__enabled_locales__locale=locale,
-        ).exists()
+        """Check if product has an active public forum in the given locale."""
+        try:
+            config = self.support_configs.get(is_active=True)
+        except ProductSupportConfig.DoesNotExist:
+            return False
+
+        return (
+            config.forum_config
+            and config.forum_config.is_active
+            and config.forum_config.enabled_locales.filter(locale=locale).exists()
+        )
 
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})

@@ -47,13 +47,7 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import (
-    AAQConfig,
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionVote,
-)
+from kitsune.questions.models import AAQConfig, Answer, AnswerVote, Question, QuestionVote
 from kitsune.questions.utils import (
     get_ga_submit_event_parameters_as_json,
     get_mobile_product_from_ua,
@@ -604,9 +598,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
     # Return 404 if the products does not have an AAQ form or if it is archived
     product = None
-    products_with_support = Product.active.filter(
-        support_configs__is_active=True
-    ).filter(
+    products_with_support = Product.active.filter(support_configs__is_active=True).filter(
         Q(support_configs__forum_config__isnull=False)
         | Q(support_configs__zendesk_config__isnull=False)
     )
@@ -677,8 +669,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             else reverse("questions.aaq_step2", args=[product_slug])
         )
 
-        # Check if the selected product has a forum in the user's locale
-        if not has_public_forum:
+        if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM and not has_public_forum:
             locale, path = split_into_language_and_path(request.path_info)
             path = f"/{settings.WIKI_DEFAULT_LANGUAGE}{path}"
 
