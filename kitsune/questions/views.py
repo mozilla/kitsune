@@ -59,7 +59,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     build_paged_url,
     get_next_url,
-    has_aaq_config,
+    has_support_config,
     is_ratelimited,
     paginate,
     set_aaq_context,
@@ -195,7 +195,7 @@ def question_list(request, product_slug=None, topic_slug=None):
     multiple = (len(products) > 1) or ("all" in product_slugs)
     product_with_aaq = False
     if products and not multiple:
-        product_with_aaq = has_aaq_config(products[0])
+        product_with_aaq = has_support_config(products[0])
 
     topics = []
 
@@ -400,7 +400,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "selected_topic_slug": topics[0].slug if topics else None,
         "product_slug": product_slug,
         "topic_navigation": topic_navigation,
-        "has_aaq_config": product_with_aaq,
+        "has_support_config": product_with_aaq,
     }
 
     if products:

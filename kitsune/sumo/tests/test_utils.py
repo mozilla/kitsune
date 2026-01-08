@@ -13,6 +13,7 @@ from kitsune.sumo.utils import (
     get_browser,
     get_next_url,
     has_blocked_link,
+    has_support_config,
     is_ratelimited,
     smart_int,
     truncated_json_dumps,
@@ -284,8 +285,7 @@ class GetBrowserNameTest(TestCase):
         self.assertEqual(get_browser(user_agent), "Trident")
         # Check with Compatibility View situation user Agent of IE11
         user_agent = (
-            "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; "
-            "Trident/7.0;  rv:11.0) like Gecko"
+            "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0;  rv:11.0) like Gecko"
         )
         self.assertEqual(get_browser(user_agent), "MSIE")
 
@@ -334,3 +334,48 @@ class WebpackStaticTests(TestCase):
     def test_exception(self):
         with self.assertRaises(RuntimeError):
             webpack_static("this_file_does_not_exist")
+
+
+class HasSupportConfigTests(TestCase):
+    def test_product_support_config_inactive(self):
+        from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
+        from kitsune.questions.tests import AAQConfigFactory
+
+        product = ProductFactory()
+        aaq_config = AAQConfigFactory(product=product, is_active=True)
+        ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=False)
+
+        self.assertFalse(has_support_config(product))
+
+    def test_aaq_config_inactive(self):
+        from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
+        from kitsune.questions.tests import AAQConfigFactory
+
+        product = ProductFactory()
+        aaq_config = AAQConfigFactory(product=product, is_active=False)
+        ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
+
+        self.assertFalse(has_support_config(product))
+
+    def test_zendesk_only_active(self):
+        from kitsune.products.tests import (
+            ProductFactory,
+            ProductSupportConfigFactory,
+            ZendeskConfigFactory,
+        )
+
+        product = ProductFactory()
+        zendesk_config = ZendeskConfigFactory()
+        ProductSupportConfigFactory(product=product, zendesk_config=zendesk_config, is_active=True)
+
+        self.assertTrue(has_support_config(product))
+
+    def test_forum_support_active(self):
+        from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
+        from kitsune.questions.tests import AAQConfigFactory
+
+        product = ProductFactory()
+        aaq_config = AAQConfigFactory(product=product, is_active=True)
+        ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
+
+        self.assertTrue(has_support_config(product))
