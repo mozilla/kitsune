@@ -7,42 +7,6 @@ from django.urls import reverse as django_reverse
 from django.utils.module_loading import import_string
 
 
-def collate(*iterables, **kwargs):
-    """Return an iterable ordered collation of the already-sorted items
-    from each of ``iterables``, compared by kwarg ``key``.
-
-    If ``reverse=True`` is passed, iterables must return their results in
-    descending order rather than ascending.
-
-    """
-    key = kwargs.pop("key", lambda a: a)
-    reverse = kwargs.pop("reverse", False)
-    min_or_max = max if reverse else min
-
-    rows = [iter(iterable) for iterable in iterables if iterable]
-    next_values = {}
-    by_key = []
-
-    def gather_next_value(row, index):
-        try:
-            next_value = next(row)
-        except StopIteration:
-            pass
-        else:
-            next_values[index] = next_value
-            by_key.append((key(next_value), index))
-
-    for index, row in enumerate(rows):
-        gather_next_value(row, index)
-
-    while by_key:
-        key_value, index = min_or_max(by_key)
-        by_key.remove((key_value, index))
-        next_value = next_values.pop(index)
-        yield next_value
-        gather_next_value(rows[index], index)
-
-
 def hash_to_unsigned(data):
     """If ``data`` is a string or unicode string, return an unsigned 4-byte int
     hash of it. If ``data`` is already an int that fits those parameters,
