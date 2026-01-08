@@ -381,11 +381,20 @@ def in_staff_group(user: User | None) -> bool:
     return bool(user and user.is_authenticated and user.profile.in_staff_group)
 
 
-def has_aaq_config(product=None):
-    """Check if a product has an AAQ config."""
+def has_support_config(product=None):
+    """Check if a product has an active support configuration (forum or Zendesk).
+
+    This checks ProductSupportConfig.is_active and ensures at least one support channel
+    is properly configured:
+    - For forum support: AAQConfig must be active
+    - For Zendesk support: ZendeskConfig just needs to be configured
+
+    Returns True if the product has any active support channel.
+    """
     # avoid circular dependencies
-    from kitsune.products.models import Product
-    from kitsune.questions.models import AAQConfig
+    from django.db.models import Q
+
+    from kitsune.products.models import Product, ProductSupportConfig
 
     if not product:
         return False
@@ -396,15 +405,22 @@ def has_aaq_config(product=None):
         except Product.DoesNotExist:
             return False
 
-    try:
-        return AAQConfig.objects.filter(product=product, is_active=True).exists()
-    except AAQConfig.DoesNotExist:
-        return False
+    # Check ProductSupportConfig with either:
+    # 1. Active forum support (AAQConfig.is_active=True), OR
+    # 2. Zendesk support configured
+    return (
+        ProductSupportConfig.objects.filter(
+            product=product,
+            is_active=True,
+        )
+        .filter(Q(forum_config__is_active=True) | Q(zendesk_config__isnull=False))
+        .exists()
+    )
 
 
 def set_aaq_context(request, product, multiple_products=False, current_support_type=None):
     """Set the AAQ context for a product."""
-    if not has_aaq_config(product):
+    if not has_support_config(product):
         request.session["aaq_context"] = {}
         return
 
