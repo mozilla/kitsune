@@ -663,10 +663,16 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["topics"] = build_topics_data(request, product, topics)
 
     elif step == 3:
-        context["cancel_url"] = get_next_url(request) or (
+        default_cancel_url = (
             reverse("products.product", args=[product.slug])
             if is_loginless
             else reverse("questions.aaq_step2", args=[product_slug])
+        )
+
+        context["cancel_url"] = (
+            default_cancel_url  # We've already switched, so avoid cycling back.
+            if request.GET.get("support_type")
+            else (get_next_url(request) or default_cancel_url)
         )
 
         if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM and not has_public_forum:
