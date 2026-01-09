@@ -84,7 +84,9 @@
     .sumo-button {
       margin-bottom: p.$spacing-lg;
       margin-left: 0;
-      max-width: 20%;
+      &:not(.sumo-button-wide) {
+        max-width: 20%;
+      }
     }
 
     .sumo-close-button {

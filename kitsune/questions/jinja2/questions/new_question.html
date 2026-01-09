@@ -38,24 +38,24 @@
       {{ _('Ask your question') }}
     {% endif %}
   </h2>
-
   {% if can_switch %}
-    <div class="support-type-switcher">
-      <p>
+    <div class="sumo-banner sumo-banner-no-close">
+      <div class="content">
         {% if current_support_type == SUPPORT_TYPE_ZENDESK %}
-          {{ _('You\'re contacting Mozilla Support directly.') }}
-          <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_FORUM }}">
+          <span class="heading">{{ _('You\'re contacting Mozilla Support directly.') }}</span>
+          <a class="sumo-button sumo-button-wide primary-button button-lg" href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_FORUM }}">
             {{ _('Ask the community instead') }}
           </a>
         {% else %}
-          {{ _('You\'re posting to the community forum.') }}
-          <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_ZENDESK }}">
+          <span class="heading">{{ _('You\'re posting to the community forum.') }}</span>
+          <a class="sumo-button sumo-button-wide primary-button button-lg" href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_ZENDESK }}">
             {{ _('Contact Mozilla Support instead') }}
           </a>
         {% endif %}
-      </p>
+      </div>
     </div>
   {% endif %}
+
 {% endblock %}
 
 {% block submit_button_value %}
