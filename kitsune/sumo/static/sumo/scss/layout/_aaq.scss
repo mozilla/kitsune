@@ -44,3 +44,16 @@
 aside .aaq-widget {
     margin-bottom: p.$spacing-lg;
 }
+
+.support-type-switcher {
+    display: inline-block;
+    border: 1px solid var(--color-marketing-gray-03);
+    border-radius: var(--global-radius);
+    padding: p.$spacing-md p.$spacing-lg;
+    margin-bottom: p.$spacing-xl;
+
+    p {
+        margin: 0;
+        color: var(--color-text-secondary);
+    }
+}
