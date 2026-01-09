@@ -50,7 +50,7 @@ dependencies = [
     "premailer>=3.10.0,<4",
     "pyquery>=2.0.0,<3",
     "parameterized>=0.8.1,<0.9",
-    "Werkzeug==3.1.4",
+    "Werkzeug==3.1.5",
     "commonware>=0.6.0,<0.7",
     "django-statici18n>=2.4.0,<3",
     "django-timezone-field~=7.1",
