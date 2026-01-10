@@ -9,3 +9,4 @@ class GroupProfileFactory(factory.django.DjangoModelFactory):
         model = GroupProfile
 
     group = factory.SubFactory(GroupFactory)
+    is_private = False

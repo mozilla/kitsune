@@ -15,7 +15,7 @@ class GroupProfileForm(forms.ModelForm):
 
     class Meta:
         model = GroupProfile
-        fields = ["information"]
+        fields = ["information", "is_private"]
 
 
 class GroupAvatarForm(forms.ModelForm):
