@@ -41,7 +41,11 @@ from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.forms import (
+    CRASH_ID_LABEL,
+    FREQUENCY_LABEL,
     FREQUENCY_CHOICES,
+    STARTED_LABEL,
+    PLUGINS_LABEL,
     AnswerForm,
     EditQuestionForm,
     NewQuestionForm,
@@ -1566,7 +1570,12 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
             AnswersFeed().title(question),
         ),
     )
+
+    crash_id_label = CRASH_ID_LABEL
+    frequency_label = FREQUENCY_LABEL
     frequencies = dict(FREQUENCY_CHOICES)
+    started_label = STARTED_LABEL
+    plugins_label = PLUGINS_LABEL
 
     is_watching_question = request.user.is_authenticated and (
         QuestionReplyEvent.is_notifying(request.user, question)
