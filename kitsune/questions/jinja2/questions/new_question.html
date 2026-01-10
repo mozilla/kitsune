@@ -41,18 +41,13 @@
 
   {% if can_switch %}
     <div class="support-type-switcher">
+      {% set is_zendesk = (current_support_type == SUPPORT_TYPE_ZENDESK) %}
+      {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
       <p>
-        {% if current_support_type == SUPPORT_TYPE_ZENDESK %}
-          {{ _('You\'re contacting Mozilla Support directly.') }}
-          <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_FORUM }}">
-            {{ _('Ask the community instead') }}
-          </a>
-        {% else %}
-          {{ _('You\'re posting to the community forum.') }}
-          <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) }}?support_type={{ SUPPORT_TYPE_ZENDESK }}">
-            {{ _('Contact Mozilla Support instead') }}
-          </a>
-        {% endif %}
+        {{ _("You're contacting Mozilla Support directly.") if is_zendesk else _("You're posting to the community forum.") }}
+        <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}">
+          {{ _('Ask the community instead') if is_zendesk else _('Contact Mozilla Support instead') }}
+        </a>
       </p>
     </div>
   {% endif %}
