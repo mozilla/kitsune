@@ -42,8 +42,8 @@ from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.forms import (
     CRASH_ID_LABEL,
-    FREQUENCY_LABEL,
     FREQUENCY_CHOICES,
+    FREQUENCY_LABEL,
     PLUGINS_LABEL,
     STARTED_LABEL,
     AnswerForm,
