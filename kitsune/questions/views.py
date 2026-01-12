@@ -621,15 +621,9 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
     }
     # If the selected product doesn't exist in DB, render a 404
     if step > 1:
-        set_aaq_context(request, product)
-        has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
-        context["has_ticketing_support"] = product.has_ticketing_support
-        context["ga_products"] = f"/{product_slug}/"
+        aaq_context = set_aaq_context(request, product)
 
-        # Determine which support channel to show (runs at step 2 and 3)
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, product
-        )
+        support_type = aaq_context.get("current_support_type")
 
         # Handle missing config
         if support_type is None:
@@ -642,17 +636,14 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             )
             return HttpResponseRedirect(reverse("products.product", args=[product.slug]))
 
-        # Add routing info to context
+        has_public_forum = aaq_context.get("has_public_forum", False)
+
+        context["ga_products"] = f"/{product_slug}/"
         context["current_support_type"] = support_type
-        context["can_switch"] = can_switch
+        context["can_switch"] = aaq_context.get("can_switch", False)
         context["SUPPORT_TYPE_FORUM"] = ProductSupportConfig.SUPPORT_TYPE_FORUM
         context["SUPPORT_TYPE_ZENDESK"] = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
-
-        # Update session context with routed support type for widgets
-        if "aaq_context" in request.session:
-            aaq_ctx = request.session["aaq_context"].copy()
-            aaq_ctx["current_support_type"] = support_type
-            request.session["aaq_context"] = aaq_ctx
+        context["has_ticketing_support"] = aaq_context.get("has_ticketing_support", False)
 
     if step == 2:
         topics = topics_for(request.user, product, parent=None)
