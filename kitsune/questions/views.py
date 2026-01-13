@@ -53,7 +53,6 @@ from kitsune.questions.utils import (
     get_mobile_product_from_ua,
 )
 from kitsune.sumo.decorators import ratelimit
-from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
@@ -654,6 +653,38 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["topics"] = build_topics_data(request, product, topics)
 
     elif step == 3:
+        # First, check for redirection cases.
+        if (
+            (support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM) and not has_public_forum
+        ) or (
+            (support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+            and (request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE)
+        ):
+            old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+            new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+
+            if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM:
+                msg = _(
+                    "The questions forum isn't available for {product} in {old_lang}, we "
+                    "have redirected you to the {new_lang} questions forum."
+                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+            else:
+                msg = _(
+                    "Mozilla Support isn't available for {product} in {old_lang}, we "
+                    "have redirected you to Mozilla Support in {new_lang}."
+                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+
+            messages.add_message(request, messages.WARNING, msg)
+
+            return HttpResponseRedirect(
+                reverse(
+                    "questions.aaq_step3",
+                    locale=settings.WIKI_DEFAULT_LANGUAGE,
+                    args=[product.slug],
+                )
+                + (f"?{request.GET.urlencode()}" if request.GET else "")
+            )
+
         context["next_url"] = next_url = get_next_url(request)
 
         context["cancel_url"] = next_url or (
@@ -661,20 +692,6 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             if is_loginless
             else reverse("questions.aaq_step2", args=[product_slug])
         )
-
-        if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM and not has_public_forum:
-            locale, path = split_into_language_and_path(request.path_info)
-            path = f"/{settings.WIKI_DEFAULT_LANGUAGE}{path}"
-
-            old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-            new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-            msg = _(
-                "The questions forum isn't available for {product} in {old_lang}, we "
-                "have redirected you to the {new_lang} questions forum."
-            ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
-            messages.add_message(request, messages.WARNING, msg)
-
-            return HttpResponseRedirect(path)
 
         if support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK:
             zendesk_form = ZendeskForm(
