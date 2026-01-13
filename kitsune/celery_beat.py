@@ -59,6 +59,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.customercare.tasks.auto_reject_old_zendesk_spam",
         "schedule": crontab(hour="3", minute="30"),
     },
+    # Every hour at 00 minutes past.
+    "process_failed_zendesk_tickets": {
+        "task": "kitsune.customercare.tasks.process_failed_zendesk_tickets",
+        "schedule": crontab(minute="0"),
+    },
     # Questions Periodic Tasks
     # Daily at 04:00.
     "auto_archive_old_questions": {

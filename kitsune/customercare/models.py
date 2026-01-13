@@ -12,12 +12,14 @@ class SupportTicket(ModelBase):
     STATUS_SENT = "sent"
     STATUS_FLAGGED = "flagged"
     STATUS_REJECTED = "rejected"
+    STATUS_PROCESSING_FAILED = "processing_failed"
 
     STATUS_CHOICES = (
         (STATUS_PENDING, "Ticket Pending Classification"),
         (STATUS_SENT, "Ticket Sent"),
         (STATUS_FLAGGED, "Ticket under Review"),
         (STATUS_REJECTED, "Ticket Rejected"),
+        (STATUS_PROCESSING_FAILED, "Ticket Processing Failed"),
     )
 
     subject = models.CharField(max_length=255)
