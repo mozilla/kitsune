@@ -69,7 +69,7 @@ class OS {
       "nt 6.2": "8",
       "nt 6.3": "8.1",
       "nt 6.4": "10",
-      "nt 10.0": "10",
+      "nt 10.0": "10/11",
     },
   };
 }
@@ -234,6 +234,10 @@ export class TroubleshootingDetector extends GenericDetector {
       os.name = "Windows";
       os.version = "11";
     }
+    else if (osVersion?.includes("Windows_NT 10.0")) {
+      os.name = "Windows";
+      os.version = "10";
+    }
     return os;
   }
 
@@ -260,7 +264,7 @@ export default class BrowserDetect {
 
   async getOS() {
     let os = await this.uaDetector.os();
-    if (os.name === "Windows" && os.version === "10") {
+    if (os.name === "Windows" && os.version === "10/11") {
       // could be windows 11
       let browser = await this.uaDetector.browser();
       if (browser.mozilla && !os.mobile) {

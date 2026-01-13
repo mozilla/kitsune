@@ -7,6 +7,8 @@ import configureStepStylesURL from "../scss/form-wizard-configure-step.styles.sc
 
 export class ConfigureStep extends BaseFormStep {
   get template() {
+    // L10n: A button.
+    const continueString = gettext("Continue");
     return `
       <template>
         <div class="configure-step-wrapper">
@@ -43,7 +45,7 @@ export class ConfigureStep extends BaseFormStep {
           </p>
 
           <p id="buttons">
-            <button id="next" class="mzp-c-button mzp-t-product" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "configuration-next"}'>${gettext("Continue")}</button>
+            <button id="next" class="mzp-c-button mzp-t-product" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "configuration-next"}'>${continueString}</button>
           </p>
         </div>
       </template>

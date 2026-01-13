@@ -8,6 +8,8 @@ export class SignInStep extends BaseFormStep {
   #emailErrorEl = null;
 
   get template() {
+    // L10n: A button.
+    const continueString = gettext("Continue");
     return `
       <template>
         <div id="sign-in-step-root">
@@ -39,7 +41,7 @@ export class SignInStep extends BaseFormStep {
               <input id="email" name="email" type="email" required="true" placeholder="${gettext("user@example.com")}" pending-autofocus="" />
             </div>
 
-            <button id="continue" class="mzp-c-button mzp-t-product" type="submit" data-event-name="dmw_click">${gettext("Continue")}</button>
+            <button id="continue" class="mzp-c-button mzp-t-product" type="submit" data-event-name="dmw_click">${continueString}</button>
           </form>
 
           <p class="for-sign-up form-footer">

@@ -671,7 +671,13 @@
 </li>
 {% endmacro %}
 
-{% macro content_editor(field) %}
+{% macro content_editor(field, mention_rules=false) %}
+{% if mention_rules %}
+  {# L10n: Text displayed above the content editor (particularly, when posting a question or a reply). Rules and guidelines refer to https://support.mozilla.org/kb/mozilla-support-rules-guidelines #}
+  <div class="field-help-text">{% trans a_open='<a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">'|safe, a_close='</a>'|safe %}
+    Remember to follow our {{ a_open }}rules and guidelines{{ a_close }}.
+  {% endtrans %}</div>
+{% endif %}
 <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}"
   data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
   <div class="editor-tools"></div>
