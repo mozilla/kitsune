@@ -418,18 +418,30 @@ def has_support_config(product=None):
     )
 
 
-def set_aaq_context(request, product, multiple_products=False, current_support_type=None):
-    """Set the AAQ context for a product."""
+def set_aaq_context(request, product, multiple_products=False):
+    """
+    Given a request and a product, determine the AAQ context, insert the AAQ
+    context into the session, and return the AAQ context.
+    """
+    from kitsune.products.models import ProductSupportConfig
+
     if not has_support_config(product):
-        request.session["aaq_context"] = {}
-        return
+        aaq_context = {}
+    else:
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, product
+        )
 
-    request.session["aaq_context"] = {
-        "has_ticketing_support": product.has_ticketing_support,
-        "product_slug": product.slug,
-        "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
-        "multiple_products": multiple_products,
-    }
+        aaq_context = {
+            "has_ticketing_support": product.has_ticketing_support,
+            "product_slug": product.slug,
+            "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
+            "multiple_products": multiple_products,
+            "current_support_type": support_type,
+            "can_switch": can_switch,
+        }
 
-    if current_support_type:
-        request.session["aaq_context"]["current_support_type"] = current_support_type
+    # Update the session with the AAQ context.
+    request.session["aaq_context"] = aaq_context
+
+    return aaq_context
