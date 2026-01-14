@@ -82,6 +82,7 @@ dependencies = [
     "langchain==0.3.27",
     "langchain-google-vertexai==2.0.28",
     "django-celery-beat>=2.8.1,<3",
+    "django-treebeard>=4.8.0",
 ]
 
 [project.optional-dependencies]
