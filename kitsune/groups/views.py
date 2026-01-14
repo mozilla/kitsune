@@ -27,8 +27,8 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     members_qs = prof.group.user_set.all().select_related("profile")
     members = paginate(request, members_qs, per_page=30)
 
-    user_can_edit = _user_can_edit(request.user, prof)
-    user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
+    user_can_edit = prof.can_edit(request.user)
+    user_can_manage_leaders = prof.can_manage_leaders(request.user)
     return render(
         request,
         "groups/profile.html",
@@ -49,7 +49,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
 def edit(request, group_slug):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
 
-    if not _user_can_edit(request.user, prof):
+    if not prof.can_edit(request.user):
         raise PermissionDenied
 
     form = GroupProfileForm(request.POST or None, instance=prof)
@@ -69,7 +69,7 @@ def edit_avatar(request, group_slug):
     """Edit group avatar."""
     prof = get_object_or_404(GroupProfile, slug=group_slug)
 
-    if not _user_can_edit(request.user, prof):
+    if not prof.can_edit(request.user):
         raise PermissionDenied
 
     if request.method == "POST":
@@ -106,7 +106,7 @@ def delete_avatar(request, group_slug):
     """Delete group avatar."""
     prof = get_object_or_404(GroupProfile, slug=group_slug)
 
-    if not _user_can_edit(request.user, prof):
+    if not prof.can_edit(request.user):
         raise PermissionDenied
 
     if request.method == "POST":
@@ -124,7 +124,7 @@ def add_member(request, group_slug):
     """Add a member to the group."""
     prof = get_object_or_404(GroupProfile, slug=group_slug)
 
-    if not _user_can_edit(request.user, prof):
+    if not prof.can_edit(request.user):
         raise PermissionDenied
 
     form = AddUserForm(request.POST)
@@ -147,11 +147,11 @@ def remove_member(request, group_slug, user_id):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     user = get_object_or_404(User, id=user_id)
 
-    if not _user_can_edit(request.user, prof):
+    if not prof.can_edit(request.user):
         raise PermissionDenied
 
     if request.method == "POST":
-        if user in prof.leaders.all():
+        if prof.leaders.filter(pk=user.pk).exists():
             # If user is a leader, remove from leaders
             prof.leaders.remove(user)
         user.groups.remove(prof.group)
@@ -168,13 +168,13 @@ def add_leader(request, group_slug):
     """Add a leader to the group."""
     prof = get_object_or_404(GroupProfile, slug=group_slug)
 
-    if not _user_can_manage_leaders(request.user, prof):
+    if not prof.can_manage_leaders(request.user):
         raise PermissionDenied
 
     form = AddUserForm(request.POST)
     if form.is_valid():
         for user in form.cleaned_data["users"]:
-            if prof.group not in user.groups.all():
+            if not user.groups.filter(pk=prof.group.pk).exists():
                 # If user isn't a member of group, add to members
                 user.groups.add(prof.group)
             prof.leaders.add(user)
@@ -196,7 +196,7 @@ def remove_leader(request, group_slug, user_id):
     prof = get_object_or_404(GroupProfile, slug=group_slug)
     user = get_object_or_404(User, id=user_id)
 
-    if not _user_can_manage_leaders(request.user, prof):
+    if not prof.can_manage_leaders(request.user):
         raise PermissionDenied
 
     if request.method == "POST":
@@ -219,14 +219,3 @@ def join_contributors(request):
         request, messages.SUCCESS, _("You are now part of the Contributors group!")
     )
     return HttpResponseRedirect(next_url)
-
-
-def _user_can_edit(user, group_profile):
-    """Can the given user edit the given group profile?"""
-    return user.has_perm("groups.change_groupprofile") or user in group_profile.leaders.all()
-
-
-def _user_can_manage_leaders(user, group_profile):
-    """Can the given user add and remove leaders?"""
-    # Limit to users with the change_groupprofile permission
-    return user.has_perm("groups.change_groupprofile")

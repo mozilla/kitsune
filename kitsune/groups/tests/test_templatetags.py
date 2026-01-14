@@ -21,7 +21,7 @@ class GroupHelperTests(TestCase):
     def test_group_link_with_profile(self):
         g = GroupFactory()
         g.save()
-        p = GroupProfile.objects.create(group=g, slug="foo")
+        p = GroupProfile.add_root(group=g, slug="foo")
         text = group_link(g)
         doc = pq(text)
         self.assertEqual(reverse("groups.profile", args=[p.slug]), doc("a")[0].attrib["href"])
@@ -43,7 +43,7 @@ class GroupHelperTests(TestCase):
     def test_group_avatar(self):
         g = GroupFactory()
         g.save()
-        p = GroupProfile.objects.create(group=g, slug="foo")
+        p = GroupProfile.add_root(group=g, slug="foo")
         url = group_avatar(p)
         self.assertRegex(url, rf"{re.escape(settings.STATIC_URL)}avatar\.[0-9a-f]+\.png")
         p.avatar = Mock()

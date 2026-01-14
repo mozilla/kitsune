@@ -7,7 +7,7 @@ from kitsune.groups.tests import GroupProfileFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import GroupFactory, UserFactory, add_permission
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class EditGroupProfileTests(TestCase):
@@ -30,8 +30,9 @@ class EditGroupProfileTests(TestCase):
         gp = GroupProfile.objects.get(slug=slug)
         self.assertEqual(gp.information, "=new info=")
 
-    def test_edit_with_perm(self):
-        add_permission(self.user, GroupProfile, "change_groupprofile")
+    def test_edit_as_superuser(self):
+        self.user.is_superuser = True
+        self.user.save()
         self._verify_get_and_post()
 
     def test_edit_as_leader(self):
@@ -54,8 +55,8 @@ class EditAvatarTests(TestCase):
     def setUp(self):
         super().setUp()
         self.user = UserFactory()
-        add_permission(self.user, GroupProfile, "change_groupprofile")
         self.group_profile = GroupProfileFactory()
+        self.group_profile.leaders.add(self.user)
         self.client.login(username=self.user.username, password="testpass")
 
     def tearDown(self):
@@ -100,8 +101,8 @@ class AddRemoveMemberTests(TestCase):
         super().setUp()
         self.user = UserFactory()
         self.member = UserFactory()
-        add_permission(self.user, GroupProfile, "change_groupprofile")
         self.group_profile = GroupProfileFactory()
+        self.group_profile.leaders.add(self.user)
         self.client.login(username=self.user.username, password="testpass")
 
     def test_add_member(self):
@@ -128,9 +129,9 @@ class AddRemoveLeaderTests(TestCase):
     def setUp(self):
         super().setUp()
         self.user = UserFactory()
-        add_permission(self.user, GroupProfile, "change_groupprofile")
         self.leader = UserFactory()
         self.group_profile = GroupProfileFactory()
+        self.group_profile.leaders.add(self.user)
         self.client.login(username=self.user.username, password="testpass")
 
     def test_add_leader(self):
