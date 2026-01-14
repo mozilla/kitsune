@@ -32,10 +32,6 @@ class TreeModelBase(MP_Node, ModelBase):
 class GroupProfile(TreeModelBase):
     """Profile model for groups with hierarchy support."""
 
-    path = models.CharField(max_length=255, unique=True, null=True, blank=True)
-    depth = models.PositiveIntegerField(null=True, blank=True)
-    numchild = models.PositiveIntegerField(default=0, null=True, blank=True)
-
     slug = models.SlugField(unique=True, editable=False, blank=False, null=False, max_length=80)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="profile")
     leaders = models.ManyToManyField(User)
