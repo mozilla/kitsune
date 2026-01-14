@@ -77,15 +77,6 @@ behaviors like editing them can be provided by overriding blocks.
             <form id="question-form" method="post">
               {% csrf_token %}
 
-              {% if current_support_type != SUPPORT_TYPE_ZENDESK %}
-                <p class="sumo-page-intro">
-                  {% trans %}
-                    Be nice. Our volunteers are Mozilla users just like you,
-                    who take the time out of their day to help.
-                  {% endtrans %}
-                </p>
-              {% endif %}
-
               <div class="info card shade-bg highlight mb">
               {% if is_loginless and not user.is_authenticated %}
                 {% trans %}
@@ -93,12 +84,16 @@ behaviors like editing them can be provided by overriding blocks.
                   You've found the right place. Complete the form below
                   to contact our support staff.
                 {% endtrans %}
+              {% elif current_support_type == SUPPORT_TYPE_ZENDESK %}
+                {% trans %}
+                  Be specific. Telling us “YouTube videos are always choppy”
+                  is much more helpful than “something is broken".
+                {% endtrans %}
               {% else %}
                 {% trans %}
-                  Be descriptive.
-                  Saying “playing video on YouTube is always choppy”
-                  will help us understand the issue better than saying
-                  “something is wrong” or “the app is broken”.
+                  Be nice and be specific. Our volunteers are Mozilla users just like
+                  you who give their own time to help. Telling us “YouTube videos are
+                  always choppy” is much more helpful than “something is broken”.
                 {% endtrans %}
               {% endif %}
               </div>
