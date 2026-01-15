@@ -46,6 +46,7 @@ behaviors like editing them can be provided by overriding blocks.
     {% endblock %}
     <div class="sumo-l-two-col">
       <aside class="sumo-l-two-col--sidebar">
+        {% block sidebar_widgets %}
         {% if form and current_support_type != SUPPORT_TYPE_ZENDESK %}
           <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
               <img class="card--img" src="{{ webpack_static('sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png') }}" alt="Illustration of community" />
@@ -64,6 +65,7 @@ behaviors like editing them can be provided by overriding blocks.
             <p>{{ _('Follow through. Sometimes, our volunteers would ask you for more information or to test out certain scenarios. The sooner you can do this, the sooner they would know how to fix it.')}}
           </div>
         {% endif %}
+        {% endblock %}
       </aside>
       <article class="sumo-l-two-col--main">
 
@@ -188,6 +190,7 @@ behaviors like editing them can be provided by overriding blocks.
                 <a class="sumo-button secondary-button push-right" href="{{ cancel_url }}" class="cancel">{{ _('Cancel') }}</a>
                 {% endblock %}
               </div>
+              {% block after_form_buttons %}{% endblock %}
             </form>
           </div>
         {% endif %}

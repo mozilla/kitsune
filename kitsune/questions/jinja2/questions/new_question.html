@@ -1,6 +1,7 @@
 {% extends "questions/includes/question_editing_frame.html" %}
 {% from "questions/includes/aaq_macros.html" import explore_solutions with context %}
 {% from "questions/includes/aaq_macros.html" import select_product %}
+{% from "questions/includes/aaq_macros.html" import support_type_switcher with context %}
 {% set announcement_product = current_product|default(None) %}
 {% set title = _('Get Support') %}
 {% set no_headline = True %}
@@ -38,18 +39,18 @@
       {{ _('Ask your question') }}
     {% endif %}
   </h2>
+{% endblock %}
 
+{% block sidebar_widgets %}
   {% if can_switch %}
-    <div class="support-type-switcher">
-      {% set is_zendesk = (current_support_type == SUPPORT_TYPE_ZENDESK) %}
-      {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
-      <p>
-        {{ _("You're contacting Mozilla Support directly.") if is_zendesk else _("You're posting to the community forum.") }}
-        <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}">
-          {{ _('Ask the community instead') if is_zendesk else _('Contact Mozilla Support instead') }}
-        </a>
-      </p>
-    </div>
+    {{ support_type_switcher(css_class='switcher-sidebar') }}
+  {% endif %}
+  {{ super() }}
+{% endblock %}
+
+{% block after_form_buttons %}
+  {% if can_switch %}
+    {{ support_type_switcher(css_class='switcher-inline') }}
   {% endif %}
 {% endblock %}
 

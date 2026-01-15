@@ -189,6 +189,33 @@
 </div>
 {%- endmacro %}
 
+{% macro support_type_switcher(css_class='') -%}
+  {% set is_zendesk = (current_support_type == SUPPORT_TYPE_ZENDESK) %}
+  {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
+  <div class="support-type-switcher-widget {{ css_class }}">
+    <img class="switcher-icon" src="{{ webpack_static('sumo/img/info.svg') }}" alt="" />
+    <p class="switcher-status">
+      {% if is_zendesk %}
+        {{ _("You're contacting Mozilla Support directly") }}
+      {% else %}
+        {{ _("You're posting to the Community Forum") }}
+      {% endif %}
+    </p>
+    <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="switcher-link">
+      <span class="switcher-link-text">
+        {% if is_zendesk %}
+          {{ _('Switch to Community Forum') }}
+        {% else %}
+          {{ _('Switch to Mozilla Support') }}
+        {% endif %}
+      </span>
+      <svg class="switcher-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+{%- endmacro %}
+
 {% macro troubleshooting_instructions(field) %}
   <div>
     <div id="api-section">
