@@ -9,3 +9,7 @@ class GroupProfileFactory(factory.django.DjangoModelFactory):
         model = GroupProfile
 
     group = factory.SubFactory(GroupFactory)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        return model_class.add_root(**kwargs)
