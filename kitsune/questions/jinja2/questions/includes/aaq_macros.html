@@ -124,10 +124,10 @@
 
     {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1)
                        if not (is_ticketed or has_forum or topic)
-                       else url('questions.aaq_step3', product_slug=aaq_context.product_slug) 
+                       else url('questions.aaq_step3', product_slug=aaq_context.product_slug)
                        if aaq_context and not multiple_products
                        else url('questions.aaq_step1') %}
-  
+
     <a class="sumo-button primary-button feature-box"
       href="{{ next_step }}"
       data-event-name="link_click"
@@ -193,13 +193,15 @@
   {% set is_zendesk = (current_support_type == SUPPORT_TYPE_ZENDESK) %}
   {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
   <div class="support-type-switcher-widget {{ css_class }}">
-    <img class="switcher-icon" src="{{ webpack_static('sumo/img/info.svg') }}" alt="" />
     <p class="switcher-status">
-      {% if is_zendesk %}
-        {{ _("You're contacting Mozilla Support directly") }}
-      {% else %}
-        {{ _("You're posting to the Community Forum") }}
-      {% endif %}
+      <img class="switcher-icon" src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="" />
+      <span>
+        {% if is_zendesk %}
+          {{ _("You're contacting Mozilla Support directly") }}
+        {% else %}
+          {{ _("You're posting to the Community Forum") }}
+        {% endif %}
+      </span>
     </p>
     <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="switcher-link">
       <span class="switcher-link-text">
