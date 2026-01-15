@@ -10,16 +10,18 @@ from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_pag
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.messages.search_page_messages import SearchPageMessage
 from playwright_tests.pages.sumo_pages import SumoPages
+from playwright_tests.tests.conftest import create_user_factory
 
 
 # C890369
 @pytest.mark.smokeTest
 @pytest.mark.searchTests
-def test_searchbar_functionality_product_solutions_page(page: Page):
+def test_searchbar_functionality_product_solutions_page(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
-    test_question_name = "NVDA fails to load"
+    test_user = create_user_factory()
+    question = _create_test_question(page, test_user)
 
     with allure.step("Navigating to the Firefox product solutions page and using the searchbar to "
                      "search for a particular kb Article"):
@@ -33,10 +35,11 @@ def test_searchbar_functionality_product_solutions_page(page: Page):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
 
     with allure.step("Using the searchbar to search for a particular question"):
-        sumo_pages.search_page.fill_into_searchbar(text=test_question_name, is_aaq=True)
+        sumo_pages.search_page.fill_into_searchbar(text=question["aaq_subject"], is_aaq=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question["aaq_subject"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
@@ -44,11 +47,12 @@ def test_searchbar_functionality_product_solutions_page(page: Page):
 
 @pytest.mark.smokeTest
 @pytest.mark.searchTests
-def test_searchbar_functionality_product_support_page(page: Page):
+def test_searchbar_functionality_product_support_page(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
-    test_question_name = "NVDA fails to load"
+    test_user = create_user_factory()
+    question = _create_test_question(page, test_user)
 
     with allure.step("Navigating to the Firefox product support page and using the searchbar to "
                      "search for a particular kb Article"):
@@ -62,10 +66,11 @@ def test_searchbar_functionality_product_support_page(page: Page):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
 
     with allure.step("Using the searchbar to search for a particular question"):
-        sumo_pages.search_page.fill_into_searchbar(test_question_name)
+        sumo_pages.search_page.fill_into_searchbar(question["aaq_subject"])
 
     with allure.step("Verifying that the question is successfully returned"):
-        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question["aaq_subject"] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
@@ -73,11 +78,12 @@ def test_searchbar_functionality_product_support_page(page: Page):
 
 @pytest.mark.smokeTest
 @pytest.mark.searchTests
-def test_searchbar_functionality_explore_by_topic_page(page: Page):
+def test_searchbar_functionality_explore_by_topic_page(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
-    test_question_name = "NVDA fails to load"
+    test_user = create_user_factory()
+    question = _create_test_question(page, test_user)
 
     with allure.step("Navigating to the 'Browse' explore by topic page and using the searchbar to "
                      "search for a particular kb Article"):
@@ -92,10 +98,11 @@ def test_searchbar_functionality_explore_by_topic_page(page: Page):
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
-        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
@@ -104,11 +111,12 @@ def test_searchbar_functionality_explore_by_topic_page(page: Page):
 # C891284
 @pytest.mark.smokeTest
 @pytest.mark.searchTests
-def test_searchbar_functionality_product_community_forum_page(page: Page):
+def test_searchbar_functionality_product_community_forum_page(page: Page, create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
-    test_question_name = "NVDA fails to load"
+    test_user = create_user_factory()
+    question = _create_test_question(page, test_user)
 
     with allure.step("Navigating to the Firefox community forum page and using the searchbar to "
                      "search for a particular kb Article"):
@@ -123,10 +131,11 @@ def test_searchbar_functionality_product_community_forum_page(page: Page):
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
-        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
@@ -134,11 +143,13 @@ def test_searchbar_functionality_product_community_forum_page(page: Page):
 
 @pytest.mark.smokeTest
 @pytest.mark.searchTests
-def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Page):
+def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Page,
+                                                                        create_user_factory):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
-    test_question_name = "NVDA fails to load"
+    test_user = create_user_factory()
+    question = _create_test_question(page, test_user)
 
     with allure.step("Navigating to the 'Settings' browse all forum threads by topic page and "
                      "using the searchbar to search for a particular kb Article"):
@@ -153,10 +164,11 @@ def test_searchbar_functionality_browse_all_forum_threads_by_topic_page(page: Pa
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
-        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
@@ -297,13 +309,13 @@ def test_searchbar_functionality_on_article_page(page: Page, create_user_factory
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_article_name = "DoNotDelete"
-    test_question_name = "NVDA fails to load"
-    test_user = create_user_factory(groups=["kb-contributors"])
+    test_user = create_user_factory(groups=["kb-contributors"],
+                                    permissions=["delete_revision", "delete_document"])
+    question = _create_test_question(page,test_user,sign_out=False)
 
     with allure.step("Submitting a new KB article against the Firefox product and using the "
                      "searchbar to search for a particular kb Article"):
-        utilities.start_existing_session(cookies=test_user)
-        sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+        article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
         sumo_pages.kb_article_page.click_on_article_option()
         utilities.wait_for_given_timeout(2000)
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
@@ -316,14 +328,18 @@ def test_searchbar_functionality_on_article_page(page: Page, create_user_factory
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
-        sumo_pages.search_page.fill_into_searchbar(test_question_name, is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(question['aaq_subject'], is_sidebar=True)
 
     with allure.step("Verifying that the question is successfully returned"):
-        assert test_question_name in sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
     with allure.step("Verifying that the filter by product is applied to the correct product"):
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "Firefox"
 
+    with allure.step("Deleting the test article"):
+        utilities.navigate_to_link(article['article_show_history_url'])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 # C1329220
 @pytest.mark.searchTests
@@ -1328,3 +1344,31 @@ def _verify_search_results(page: Page, search_term: str, locale: str, search_res
             in_content = True
             break
     return in_title or in_content
+
+def _create_test_question(page: Page, user, sign_out=True):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+
+    utilities.start_existing_session(cookies=user)
+    with allure.step("Navigating to the AAQ form and posting a new AAQ question"):
+        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+
+    question = sumo_pages.aaq_flow.submit_an_aaq_question(
+        subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
+        topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
+        body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
+        expected_locator=sumo_pages.question_page.questions_header
+    )
+
+    with allure.step("Leaving a reply to the question so it appears on search results"):
+        sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=user["username"],
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        )
+
+    with allure.step("Waiting until the test question is returned in search results"):
+        utilities.wait_for_given_timeout(65000)
+        if sign_out:
+            utilities.delete_cookies()
+
+    return question

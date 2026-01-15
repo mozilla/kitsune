@@ -176,6 +176,7 @@ class SearchPage(BasePage):
             is_aaq (bool): Whether the search bar is on the AAQ flow pages
             is_sidebar (bool): Whether the search bar is on the sidebar
         """
+        self.wait_for_dom_to_load()
         if is_aaq:
             self.clear_the_searchbar(is_aaq=True)
             self._fill(self.searchbar_aaq, text)

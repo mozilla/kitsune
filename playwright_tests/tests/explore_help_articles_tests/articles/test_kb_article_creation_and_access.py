@@ -78,7 +78,8 @@ def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
-    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"],
+                                        permissions=["delete_revision", "delete_document"])
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
@@ -122,6 +123,8 @@ def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
                 article_details['first_revision_id']))
         assert KBArticlePageMessages.REVIEW_REVISION_STATUS == status
 
+    with allure.step("Deleting the test article"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 # C2081446, C2081447, C2490049,  C2490051
 @pytest.mark.smokeTest
@@ -428,7 +431,8 @@ def test_articles_discussions_not_allowed(page: Page, create_user_factory):
 def test_kb_article_title_and_slug_validations(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers"],
+                                    permissions=["delete_revision", "delete_document"])
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
@@ -551,6 +555,10 @@ def test_kb_article_title_and_slug_validations(page: Page, create_user_factory):
         sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
         assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
         )[0] == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
+
+    with allure.step("Deleting the test article"):
+        utilities.navigate_to_link(article_details["article_show_history_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 @pytest.mark.kbArticleCreationAndAccess
@@ -686,7 +694,7 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
 def test_edit_non_approved_articles(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory()
+    test_user = create_user_factory(permissions=["delete_revision", "delete_document"])
 
     with allure.step(f"Signing in with a {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
@@ -704,6 +712,9 @@ def test_edit_non_approved_articles(page: Page, create_user_factory):
         expect(
             sumo_pages.kb_article_show_history_page.revision(second_revision['revision_id'])
         ).to_be_visible()
+
+    with allure.step("Deleting the test article"):
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
 
 # C966833, C2102177, C2091592

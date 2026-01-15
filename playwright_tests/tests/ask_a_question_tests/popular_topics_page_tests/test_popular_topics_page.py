@@ -78,10 +78,12 @@ def test_aaq_redirect(page: Page):
                                     f" {product_topic} is displayed"):
                 if product_topic in utilities.general_test_data["premium_products"]:
                     assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                    ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+                    ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
+                        f"Incorrect AAQ widget text displayed for the {product_topic} product")
                 else:
                     assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                    ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+                    ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
+                        f"Incorrect AAQ widget text displayed for the {product_topic} product")
 
             with allure.step("Clicking on the AAQ button"):
                 sumo_pages.common_web_elements.click_on_aaq_button()

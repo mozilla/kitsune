@@ -111,6 +111,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page, create
 
     with allure.step("Navigating to the parent article and marking it as ready for l10n"):
         utilities.navigate_to_link(article_details['article_url'])
+        sumo_pages.kb_article_page.click_on_show_history_option()
         sumo_pages.kb_article_show_history_page.click_on_ready_for_l10n_option(
             article_details['first_revision_id']
         )
