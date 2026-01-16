@@ -41,6 +41,7 @@ from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.forums.models import Post, Thread
+from kitsune.groups.models import GroupProfile
 from kitsune.kbadge.models import Award
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
@@ -138,7 +139,7 @@ def profile(request, username):
         if not (request.user.has_perm("users.deactivate_users") or user_profile.user.is_active):
             raise Http404("No Profile matches the given query.")
 
-        groups = user_profile.user.groups.all()
+        groups = GroupProfile.filter_by_visible(user_profile.user.groups.all(), request.user)
         ctx.update(
             {
                 "profile": user_profile,
@@ -164,7 +165,9 @@ def close_account(request):
     entered_confirmation = request.POST.get("entered_confirmation")
 
     if not expected_confirmation or expected_confirmation != entered_confirmation:
-        messages.add_message(request, messages.ERROR, _("Confirmation failed. Account not deleted."))
+        messages.add_message(
+            request, messages.ERROR, _("Confirmation failed. Account not deleted.")
+        )
         return HttpResponseRedirect(reverse("users.edit_my_profile"))
 
     # Clear the confirmation from the session
@@ -395,7 +398,9 @@ def edit_profile(request, username=None):
 
     # CWF protection for account deletion
     if request.method == "GET":
-        random_string = "".join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(6))
+        random_string = "".join(
+            secrets.choice(string.ascii_lowercase + string.digits) for _ in range(6)
+        )
         request.session["delete_account_confirmation"] = random_string
 
     # TODO: detect timezone automatically from client side, see
@@ -634,4 +639,3 @@ class WebhookView(View):
 
             return HttpResponse(status=202)
         raise Http404
-

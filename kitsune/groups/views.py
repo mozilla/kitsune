@@ -17,12 +17,13 @@ from kitsune.upload.tasks import _create_image_thumbnail
 
 
 def list(request):
-    groups = GroupProfile.objects.select_related("group").all()
+    """List all groups visible to the user."""
+    groups = GroupProfile.objects.visible(request.user).select_related("group")
     return render(request, "groups/list.html", {"groups": groups})
 
 
 def profile(request, group_slug, member_form=None, leader_form=None):
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
     leaders = prof.leaders.all().select_related("profile")
     members_qs = prof.group.user_set.all().select_related("profile")
     members = paginate(request, members_qs, per_page=30)
@@ -47,7 +48,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
 @login_required
 @require_http_methods(["GET", "POST"])
 def edit(request, group_slug):
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
 
     if not prof.can_edit(request.user):
         raise PermissionDenied
@@ -67,7 +68,7 @@ def edit(request, group_slug):
 @require_http_methods(["GET", "POST"])
 def edit_avatar(request, group_slug):
     """Edit group avatar."""
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
 
     if not prof.can_edit(request.user):
         raise PermissionDenied
@@ -104,7 +105,7 @@ def edit_avatar(request, group_slug):
 @require_http_methods(["GET", "POST"])
 def delete_avatar(request, group_slug):
     """Delete group avatar."""
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
 
     if not prof.can_edit(request.user):
         raise PermissionDenied
@@ -122,7 +123,7 @@ def delete_avatar(request, group_slug):
 @require_POST
 def add_member(request, group_slug):
     """Add a member to the group."""
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
 
     if not prof.can_edit(request.user):
         raise PermissionDenied
@@ -144,7 +145,7 @@ def add_member(request, group_slug):
 @require_http_methods(["GET", "POST"])
 def remove_member(request, group_slug, user_id):
     """Remove a member from the group."""
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
     user = get_object_or_404(User, id=user_id)
 
     if not prof.can_edit(request.user):
@@ -166,7 +167,7 @@ def remove_member(request, group_slug, user_id):
 @require_POST
 def add_leader(request, group_slug):
     """Add a leader to the group."""
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
 
     if not prof.can_manage_leaders(request.user):
         raise PermissionDenied
@@ -193,7 +194,7 @@ def add_leader(request, group_slug):
 @require_http_methods(["GET", "POST"])
 def remove_leader(request, group_slug, user_id):
     """Remove a leader from the group."""
-    prof = get_object_or_404(GroupProfile, slug=group_slug)
+    prof = _get_group_profile_or_404(request.user, group_slug)
     user = get_object_or_404(User, id=user_id)
 
     if not prof.can_manage_leaders(request.user):
@@ -219,3 +220,8 @@ def join_contributors(request):
         request, messages.SUCCESS, _("You are now part of the Contributors group!")
     )
     return HttpResponseRedirect(next_url)
+
+
+def _get_group_profile_or_404(user, slug):
+    """Get the GroupProfile visible to the given user and identified by the given slug."""
+    return get_object_or_404(GroupProfile.objects.visible(user), slug=slug)
