@@ -36,8 +36,8 @@ class GroupProfile(TreeModelBase):
 
     slug = models.SlugField(unique=True, editable=False, blank=False, null=False, max_length=80)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="profile")
-    leaders = models.ManyToManyField(User)
-    information = models.TextField(help_text="Use Wiki Syntax")
+    leaders = models.ManyToManyField(User, blank=True)
+    information = models.TextField(blank=True, default="", help_text="Use Wiki Syntax")
     information_html = models.TextField(editable=False)
     avatar = models.ImageField(
         upload_to=settings.GROUP_AVATAR_PATH,

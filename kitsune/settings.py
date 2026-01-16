@@ -650,6 +650,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "guardian",
     "waffle",
     "storages",
+    "treebeard",
     "kitsune.access",
     "kitsune.sumo",
     "kitsune.search",
