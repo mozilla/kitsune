@@ -200,9 +200,10 @@ class ZendeskTopicAdmin(admin.ModelAdmin):
 
 
 class ZendeskConfigAdmin(admin.ModelAdmin):
-    list_display = ("name", "ticket_form_id", "enable_os_field", "topic_count")
+    list_display = ("name", "ticket_form_id", "enable_os_field", "skip_spam_moderation", "topic_count")
     list_display_links = ("name",)
-    list_editable = ("enable_os_field",)
+    list_editable = ("enable_os_field", "skip_spam_moderation")
+    list_filter = ("enable_os_field", "skip_spam_moderation")
     search_fields = ("name",)
     inlines = [ZendeskTopicConfigurationInline]
 

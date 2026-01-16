@@ -26,14 +26,24 @@ def zendesk_submission_classifier(submission_id: int) -> None:
 
     Always runs the classifier. The waffle switch only controls
     behavior when spam is detected (flag for moderation vs reject).
+
+    If classification fails after all retries, marks ticket as
+    STATUS_PROCESSING_FAILED for periodic task to handle.
     """
     try:
         submission = SupportTicket.objects.get(id=submission_id)
     except SupportTicket.DoesNotExist:
         return
 
-    result = classify_zendesk_submission(submission)
-    process_zendesk_classification_result(submission, result)
+    try:
+        result = classify_zendesk_submission(submission)
+        process_zendesk_classification_result(submission, result)
+    except Exception as e:
+        # After all retries exhausted, mark as processing failed
+        log.error(f"Classification failed for ticket {submission_id}: {e}", exc_info=True)
+        submission.status = SupportTicket.STATUS_PROCESSING_FAILED
+        submission.save(update_fields=["status"])
+        raise
 
 
 @shared_task
@@ -83,3 +93,29 @@ def auto_reject_old_zendesk_spam() -> None:
     log.info(
         f"Auto-rejected {rejected_count} old Zendesk spam tickets older than {cutoff_date.date()}"
     )
+
+
+@shared_task
+@skip_if_read_only_mode
+def process_failed_zendesk_tickets() -> None:
+    """Send tickets to Zendesk where classification/processing failed.
+
+    This is a safety net for cases where classification fails after all retries.
+    Sends the ticket to Zendesk with whatever tags are currently set.
+    """
+    from kitsune.customercare.utils import send_support_ticket_to_zendesk
+
+    failed_tickets = SupportTicket.objects.filter(
+        status=SupportTicket.STATUS_PROCESSING_FAILED
+    )
+
+    processed_count = 0
+
+    for ticket in failed_tickets:
+        # Send to Zendesk with whatever tags are currently set
+        success = send_support_ticket_to_zendesk(ticket)
+        if success:
+            processed_count += 1
+
+    if processed_count > 0:
+        log.info(f"Processed {processed_count} failed Zendesk tickets")

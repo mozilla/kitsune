@@ -7,7 +7,7 @@ from kitsune.llm.spam.classifier import (
     classify_spam,
     determine_action_from_spam_result,
 )
-from kitsune.products.models import Product
+from kitsune.products.models import Product, ProductSupportConfig
 from kitsune.products.utils import get_taxonomy
 
 if TYPE_CHECKING:
@@ -122,12 +122,18 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
         ),
     }
 
-    spam_result_dict = classify_spam(payload)
-    spam_result = spam_result_dict["spam_result"]
-    is_spam: bool = spam_result.get("is_spam", False)
+    # Check if spam moderation should be skipped for this product
+    skip_spam = False
+    try:
+        config = product.support_configs.get(is_active=True)
+        if config.zendesk_config and config.zendesk_config.skip_spam_moderation:
+            skip_spam = True
+    except ProductSupportConfig.DoesNotExist:
+        # If we can't determine config, fall back to normal spam checking
+        pass
 
-    base_result = {
-        "spam_result": spam_result,
+    base_result: dict[str, Any] = {
+        "spam_result": {},
         "product_result": {},
         "topic_result": {},
     }
@@ -147,6 +153,29 @@ def classify_zendesk_submission(submission: "SupportTicket") -> dict[str, Any]:
             "product_result": product_result,
             "topic_result": {},
         }
+
+    # Skip spam moderation if configured
+    if skip_spam:
+        # Check for product reassignment
+        if result := _handle_product_reassignment(
+            payload, product, False, zendesk_on_reassignment
+        ):
+            return {**base_result, **result}
+
+        # No reassignment - classify topic normally
+        topic_result_dict = classify_topic(payload)
+        return {
+            **base_result,
+            "action": ModerationAction.NOT_SPAM,
+            "topic_result": topic_result_dict["topic_result"],
+        }
+
+    # Normal spam checking flow
+    spam_result_dict = classify_spam(payload)
+    spam_result = spam_result_dict["spam_result"]
+    is_spam: bool = spam_result.get("is_spam", False)
+
+    base_result["spam_result"] = spam_result
 
     # If spam with maybe_misclassified flag, check for product reassignment
     if is_spam:
