@@ -255,3 +255,4 @@ Kitsune uses Django's i18n URL patterns with specific routing conventions:
 - Use uv for Python package management
 - Dependabot automatically updates dependencies weekly
 - **Do not add trailing spaces at the end of files**
+- **Exception handling:** Be specific with exception types. Avoid catching plain `Exception` when the specific exception that could occur is known. For example, use `Model.DoesNotExist` when calling `.get()` on a Django queryset, or `KeyError` when accessing dictionary keys. This makes error handling more explicit and allows unexpected exceptions to be raised rather than silently caught.
