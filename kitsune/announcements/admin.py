@@ -20,7 +20,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
     search_fields = ["creator__username"]
 
     def get_groups(self, obj):
-        groups = obj.groups.all()
+        groups = obj.groups.all()  # noqa: group-leak
         if groups:
             return ", ".join([g.name for g in groups])
         return ""

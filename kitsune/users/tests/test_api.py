@@ -249,7 +249,7 @@ class TestUserCreation(TestCase):
 
         user = User.objects.get(username="mccartney")
 
-        self.assertEqual({g.name for g in user.groups.all()}, {"Staff", "Beatles"})
+        self.assertEqual({g.name for g in user.groups.all()}, {"Staff", "Beatles"})  # noqa: group-leak
         self.assertEqual(
             {p.codename for p in user.user_permissions.all()}, {"perm1", "perm2"}
         )
@@ -275,7 +275,7 @@ class TestUserCreation(TestCase):
 
         user = User.objects.get(username="lennon")
 
-        self.assertEqual([g.name for g in user.groups.all()], ["Beatles"])
+        self.assertEqual([g.name for g in user.groups.all()], ["Beatles"])  # noqa: group-leak
         self.assertEqual([p.codename for p in user.user_permissions.all()], ["perm1"])
 
     def test_create_test_user_404(self):

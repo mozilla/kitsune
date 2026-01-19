@@ -23,6 +23,18 @@ repos:
           - prettier@3.2.0
           - prettier-plugin-svelte@3.1.2
         files: "^svelte/"
+  - repo: local
+    hooks:
+      - id: check-group-visibility-leak
+        name: Check for group visibility leaks
+        entry: >
+          bash -c 'if grep -rn "\.groups\.all()" --include="*.py" --include="*.html" kitsune/ --exclude-dir=migrations | grep -v "# noqa: group-leak"; then
+          echo "ERROR - Found .groups.all() which bypasses GroupProfile visibility";
+          echo "Use profile.visible_group_profiles(viewer) or GroupProfile.objects.visible(viewer) instead";
+          echo "See docs/conventions.md Security Patterns section";
+          exit 1; fi'
+        language: system
+        pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.15.0
     hooks:

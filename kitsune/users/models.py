@@ -282,7 +282,7 @@ class Profile(ModelBase):
         """
         Get GroupProfiles visible to the viewer that this user belongs to.
 
-        WARNING: Never use self.user.groups.all() directly in templates or views
+        WARNING: Never use self.user.groups.all() directly in templates or views  # noqa: group-leak
         as it bypasses visibility filtering and can leak private groups.
         Always use this method instead.
 

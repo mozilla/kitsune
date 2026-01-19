@@ -19,6 +19,37 @@ When creating and/or modifying Python functions/methods, we add [type
 hints](https://docs.python.org/3/library/typing.html) to their arguments
 and result, but only when it makes sense. See [our Architectural Decision Record](architecture/decisions/0004-type-checking.md) for more details.
 
+## Security patterns
+
+### GroupProfile visibility
+
+**CRITICAL:** Never bypass GroupProfile visibility checks when displaying user's groups.
+
+GroupProfile has three visibility levels:
+- **PUBLIC** - Visible to everyone
+- **PRIVATE** - Visible only to members and group moderators
+- **MODERATED** - Visible to members of specific groups
+
+**WRONG - Privacy leak:**
+```python
+# This exposes ALL groups, including PRIVATE ones
+user.groups.all()
+profile.user.groups.all()
+```
+
+**CORRECT - Respects visibility:**
+```python
+# Use the safe accessor method
+profile.visible_group_profiles(viewer=request.user)
+
+# Or use the manager directly
+GroupProfile.objects.visible(viewer).filter(group__user=some_user)
+```
+
+**Pre-commit protection:** A pre-commit hook checks for `.groups.all()` patterns. To bypass for legitimate internal use (like admin or Django internals), add `# noqa: group-leak` comment.
+
+**Runtime monitoring:** In development, calls to `user.groups.all()` from views/templates will log security warnings.
+
 # Git conventions
 
 ## Git workflow
