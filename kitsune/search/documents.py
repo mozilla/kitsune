@@ -356,7 +356,28 @@ class ProfileDocument(SumoDocument):
         return [product.id for product in instance.products.all()]
 
     def prepare_group_ids(self, instance):
-        return [group.id for group in instance.user.groups.all()]
+        """
+        Index only public and moderated groups for search.
+        Private groups are excluded to prevent leaking membership via search.
+        """
+        from kitsune.groups.models import GroupProfile
+
+        # Get visible groups with GroupProfiles (public + moderated)
+        visible_group_profiles = GroupProfile.objects.filter(
+            group__user=instance.user
+        ).exclude(visibility=GroupProfile.Visibility.PRIVATE)
+        visible_group_ids = list(visible_group_profiles.values_list('group_id', flat=True))
+
+        # Get groups without GroupProfiles (legacy groups) - include them by default
+        groups_with_profiles = GroupProfile.objects.filter(
+            group__user=instance.user
+        ).values_list('group_id', flat=True)
+        legacy_group_ids = list(
+            instance.user.groups.exclude(id__in=groups_with_profiles).values_list('id', flat=True)
+        )
+
+        # Combine visible + legacy
+        return visible_group_ids + legacy_group_ids
 
     @classmethod
     def get_model(cls):

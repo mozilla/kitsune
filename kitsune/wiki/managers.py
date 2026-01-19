@@ -55,7 +55,7 @@ class VisibilityManager(models.Manager):
             if not check_for_group_match:
                 return parent_condition & not_restricted
 
-            group_condition_fulfilled = Q(**{f"{restrict_to_groups}__in": user.groups.all()})
+            group_condition_fulfilled = Q(**{f"{restrict_to_groups}__in": user.groups.all()})  # noqa: group-leak
 
             return parent_condition & (not_restricted | group_condition_fulfilled)
 

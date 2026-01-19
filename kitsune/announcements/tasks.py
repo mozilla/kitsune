@@ -17,7 +17,7 @@ def send_group_email(announcement_id):
     except Announcement.DoesNotExist:
         return
 
-    groups = announcement.groups.all()
+    groups = announcement.groups.all()  # noqa: group-leak
     users = User.objects.filter(groups__in=groups).distinct()
     plain_content = bleach.clean(announcement.content_parsed, tags=[], strip=True).strip()
     email_kwargs = {

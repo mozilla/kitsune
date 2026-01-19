@@ -278,6 +278,24 @@ class Profile(ModelBase):
     def in_staff_group(self):
         return self.user.groups.filter(name=settings.STAFF_GROUP).exists()
 
+    def visible_group_profiles(self, viewer=None):
+        """
+        Get GroupProfiles visible to the viewer that this user belongs to.
+
+        WARNING: Never use self.user.groups.all() directly in templates or views  # noqa: group-leak
+        as it bypasses visibility filtering and can leak private groups.
+        Always use this method instead.
+
+        Args:
+            viewer: User viewing the profile (None for anonymous)
+
+        Returns:
+            QuerySet of GroupProfile objects filtered by visibility
+        """
+        from kitsune.groups.models import GroupProfile
+
+        return GroupProfile.objects.visible(viewer).filter(group__user=self.user)
+
     @property
     def is_system_account(self):
         """Helper property to check if this is a system account."""

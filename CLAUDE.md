@@ -212,6 +212,51 @@ Kitsune uses Django's i18n URL patterns with specific routing conventions:
 - API endpoints follow REST conventions in `api.py` files
 - Each app has dedicated `urls.py` and often `urls_api.py`
 
+### Security Patterns
+
+**GroupProfile Visibility - CRITICAL:**
+
+GroupProfile has three visibility levels (PUBLIC, PRIVATE, MODERATED) that control who can see a group. **Never bypass these checks:**
+
+**DANGER - Privacy Leak:**
+```python
+# WRONG - Exposes ALL groups, ignoring visibility settings
+user.groups.all()  # Leaks PRIVATE groups!
+profile.user.groups.all()  # Leaks PRIVATE groups!
+
+# WRONG - Direct Group queryset bypasses GroupProfile visibility
+Group.objects.filter(user=some_user)  # No visibility filtering!
+```
+
+**SAFE - Respects visibility:**
+```python
+# Correct - Use Profile.visible_group_profiles()
+profile.visible_group_profiles(viewer=request.user)
+
+# Correct - Use GroupProfile manager
+GroupProfile.objects.visible(viewer).filter(group__user=some_user)
+
+# Correct - Check individual group visibility
+group_profile.can_view(request.user)
+```
+
+**Why this matters:**
+- Django's `User.groups` relationship returns ALL Group objects, ignoring GroupProfile visibility
+- PRIVATE groups would be exposed to anyone viewing a user profile
+- Search indexing would leak private group membership
+- API responses would expose sensitive group information
+
+**Safe patterns implemented:**
+- `Profile.visible_group_profiles(viewer)` - Get groups respecting visibility
+- `GroupProfile.objects.visible(viewer)` - Manager method for filtering
+- Search indexing excludes PRIVATE groups automatically
+- All views use visibility-aware methods
+
+**Never:**
+- Use `user.groups.all()` in templates, views, or API serializers
+- Query `Group` model directly when GroupProfile visibility matters
+- Bypass `.visible()` filtering for user-facing data
+
 ### Template System
 
 **Template Architecture:**
@@ -256,3 +301,25 @@ Kitsune uses Django's i18n URL patterns with specific routing conventions:
 - Dependabot automatically updates dependencies weekly
 - **Do not add trailing spaces at the end of files**
 - **Exception handling:** Be specific with exception types. Avoid catching plain `Exception` when the specific exception that could occur is known. For example, use `Model.DoesNotExist` when calling `.get()` on a Django queryset, or `KeyError` when accessing dictionary keys. This makes error handling more explicit and allows unexpected exceptions to be raised rather than silently caught.
+
+### Naming Conventions
+
+**Manager Methods:**
+- Custom manager methods should balance conciseness with explicitness
+- **Preferred:** Concise, verb-based names following Django's queryset API patterns: `all()`, `filter()`, `exclude()`, `visible()`, `active()`
+- **Alternative:** Verbose descriptive names when explicitness adds clarity (per "explicit is better than implicit")
+- Choose based on context: if the method name alone isn't clear, add descriptive prefixes
+- If a method returns a queryset, the name should read naturally when chained
+
+**Example:**
+```python
+# Preferred - concise, follows Django patterns, clear in context
+GroupProfile.objects.visible(user)
+Article.objects.active()
+Question.objects.recent()
+
+# Alternative - more explicit, acceptable when clarity is prioritized
+GroupProfile.objects.filter_by_visibility(user)
+Article.objects.get_active_articles()
+Question.objects.filter_by_recent()
+```

@@ -1,5 +1,5 @@
 {% macro titles(user) -%}
-  {% set titles = karma_titles(user) %}
+  {% set titles = karma_titles(user, request.user) %}
   {% if titles %}
     <ul class="karma-titles">
       {% for title in titles %}

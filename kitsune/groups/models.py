@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Value
+from django.db.models.functions import Length, Substr
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
 from treebeard.mp_tree import MP_Node
 
+from kitsune.groups.managers import GroupProfileManager
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.parser import wiki_to_html
@@ -59,6 +61,8 @@ class GroupProfile(TreeModelBase):
         help_text="Groups that can see this group when visibility is MODERATED",
     )
 
+    objects = GroupProfileManager()
+
     class Meta:
         ordering = ["slug"]
 
@@ -77,46 +81,72 @@ class GroupProfile(TreeModelBase):
 
         super().save(*args, **kwargs)
 
-    def can_edit(self, user):
-        """Check if user can edit this group.
-
-        If no leaders exist, delegates to parent leaders.
+    def can_moderate_group(self, user):
         """
-        if user.is_superuser or self.leaders.filter(pk=user.pk).exists():
+        Check if user can moderate this group (manage members and leaders).
+
+        Direct leaders have full control. If this group has no leaders,
+        delegate to nearest ancestor with leaders.
+        """
+        if not (user and user.is_authenticated):
+            return False
+
+        if user.is_superuser:
             return True
-        if not self.leaders.exists():
-            parent = self.get_parent()
-            if parent:
-                return parent.can_edit(user)
-        return False
 
-    def can_manage_members(self, user):
-        """Check if user can add/remove members."""
-        return self.can_edit(user)
+        # Is the user a leader of this group, if it has leaders,
+        # or its nearest ancestor group with leaders, if one exists.
+        return bool(
+            GroupProfile.objects.filter(
+                leaders__isnull=False,
+                path=Substr(Value(self.path), 1, Length("path")),
+            )
+            .order_by("-path")
+            .annotate(
+                is_leader=Exists(
+                    GroupProfile.objects.filter(
+                        pk=OuterRef("pk"),
+                        leaders=user,
+                    )
+                )
+            )
+            .values_list("is_leader", flat=True)
+            .first()
+        )
 
-    def can_manage_leaders(self, user):
-        """Check if user can add/remove leaders."""
-        return user.is_superuser or self.leaders.filter(pk=user.pk).exists()
+    def can_edit(self, user):
+        """Check if user can edit this group profile."""
+        return self.can_moderate_group(user)
 
     def can_view(self, user):
         """Check if user can view this group based on visibility setting."""
+        # PUBLIC groups are visible to everyone
+        if self.visibility == self.Visibility.PUBLIC:
+            return True
+
+        # Non-authenticated users can only see PUBLIC groups
+        if not (user and user.is_authenticated):
+            return False
+
+        # Superusers can see everything
         if user.is_superuser:
             return True
 
+        # Check based on visibility level
         match self.visibility:
-            case self.Visibility.PRIVATE:
-                return self.group.user_set.filter(pk=user.pk).exists()
-            case self.Visibility.PUBLIC:
-                return True
             case self.Visibility.MODERATED:
-                return self.visible_to_groups.filter(pk__in=user.groups.all()).exists()
+                # Visible to members of specified groups
+                return self.visible_to_groups.filter(user=user).exists()
+            case self.Visibility.PRIVATE:
+                # Members can see their own group
+                if self.group.user_set.filter(pk=user.pk).exists():
+                    return True
+                # Moderators (including delegated) can see private groups
+                return self.can_moderate_group(user)
+            case _:
+                return False
 
     def get_visible_children(self, user):
         """Get child groups visible to this user."""
-        if user.is_superuser:
-            return self.get_children()
-
-        public = Q(visibility=self.Visibility.PUBLIC)
-        private = Q(visibility=self.Visibility.PRIVATE) & Q(group__user_set__pk=user.pk)
-        moderated = Q(visibility=self.Visibility.MODERATED) & Q(visible_to_groups__in=user.groups.all())
-        return self.get_children().filter(public | private | moderated)
+        children = self.get_children()
+        return GroupProfile.objects.filter(pk__in=children).visible(user)
