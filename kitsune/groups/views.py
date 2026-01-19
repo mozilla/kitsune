@@ -30,6 +30,11 @@ def profile(request, group_slug, member_form=None, leader_form=None):
 
     user_can_edit = prof.can_edit(request.user)
     user_can_moderate = prof.can_moderate_group(request.user)
+
+    # Fetch hierarchy data in view for better performance
+    parent = prof.get_parent()
+    children = prof.get_visible_children(request.user)
+
     return render(
         request,
         "groups/profile.html",
@@ -41,6 +46,8 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "user_can_moderate": user_can_moderate,
             "member_form": member_form or AddUserForm(),
             "leader_form": leader_form or AddUserForm(),
+            "parent": parent,
+            "children": children,
         },
     )
 

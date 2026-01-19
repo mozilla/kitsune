@@ -11,9 +11,17 @@
 
     <h1 class="sumo-page-heading">{{ title }}</h1>
 
-    <ul class="mzp-u-list-styled">
+    <ul class="group-tree">
       {% for profile in groups %}
-        <li><a href="{{ profile.get_absolute_url() }}">{{ profile.group.name }}</a></li>
+        <li class="group-tree--item" data-depth="{{ profile.depth }}">
+          {% if profile.depth > 1 %}
+            <span class="group-tree--indicator">└─</span>
+          {% endif %}
+          <a href="{{ profile.get_absolute_url() }}">{{ profile.group.name }}</a>
+          {% if profile.numchild > 0 %}
+            <span class="muted">({{ profile.numchild }} {% if profile.numchild == 1 %}{{ _('subgroup') }}{% else %}{{ _('subgroups') }}{% endif %})</span>
+          {% endif %}
+        </li>
       {% endfor %}
     </ul>
   </article>
