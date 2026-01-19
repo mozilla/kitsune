@@ -1,21 +1,16 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import Exists, OuterRef, Value
 from django.db.models.functions import Length, Substr
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
 from treebeard.mp_tree import MP_Node
 
+from kitsune.groups.managers import GroupProfileManager
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.parser import wiki_to_html
-
-
-class GroupProfileManager(models.Manager):
-    def visible(self, user=None):
-        """Returns a queryset of all group profiles visible to the given user."""
-        return GroupProfile.filter_by_visible(self.all(), user)
 
 
 class TreeModelBase(MP_Node, ModelBase):
@@ -71,48 +66,6 @@ class GroupProfile(TreeModelBase):
     class Meta:
         ordering = ["slug"]
 
-    @classmethod
-    def filter_by_visible(
-        cls, queryset: QuerySet[Group] | QuerySet["GroupProfile"], user: User | None = None
-    ) -> QuerySet[Group] | QuerySet["GroupProfile"]:
-        """
-        Given a Group or GroupProfile queryset, and a user, returns a new queryset
-        filtered to the groups or group profiles visible to the given user. If the
-        given user is a superuser, the queryset is returned unmodified.
-        """
-        if user and user.is_superuser:
-            return queryset
-
-        if queryset.model is Group:
-            prefix = "profile__"
-            user_prefix = ""
-            # Groups without a profile are considered public.
-            public = Q(profile__isnull=True) | Q(profile__visibility=cls.Visibility.PUBLIC)
-        else:
-            prefix = ""
-            user_prefix = "group__"
-            public = Q(visibility=cls.Visibility.PUBLIC)
-
-        if not (user and user.is_authenticated):
-            # Anonymous users only see public groups.
-            return queryset.filter(public)
-
-        # Check if the user is a member of the group.
-        member = Q(**{f"{user_prefix}user": user})
-        # Check if the user is a leader of the group or one of its ancestors.
-        leader = Exists(
-            cls.objects.filter(leaders=user).filter(
-                path=Substr(OuterRef(f"{prefix}path"), 1, Length("path"))
-            )
-        )
-        private = Q(**{f"{prefix}visibility": cls.Visibility.PRIVATE}) & (member | leader)
-
-        moderated = Q(**{f"{prefix}visibility": cls.Visibility.MODERATED}) & Q(
-            **{f"{prefix}visible_to_groups__in": user.groups.all()}
-        )
-
-        return queryset.filter(public | private | moderated).distinct()
-
     def __str__(self):
         return str(self.group)
 
@@ -128,11 +81,12 @@ class GroupProfile(TreeModelBase):
 
         super().save(*args, **kwargs)
 
-    def is_governing_leader(self, user):
+    def can_moderate_group(self, user):
         """
-        Check if user can lead this group.
+        Check if user can moderate this group (manage members and leaders).
 
-        If this group has no leaders, delegate to nearest ancestor with leaders.
+        Direct leaders have full control. If this group has no leaders,
+        delegate to nearest ancestor with leaders.
         """
         if not (user and user.is_authenticated):
             return False
@@ -145,7 +99,7 @@ class GroupProfile(TreeModelBase):
         return bool(
             GroupProfile.objects.filter(
                 leaders__isnull=False,
-                path=Substr(self.path, 1, Length("path")),
+                path=Substr(Value(self.path), 1, Length("path")),
             )
             .order_by("-path")
             .annotate(
@@ -161,44 +115,38 @@ class GroupProfile(TreeModelBase):
         )
 
     def can_edit(self, user):
-        """Check if user can edit this group."""
-        return self.is_governing_leader(user)
-
-    def can_manage_members(self, user):
-        """Check if user can add/remove members."""
-        return self.is_governing_leader(user)
-
-    def can_manage_leaders(self, user):
-        """Check if user can add/remove leaders."""
-        return (
-            user
-            and user.is_authenticated
-            and (user.is_superuser or self.leaders.filter(pk=user.pk).exists())
-        )
+        """Check if user can edit this group profile."""
+        return self.can_moderate_group(user)
 
     def can_view(self, user):
         """Check if user can view this group based on visibility setting."""
+        # PUBLIC groups are visible to everyone
         if self.visibility == self.Visibility.PUBLIC:
             return True
 
+        # Non-authenticated users can only see PUBLIC groups
         if not (user and user.is_authenticated):
             return False
 
+        # Superusers can see everything
         if user.is_superuser:
             return True
 
-        if self.visibility == self.Visibility.MODERATED:
-            return self.visible_to_groups.filter(pk__in=user.groups.all()).exists()
-
-        # From here on, we're dealing with groups with PRIVATE visibility.
-
-        if self.group.user_set.filter(pk=user.pk).exists():
-            # Group members can see their own groups.
-            return True
-
-        # Other than members, only governing leaders can see private groups.
-        return self.is_governing_leader(user)
+        # Check based on visibility level
+        match self.visibility:
+            case self.Visibility.MODERATED:
+                # Visible to members of specified groups
+                return self.visible_to_groups.filter(user=user).exists()
+            case self.Visibility.PRIVATE:
+                # Members can see their own group
+                if self.group.user_set.filter(pk=user.pk).exists():
+                    return True
+                # Moderators (including delegated) can see private groups
+                return self.can_moderate_group(user)
+            case _:
+                return False
 
     def get_visible_children(self, user):
         """Get child groups visible to this user."""
-        return self.filter_by_visible(self.get_children(), user)
+        children = self.get_children()
+        return GroupProfile.objects.filter(pk__in=children).visible(user)

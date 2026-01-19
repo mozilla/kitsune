@@ -26,7 +26,7 @@
       </div>
 
       <div id="group-leaders" class="editable">
-        {% if user_can_manage_leaders %}
+        {% if user_can_moderate %}
           <a class="edit" href="#group-leaders">{{ _('Edit group leaders') }}</a>
         {% endif %}
         <h2>{{ _('Group Leaders') }}</h2>
@@ -34,7 +34,7 @@
           {% for user in leaders %}
             <li>
               {{ user_row(user) }}
-              {% if user_can_manage_leaders %}
+              {% if user_can_moderate %}
                 <div class="remove edit-mode">
                   <a href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">&#x2716;</a>
                 </div>
@@ -42,7 +42,7 @@
             </li>
           {% endfor %}
         </ul>
-        {% if user_can_manage_leaders %}
+        {% if user_can_moderate %}
           <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
             {% csrf_token %}
             {{ errorlist(leader_form) }}

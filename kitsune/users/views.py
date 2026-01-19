@@ -41,7 +41,6 @@ from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.forums.models import Post, Thread
-from kitsune.groups.models import GroupProfile
 from kitsune.kbadge.models import Award
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
@@ -139,7 +138,7 @@ def profile(request, username):
         if not (request.user.has_perm("users.deactivate_users") or user_profile.user.is_active):
             raise Http404("No Profile matches the given query.")
 
-        groups = GroupProfile.filter_by_visible(user_profile.user.groups.all(), request.user)
+        groups = user_profile.visible_group_profiles(request.user)
         ctx.update(
             {
                 "profile": user_profile,

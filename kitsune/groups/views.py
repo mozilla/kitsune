@@ -29,7 +29,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     members = paginate(request, members_qs, per_page=30)
 
     user_can_edit = prof.can_edit(request.user)
-    user_can_manage_leaders = prof.can_manage_leaders(request.user)
+    user_can_moderate = prof.can_moderate_group(request.user)
     return render(
         request,
         "groups/profile.html",
@@ -38,7 +38,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "leaders": leaders,
             "members": members,
             "user_can_edit": user_can_edit,
-            "user_can_manage_leaders": user_can_manage_leaders,
+            "user_can_moderate": user_can_moderate,
             "member_form": member_form or AddUserForm(),
             "leader_form": leader_form or AddUserForm(),
         },
@@ -169,7 +169,7 @@ def add_leader(request, group_slug):
     """Add a leader to the group."""
     prof = _get_group_profile_or_404(request.user, group_slug)
 
-    if not prof.can_manage_leaders(request.user):
+    if not prof.can_moderate_group(request.user):
         raise PermissionDenied
 
     form = AddUserForm(request.POST)
@@ -197,7 +197,7 @@ def remove_leader(request, group_slug, user_id):
     prof = _get_group_profile_or_404(request.user, group_slug)
     user = get_object_or_404(User, id=user_id)
 
-    if not prof.can_manage_leaders(request.user):
+    if not prof.can_moderate_group(request.user):
         raise PermissionDenied
 
     if request.method == "POST":
