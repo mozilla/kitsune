@@ -205,7 +205,7 @@
       <h2 class="sumo-page-subheading mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
       <ul>
         {% for g in groups %}
-          <li>{{ group_link(g) }}</li>
+          <li>{{ group_link(g.group) }}</li>
         {% endfor %}
       </ul>
     </section>
