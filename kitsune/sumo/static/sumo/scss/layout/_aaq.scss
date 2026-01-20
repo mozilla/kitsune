@@ -100,11 +100,18 @@ aside .aaq-widget {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
   }
 
-  // Icon and status text inline
+  // Header with icon and title
+  .switcher-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: p.$spacing-md;
+  }
+
   .switcher-icon {
     width: 32px;
     height: 32px;
-    margin-right: p.$spacing-md;
+    margin-right: p.$spacing-sm;
     flex-shrink: 0;
     animation: pulse 3s ease-in-out infinite;
 
@@ -120,72 +127,23 @@ aside .aaq-widget {
     }
   }
 
-  // Status text
-  .switcher-status {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: flex-start;
-    margin: 0 0 p.$spacing-lg 0;
-    font-size: 20px;
+  .switcher-title {
+    font-size: 1.25rem;
     font-weight: 700;
-    line-height: 1.3;
+    line-height: 1.2;
     color: var(--color-heading);
   }
 
-  // Action link
-  .switcher-link {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    padding: 12px 24px 12px 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    background: var(--color-link);
-    font-size: 15px;
-    font-weight: 600;
-    text-decoration: none;
-    color: #FFFFFF;
-    overflow: hidden;
-    gap: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &:hover {
-      transform: translateX(4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      background: var(--color-blue-07);
-
-      .switcher-arrow {
-        transform: translateX(4px);
-      }
-    }
-
-    &:active {
-      transform: translateX(2px) scale(0.98);
-    }
+  // Description text
+  .switcher-description {
+    margin: 0 0 p.$spacing-lg 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-text);
   }
 
-  .switcher-link-text {
-    position: relative;
-    z-index: 1;
-  }
-
-  .switcher-arrow {
-    position: relative;
-    z-index: 1;
-    width: 32px;
-    height: 32px;
-    color: currentColor;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  // Responsive adjustments
-  @media #{p.$mq-md} {
-    .switcher-status {
-      font-size: 22px;
-    }
-  }
+  // Continue button - centered but not stretched
+  text-align: center;
 
   // Reduced motion support
   @media (prefers-reduced-motion: reduce) {
@@ -197,19 +155,6 @@ aside .aaq-widget {
 
     .switcher-icon {
       animation: none;
-    }
-
-    .switcher-link,
-    .switcher-arrow {
-      transition: none;
-    }
-
-    .switcher-link:hover {
-      transform: none;
-
-      .switcher-arrow {
-        transform: none;
-      }
     }
   }
 }

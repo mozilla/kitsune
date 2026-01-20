@@ -193,27 +193,25 @@
   {% set is_zendesk = (current_support_type == SUPPORT_TYPE_ZENDESK) %}
   {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
   <div class="support-type-switcher-widget {{ css_class }}">
-    <p class="switcher-status">
+    <div class="switcher-header">
       <img class="switcher-icon" src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="" />
-      <span>
+      <span class="switcher-title">
         {% if is_zendesk %}
-          {{ _("You're contacting Mozilla Support directly") }}
+          {{ _('Ask the community') }}
         {% else %}
-          {{ _("You're posting to the Community Forum") }}
+          {{ _('Contact Support') }}
         {% endif %}
       </span>
+    </div>
+    <p class="switcher-description">
+      {% if is_zendesk %}
+        {{ _('You can also get help by posting your question in the Community Forum.') }}
+      {% else %}
+        {{ _('You can also post your question directly to our support team for assistance.') }}
+      {% endif %}
     </p>
-    <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="switcher-link">
-      <span class="switcher-link-text">
-        {% if is_zendesk %}
-          {{ _('Switch to Community Forum') }}
-        {% else %}
-          {{ _('Switch to Mozilla Support') }}
-        {% endif %}
-      </span>
-      <svg class="switcher-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="sumo-button secondary-button">
+      {{ _('Continue') }}
     </a>
   </div>
 {%- endmacro %}
