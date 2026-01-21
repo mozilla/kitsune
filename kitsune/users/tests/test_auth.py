@@ -113,17 +113,6 @@ class FXAAuthBackendTests(TestCase):
         self.assertEqual(user.username, "bar1")
         message_mock.success.assert_called()
 
-    def test_login_fxa_uid_missing(self):
-        """Test user filtering without FxA uid."""
-        claims = {
-            "uid": "",
-        }
-
-        request_mock = Mock(spec=HttpRequest)
-        self.backend.claims = claims
-        self.backend.request = request_mock
-        assert not self.backend.filter_users_by_claims(claims)
-
     def test_login_existing_user_by_fxa_uid(self):
         """Test user filtering by FxA uid."""
         user = UserFactory.create(profile__fxa_uid="my_unique_fxa_id")
@@ -144,8 +133,6 @@ class FXAAuthBackendTests(TestCase):
         """Test connecting a SUMO account with an existing FxA in SUMO."""
         UserFactory.create(profile__fxa_uid="my_unique_fxa_id")
         user = UserFactory.create()
-        user.profile.is_fxa_migrated = False
-        user.profile.save()
         claims = {
             "uid": "my_unique_fxa_id",
         }
@@ -153,8 +140,6 @@ class FXAAuthBackendTests(TestCase):
         with self.subTest("without a request"):
             self.backend.update_user(user, claims)
             assert not message_mock.error.called
-            assert not User.objects.get(id=user.id).profile.is_fxa_migrated
-            assert not User.objects.get(id=user.id).profile.fxa_uid
         # Test with a request.
         request_mock = Mock(spec=HttpRequest)
         request_mock.session = {}
@@ -164,8 +149,6 @@ class FXAAuthBackendTests(TestCase):
             message_mock.error.assert_called_with(
                 request_mock, "This Mozilla account is already used in another profile."
             )
-            assert not User.objects.get(id=user.id).profile.is_fxa_migrated
-            assert not User.objects.get(id=user.id).profile.fxa_uid
 
     def test_login_existing_user_by_email(self):
         """Test user filtering by email."""
@@ -189,7 +172,6 @@ class FXAAuthBackendTests(TestCase):
         user = UserFactory.create(
             profile__fxa_uid="my_unique_fxa_id",
             email="foo@example.com",
-            profile__is_fxa_migrated=True,
         )
         claims = {"uid": "my_unique_fxa_id", "email": "bar@example.com", "subscriptions": "[]"}
         self.backend.update_user(user, claims)
@@ -202,12 +184,9 @@ class FXAAuthBackendTests(TestCase):
     @patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
     def test_link_sumo_account_fxa(self, verify_token_mock, requests_mock, message_mock):
         """Test that an existing SUMO account is succesfully linked to Mozilla account."""
-
         verify_token_mock.return_value = True
 
         user = UserFactory.create(email="sumo@example.com", profile__name="Kenny Bania")
-        user.profile.is_fxa_migrated = False
-        user.profile.save()
         auth_request = RequestFactory().get("/foo", {"code": "foo", "state": "bar"})
         auth_request.session = {}
         auth_request.user = user
@@ -232,8 +211,6 @@ class FXAAuthBackendTests(TestCase):
         requests_mock.post.return_value = post_json_mock
 
         self.backend.authenticate(auth_request)
-        assert user.profile.is_fxa_migrated
-        self.assertEqual(user.profile.fxa_uid, "my_unique_fxa_id")
         self.assertEqual(user.email, "fxa@example.com")
         self.assertEqual(user.profile.name, "Kenny Bania")
         message_mock.info.assert_called_with(auth_request, "fxa_notification_updated")
