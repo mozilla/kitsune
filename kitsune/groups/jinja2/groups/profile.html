@@ -2,6 +2,14 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% set title = _('{group} | Groups')|f(group=profile.group.name) %}
 
+{# Build breadcrumb trail #}
+{% set crumbs = [(url('groups.list'), _('Groups'))] %}
+{% set ancestors = profile.get_ancestors() %}
+{% for ancestor in ancestors %}
+  {% do crumbs.append((url('groups.profile', ancestor.slug), ancestor.group.name)) %}
+{% endfor %}
+{% do crumbs.append((None, profile.group.name)) %}
+
 {% block content %}
   <article id="group-profile" class="main">
     <section id="avatar-area">
