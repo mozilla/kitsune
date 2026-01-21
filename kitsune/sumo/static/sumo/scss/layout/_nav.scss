@@ -193,7 +193,8 @@
       flex-wrap: wrap;
 
       >li {
-        flex: 25%;
+        flex: 0 0 25%;
+        max-width: 25%;
       }
 
     }
