@@ -106,6 +106,11 @@ aside .aaq-widget {
     align-items: center;
     justify-content: center;
     margin-bottom: p.$spacing-md;
+
+    // On desktop, stack icon above title
+    @media #{p.$mq-lg} {
+      flex-direction: column;
+    }
   }
 
   .switcher-icon {
@@ -114,6 +119,12 @@ aside .aaq-widget {
     margin-right: p.$spacing-sm;
     flex-shrink: 0;
     animation: pulse 3s ease-in-out infinite;
+
+    // On desktop, remove right margin and add bottom margin
+    @media #{p.$mq-lg} {
+      margin-right: 0;
+      margin-bottom: p.$spacing-sm;
+    }
 
     @keyframes pulse {
       0%, 100% {
