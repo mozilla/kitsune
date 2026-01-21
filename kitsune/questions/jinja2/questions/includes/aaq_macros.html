@@ -82,6 +82,7 @@
 
 {% macro aaq_widget(request, location="aaq", topic=None) %}
   {% set aaq_context = request.session.get("aaq_context") %}
+  {% if aaq_context and (aaq_context.has_public_forum or aaq_context.has_ticketing_support) %}
   <div class="aaq-widget card is-inverse elevation-01 text-center radius-md">
     <h2 class="card--title has-bottom-margin">
       <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -124,10 +125,10 @@
 
     {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1)
                        if not (is_ticketed or has_forum or topic)
-                       else url('questions.aaq_step3', product_slug=aaq_context.product_slug) 
+                       else url('questions.aaq_step3', product_slug=aaq_context.product_slug)
                        if aaq_context and not multiple_products
                        else url('questions.aaq_step1') %}
-  
+
     <a class="sumo-button primary-button feature-box"
       href="{{ next_step }}"
       data-event-name="link_click"
@@ -137,7 +138,8 @@
       }'>
       {{ _('Continue')}}
     </a>
-    </div>
+  </div>
+  {% endif %}
 {%- endmacro %}
 
 {% macro explore_solutions(product, search_box, featured, topics, is_ticketed_support=True) -%}
