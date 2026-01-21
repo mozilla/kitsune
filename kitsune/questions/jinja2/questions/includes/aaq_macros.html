@@ -191,6 +191,33 @@
 </div>
 {%- endmacro %}
 
+{% macro support_type_switcher(css_class='') -%}
+  {% set is_zendesk = (current_support_type == SUPPORT_TYPE_ZENDESK) %}
+  {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
+  <div class="support-type-switcher-widget {{ css_class }}">
+    <div class="switcher-header">
+      <img class="switcher-icon" src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="" />
+      <span class="switcher-title">
+        {% if is_zendesk %}
+          {{ _('Ask the community') }}
+        {% else %}
+          {{ _('Contact Support') }}
+        {% endif %}
+      </span>
+    </div>
+    <p class="switcher-description">
+      {% if is_zendesk %}
+        {{ _('You can also get help by posting your question in the Community Forum.') }}
+      {% else %}
+        {{ _('You can also post your question directly to our support team for assistance.') }}
+      {% endif %}
+    </p>
+    <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="sumo-button secondary-button">
+      {{ _('Continue') }}
+    </a>
+  </div>
+{%- endmacro %}
+
 {% macro troubleshooting_instructions(field) %}
   <div>
     <div id="api-section">

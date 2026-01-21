@@ -3,44 +3,158 @@
 
 
 .aaq {
-    .sumo-l-two-col--sidebar {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+  .sumo-l-two-col--sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .field,
+  .form-as-ul > li {
+    margin-bottom: p.$spacing-2xl;
+  }
+
+  .add-attachment {
+    margin-bottom: 0;
+  }
+
+  #id_content {
+    resize: vertical;
+  }
+
+  #troubleshooting-field {
+    margin: p.$spacing-md 0;
+  }
+
+  .aaq-form-buttons {
+    padding-top: p.$spacing-2xl;
+    border-top: 1px solid var(--color-marketing-gray-03);
+  }
+
+  // Make the community card more compact
+  .card.is-in-sidebar {
+    margin-bottom: p.$spacing-sm;
+
+    .card--img {
+      width: 120px;
+      margin: -40px auto p.$spacing-md;
     }
 
-    .field,
-    .form-as-ul > li {
-        margin-bottom: p.$spacing-2xl;
+    .card--desc {
+      margin-bottom: p.$spacing-md;
     }
-
-    .add-attachment {
-        margin-bottom: 0;
-    }
-
-    #id_content {
-        resize: vertical;
-    }
-
-    #troubleshooting-field {
-        margin: p.$spacing-md 0;
-    }
-
-    .aaq-form-buttons {
-        border-top: 1px solid var(--color-marketing-gray-03);
-        padding-top: p.$spacing-2xl;
-    }
+  }
 }
 
 .aaq-widget {
-    background-color: var(--card-bg);
+  background-color: var(--card-bg);
 
-    .card--icon-sm {
-        vertical-align: middle;
-        margin-bottom: 0;
-    }
+  .card--icon-sm {
+    margin-bottom: 0;
+    vertical-align: middle;
+  }
 }
 
 aside .aaq-widget {
-    margin-bottom: p.$spacing-lg;
+  margin-bottom: p.$spacing-lg;
+}
+
+// Add spacing to sidebar sections
+.aaq .sumo-l-two-col--sidebar {
+  > .large-only {
+    margin-top: p.$spacing-lg;
+  }
+}
+
+// Support Type Switcher Widget - Editorial Style
+.support-type-switcher-widget {
+  position: relative;
+  margin-bottom: p.$spacing-lg;
+  padding: p.$spacing-xl;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  background: var(--color-callout-bg);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Hide sidebar version on mobile, show inline version
+  &.switcher-sidebar {
+    display: none;
+
+    @media #{p.$mq-lg} {
+      display: block;
+    }
+  }
+
+  // Hide inline version on desktop, show on mobile
+  &.switcher-inline {
+    display: block;
+    margin-top: p.$spacing-xl;
+
+    @media #{p.$mq-lg} {
+      display: none;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  // Header with icon and title
+  .switcher-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: p.$spacing-md;
+  }
+
+  .switcher-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: p.$spacing-sm;
+    flex-shrink: 0;
+    animation: pulse 3s ease-in-out infinite;
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .switcher-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-heading);
+  }
+
+  // Description text
+  .switcher-description {
+    margin: 0 0 p.$spacing-lg 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-text);
+  }
+
+  // Continue button - centered but not stretched
+  text-align: center;
+
+  // Reduced motion support
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+
+    .switcher-icon {
+      animation: none;
+    }
+  }
 }
