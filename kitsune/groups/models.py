@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Exists, OuterRef, Value
-from django.db.models.functions import Length, Substr
+from django.db.models import Q
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
 from treebeard.mp_tree import MP_Node
@@ -52,13 +51,18 @@ class GroupProfile(TreeModelBase):
         max_length=20,
         choices=Visibility.choices,
         default=Visibility.PUBLIC,
-        help_text="Who can see this group",
+        help_text="Who can see this group. Children automatically inherit parent's visibility.",
+    )
+    isolation_enabled = models.BooleanField(
+        default=True,
+        help_text="Enable sibling isolation for PRIVATE/MODERATED groups. "
+                  "When enabled, members can only see their hierarchy (ancestors + descendants), not siblings.",
     )
     visible_to_groups = models.ManyToManyField(
         Group,
         related_name="visible_group_profiles",
         blank=True,
-        help_text="Groups that can see this group when visibility is MODERATED",
+        help_text="Groups with view-only access to this group (for auditing/compliance).",
     )
 
     objects = GroupProfileManager()
@@ -73,20 +77,45 @@ class GroupProfile(TreeModelBase):
         return reverse("groups.profile", args=[self.slug])
 
     def save(self, *args, **kwargs):
-        """Set slug on first save and parse information to html."""
+        """Set slug on first save, parse information to html, and inherit parent visibility."""
         if not self.slug:
             self.slug = slugify(self.group.name)
 
-        self.information_html = wiki_to_html(self.information)
+        update_fields = kwargs.get('update_fields')
+        if not self.pk or update_fields is None or 'information' in update_fields:
+            self.information_html = wiki_to_html(self.information)
+
+        if len(self.path) > self.steplen:
+            parent = self.get_parent()
+            if parent:
+                self.visibility = parent.visibility
 
         super().save(*args, **kwargs)
 
+    def update_visibility(self, new_visibility, propagate=True):
+        """
+        Update visibility for this group and optionally all descendants.
+
+        Args:
+            new_visibility: New visibility level
+            propagate: If True, update all descendants too (default: True)
+        """
+        self.visibility = new_visibility
+        self.save(update_fields=['visibility'])
+
+        if propagate:
+            self.get_descendants().update(visibility=new_visibility)
+
     def can_moderate_group(self, user):
         """
-        Check if user can moderate this group (manage members and leaders).
+        Check if user can moderate this group.
 
-        Direct leaders have full control. If this group has no leaders,
-        delegate to nearest ancestor with leaders.
+        Moderation rules:
+        - Root moderators: Can moderate entire tree
+        - Non-root moderators: Can moderate ONLY their specific group (not descendants)
+        - Inheritance: If no local moderators, inherits from ROOT only (not parent)
+
+        Returns True if user can add/remove members and edit group settings.
         """
         if not (user and user.is_authenticated):
             return False
@@ -94,59 +123,63 @@ class GroupProfile(TreeModelBase):
         if user.is_superuser:
             return True
 
-        # Is the user a leader of this group, if it has leaders,
-        # or its nearest ancestor group with leaders, if one exists.
-        return bool(
-            GroupProfile.objects.filter(
-                leaders__isnull=False,
-                path=Substr(Value(self.path), 1, Length("path")),
-            )
-            .order_by("-path")
-            .annotate(
-                is_leader=Exists(
-                    GroupProfile.objects.filter(
-                        pk=OuterRef("pk"),
-                        leaders=user,
-                    )
-                )
-            )
-            .values_list("is_leader", flat=True)
-            .first()
-        )
-
-    def can_edit(self, user):
-        """Check if user can edit this group profile."""
-        return self.can_moderate_group(user)
-
-    def can_view(self, user):
-        """Check if user can view this group based on visibility setting."""
-        # PUBLIC groups are visible to everyone
-        if self.visibility == self.Visibility.PUBLIC:
+        if self.leaders.filter(pk=user.pk).exists():
             return True
 
-        # Non-authenticated users can only see PUBLIC groups
+        if not self.is_root():
+            root = self.get_root()
+            if root.leaders.filter(pk=user.pk).exists():
+                return True
+
+        return False
+
+    def can_edit(self, user):
+        """
+        Check if user can edit this group's settings (info, avatar).
+
+        Root moderators can edit entire tree.
+        Non-root moderators can edit only their specific group.
+        """
+        return self.can_moderate_group(user)
+
+    def can_delete_subgroup(self, user, subgroup):
+        """
+        Check if user can delete a subgroup.
+
+        Only root moderators can delete subgroups.
+        """
         if not (user and user.is_authenticated):
             return False
 
-        # Superusers can see everything
         if user.is_superuser:
             return True
 
-        # Check based on visibility level
-        match self.visibility:
-            case self.Visibility.MODERATED:
-                # Visible to members of specified groups
-                return self.visible_to_groups.filter(user=user).exists()
-            case self.Visibility.PRIVATE:
-                # Members can see their own group
-                if self.group.user_set.filter(pk=user.pk).exists():
-                    return True
-                # Moderators (including delegated) can see private groups
-                return self.can_moderate_group(user)
-            case _:
-                return False
+        root = self.get_root()
+        return root.leaders.filter(pk=user.pk).exists()
+
+    def can_view(self, user):
+        """Check if user can view this group based on visibility and isolation settings."""
+        return self.__class__.objects.visible(user).filter(pk=self.pk).exists()
 
     def get_visible_children(self, user):
-        """Get child groups visible to this user."""
+        """Return child groups visible to this user."""
         children = self.get_children()
-        return GroupProfile.objects.filter(pk__in=children).visible(user)
+
+        if self.can_moderate_group(user):
+            return children
+
+        if not (user and user.is_authenticated):
+            return children.filter(visibility=self.Visibility.PUBLIC)
+
+        is_parent_member = self.group.user_set.filter(pk=user.pk).exists()
+
+        filters = Q(visibility=self.Visibility.PUBLIC)
+        if is_parent_member:
+            filters |= Q(visibility=self.Visibility.PRIVATE)
+
+        filters |= Q(
+            visibility=self.Visibility.MODERATED,
+            visible_to_groups__user=user
+        )
+
+        return children.filter(filters).distinct()
