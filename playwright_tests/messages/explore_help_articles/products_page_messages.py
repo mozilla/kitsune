@@ -9,7 +9,6 @@ class ProductsPageMessages:
                          "address",
         "Mozilla Monitor": "Find out if your private information has been exposed in a known "
                            "data breach.",
-        "Pocket": "Discover and save stories for later.",
         "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters.",
         "Firefox Focus": "Automatic privacy browser and content blocker",
         "Firefox for Enterprise": "Firefox Quantum for businesses",

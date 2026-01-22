@@ -1434,16 +1434,16 @@ def test_ignored_article_types_from_frequent_topics_cards(page: Page, category,
     with allure.step("Creating a new kb article of 'Canned Responses' type, under the Test Topic "
                      "and approving the revision"):
         article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Pocket", article_topic="Pocket test topic", approve_first_revision=True,
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True,
             article_category=category, is_template= (category == "60"))
 
     with check, allure.step("Verifying that the article is not displayed inside the topic card"):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
-                utilities.general_test_data[link]["Pocket"])
+                utilities.general_test_data[link]["MDN Plus"])
             assert (article["article_title"] not in sumo_pages.common_web_elements.
                     get_frequent_topic_card_articles(
-                utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]))
+                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]))
 
 
 # C2903871 C2903873 C2903874
@@ -1459,35 +1459,36 @@ def test_article_topic_and_product_change(page: Page, create_user_factory):
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
 
-    with allure.step("Updating the article metadata to add the MDN product and test topic"):
+    with allure.step("Updating the article metadata to add the Thunderbird product and test "
+                     "topic"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            product="MDN Plus",
-            topics=utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"])
+            product="Thunderbird",
+            topics=utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
 
-    with check, allure.step("Verifying that the article is displayed in bot products and topic "
+    with check, allure.step("Verifying that the article is displayed in both products and topic "
                             "cards"):
-        for product in ["MDN Plus", "Pocket"]:
+        for product in ["MDN Plus", "Thunderbird"]:
             for link in ["product_support", "product_solutions"]:
                 utilities.navigate_to_link(utilities.general_test_data[link][product])
                 assert (article_details["article_title"] in sumo_pages.common_web_elements.
                         get_frequent_topic_card_articles(
                     utilities.general_test_data["test_topics"][product]["topic_name"]))
 
-    with check, allure.step("Removing the article from the Pocket product & topic"):
+    with check, allure.step("Removing the article from the Thunderbird product & topic"):
         utilities.navigate_to_link(article_details["article_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
-            product="Pocket",
-            topics=utilities.general_test_data["test_topics"]["Pocket"]["topic_name"])
+            product="Thunderbird",
+            topics=utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
 
-    with check, allure.step("Verifying that the article is not displayed in the Pocket product & "
-                            "topic"):
+    with check, allure.step("Verifying that the article is not displayed in the Thunderbird "
+                            "product &  topic"):
         for link in ["product_support", "product_solutions"]:
-            utilities.navigate_to_link(utilities.general_test_data[link]["Pocket"])
+            utilities.navigate_to_link(utilities.general_test_data[link]["Thunderbird"])
             assert (article_details["article_title"] not in sumo_pages.common_web_elements.
                     get_frequent_topic_card_articles(
-                utilities.general_test_data["test_topics"]["Pocket"]["topic_name"]))
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]))
             assert (article_details["article_title"] not in sumo_pages.common_web_elements.
                     get_frequent_topic_card_articles(
                 utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]))
@@ -1827,7 +1828,7 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
         counter = 1
         while counter <= 3:
             article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-                product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+                product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
             test_article_titles.append(article_info["article_title"])
             test_articles_url.append(article_info["article_url"])
             counter += 1
@@ -1885,7 +1886,7 @@ def test_same_article_cannot_be_added_as_related_article(page: Page, create_user
 
     with allure.step("Creating a new KB article"):
         article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-            product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+            product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
 
     with allure.step("Wait for ~1 minute until the kb article is available in search"):
         utilities.wait_for_given_timeout(90000)
@@ -1918,7 +1919,7 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
         counter = 1
         while counter <= 3:
             article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
-                product="Pocket", article_topic="Pocket test topic", approve_first_revision=True)
+                product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
             test_article_titles.append(article_info["article_title"])
             test_articles_url.append(article_info["article_url"])
             counter += 1
