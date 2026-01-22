@@ -6,7 +6,7 @@
   {% endif %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
-      {% if in_staff_group(user) and (document or parent).is_linked_in_product %}
+      {% if (is_contributor(user) or in_staff_group(user)) and (document or parent).is_linked_in_product %}
         <li>
           <figure class="linked-in-product">
             <img src="{{ webpack_static('sumo/img/info.svg') }}" alt="{{ _('Information icon') }}" />
