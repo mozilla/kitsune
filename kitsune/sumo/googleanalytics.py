@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+import google.auth
 from django.conf import settings
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
@@ -31,6 +32,7 @@ PERIOD_TO_DAYS_AGO = {
     LAST_YEAR: "365daysAgo",
 }
 VALID_LOCALES = frozenset(lang for lang in settings.SUMO_LANGUAGES if lang != "xx")
+GA_SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]
 
 
 def get_client():
@@ -43,7 +45,8 @@ def get_client():
     # within our GKE clusters. The GA_PROPERTY_ID and GOOGLE_CLOUD_PROJECT settings must
     # be defined properly. When running locally, you'll also need to impersonate one of
     # the GKE service accounts as well as define GOOGLE_APPLICATION_CREDENTIALS.
-    return BetaAnalyticsDataClient()
+    credentials, project_id = google.auth.default(scopes=GA_SCOPES)
+    return BetaAnalyticsDataClient(credentials=credentials)
 
 
 def run_report(date_range, create_report_request, limit=10000, verbose=False):
