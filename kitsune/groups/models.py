@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Q
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
 from treebeard.mp_tree import MP_Node
@@ -56,7 +55,7 @@ class GroupProfile(TreeModelBase):
     isolation_enabled = models.BooleanField(
         default=True,
         help_text="Enable sibling isolation for PRIVATE/MODERATED groups. "
-                  "When enabled, members can only see their hierarchy (ancestors + descendants), not siblings.",
+        "When enabled, members can only see their hierarchy (ancestors + descendants), not siblings.",
     )
     visible_to_groups = models.ManyToManyField(
         Group,
@@ -81,8 +80,8 @@ class GroupProfile(TreeModelBase):
         if not self.slug:
             self.slug = slugify(self.group.name)
 
-        update_fields = kwargs.get('update_fields')
-        if not self.pk or update_fields is None or 'information' in update_fields:
+        update_fields = kwargs.get("update_fields")
+        if not self.pk or update_fields is None or "information" in update_fields:
             self.information_html = wiki_to_html(self.information)
 
         if len(self.path) > self.steplen:
@@ -101,7 +100,7 @@ class GroupProfile(TreeModelBase):
             propagate: If True, update all descendants too (default: True)
         """
         self.visibility = new_visibility
-        self.save(update_fields=['visibility'])
+        self.save(update_fields=["visibility"])
 
         if propagate:
             self.get_descendants().update(visibility=new_visibility)
@@ -164,22 +163,4 @@ class GroupProfile(TreeModelBase):
     def get_visible_children(self, user):
         """Return child groups visible to this user."""
         children = self.get_children()
-
-        if self.can_moderate_group(user):
-            return children
-
-        if not (user and user.is_authenticated):
-            return children.filter(visibility=self.Visibility.PUBLIC)
-
-        is_parent_member = self.group.user_set.filter(pk=user.pk).exists()
-
-        filters = Q(visibility=self.Visibility.PUBLIC)
-        if is_parent_member:
-            filters |= Q(visibility=self.Visibility.PRIVATE)
-
-        filters |= Q(
-            visibility=self.Visibility.MODERATED,
-            visible_to_groups__user=user
-        )
-
-        return children.filter(filters).distinct()
+        return self.__class__.objects.visible(user).filter(pk__in=children)
