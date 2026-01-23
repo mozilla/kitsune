@@ -1,0 +1,69 @@
+{% extends "questions/base.html" %}
+{% from "questions/includes/aaq_macros.html" import progress_bar %}
+{% set title = _('Choose Support Option') %}
+{% set no_headline = True %}
+{% set hide_locale_switcher = True %}
+{% set meta = [('robots', 'noindex')] %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block contentwrap %}
+<div id="main-content" class="aaq">
+  <article class="main mzp-l-content sumo-page-section--inner">
+    {{ progress_bar(3, product_slug=current_product.slug) }}
+
+    <div class="support-language-choice">
+      <img class="page-heading--logo" src="{{ current_product.image_alternate_url }}" alt="{{ current_product.title }} logo" />
+      <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
+        {{ current_product.title }}
+      </h3>
+
+      <h1 class="sumo-page-heading">{{ _('Choose Your Support Option') }}</h1>
+      <p class="choice-intro">
+        {{ _('Direct assistance from our support team is available only in English, but help from our community is available in {language}.').format(language=current_language) }}
+      </p>
+
+      <div class="support-choice-cards">
+        <div class="support-choice-card card highlight-box">
+          <div class="choice-icon">
+            <img src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="" />
+          </div>
+          <h2 class="choice-title">{{ _('Contact Support') }}</h2>
+          <ul class="choice-features">
+            <li>{{ _('Direct assistance from our support team') }}</li>
+            <li>{{ _('Available only in English') }}</li>
+          </ul>
+          <div class="choice-action">
+            <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) | urlparams(support_type=SUPPORT_TYPE_ZENDESK, next=next_url) }}" class="sumo-button primary-button button-lg">
+              {{ _('Continue') }}
+            </a>
+          </div>
+        </div>
+
+        <div class="support-choice-card card highlight-box">
+          <div class="choice-icon">
+            <img src="{{ webpack_static('sumo/img/group-icon.svg') }}" alt="" />
+          </div>
+          <h2 class="choice-title">{{ _('Ask the Community') }}</h2>
+          <ul class="choice-features">
+            <li>{{ _('Help from our community of volunteers') }}</li>
+            <li>{{ _('Available in {language}').format(language=current_language) }}</li>
+          </ul>
+          <div class="choice-action">
+            <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=SUPPORT_TYPE_FORUM, next=next_url) }}" class="sumo-button primary-button button-lg">
+              {{ _('Continue') }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="choice-cancel">
+        <a href="{{ cancel_url }}" class="sumo-button secondary-button">{{ _('Cancel') }}</a>
+      </div>
+    </div>
+  </article>
+</div>
+{% endblock %}
+
+{% block side %}
+{% endblock %}
