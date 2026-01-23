@@ -536,11 +536,16 @@
       margin: p.$spacing-xs 0;
       padding: p.$spacing-xs 0;
       line-height: 1.6;
+      transition: opacity 150ms ease;
 
       @for $depth from 1 through 10 {
         &[data-depth="#{$depth}"] {
           padding-left: #{($depth - 1) * 24}px;
         }
+      }
+
+      &.hidden {
+        display: none;
       }
 
       a {
@@ -560,10 +565,27 @@
       }
     }
 
-    &--indicator {
-      color: var(--color-marketing-gray-05);
+    &--toggle {
+      display: inline-block;
+      width: 16px;
+      color: var(--color-link);
       margin-right: p.$spacing-xs;
-      font-family: monospace;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.75rem;
+
+      &:hover {
+        color: var(--color-link-hover);
+      }
+    }
+
+    &--leaf {
+      display: inline-block;
+      width: 16px;
+      color: var(--color-marketing-gray-04);
+      margin-right: p.$spacing-xs;
+      font-size: 0.5rem;
+      text-align: center;
     }
   }
 }

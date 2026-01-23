@@ -19,6 +19,12 @@ from kitsune.upload.tasks import _create_image_thumbnail
 def list(request):
     """List all groups visible to the user."""
     groups = GroupProfile.objects.visible(request.user).select_related("group")
+
+    for group in groups:
+        group.has_children = group.numchild > 0
+        parent = group.get_parent()
+        group.parent_id = parent.id if parent else None
+
     return render(request, "groups/list.html", {"groups": groups})
 
 
