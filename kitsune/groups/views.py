@@ -19,6 +19,12 @@ from kitsune.upload.tasks import _create_image_thumbnail
 def list(request):
     """List all groups visible to the user."""
     groups = GroupProfile.objects.visible(request.user).select_related("group")
+
+    for group in groups:
+        group.has_children = group.numchild > 0
+        parent = group.get_parent()
+        group.parent_id = parent.id if parent else None
+
     return render(request, "groups/list.html", {"groups": groups})
 
 
@@ -30,6 +36,11 @@ def profile(request, group_slug, member_form=None, leader_form=None):
 
     user_can_edit = prof.can_edit(request.user)
     user_can_moderate = prof.can_moderate_group(request.user)
+
+    # Fetch hierarchy data in view for better performance
+    parent = prof.get_parent()
+    children = prof.get_visible_children(request.user)
+
     return render(
         request,
         "groups/profile.html",
@@ -41,6 +52,8 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "user_can_moderate": user_can_moderate,
             "member_form": member_form or AddUserForm(),
             "leader_form": leader_form or AddUserForm(),
+            "parent": parent,
+            "children": children,
         },
     )
 

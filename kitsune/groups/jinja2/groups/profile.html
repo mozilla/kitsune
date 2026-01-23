@@ -1,98 +1,230 @@
-﻿{% extends "groups/base.html" %}
-{% from "layout/errorlist.html" import errorlist %}
+{% extends "groups/base.html" %}
 {% set title = _('{group} | Groups')|f(group=profile.group.name) %}
 
-{% block content %}
-  <article id="group-profile" class="main">
-    <section id="avatar-area">
-      <img src="{{ group_avatar(profile) }}" alt="" />
-      {% if user_can_edit %}
-        <p><a href="{{ url('groups.edit_avatar', profile.slug) }}" title="{{ _('Change avatar') }}">{{ _('Change') }}</a></p>
+{# Build breadcrumb trail #}
+{% set crumbs = [(url('groups.list'), _('Groups'))] %}
+{% set ancestors = profile.get_ancestors() %}
+{% for ancestor in ancestors %}
+  {% do crumbs.append((url('groups.profile', ancestor.slug), ancestor.group.name)) %}
+{% endfor %}
+{% do crumbs.append((None, profile.group.name)) %}
+
+{% block side %}
+  {# Avatar card #}
+  <div class="card elevation-01">
+    <div class="card--avatar-section">
+      <img class="group-avatar" src="{{ group_avatar(profile) }}" alt="{{ profile.group.name }}" />
+    </div>
+
+    {% if user_can_edit %}
+      <div class="card--actions">
+        <a href="{{ url('groups.edit_avatar', profile.slug) }}" class="sumo-button secondary-button button-sm button-full-width">
+          {{ _('Change Avatar') }}
+        </a>
         {% if profile.avatar %}
-          <p><a href="{{ url('groups.delete_avatar', profile.slug) }}" title="{{ _('Delete avatar') }}">{{ _('Delete') }}</a></p>
+          <a href="{{ url('groups.delete_avatar', profile.slug) }}" class="sumo-button link-button">
+            {{ _('Delete Avatar') }}
+          </a>
         {% endif %}
+      </div>
+    {% endif %}
+
+    {# Quick stats #}
+    <div class="group-stats">
+      <div class="stat-item">
+        <span class="stat-value">{{ leaders|length }}</span>
+        <span class="stat-label">{{ _('Leaders') }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ members.paginator.count }}</span>
+        <span class="stat-label">{{ _('Members') }}</span>
+      </div>
+      {% if children %}
+        <div class="stat-item">
+          <span class="stat-value">{{ children|length }}</span>
+          <span class="stat-label">{{ _('Subgroups') }}</span>
+        </div>
       {% endif %}
-    </section>
-    <section id="main-area">
-      {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
-        <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
+    </div>
+  </div>
+
+  {# Hierarchy card #}
+  {% if parent or children %}
+    <div class="card elevation-01 group-hierarchy-card">
+      <h3 class="card--title">{{ _('Hierarchy') }}</h3>
+      {% if parent %}
+        <div class="hierarchy-item">
+          <label>{{ _('Parent:') }}</label>
+          <a href="{{ url('groups.profile', parent.slug) }}">{{ parent.group.name }}</a>
+        </div>
       {% endif %}
-      <h1>{{ profile.group.name }}</h1>
-        {% if user_can_edit %}
-          <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
+      {% if children %}
+        <div class="hierarchy-item">
+          <label>{{ _('Subgroups:') }}</label>
+          <ul class="hierarchy-list">
+            {% for child in children %}
+              <li><a href="{{ url('groups.profile', child.slug) }}">{{ child.group.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {# Quick Actions card #}
+  {% if user_can_edit or user_can_moderate %}
+    <div class="card elevation-01 group-actions-card">
+      <h3 class="card--title">{{ _('Manage Group') }}</h3>
+
+      {% if user_can_edit %}
+      <div class="quick-action">
+        <input type="checkbox" id="toggle-add-member" class="action-toggle" />
+        <label for="toggle-add-member" class="action-button">
+          <span class="action-icon">+</span>
+          {{ _('Add Member') }}
+        </label>
+        <div class="action-form">
+          <form action="{{ url('groups.add_member', profile.slug) }}" method="POST">
+            {% csrf_token %}
+            {{ member_form.users|safe }}
+            <button type="submit" class="sumo-button primary-button button-sm button-full-width">
+              {{ _('Add') }}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if user_can_moderate %}
+      <div class="quick-action">
+        <input type="checkbox" id="toggle-add-leader" class="action-toggle" />
+        <label for="toggle-add-leader" class="action-button">
+          <span class="action-icon">+</span>
+          {{ _('Add Leader') }}
+        </label>
+        <div class="action-form">
+          <form action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
+            {% csrf_token %}
+            {{ leader_form.users|safe }}
+            <button type="submit" class="sumo-button primary-button button-sm button-full-width">
+              {{ _('Add') }}
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <article id="group-profile">
+    {# Header section #}
+    <header class="group-header">
+      <div class="group-header--primary">
+        <h1 class="sumo-page-heading">{{ profile.group.name }}</h1>
+        <div class="group-header--meta">
+          <span class="badge badge--visibility">
+            {{ profile.get_visibility_display() }}
+          </span>
+          <span class="badge badge--count">
+            {{ members.paginator.count }} {{ _('members') }}
+          </span>
+        </div>
+      </div>
+      {% if user_can_edit %}
+      <div class="group-header--actions">
+        <a class="sumo-button secondary-button button-sm" href="{{ url('groups.edit', profile.slug) }}">
+          {{ _('Edit Profile') }}
+        </a>
+        {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
+          <a class="sumo-button secondary-button button-sm" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">
+            {{ _('Edit in admin') }}
+          </a>
         {% endif %}
-      <div id="doc-content">
+      </div>
+      {% endif %}
+    </header>
+
+    {% if profile.information_html %}
+    <div class="group-section" id="group-information">
+      <div class="section-heading">
+        <h2>{{ _('About this group') }}</h2>
+      </div>
+      <div class="group-info-content">
         {{ profile.information_html|safe }}
       </div>
+    </div>
+    {% endif %}
 
-      <div id="group-leaders" class="editable">
-        {% if user_can_moderate %}
-          <a class="edit" href="#group-leaders">{{ _('Edit group leaders') }}</a>
-        {% endif %}
-        <h2>{{ _('Group Leaders') }}</h2>
-        <ul class="users leaders">
-          {% for user in leaders %}
-            <li>
-              {{ user_row(user) }}
-              {% if user_can_moderate %}
-                <div class="remove edit-mode">
-                  <a href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">&#x2716;</a>
-                </div>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-        {% if user_can_moderate %}
-          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
-            {% csrf_token %}
-            {{ errorlist(leader_form) }}
-            {{ leader_form.users|safe }}
-            <input type="submit" value="{{ _('Add Leader') }}" />
-          </form>
-        {% endif %}
+    {# Group Leaders section #}
+    <div class="group-section" id="group-leaders">
+      <div class="section-heading">
+        <h2>{{ _('Group leaders') }}</h2>
       </div>
 
-      <div id="group-members" class="editable">
-        {% if user_can_edit %}
-          <a class="edit" href="#group-members">{{ _('Edit group members') }}</a>
-        {% endif %}
-        <h2>{{ _('Group Members') }}</h2>
-        {% if user_can_edit %}
-          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
-            {% csrf_token %}
-            {{ errorlist(member_form) }}
-            {{ member_form.users|safe }}
-            <input type="submit" value="{{ _('Add Member') }}" />
-          </form>
-        {% endif %}
-        <ul class="users members container_12 cf">
-          {% for user in members %}
-            <li class="grid_4">
-              {{ user_row(user) }}
-              {% if user_can_edit %}
-                <div class="remove edit-mode">
-                  <a href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">&#x2716;</a>
-                </div>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
+      {% if leaders %}
+      <ul class="users leaders">
+        {% for user in leaders %}
+          <li>
+            {{ user_row(user, is_leader=true) }}
+            {% if user_can_moderate %}
+              <div class="remove">
+                <a href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">&#x2716;</a>
+              </div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+
+    {# Group Members section #}
+    <div class="group-section" id="group-members">
+      <div class="section-heading">
+        <h2>{{ _('Group members') }}</h2>
       </div>
+
+      {% if members %}
+      <ul class="users members">
+        {% for user in members %}
+          <li>
+            {{ user_row(user, is_leader=false) }}
+            {% if user_can_edit %}
+              <div class="remove">
+                <a href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">&#x2716;</a>
+              </div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
       {% if members.object_list %}
         {{ members|paginator }}
       {% endif %}
-    </section>
+    </div>
   </article>
 {% endblock %}
 
-{% macro user_row(user) -%}
-  <div class="avatar">
-    <a rel="nofollow" href="{{ profile_url(user) }}">
-      <img src="{{ profile_avatar(user) }}" alt="" />
-    </a>
-  </div>
-  <div class="info">
-    <a rel="nofollow" href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
-    {{ private_message(user) }}
+{% macro user_row(user, is_leader=false) -%}
+  <div class="user-card-content">
+    <div class="avatar">
+      <a rel="nofollow" href="{{ profile_url(user) }}">
+        <img src="{{ profile_avatar(user) }}" alt="{{ display_name(user) }}" />
+      </a>
+    </div>
+    <div class="info">
+      <a rel="nofollow" href="{{ profile_url(user) }}" class="user-name">{{ display_name(user) }}</a>
+      {% if is_leader %}
+      <span class="leader-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        {{ _('Leader') }}
+      </span>
+      {% endif %}
+      {{ private_message(user) }}
+    </div>
   </div>
 {%- endmacro %}
