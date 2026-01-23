@@ -51,7 +51,7 @@ class AuthFlowPage:
             account_password (str): Password to be used for sign in.
         """
         # Forcing an email clearance
-        self.utilities.clear_fxa_email(username)
+        self.utilities.clear_email()
 
         if self.auth_page.is_continue_with_firefox_button_displayed():
             """If the 'Continue with Firefox Accounts' button is displayed, click on it."""
@@ -65,9 +65,8 @@ class AuthFlowPage:
 
         if self.auth_page.is_enter_otp_code_input_field_displayed():
             """If the OTP code input field is displayed, provide the OTP code."""
-            self.utilities.clear_fxa_email(self.utilities.staff_user)
+            self.utilities.clear_email()
             self.auth_page.click_on_email_new_code_button()
-            self.__provide_otp_code(self.utilities.get_fxa_verification_code(
-                fxa_username=username))
+            self.__provide_otp_code(self.utilities.get_fxa_verification_code())
         self.utilities.wait_for_dom_to_load()
         return username

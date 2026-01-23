@@ -48,6 +48,9 @@ env:
     TEST_ACCOUNTS_PS: ${{secrets.AUTOMATION_ACCOUNTS_PASSWORD}}
     TEST_ACCOUNT_MODERATOR: ${{secrets.AUTOMATION_MODERATOR_ACCOUNT}}
     PLAYWRIGHT_USER_AGENT: ${{secrets.PLAYWRIGHT_USER_AGENT}}
+    GMAIL_CLIENT_ID: ${{secrets.PLAYWRIGHT_GMAIL_CLIENT_ID}}
+    GMAIL_CLIENT_SECRET: ${{secrets.PLAYWRIGHT_GMAIL_CLIENT_SECRET}}
+    GMAIL_REFRESH_TOKEN: ${{secrets.PLAYWRIGHT_GMAIL_REFRESH_TOKEN}}
     BROWSER: ${{secrets.BROWSER}}
     DATABASE_URL: postgres://kitsune:kitsune@postgres:5432/kitsune
     SECRET_KEY: secret
@@ -70,7 +73,7 @@ jobs:
           sudo apt-get update
           pip3 install --user uv
           uv venv
-          uv sync --extra dev
+          uv sync --group dev
       - name: Download NLTK Data
         run: |
           source .venv/bin/activate && python -m nltk.downloader wordnet omw-1.4

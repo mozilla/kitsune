@@ -1,3 +1,4 @@
+import base64
 import functools
 import os
 import warnings
@@ -16,10 +17,12 @@ from nltk import SnowballStemmer, WordNetLemmatizer
 from playwright.sync_api import Page, Locator, Response, expect
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from requests.exceptions import HTTPError
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.test_data.search_synonym import SearchSynonyms
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, Error as PlaywrightError
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
 
 
 class Utilities:
@@ -65,51 +68,113 @@ class Utilities:
     user_secrets_pass = os.environ.get("TEST_ACCOUNTS_PS")
     user_agent = os.environ.get("PLAYWRIGHT_USER_AGENT")
 
+    # Fetching Gmail API credentials for email verification.
+    gmail_client_id = os.environ.get("GMAIL_CLIENT_ID")
+    gmail_client_secret = os.environ.get("GMAIL_CLIENT_SECRET")
+    gmail_refresh_token = os.environ.get("GMAIL_REFRESH_TOKEN")
+
     def get_session_id(self, username: str) -> dict:
         with open(f"core/sessions/.auth/{username}.json", 'r') as staff_cookies:
             staff_user_session = json.load(staff_cookies)
             return [cookie['value'] for cookie in staff_user_session['cookies'] if cookie[
                 'name'] == 'session_id'][0]
 
-    def clear_fxa_email(self, fxa_username: str):
-        """
-        This helper function sends a delete request to clear the restmail inbox content for a given
-        fxa username.
+    def _get_gmail_service(self):
+        """Creates an authenticated Gmail API service from environment variables."""
+        creds = Credentials(
+            token=None,
+            refresh_token=self.gmail_refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=self.gmail_client_id,
+            client_secret=self.gmail_client_secret,
+            scopes=['https://www.googleapis.com/auth/gmail.modify']
+        )
+        creds.refresh(Request())
+        return build('gmail', 'v1', credentials=creds)
 
+    def clear_email(self):
+        """ Clears FxA verification emails from the Gmail inbox."""
+        try:
+            service = self._get_gmail_service()
+            results = service.users().messages().list(
+                userId='me',
+                q='from:verification@stage.mozaws.net'
+            ).execute()
+
+            messages = results.get('messages', [])
+            for message in messages:
+                service.users().messages().trash(
+                    userId='me',
+                    id=message['id']
+                ).execute()
+        except Exception as e:
+            print(f"Error clearing Gmail: {e}")
+
+    def get_fxa_verification_code(self, max_attempts=5, poll_interval=5) -> str:
+        """
+        Polls Gmail for the FxA verification code.
         Args:
-            fxa_username (str): The fxa username
+            max_attempts (int): Maximum polling attempts
+            poll_interval (int): Seconds between attempts
+        Returns:
+            str: The verification code
         """
-        requests.delete(f"https://restmail.net/mail/{fxa_username}")
+        service = self._get_gmail_service()
 
-    def get_fxa_verification_code(self, fxa_username: str, max_attempts=5, poll_interval=5) -> str:
-        """
-        This helper function pols the restmail inbox for the fxa verification code.
-
-        Args:
-            fxa_username (str): The fxa username
-            max_attempts (int): The maximum number of attempts
-            poll_interval (int): The poll interval
-        """
         for attempt in range(max_attempts):
             try:
-                # Steps:
-                # 1. Parsing the inbox json encoded response for the x-signing-verify-code.
-                # 2. Clearing the inbox for the given fxa username if the verification code was
-                # fetched.
-                # 3. Returning the fxa verification code for further usage.
-                cleared_username = self.username_extraction_from_email(fxa_username)
-                response = requests.get(f"https://restmail.net/mail/{cleared_username}")
-                response.raise_for_status()
-                json_response = response.json()
-                fxa_verification_code = json_response[0]['headers']['x-signin-verify-code']
-                self.clear_fxa_email(cleared_username)
-                return fxa_verification_code
-            except HTTPError as htt_err:
-                print(htt_err)
+                results = service.users().messages().list(
+                    userId='me',
+                    q='from:verification@stage.mozaws.net',
+                    maxResults=1
+                ).execute()
+
+                messages = results.get('messages', [])
+
+                if messages:
+                    msg = service.users().messages().get(
+                        userId='me',
+                        id=messages[0]['id'],
+                        format='full'
+                    ).execute()
+
+                    # Try to get code from headers first
+                    headers = msg['payload'].get('headers', [])
+                    for header in headers:
+                        if header['name'].lower() == 'x-signin-verify-code':
+                            code = header['value']
+                            service.users().messages().trash(
+                                userId='me', id=messages[0]['id']
+                            ).execute()
+                            return code
+
+                    # Fallback: parse from subject (e.g., "Use xxx to confirm your account")
+                    for header in headers:
+                        if header['name'].lower() == 'subject':
+                            code = self._extract_code_from_subject(header['value'])
+                            if code:
+                                service.users().messages().trash(
+                                    userId='me', id=messages[0]['id']
+                                ).execute()
+                                return code
+                            break
+
+                print(f"Attempt {attempt + 1}/{max_attempts}: No verification email yet")
                 time.sleep(poll_interval)
-            except Exception as err:
-                print(err)
+
+            except Exception as e:
+                print(f"Error fetching verification code: {e}")
                 time.sleep(poll_interval)
+
+        raise Exception("Failed to retrieve FxA verification code")
+
+    def _extract_code_from_subject(self, subject: str) -> str:
+        """Extracts 6-digit verification code from email subject.
+
+        Expected format: "Use 330759 to confirm your account"
+        """
+        match = re.search(r'Use\s+(\d{6})\s+to', subject)
+        return match.group(1) if match else None
 
     def username_extraction_from_email(self, string_to_analyze: str) -> str:
         """
@@ -375,16 +440,6 @@ class Utilities:
         """
         return self.page.evaluate('window.navigator.userAgent ')
 
-    def replace_special_chars_account(self, account: str) -> str:
-        """
-        This helper function replaces the special characters applied to the special chars test
-        username.
-
-        Args:
-            account (str): The account to be replaced
-        """
-        return account.replace(account, "testMozillaSpecialChars")
-
     def remove_character_from_string(self, string: str, character_to_remove: str) -> str:
         """
         This helper function removes a given character from a given target string.
@@ -637,13 +692,6 @@ class Utilities:
         This function blocks a certain request
         """
         route.abort()
-
-    def get_csrfmiddlewaretoken(self) -> str:
-        """
-        This helper function fetches the csrfmiddlewaretoken from the page.
-        """
-        return self.page.evaluate("document.querySelector('input[name=csrfmiddlewaretoken]')"
-                                  ".value")
 
     def get_ga_logs(self, msg) -> dict:
         """
