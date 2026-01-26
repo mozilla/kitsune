@@ -173,6 +173,11 @@
       display: flex;
       gap: p.$spacing-sm;
       flex-wrap: wrap;
+
+      @media (max-width: 767px) {
+        flex-basis: 100%;
+        margin-top: p.$spacing-sm;
+      }
     }
 
     .badge {
