@@ -3,10 +3,14 @@
 
 // Shared card styles for group profile and sidebar
 #group-profile .card,
-.sumo-l-two-col--sidebar .card {
+.sumo-l-two-col--sidebar .group-avatar-card,
+.sumo-l-two-col--sidebar .group-hierarchy-card,
+.sumo-l-two-col--sidebar .group-actions-card {
   @include c.card;
+  @include c.elevation-01;
   margin-bottom: p.$spacing-lg;
   padding: p.$spacing-lg;
+  background: white;
 
   &--avatar-section {
     text-align: center;
@@ -47,11 +51,6 @@
     @include c.text-body-md;
     line-height: 1.6;
   }
-}
-
-.sumo-l-two-col--sidebar .card {
-  @include c.elevation-01;
-  background: white;
 }
 
 #group-profile .group-avatar,
