@@ -196,7 +196,11 @@
   {% set switch_to_type = SUPPORT_TYPE_FORUM if is_zendesk else SUPPORT_TYPE_ZENDESK %}
   <div class="support-type-switcher-widget {{ css_class }}">
     <div class="switcher-header">
-      <img class="switcher-icon" src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="" />
+      {% if is_zendesk %}
+        <img class="switcher-icon" src="{{ webpack_static('sumo/img/megaphone.svg') }}" alt="{{ _('Megaphone icon') }}" />
+      {% else %}
+        <img class="switcher-icon" src="{{ webpack_static('sumo/img/message.svg') }}" alt="{{ _('Message icon') }}" />
+      {% endif %}
       <span class="switcher-title">
         {% if is_zendesk %}
           {{ _('Ask the Community') }}
