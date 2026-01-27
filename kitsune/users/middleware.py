@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
@@ -30,11 +30,19 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
         user = request.user
 
         if user.is_authenticated:
-            first_seen = request.session.get("first_seen")
-            if first_seen:
-                change_time = user.profile.fxa_password_change
-                if change_time and change_time > first_seen:
-                    logout(request)
-                    return HttpResponseRedirect(reverse("home"))
+            first_seen_str = request.session.get("first_seen")
+            if first_seen_str:
+                # Convert ISO string back to datetime for comparison
+                try:
+                    first_seen = datetime.fromisoformat(first_seen_str)
+                except (ValueError, AttributeError):
+                    # Handle legacy pickle-serialized datetime objects or invalid strings
+                    first_seen = None
+
+                if first_seen:
+                    change_time = user.profile.fxa_password_change
+                    if change_time and change_time > first_seen:
+                        logout(request)
+                        return HttpResponseRedirect(reverse("home"))
             else:
-                request.session["first_seen"] = datetime.utcnow()
+                request.session["first_seen"] = datetime.now(UTC).isoformat()

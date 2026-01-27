@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -26,7 +26,7 @@ log = logging.getLogger("k.search")
 def cache_control(resp, cache_period):
     """Inserts cache/expires headers"""
     resp["Cache-Control"] = "max-age=%s" % (cache_period * 60)
-    resp["Expires"] = (datetime.utcnow() + timedelta(minutes=cache_period)).strftime(
+    resp["Expires"] = (datetime.now(UTC) + timedelta(minutes=cache_period)).strftime(
         "%A, %d %B %Y %H:%M:%S GMT"
     )
     return resp
