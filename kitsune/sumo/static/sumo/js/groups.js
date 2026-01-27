@@ -1,4 +1,5 @@
 import Marky from "sumo/js/markup";
+import "sumo/js/libs/jquery.lazyload";
 
 /*
  * JS for Groups app
@@ -14,6 +15,9 @@ import Marky from "sumo/js/markup";
     Marky.createCustomToolbar('.editor-tools', '#id_information', buttons);
 
     initGroupsTree();
+
+    // Initialize lazy loading for images in group information
+    $("img.lazy").lazyload();
   }
 
   function initGroupsTree() {
