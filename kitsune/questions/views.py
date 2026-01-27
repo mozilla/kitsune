@@ -639,7 +639,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
         context["ga_products"] = f"/{product_slug}/"
         context["current_support_type"] = support_type
-        context["can_switch"] = aaq_context.get("can_switch", False)
+        context["can_switch"] = can_switch = aaq_context.get("can_switch", False)
         context["SUPPORT_TYPE_FORUM"] = ProductSupportConfig.SUPPORT_TYPE_FORUM
         context["SUPPORT_TYPE_ZENDESK"] = ProductSupportConfig.SUPPORT_TYPE_ZENDESK
         context["has_ticketing_support"] = aaq_context.get("has_ticketing_support", False)
@@ -653,26 +653,44 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
         context["topics"] = build_topics_data(request, product, topics)
 
     elif step == 3:
-        # First, check for redirection cases.
+        context["next_url"] = next_url = get_next_url(request)
+        context["cancel_url"] = next_url or (
+            reverse("products.product", args=[product.slug])
+            if is_loginless
+            else reverse("questions.aaq_step2", args=[product_slug])
+        )
+
+        if (
+            can_switch
+            and has_public_forum
+            and (support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+            and (request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE)
+        ):
+            # Allow the user to select a support option depending on
+            # their preferred combination of language and support type.
+            context["current_language"] = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+            return render(request, "questions/support_choice.html", context)
+
+        # Check for redirection cases.
         if (
             (support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM) and not has_public_forum
         ) or (
             (support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
             and (request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE)
         ):
-            old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+            current_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
             new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
 
             if support_type == ProductSupportConfig.SUPPORT_TYPE_FORUM:
                 msg = _(
-                    "The questions forum isn't available for {product} in {old_lang}, we "
+                    "The questions forum isn't available for {product} in {current_lang}, we "
                     "have redirected you to the {new_lang} questions forum."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+                ).format(product=product.title, current_lang=current_lang, new_lang=new_lang)
             else:
                 msg = _(
-                    "Mozilla Support isn't available for {product} in {old_lang}, we "
+                    "Mozilla Support isn't available for {product} in {current_lang}, we "
                     "have redirected you to Mozilla Support in {new_lang}."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+                ).format(product=product.title, current_lang=current_lang, new_lang=new_lang)
 
             messages.add_message(request, messages.WARNING, msg)
 
@@ -684,14 +702,6 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 )
                 + (f"?{request.GET.urlencode()}" if request.GET else "")
             )
-
-        context["next_url"] = next_url = get_next_url(request)
-
-        context["cancel_url"] = next_url or (
-            reverse("products.product", args=[product.slug])
-            if is_loginless
-            else reverse("questions.aaq_step2", args=[product_slug])
-        )
 
         if support_type == ProductSupportConfig.SUPPORT_TYPE_ZENDESK:
             zendesk_form = ZendeskForm(
