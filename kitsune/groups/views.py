@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
@@ -13,7 +12,6 @@ from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
-from kitsune.upload.tasks import _create_image_thumbnail
 
 
 def list(request):
@@ -103,12 +101,8 @@ def edit_avatar(request, group_slug):
         if old_avatar_path:
             default_storage.delete(old_avatar_path)
 
-        content = _create_image_thumbnail(
-            form.instance.avatar.file, settings.AVATAR_SIZE, pad=True
-        )
-        # We want everything as .png
-        name = form.instance.avatar.name + ".png"
-        prof.avatar.save(name, content, save=True)
+        # Save the avatar directly without resizing (same as admin behavior)
+        form.save()
         return HttpResponseRedirect(prof.get_absolute_url())
 
     return render(request, "groups/edit_avatar.html", {"form": form, "profile": prof})
