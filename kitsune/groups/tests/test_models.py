@@ -882,6 +882,82 @@ class VisibilityInheritanceTests(TestCase):
         self.assertEqual(child.visibility, GroupProfile.Visibility.PRIVATE)
         self.assertEqual(grandchild.visibility, GroupProfile.Visibility.PRIVATE)
 
+    def test_save_propagates_visibility_to_descendants(self):
+        """Changing visibility via save() (as in admin) propagates to descendants."""
+        parent_group = Group.objects.create(name="Parent")
+        parent = GroupProfile.add_root(
+            group=parent_group,
+            slug="parent",
+            visibility=GroupProfile.Visibility.PUBLIC,
+        )
+
+        child_group = Group.objects.create(name="Child")
+        child = parent.add_child(
+            group=child_group,
+            slug="child",
+        )
+
+        grandchild_group = Group.objects.create(name="Grandchild")
+        grandchild = child.add_child(
+            group=grandchild_group,
+            slug="grandchild",
+        )
+
+        # All should be PUBLIC initially
+        self.assertEqual(parent.visibility, GroupProfile.Visibility.PUBLIC)
+        child.refresh_from_db()
+        grandchild.refresh_from_db()
+        self.assertEqual(child.visibility, GroupProfile.Visibility.PUBLIC)
+        self.assertEqual(grandchild.visibility, GroupProfile.Visibility.PUBLIC)
+
+        # Change root to PRIVATE via save() (simulates admin form submission)
+        parent.visibility = GroupProfile.Visibility.PRIVATE
+        parent.save()
+
+        # All descendants should now be PRIVATE
+        parent.refresh_from_db()
+        child.refresh_from_db()
+        grandchild.refresh_from_db()
+        self.assertEqual(parent.visibility, GroupProfile.Visibility.PRIVATE)
+        self.assertEqual(child.visibility, GroupProfile.Visibility.PRIVATE)
+        self.assertEqual(grandchild.visibility, GroupProfile.Visibility.PRIVATE)
+
+    def test_cannot_change_subgroup_visibility(self):
+        """Attempting to change subgroup visibility is overridden by parent."""
+        parent_group = Group.objects.create(name="Parent")
+        parent = GroupProfile.add_root(
+            group=parent_group,
+            slug="parent",
+            visibility=GroupProfile.Visibility.PRIVATE,
+        )
+
+        child_group = Group.objects.create(name="Child")
+        child = parent.add_child(
+            group=child_group,
+            slug="child",
+        )
+
+        # Verify child is PRIVATE (inherited)
+        child.refresh_from_db()
+        self.assertEqual(child.visibility, GroupProfile.Visibility.PRIVATE)
+
+        # Try to change child to PUBLIC (simulates admin form submission)
+        child.visibility = GroupProfile.Visibility.PUBLIC
+        child.save()
+
+        # Refresh and verify it's still PRIVATE (overridden by parent)
+        child.refresh_from_db()
+        self.assertEqual(child.visibility, GroupProfile.Visibility.PRIVATE)
+
+        # Verify descendants also remain PRIVATE
+        grandchild_group = Group.objects.create(name="Grandchild")
+        grandchild = child.add_child(
+            group=grandchild_group,
+            slug="grandchild",
+        )
+        grandchild.refresh_from_db()
+        self.assertEqual(grandchild.visibility, GroupProfile.Visibility.PRIVATE)
+
 
 class ModeratedVisibilityTests(TestCase):
     """Test MODERATED visibility with nested groups."""
