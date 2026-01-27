@@ -84,12 +84,25 @@ class GroupProfile(TreeModelBase):
         if not self.pk or update_fields is None or "information" in update_fields:
             self.information_html = wiki_to_html(self.information)
 
+        # update visibility based on parent group
+        old_visibility = None
+        if self.pk:
+            try:
+                old_instance = GroupProfile.objects.get(pk=self.pk)
+                old_visibility = old_instance.visibility
+            except GroupProfile.DoesNotExist:
+                pass
+
         if len(self.path) > self.steplen:
             parent = self.get_parent()
             if parent:
                 self.visibility = parent.visibility
 
         super().save(*args, **kwargs)
+
+        # Propagate visibility changes to all descendants
+        if old_visibility is not None and old_visibility != self.visibility:
+            self.get_descendants().update(visibility=self.visibility)
 
     def update_visibility(self, new_visibility, propagate=True):
         """
