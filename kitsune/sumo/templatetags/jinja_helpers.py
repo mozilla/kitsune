@@ -254,8 +254,6 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
 
     default_tzinfo = convert_tzinfo = ZoneInfo(settings.TIME_ZONE)
     if is_naive(value):
-        # Since Python 3.9, due to the introduction of the new "fold" parameter, this is the
-        # recommended way to convert a datetime instance from "naive" to "aware".
         new_value = value.replace(tzinfo=default_tzinfo)
     else:
         new_value = value
@@ -269,9 +267,16 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
                     )
                 except (Profile.DoesNotExist, AttributeError):
                     pass
-            request.session["timezone"] = convert_tzinfo
+            request.session["timezone"] = str(convert_tzinfo)
         else:
-            convert_tzinfo = request.session["timezone"] or default_tzinfo
+            tz_str = request.session.get("timezone")
+            if tz_str:
+                try:
+                    convert_tzinfo = ZoneInfo(tz_str)
+                except Exception:
+                    convert_tzinfo = default_tzinfo
+            else:
+                convert_tzinfo = default_tzinfo
 
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
@@ -567,4 +572,5 @@ def safe_file_url(file: FieldFile) -> str | None:
     try:
         return file.url
     except (AttributeError, ValueError):
+        return None
         return None
