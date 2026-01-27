@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.timezone import now as timezone_now
 
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory
@@ -257,7 +258,7 @@ class HybridTranslationServiceTests(TestCase):
             self.rev1_it_2,
         )
 
-        datetime_prior_to_test = datetime.now()
+        datetime_prior_to_test = timezone_now()
 
         HybridTranslationService().reject_obsolete_translations(self.doc1_en)
 
@@ -326,7 +327,7 @@ class HybridTranslationServiceTests(TestCase):
             self.rev1_it_2,
         )
 
-        datetime_prior_to_test = datetime.now()
+        datetime_prior_to_test = timezone_now()
 
         HybridTranslationService().reject_obsolete_translations(self.doc2_en)
 
@@ -395,7 +396,7 @@ class HybridTranslationServiceTests(TestCase):
             self.rev1_it_2,
         )
 
-        datetime_prior_to_test = datetime.now()
+        datetime_prior_to_test = timezone_now()
 
         HybridTranslationService().reject_obsolete_translations(self.doc1_el)
 
@@ -440,7 +441,7 @@ class HybridTranslationServiceTests(TestCase):
             self.rev1_it_2,
         )
 
-        datetime_prior_to_test = datetime.now()
+        datetime_prior_to_test = timezone_now()
 
         HybridTranslationService().publish_pending_translations()
 

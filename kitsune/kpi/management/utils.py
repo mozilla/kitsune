@@ -1,8 +1,9 @@
 import operator
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from functools import reduce
 
 from django.db.models import Q
+from django.utils import timezone
 
 from kitsune.dashboards import LAST_90_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
@@ -147,7 +148,16 @@ def _get_cohort(querysets, date_range):
             filters = reduce(operator.or_, qs)
 
             first_contrib = queryset.filter(filters).order_by("id")[0]
-            return start <= first_contrib.created < end
+            # Make start and end timezone-aware if they're naive datetimes
+            start_aware = (
+                timezone.make_aware(start)
+                if isinstance(start, datetime) and timezone.is_naive(start)
+                else start
+            )
+            end_aware = (
+                timezone.make_aware(end) if isinstance(end, datetime) and timezone.is_naive(end) else end
+            )
+            return start_aware <= first_contrib.created < end_aware
 
         cohort |= set(filter(is_in_cohort, potential_users))
 
