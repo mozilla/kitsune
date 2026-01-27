@@ -1,18 +1,84 @@
 {% extends "groups/base.html" %}
 {% set title = _('Change {group} group avatar')|f(group=profile.group.name) %}
 
+{# Build breadcrumb trail #}
+{% set crumbs = [(url('groups.list'), _('Groups')), (url('groups.profile', profile.slug), profile.group.name), (None, _('Change Avatar'))] %}
+
 {% block content %}
-  <article id="change-avatar" class="main">
-    <h1>{{ title }}</h1>
-    <form method="post" action="" enctype="multipart/form-data">
-      {% csrf_token %}
-      <ul>
-        {{ form.as_ul()|safe }}
-      </ul>
-      <div class="submit">
-        <input type="submit" value="{{ pgettext('avatar', 'Upload') }}" />
-        <a href="{{ url('groups.profile', profile.slug) }}">{{ _('Cancel') }}</a>
-      </div>
-    </form>
+  <article id="change-avatar">
+    <div class="avatar-edit-container">
+      <header class="avatar-edit-header">
+        <h1 class="sumo-page-heading">{{ title }}</h1>
+        <p class="avatar-edit-description">{{ _('Upload a new avatar for your group. Supported formats: JPG, PNG') }}</p>
+      </header>
+
+      <form method="post" action="" enctype="multipart/form-data" id="avatar-form">
+        {% csrf_token %}
+
+        <div class="avatar-edit-content">
+          <div class="avatar-preview-section">
+            <h2 class="section-title">{{ _('Preview') }}</h2>
+            <div class="avatar-preview-wrapper">
+              <img id="avatar-preview"
+                   src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}{{ webpack_static('sumo/img/default-FFA-avatar.png') }}{% endif %}"
+                   alt="{{ _('Avatar preview') }}"
+                   class="avatar-preview-image" />
+              <div id="avatar-overlay" class="avatar-overlay hidden">
+                <span>{{ _('Preview') }}</span>
+              </div>
+            </div>
+            <p class="avatar-preview-help">{{ _('This is how your avatar will appear') }}</p>
+          </div>
+
+          <div class="avatar-upload-section">
+            <h2 class="section-title">{{ _('Upload New Avatar') }}</h2>
+
+            {% if form.errors %}
+              <div class="form-errors">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <p class="error-message">{{ error }}</p>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors() %}
+                  <p class="error-message">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="form-field">
+              <div class="file-input-wrapper">
+                {{ form.avatar }}
+                <label for="id_avatar" class="file-input-label sumo-button secondary-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  {{ _('Choose File') }}
+                </label>
+                <span id="file-name" class="file-name">{{ _('No file chosen') }}</span>
+              </div>
+
+              {% if form.avatar.help_text %}
+                <p class="form-help-text">{{ form.avatar.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="sumo-button primary-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                {{ pgettext('avatar', 'Upload') }}
+              </button>
+              <a href="{{ url('groups.profile', profile.slug) }}" class="sumo-button secondary-button">
+                {{ _('Cancel') }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
   </article>
 {% endblock %}

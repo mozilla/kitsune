@@ -529,6 +529,211 @@
   }
 }
 
+// Avatar edit page
+#change-avatar {
+  .avatar-edit-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .avatar-edit-header {
+    text-align: center;
+    margin-bottom: p.$spacing-2xl;
+    padding-bottom: p.$spacing-lg;
+    border-bottom: 2px solid var(--color-marketing-gray-03);
+
+    .sumo-page-heading {
+      margin-bottom: p.$spacing-sm;
+    }
+
+    .avatar-edit-description {
+      @include c.text-body-md;
+      color: var(--color-marketing-gray-07);
+      margin: 0;
+    }
+  }
+
+  .avatar-edit-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: p.$spacing-2xl;
+
+    @media #{p.$mq-md} {
+      grid-template-columns: 1fr 1.5fr;
+    }
+  }
+
+  .avatar-preview-section {
+    .section-title {
+      @include c.text-body-lg;
+      font-weight: 700;
+      margin-bottom: p.$spacing-lg;
+      color: var(--color-ink-09);
+      text-align: center;
+    }
+
+    .avatar-preview-wrapper {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto p.$spacing-md;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid var(--color-marketing-gray-03);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-preview-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .avatar-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+
+      &.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+
+    .avatar-preview-help {
+      @include c.text-body-sm;
+      text-align: center;
+      color: var(--color-marketing-gray-06);
+      margin: 0;
+    }
+  }
+
+  .avatar-upload-section {
+    text-align: center;
+
+    .section-title {
+      @include c.text-body-lg;
+      font-weight: 700;
+      margin-bottom: p.$spacing-lg;
+      color: var(--color-ink-09);
+    }
+
+    .form-errors {
+      background: var(--color-red-01);
+      border-left: 4px solid var(--color-red-60);
+      padding: p.$spacing-md;
+      margin-bottom: p.$spacing-lg;
+      border-radius: p.$border-radius-sm;
+
+      .error-message {
+        color: var(--color-red-70);
+        margin: 0;
+        @include c.text-body-sm;
+
+        & + .error-message {
+          margin-top: p.$spacing-xs;
+        }
+      }
+    }
+
+    .form-field {
+      margin-bottom: p.$spacing-xl;
+    }
+
+    .form-label {
+      display: block;
+      @include c.text-body-md;
+      font-weight: 600;
+      margin-bottom: p.$spacing-sm;
+      color: var(--color-ink-09);
+
+      .required {
+        color: var(--color-red-60);
+        margin-left: 2px;
+      }
+    }
+
+    .file-input-wrapper {
+      position: relative;
+
+      input[type="file"] {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+      }
+
+      // Hide the widget's built-in image preview since we have our own
+      .val-wrap img {
+        display: none;
+      }
+
+      .file-input-label {
+        display: inline-flex;
+        align-items: center;
+        gap: p.$spacing-sm;
+        cursor: pointer;
+        margin-bottom: p.$spacing-sm;
+
+        svg {
+          flex-shrink: 0;
+        }
+      }
+
+      .file-name {
+        display: block;
+        @include c.text-body-sm;
+        color: var(--color-marketing-gray-07);
+        padding: p.$spacing-sm p.$spacing-md;
+        background: var(--color-marketing-gray-01);
+        border-radius: p.$border-radius-sm;
+        border: 1px solid var(--color-marketing-gray-03);
+      }
+    }
+
+    .form-help-text {
+      @include c.text-body-sm;
+      color: var(--color-marketing-gray-06);
+      margin-top: p.$spacing-sm;
+      margin-bottom: 0;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: p.$spacing-md;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+
+      button,
+      a {
+        white-space: nowrap;
+      }
+
+      button[type="submit"] {
+        display: inline-flex;
+        align-items: center;
+        gap: p.$spacing-xs;
+
+        svg {
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+}
+
 // Groups list page
 #group-list {
   .group-tree {
