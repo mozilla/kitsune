@@ -390,9 +390,11 @@ def edit_profile(request, username=None):
         user = user_form.save()
         new_timezone = user_profile.timezone
         if new_timezone:
-            tz_changed = request.session.get("timezone", None) != new_timezone
+            # Convert timezone to string for JSONSerializer compatibility (Django 5.0+)
+            tz_str = str(new_timezone)
+            tz_changed = request.session.get("timezone", None) != tz_str
             if tz_changed and user == request.user:
-                request.session["timezone"] = new_timezone
+                request.session["timezone"] = tz_str
         return HttpResponseRedirect(reverse("users.profile", args=[user.username]))
 
     # CWF protection for account deletion
