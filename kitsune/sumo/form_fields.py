@@ -56,9 +56,8 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
 
 class MultiUsernameField(forms.Field):
     """
-    Form field that takes a comma-separated list of usernames OR profile
-    names (display names) as input, validates that users exist for each one,
-    and returns the list of users.
+    Form field that takes a comma-separated list of usernames as input,
+    and returns a list of active users matching those usernames.
     """
 
     def to_python(self, value):
@@ -68,23 +67,18 @@ class MultiUsernameField(forms.Field):
             else:
                 return []
 
-        users = []
-        usernames = [name.strip() for name in value.split(",") if name]
+        usernames = list(filter(None, (name.strip() for name in value.split(","))))
         if usernames:
-            all_users = User.objects.filter(
-                Q(username__in=usernames) | Q(profile__name__in=usernames)
-            )
-            for user in all_users:
-                if user and user.is_active:
-                    users.append(user)
+            return list(User.objects.filter(is_active=True, username__in=usernames))
 
-        return users
+        return []
 
 
 class MultiUsernameFilterField(forms.Field):
     """
     Similar to MultiUsernameField with the following differences:
         * Allows system accounts
+        * Allows filtering by user display name
         * Cleaned data provides User querysets rather than User instances
     """
 
