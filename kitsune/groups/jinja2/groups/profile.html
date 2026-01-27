@@ -72,47 +72,31 @@
   {% endif %}
 
   {# Quick Actions card #}
-  {% if user_can_edit or user_can_moderate %}
+  {% if user_can_moderate %}
     <div class="card elevation-01 group-actions-card">
       <h3 class="card--title">{{ _('Manage Group') }}</h3>
 
-      {% if user_can_edit %}
       <div class="quick-action">
-        <input type="checkbox" id="toggle-add-member" class="action-toggle" />
-        <label for="toggle-add-member" class="action-button">
+        <input type="checkbox" id="toggle-add-users" class="action-toggle" />
+        <label for="toggle-add-users" class="action-button">
           <span class="action-icon">+</span>
-          {{ _('Add Member') }}
+          {{ _('Add Users') }}
         </label>
         <div class="action-form">
-          <form action="{{ url('groups.add_member', profile.slug) }}" method="POST">
+          <form id="add-users-form" method="POST">
             {% csrf_token %}
             {{ member_form.users|safe }}
-            <button type="submit" class="sumo-button primary-button button-sm button-full-width">
-              {{ _('Add') }}
-            </button>
+            <div class="action-buttons">
+              <button type="submit" name="action" value="member" formaction="{{ url('groups.add_member', profile.slug) }}" class="sumo-button secondary-button button-sm">
+                {{ _('Add to Members') }}
+              </button>
+              <button type="submit" name="action" value="leader" formaction="{{ url('groups.add_leader', profile.slug) }}" class="sumo-button secondary-button button-sm">
+                {{ _('Add to Leaders') }}
+              </button>
+            </div>
           </form>
         </div>
       </div>
-    {% endif %}
-
-    {% if user_can_moderate %}
-      <div class="quick-action">
-        <input type="checkbox" id="toggle-add-leader" class="action-toggle" />
-        <label for="toggle-add-leader" class="action-button">
-          <span class="action-icon">+</span>
-          {{ _('Add Leader') }}
-        </label>
-        <div class="action-form">
-          <form action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
-            {% csrf_token %}
-            {{ leader_form.users|safe }}
-            <button type="submit" class="sumo-button primary-button button-sm button-full-width">
-              {{ _('Add') }}
-            </button>
-          </form>
-        </div>
-      </div>
-      {% endif %}
     </div>
   {% endif %}
 {% endblock %}
