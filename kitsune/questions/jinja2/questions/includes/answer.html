@@ -34,39 +34,47 @@
       </div>
     </div>
     {% if answer.id %}
-    <div class="mzp-c-menu-list">
-      <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
-      <ul class="mzp-c-menu-list-list">
-        {% if user.is_authenticated and answer.allows_flag(user, question) %}
-          <li class="mzp-c-menu-list-item">
-            {{ flag_form(url('questions.answer_flag', question.id, answer.id), answer.id) }}
-          </li>
-        {% endif %}
-        <li class="mzp-c-menu-list-item">
-          <a class="reply quoted-reply" href="#question-reply" data-content-id="answer-{{ answer.id }}">{{ _('Quote') }}</a>
-        </li>
-
-        {% if user.has_perm('flagit.can_moderate') %}
-        <li class="mzp-c-menu-list-item">
-          {% if answer.is_spam %}
-            {{ unmark_spam_form(answer_id=answer.id) }}
-          {% else %}
-            {{ mark_spam_form(answer_id=answer.id) }}
-          {% endif %}
-        </li>
-        {% endif %}
-        {% if answer.id and answer.allows_edit(user, question) %}
-          <li class="mzp-c-menu-list-item edit">
-            <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
-          </li>
-        {% endif %}
-        {% if answer.id and answer.allows_delete(user) %}
-          <li class="mzp-c-menu-list-item delete">
-            <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
-          </li>
-        {% endif %}
-      </ul>
-    </div>
+      {% set display_flag_option=answer.allows_flag(user, question) %}
+      {% set display_quote_option=question.allows_new_answer(user) %}
+      {% set display_spam_option=user.has_perm('flagit.can_moderate') %}
+      {% set display_edit_option=answer.allows_edit(user, question) %}
+      {% set display_delete_option=answer.allows_delete(user) %}
+      {% if display_flag_option or display_quote_option or display_spam_option or display_edit_option or display_delete_option %}
+        <div class="mzp-c-menu-list">
+          <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
+          <ul class="mzp-c-menu-list-list">
+            {% if display_flag_option %}
+              <li class="mzp-c-menu-list-item">
+                {{ flag_form(url('questions.answer_flag', question.id, answer.id), answer.id) }}
+              </li>
+            {% endif %}
+            {% if display_quote_option %}
+              <li class="mzp-c-menu-list-item">
+                <a class="reply quoted-reply" href="#question-reply" data-content-id="answer-{{ answer.id }}">{{ _('Quote') }}</a>
+              </li>
+            {% endif %}
+            {% if display_spam_option %}
+              <li class="mzp-c-menu-list-item">
+                {% if answer.is_spam %}
+                  {{ unmark_spam_form(answer_id=answer.id) }}
+                {% else %}
+                  {{ mark_spam_form(answer_id=answer.id) }}
+                {% endif %}
+             </li>
+            {% endif %}
+            {% if display_edit_option %}
+              <li class="mzp-c-menu-list-item edit">
+                <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
+              </li>
+            {% endif %}
+            {% if display_delete_option %}
+              <li class="mzp-c-menu-list-item delete">
+                <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endif %}
     {% endif %}
   </section>
 

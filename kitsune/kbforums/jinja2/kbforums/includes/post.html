@@ -39,25 +39,22 @@
       {% if post.id and (perms.kbforums.change_post or (post.creator == request.user and not thread.is_locked)) %}
         <li class="mzp-c-menu-list-item"><a rel="ugc nofollow" href="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}">{{ _('Edit this post') }}</a></li>
       {% endif %}
-
       {% if post.id and perms.kbforums.delete_post %}
         <li class="mzp-c-menu-list-item"><a rel="ugc nofollow" href="{{ url('wiki.discuss.delete_post', document.slug, thread.id, post.id) }}">{{ _('Delete this post') }}</a></li>
       {% endif %}
-
       {% if post.id and user.is_authenticated and not thread.is_locked %}
         <li class="mzp-c-menu-list-item post-action">
           <a class="reply" data-post="{{ post.id }}" rel="ugc nofollow" href="#thread-reply">{{ _('Quote') }}</a>
         </li>
       {% endif %}
-
-    <li class="mzp-c-menu-list-item post-action">
-    <a rel="ugc nofollow" href="#post-{{ post.id }}">{{ _('Link to this post') }}</a>
-    </li>
-    {% if user.is_authenticated and document and document.slug and post.id %}
-    <li class="mzp-c-menu-list-item post-action">
-      {{ flag_form(url('wiki.discuss.flag_post', document.slug, post.id), post.id) }}
-    </li>
-    {% endif %}
+      <li class="mzp-c-menu-list-item post-action">
+        <a rel="ugc nofollow" href="#post-{{ post.id }}">{{ _('Link to this post') }}</a>
+      </li>
+      {% if user.is_authenticated and document and document.slug and post.id %}
+        <li class="mzp-c-menu-list-item post-action">
+          {{ flag_form(url('wiki.discuss.flag_post', document.slug, post.id), post.id) }}
+        </li>
+      {% endif %}
     </ul>
   </div>
 </section>

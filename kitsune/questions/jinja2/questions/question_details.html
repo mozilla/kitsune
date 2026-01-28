@@ -170,15 +170,21 @@
           </div>
         </div>
 
-        <div class="mzp-c-menu-list">
-          <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
-          <ul class="mzp-c-menu-list-list">
-            {% if user.is_authenticated and question.allows_flag(user) %}
-              <li class="mzp-c-menu-list-item">{{ flag_form(url('questions.flag', question.id), question.id, content_moderation=True) }}</li>
-            {% endif %}
-            <li class="mzp-c-menu-list-item"><a class="quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Quote') }}</a></li>
-          </ul>
-        </div>
+        {% set display_flag_option=question.allows_flag(user) %}
+        {% set display_quote_option=question.allows_new_answer(user) %}
+        {% if display_flag_option or display_quote_option %}
+          <div class="mzp-c-menu-list">
+            <span class="icon-button" data-has-dropdown>{{ _('more options') }}</span>
+            <ul class="mzp-c-menu-list-list">
+              {% if display_flag_option %}
+                <li class="mzp-c-menu-list-item">{{ flag_form(url('questions.flag', question.id), question.id, content_moderation=True) }}</li>
+              {% endif %}
+              {% if display_quote_option %}
+                <li class="mzp-c-menu-list-item"><a class="quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Quote') }}</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        {% endif %}
       </section>
 
       <div class="main-content">
