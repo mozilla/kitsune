@@ -441,6 +441,11 @@ def set_aaq_context(request, product, multiple_products=False):
             "can_switch": can_switch,
         }
 
+        if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
+            aaq_context["has_default_public_forum"] = product.questions_enabled(
+                locale=settings.WIKI_DEFAULT_LANGUAGE
+            )
+
     # Update the session with the AAQ context.
     request.session["aaq_context"] = aaq_context
 
