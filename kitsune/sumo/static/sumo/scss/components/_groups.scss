@@ -276,6 +276,20 @@
     p:last-child {
       margin-bottom: 0;
     }
+
+    ul {
+      list-style: disc;
+      margin: p.$spacing-md;
+    }
+
+    ol {
+      list-style: decimal;
+      margin: p.$spacing-md;
+    }
+
+    li {
+      margin-bottom: p.$spacing-sm;
+    }
   }
 
   .users {
