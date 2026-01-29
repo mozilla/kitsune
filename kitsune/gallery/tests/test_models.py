@@ -8,7 +8,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.upload.tasks import generate_thumbnail
 
 
-@patch("kitsune.upload.tasks._create_image_thumbnail")
+@patch("kitsune.upload.tasks.create_image_thumbnail")
 class ImageTestCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()

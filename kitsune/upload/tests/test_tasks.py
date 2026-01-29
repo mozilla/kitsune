@@ -11,9 +11,9 @@ from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import (
-    _create_image_thumbnail,
     _scale_dimensions,
     compress_image,
+    create_image_thumbnail,
     generate_thumbnail,
 )
 from kitsune.users.tests import UserFactory
@@ -66,7 +66,7 @@ class ScaleDimensionsTestCase(TestCase):
 class CreateThumbnailTestCase(TestCase):
     def test_create_image_thumbnail_default(self):
         """A thumbnail is created from an image file."""
-        thumb_content = _create_image_thumbnail("kitsune/upload/tests/media/test.jpg")
+        thumb_content = create_image_thumbnail("kitsune/upload/tests/media/test.jpg")
         actual_thumb = ImageFile(thumb_content)
         with open("kitsune/upload/tests/media/test_thumb.jpg", "rb") as f:
             expected_thumb = ImageFile(f)
@@ -76,7 +76,7 @@ class CreateThumbnailTestCase(TestCase):
 
     def test_create_image_thumbnail_avatar(self):
         """An avatar is created from an image file."""
-        thumb_content = _create_image_thumbnail(
+        thumb_content = create_image_thumbnail(
             "kitsune/upload/tests/media/test.jpg", settings.AVATAR_SIZE, pad=True
         )
         actual_thumb = ImageFile(thumb_content)

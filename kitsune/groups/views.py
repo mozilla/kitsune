@@ -13,7 +13,7 @@ from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
-from kitsune.upload.tasks import _create_image_thumbnail
+from kitsune.upload.tasks import create_image_thumbnail
 
 
 def list(request):
@@ -103,9 +103,7 @@ def edit_avatar(request, group_slug):
         if old_avatar_path:
             default_storage.delete(old_avatar_path)
 
-        content = _create_image_thumbnail(
-            form.instance.avatar.file, settings.AVATAR_SIZE, pad=True
-        )
+        content = create_image_thumbnail(form.instance.avatar.file, settings.AVATAR_SIZE)
         # We want everything as .png
         name = form.instance.avatar.name + ".png"
         prof.avatar.save(name, content, save=True)
