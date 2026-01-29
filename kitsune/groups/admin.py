@@ -13,17 +13,19 @@ class GroupProfileAdmin(TreeAdmin):
     search_fields = ["slug", "group__name"]
 
     def get_readonly_fields(self, request, obj=None):
-        """Make visibility read-only for subgroups (non-root nodes)."""
+        """Make visibility and visible_to_groups read-only for subgroups (non-root nodes)."""
         readonly = list(super().get_readonly_fields(request, obj))
 
         if obj and not obj.is_root():
             if "visibility" not in readonly:
                 readonly.append("visibility")
+            if "visible_to_groups" not in readonly:
+                readonly.append("visible_to_groups")
 
         return readonly
 
     def get_form(self, request, obj=None, **kwargs):
-        """Add help text for visibility field based on node type."""
+        """Add help text for visibility and visible_to_groups fields based on node type."""
         form = super().get_form(request, obj, **kwargs)
 
         if "visibility" in form.base_fields:
@@ -37,6 +39,23 @@ class GroupProfileAdmin(TreeAdmin):
                 form.base_fields["visibility"].help_text = (
                     "Who can see this group. Children automatically inherit parent's visibility. "
                     "Changing this will update all descendants in the tree."
+                )
+
+        if "visible_to_groups" in form.base_fields:
+            if obj and not obj.is_root():
+                parent = obj.get_parent()
+                parent_groups = ", ".join(g.name for g in parent.visible_to_groups.all())
+                if not parent_groups:
+                    parent_groups = "none"
+                form.base_fields["visible_to_groups"].help_text = (
+                    "Groups with view-only access are inherited from parent and cannot be changed. "
+                    f"This group inherits access from: {parent_groups}. "
+                    "To change, update the root group."
+                )
+            else:
+                form.base_fields["visible_to_groups"].help_text = (
+                    "Groups with view-only access to this group (for auditing/compliance). "
+                    "All descendants will automatically inherit these settings."
                 )
 
         return form
