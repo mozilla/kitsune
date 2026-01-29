@@ -1,6 +1,30 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
+// Groups page layout - wider sidebar for better button sizing
+// Target when group-profile exists (profile page)
+body:has(#group-profile) {
+  @media #{p.$mq-lg} {
+    .sumo-l-two-col--sidebar {
+      width: c.col-width(3.1, 8);
+    }
+
+    .sumo-l-two-col--main {
+      width: c.col-width(4.9, 8);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    .sumo-l-two-col--sidebar {
+      width: c.col-width(3.1, 10);
+    }
+
+    .sumo-l-two-col--main {
+      width: c.col-width(6.9, 10);
+    }
+  }
+}
+
 // Shared card styles for group profile and sidebar
 #group-profile .card,
 .sumo-l-two-col--sidebar .group-avatar-card,
@@ -484,6 +508,7 @@
         align-items: center;
         gap: p.$spacing-xs;
         padding: p.$spacing-sm p.$spacing-md;
+        margin-top: p.$spacing-sm;
         background: var(--color-white);
         border: 2px solid var(--color-link);
         border-radius: p.$border-radius-sm;
@@ -515,13 +540,32 @@
           display: flex;
           flex-direction: column;
           gap: p.$spacing-sm;
-          padding: p.$spacing-md 0 0 0;
+          padding: p.$spacing-sm 0 0 0;
 
           .token-input-list-facebook {
             width: 100%;
+            margin-bottom: p.$spacing-xs;
           }
 
-          button[type="submit"] {
+          .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: p.$spacing-sm;
+            margin-top: 4px;
+
+            button {
+              display: flex !important;
+              justify-content: center;
+              align-items: center;
+              white-space: normal;
+              line-height: 1.3;
+              padding: p.$spacing-sm !important;
+              height: auto !important;
+              min-height: 40px;
+            }
+          }
+
+          button[type="submit"]:not(.action-buttons button) {
             margin-top: p.$spacing-xs;
           }
         }

@@ -39,6 +39,7 @@ import { safeString, safeInterpolate } from "sumo/js/main";
       propertyToSearch: 'username',
       tokenValue: 'username',
       prePopulate: prefill,
+      preventDuplicates: true,
       resultsFormatter: function(item) {
         var term = $('#token-input-id_to').val();
         if (item.display_name) {

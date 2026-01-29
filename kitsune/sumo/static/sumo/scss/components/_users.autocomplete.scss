@@ -8,12 +8,13 @@
 /* Example tokeninput style #2: Facebook style */
 ul.token-input-list-facebook {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   appearance: none;
   position: relative;
-  padding: 0;
+  padding: p.$spacing-xs;
   width: 100%;
-  height: p.$spacing-2xl;
+  min-height: p.$spacing-2xl;
   border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
   background-color: var(--color-white);
