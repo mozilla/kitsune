@@ -1,10 +1,9 @@
 import re
-from typing import Any, cast
+from typing import Any
 
 import waffle
 from zenpy.lib.exception import APIException
 
-from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_LEGACY_MAPPING
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
@@ -30,7 +29,6 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
     Returns tier tags (t1-, t2-, t3-), legacy tags, and automation tags based on the classified topic.
     If product was reassigned, includes "other" tag.
     """
-    product_slug = submission.product.slug
     topic_result = result.get("topic_result", {})
     product_result = result.get("product_result", {})
 
@@ -45,7 +43,7 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
 
     # Find topic in database and build tier tags
     topic = Topic.objects.filter(
-        title=topic_title, products__slug=product_slug, is_archived=False
+        title=topic_title, products=submission.product, is_archived=False
     ).first()
 
     # If no topic or "Undefined" or topic not found in DB
@@ -68,22 +66,32 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
 
         tags.extend(tier_tags)
 
-        # Find matching automation tags
-        categories = cast(list, ZENDESK_CATEGORIES.get(product_slug, []))
-        for category in categories:
-            category_tiers = category.get("tags", {}).get("tiers", [])
-            if set(tier_tags) == set(category_tiers):
-                automation = category.get("tags", {}).get("automation")
-                if automation:
-                    tags.append(automation)
-                break
+        # Find matching ZendeskTopic from database
+        # Get the ZendeskConfig for this product through ProductSupportConfig
+        support_config = submission.product.support_configs.filter(
+            is_active=True, zendesk_config__isnull=False
+        ).first()
 
-        # Find matching legacy tag or fallback to "general" legacy tag.
-        for legacy_tag, topic_tags in ZENDESK_LEGACY_MAPPING.items():
-            if set(tier_tags) & topic_tags:
-                tags.append(legacy_tag)
-                break
+        if support_config and support_config.zendesk_config:
+            # Find ZendeskTopic with matching tier_tags
+            zendesk_topic = support_config.zendesk_config.topics.filter(
+                tier_tags=tier_tags
+            ).first()
+
+            if zendesk_topic:
+                # Add automation tag if present
+                if zendesk_topic.automation_tag:
+                    tags.append(zendesk_topic.automation_tag)
+                # Add legacy tag if present, otherwise fallback to "general"
+                if zendesk_topic.legacy_tag:
+                    tags.append(zendesk_topic.legacy_tag)
+                else:
+                    tags.append("general")
+            else:
+                # No matching ZendeskTopic found, use "general" as legacy tag
+                tags.append("general")
         else:
+            # No ZendeskConfig for this product, use "general" as legacy tag
             tags.append("general")
 
     except Exception:

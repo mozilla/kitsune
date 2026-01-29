@@ -8,7 +8,14 @@ from kitsune.customercare.utils import (
     generate_classification_tags,
     send_support_ticket_to_zendesk,
 )
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
+    ZendeskTopicFactory,
+)
 from kitsune.sumo.tests import TestCase
 
 
@@ -86,7 +93,7 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-settings", "technical"])
+        self.assertEqual(tags, ["t1-settings", "general"])
 
     def test_two_tier_topic(self):
         """Test generating tags for a tier 2 topic."""
@@ -100,7 +107,7 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-settings", "t2-notifications", "technical"])
+        self.assertEqual(tags, ["t1-settings", "t2-notifications", "general"])
 
     def test_three_tier_topic(self):
         """Test generating tags for a tier 3 topic."""
@@ -119,26 +126,31 @@ class GenerateClassificationTagsTests(TestCase):
         tags = generate_classification_tags(submission, result)
 
         self.assertEqual(
-            tags, ["t1-settings", "t2-addons-extensions-and-themes", "t3-extensions", "technical"]
+            tags, ["t1-settings", "t2-addons-extensions-and-themes", "t3-extensions", "general"]
         )
 
-    @patch("kitsune.customercare.utils.ZENDESK_CATEGORIES")
-    def test_automation_tag_included_when_matched(self, mock_categories):
+    def test_automation_tag_included_when_matched(self):
         """Test that automation tag is included when tier tags match a category."""
-        mock_categories.get.return_value = [
-            {
-                "slug": "accounts-signin",
-                "tags": {
-                    "tiers": ["t1-passwords-and-sign-in", "t2-sign-in"],
-                    "automation": "ssa-sign-in-failure-automation",
-                },
-            }
-        ]
-
         tier1 = TopicFactory(title="Passwords and sign in", parent=None, is_archived=False)
         tier1.products.add(self.product)
         tier2 = TopicFactory(title="Sign in", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
+
+        # Create ZendeskConfig and ZendeskTopic with matching tier tags
+        zendesk_config = ZendeskConfigFactory(name="Test Config")
+        zendesk_topic = ZendeskTopicFactory(
+            slug="accounts-signin",
+            topic="I can't sign in",
+            tier_tags=["t1-passwords-and-sign-in", "t2-sign-in"],
+            automation_tag="ssa-sign-in-failure-automation",
+            legacy_tag="accounts",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=zendesk_config, zendesk_topic=zendesk_topic
+        )
+        ProductSupportConfigFactory(
+            product=self.product, zendesk_config=zendesk_config, is_active=True
+        )
 
         submission = Mock(product=self.product)
         result = {"topic_result": {"topic": "Sign in"}}
@@ -150,28 +162,33 @@ class GenerateClassificationTagsTests(TestCase):
         self.assertIn("t2-sign-in", tags)
         self.assertIn("accounts", tags)
 
-    @patch("kitsune.customercare.utils.ZENDESK_CATEGORIES")
-    def test_no_automation_tag_when_not_matched(self, mock_categories):
+    def test_no_automation_tag_when_not_matched(self):
         """Test that no automation tag is included when tier tags don't match."""
-        mock_categories.get.return_value = [
-            {
-                "slug": "different-category",
-                "tags": {
-                    "tiers": ["t1-different"],
-                    "automation": "some-automation",
-                },
-            }
-        ]
-
         tier1 = TopicFactory(title="Billing and subscriptions", parent=None, is_archived=False)
         tier1.products.add(self.product)
+
+        # Create ZendeskConfig with a ZendeskTopic that has different tier tags
+        zendesk_config = ZendeskConfigFactory(name="Test Config")
+        zendesk_topic = ZendeskTopicFactory(
+            slug="different-category",
+            topic="Different topic",
+            tier_tags=["t1-different"],
+            automation_tag="some-automation",
+            legacy_tag="",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=zendesk_config, zendesk_topic=zendesk_topic
+        )
+        ProductSupportConfigFactory(
+            product=self.product, zendesk_config=zendesk_config, is_active=True
+        )
 
         submission = Mock(product=self.product)
         result = {"topic_result": {"topic": "Billing and subscriptions"}}
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-billing-and-subscriptions", "payment"])
+        self.assertEqual(tags, ["t1-billing-and-subscriptions", "general"])
         self.assertNotIn("some-automation", tags)
 
     def test_product_reassignment_includes_other_tag(self):
@@ -189,7 +206,7 @@ class GenerateClassificationTagsTests(TestCase):
 
         self.assertIn("other", tags)
         self.assertIn("t1-settings", tags)
-        self.assertIn("technical", tags)
+        self.assertIn("general", tags)
 
     def test_archived_topic_returns_undefined(self):
         """Test that archived topics are not found and return ['undefined', 'general']."""
