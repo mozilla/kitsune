@@ -80,9 +80,15 @@
   </ul>
 {%- endmacro %}
 
-{% macro aaq_widget(request, location="aaq", topic=None) %}
+{% macro aaq_widget(request, product=None, topic=None) %}
   {% set aaq_context = request.session.get("aaq_context") %}
-  {% if aaq_context and (aaq_context.has_public_forum or aaq_context.has_ticketing_support) %}
+  {% set current_support = aaq_context.current_support_type if aaq_context else None %}
+  {% set has_forum = aaq_context.has_public_forum if aaq_context else False %}
+  {% set has_default_forum = aaq_context.has_default_public_forum if aaq_context else False %}
+  {% set multiple_products = aaq_context.multiple_products if aaq_context else False %}
+  {% set is_ticketed = (current_support == 'zendesk') if current_support else False %}
+
+  {% if (not product) or has_forum or is_ticketed or has_default_forum %}
   <div class="aaq-widget card is-inverse elevation-01 text-center radius-md">
     <h2 class="card--title has-bottom-margin">
       <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -96,12 +102,6 @@
 
       {{ _('Ask a Question') }}
     </h2>
-    {% set link_detail = aaq_context.product_slug if aaq_context else topic %}
-    {% set current_support = aaq_context.current_support_type if aaq_context else None %}
-    {% set has_forum = aaq_context.has_public_forum if aaq_context else False %}
-    {% set multiple_products = aaq_context.multiple_products if aaq_context else False %}
-    {% set is_ticketed = (current_support == 'zendesk') if current_support else False %}
-
     {% if aaq_context %}
       {% if request.user.is_authenticated %}
         {% if is_ticketed %}
@@ -128,6 +128,8 @@
                        else url('questions.aaq_step3', product_slug=aaq_context.product_slug)
                        if aaq_context and not multiple_products
                        else url('questions.aaq_step1') %}
+
+    {% set link_detail = aaq_context.product_slug if aaq_context else topic %}
 
     <a class="sumo-button primary-button feature-box"
       href="{{ next_step }}"
@@ -166,7 +168,7 @@
         </p>
       </div>
       <div class="sumo-l-two-col--sidebar">
-        {{ aaq_widget(request) }}
+        {{ aaq_widget(request, product=product) }}
       </div>
     </div>
   </div>

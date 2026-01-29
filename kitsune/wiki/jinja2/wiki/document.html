@@ -58,7 +58,7 @@
   </div>
 
   {% if show_aaq_widget %}
-    {{ aaq_widget(request) }}
+    {{ aaq_widget(request, product=product) }}
   {% endif %}
 
   {% if fallback_reason == 'no_translation' %}
