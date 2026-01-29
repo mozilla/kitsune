@@ -18,6 +18,44 @@ import "sumo/js/libs/jquery.lazyload";
 
     // Initialize lazy loading for images in group information
     $("img.lazy").lazyload();
+
+    // Initialize avatar preview functionality
+    initAvatarPreview();
+  }
+
+  function initAvatarPreview() {
+    const fileInput = document.getElementById('id_avatar');
+    const fileName = document.getElementById('file-name');
+    const preview = document.getElementById('avatar-preview');
+    const overlay = document.getElementById('avatar-overlay');
+
+    if (fileInput && fileName && preview) {
+      fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+
+        if (file) {
+          // Update file name display
+          fileName.textContent = file.name;
+
+          // Show preview
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            preview.src = e.target.result;
+            if (overlay) {
+              overlay.classList.remove('hidden');
+
+              // Hide overlay after animation
+              setTimeout(function() {
+                overlay.classList.add('hidden');
+              }, 1500);
+            }
+          };
+          reader.readAsDataURL(file);
+        } else {
+          fileName.textContent = gettext('No file chosen');
+        }
+      });
+    }
   }
 
   function initGroupsTree() {

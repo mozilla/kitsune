@@ -26,9 +26,9 @@ class GroupAvatarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
-        self.fields["avatar"].help_text = _("Your avatar will be resized to {size}x{size}").format(
-            size=settings.AVATAR_SIZE
-        )
+        self.fields["avatar"].help_text = _(
+            "Upload an image file (JPG or PNG). Maximum file size: {size}MB"
+        ).format(size=settings.MAX_AVATAR_FILE_SIZE // (1024 * 1024))
 
     class Meta:
         model = GroupProfile
