@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.11, <3.15"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -2155,7 +2155,7 @@ requires-dist = [
     { name = "django-watchman", specifier = "==1.3.0" },
     { name = "djangorestframework", specifier = ">=3.15.2,<4" },
     { name = "dockerflow", specifier = ">=2022.8.0,<2023" },
-    { name = "elasticsearch", specifier = ">=9.0.2,<10" },
+    { name = "elasticsearch", specifier = ">=9.2.1,<10" },
     { name = "factory-boy", specifier = ">=3.3.0,<4" },
     { name = "faker", specifier = ">=16.9.0,<17" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0,<0.19" },
