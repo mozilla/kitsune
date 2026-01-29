@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
@@ -42,8 +43,17 @@ class GroupProfileAdmin(TreeAdmin):
         return form
 
     def save_related(self, request, form, formsets, change):
-        """Ensure all leaders are also members of the group."""
+        """
+        Ensure all leaders are also members of the group.
+        Validate that root groups have at least one leader.
+        """
         super().save_related(request, form, formsets, change)
+
+        if form.instance.is_root() and form.instance.leaders.count() == 0:
+            raise forms.ValidationError(
+                "Root groups must have at least one leader. Please assign a leader before saving."
+            )
+
         for leader in form.instance.leaders.all():
             if not leader.groups.filter(pk=form.instance.group.pk).exists():
                 leader.groups.add(form.instance.group)
