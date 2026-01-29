@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Group
 from django.test import RequestFactory
@@ -13,6 +14,7 @@ class MockForm:
 
     def __init__(self, instance):
         self.instance = instance
+        self.cleaned_data = {}
 
     def save_m2m(self):
         """Mock save_m2m method required by Django admin."""
@@ -62,3 +64,33 @@ class GroupProfileAdminTests(TestCase):
 
         self.assertTrue(user.groups.filter(pk=group.pk).exists())
         self.assertEqual(user.groups.filter(pk=group.pk).count(), 1)
+
+    def test_root_group_requires_leader(self):
+        """Ensure root groups cannot be saved without at least one leader."""
+        group = Group.objects.create(name="Test Root Group")
+        profile = GroupProfile.add_root(group=group, slug="test-root-group")
+
+        mock_request = self.factory.post("/admin/groups/groupprofile/")
+        mock_form = MockForm(profile)
+
+        with self.assertRaises(forms.ValidationError) as cm:
+            self.admin.save_related(mock_request, mock_form, [], change=True)
+
+        self.assertIn("Root groups must have at least one leader", str(cm.exception))
+
+    def test_subgroup_can_have_no_leaders(self):
+        """Ensure subgroups can be saved without leaders."""
+        root_group = Group.objects.create(name="Root Group")
+        root_profile = GroupProfile.add_root(group=root_group, slug="root-group")
+        root_leader = UserFactory()
+        root_profile.leaders.add(root_leader)
+
+        sub_group = Group.objects.create(name="Sub Group")
+        sub_profile = root_profile.add_child(group=sub_group, slug="sub-group")
+
+        mock_request = self.factory.post("/admin/groups/groupprofile/")
+        mock_form = MockForm(sub_profile)
+
+        self.admin.save_related(mock_request, mock_form, [], change=True)
+
+        self.assertEqual(sub_profile.leaders.count(), 0)

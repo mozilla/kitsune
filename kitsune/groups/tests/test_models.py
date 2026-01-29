@@ -1158,3 +1158,55 @@ class VisibleToGroupsInheritanceTests(TestCase):
         self.assertIn(audit_group, level1.visible_to_groups.all())
         self.assertIn(audit_group, level2.visible_to_groups.all())
         self.assertIn(audit_group, level3.visible_to_groups.all())
+
+
+class LeaderRemovalValidationTests(TestCase):
+    """Test validation rules for leader removal."""
+
+    def test_can_remove_leader_from_root_with_multiple_leaders(self):
+        """Root groups with multiple leaders can have a leader removed."""
+        root_group = Group.objects.create(name="Root")
+        root = GroupProfile.add_root(group=root_group, slug="root")
+
+        leader1 = UserFactory()
+        leader2 = UserFactory()
+        root.leaders.add(leader1, leader2)
+
+        self.assertTrue(root.can_remove_leader())
+        self.assertTrue(root.can_remove_leader())
+
+    def test_cannot_remove_last_leader_from_root(self):
+        """Root groups cannot have their last leader removed."""
+        root_group = Group.objects.create(name="Root")
+        root = GroupProfile.add_root(group=root_group, slug="root")
+
+        leader = UserFactory()
+        root.leaders.add(leader)
+
+        self.assertFalse(root.can_remove_leader())
+
+    def test_can_remove_leader_from_subgroup(self):
+        """Subgroups can have their only leader removed."""
+        root_group = Group.objects.create(name="Root")
+        root = GroupProfile.add_root(group=root_group, slug="root")
+        root_leader = UserFactory()
+        root.leaders.add(root_leader)
+
+        sub_group = Group.objects.create(name="Sub")
+        sub = root.add_child(group=sub_group, slug="sub")
+        sub_leader = UserFactory()
+        sub.leaders.add(sub_leader)
+
+        self.assertTrue(sub.can_remove_leader())
+
+    def test_can_remove_leader_from_subgroup_with_no_leaders(self):
+        """Subgroups with no leaders can still pass validation."""
+        root_group = Group.objects.create(name="Root")
+        root = GroupProfile.add_root(group=root_group, slug="root")
+        root_leader = UserFactory()
+        root.leaders.add(root_leader)
+
+        sub_group = Group.objects.create(name="Sub")
+        sub = root.add_child(group=sub_group, slug="sub")
+
+        self.assertTrue(sub.can_remove_leader())

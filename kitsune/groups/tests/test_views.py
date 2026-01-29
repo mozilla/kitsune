@@ -124,6 +124,22 @@ class AddRemoveMemberTests(TestCase):
         self.assertEqual(302, r.status_code)
         assert self.member not in self.group_profile.group.user_set.all()
 
+    def test_cannot_remove_member_who_is_last_leader(self):
+        """Cannot remove a member who is the last leader of a root group."""
+        self.user.groups.add(self.group_profile.group)
+        self.group_profile.refresh_from_db()
+        self.assertEqual(self.group_profile.leaders.count(), 1)
+
+        url = reverse(
+            "groups.remove_member", locale="en-US", args=[self.group_profile.slug, self.user.id]
+        )
+        r = self.client.post(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        self.assertContains(r, "Cannot remove")
+        self.assertContains(r, "last leader")
+        assert self.user in self.group_profile.group.user_set.all()
+        assert self.user in self.group_profile.leaders.all()
+
 
 class AddRemoveLeaderTests(TestCase):
     def setUp(self):
@@ -142,7 +158,7 @@ class AddRemoveLeaderTests(TestCase):
         self.assertEqual(302, r.status_code)
         assert self.leader in self.group_profile.leaders.all()
 
-    def test_remove_member(self):
+    def test_remove_leader(self):
         self.group_profile.leaders.add(self.leader)
         url = reverse(
             "groups.remove_leader", locale="en-US", args=[self.group_profile.slug, self.leader.id]
@@ -152,6 +168,35 @@ class AddRemoveLeaderTests(TestCase):
         r = self.client.post(url)
         self.assertEqual(302, r.status_code)
         assert self.leader not in self.group_profile.leaders.all()
+
+    def test_cannot_remove_last_leader_from_root(self):
+        """Cannot remove the last leader from a root group."""
+        self.group_profile.refresh_from_db()
+        self.assertEqual(self.group_profile.leaders.count(), 1)
+
+        url = reverse(
+            "groups.remove_leader", locale="en-US", args=[self.group_profile.slug, self.user.id]
+        )
+        r = self.client.post(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        self.assertContains(r, "last leader of a root group")
+        assert self.user in self.group_profile.leaders.all()
+
+    def test_can_remove_leader_from_subgroup(self):
+        """Can remove the only leader from a subgroup."""
+        sub_profile = self.group_profile.add_child(group=self.group_profile.group, slug="subgroup")
+        sub_leader = UserFactory()
+        sub_profile.leaders.add(sub_leader)
+
+        self.user.is_superuser = True
+        self.user.save()
+
+        url = reverse(
+            "groups.remove_leader", locale="en-US", args=[sub_profile.slug, sub_leader.id]
+        )
+        r = self.client.post(url)
+        self.assertEqual(302, r.status_code)
+        assert sub_leader not in sub_profile.leaders.all()
 
 
 class JoinContributorsTests(TestCase):
