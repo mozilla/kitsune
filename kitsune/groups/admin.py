@@ -41,5 +41,12 @@ class GroupProfileAdmin(TreeAdmin):
 
         return form
 
+    def save_related(self, request, form, formsets, change):
+        """Ensure all leaders are also members of the group."""
+        super().save_related(request, form, formsets, change)
+        for leader in form.instance.leaders.all():
+            if not leader.groups.filter(pk=form.instance.group.pk).exists():
+                leader.groups.add(form.instance.group)
+
 
 admin.site.register(GroupProfile, GroupProfileAdmin)
