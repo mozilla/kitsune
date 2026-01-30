@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import patch
 
 from django.conf import settings
@@ -228,7 +228,7 @@ class AccountEventsTasksTestCase(TestCase):
         profile.refresh_from_db()
         account_event_1.refresh_from_db()
 
-        self.assertEqual(profile.fxa_password_change, datetime.utcfromtimestamp(2))
+        self.assertEqual(profile.fxa_password_change, datetime.fromtimestamp(2, UTC))
         self.assertEqual(account_event_1.status, AccountEvent.PROCESSED)
 
         account_event_2 = AccountEventFactory(
@@ -243,7 +243,7 @@ class AccountEventsTasksTestCase(TestCase):
         profile.refresh_from_db()
         account_event_2.refresh_from_db()
 
-        self.assertEqual(profile.fxa_password_change, datetime.utcfromtimestamp(2))
+        self.assertEqual(profile.fxa_password_change, datetime.fromtimestamp(2, UTC))
         self.assertEqual(account_event_2.status, AccountEvent.IGNORED)
 
     def test_process_password_change_atomicity(self):

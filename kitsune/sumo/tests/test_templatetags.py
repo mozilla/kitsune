@@ -181,14 +181,14 @@ class TestDateTimeFormat(TestCase):
         """Expects Europe/Paris timezone."""
         fr_timezone = ZoneInfo("Europe/Paris")
         self.context["request"].LANGUAGE_CODE = "fr"
-        self.context["request"].session = {"timezone": fr_timezone}
+        self.context["request"].session = {"timezone": str(fr_timezone)}
         self._get_datetime_result("fr", fr_timezone, "medium", "datetime")
 
     def test_timezone_different_locale(self):
         """Expects Europe/Paris timezone with different locale."""
         fr_timezone = ZoneInfo("Europe/Paris")
         self.context["request"].LANGUAGE_CODE = "tr"
-        self.context["request"].session = {"timezone": fr_timezone}
+        self.context["request"].session = {"timezone": str(fr_timezone)}
         self._get_datetime_result("tr", fr_timezone, "medium", "datetime")
 
     def test_invalid_value(self):
