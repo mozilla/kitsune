@@ -86,6 +86,6 @@ class GroupProfileManager(MP_NodeManager):
 
         private_moderated = (private | moderated) & (ancestor | descendant | not_isolated)
 
-        cross_hierarchy = Q(visible_to_groups__user=user)
+        cross_hierarchy = moderated & Q(visible_to_groups__user=user)
 
         return queryset.filter(public | private_moderated | cross_hierarchy).distinct()

@@ -134,6 +134,12 @@ class VisibilityWithIsolationTests(TestCase):
         self.alice = UserFactory(username="alice")
         self.bob = UserFactory(username="bob")
         self.charlie = UserFactory(username="charlie")
+        self.ringo = UserFactory(username="ringo")
+
+        # The "visible_to_groups" value should be ignored, since the root is private.
+        audit_group = Group.objects.create(name="Audit")
+        audit_group.user_set.add(self.ringo)
+        self.root.visible_to_groups.add(audit_group)
 
         # Mike is moderator, Alice and Bob are members of root
         self.root.leaders.add(self.mike)
@@ -194,6 +200,13 @@ class VisibilityWithIsolationTests(TestCase):
         # Alice is root member but not moderator
         self.assertFalse(self.root.can_moderate_group(self.alice))
         self.assertFalse(self.sub_a.can_moderate_group(self.alice))
+
+    def test_visible_to_groups_ignored(self):
+        """The "visible_to_groups" field should be ignored for private groups."""
+        visible = GroupProfile.objects.visible(self.ringo)
+        self.assertNotIn(self.root, visible)
+        self.assertNotIn(self.sub_a, visible)
+        self.assertNotIn(self.sub_b, visible)
 
 
 class PublicGroupsNoIsolationTests(TestCase):
