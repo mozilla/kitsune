@@ -39,7 +39,7 @@ def generate_thumbnail(
         return
 
     log.info(f"Generating thumbnail for {obj_model_name} {obj.id}: {from_field} -> {to_field}")
-    thumb_content = _create_image_thumbnail(from_.file, longest_side=max_size)
+    thumb_content = create_image_thumbnail(from_.file, longest_side=max_size)
     if to_:
         # Clean up old file before creating new one.
         to_.delete(save=False)
@@ -51,7 +51,7 @@ def generate_thumbnail(
     obj.update(**{to_field: to_.name})
 
 
-def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=False):
+def create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=False):
     """
     Returns a thumbnail file with a set longest side.
     """

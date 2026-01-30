@@ -1,8 +1,10 @@
+from django.conf import settings
 from django.contrib import admin
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from kitsune.groups.models import GroupProfile
+from kitsune.upload.tasks import create_image_thumbnail
 
 
 class GroupProfileAdmin(TreeAdmin):
@@ -59,6 +61,14 @@ class GroupProfileAdmin(TreeAdmin):
                 )
 
         return form
+
+    def save_model(self, request, obj, form, change):
+        """Process avatar upload to resize and convert to PNG."""
+        if ("avatar" in form.changed_data) and (uploaded_file := form.cleaned_data.get("avatar")):
+            content = create_image_thumbnail(uploaded_file, settings.AVATAR_SIZE)
+            obj.avatar.save(f"{uploaded_file.name}.png", content, save=False)
+
+        super().save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
         """Ensure all leaders are also members of the group."""
