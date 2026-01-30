@@ -97,6 +97,7 @@ class GroupProfile(TreeModelBase):
             parent = self.get_parent()
             if parent:
                 self.visibility = parent.visibility
+                self._needs_visible_to_groups_sync = True
 
         super().save(*args, **kwargs)
 

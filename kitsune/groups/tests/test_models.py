@@ -1019,3 +1019,129 @@ class ModeratedVisibilityTests(TestCase):
         # User is in parent hierarchy, so can see moderated child
         # MODERATED allows both: hierarchy access AND moderator group access
         self.assertIn(self.moderated_child, visible)
+
+
+class VisibleToGroupsInheritanceTests(TestCase):
+    """Test that visible_to_groups is inherited from parent to children."""
+
+    def test_child_inherits_visible_to_groups_on_create(self):
+        """Child automatically inherits parent's visible_to_groups when created."""
+        parent_group = Group.objects.create(name="Parent")
+        parent = GroupProfile.add_root(
+            group=parent_group,
+            slug="parent",
+            visibility=GroupProfile.Visibility.MODERATED,
+        )
+
+        audit_group = Group.objects.create(name="AuditTeam")
+        GroupProfile.add_root(
+            group=audit_group,
+            slug="audit-team",
+            visibility=GroupProfile.Visibility.PUBLIC,
+        )
+
+        parent.visible_to_groups.add(audit_group)
+
+        child_group = Group.objects.create(name="Child")
+        child = parent.add_child(group=child_group, slug="child")
+        child.refresh_from_db()
+
+        self.assertEqual(set(child.visible_to_groups.all()), set(parent.visible_to_groups.all()))
+
+    def test_adding_to_parent_propagates_to_descendants(self):
+        """Adding group to parent's visible_to_groups propagates to descendants."""
+        parent_group = Group.objects.create(name="Parent")
+        parent = GroupProfile.add_root(
+            group=parent_group,
+            slug="parent",
+            visibility=GroupProfile.Visibility.MODERATED,
+        )
+
+        child_group = Group.objects.create(name="Child")
+        child = parent.add_child(group=child_group, slug="child")
+
+        grandchild_group = Group.objects.create(name="Grandchild")
+        grandchild = child.add_child(group=grandchild_group, slug="grandchild")
+
+        audit_group = Group.objects.create(name="AuditTeam")
+        parent.visible_to_groups.add(audit_group)
+
+        child.refresh_from_db()
+        grandchild.refresh_from_db()
+
+        self.assertIn(audit_group, parent.visible_to_groups.all())
+        self.assertIn(audit_group, child.visible_to_groups.all())
+        self.assertIn(audit_group, grandchild.visible_to_groups.all())
+
+    def test_removing_from_parent_propagates_to_descendants(self):
+        """Removing group from parent's visible_to_groups propagates to descendants."""
+        parent_group = Group.objects.create(name="Parent")
+        parent = GroupProfile.add_root(
+            group=parent_group,
+            slug="parent",
+            visibility=GroupProfile.Visibility.MODERATED,
+        )
+
+        audit_group = Group.objects.create(name="AuditTeam")
+        parent.visible_to_groups.add(audit_group)
+
+        child_group = Group.objects.create(name="Child")
+        child = parent.add_child(group=child_group, slug="child")
+        child.refresh_from_db()
+
+        self.assertIn(audit_group, child.visible_to_groups.all())
+
+        parent.visible_to_groups.remove(audit_group)
+        child.refresh_from_db()
+
+        self.assertNotIn(audit_group, child.visible_to_groups.all())
+
+    def test_clearing_parent_propagates_to_descendants(self):
+        """Clearing parent's visible_to_groups propagates to descendants."""
+        parent_group = Group.objects.create(name="Parent")
+        parent = GroupProfile.add_root(
+            group=parent_group,
+            slug="parent",
+            visibility=GroupProfile.Visibility.MODERATED,
+        )
+
+        audit1 = Group.objects.create(name="Audit1")
+        audit2 = Group.objects.create(name="Audit2")
+        parent.visible_to_groups.add(audit1, audit2)
+
+        child_group = Group.objects.create(name="Child")
+        child = parent.add_child(group=child_group, slug="child")
+        child.refresh_from_db()
+
+        self.assertEqual(child.visible_to_groups.count(), 2)
+
+        parent.visible_to_groups.clear()
+        child.refresh_from_db()
+
+        self.assertEqual(child.visible_to_groups.count(), 0)
+
+    def test_deep_hierarchy_propagation(self):
+        """visible_to_groups propagates through deep hierarchies."""
+        root_group = Group.objects.create(name="Root")
+        root = GroupProfile.add_root(group=root_group, slug="root")
+
+        level1_group = Group.objects.create(name="Level1")
+        level1 = root.add_child(group=level1_group, slug="level1")
+
+        level2_group = Group.objects.create(name="Level2")
+        level2 = level1.add_child(group=level2_group, slug="level2")
+
+        level3_group = Group.objects.create(name="Level3")
+        level3 = level2.add_child(group=level3_group, slug="level3")
+
+        audit_group = Group.objects.create(name="AuditTeam")
+        root.visible_to_groups.add(audit_group)
+
+        level1.refresh_from_db()
+        level2.refresh_from_db()
+        level3.refresh_from_db()
+
+        self.assertIn(audit_group, root.visible_to_groups.all())
+        self.assertIn(audit_group, level1.visible_to_groups.all())
+        self.assertIn(audit_group, level2.visible_to_groups.all())
+        self.assertIn(audit_group, level3.visible_to_groups.all())
