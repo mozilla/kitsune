@@ -28,39 +28,29 @@ class GroupProfileAdmin(TreeAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         """Add help text for visibility and visible_to_groups fields based on node type."""
-        form = super().get_form(request, obj, **kwargs)
+        # Since these fields can be read-only, this must happen before the super() call.
+        help_texts = kwargs.setdefault("help_texts", {})
 
-        if "visibility" in form.base_fields:
-            if obj and not obj.is_root():
-                form.base_fields["visibility"].help_text = (
-                    "Visibility is inherited from parent group and cannot be changed. "
-                    f"This group inherits '{obj.get_parent().visibility}' from its parent. "
-                    "To change visibility, update the root group."
-                )
-            else:
-                form.base_fields["visibility"].help_text = (
-                    "Who can see this group. Children automatically inherit parent's visibility. "
-                    "Changing this will update all descendants in the tree."
-                )
+        if obj and not obj.is_root():
+            help_texts["visibility"] = (
+                "Visibility is inherited from the parent and cannot be changed. "
+                "To change, update the root group."
+            )
+            help_texts["visible_to_groups"] = (
+                "Groups with view-only access are inherited from the parent and cannot "
+                "be changed. To change, update the root group."
+            )
+        else:
+            help_texts["visibility"] = (
+                "Who can see this group. Children automatically inherit parent's visibility. "
+                "Changing this will update all descendants in the tree."
+            )
+            help_texts["visible_to_groups"] = (
+                "Groups with view-only access to this group (for auditing/compliance). "
+                "All descendants will automatically inherit these settings."
+            )
 
-        if "visible_to_groups" in form.base_fields:
-            if obj and not obj.is_root():
-                parent = obj.get_parent()
-                parent_groups = ", ".join(g.name for g in parent.visible_to_groups.all())
-                if not parent_groups:
-                    parent_groups = "none"
-                form.base_fields["visible_to_groups"].help_text = (
-                    "Groups with view-only access are inherited from parent and cannot be changed. "
-                    f"This group inherits access from: {parent_groups}. "
-                    "To change, update the root group."
-                )
-            else:
-                form.base_fields["visible_to_groups"].help_text = (
-                    "Groups with view-only access to this group (for auditing/compliance). "
-                    "All descendants will automatically inherit these settings."
-                )
-
-        return form
+        return super().get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change):
         """Process avatar upload to resize and convert to PNG."""
@@ -71,8 +61,19 @@ class GroupProfileAdmin(TreeAdmin):
         super().save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
-        """Ensure all leaders are also members of the group."""
+        """
+        Save related objects.
+
+        For child nodes, skip saving "visible_to_groups" since it's inherited
+        from the parent via signals. Ensure all leaders are also members.
+        """
+        # For children, prevent the form from overwriting the value of the
+        # "visible_to_groups" that was inherited via the "post_save" signal.
+        if form.instance and not form.instance.is_root():
+            form.cleaned_data.pop("visible_to_groups", None)
+
         super().save_related(request, form, formsets, change)
+
         for leader in form.instance.leaders.all():
             if not leader.groups.filter(pk=form.instance.group.pk).exists():
                 leader.groups.add(form.instance.group)
