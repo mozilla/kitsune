@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from django.utils import timezone
 
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.tests import AnnouncementFactory
@@ -19,17 +21,17 @@ class AnnouncementModelTests(TestCase):
     def test_active(self):
         """Active announcement shows."""
         AnnouncementFactory(
-            show_after=datetime.now() - timedelta(days=2),
-            show_until=datetime.now() + timedelta(days=2),
+            show_after=timezone.now() - timedelta(days=2),
+            show_until=timezone.now() + timedelta(days=2),
         )
         self.assertEqual(1, Announcement.get_site_wide().count())
 
     def test_always_visible(self):
         """Always visible announcements are shown."""
         # This one doesn't show
-        AnnouncementFactory(show_after=datetime.now() + timedelta(days=2))
+        AnnouncementFactory(show_after=timezone.now() + timedelta(days=2))
         AnnouncementFactory(
-            show_after=datetime.now() - timedelta(days=2), content="stardate 43125"
+            show_after=timezone.now() - timedelta(days=2), content="stardate 43125"
         )
 
         site_wide = Announcement.get_site_wide()

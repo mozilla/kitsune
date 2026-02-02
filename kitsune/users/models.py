@@ -1,12 +1,12 @@
 import logging
 import re
-from datetime import datetime
 from functools import cached_property
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.functions import Upper
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 from timezone_field import TimeZoneField
 
@@ -346,9 +346,7 @@ class RegistrationProfile(models.Model):
     for creating and activating new accounts.
     """
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, unique=True, verbose_name="user"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True, verbose_name="user")
     activation_key = models.CharField(verbose_name="activation key", max_length=40)
 
     class Meta:
@@ -383,9 +381,7 @@ class EmailChange(models.Model):
 
     ACTIVATED = "ALREADY_ACTIVATED"
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, unique=True, verbose_name="user"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True, verbose_name="user")
     activation_key = models.CharField(verbose_name="activation key", max_length=40)
     email = models.EmailField(db_index=True, null=True)
 
@@ -396,16 +392,14 @@ class EmailChange(models.Model):
 class Deactivation(models.Model):
     """Stores user deactivation logs."""
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="user", related_name="+"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="user", related_name="+")
     moderator = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name="moderator",
         related_name="deactivations",
     )
-    date = models.DateTimeField(default=datetime.now)
+    date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return "{} was deactivated by {} on {}".format(self.user, self.moderator, self.date)

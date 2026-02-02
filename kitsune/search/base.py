@@ -170,7 +170,7 @@ class SumoDocument(DSLDocument):
         else:
             obj.es_discard_doc = "unindex_me"
 
-        obj.indexed_on = datetime.now(UTC)
+        obj.indexed_on = timezone.now()
         obj.meta.id = instance.pk
         if parent_id:
             obj.meta.id = parent_id
