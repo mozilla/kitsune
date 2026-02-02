@@ -74,6 +74,7 @@ nav:
         - email.md
         - localization.md
         - l10n-system.md
+        - classifier.md
         - elastic_search.md
         - frontend.md
         - svelte.md
