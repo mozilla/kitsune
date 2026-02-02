@@ -1,10 +1,10 @@
 from collections.abc import Iterable
-from datetime import datetime
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from kitsune.users.models import Profile
 from kitsune.wiki.events import (
@@ -151,7 +151,7 @@ class WikiContentManager:
         revision = Revision(**data)
         revision.document = document
         revision.creator = creator
-        revision.created = datetime.now()
+        revision.created = timezone.now()
 
         if based_on_id:
             revision.based_on_id = based_on_id
@@ -214,7 +214,7 @@ class WikiContentManager:
             notifications: An iterable of notifications to send
         """
         revision.is_approved = approve
-        revision.reviewed = datetime.now()
+        revision.reviewed = timezone.now()
         revision.reviewer = reviewer
         if comment:
             if revision.comment:
@@ -265,7 +265,7 @@ class WikiContentManager:
         """Mark a revision as ready for localization and optionally send notifications."""
         revision.is_ready_for_localization = True
         revision.readied_for_localization = (
-            revision.reviewed if is_review_workflow else datetime.now()
+            revision.reviewed if is_review_workflow else timezone.now()
         )
         if user:
             revision.readied_for_localization_by = user
@@ -330,7 +330,7 @@ class AIContentManager(WikiContentManager):
             if not based_on_id:
                 based_on_id = document.parent.latest_localizable_revision_id
 
-            data["created"] = datetime.now()
+            data["created"] = timezone.now()
 
         return super().create_revision(
             data, document, Profile.get_sumo_bot(), based_on_id, base_rev, send_notifications

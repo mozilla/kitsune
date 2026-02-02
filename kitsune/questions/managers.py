@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from functools import lru_cache
 
 from django.db.models import F, Manager, Q
 from django.db.models.functions import Now
+from django.utils import timezone
 
 from kitsune.questions import config
 from kitsune.users.models import Profile
@@ -35,7 +36,7 @@ class QuestionManager(Manager):
             solution__isnull=True,
             is_locked=False,
             is_archived=False,
-            updated__range=(datetime.now() - timedelta(days=7), Now()),
+            updated__range=(timezone.now() - timedelta(days=7), Now()),
         )
         return qs.filter(Q(last_answer__creator=F("creator")) | Q(last_answer__isnull=True))
 
@@ -44,7 +45,7 @@ class QuestionManager(Manager):
         return self.filter(
             last_answer__isnull=True,
             is_locked=False,
-            created__range=(datetime.now() - timedelta(hours=24), Now()),
+            created__range=(timezone.now() - timedelta(hours=24), Now()),
         )
 
     def new(self):
@@ -52,7 +53,7 @@ class QuestionManager(Manager):
         return self.filter(
             last_answer__isnull=True,
             is_locked=False,
-            created__range=(datetime.now() - timedelta(days=7), Now()),
+            created__range=(timezone.now() - timedelta(days=7), Now()),
         )
 
     def unhelpful_answers(self):
@@ -61,7 +62,7 @@ class QuestionManager(Manager):
             solution__isnull=True,
             is_locked=False,
             last_answer__creator=F("creator"),
-            created__range=(datetime.now() - timedelta(days=7), Now()),
+            created__range=(timezone.now() - timedelta(days=7), Now()),
         )
 
     def needs_info(self):

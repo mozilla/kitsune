@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from importlib import import_module
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -12,6 +12,7 @@ from django.db import IntegrityError
 from django.db.models import Count, Q
 from django.db.models.functions import Now
 from django.http import Http404, JsonResponse
+from django.utils import timezone
 from django.utils.encoding import force_str
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -264,7 +265,7 @@ class ProfileViewSet(
         """
         Return the most helpful users in the past week.
         """
-        start = datetime.now() - timedelta(days=7)
+        start = timezone.now() - timedelta(days=7)
         # Get a list of top 10 users and the number of solutions they have in the last week.
         # It looks like [{'creator__username': 'bob', 'creator__count': 12}, ...]
         # This uses ``username`` instead of ``id``, because ``username`` appears

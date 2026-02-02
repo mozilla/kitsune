@@ -1,4 +1,3 @@
-import datetime
 import glob
 import re
 import subprocess
@@ -6,6 +5,7 @@ from pathlib import Path
 
 from babel.messages.frontend import CommandLineInterface
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 
 class Command(BaseCommand):
@@ -110,7 +110,7 @@ class Command(BaseCommand):
 
 def update_header_comments(filename):
     """Given a POT filename, adjust some of the header comments if necessary."""
-    current_year = datetime.datetime.now().year
+    current_year = timezone.now().year
     replacements = [
         (
             re.compile(r"^# SOME DESCRIPTIVE TITLE.$", flags=re.MULTILINE),

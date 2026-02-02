@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils import timezone
 from django.utils.timezone import now as timezone_now
 
 from kitsune.users.models import Profile
@@ -25,7 +26,7 @@ class HybridTranslationServiceTests(TestCase):
     def setUp(self):
         super().setUp()
         self.sumo_bot = Profile.get_sumo_bot()
-        now = datetime.now()
+        now = timezone.now()
         one_day_ago = now - timedelta(days=1)
         two_days_ago = now - timedelta(days=2)
         four_days_ago = now - timedelta(days=4)
@@ -517,7 +518,7 @@ class TranslationQueryBuilderTests(TestCase):
         """Test finding stale translations in HYBRID locales (non-archived only)."""
         # Create old translation in HYBRID locale
         doc1_es = DocumentFactory(parent=self.doc1_en, locale="es")
-        old_date = datetime.now() - timedelta(days=35)
+        old_date = timezone.now() - timedelta(days=35)
         ApprovedRevisionFactory(
             document=doc1_es,
             based_on=self.rev1_en,
@@ -528,8 +529,8 @@ class TranslationQueryBuilderTests(TestCase):
         # Create new revision in English to make translation stale
         ApprovedRevisionFactory(
             document=self.doc1_en,
-            created=datetime.now() - timedelta(days=1),
-            reviewed=datetime.now() - timedelta(days=1),
+            created=timezone.now() - timedelta(days=1),
+            reviewed=timezone.now() - timedelta(days=1),
             significance=MAJOR_SIGNIFICANCE,
             is_ready_for_localization=True,
         )
@@ -559,7 +560,7 @@ class TranslationQueryBuilderTests(TestCase):
     )
     def test_get_stale_docs_ai(self):
         """Test finding stale translations for AI flow (all AI docs + archived HYBRID docs)."""
-        old_date = datetime.now() - timedelta(days=35)
+        old_date = timezone.now() - timedelta(days=35)
 
         # Create stale translation in AI locale (non-archived)
         doc1_de = DocumentFactory(parent=self.doc1_en, locale="de")
@@ -582,15 +583,15 @@ class TranslationQueryBuilderTests(TestCase):
         # Update English documents to make translations stale
         ApprovedRevisionFactory(
             document=self.doc1_en,
-            created=datetime.now() - timedelta(days=1),
-            reviewed=datetime.now() - timedelta(days=1),
+            created=timezone.now() - timedelta(days=1),
+            reviewed=timezone.now() - timedelta(days=1),
             significance=MAJOR_SIGNIFICANCE,
             is_ready_for_localization=True,
         )
         ApprovedRevisionFactory(
             document=self.doc2_en,
-            created=datetime.now() - timedelta(days=1),
-            reviewed=datetime.now() - timedelta(days=1),
+            created=timezone.now() - timedelta(days=1),
+            reviewed=timezone.now() - timedelta(days=1),
             significance=MAJOR_SIGNIFICANCE,
             is_ready_for_localization=True,
         )
@@ -649,8 +650,8 @@ class TranslationQueryBuilderTests(TestCase):
     )
     def test_get_pending_translations(self):
         """Test finding pending translations that exceeded grace period."""
-        old_enough = datetime.now() - timedelta(hours=80)
-        too_recent = datetime.now() - timedelta(hours=50)
+        old_enough = timezone.now() - timedelta(hours=80)
+        too_recent = timezone.now() - timedelta(hours=50)
 
         # Create pending translation that should be auto-approved
         doc1_es = DocumentFactory(parent=self.doc1_en, locale="es")
@@ -752,7 +753,7 @@ class StaleTranslationServiceTests(TestCase):
     def test_process_stale_with_strategy_filter(self, mock_execute):
         """Test processing stale translations with strategy filter."""
         # Create stale translations
-        old_date = datetime.now() - timedelta(days=35)
+        old_date = timezone.now() - timedelta(days=35)
 
         doc_en = DocumentFactory(is_localizable=True, is_archived=False)
         rev_en = ApprovedRevisionFactory(
@@ -783,8 +784,8 @@ class StaleTranslationServiceTests(TestCase):
         # Update English to make translations stale
         ApprovedRevisionFactory(
             document=doc_en,
-            created=datetime.now() - timedelta(days=1),
-            reviewed=datetime.now() - timedelta(days=1),
+            created=timezone.now() - timedelta(days=1),
+            reviewed=timezone.now() - timedelta(days=1),
             significance=MAJOR_SIGNIFICANCE,
             is_ready_for_localization=True,
         )

@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group, User
 from django.core.mail import send_mail
 from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce, Now
+from django.utils import timezone
 from sentry_sdk import capture_exception
 
 from kitsune.community.utils import num_deleted_contributions
@@ -44,7 +45,7 @@ def update_question_vote_chunk(question_ids: list[int]) -> None:
 
     log.info("Calculating past week votes for {} questions.".format(len(question_ids)))
 
-    past_week = (datetime.now() - timedelta(days=7)).replace(
+    past_week = (timezone.now() - timedelta(days=7)).replace(
         hour=0, minute=0, second=0, microsecond=0
     )
 
@@ -219,7 +220,7 @@ def update_weekly_votes() -> None:
     from kitsune.questions.models import Question, QuestionVote
 
     # Get all questions (id) with a vote in the last week.
-    recent = datetime.now() - timedelta(days=7)
+    recent = timezone.now() - timedelta(days=7)
     q = QuestionVote.objects.filter(created__range=(recent, Now()))
     q = q.values_list("question_id", flat=True).order_by("question")
     q = q.distinct()
@@ -248,7 +249,7 @@ def auto_archive_old_questions() -> None:
     # Get a list of ids of questions we're going to go change. We need
     # a list of ids so that we can feed it to the update, but then
     # also know what we need to update in the index.
-    days_180 = datetime.now() - timedelta(days=180)
+    days_180 = timezone.now() - timedelta(days=180)
     q_ids = list(
         Question.objects.filter(is_archived=False)
         # Use "__range" to ensure the database index is used in Postgres.

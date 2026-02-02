@@ -1,8 +1,8 @@
-from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
@@ -13,8 +13,8 @@ class Media(ModelBase):
     """Generic model for media"""
 
     title = models.CharField(max_length=255, db_index=True)
-    created = models.DateTimeField(default=datetime.now, db_index=True)
-    updated = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
+    updated = models.DateTimeField(default=timezone.now, db_index=True)
     updated_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="%(app_label)s_%(class)s_set"
     )

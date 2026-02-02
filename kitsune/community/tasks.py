@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db.models import F, Q
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from kitsune.questions.models import Answer
@@ -27,7 +28,7 @@ def send_welcome_emails() -> None:
     """
     log.info("Sending welcome emails")
 
-    wait_period = datetime.now() - timedelta(hours=24)
+    wait_period = timezone.now() - timedelta(hours=24)
     messages = []
 
     base_context = {"host": Site.objects.get_current().domain}

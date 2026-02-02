@@ -1,13 +1,14 @@
 import bisect
 import logging
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 from re import compile, escape
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from kitsune.flagit.handlers import FlagListener
@@ -31,7 +32,7 @@ log = logging.getLogger("k.users")
 
 def get_community_team_member_info(email_type='contributor'):
     """Get a random member from the Community Team who has logged in within 30 days."""
-    thirty_days_ago = datetime.now() - timedelta(days=30)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
 
     try:
         community_team = Group.objects.get(name="Community Team")

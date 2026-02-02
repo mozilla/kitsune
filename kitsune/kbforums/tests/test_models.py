@@ -1,5 +1,7 @@
 import datetime
 
+from django.utils import timezone
+
 from kitsune.kbforums.models import Thread
 from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -80,7 +82,7 @@ class KBSaveDateTestCase(TestCase):
         """Saving a new thread should behave as if auto_add_now was set."""
         t = self.doc.thread_set.create(title="foo", creator=self.user)
         t.save()
-        now = datetime.datetime.now()
+        now = timezone.now()
         self.assertDateTimeAlmostEqual(now, t.created, self.delta)
 
     def test_save_thread_created(self):
@@ -106,7 +108,7 @@ class KBSaveDateTestCase(TestCase):
         created and auto_now set on updated.
         """
         p = self.thread.new_post(creator=self.user, content="bar")
-        now = datetime.datetime.now()
+        now = timezone.now()
         self.assertDateTimeAlmostEqual(now, p.created, self.delta)
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
 
@@ -114,7 +116,7 @@ class KBSaveDateTestCase(TestCase):
         """
         Saving an existing post should update the updated date.
         """
-        now = datetime.datetime.now()
+        now = timezone.now()
 
         p = self.thread.new_post(creator=self.user, content="bar")
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
@@ -133,7 +135,7 @@ class KBSaveDateTestCase(TestCase):
         created_ = datetime.datetime(1992, 1, 12, 10, 12, 32)
         p = PostFactory(thread=self.thread, creator=self.user, created=created_, updated=created_)
 
-        now = datetime.datetime.now()
+        now = timezone.now()
         self.assertDateTimeAlmostEqual(now, p.created, self.delta)
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
 

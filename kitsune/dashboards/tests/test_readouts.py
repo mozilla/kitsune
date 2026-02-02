@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from django.conf import settings
+from django.utils import timezone
 
 from kitsune.dashboards import LAST_30_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
@@ -583,7 +584,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
     def test_rejected_newer_than_current(self):
         """Don't show reviewed but unapproved revs newer than current rev"""
         rejected = TranslatedRevisionFactory(
-            document__locale="de", reviewed=datetime.now(), is_approved=False
+            document__locale="de", reviewed=timezone.now(), is_approved=False
         )
         assert rejected.document.title not in self.titles()
 
@@ -801,7 +802,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
     def test_one_rejected_revision(self):
         """Translation with 1 rejected rev shows as Needs Translation"""
         TranslatedRevisionFactory(
-            document__locale="de", is_approved=False, reviewed=datetime.now()
+            document__locale="de", is_approved=False, reviewed=timezone.now()
         )
 
         # A document will be excluded for anonymous users, if its
@@ -927,7 +928,7 @@ class UnreadyTests(ReadoutTestCase):
             document=d, is_approved=False, reviewed=None, is_ready_for_localization=False
         )
         RevisionFactory(
-            document=d, is_approved=False, reviewed=datetime.now(), is_ready_for_localization=False
+            document=d, is_approved=False, reviewed=timezone.now(), is_ready_for_localization=False
         )
         self.assertEqual([], self.titles())
 
@@ -939,7 +940,7 @@ class UnreadyTests(ReadoutTestCase):
 
         """
         r = ApprovedRevisionFactory(
-            reviewed=datetime.now(), is_ready_for_localization=False, significance=None
+            reviewed=timezone.now(), is_ready_for_localization=False, significance=None
         )
         self.assertEqual([r.document.title], self.titles())
 

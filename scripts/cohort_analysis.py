@@ -6,6 +6,7 @@ Groups users into monthly cohorts, and analyzes drop off rate for each group.
 Run this script like `./manage.py runscript cohort_analysis`.
 """
 from datetime import datetime, timedelta
+from django.utils import timezone
 from traceback import print_exc
 
 from tabulate import tabulate
@@ -23,7 +24,7 @@ def run():
 
 
 def run_():
-    now = datetime.now()
+    now = timezone.now()
     boundaries = [datetime(now.year, now.month, 1)]
     for _ in range(12):
         first_day_of_previous_month = (boundaries[-1] - timedelta(days=1)).replace(day=1)

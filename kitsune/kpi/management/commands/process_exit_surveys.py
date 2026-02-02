@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from kitsune.kpi.management import utils
 from kitsune.kpi.surveygizmo_utils import (
@@ -31,8 +32,8 @@ class Command(BaseCommand):
         # survey.
         # The range here is set between 4 and 8 hours to be sure no emails are
         # missed should a particular cron run be skipped (e.g. during a deployment)
-        startdatetime = datetime.now() - timedelta(hours=8)
-        enddatetime = datetime.now() - timedelta(hours=4)
+        startdatetime = timezone.now() - timedelta(hours=8)
+        enddatetime = timezone.now() - timedelta(hours=4)
 
         for survey in list(SURVEYS.keys()):
             if (

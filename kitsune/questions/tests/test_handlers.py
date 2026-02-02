@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.utils import timezone
 
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.handlers import AAQChain, OldSpamCleanupHandler
@@ -186,15 +187,15 @@ class TestOldSpamCleanupHandler(TestCase):
 
     def test_cleanup_old_spam_questions_and_answers(self):
         """Test that old spam questions and answers are deleted."""
-        old_date = datetime.now() - timedelta(days=100)
+        old_date = timezone.now() - timedelta(days=100)
         old_spam_q = QuestionFactory(creator=self.user, is_spam=True, marked_as_spam=old_date)
         old_spam_a = AnswerFactory(creator=self.user, is_spam=True, marked_as_spam=old_date)
 
         recent_spam_q = QuestionFactory(
-            creator=self.user, is_spam=True, marked_as_spam=datetime.now()
+            creator=self.user, is_spam=True, marked_as_spam=timezone.now()
         )
         recent_spam_a = AnswerFactory(
-            creator=self.user, is_spam=True, marked_as_spam=datetime.now()
+            creator=self.user, is_spam=True, marked_as_spam=timezone.now()
         )
 
         normal_q = QuestionFactory(creator=self.user, is_spam=False)
@@ -220,11 +221,11 @@ class TestOldSpamCleanupHandler(TestCase):
         handler = OldSpamCleanupHandler(cutoff_months=1)
 
         # Create spam content older than 1 month
-        old_date = datetime.now() - timedelta(days=35)
+        old_date = timezone.now() - timedelta(days=35)
         old_spam_q = QuestionFactory(creator=self.user, is_spam=True, marked_as_spam=old_date)
 
         # Create spam content newer than 1 month
-        recent_date = datetime.now() - timedelta(days=25)
+        recent_date = timezone.now() - timedelta(days=25)
         recent_spam_q = QuestionFactory(
             creator=self.user, is_spam=True, marked_as_spam=recent_date
         )
@@ -242,7 +243,7 @@ class TestOldSpamCleanupHandler(TestCase):
         """Test cleanup when no old spam exists."""
         # Create only recent spam
         recent_spam_q = QuestionFactory(
-            creator=self.user, is_spam=True, marked_as_spam=datetime.now()
+            creator=self.user, is_spam=True, marked_as_spam=timezone.now()
         )
 
         result = self.handler.cleanup_old_spam()

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from kitsune.kpi.management import utils
 from kitsune.kpi.surveygizmo_utils import SURVEYS
@@ -44,5 +45,5 @@ class Command(BaseCommand):
                 except requests.exceptions.Timeout:
                     print("Timed out adding: {}".format(u.email))
                 else:
-                    p.csat_email_sent = datetime.now()
+                    p.csat_email_sent = timezone.now()
                     p.save()

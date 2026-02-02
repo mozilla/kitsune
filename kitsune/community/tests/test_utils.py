@@ -1,5 +1,6 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
+from django.utils import timezone
 from django.utils.timezone import now as timezone_now
 
 from kitsune.community.utils import (
@@ -151,12 +152,12 @@ class TopContributorTests(ElasticTestCase):
 
         a1 = AnswerFactory(
             creator=ContributorFactory(),
-            created=datetime.now() - timedelta(days=3),
+            created=timezone.now() - timedelta(days=3),
             question__product=firefox,
         )
         a2 = AnswerFactory(
             creator=a1.creator,
-            created=datetime.now() - timedelta(days=2),
+            created=timezone.now() - timedelta(days=2),
             question__product=firefox,
         )
         a3 = AnswerFactory(
@@ -165,17 +166,17 @@ class TopContributorTests(ElasticTestCase):
         )
         a4 = AnswerFactory(
             creator=ContributorFactory(),
-            created=datetime.now() - timedelta(days=91),
+            created=timezone.now() - timedelta(days=91),
             question__product=firefox,
         )
         a5 = AnswerFactory(
             creator=a1.creator,
-            created=datetime.now() - timedelta(days=1),
+            created=timezone.now() - timedelta(days=1),
             question__product=fxos,
         )
         a6 = AnswerFactory(
             creator=a4.creator,
-            created=datetime.now() - timedelta(days=30),
+            created=timezone.now() - timedelta(days=30),
             question=a4.question,
         )
 

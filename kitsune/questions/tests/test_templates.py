@@ -1,12 +1,13 @@
 import json
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 from string import ascii_letters
 from unittest import mock
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
+from django.utils import timezone
 from pyquery import PyQuery as pq
 
 from kitsune.products.models import ProductSupportConfig
@@ -1195,7 +1196,7 @@ class QuestionsTemplateTestCase(TestCase):
         self.assertEqual("1007", doc(".views-val").text())
 
     def test_no_unarchive_on_old_questions(self):
-        ques = QuestionFactory(created=(datetime.now() - timedelta(days=200)), is_archived=True)
+        ques = QuestionFactory(created=(timezone.now() - timedelta(days=200)), is_archived=True)
         response = get(self.client, "questions.details", args=[ques.id])
         assert b"Archive this post" not in response.content
 

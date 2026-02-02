@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionVote
@@ -119,7 +120,7 @@ class OldSpamCleanupHandler:
 
     def cleanup_old_spam(self) -> dict:
         """Delete Questions and Answers marked as spam older than cutoff period."""
-        cutoff_date = datetime.now() - timedelta(days=30 * self.cutoff_months)
+        cutoff_date = timezone.now() - timedelta(days=30 * self.cutoff_months)
 
         questions = Question.objects.filter(is_spam=True, marked_as_spam__lt=cutoff_date)
         answers = Answer.objects.filter(is_spam=True, marked_as_spam__lt=cutoff_date)

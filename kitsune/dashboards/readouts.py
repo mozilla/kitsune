@@ -8,13 +8,13 @@ is_ready_for_localization=False do not exist.
 
 import logging
 from collections import OrderedDict
-from datetime import datetime
 
 from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import Case, Count, Exists, F, Max, OuterRef, Q, Subquery, When
 from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
@@ -246,7 +246,7 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
             data["visits_ratio"] = float(d.num_visits) / max_visits
 
         if data.get("expiry_date"):
-            data["stale"] = data["expiry_date"] < datetime.now()
+            data["stale"] = data["expiry_date"] < timezone.now()
 
         if d.unapproved_revision_comment is None:
             data["latest_revision"] = True

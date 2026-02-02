@@ -1,10 +1,10 @@
 import json
-from datetime import datetime
 
 import actstream.actions
 import django_filters
 from django import forms
 from django.db.models import Q
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import pagination, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -210,7 +210,7 @@ class QuestionFilter(django_filters.FilterSet):
         return queryset.filter(creator_filter | answered_filter)
 
     def filter_is_taken(self, queryset, name, value):
-        now = datetime.now()
+        now = timezone.now()
         if value:
             # only taken questions
             return queryset.filter(~Q(taken_by=None), taken_until__gt=now)

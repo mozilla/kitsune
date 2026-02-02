@@ -1,7 +1,7 @@
-import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from kitsune import kbforums
 from kitsune.sumo.models import ModelBase
@@ -33,7 +33,7 @@ class ThreadLockedError(Exception):
 class Thread(NotificationsMixin, ModelBase):
     title = models.CharField(max_length=255)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
-    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_thread_set")
     last_post = models.ForeignKey(
         "Post", on_delete=models.CASCADE, related_name="last_post_in", null=True
@@ -83,8 +83,8 @@ class Post(ModelBase):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
     content = models.TextField()
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_post_set")
-    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
-    updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
+    updated = models.DateTimeField(default=timezone.now, db_index=True)
     updated_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="wiki_post_last_updated_by", null=True
     )
@@ -101,7 +101,7 @@ class Post(ModelBase):
         created and updated.
         """
         new = self.id is None
-        now = datetime.datetime.now()
+        now = timezone.now()
 
         if new:
             self.created = now

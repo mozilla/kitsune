@@ -184,7 +184,7 @@ def top_contributors_l10n(
             return cached
 
     if start is None:
-        start = datetime.now() - timedelta(days=DEFAULT_PERIOD_DAYS)
+        start = timezone.now() - timedelta(days=DEFAULT_PERIOD_DAYS)
     elif type(start) is date:
         start = datetime.combine(start, time.min)
 

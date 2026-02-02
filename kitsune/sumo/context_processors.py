@@ -1,7 +1,6 @@
-from datetime import datetime
 
 from django.conf import settings
-from django.utils import translation
+from django.utils import timezone, translation
 
 from kitsune.questions.models import AAQConfig
 
@@ -26,7 +25,7 @@ def aaq_languages(request):
 
 
 def current_year(request):
-    return {"CURRENT_YEAR": datetime.now().year}
+    return {"CURRENT_YEAR": timezone.now().year}
 
 
 def static_url_webpack(request):

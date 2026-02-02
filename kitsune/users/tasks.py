@@ -129,7 +129,7 @@ def process_unprocessed_account_events(within_hours):
     Attempt to process all unprocessed account events that have been
     created within the given number of hours.
     """
-    hours_ago = datetime.now() - timedelta(hours=within_hours)
+    hours_ago = timezone.now() - timedelta(hours=within_hours)
 
     for event in AccountEvent.objects.filter(
         status=AccountEvent.UNPROCESSED, created_at__gte=hours_ago

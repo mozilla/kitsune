@@ -1,4 +1,5 @@
-from datetime import datetime
+
+from django.utils import timezone
 
 from kitsune.notifications.tests import NotificationFactory
 from kitsune.sumo.tests import TestCase
@@ -10,7 +11,7 @@ class TestNotificationModel(TestCase):
         self.assertEqual(n.is_read, False)
 
     def test_is_read_true(self):
-        n = NotificationFactory(read_at=datetime.now())
+        n = NotificationFactory(read_at=timezone.now())
         self.assertEqual(n.is_read, True)
 
     def test_set_is_read_true(self):
@@ -19,6 +20,6 @@ class TestNotificationModel(TestCase):
         assert n.read_at is not None
 
     def test_set_is_read_false(self):
-        n = NotificationFactory(read_at=datetime.now())
+        n = NotificationFactory(read_at=timezone.now())
         n.is_read = False
         assert n.read_at is None

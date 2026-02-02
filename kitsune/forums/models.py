@@ -1,9 +1,9 @@
-import datetime
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.utils import timezone
 
 from kitsune import forums
 from kitsune.access.utils import has_perm
@@ -96,7 +96,7 @@ class Forum(NotificationsMixin, ModelBase):
 class Thread(NotificationsMixin, ModelBase):
     title = models.CharField(max_length=255)
     forum = models.ForeignKey("Forum", on_delete=models.CASCADE)
-    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     last_post = models.ForeignKey(
         "Post", related_name="last_post_in", null=True, on_delete=models.SET_NULL
@@ -180,8 +180,8 @@ class Post(ModelBase):
     thread = models.ForeignKey("Thread", on_delete=models.CASCADE)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
-    updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
+    updated = models.DateTimeField(default=timezone.now, db_index=True)
     updated_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="post_last_updated_by", null=True
     )
@@ -203,7 +203,7 @@ class Post(ModelBase):
         new = self.id is None
 
         if not new:
-            self.updated = datetime.datetime.now()
+            self.updated = timezone.now()
 
         super().save(*args, **kwargs)
 

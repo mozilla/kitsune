@@ -1,6 +1,5 @@
-from datetime import datetime
-
 import factory
+from django.utils import timezone
 
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.models import (
@@ -52,7 +51,7 @@ class QuestionVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = QuestionVote
 
-    created = factory.LazyAttribute(lambda o: datetime.now())
+    created = factory.LazyAttribute(lambda o: timezone.now())
     question = factory.SubFactory(QuestionFactory)
     creator = factory.SubFactory(UserFactory)
 
@@ -96,7 +95,7 @@ class AnswerFactory(factory.django.DjangoModelFactory):
         model = Answer
 
     content = FuzzyUnicode()
-    created = factory.LazyAttribute(lambda a: datetime.now())
+    created = factory.LazyAttribute(lambda a: timezone.now())
     creator = factory.SubFactory(UserFactory)
     question = factory.SubFactory(QuestionFactory)
 
@@ -112,7 +111,7 @@ class AnswerVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AnswerVote
 
-    created = factory.LazyAttribute(lambda a: datetime.now())
+    created = factory.LazyAttribute(lambda a: timezone.now())
     helpful = factory.fuzzy.FuzzyChoice([True, False])
     creator = factory.SubFactory(UserFactory)
     answer = factory.SubFactory(AnswerFactory)

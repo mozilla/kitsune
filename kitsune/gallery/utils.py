@@ -1,8 +1,8 @@
-from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
+from django.utils import timezone
 from django.utils.html import escape
 
 from kitsune.gallery.forms import ImageForm
@@ -69,4 +69,4 @@ def check_media_permissions(media, user, perm_type):
 
 
 def get_draft_title(user):
-    return "Draft for user {}. Created at: {}".format(user.username, datetime.now())
+    return "Draft for user {}. Created at: {}".format(user.username, timezone.now())

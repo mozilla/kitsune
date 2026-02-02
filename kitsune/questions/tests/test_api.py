@@ -1,9 +1,10 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import mock
 
 import actstream.actions
 from actstream.models import Follow
+from django.utils import timezone
 from rest_framework.exceptions import APIException
 from rest_framework.test import APIClient
 
@@ -280,7 +281,7 @@ class TestQuestionViewSet(TestCase):
         q = QuestionFactory()
         # "take" the question, but with an expired timer.
         q.taken_by = UserFactory()
-        q.taken_until = datetime.now() - timedelta(seconds=60)
+        q.taken_until = timezone.now() - timedelta(seconds=60)
 
         url = reverse("question-list") + "?is_taken=1"
         res = self.client.get(url)
@@ -443,7 +444,7 @@ class TestQuestionViewSet(TestCase):
     def test_take_conflict(self):
         u1 = UserFactory()
         u2 = UserFactory()
-        taken_until = datetime.now() + timedelta(seconds=30)
+        taken_until = timezone.now() + timedelta(seconds=30)
         q = QuestionFactory(taken_until=taken_until, taken_by=u1)
         self.client.force_authenticate(user=u2)
         res = self.client.post(reverse("question-take", args=[q.id]))
@@ -801,7 +802,7 @@ class TestQuestionFilter(TestCase):
 
     def test_is_taken(self):
         u = UserFactory()
-        taken_until = datetime.now() + timedelta(seconds=30)
+        taken_until = timezone.now() + timedelta(seconds=30)
         q = QuestionFactory(taken_by=u, taken_until=taken_until)
         QuestionFactory()
         res = self.filter_instance.filter_is_taken(self.queryset, "is_taken", True)
@@ -809,7 +810,7 @@ class TestQuestionFilter(TestCase):
 
     def test_is_not_taken(self):
         u = UserFactory()
-        taken_until = datetime.now() + timedelta(seconds=30)
+        taken_until = timezone.now() + timedelta(seconds=30)
         QuestionFactory(taken_by=u, taken_until=taken_until)
         q = QuestionFactory()
         res = self.filter_instance.filter_is_taken(self.queryset, "is_taken", False)
@@ -817,14 +818,14 @@ class TestQuestionFilter(TestCase):
 
     def test_is_taken_expired(self):
         u = UserFactory()
-        taken_until = datetime.now() - timedelta(seconds=30)
+        taken_until = timezone.now() - timedelta(seconds=30)
         QuestionFactory(taken_by=u, taken_until=taken_until)
         res = self.filter_instance.filter_is_taken(self.queryset, "is_taken", True)
         self.assertEqual(list(res), [])
 
     def test_is_not_taken_expired(self):
         u = UserFactory()
-        taken_until = datetime.now() - timedelta(seconds=30)
+        taken_until = timezone.now() - timedelta(seconds=30)
         q = QuestionFactory(taken_by=u, taken_until=taken_until)
         res = self.filter_instance.filter_is_taken(self.queryset, "is_taken", False)
         self.assertEqual(list(res), [q])

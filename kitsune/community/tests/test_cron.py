@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import mock
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
+from django.utils import timezone
 
 from kitsune.community.tasks import send_welcome_emails
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
@@ -22,7 +23,7 @@ class WelcomeEmailsTests(TestCase):
         u2 = UserFactory(profile__first_answer_email_sent=True)
         u3 = UserFactory()
 
-        two_days = datetime.now() - timedelta(hours=48)
+        two_days = timezone.now() - timedelta(hours=48)
 
         q = QuestionFactory(creator=u1)
         AnswerFactory(question=q, creator=u1, created=two_days)
@@ -61,7 +62,7 @@ class WelcomeEmailsTests(TestCase):
         u1 = UserFactory()
         u2 = UserFactory(profile__first_l10n_email_sent=True)
 
-        two_days = datetime.now() - timedelta(hours=48)
+        two_days = timezone.now() - timedelta(hours=48)
 
         d = DocumentFactory(locale="ru")
         RevisionFactory(document=d, creator=u1, created=two_days)

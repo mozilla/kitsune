@@ -1,8 +1,8 @@
-from datetime import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Count, F
+from django.utils import timezone
 from django.utils.termcolors import make_style
 
 from kitsune.wiki.models import Document
@@ -44,7 +44,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         self.stdout.write("-" * 85)
-        self.stdout.write(f"L10N Metrics Report ({datetime.now()})")
+        self.stdout.write(f"L10N Metrics Report ({timezone.now()})")
         self.stdout.write("-" * 85)
         self.stdout.write(f"Core locales: {', '.join(loc for loc in CORE_LOCALES)}")
         self.stdout.write(

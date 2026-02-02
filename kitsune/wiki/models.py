@@ -1,6 +1,6 @@
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from urllib.parse import urlparse
 
 import waffle
@@ -12,7 +12,7 @@ from django.db import IntegrityError, models
 from django.db.models import Q, Value
 from django.db.models.functions import Now
 from django.urls import is_valid_path
-from django.utils import translation
+from django.utils import timezone, translation
 from django.utils.encoding import smart_bytes
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
@@ -659,7 +659,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
         return HelpfulVote.objects.filter(
             revision__document=self,
             # Use "__range" to ensure the database index is used in Postgres.
-            created__range=(datetime.now() - timedelta(days=30), Now()),
+            created__range=(timezone.now() - timedelta(days=30), Now()),
             helpful=True,
         ).count()
 
@@ -807,7 +807,7 @@ class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
     # like created_revisions and created_draftrevisions
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_%(class)ss")
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     # The reverse name should be revisions and draftrevisions
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="%(class)ss")
     # Keywords are used mostly to affect search rankings. Moderators may not
@@ -1103,7 +1103,7 @@ class HelpfulVote(ModelBase):
 
     revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name="poll_votes")
     helpful = models.BooleanField(default=False)
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="poll_votes", null=True
     )

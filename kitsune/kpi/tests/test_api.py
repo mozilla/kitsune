@@ -1,7 +1,8 @@
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from django.core.cache import cache
+from django.utils import timezone
 
 from kitsune.kpi.models import (
     EXIT_SURVEY_DONT_KNOW_CODE,
@@ -240,7 +241,7 @@ class KpiApiTests(TestCase):
         # A translation with 2 contributors (translator + reviewer):
         d = DocumentFactory(parent=r1.document, locale="es")
         RevisionFactory(
-            document=d, reviewed=datetime.now(), reviewer=r1.creator, creator=r2.creator
+            document=d, reviewed=timezone.now(), reviewer=r1.creator, creator=r2.creator
         )
         # 1 active support forum contributor:
         # A user with 10 answers

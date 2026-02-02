@@ -1,10 +1,10 @@
 import logging
-from datetime import datetime
 
 from django.core.exceptions import PermissionDenied
 from django.db.models import F
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from kitsune import kbforums
@@ -327,7 +327,7 @@ def edit_post(request, document_slug, thread_id, post_id):
         post.content = form.cleaned_data["content"]
         post.updated_by = request.user
         if "preview" in request.POST:
-            post.updated = datetime.now()
+            post.updated = timezone.now()
             post_preview = post
         else:
             log.warning("User {} is editing KB post with id={}".format(request.user, post.id))
