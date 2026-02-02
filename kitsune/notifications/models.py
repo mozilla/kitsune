@@ -1,4 +1,3 @@
-from datetime import datetime
 
 from actstream.models import Action
 from django.contrib.auth.models import User
@@ -7,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from kitsune.sumo.models import ModelBase
 
@@ -24,14 +24,14 @@ class Notification(ModelBase):
     def is_read(self, newval):
         oldval = self.read_at is not None
         if not oldval and newval:
-            self.read_at = datetime.now()
+            self.read_at = timezone.now()
         elif oldval and not newval:
             self.read_at = None
 
 
 class PushNotificationRegistration(ModelBase):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     push_url = models.CharField(max_length=256)
 
 
@@ -56,7 +56,7 @@ def send_notification(sender, instance, created, **kwargs):
 
 class RealtimeRegistration(ModelBase):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     endpoint = models.CharField(max_length=256)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

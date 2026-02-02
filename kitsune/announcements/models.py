@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.db.models.functions import Now
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
+from django.utils import timezone
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
@@ -14,10 +15,10 @@ from kitsune.wiki.models import Locale
 
 
 class Announcement(ModelBase):
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     show_after = models.DateTimeField(
-        default=datetime.now,
+        default=timezone.now,
         db_index=True,
         verbose_name="Start displaying",
         help_text=("When this announcement will start appearing. (US/Pacific)"),
@@ -62,7 +63,7 @@ class Announcement(ModelBase):
         return f"{self.content[:50]}"
 
     def is_visible(self):
-        now = datetime.now()
+        now = timezone.now()
         if now > self.show_after and (not self.show_until or now < self.show_until):
             return True
         return False
@@ -134,7 +135,7 @@ def connector(sender, **kw):
         if instance.send_email:
             from kitsune.announcements.tasks import send_group_email
 
-            now = datetime.now()
+            now = timezone.now()
             if instance.is_visible():
                 send_group_email.delay(instance.pk)
             elif now < instance.show_after:

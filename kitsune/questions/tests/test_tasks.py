@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.db.models.signals import post_save
 from django.test import override_settings
+from django.utils import timezone
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.badges import QUESTIONS_BADGES
@@ -31,13 +32,13 @@ class QuestionVoteTestCase(TestCase):
         q1 = QuestionFactory()
         q2 = QuestionFactory()
         q3 = QuestionFactory()
-        QuestionVoteFactory(question=q1, created=datetime.now() - timedelta(days=1))
-        QuestionVoteFactory(question=q1, created=datetime.now() - timedelta(days=2))
-        QuestionVoteFactory(question=q1, created=datetime.now() - timedelta(days=9))
-        QuestionVoteFactory(question=q2, created=datetime.now() - timedelta(days=3))
-        QuestionVoteFactory(question=q2, created=datetime.now() - timedelta(days=6))
-        QuestionVoteFactory(question=q2, created=datetime.now() - timedelta(days=7))
-        QuestionVoteFactory(question=q2, created=datetime.now() - timedelta(days=8))
+        QuestionVoteFactory(question=q1, created=timezone.now() - timedelta(days=1))
+        QuestionVoteFactory(question=q1, created=timezone.now() - timedelta(days=2))
+        QuestionVoteFactory(question=q1, created=timezone.now() - timedelta(days=9))
+        QuestionVoteFactory(question=q2, created=timezone.now() - timedelta(days=3))
+        QuestionVoteFactory(question=q2, created=timezone.now() - timedelta(days=6))
+        QuestionVoteFactory(question=q2, created=timezone.now() - timedelta(days=7))
+        QuestionVoteFactory(question=q2, created=timezone.now() - timedelta(days=8))
         q1.refresh_from_db()
         q2.refresh_from_db()
         q3.refresh_from_db()
@@ -78,7 +79,7 @@ class TestMaybeAwardBadge(TestCase):
     def test_maybe_award_badge_for_kb(self):
         badge = get_or_create_badge(
             QUESTIONS_BADGES["answer-badge"],
-            year=datetime.now().year,
+            year=timezone.now().year,
         )
 
         a1 = AnswerFactory()
@@ -112,20 +113,20 @@ class TestReportEmployeeAnswers(TestCase):
         report_user.groups.add(report_group)
 
         # An unanswered question that should get reported
-        QuestionFactory(created=datetime.now() - timedelta(days=2))
+        QuestionFactory(created=timezone.now() - timedelta(days=2))
 
         # An answered question that should get reported
-        q = QuestionFactory(created=datetime.now() - timedelta(days=2))
+        q = QuestionFactory(created=timezone.now() - timedelta(days=2))
         AnswerFactory(question=q)
 
         # A question answered by a tracked user that should get reported
-        q = QuestionFactory(created=datetime.now() - timedelta(days=2))
+        q = QuestionFactory(created=timezone.now() - timedelta(days=2))
         AnswerFactory(creator=tracked_user, question=q)
 
         # More questions that shouldn't get reported
-        q = QuestionFactory(created=datetime.now() - timedelta(days=3))
+        q = QuestionFactory(created=timezone.now() - timedelta(days=3))
         AnswerFactory(creator=tracked_user, question=q)
-        q = QuestionFactory(created=datetime.now() - timedelta(days=1))
+        q = QuestionFactory(created=timezone.now() - timedelta(days=1))
         AnswerFactory(question=q)
         QuestionFactory()
 

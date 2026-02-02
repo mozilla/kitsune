@@ -26,6 +26,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -1406,7 +1407,7 @@ def edit_answer(request, question_id, answer_id):
         answer.content = form.cleaned_data["content"]
         answer.updated_by = request.user
         if "preview" in request.POST:
-            answer.updated = datetime.now()
+            answer.updated = timezone.now()
             answer_preview = answer
         else:
             log.warning("User {} is editing answer with id={}".format(request.user, answer.id))

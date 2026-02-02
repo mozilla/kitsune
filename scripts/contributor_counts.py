@@ -5,7 +5,8 @@
 
 
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
 
 from django.db.models.functions import Now
 
@@ -13,7 +14,7 @@ from kitsune.forums.models import Post
 
 
 def run():
-    two_weeks_ago = datetime.now() - timedelta(days=24)
+    two_weeks_ago = timezone.now() - timedelta(days=24)
 
     print(f"Data since {two_weeks_ago}")
     print("")

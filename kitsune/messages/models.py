@@ -1,7 +1,7 @@
-from datetime import datetime
 
 from django.contrib.auth.models import Group, User
 from django.db import models
+from django.utils import timezone
 
 from kitsune.sumo.models import ModelBase
 
@@ -35,7 +35,7 @@ class InboxMessage(ModelBase):
     to = models.ForeignKey(User, on_delete=models.CASCADE, related_name="inbox")
     sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     read = models.BooleanField(default=False, db_index=True)
     replied = models.BooleanField(default=False)
 
@@ -60,7 +60,7 @@ class OutboxMessage(ModelBase):
     to = models.ManyToManyField(User)
     to_group = models.ManyToManyField(Group, null=True, blank=True)
     message = models.TextField()
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
 
     def __str__(self):
         to = ", ".join([u.username for u in self.to.all()])

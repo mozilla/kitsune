@@ -14,9 +14,10 @@ from django.db.models.fields.files import FieldFile
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
+from django.utils import timezone
 from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlencode
-from django.utils.timezone import get_default_timezone, is_aware, is_naive
+from django.utils.timezone import is_aware, is_naive
 from django.utils.timezone import now as django_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
@@ -399,9 +400,9 @@ def timesince(d, now=None):
     ]
     if not now:
         if is_aware(d):
-            now = datetime.datetime.now(get_default_timezone())
+            now = timezone.now()
         else:
-            now = datetime.datetime.now()
+            now = timezone.now().replace(tzinfo=None)
 
     # Ignore microsecond part of 'd' since we removed it from 'now'
     delta = now - (d - datetime.timedelta(0, 0, d.microsecond))
@@ -479,7 +480,7 @@ def static(path):
 
 @library.global_function
 def now():
-    return datetime.datetime.now()
+    return timezone.now()
 
 
 @library.filter

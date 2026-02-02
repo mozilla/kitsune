@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import factory
+from django.utils import timezone
 
 from kitsune.announcements.models import Announcement
 from kitsune.sumo.tests import FuzzyUnicode
@@ -14,7 +15,7 @@ class AnnouncementFactory(factory.django.DjangoModelFactory):
 
     content = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
-    show_after = factory.LazyAttribute(lambda a: datetime.now() - timedelta(days=2))
+    show_after = factory.LazyAttribute(lambda a: timezone.now() - timedelta(days=2))
     visible_dates = True
     send_email = False
 
@@ -23,4 +24,4 @@ class AnnouncementFactory(factory.django.DjangoModelFactory):
         if self.visible_dates:
             return None
         else:
-            return datetime.now() - timedelta(days=1)
+            return timezone.now() - timedelta(days=1)

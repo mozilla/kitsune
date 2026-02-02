@@ -1,7 +1,6 @@
 import json
 import re
 import sys
-from datetime import datetime
 from functools import lru_cache
 from urllib.parse import urlparse
 
@@ -11,6 +10,7 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.templatetags.static import static
+from django.utils import timezone
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django_ratelimit.core import is_ratelimited as is_ratelimited_core
@@ -218,7 +218,7 @@ class Progress:
         self.current = 0
         self.total = total
         self.milestone_stride = milestone_stride
-        self.milestone_time = datetime.now()
+        self.milestone_time = timezone.now()
         self.estimated = "?"
 
     def tick(self, incr=1):
@@ -229,7 +229,7 @@ class Progress:
         self.current += incr
 
         if self.current and self.current % self.milestone_stride == 0:
-            now = datetime.now()
+            now = timezone.now()
             duration = now - self.milestone_time
             duration = duration.seconds + duration.microseconds // 1e6
             rate = self.milestone_stride // duration

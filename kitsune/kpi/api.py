@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from functools import reduce
 from operator import itemgetter
 
@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
 from django.db.models.functions import Now
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, viewsets
 from rest_framework.response import Response
@@ -196,7 +197,7 @@ class KBVoteMetricList(CachedAPIView):
         # Use "__range" to ensure the database index is used in Postgres,
         # and only show the helpful votes from the last 365 days.
         qs_kb_votes = HelpfulVote.objects.filter(
-            created__range=(datetime.now() - timedelta(days=365), Now())
+            created__range=(timezone.now() - timedelta(days=365), Now())
         )
 
         if locale:
@@ -332,7 +333,7 @@ def _daily_qs_for(model_cls):
         # Use "__range" to ensure the database index is used in Postgres,
         # and only get the objects from the last 365 days.
         model_cls.objects.filter(
-            created__range=(datetime.now() - timedelta(days=365), Now()), creator__is_active=1
+            created__range=(timezone.now() - timedelta(days=365), Now()), creator__is_active=1
         )
         .extra(
             select={
@@ -351,7 +352,7 @@ def _qs_for(model_cls):
     return (
         # Use "__range" to ensure the database index is used in Postgres,
         # and only get the objects from the last 365 days.
-        model_cls.objects.filter(created__range=(datetime.now() - timedelta(days=365), Now()))
+        model_cls.objects.filter(created__range=(timezone.now() - timedelta(days=365), Now()))
         .extra(
             select={
                 "day": "extract( day from created )",

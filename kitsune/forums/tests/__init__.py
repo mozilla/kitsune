@@ -1,7 +1,6 @@
-from datetime import datetime
-
 import factory
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 
 from kitsune.forums.models import Forum, Post, Thread
 from kitsune.sumo.tests import FuzzyUnicode, TestCase
@@ -20,7 +19,7 @@ class ThreadFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Thread
 
-    created = factory.LazyAttribute(lambda t: datetime.now())
+    created = factory.LazyAttribute(lambda t: timezone.now())
     creator = factory.SubFactory(UserFactory)
     forum = factory.SubFactory(ForumFactory)
     title = FuzzyUnicode()

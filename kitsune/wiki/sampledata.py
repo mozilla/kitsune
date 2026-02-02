@@ -1,5 +1,6 @@
 import os
-from datetime import datetime
+
+from django.utils import timezone
 
 from kitsune.products.models import Product, Topic
 from kitsune.products.tests import TopicFactory
@@ -76,7 +77,7 @@ def generate_sampledata(options):
     # Create a hot article
     flash = DocumentFactory(title="Flash 11.3 crashes", slug="flash-113-crashes")
     RevisionFactory(
-        content=FLASH_CONTENT, document=flash, is_approved=True, reviewed=datetime.now()
+        content=FLASH_CONTENT, document=flash, is_approved=True, reviewed=timezone.now()
     )
     flash.products.add(firefox)
     flash.topics.add(Topic.active.get(products=firefox, slug="fix-problems"))
@@ -88,7 +89,7 @@ def generate_sampledata(options):
         d = DocumentFactory(
             title="Sample Article {}".format(str(i + 1)), slug="sample-article-{}".format(str(i + 1))
         )
-        RevisionFactory(document=d, is_approved=True, reviewed=datetime.now())
+        RevisionFactory(document=d, is_approved=True, reviewed=timezone.now())
         d.products.add(firefox)
         d.products.add(mobile)
         d.topics.add(topics[i])

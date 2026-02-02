@@ -1,10 +1,10 @@
 
 import urllib.parse
-from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.apps import ProgrammingError
@@ -1260,7 +1260,7 @@ class LocalizableOrLatestRevisionTests(TestCase):
 
     def test_only_rejected(self):
         """If there are only rejected revisions, return None."""
-        rejected = RevisionFactory(is_approved=False, reviewed=datetime.now())
+        rejected = RevisionFactory(is_approved=False, reviewed=timezone.now())
         self.assertEqual(None, rejected.document.localizable_or_latest_revision())
 
     def test_multiple_ready(self):
@@ -1294,7 +1294,7 @@ class LocalizableOrLatestRevisionTests(TestCase):
     def test_latest_rejected_if_none_unreviewed(self):
         """Return the latest rejected revision when no ready or unreviewed ones
         exist, if include_rejected=True."""
-        rejected = RevisionFactory(is_approved=False, reviewed=datetime.now())
+        rejected = RevisionFactory(is_approved=False, reviewed=timezone.now())
         self.assertEqual(
             rejected, rejected.document.localizable_or_latest_revision(include_rejected=True)
         )

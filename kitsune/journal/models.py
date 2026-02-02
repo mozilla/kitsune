@@ -1,6 +1,6 @@
-from datetime import datetime
 
 from django.db import models
+from django.utils import timezone
 
 RECORD_INFO = "info"
 RECORD_ERROR = "error"
@@ -36,7 +36,7 @@ class Record(models.Model):
     msg = models.CharField(max_length=255)
 
     # When this log entry was created
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
 
     objects = RecordManager()
 
