@@ -178,3 +178,18 @@ class GroupProfile(TreeModelBase):
         """Return child groups visible to this user."""
         children = self.get_children()
         return self.__class__.objects.visible(user).filter(pk__in=children)
+
+    def can_remove_leader(self):
+        """
+        Check if a leader can be removed from this group.
+
+        Rules:
+        - Root groups must always have at least one leader
+        - Subgroups can have no leaders (they inherit from root)
+
+        Returns True if a leader can be removed, False otherwise.
+        """
+        if not self.is_root():
+            return True
+
+        return self.leaders.count() > 1

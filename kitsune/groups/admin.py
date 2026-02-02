@@ -1,3 +1,4 @@
+from django import forms
 from django.conf import settings
 from django.contrib import admin
 from treebeard.admin import TreeAdmin
@@ -66,6 +67,7 @@ class GroupProfileAdmin(TreeAdmin):
 
         For child nodes, skip saving "visible_to_groups" since it's inherited
         from the parent via signals. Ensure all leaders are also members.
+        Ensure root nodes always have at least one leader.
         """
         # For children, prevent the form from overwriting the value of the
         # "visible_to_groups" that was inherited via the "post_save" signal.
@@ -74,6 +76,10 @@ class GroupProfileAdmin(TreeAdmin):
 
         super().save_related(request, form, formsets, change)
 
+        if form.instance.is_root() and form.instance.leaders.count() == 0:
+            raise forms.ValidationError(
+                "Root groups must have at least one leader. Please assign a leader before saving."
+            )
         for leader in form.instance.leaders.all():
             if not leader.groups.filter(pk=form.instance.group.pk).exists():
                 leader.groups.add(form.instance.group)

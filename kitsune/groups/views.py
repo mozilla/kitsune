@@ -16,6 +16,32 @@ from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.tasks import create_image_thumbnail
 
 
+def _remove_group_member(profile, user, request):
+    """
+    Remove a member/leader from a group with validation.
+
+    Handles both regular members and leaders, with appropriate validation
+    and error messages for the last leader scenario.
+
+    Returns True if removed successfully, False if validation failed.
+    """
+    is_leader = profile.leaders.filter(pk=user.pk).exists()
+
+    if is_leader and not profile.can_remove_leader():
+        msg = _(
+            "Cannot remove {user} because they are the last leader of a root group. "
+            "Root groups must always have at least one leader. "
+            "Please assign another leader before removing this member."
+        ).format(user=user.username)
+        messages.add_message(request, messages.ERROR, msg)
+        return False
+
+    if is_leader:
+        profile.leaders.remove(user)
+    user.groups.remove(profile.group)
+    return True
+
+
 def list(request):
     """List all groups visible to the user."""
     groups = GroupProfile.objects.visible(request.user).select_related("group")
@@ -163,12 +189,9 @@ def remove_member(request, group_slug, user_id):
         raise PermissionDenied
 
     if request.method == "POST":
-        if prof.leaders.filter(pk=user.pk).exists():
-            # If user is a leader, remove from leaders
-            prof.leaders.remove(user)
-        user.groups.remove(prof.group)
-        msg = _("{user} removed from the group successfully!").format(user=user.username)
-        messages.add_message(request, messages.SUCCESS, msg)
+        if _remove_group_member(prof, user, request):
+            msg = _("{user} removed from the group successfully!").format(user=user.username)
+            messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(prof.get_absolute_url())
 
     return render(request, "groups/confirm_remove_member.html", {"profile": prof, "member": user})
@@ -212,9 +235,11 @@ def remove_leader(request, group_slug, user_id):
         raise PermissionDenied
 
     if request.method == "POST":
-        prof.leaders.remove(user)
-        msg = _("{user} removed from the group leaders successfully!").format(user=user.username)
-        messages.add_message(request, messages.SUCCESS, msg)
+        if _remove_group_member(prof, user, request):
+            msg = _("{user} removed from the group leaders successfully!").format(
+                user=user.username
+            )
+            messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(prof.get_absolute_url())
 
     return render(request, "groups/confirm_remove_leader.html", {"profile": prof, "leader": user})
