@@ -16,12 +16,19 @@ from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.tasks import create_image_thumbnail
 
 
-def _remove_group_member(profile, user, request):
+def _remove_group_member(profile, user, request, remove_from_group=True):
     """
     Remove a member/leader from a group with validation.
 
     Handles both regular members and leaders, with appropriate validation
     and error messages for the last leader scenario.
+
+    Args:
+        profile: The GroupProfile to remove the user from
+        user: The user to remove
+        request: The HTTP request object
+        remove_from_group: If True, removes user from group entirely.
+                          If False, only removes from leaders (demotes to regular member).
 
     Returns True if removed successfully, False if validation failed.
     """
@@ -38,7 +45,10 @@ def _remove_group_member(profile, user, request):
 
     if is_leader:
         profile.leaders.remove(user)
-    user.groups.remove(profile.group)
+
+    if remove_from_group:
+        user.groups.remove(profile.group)
+
     return True
 
 
@@ -235,7 +245,7 @@ def remove_leader(request, group_slug, user_id):
         raise PermissionDenied
 
     if request.method == "POST":
-        if _remove_group_member(prof, user, request):
+        if _remove_group_member(prof, user, request, remove_from_group=False):
             msg = _("{user} removed from the group leaders successfully!").format(
                 user=user.username
             )
