@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import waffle
 from celery import shared_task
@@ -84,7 +84,7 @@ def process_event_password_change(event_id):
 
     body = json.loads(event.body)
 
-    change_time = datetime.utcfromtimestamp(body["changeTime"] / 1000.0)
+    change_time = datetime.fromtimestamp(body["changeTime"] / 1000.0, UTC)
 
     if event.profile.fxa_password_change and event.profile.fxa_password_change > change_time:
         event.status = AccountEvent.IGNORED

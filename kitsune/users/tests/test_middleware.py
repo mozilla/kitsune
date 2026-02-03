@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from django.contrib.auth.middleware import AuthenticationMiddleware
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse, HttpResponseRedirect
 from django.test.client import RequestFactory
+from django.utils.timezone import now as timezone_now
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.middleware import LogoutInvalidatedSessionsMiddleware
@@ -37,7 +38,8 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
         self._process_request(self.request)
         first_seen = self.request.session["first_seen"]
 
-        assert datetime.utcnow() > first_seen
+        first_seen_dt = datetime.fromisoformat(first_seen)
+        assert timezone_now() > first_seen_dt
 
         self._process_request(self.request)
 
@@ -46,7 +48,7 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
     def test_does_nothing_if_no_fxa_password_change(self):
         user = UserFactory()
         self.request.user = user
-        self.request.session["first_seen"] = datetime.utcfromtimestamp(1)
+        self.request.session["first_seen"] = datetime.fromtimestamp(1, UTC).isoformat()
 
         self._process_request(self.request)
 
@@ -54,7 +56,7 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
 
     def test_logs_out_user_first_seen_before_password_change(self):
         self.request.user = ProfileFactory(
-            fxa_password_change=datetime.utcnow() + timedelta(minutes=5)
+            fxa_password_change=timezone_now() + timedelta(minutes=5)
         ).user
 
         self._process_request(self.request)
@@ -65,7 +67,7 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
 
     def test_does_nothing_if_user_first_seen_after_password_change(self):
         self.request.user = ProfileFactory(
-            fxa_password_change=datetime.utcnow() - timedelta(minutes=5)
+            fxa_password_change=timezone_now() - timedelta(minutes=5)
         ).user
         user = self.request.user
 

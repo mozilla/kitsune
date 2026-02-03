@@ -1,9 +1,9 @@
-from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase
@@ -49,9 +49,9 @@ class FlaggedObject(ModelBase):
     notes = models.TextField(default="", blank=True)
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="flags")
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
 
-    handled = models.DateTimeField(default=datetime.now, db_index=True)
+    handled = models.DateTimeField(default=timezone.now, db_index=True)
     handled_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     assignee = models.ForeignKey(

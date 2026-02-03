@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import Count, Exists, F, Max, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce, Now
+from django.utils import timezone
 from elasticsearch.dsl import A
 
 from kitsune.community.models import DeletedContribution
@@ -24,7 +25,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
     """Get the top Support Forum contributors."""
 
     if not start:
-        start = datetime.now() - timedelta(days=DEFAULT_PERIOD_DAYS)
+        start = timezone.now() - timedelta(days=DEFAULT_PERIOD_DAYS)
 
     limit = min(count * 10, 1000)
 
@@ -122,7 +123,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
     ) in deletion_metrics_by_contributor.items():
         user_id = str(contributor_id)
         if user := users.get(user_id):
-            days_since_last_activity = (datetime.now() - last_contribution_timestamp).days
+            days_since_last_activity = (timezone.now() - last_contribution_timestamp).days
             if user_info := combined_map.get(user_id):
                 user_info["count"] += num_contributions
                 user_info["days_since_last_activity"] = min(

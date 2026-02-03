@@ -55,22 +55,34 @@ ADMINS = (
 MANAGERS = ADMINS
 
 
-# DB_CONN_MAX_AGE: 'persistent' to keep open connection, or max requests before
-# releasing. Default is 0 for a new connection per request.
-def parse_conn_max_age(value):
-    try:
-        return int(value)
-    except ValueError:
-        assert value.lower() == "persistent", 'Must be int or "persistent"'
-        return None
-
-
-DB_CONN_MAX_AGE = config("DB_CONN_MAX_AGE", default=60, cast=parse_conn_max_age)
-
 DATABASES = {"default": config("DATABASE_URL", cast=dj_database_url.parse)}
 
 if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
-    DATABASES["default"]["CONN_MAX_AGE"] = DB_CONN_MAX_AGE
+    # Django 5.1+ Native Connection Pooling with psycopg3
+    # CRITICAL: CONN_MAX_AGE must be 0 when using pool
+    DATABASES["default"]["CONN_MAX_AGE"] = 0
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = config(
+        "CONN_HEALTH_CHECKS", default=True, cast=bool
+    )
+
+    # Configure connection pooling to prevent exhaustion
+    # Max connections capacity: 100 pods x 3 workers x 2 max + 16 celery x 2 = 632 connections
+    # Database connection limit: 800 (leaves 168 connection headroom = 21% buffer)
+    DATABASES["default"]["OPTIONS"] = {
+        "connect_timeout": config("DB_CONNECT_TIMEOUT", default=10, cast=int),
+        "pool": {
+            # Minimum connections per worker (keep some warm)
+            "min_size": config("DB_POOL_MIN_SIZE", default=1, cast=int),
+            # Maximum connections per worker (prevents exhaustion)
+            "max_size": config("DB_POOL_MAX_SIZE", default=2, cast=int),
+            # How long idle connections stay in pool (seconds)
+            "max_idle": config("DB_POOL_MAX_IDLE", default=300, cast=float),
+            # Recycle connections after this time (seconds)
+            "max_lifetime": config("DB_POOL_MAX_LIFETIME", default=3600, cast=float),
+            # How long to wait for a connection from pool (seconds)
+            "timeout": config("DB_POOL_TIMEOUT", default=30, cast=float),
+        },
+    }
 
 # Cache Settings
 CACHES = {
@@ -110,6 +122,9 @@ K8S_DOMAIN = config("K8S_DOMAIN", default="")
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 TIME_ZONE = config("TIME_ZONE", default="US/Pacific")
+
+# Enable timezone-aware datetimes (default changed to True in Django 5.0)
+USE_TZ = config("USE_TZ", default=True, cast=bool)
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -333,7 +348,6 @@ TEXT_DOMAIN = "messages"
 SITE_ID = 1
 
 USE_I18N = True
-USE_L10N = True
 
 DB_LOCALIZE = {
     "karma": {
@@ -736,8 +750,9 @@ SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=not DEBUG, cast=
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_NAME = "session_id"
 SESSION_ENGINE = config("SESSION_ENGINE", default="django.contrib.sessions.backends.cache")
+# JSONSerializer is now the default and recommended serializer
 SESSION_SERIALIZER = config(
-    "SESSION_SERIALIZER", default="django.contrib.sessions.serializers.PickleSerializer"
+    "SESSION_SERIALIZER", default="django.contrib.sessions.serializers.JSONSerializer"
 )
 
 
@@ -1378,7 +1393,7 @@ STALE_ANCHOR_RECORD_RETENTION_DAYS = config(
 )
 
 # Celery beat configuration
-DJANGO_CELERY_BEAT_TZ_AWARE = False  # This should match USE_TZ.
+DJANGO_CELERY_BEAT_TZ_AWARE = config("USE_TZ", default=True, cast=bool)
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 if READ_ONLY:
     CELERY_BEAT_SCHEDULE = {}

@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from functools import cached_property
 from urllib.parse import urlparse
 
@@ -18,7 +18,7 @@ from django.db.models.functions import Now
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import is_valid_path
-from django.utils import translation
+from django.utils import timezone, translation
 from django.utils.translation import pgettext
 from elasticsearch import ApiError, TransportError
 from product_details import product_details
@@ -50,7 +50,7 @@ class AlreadyTakenException(Exception):
 
 
 class VoteBase(ModelBase):
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     class Meta:
@@ -61,8 +61,8 @@ class VoteBase(ModelBase):
 
 
 class AAQBase(ModelBase):
-    created = models.DateTimeField(default=datetime.now, db_index=True)
-    updated = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
+    updated = models.DateTimeField(default=timezone.now, db_index=True)
     content = models.TextField()
     is_spam = models.BooleanField(default=False)
     marked_as_spam = models.DateTimeField(default=None, null=True)
@@ -191,7 +191,7 @@ class Question(AAQBase):
         if not new:
             self.clear_cached_html()
             if update:
-                self.updated = datetime.now()
+                self.updated = timezone.now()
 
         super().save(*args, **kwargs)
 
@@ -351,7 +351,7 @@ class Question(AAQBase):
 
     def sync_num_votes_past_week(self):
         """Get the number of votes for this question in the past week."""
-        last_week = datetime.now().date() - timedelta(days=7)
+        last_week = timezone.now().date() - timedelta(days=7)
         # Use "__range" to ensure the database index is used in Postgres.
         n = QuestionVote.objects.filter(question=self, created__range=(last_week, Now())).count()
         self.num_votes_past_week = n
@@ -439,7 +439,7 @@ class Question(AAQBase):
     @classmethod
     def recent_asked_count(cls, extra_filter=None):
         """Returns the number of questions asked in the last 24 hours."""
-        start = datetime.now() - timedelta(hours=24)
+        start = timezone.now() - timedelta(hours=24)
         # Use "__range" to ensure the database index is used in Postgres.
         qs = cls.objects.filter(created__range=(start, Now()), creator__is_active=True)
         if extra_filter:
@@ -452,7 +452,7 @@ class Question(AAQBase):
         last 24 hours.
         """
         # Use "__range" to ensure the database index is used in Postgres.
-        start = datetime.now() - timedelta(hours=24)
+        start = timezone.now() - timedelta(hours=24)
         qs = cls.objects.filter(
             num_answers=0,
             created__range=(start, Now()),
@@ -519,7 +519,7 @@ class Question(AAQBase):
     @property
     def age(self):
         """The age of the question, in seconds."""
-        delta = datetime.now() - self.created
+        delta = timezone.now() - self.created
         return delta.seconds + delta.days * 24 * 60 * 60
 
     def set_solution(self, answer, solver):
@@ -690,7 +690,7 @@ class Question(AAQBase):
     def mark_as_spam(self, by_user):
         """Mark the question as spam by the specified user."""
         self.is_spam = True
-        self.marked_as_spam = datetime.now()
+        self.marked_as_spam = timezone.now()
         self.marked_as_spam_by = by_user
         self.save()
 
@@ -702,7 +702,7 @@ class Question(AAQBase):
         If the question is no longer validly taken (due to missing user or expired time),
         this will reset the database fields and return False.
         """
-        if self.taken_by is None or self.taken_until is None or self.taken_until < datetime.now():
+        if self.taken_by is None or self.taken_until is None or self.taken_until < timezone.now():
             if (self.taken_by is not None) or (self.taken_until is not None):
                 self.taken_by = None
                 self.taken_until = None
@@ -731,7 +731,7 @@ class Question(AAQBase):
             raise AlreadyTakenException
 
         self.taken_by = user
-        self.taken_until = datetime.now() + timedelta(seconds=config.TAKE_TIMEOUT)
+        self.taken_until = timezone.now() + timedelta(seconds=config.TAKE_TIMEOUT)
         self.save()
 
     def get_images(self):
@@ -931,7 +931,7 @@ class Answer(AAQBase):
             page = self.question.num_answers // config.ANSWERS_PER_PAGE + 1
             self.page = page
         else:
-            self.updated = datetime.now()
+            self.updated = timezone.now()
             self.clear_cached_html()
 
         super().save(*args, **kwargs)
@@ -1092,7 +1092,7 @@ class Answer(AAQBase):
     def mark_as_spam(self, by_user):
         """Mark the answer as spam by the specified user."""
         self.is_spam = True
-        self.marked_as_spam = datetime.now()
+        self.marked_as_spam = timezone.now()
         self.marked_as_spam_by = by_user
         self.save()
 
