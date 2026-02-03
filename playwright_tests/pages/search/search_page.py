@@ -13,7 +13,7 @@ class SearchPage(BasePage):
         self.searchbar_sidebar = page.locator("form#support-search-sidebar input#search-q")
         self.hidden_searchbar = page.locator("form#hidden-search input#search-q")
         self.searchbar_search_button = page.locator("form#support-search-masthead button")
-        self.search_results_header = page.locator("div[class='home-search-section--content'] h2")
+        self.search_results_header = page.locator("//main[@id='search-results-list']/h2")
         self.popular_searches = page.locator("div[class='popular-searches'] a")
         self.popular_search = lambda option: page.locator(
             "p[class='popular-searches']").get_by_role("link", name=option, exact=True)

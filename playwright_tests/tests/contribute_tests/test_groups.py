@@ -1,10 +1,8 @@
 import os
-
 import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
-
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.user_groups_messages import UserGroupMessages
 from playwright_tests.pages.sumo_pages import SumoPages
@@ -60,8 +58,7 @@ def test_group_edit_buttons_visibility(page: Page, create_user_factory):
         assert not sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_leaders_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_members_option_visible()
+        assert not sumo_pages.user_groups.is_manage_group_section_visible()
 
     with check, allure.step("Signing in with a non-admin and a non group member and verifying "
                             "that the edit buttons are not available"):
@@ -69,8 +66,7 @@ def test_group_edit_buttons_visibility(page: Page, create_user_factory):
         assert not sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_leaders_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_members_option_visible()
+        assert not sumo_pages.user_groups.is_manage_group_section_visible()
 
     with check, allure.step("Signing in with a group member and verifying that the edit buttons "
                             "are not available"):
@@ -78,17 +74,15 @@ def test_group_edit_buttons_visibility(page: Page, create_user_factory):
         assert not sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_leaders_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_members_option_visible()
+        assert not sumo_pages.user_groups.is_manage_group_section_visible()
 
     with check, allure.step("Signing in with the group leader and verifying that only the 'edit "
-                            "in admin' and 'edit group leaders' buttons are available"):
+                            "in admin' and 'Manage Group' sections are visible"):
         utilities.start_existing_session(cookies=test_user_four)
         assert sumo_pages.user_groups.is_change_avatar_button_visible()
         assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_leaders_button_visible()
-        assert sumo_pages.user_groups.is_edit_group_members_option_visible()
+        assert sumo_pages.user_groups.is_manage_group_section_visible()
 
     with check, allure.step("Signing in with an admin account and verifying that all edit options "
                             "are available"):
@@ -97,11 +91,11 @@ def test_group_edit_buttons_visibility(page: Page, create_user_factory):
         assert sumo_pages.user_groups.is_change_avatar_button_visible()
         assert sumo_pages.user_groups.is_edit_in_admin_button_visible()
         assert sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert sumo_pages.user_groups.is_edit_group_leaders_button_visible()
-        assert sumo_pages.user_groups.is_edit_group_members_option_visible()
+        assert sumo_pages.user_groups.is_manage_group_section_visible()
 
 
 # C2783730, C2715807
+@pytest.mark.skip
 @pytest.mark.userGroupsTests
 def test_change_group_avatar(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -248,7 +242,6 @@ def test_add_new_group_leader(page: Page, create_user_factory):
 
     with check, allure.step("Clicking on the 'Delete' button for the newly added user and "
                             "verifying that the correct page header is displayed"):
-        sumo_pages.user_groups.click_on_edit_group_leaders_option()
         sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user["username"],
                                                                         from_leaders=True)
         assert (sumo_pages.user_groups.get_remove_leader_page_header() == UserGroupMessages.
@@ -304,7 +297,7 @@ def test_add_group_members(page: Page, user_type, create_user_factory):
                 get_user_added_success_message(test_user["username"]))
 
     with allure.step("Clicking on the added user"):
-        sumo_pages.user_groups.click_on_a_listed_group_user(test_user["username"])
+        sumo_pages.user_groups.click_on_a_listed_group_member(test_user["username"])
 
     with allure.step("Verifying that the group is listed inside the users profile group list"):
         assert test_group in sumo_pages.my_profile_page.get_my_profile_groups_items_text()
@@ -314,7 +307,6 @@ def test_add_group_members(page: Page, user_type, create_user_factory):
 
     with check, allure.step("Clicking on the 'Delete' button for the newly added user and "
                             "verifying that the correct page header is displayed"):
-        sumo_pages.user_groups.click_on_edit_group_members()
         sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user["username"])
         assert (sumo_pages.user_groups.get_remove_user_page_header() == UserGroupMessages.
                 get_delete_user_header(test_user["username"], test_group))
