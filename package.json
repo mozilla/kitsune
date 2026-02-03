@@ -38,7 +38,7 @@
     "@alpinejs/csp": "^3.15.1",
     "@babel/runtime": "^7.27.0",
     "@urql/svelte": "^3.0.3",
-    "codemirror": "^5.65.11",
+    "codemirror": "^6.0.2",
     "d3": "^3.5.17",
     "graphql": "^16.8.1",
     "htmx.org": "^1.9.12",
