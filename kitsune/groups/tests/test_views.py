@@ -160,6 +160,7 @@ class AddRemoveLeaderTests(TestCase):
 
     def test_remove_leader(self):
         self.group_profile.leaders.add(self.leader)
+        self.leader.groups.add(self.group_profile.group)
         url = reverse(
             "groups.remove_leader", locale="en-US", args=[self.group_profile.slug, self.leader.id]
         )
@@ -168,6 +169,7 @@ class AddRemoveLeaderTests(TestCase):
         r = self.client.post(url)
         self.assertEqual(302, r.status_code)
         assert self.leader not in self.group_profile.leaders.all()
+        assert self.leader in self.group_profile.group.user_set.all()
 
     def test_cannot_remove_last_leader_from_root(self):
         """Cannot remove the last leader from a root group."""
