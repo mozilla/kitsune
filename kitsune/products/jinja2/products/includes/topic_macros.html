@@ -56,23 +56,31 @@
             </g>
           </svg>
 
-          {{ _('Still need help?') }}
+          {% if product.slug == 'firefox-enterprise' %}
+            {{ _('Get Help') }}
+          {% else %}
+            {{ _('Still need help?') }}
+          {% endif %}
         </h3>
         <p class="card--desc">
-          {% if product and product.has_ticketing_support %}
-            {{ _('We’re here for you! If you haven’t found a solution after exploring our help articles, you can get in touch with our support team.') }}
+          {% if product.slug == 'firefox-enterprise' %}
+            {{ _('If you\'re a Firefox Support for Organizations admin, contact us for technical assistance, deployment guidance, and priority help.') }}
+          {% elif product.has_ticketing_support %}
+            {{ _('We\'re here for you! If you haven\'t found a solution after exploring our help articles, you can get in touch with our support team.') }}
           {% else %}
-            {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
+            {{ _('We\'re here for you. Post a question to our support forums and get answers from our community of experts.') }}
           {% endif %}
         </p>
         <a class="sumo-button primary-button button-lg"
-          href="{{ url('questions.aaq_step2', product_slug=product.slug) }}"
+          href="{% if product.slug == 'firefox-enterprise' %}{{ url('questions.aaq_step3', product_slug=product.slug) }}{% else %}{{ url('questions.aaq_step2', product_slug=product.slug) }}{% endif %}"
           data-event-name="link_click"
           data-event-parameters='{
-            "link_name": "aaq-banner.aaq-step-2",
+            "link_name": "{% if product.slug == 'firefox-enterprise' %}enterprise-banner.aaq-step-3{% else %}aaq-banner.aaq-step-2{% endif %}",
             "link_detail": "{{ product.slug }}"
           }'>
-          {% if product and product.has_ticketing_support %}
+          {% if product.slug == 'firefox-enterprise' %}
+            {{ _('Contact Support') }}
+          {% elif product.has_ticketing_support %}
             {{ _('Get Support') }}
           {% else %}
             {{ _('Ask the Community') }}

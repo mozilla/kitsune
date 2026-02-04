@@ -17,7 +17,7 @@
 {% block hidden_search_masthead %}{% endblock %}
 
 {% block masthead %}
-<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg">
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg product-{{ product.slug }}">
 
   <div class="mzp-l-content">
 
@@ -112,6 +112,11 @@
     </div>
   </div>
 </section>
+
+{% if product.slug == 'firefox-enterprise' %}
+  {{ topic_metadata(topics, product=product) }}
+{% endif %}
+
 {% endblock %}
 
 {% block contentwrap %}
@@ -147,7 +152,9 @@
     {{ help_topics(topics) }}
   </div>
 
+  {% if product.slug != 'firefox-enterprise' %}
   {{ topic_metadata(topics, product=product) }}
+  {% endif %}
 
 {% if featured %}
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
