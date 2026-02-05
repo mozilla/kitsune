@@ -81,5 +81,11 @@
 }
 
 .search-results-heading {
-  margin-top: p.$spacing-xl;
+  font-size: 1.25rem;
+  margin-top: 0;
+  margin-bottom: p.$spacing-lg;
+}
+
+#instant-search-content > section {
+  padding-top: p.$spacing-lg;
 }

@@ -120,7 +120,7 @@
 {% endif %}
 
 
-{% if num_results == 0 %}
+{% if num_results == 0 and product != 'firefox-enterprise' %}
 <div class="sumo-page-section--inner">
   <div class="card card--ribbon is-inverse">
     <div class="card--details">
@@ -142,7 +142,7 @@
       <a
         id="search-results-aaq-link"
         class="sumo-button primary-button button-lg"
-        href="/questions/new"
+        href="{% if product %}/questions/new/{{ product }}/form{% else %}/questions/new{% endif %}"
         data-event-name="link_click"
         data-event-parameters='{"link_name": "search-results.aaq-step-3.get-support"}'>
         {{ _('Get Support') }}
