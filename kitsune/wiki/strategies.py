@@ -240,6 +240,7 @@ class AITranslationStrategy(TranslationStrategy):
     ) -> TranslationResult:
         """Perform AI translation."""
         doc = l10n_request.revision.document
+        send_notifications = not doc.is_archived
 
         translated_content = llm_translate(doc=doc, target_locale=l10n_request.target_locale)
 
@@ -251,9 +252,9 @@ class AITranslationStrategy(TranslationStrategy):
             "translated_content": translated_content,
         }
 
-        rev = self.content_manager.create_revision(data, doc, send_notifications=True)
+        rev = self.content_manager.create_revision(data, doc, send_notifications=send_notifications)
         if publish:
-            rev = self.content_manager.publish_revision(rev)
+            rev = self.content_manager.publish_revision(rev, send_notifications=send_notifications)
 
         result = TranslationResult(
             success=True,
