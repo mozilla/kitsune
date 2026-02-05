@@ -9,7 +9,7 @@ from product_details import product_details
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.models import Product, Topic, TopicSlugHistory
-from kitsune.sumo.utils import has_support_config, set_aaq_context
+from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, Revision
@@ -58,6 +58,7 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
         else:
             latest_version = 0
     topics = topics_for(request.user, product=product, parent=None)
+    aaq_context = get_aaq_context(request, product)
 
     return render(
         request,
@@ -69,7 +70,8 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product=product, locale=request.LANGUAGE_CODE),
-            "has_support_config": has_support_config(product),
+            "has_support_config": bool(aaq_context),
+            "aaq_context": aaq_context,
         },
     )
 

@@ -27,7 +27,13 @@ from markupsafe import Markup, escape
 
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import has_support_config, in_staff_group, is_trusted_user, webpack_static
+from kitsune.sumo.utils import (
+    get_aaq_url,
+    has_support_config,
+    in_staff_group,
+    is_trusted_user,
+    webpack_static,
+)
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
@@ -48,6 +54,7 @@ library.global_function(webpack_static)
 library.global_function(is_trusted_user)
 library.global_function(in_staff_group)
 library.global_function(has_support_config)
+library.global_function(get_aaq_url)
 
 
 @library.filter
