@@ -108,10 +108,8 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     detailsInit(); // fold up sidebar on mobile.
     tabsInit();
 
-    // remove and append search results heading
+    // hide intro text when showing search results
     $(".page-heading--intro-text").hide();
-    $(".home-search-section--content .search-results-heading").remove();
-    $(".search-results-heading").appendTo(".home-search-section--content");
 
     // change aaq link if we're in aaq flow
     if (aaq_explore_step) {
