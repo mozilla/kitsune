@@ -14,55 +14,75 @@ from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
 
-# labels and help text
+# unused labels and help text
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 SITE_AFFECTED_LABEL = _lazy("URL of affected site")
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 CRASH_ID_LABEL = _lazy("Crash ID(s)")
-CRASH_ID_HELP = _lazy(
-    "If you submit information to Mozilla when you crash, "
-    "you'll be given a crash ID which uniquely identifies "
-    "your crash and lets us look at details that may help "
-    "identify the cause. To find your recently submitted "
-    "crash IDs, go to <strong>about:crashes</strong> in "
-    "your location bar. <a href='https://support.mozilla."
-    "com/en-US/kb/Firefox+crashes#Getting_the_most_"
-    "accurate_help_with_your_Firefox_crash' "
-    "target='_blank'>Click for detailed instructions</a>."
-)
-TROUBLESHOOTING_LABEL = _lazy("Troubleshooting Information")
-TROUBLESHOOTING_HELP = _lazy(
-    "This information gives details about the "
-    "internal workings of your browser that will "
-    "help in answering your question."
-)
+# if you want to use the following string, update it to remove "en-US" from the link first
+# when updating, don't remove the original string, just mark it as deprecated and create a new one
+# L10n: Unused. A description of the "Crash ID(s)" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+CRASH_ID_HELP = _lazy("If you submit information to Mozilla when you crash, you'll be given a crash ID which uniquely identifies your crash and lets us look at details that may help identify the cause. To find your recently submitted crash IDs, go to <strong>about:crashes</strong> in your location bar. <a href='https://support.mozilla.com/en-US/kb/Firefox+crashes#Getting_the_most_accurate_help_with_your_Firefox_crash' target='_blank'>Click for detailed instructions</a>.")
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 FREQUENCY_LABEL = _lazy("This happens")
 FREQUENCY_CHOICES = [
     ("", ""),
+    # L10n: Unused. An option for the "This happens" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
     ("NOT_SURE", _lazy("Not sure how often")),
+    # L10n: Unused. An option for the "This happens" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
     ("ONCE_OR_TWICE", _lazy("Just once or twice")),
+    # L10n: Unused. An option for the "This happens" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
     ("FEW_TIMES_WEEK", _lazy("A few times a week")),
+    # L10n: Unused. An option for the "This happens" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
     ("EVERY_TIME", _lazy("Every time Firefox opened")),
 ]
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 STARTED_LABEL = _lazy("This started when...")
-TITLE_LABEL = _lazy("Subject")
-CONTENT_LABEL = _lazy("How can we help?")
-FF_VERSION_LABEL = _lazy("Firefox version")
-OS_LABEL = _lazy("Operating system")
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 PLUGINS_LABEL = _lazy("Installed plugins")
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 ADDON_LABEL = _lazy("Extension/plugin you are having trouble with")
+# L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 DEVICE_LABEL = _lazy("Mobile device")
+
+# unused labels and help text
+# L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+TROUBLESHOOTING_LABEL = _lazy("Troubleshooting Information")
+# L10n: A description of the "Troubleshooting Information" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+TROUBLESHOOTING_HELP = _lazy("This information gives details about the internal workings of your browser that will help in answering your question.")
+# L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+TITLE_LABEL = _lazy("Summarize your question")
+# L10n: A description of the "Summarize your question" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+TITLE_HELP_TEXT = _lazy("Please summarize your question in one sentence:")
+# L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+CONTENT_LABEL = _lazy("How can we help?")
+# L10n: A description of the "How can we help?" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+CONTENT_HELP_TEXT = _lazy('Please include as much detail as possible. Also, remember to follow our <a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">rules and guidelines</a>.')
+# L10n: A label for a field, displayed when filing a Firefox-related question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+FF_VERSION_LABEL = _lazy("Firefox version")
+# L10n: A label for a field, displayed when filing a Thunderbird-related question form (e.g., on https://support.mozilla.org/questions/new/thunderbird/form).
+TB_VERSION_LABEL = _lazy("Thunderbird version")
+# L10n: A placeholder for the "Thunderbird version" field, displayed when filing a Thunderbird-related question form (e.g., on https://support.mozilla.org/questions/new/thunderbird/form).
+TB_VERSION_PLACEHOLDER = _lazy("e.g., 140.5.0esr, 146.1.0 release or 147.0b4")
+# L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
+OS_LABEL = _lazy("Operating system")
+# L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 CATEGORY_LABEL = _lazy("Which topic best describes your question?")
+# L10n: A label for a checkbox, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 NOTIFICATIONS_LABEL = _lazy("Email me when someone answers the thread")
 
+# L10n: A placeholder for the "Post a Reply" editor.
 REPLY_PLACEHOLDER = _lazy("Enter your reply here.")
+# L10n: A placeholder for the email field, displayed when subscribing to a question while not signed in.
 EMAIL_PLACEHOLDER = _lazy("Enter your email address here.")
 
 
 class EditQuestionForm(forms.ModelForm):
     """Form to edit an existing question"""
 
-    title = forms.CharField(label=TITLE_LABEL, min_length=5)
+    title = forms.CharField(label=TITLE_LABEL, help_text=TITLE_HELP_TEXT, min_length=5)
 
-    content = forms.CharField(label=CONTENT_LABEL, min_length=5, widget=forms.Textarea())
+    content = forms.CharField(label=CONTENT_LABEL, help_text=CONTENT_HELP_TEXT, min_length=5, widget=forms.Textarea())
 
     class Meta:
         model = Question
@@ -75,6 +95,7 @@ class EditQuestionForm(forms.ModelForm):
         form fields to include depend on the selected product/category.
         """
         super().__init__(*args, **kwargs)
+        self.label_suffix = None
 
         #  Extra fields required by product/category selected
         extra_fields = []
@@ -87,6 +108,13 @@ class EditQuestionForm(forms.ModelForm):
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL,
                 required=False,
+            )
+
+        if "tb_version" in extra_fields:
+            self.fields["tb_version"] = forms.CharField(
+                label=TB_VERSION_LABEL,
+                required=False,
+                widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER}),
             )
 
         if "os" in extra_fields:
@@ -108,7 +136,17 @@ class EditQuestionForm(forms.ModelForm):
 
         for field in self.fields.values():
             if not field.required:
+                # L10n: A label suffix for optional fields, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). The leading space must be preserved.
                 field.label_suffix = _lazy(" (optional):")
+
+        for name, field in self.fields.items():
+            if field.help_text:
+                bound = self[name]
+                bound.help_id = f"{bound.id_for_label}_help"
+                if field.widget.attrs.get("aria-describedby"):
+                    field.widget.attrs["aria-describedby"] += " " + bound.help_id
+                else:
+                    field.widget.attrs["aria-describedby"] = bound.help_id
 
     def clean_content(self):
         """Validate that content field contains actual text, not just HTML markup."""
@@ -117,6 +155,7 @@ class EditQuestionForm(forms.ModelForm):
         text_only = html.unescape(text_only).strip()
 
         if len(text_only) < 5:
+            # L10n: An error message displayed under the "How can we help?" field when filing a question form if the submitted value contains too few non-HTML symbols.
             raise forms.ValidationError(_("Question content cannot be empty."))
         return content
 
@@ -177,7 +216,8 @@ class NewQuestionForm(EditQuestionForm):
     category = forms.ModelChoiceField(
         label=CATEGORY_LABEL,
         queryset=Topic.objects.none(),
-        empty_label="Please select",
+        # L10n: A default option for dropdown menus (displayed when none of the actual options is selected).
+        empty_label=_lazy("Please select..."),
         required=True,
     )
 
@@ -275,6 +315,3 @@ class WatchQuestionForm(forms.Form):
             return self.cleaned_data["email"]
         # Clear out the email for logged in users, we don't want to use it.
         return None
-
-
-bucket_choices = [(1, "1 day"), (7, "1 week"), (30, "1 month")]
