@@ -261,7 +261,13 @@ class TestWikiParser(TestCase):
         self.assertEqual(0, len(doc("iframe")))
 
     def test_iframe_hell_bug_898769(self):
-        """Verify fix for bug 898769."""
+        """Verify fix for bug 898769.
+
+        The exact output varies between HTML parsers (html5lib vs justhtml),
+        but the security property must hold: no iframe, svg, or event handler
+        attributes survive as live HTML in the output. Entity-escaped text
+        (e.g. &lt;iframe) is safe since browsers render it as inert text.
+        """
         content = r"""<iframe/src \/\/onload = prompt(1)
 
 <iframe/onreadystatechange=alert(/@blinkms/)
@@ -269,10 +275,10 @@ class TestWikiParser(TestCase):
 <svg/onload=alert(1)"""
 
         self.assertEqual(
-            '<p>&lt;iframe src="" \\="" onload="prompt(1)" &lt;="" p=""'
-            "&gt;&lt;p&gt;&lt;iframe/onreadystatechange="
-            "alert(/@blinkms/)\n&lt;/p&gt;&lt;p&gt;&lt;"
-            "svg/onload=alert(1)\n&lt;/p&gt;&lt;/iframe&gt;</p>",
+            "<p>&lt;iframe src \\ onload &lt; p&gt;&amp;lt;p&amp;gt;&amp;"
+            "lt;iframe/onreadystatechange=alert(/@blinkms/)\n&amp;lt;/p&amp;"
+            "gt;&amp;lt;p&amp;gt;&amp;lt;svg/onload=alert(1)\n&amp;lt;/p&amp;"
+            "gt;&lt;/iframe&gt;</p>",
             self.p.parse(content),
         )
 
@@ -533,7 +539,7 @@ class TestWikiImageTags(TestCase):
     def test_link_valign(self):
         """Link with valign."""
         img = pq_img(self.p, "[[Image:test.jpg|link=http://example.com|valign=top]]")
-        self.assertEqual("vertical-align:top;", img.attr("style"))
+        self.assertEqual("vertical-align: top", img.attr("style"))
 
     def test_link_valign_invalid(self):
         """Link with invalid valign."""
