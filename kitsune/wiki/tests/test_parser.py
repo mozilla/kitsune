@@ -455,31 +455,14 @@ class TestWikiVideo(TestCase):
         d = ApprovedRevisionFactory(content="[[V:{}]]".format(v.title)).document
         doc = pq(d.html)
         self.assertEqual("video", doc("div.video").attr("class"))
-
-        # This test and the code it tests hasn't changed in
-        # months. However, this test started failing for Mike and I
-        # early July 2013. We think we picked up libxml2 2.9.1 and
-        # that causes the output to be different.  I contend that the
-        # output and expected output are both "wrong" in that they're
-        # invalid html5 and the output I'm getting isn't really any
-        # worse. Ergo, I have changed the test to accept either output
-        # because I got stuff to do. Having said that, this is kind of
-        # ridiculous and should be fixed. See bug #892610.
-        assert doc("video").html() in [
-            # This was the original expected test output.
+        self.assertEqual(
+            doc("video").html(),
             (
-                '<source src="{}" '
-                'type="video/webm"><source src="{}" type="video/ogg"/>'
-                "</source>".format(v.webm.url, v.ogv.url)
+                f'<source src="{v.webm.url}" type="video/webm">'
+                f'<source src="{v.ogv.url}" type="video/ogg"/>'
+                "</source>"
             ),
-            # This is the version that Mike and I get.
-            (
-                '\n          <source src="{}" type="video/webm">'
-                '\n          <source src="{}" type="video/ogg">'
-                "\n      </source></source>".format(v.webm.url, v.ogv.url)
-            ),
-        ]
-
+        )
         self.assertEqual(1, len(doc("video")))
         self.assertEqual(2, len(doc("source")))
         data_fallback = doc("video").attr("data-fallback")
@@ -584,14 +567,7 @@ class ForWikiTests(TestCase):
     def test_nested(self):
         """{for} tags should be nestable."""
         self.assertWikiHtmlEqual(
-            "{for mac}\n"
-            "Joe\n"
-            "\n"
-            "Red {for}{for}riding\n"
-            "{/for} hood{/for}\n"
-            "\n"
-            "Blow\n"
-            "{/for}",
+            "{for mac}\nJoe\n\nRed {for}{for}riding\n{/for} hood{/for}\n\nBlow\n{/for}",
             '<div data-for="mac" class="for">'
             "<p>Joe</p>"
             '<p>Red <span class="for"><span class="for">riding'
@@ -652,12 +628,7 @@ class ForWikiTests(TestCase):
         """Make sure one block-level {for} doesn't absorb an adjacent one."""
         p = WikiParser()
         html = p.parse(
-            "{for fx4}\n"
-            "{for mac}Fx4{/for}\n"
-            "{/for}\n"
-            "{for fx3}\n"
-            "{for mac}Fx3{/for}\n"
-            "{/for}"
+            "{for fx4}\n{for mac}Fx4{/for}\n{/for}\n{for fx3}\n{for mac}Fx3{/for}\n{/for}"
         )
         # The two div.fors should be siblings, not nested:
         self.assertEqual([], pq(html)("div.for div.for"))
@@ -821,12 +792,7 @@ class ForParserTests(TestCase):
         strip_eq(
             "\x910\x91\n\n\x911\x91Fx4\x91/sf\x91\n\n\x91/sf\x91\n\n"
             "\x912\x91\n\n\x913\x91Fx3\x91/sf\x91\n\n\x91/sf\x91",
-            "{for fx4}\n"
-            "{for mac}Fx4{/for}\n"
-            "{/for}\n"
-            "{for fx3}\n"
-            "{for mac}Fx3{/for}\n"
-            "{/for}",
+            "{for fx4}\n{for mac}Fx4{/for}\n{/for}\n{for fx3}\n{for mac}Fx3{/for}\n{/for}",
         )
 
     def test_self_closers(self):

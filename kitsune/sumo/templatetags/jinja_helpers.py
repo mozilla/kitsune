@@ -5,7 +5,6 @@ import re
 import urllib
 from zoneinfo import ZoneInfo
 
-import bleach
 import jinja2
 import wikimarkup.parser
 from babel.dates import format_date, format_datetime, format_time
@@ -25,7 +24,8 @@ from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
 
-from kitsune.sumo import parser
+from kitsune.sumo import parser, sanitize
+from kitsune.sumo.sanitize import ALLOWED_BIO_ATTRIBUTES, ALLOWED_BIO_TAGS, clean
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     get_aaq_url,
@@ -37,10 +37,6 @@ from kitsune.sumo.utils import (
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
-ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS | {"p"}
-ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
-# allow rel="nofollow"
-ALLOWED_BIO_ATTRIBUTES["a"].append("rel")
 log = logging.getLogger("k.helpers")
 
 
@@ -148,9 +144,7 @@ def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofoll
         tags=[*wikimarkup.parser.ALLOWED_TAGS, "abbr"],
         attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES | {"abbr": ["title"]},
     )
-    return Markup(
-        bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
-    )
+    return Markup(clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES))
 
 
 @library.filter
@@ -158,7 +152,7 @@ def truncate_question(text, length, longtext=None):
     if len(text) > length:
         if longtext is None:
             longtext = text
-        stripped_text = bleach.clean(text, tags=[], strip=True)
+        stripped_text = clean(text)
 
         f = (
             '<p class="short-text">%s&hellip; '
@@ -448,7 +442,7 @@ def is_secure(context):
 
 @library.filter
 def linkify(text):
-    return bleach.linkify(text)
+    return sanitize.linkify(text)
 
 
 @library.global_function
