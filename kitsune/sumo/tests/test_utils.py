@@ -10,6 +10,7 @@ from kitsune.journal.models import Record
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.utils import (
     chunked,
+    get_aaq_url,
     get_browser,
     get_next_url,
     has_blocked_link,
@@ -379,3 +380,65 @@ class HasSupportConfigTests(TestCase):
         ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
 
         self.assertTrue(has_support_config(product))
+
+
+class GetAAQUrlTests(TestCase):
+    def test_empty_context_returns_community_support(self):
+        url = get_aaq_url({})
+        self.assertEqual(url, "/en-US/kb/get-community-support?exit_aaq=1")
+
+    def test_ticketed_single_product_returns_step3(self):
+        url = get_aaq_url(
+            {
+                "current_support_type": "zendesk",
+                "has_public_forum": False,
+                "multiple_products": False,
+                "product_slug": "firefox",
+            }
+        )
+        self.assertEqual(url, "/en-US/questions/new/firefox/form")
+
+    def test_forum_single_product_returns_step3(self):
+        url = get_aaq_url(
+            {
+                "current_support_type": "forum",
+                "has_public_forum": True,
+                "multiple_products": False,
+                "product_slug": "firefox",
+            }
+        )
+        self.assertEqual(url, "/en-US/questions/new/firefox/form")
+
+    def test_multiple_products_returns_step1(self):
+        url = get_aaq_url(
+            {
+                "current_support_type": "zendesk",
+                "has_public_forum": False,
+                "multiple_products": True,
+                "product_slug": "firefox",
+            }
+        )
+        self.assertEqual(url, "/en-US/questions/new")
+
+    def test_no_channels_no_topic_returns_community_support(self):
+        url = get_aaq_url(
+            {
+                "current_support_type": "forum",
+                "has_public_forum": False,
+                "multiple_products": False,
+                "product_slug": "firefox",
+            }
+        )
+        self.assertEqual(url, "/en-US/kb/get-community-support?exit_aaq=1")
+
+    def test_no_channels_with_topic_returns_step3(self):
+        url = get_aaq_url(
+            {
+                "current_support_type": "forum",
+                "has_public_forum": False,
+                "multiple_products": False,
+                "product_slug": "firefox",
+            },
+            topic="some-topic",
+        )
+        self.assertEqual(url, "/en-US/questions/new/firefox/form")

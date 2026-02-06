@@ -134,11 +134,7 @@
     {% set link_name = "aaq-widget.community-support.kb-article" if not (is_ticketed or has_forum)
                       else "aaq-widget.aaq-step-3" %}
 
-    {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1)
-                       if not (is_ticketed or has_forum or topic)
-                       else url('questions.aaq_step3', product_slug=aaq_context.product_slug)
-                       if aaq_context and not multiple_products
-                       else url('questions.aaq_step1') %}
+    {% set next_step = get_aaq_url(aaq_context or {}, topic) %}
 
     {% set link_detail = aaq_context.product_slug if aaq_context else topic %}
 

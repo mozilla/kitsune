@@ -18,6 +18,7 @@ from django_ratelimit.core import is_ratelimited as is_ratelimited_core
 from kitsune.journal.models import Record
 from kitsune.lib.tlds import VALID_TLDS
 from kitsune.sumo import paginator
+from kitsune.sumo.urlresolvers import reverse
 
 POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
@@ -418,35 +419,63 @@ def has_support_config(product=None):
     )
 
 
+def get_aaq_context(request, product, multiple_products=False):
+    """
+    Given a request and a product, determine the AAQ context and return it.
+
+    Returns an empty dict when there is no support config for the product.
+    """
+    from kitsune.products.models import ProductSupportConfig
+
+    if not has_support_config(product):
+        return {}
+
+    support_type, can_switch = ProductSupportConfig.objects.route_support_request(request, product)
+
+    aaq_context = {
+        "product_slug": product.slug,
+        "multiple_products": multiple_products,
+        "has_ticketing_support": product.has_ticketing_support,
+        "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
+        "current_support_type": support_type,
+        "can_switch": can_switch,
+    }
+
+    if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
+        aaq_context["has_default_public_forum"] = product.questions_enabled(
+            locale=settings.WIKI_DEFAULT_LANGUAGE
+        )
+
+    return aaq_context
+
+
 def set_aaq_context(request, product, multiple_products=False):
     """
     Given a request and a product, determine the AAQ context, insert the AAQ
     context into the session, and return the AAQ context.
     """
-    from kitsune.products.models import ProductSupportConfig
-
-    if not has_support_config(product):
-        aaq_context = {}
-    else:
-        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
-            request, product
-        )
-
-        aaq_context = {
-            "has_ticketing_support": product.has_ticketing_support,
-            "product_slug": product.slug,
-            "has_public_forum": product.questions_enabled(locale=request.LANGUAGE_CODE),
-            "multiple_products": multiple_products,
-            "current_support_type": support_type,
-            "can_switch": can_switch,
-        }
-
-        if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
-            aaq_context["has_default_public_forum"] = product.questions_enabled(
-                locale=settings.WIKI_DEFAULT_LANGUAGE
-            )
+    aaq_context = get_aaq_context(request, product, multiple_products)
 
     # Update the session with the AAQ context.
     request.session["aaq_context"] = aaq_context
 
     return aaq_context
+
+
+def get_aaq_url(aaq_context, topic=None):
+    """Return the appropriate AAQ target URL given the aaq_context dict.
+
+    Expects a dict as returned by get_aaq_context (may be empty).
+    """
+    is_ticketed = aaq_context.get("current_support_type") == "zendesk"
+    has_forum = aaq_context.get("has_public_forum", False)
+    multiple_products = aaq_context.get("multiple_products", False)
+    product_slug = aaq_context.get("product_slug")
+
+    if not (is_ticketed or has_forum or topic):
+        return reverse("wiki.document", args=["get-community-support"]) + "?exit_aaq=1"
+
+    if product_slug and not multiple_products:
+        return reverse("questions.aaq_step3", kwargs={"product_slug": product_slug})
+
+    return reverse("questions.aaq_step1")
