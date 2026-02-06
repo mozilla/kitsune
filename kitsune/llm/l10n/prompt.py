@@ -105,17 +105,17 @@ r"\\{(button|menu|pref) [^}]*\\}"
 SOURCE_ARTICLE = """
 # Prior translation
 
-{%if prior_translation -%}
+{%if prior_source_text -%}
 ## The {{ source_language }} text of the prior translation
 
 ```wiki
-{{ prior_translation.source_text|safe }}
+{{ prior_source_text|safe }}
 ```
 
 ## The {{ target_language }} text of the prior translation
 
 ```wiki
-{{ prior_translation.target_text|safe }}
+{{ prior_target_text|safe }}
 ```
 {%- else -%}
 There is no prior translation.

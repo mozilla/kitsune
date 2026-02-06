@@ -65,13 +65,15 @@ def translate(doc: Document, target_locale: str) -> dict[str, dict[str, Any]]:
             and (source_text := getattr(source_rev, content_attribute))
             and (target_text := getattr(target_rev, content_attribute))
         ):
-            return {"source_text": source_text, "target_text": target_text}
-        return None
+            return source_text, target_text
+        return None, None
 
     for content_attribute in content_attributes:
+        prior_source_text, prior_target_text = get_prior_translation(content_attribute)
         payload.update(
             source_text=get_source_text(content_attribute),
-            prior_translation=get_prior_translation(content_attribute),
+            prior_source_text=prior_source_text,
+            prior_target_text=prior_target_text,
         )
 
         if payload["source_text"]:
