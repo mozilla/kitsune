@@ -2,8 +2,6 @@ import re
 from itertools import count
 from xml.sax.saxutils import quoteattr
 
-import bleach
-from bleach.css_sanitizer import CSSSanitizer
 from django.conf import settings
 from django.utils import translation
 from django.utils.translation import gettext as _
@@ -19,6 +17,7 @@ from wikimarkup.parser import ALLOWED_TAGS
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
 from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, ALLOWED_STYLES, get_object_fallback
+from kitsune.sumo.sanitize import clean
 from kitsune.wiki.models import Document
 
 # block elements wikimarkup knows about (and thus preserves)
@@ -211,14 +210,12 @@ class ForParser:
         stream = sortAttributes(stream)
         serializer = HTMLSerializer(quote_attr_values="always", omit_optional_tags=False)
         html = serializer.render(stream)[container_len : -container_len - 1]
-        return bleach.clean(
+        return clean(
             html,
             tags=kwargs.get("tags") or ([*ALLOWED_TAGS, "for"]),
             attributes=kwargs.get("attributes") or ALLOWED_ATTRIBUTES,
-            css_sanitizer=CSSSanitizer(
-                allowed_css_properties=kwargs.get("styles") or ALLOWED_STYLES
-            ),
-            strip_comments=True,
+            css_properties=kwargs.get("styles") or ALLOWED_STYLES,
+            strip=False,
         )
 
     @staticmethod
@@ -412,9 +409,7 @@ class WikiParser(sumo_parser.WikiParser):
         text = parse_simple_syntax(text)
 
         # Run the formatter:
-        html = super().parse(
-            text, youtube_embeds=False, ui_component_embeds=False, **kwargs
-        )
+        html = super().parse(text, youtube_embeds=False, ui_component_embeds=False, **kwargs)
 
         # Put the fors back in (as XML-ish <for> tags this time):
         html = ForParser.unstrip_fors(html, data)

@@ -8,7 +8,7 @@ license = "BSD-3-Clause"
 dependencies = [
     "Django>=4.2.25,<5",
     "Pillow>=11.0.0,<12",
-    "bleach[css]>=6.1.0,<7",
+    "justhtml>=1.5.0,<2",
     "boto3>=1.34.17,<2",
     "celery==5.6.0",
     "dennis>=1.1.0,<2",

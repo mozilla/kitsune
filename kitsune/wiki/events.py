@@ -1,7 +1,6 @@
 import difflib
 import logging
 
-from bleach import clean
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import reverse as django_reverse
@@ -10,6 +9,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
 
 from kitsune.sumo import email_utils
+from kitsune.sumo.sanitize import clean
 from kitsune.sumo.templatetags.jinja_helpers import add_utm
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.events import Event, EventUnion, InstanceEvent
@@ -41,7 +41,7 @@ def get_diff_for(doc, old_rev, new_rev):
             acc = acc + d.decode("utf8")
 
     # Clean output
-    return clean(acc, ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+    return clean(acc, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES, strip=False)
 
 
 def context_dict(revision, ready_for_l10n=False, revision_approved=False):
@@ -65,8 +65,12 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
         "creator": revision.creator,
         "host": Site.objects.get_current().domain,
         "diff": diff,
-        "summary": clean(revision.summary, ALLOWED_TAGS, ALLOWED_ATTRIBUTES),
-        "fulltext": clean(revision.content, ALLOWED_TAGS, ALLOWED_ATTRIBUTES),
+        "summary": clean(
+            revision.summary, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES, strip=False
+        ),
+        "fulltext": clean(
+            revision.content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES, strip=False
+        ),
     }
 
 
