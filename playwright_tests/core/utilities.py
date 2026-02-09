@@ -1,7 +1,7 @@
-import base64
 import functools
 import os
 import warnings
+from urllib.error import HTTPError
 import requests
 import time
 import re
@@ -92,81 +92,108 @@ class Utilities:
         creds.refresh(Request())
         return build('gmail', 'v1', credentials=creds)
 
-    def clear_email(self):
-        """ Clears FxA verification emails from the Gmail inbox."""
-        try:
-            service = self._get_gmail_service()
-            results = service.users().messages().list(
-                userId='me',
-                q='from:verification@stage.mozaws.net'
-            ).execute()
-
-            messages = results.get('messages', [])
-            for message in messages:
-                service.users().messages().trash(
-                    userId='me',
-                    id=message['id']
-                ).execute()
-        except Exception as e:
-            print(f"Error clearing Gmail: {e}")
-
-    def get_fxa_verification_code(self, max_attempts=5, poll_interval=5) -> str:
-        """
-        Polls Gmail for the FxA verification code.
+    def clear_email(self, restmail_username: str = None):
+        """ Clears FxA verification emails from the Gmail inbox.
         Args:
-            max_attempts (int): Maximum polling attempts
-            poll_interval (int): Seconds between attempts
-        Returns:
-            str: The verification code
+            restmail_username (str): If using a restmail account.
         """
-        service = self._get_gmail_service()
-
-        for attempt in range(max_attempts):
+        if restmail_username:
+            requests.delete(f"https://restmail.net/mail/{restmail_username}")
+        else:
             try:
+                service = self._get_gmail_service()
                 results = service.users().messages().list(
                     userId='me',
-                    q='from:verification@stage.mozaws.net',
-                    maxResults=1
+                    q='from:verification@stage.mozaws.net'
                 ).execute()
 
                 messages = results.get('messages', [])
-
-                if messages:
-                    msg = service.users().messages().get(
+                for message in messages:
+                    service.users().messages().trash(
                         userId='me',
-                        id=messages[0]['id'],
-                        format='full'
+                        id=message['id']
+                    ).execute()
+            except Exception as e:
+                print(f"Error clearing Gmail: {e}")
+
+    def get_fxa_verification_code(self, max_attempts=5, poll_interval=5,
+                                  restmail_username: str = None, new_account: bool = False) -> str:
+        """
+        Polls Gmail for the FxA verification code.
+        Args:
+            max_attempts (int): Maximum polling attempts.
+            poll_interval (int): Seconds between attempts.
+            restmail_username (str): Optional. The restmail username (if we need/want to use
+            restmail).
+            new_account (bool): If we are creating a new fxa account.
+        Returns:
+            str: The verification code
+        """
+        for attempt in range(max_attempts):
+            if restmail_username:
+                try:
+                    target = f"https://restmail.net/mail/{restmail_username}"
+                    response = requests.get(target)
+                    response.raise_for_status()
+                    json_response = response.json()
+                    if new_account:
+                        fxa_verification_code = json_response[0]['headers']['x-verify-short-code']
+                    else:
+                        fxa_verification_code = json_response[0]['headers']['x-signin-verify-code']
+                    self.clear_email(restmail_username=restmail_username)
+                    return fxa_verification_code
+                except HTTPError and IndexError as error:
+                    print(error)
+            else:
+                service = self._get_gmail_service()
+                try:
+                    self.clear_email()
+                    results = service.users().messages().list(
+                        userId='me',
+                        q='from:verification@stage.mozaws.net',
+                        maxResults=1
                     ).execute()
 
-                    # Try to get code from headers first
-                    headers = msg['payload'].get('headers', [])
-                    for header in headers:
-                        if header['name'].lower() == 'x-signin-verify-code':
-                            code = header['value']
-                            service.users().messages().trash(
-                                userId='me', id=messages[0]['id']
-                            ).execute()
-                            return code
+                    messages = results.get('messages', [])
 
-                    # Fallback: parse from subject (e.g., "Use xxx to confirm your account")
-                    for header in headers:
-                        if header['name'].lower() == 'subject':
-                            code = self._extract_code_from_subject(header['value'])
-                            if code:
+                    if messages:
+                        msg = service.users().messages().get(
+                            userId='me',
+                            id=messages[0]['id'],
+                            format='full'
+                        ).execute()
+
+                        # Try to get code from headers first
+                        headers = msg['payload'].get('headers', [])
+                        for header in headers:
+                            if header['name'].lower() == 'x-signin-verify-code':
+                                code = header['value']
                                 service.users().messages().trash(
                                     userId='me', id=messages[0]['id']
                                 ).execute()
+                                self.clear_email()
                                 return code
-                            break
 
-                print(f"Attempt {attempt + 1}/{max_attempts}: No verification email yet")
-                time.sleep(poll_interval)
+                        # Fallback: parse from subject (e.g., "Use xxx to confirm your account")
+                        for header in headers:
+                            if header['name'].lower() == 'subject':
+                                code = self._extract_code_from_subject(header['value'])
+                                if code:
+                                    service.users().messages().trash(
+                                        userId='me', id=messages[0]['id']
+                                    ).execute()
+                                    self.clear_email()
+                                    return code
+                                break
 
-            except Exception as e:
-                print(f"Error fetching verification code: {e}")
-                time.sleep(poll_interval)
+                    print(f"Attempt {attempt + 1}/{max_attempts}: No verification email yet")
+                    time.sleep(poll_interval)
 
-        raise Exception("Failed to retrieve FxA verification code")
+                except Exception as e:
+                    print(f"Error fetching verification code: {e}")
+                    time.sleep(poll_interval)
+
+            raise Exception("Failed to retrieve FxA verification code")
 
     def _extract_code_from_subject(self, subject: str) -> str:
         """Extracts 6-digit verification code from email subject.

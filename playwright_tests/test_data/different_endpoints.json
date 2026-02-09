@@ -8,5 +8,6 @@
             "Navigation": "https://support.allizom.org/en-US/kb/category/50",
             "Templates": "https://support.allizom.org/en-US/kb/category/60",
             "Canned Responses": "https://support.allizom.org/en-US/kb/category/70"
-          }
+          },
+  "fxa_stage": "https://accounts.stage.mozaws.net"
 }

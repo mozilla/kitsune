@@ -11,6 +11,8 @@ from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright._impl._errors import TimeoutError
 
+from playwright_tests.pages.sumo_pages import SumoPages
+
 
 @pytest.fixture(autouse=True)
 def navigate_to_homepage(page: Page):
@@ -148,3 +150,28 @@ def create_user_factory(page: Page, request):
 
     request.addfinalizer(_cleanup)
     return _create_user
+
+@pytest.fixture()
+def restmail_test_account_creation(page: Page, request):
+    sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
+    """Creates and deletes a restmail test account on teardown."""
+    username = 'Test'.join(random.choice(
+        string.ascii_lowercase + string.digits) for _ in range(3)) + "@restmail.net"
+    password = 'Test'.join(random.choice(
+        string.ascii_lowercase + string.digits) for _ in range(3))
+
+    user, user_password = sumo_pages.auth_flow_page.sign_in_flow(
+        username=username, account_password=password, via_top_navbar=True, is_restmail=True,
+        new_account=True
+    )
+
+    yield user, user_password
+
+    page.goto(utilities.different_endpoints['fxa_stage'])
+    sumo_pages.auth_page.click_on_user_logged_in_sign_in_button()
+    sumo_pages.auth_page.click_on_delete_account_button()
+    sumo_pages.auth_page.check_all_acknowledge_fxa_page_checkboxes()
+    sumo_pages.auth_page.click_on_continue_deletion_button()
+    sumo_pages.auth_page.add_fxa_password(password)
+    sumo_pages.auth_page.click_on_the_delete_confirmation_button()
