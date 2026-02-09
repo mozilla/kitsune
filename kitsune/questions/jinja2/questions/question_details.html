@@ -490,6 +490,7 @@
 
                 <div class="sumo-button-wrap">
                   <button id="details-submit" type="submit" class="sumo-button button-sm primary-button">{{ _('Save changes') }}</button>
+                  <button id="details-cancel" class="sumo-button button-sm">{{ _('Cancel') }}</button>
                 </div>
               {% endif %}
 
@@ -500,10 +501,13 @@
                     {% if question.metadata.os %}
                       {% set os = question.metadata.os %}
                       {% set os_lower = os.lower() %}
-                      <li class="{% if os_lower.find('mac') >= 0 %}mac{% elif os_lower.find('linux') >= 0 %}linux{% elif os_lower.find('win') >= 0 %}windows{% endif %}">{{ os }}</li>
+                      <li>{{ os }}</li>
                     {% endif %}
                     {% if question.metadata.ff_version %}
-                      <li class="ff">Firefox {{ question.metadata.ff_version }}</li>
+                      <li>Firefox {{ question.metadata.ff_version }}</li>
+                    {% endif %}
+                    {% if question.metadata.tb_version %}
+                      <li>Thunderbird {{ question.metadata.tb_version }}</li>
                     {% endif %}
                     {% if question.metadata.device %}
                       <li>{{ _('Device:') }} {{ question.metadata.device }}</li>

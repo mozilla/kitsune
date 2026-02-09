@@ -76,6 +76,12 @@ function init() {
       ev.preventDefault();
       $('#question-details').addClass('editing');
     });
+    $(document).on('click', '#details-cancel', function(ev) {
+      ev.preventDefault();
+      let $form = $('#details-cancel').closest('form');
+      $form.trigger('reset');
+      $('#question-details').removeClass('editing');
+    });
 
     initHaveThisProblemTooAjax();
     initHelpfulVote();
