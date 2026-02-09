@@ -1,5 +1,4 @@
-from playwright.sync_api import Locator, Page
-
+from playwright.sync_api import Locator, Page, expect, ElementHandle
 from playwright_tests.core.basepage import BasePage
 
 
@@ -24,10 +23,25 @@ class AuthPage(BasePage):
         self.enter_your_password_input_field = page.locator("input[type='password']")
         self.enter_your_password_submit_button = page.get_by_role(
             "button", name="Sign in", exact=True)
+        self.create_account_button = page.locator("//button[text()='Create account']")
         self.enter_otp_code_input_field = page.locator(
             "//input[@data-testid='signin-token-code-input-field']")
+        self.enter_otp_new_account_code_input_field = page.locator(
+            "//input[@data-testid='confirm-signup-code-input-field']")
         self.enter_otp_code_confirm_button = page.locator("//button[@type='submit']")
         self.email_new_code = page.locator("//button[text()='Email new code.']")
+
+        """Locators belonging to the fxa stage account page."""
+        self.delete_fxa_account_button = page.locator("//a[@data-testid='settings-delete-account']")
+        self.all_acknowledge_checkboxes = page.locator("//input[@data-testid='checkbox-input']")
+        self.delete_fxa_continue_button = page.locator("//button[@data-testid='continue-button']")
+        self.password_confirmation_field = page.locator(
+            "//input[@data-testid='delete-account-confirm-input-field']")
+        self.password_confirmation_delete_button = page.locator(
+            "//button[@data-testid='delete-account-button']"
+        )
+        self.account_deleted_message = page.locator("//p[text()='Account deleted successfully']")
+
 
     def click_on_cant_sign_in_to_my_mozilla_account_link(self):
         """Click on 'Can't sign in to my Mozilla account' link"""
@@ -44,6 +58,10 @@ class AuthPage(BasePage):
     def click_on_user_logged_in_sign_in_button(self):
         """Click on 'Sign in' button"""
         self._click(self.user_logged_in_sign_in_button)
+
+    def click_on_create_account_button(self):
+        """Click on the 'Create account' button."""
+        self._click(self.create_account_button)
 
     def click_on_enter_your_email_submit_button(self):
         """Click on 'Submit' e-mail button"""
@@ -73,6 +91,10 @@ class AuthPage(BasePage):
         """Add data to 'Enter OTP code' input field"""
         self._type(self.enter_otp_code_input_field, text, 100)
 
+    def add_data_to_new_account_otp_code_input_field(self, text: str):
+        """Add data to 'Enter OTP code' input field when creating a new account."""
+        self._type(self.enter_otp_new_account_code_input_field,text, 100)
+
     def clear_email_input_field(self):
         """Clear 'Enter your email' input field"""
         self._clear_field(self.enter_your_email_input_field)
@@ -89,9 +111,43 @@ class AuthPage(BasePage):
     def is_enter_otp_code_input_field_displayed(self) -> bool:
         """Check if 'Enter OTP code' input field is displayed"""
         self._wait_for_locator(self.continue_with_firefox_accounts_button)
-        return self._is_element_visible(self.enter_otp_code_input_field)
+        return (
+            self._is_element_visible(self.enter_otp_code_input_field) or self._is_locator_visible(
+            self.enter_otp_new_account_code_input_field)
+        )
 
     def is_continue_with_firefox_button_displayed(self) -> bool:
         """Check if 'Continue with Firefox Accounts' button is displayed"""
         self._wait_for_locator(self.continue_with_firefox_accounts_button)
         return self._is_element_visible(self.continue_with_firefox_accounts_button)
+
+    """Actions against the fxa pages."""
+    def click_on_delete_account_button(self):
+        """Clicks on the 'Delete Account' button from the fxa page."""
+        self._click(self.delete_fxa_account_button)
+
+    def check_all_acknowledge_fxa_page_checkboxes(self):
+        """Checks all the required checkboxes inside the step 1 fxa deletion flow/page."""
+        self.wait_for_dom_to_load()
+        for checkbox in self._get_element_handles(self.all_acknowledge_checkboxes):
+            try:
+                checkbox.check(force=True)
+            except ElementHandle.check as error:
+                print(error)
+                checkbox.check(force=True)
+
+    def click_on_continue_deletion_button(self):
+        """Clicks on the 'Continue' button inside the step 1 fxa deletion flow/page."""
+        self._click(self.delete_fxa_continue_button)
+
+    def add_fxa_password(self, password: str):
+        """Adds the fxa password inside the step 2 of the fxa deletion flow/page.
+        Args:
+            password (str): The password associated with the fxa account.
+        """
+        self._fill(self.password_confirmation_field, password)
+
+    def click_on_the_delete_confirmation_button(self):
+        """Clicks on the 'Delete' button inside the step 2 of the fxa deletion flow/page."""
+        self._click(self.password_confirmation_delete_button,
+                    expected_locator=self.account_deleted_message)
