@@ -112,7 +112,7 @@ class AuthPage(BasePage):
         """Check if 'Enter OTP code' input field is displayed"""
         self._wait_for_locator(self.continue_with_firefox_accounts_button)
         return (
-            self._is_element_visible(self.enter_otp_code_input_field) or self._is_locator_visible(
+            self._is_element_visible(self.enter_otp_code_input_field) or self._is_element_visible(
             self.enter_otp_new_account_code_input_field)
         )
 

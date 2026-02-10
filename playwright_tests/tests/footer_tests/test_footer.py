@@ -29,7 +29,7 @@ def test_all_footer_links_are_working(page: Page):
         # Some links are returning status code 429.
         # We are currently treating them as pass cases.
         with allure.step(f"Verifying that {url} is not broken"):
-            assert response.status in set(range(400)) | {403, 429}
+            assert response.status < 400 or response.status in (403, 429)
 
 
 # C2316348
@@ -40,6 +40,4 @@ def test_locale_selector(page: Page):
                      "correct page locale"):
         for locale in sumo_pages.footer_section.get_all_footer_locales():
             sumo_pages.footer_section.switch_to_a_locale(locale)
-            expect(
-                page
-            ).to_have_url(re.compile(f".*{locale}"))
+            expect(page).to_have_url(re.compile(f".*/{re.escape(locale)}(/|$)"))

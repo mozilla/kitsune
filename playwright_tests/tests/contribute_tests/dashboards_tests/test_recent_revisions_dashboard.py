@@ -147,7 +147,6 @@ def test_second_revisions_availability(page: Page, create_user_factory):
         utilities.navigate_to_link(article_details["article_show_history_url"])
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=second_revision['revision_id'])
-        utilities.wait_for_given_timeout(1000)
 
     with allure.step("Signing out and verifying that the revision is displayed inside the "
                      "Recent Revisions dashboard"):
@@ -196,7 +195,7 @@ def test_second_revisions_availability(page: Page, create_user_factory):
 def test_recent_revisions_dashboard_links(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
+    test_user = create_user_factory(groups=["Knowledge Base Reviewers", "forum-contributors"])
     test_user_two = create_user_factory(groups=["forum-contributors"])
 
     with allure.step("Signing in with Knowledge Base Reviewers account"):
@@ -210,7 +209,6 @@ def test_recent_revisions_dashboard_links(page: Page, create_user_factory):
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
                      "'Show Diff' option is not available for first revisions"):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
-        utilities.wait_for_given_timeout(3000)
         expect(
             sumo_pages.recent_revisions_page.show_diff(
                 article_title=article_details['article_title'], creator=first_username
@@ -233,10 +231,9 @@ def test_recent_revisions_dashboard_links(page: Page, create_user_factory):
             article_title=article_details['article_title'], username=username
         )
         expect(page).to_have_url(
-            article_details['article_url'] + KBArticleRevision.
-            KB_REVISION_PREVIEW + str(utilities.number_extraction_from_string(
-                second_revision['revision_id']
-            ))
+            article_details['article_url']
+            + KBArticleRevision.KB_REVISION_PREVIEW
+            + str(utilities.number_extraction_from_string(second_revision['revision_id']))
         )
 
     with check, allure.step("Verifying that the revision id is the correct one"):
@@ -303,7 +300,7 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page, create
         )
 
     with allure.step("Navigating to the recent revisions dashboard and verifying that the "
-                     "correct new username and article title arte displayed"):
+                     "correct new username and article title are displayed"):
         sumo_pages.top_navbar.click_on_recent_revisions_option()
         expect(
             sumo_pages.recent_revisions_page.recent_revisions_based_on_article_and_user(
@@ -319,6 +316,7 @@ def test_recent_revisions_dashboard_title_and_username_update(page: Page, create
         sumo_pages.edit_my_profile_page.click_update_my_profile_button(
             expected_url=MyProfileMessages.get_my_profile_stage_url(test_user["username"])
         )
+
 
 # C2266241
 @pytest.mark.recentRevisionsDashboard
@@ -337,7 +335,7 @@ def test_recent_revisions_dashboard_filters(page: Page):
     with check, allure.step("Selecting the ro locale from the locale filter and verifying "
                             "that all the displayed revisions are for the 'ro' locale"):
         sumo_pages.recent_revisions_page.select_locale_option("ro")
-        for tag in sumo_pages.recent_revisions_page.get_list_of_all_locale_tage():
+        for tag in sumo_pages.recent_revisions_page.get_list_of_all_locale_tags():
             assert tag == "ro"
 
     with check, allure.step("Selecting the US filter, typing a username Display Name inside the "
@@ -368,16 +366,18 @@ def test_recent_revisions_dashboard_filters(page: Page):
     with allure.step("Clearing the user filter, adding data inside the start and end fields"):
         sumo_pages.recent_revisions_page.clearing_the_user_field()
 
-        sumo_pages.recent_revisions_page.add_start_date("04052023")
-        sumo_pages.recent_revisions_page.add_end_date("05012023")
+        sumo_pages.recent_revisions_page.add_start_date(start_date)
+        sumo_pages.recent_revisions_page.add_end_date(end_date)
     with check, allure.step("Verifying that the displayed revision dates are between ("
                             "inclusive) the set start and end date filters"):
-        extracted_date = []
-        date_filters = [int(start_date), int(end_date)]
-        for date in sumo_pages.recent_revisions_page.get_all_revision_dates():
-            extracted_date.append(utilities.extract_date_to_digit_format(
+        date_filter_start = int(start_date)
+        date_filter_end = int(end_date)
+        extracted_dates = [
+            utilities.extract_date_to_digit_format(
                 utilities.extract_month_day_year_from_string(date)
-            ))
+            )
+            for date in sumo_pages.recent_revisions_page.get_all_revision_dates()
+        ]
 
-        for date in extracted_date:
-            assert date_filters[0] <= date <= date_filters[1]
+        for date in extracted_dates:
+            assert date_filter_start <= date <= date_filter_end

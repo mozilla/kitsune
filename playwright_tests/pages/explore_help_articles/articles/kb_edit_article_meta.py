@@ -133,4 +133,3 @@ class KBArticleEditMetadata(BasePage):
 
     def click_on_save_changes_button(self):
         self._click(self.save_changes_button)
-        self.wait_for_page_to_load()

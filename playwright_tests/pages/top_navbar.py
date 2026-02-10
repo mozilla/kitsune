@@ -1,3 +1,4 @@
+import re
 from playwright.sync_api import ElementHandle, Locator, Page
 from playwright_tests.core.basepage import BasePage
 from playwright_tests.pages.contribute.contributor_tools_pages.recent_revisions_page import \
@@ -112,6 +113,27 @@ class TopNavbar(BasePage):
     def click_on_sumo_nav_logo(self):
         """Click on the sumo nav logo"""
         self._click(self.sumo_nav_logo)
+
+    def get_text_of_option_and_click(self, option: Locator, hover_menu, is_first: bool) -> str:
+        """Get the text of a navbar dropdown option and click it, hovering if needed.
+
+        Args:
+            option: The locator of the option to click.
+            hover_menu: A callable that hovers over the parent menu to reveal the dropdown.
+            is_first: Whether this is the first option (skips initial hover).
+
+        Returns:
+            The normalized text of the option.
+        """
+        if not is_first:
+            hover_menu()
+        option_text = re.sub(r'\s+', ' ', self._get_text_of_element(option)).strip()
+        if self._is_element_visible(option):
+            self._click(option)
+        else:
+            hover_menu()
+            self._click(option)
+        return option_text
 
     """Actions against the 'Explore Help Articles' top-navbar section."""
     def hover_over_explore_by_product_top_navbar_option(self):

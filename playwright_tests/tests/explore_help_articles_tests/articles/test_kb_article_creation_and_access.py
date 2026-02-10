@@ -1540,9 +1540,8 @@ def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
                 KB_SURVEY_FEEDBACK
             )
 
-        with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
-                                " displayed"):
-            utilities.wait_for_given_timeout(6000)
+        with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
+            sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
             assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
         with check, allure.step("Refreshing the page and verifying that the widget is no longer "
@@ -1596,9 +1595,8 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_fact
             assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
                     KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
 
-        with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
-                                " displayed"):
-            utilities.wait_for_given_timeout(6000)
+        with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
+            sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
             assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
         with check, allure.step("Refreshing the page and verifying that the widget is no longer "
@@ -1658,9 +1656,8 @@ def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory)
         assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
                 KB_SURVEY_FEEDBACK)
 
-    with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
-                            " displayed"):
-        utilities.wait_for_given_timeout(6000)
+    with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
+        sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
         assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
@@ -1715,9 +1712,8 @@ def test_article_unhelpfulness_cancel_vote(page: Page, vote_type, create_user_fa
         assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
                 KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
 
-    with check, allure.step("Waiting for 6 seconds and verifying that the widget is no longer"
-                            " displayed"):
-        utilities.wait_for_given_timeout(6000)
+    with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
+        sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
         assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
@@ -1806,7 +1802,7 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
 
     with check, allure.step("Verifying that the helpfulness widget is no longer displayed inside"
                             " first browser window"):
-        utilities.wait_for_given_timeout(1000)
+        sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
         assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
 
 
@@ -1857,6 +1853,7 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
         sumo_pages.kb_article_edit_article_metadata_page.remove_related_document(
             test_article_titles[1])
         sumo_pages.kb_article_edit_article_metadata_page.click_on_save_changes_button()
+        utilities.wait_for_page_to_load()
 
     with allure.step(f"Verifying that the f{test_article_titles[1]} is no longer listed inside "
                      "'Related Articles' section"):

@@ -3,5 +3,6 @@ class KBDashboardPageMessages:
     GENERAL_NEGATIVE_STATUS = "No"
     GENERAL_POSITIVE_STATUS = "Yes"
 
-    def get_kb_not_live_status(self, revision_note: str) -> str:
+    @staticmethod
+    def get_kb_not_live_status(revision_note: str) -> str:
         return f"Review Needed: {revision_note}"

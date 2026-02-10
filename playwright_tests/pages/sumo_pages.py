@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from playwright.sync_api import Page
 
 from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFlow
@@ -145,145 +147,317 @@ from playwright_tests.pages.user_pages.my_profile_user_navbar import UserNavbar
 
 class SumoPages:
     def __init__(self, page: Page):
-        # Auth Page.
-        self.auth_page = AuthPage(page)
+        self._page = page
 
-        # Search Page.
-        self.search_page = SearchPage(page)
+    # Auth Page.
+    @cached_property
+    def auth_page(self):
+        return AuthPage(self._page)
 
-        # Homepage.
-        self.homepage = Homepage(page)
+    # Search Page.
+    @cached_property
+    def search_page(self):
+        return SearchPage(self._page)
 
-        # Ways to contribute_messages pages.
-        self.ways_to_contribute_pages = WaysToContributePages(page)
+    # Homepage.
+    @cached_property
+    def homepage(self):
+        return Homepage(self._page)
 
-        # Footer.
-        self.footer_section = FooterSection(page)
+    # Ways to contribute_messages pages.
+    @cached_property
+    def ways_to_contribute_pages(self):
+        return WaysToContributePages(self._page)
 
-        # top-navbar.
-        self.top_navbar = TopNavbar(page)
+    # Footer.
+    @cached_property
+    def footer_section(self):
+        return FooterSection(self._page)
 
-        # Profile pages.
-        self.my_profile_page = MyProfilePage(page)
-        self.my_answers_page = MyProfileAnswersPage(page)
-        self.my_questions_page = MyProfileMyQuestionsPage(page)
-        self.question_page = QuestionPage(page)
-        self.my_documents_page = MyProfileDocumentsPage(page)
-        self.edit_my_profile_page = MyProfileEdit(page)
-        self.edit_my_profile_settings_page = MyProfileEditSettingsPage(page)
-        self.edit_my_profile_con_areas_page = MyProfileEditContributionAreasPage(page)
-        self.user_navbar = UserNavbar(page)
+    # top-navbar.
+    @cached_property
+    def top_navbar(self):
+        return TopNavbar(self._page)
 
-        # Messaging System.
-        self.sent_message_page = SentMessagePage(page)
-        self.new_message_page = NewMessagePage(page)
-        self.inbox_page = InboxPage(page)
-        self.mess_system_user_navbar = MessagingSystemUserNavbar(page)
+    # Profile pages.
+    @cached_property
+    def my_profile_page(self):
+        return MyProfilePage(self._page)
 
-        # Contribute page.
-        self.contribute_page = ContributePage(page)
+    @cached_property
+    def my_answers_page(self):
+        return MyProfileAnswersPage(self._page)
 
-        # Community hub page.
-        self.community_hub_page = CommunityHubPage(page)
+    @cached_property
+    def my_questions_page(self):
+        return MyProfileMyQuestionsPage(self._page)
 
-        # AAQ Pages
-        self.aaq_form_page = AAQFormPage(page)
+    @cached_property
+    def question_page(self):
+        return QuestionPage(self._page)
 
-        # Explore our help articles products page.
-        self.products_page = ProductsPage(page)
-        self.explore_by_topic_page = ExploreByTopicPage(page)
+    @cached_property
+    def my_documents_page(self):
+        return MyProfileDocumentsPage(self._page)
 
-        # KB Articles.
-        self.kb_submit_kb_article_form_page = SubmitKBArticlePage(page)
-        self.kb_article_page = KBArticlePage(page)
-        self.kb_edit_article_page = EditKBArticlePage(page)
-        self.kb_article_discussion_page = KBArticleDiscussionPage(page)
-        self.kb_article_show_history_page = KBArticleShowHistoryPage(page)
-        self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
-        self.kb_article_preview_revision_page = KBArticleRevisionsPreviewPage(page)
-        self.kb_article_edit_article_metadata_page = KBArticleEditMetadata(page)
-        self.kb_what_links_here_page = WhatLinksHerePage(page)
-        self.kb_category_page = KBCategoryPage(page)
-        self.translate_article_page = TranslateArticlePage(page)
+    @cached_property
+    def edit_my_profile_page(self):
+        return MyProfileEdit(self._page)
 
-        # Product Topics page
-        self.product_topics_page = ProductTopicPage(page)
+    @cached_property
+    def edit_my_profile_settings_page(self):
+        return MyProfileEditSettingsPage(self._page)
 
-        # Product Solutions page.
-        self.product_solutions_page = ProductSolutionsPage(page)
+    @cached_property
+    def edit_my_profile_con_areas_page(self):
+        return MyProfileEditContributionAreasPage(self._page)
 
-        # Product Support page.
-        self.product_support_page = ProductSupportPage(page)
+    @cached_property
+    def user_navbar(self):
+        return UserNavbar(self._page)
 
-        # Contact Support page.
-        self.contact_support_page = ContactSupportPage(page)
+    # Messaging System.
+    @cached_property
+    def sent_message_page(self):
+        return SentMessagePage(self._page)
 
-        # Forums
-        self.all_community_forums_page = SupportForumsPage(page)
-        self.product_support_forum = ProductSupportForum(page)
+    @cached_property
+    def new_message_page(self):
+        return NewMessagePage(self._page)
 
-        # User Groups
-        self.user_groups = GroupsPage(page)
+    @cached_property
+    def inbox_page(self):
+        return InboxPage(self._page)
 
-        # Article Discussions page.
-        self.article_discussions_page = ArticleDiscussionsPage(page)
+    @cached_property
+    def mess_system_user_navbar(self):
+        return MessagingSystemUserNavbar(self._page)
 
-        # Dashboard pages.
-        self.kb_dashboard_page = KBDashboard(page)
-        self.recent_revisions_page = RecentRevisions(page)
-        self.localization_unreviewed_page = UnreviewedLocalizationPage(page)
-        self.most_visited_translations_page = MostVisitedTranslations(page)
+    # Contribute page.
+    @cached_property
+    def contribute_page(self):
+        return ContributePage(self._page)
 
-        # Media Gallery page.
-        self.media_gallery = MediaGallery(page)
+    # Community hub page.
+    @cached_property
+    def community_hub_page(self):
+        return CommunityHubPage(self._page)
 
-        # Moderate Forum Page
-        self.moderate_forum_content_page = ModerateForumContent(page)
+    # AAQ Pages
+    @cached_property
+    def aaq_form_page(self):
+        return AAQFormPage(self._page)
 
-        # Discussions pages
-        self.contributor_discussions_page = ContributorDiscussionPage(page)
-        self.forum_discussions_page = ForumDiscussionsPage(page)
-        self.new_thread_page = NewThreadPage(page)
-        self.edit_thread_title_page = EditThreadTitle(page)
-        self.edit_post_thread_page = EditThreadPostPage(page)
-        self.delete_thread_post_page = DeleteThreadPostPage(page)
-        self.forum_thread_page = ForumThreadPage(page)
+    # Explore our help articles products page.
+    @cached_property
+    def products_page(self):
+        return ProductsPage(self._page)
 
-        # Discussion Threads flow.
-        self.contributor_thread_flow = ContributorThreadFlow(page)
+    @cached_property
+    def explore_by_topic_page(self):
+        return ExploreByTopicPage(self._page)
 
-        # Auth flow Page.
-        self.auth_flow_page = AuthFlowPage(page)
+    # KB Articles.
+    @cached_property
+    def kb_submit_kb_article_form_page(self):
+        return SubmitKBArticlePage(self._page)
 
-        # AAQ Flow.
-        self.aaq_flow = AAQFlow(page)
+    @cached_property
+    def kb_article_page(self):
+        return KBArticlePage(self._page)
 
-        # Messaging System Flows.
-        self.messaging_system_flow = MessagingSystemFlows(page)
+    @cached_property
+    def kb_edit_article_page(self):
+        return EditKBArticlePage(self._page)
 
-        # Edit profile flow
-        self.edit_profile_flow = EditProfileDataFlow(page)
+    @cached_property
+    def kb_article_discussion_page(self):
+        return KBArticleDiscussionPage(self._page)
 
-        # KB article Flow
-        self.submit_kb_article_flow = AddKbArticleFlow(page)
+    @cached_property
+    def kb_article_show_history_page(self):
+        return KBArticleShowHistoryPage(self._page)
 
-        # KB article translation Flow
-        self.submit_kb_translation_flow = KbArticleTranslationFlow(page)
+    @cached_property
+    def kb_article_review_revision_page(self):
+        return KBArticleReviewRevisionPage(self._page)
 
-        # KB article deletion Flow
-        self.kb_article_deletion_flow = DeleteKbArticleFlow(page)
+    @cached_property
+    def kb_article_preview_revision_page(self):
+        return KBArticleRevisionsPreviewPage(self._page)
 
-        # KB article edit metadata Flow
-        self.edit_article_metadata_flow = EditArticleMetaFlow(page)
+    @cached_property
+    def kb_article_edit_article_metadata_page(self):
+        return KBArticleEditMetadata(self._page)
 
-        # KB add article media Flow
-        self.add_kb_media_flow = AddKbMediaFlow(page)
+    @cached_property
+    def kb_what_links_here_page(self):
+        return WhatLinksHerePage(self._page)
 
-        # User Group Flow
-        self.user_group_flow = UserGroupFlow(page)
+    @cached_property
+    def kb_category_page(self):
+        return KBCategoryPage(self._page)
 
-        # KB article threads Flow
-        self.kb_article_thread_flow = KbThreads(page)
+    @cached_property
+    def translate_article_page(self):
+        return TranslateArticlePage(self._page)
 
-        # Common Web Elements
-        self.common_web_elements = CommonWebElements(page)
+    # Product Topics page
+    @cached_property
+    def product_topics_page(self):
+        return ProductTopicPage(self._page)
+
+    # Product Solutions page.
+    @cached_property
+    def product_solutions_page(self):
+        return ProductSolutionsPage(self._page)
+
+    # Product Support page.
+    @cached_property
+    def product_support_page(self):
+        return ProductSupportPage(self._page)
+
+    # Contact Support page.
+    @cached_property
+    def contact_support_page(self):
+        return ContactSupportPage(self._page)
+
+    # Forums
+    @cached_property
+    def all_community_forums_page(self):
+        return SupportForumsPage(self._page)
+
+    @cached_property
+    def product_support_forum(self):
+        return ProductSupportForum(self._page)
+
+    # User Groups
+    @cached_property
+    def user_groups(self):
+        return GroupsPage(self._page)
+
+    # Article Discussions page.
+    @cached_property
+    def article_discussions_page(self):
+        return ArticleDiscussionsPage(self._page)
+
+    # Dashboard pages.
+    @cached_property
+    def kb_dashboard_page(self):
+        return KBDashboard(self._page)
+
+    @cached_property
+    def recent_revisions_page(self):
+        return RecentRevisions(self._page)
+
+    @cached_property
+    def localization_unreviewed_page(self):
+        return UnreviewedLocalizationPage(self._page)
+
+    @cached_property
+    def most_visited_translations_page(self):
+        return MostVisitedTranslations(self._page)
+
+    # Media Gallery page.
+    @cached_property
+    def media_gallery(self):
+        return MediaGallery(self._page)
+
+    # Moderate Forum Page
+    @cached_property
+    def moderate_forum_content_page(self):
+        return ModerateForumContent(self._page)
+
+    # Discussions pages
+    @cached_property
+    def contributor_discussions_page(self):
+        return ContributorDiscussionPage(self._page)
+
+    @cached_property
+    def forum_discussions_page(self):
+        return ForumDiscussionsPage(self._page)
+
+    @cached_property
+    def new_thread_page(self):
+        return NewThreadPage(self._page)
+
+    @cached_property
+    def edit_thread_title_page(self):
+        return EditThreadTitle(self._page)
+
+    @cached_property
+    def edit_post_thread_page(self):
+        return EditThreadPostPage(self._page)
+
+    @cached_property
+    def delete_thread_post_page(self):
+        return DeleteThreadPostPage(self._page)
+
+    @cached_property
+    def forum_thread_page(self):
+        return ForumThreadPage(self._page)
+
+    # Discussion Threads flow.
+    @cached_property
+    def contributor_thread_flow(self):
+        return ContributorThreadFlow(self._page)
+
+    # Auth flow Page.
+    @cached_property
+    def auth_flow_page(self):
+        return AuthFlowPage(self._page)
+
+    # AAQ Flow.
+    @cached_property
+    def aaq_flow(self):
+        return AAQFlow(self._page)
+
+    # Messaging System Flows.
+    @cached_property
+    def messaging_system_flow(self):
+        return MessagingSystemFlows(self._page)
+
+    # Edit profile flow
+    @cached_property
+    def edit_profile_flow(self):
+        return EditProfileDataFlow(self._page)
+
+    # KB article Flow
+    @cached_property
+    def submit_kb_article_flow(self):
+        return AddKbArticleFlow(self._page)
+
+    # KB article translation Flow
+    @cached_property
+    def submit_kb_translation_flow(self):
+        return KbArticleTranslationFlow(self._page)
+
+    # KB article deletion Flow
+    @cached_property
+    def kb_article_deletion_flow(self):
+        return DeleteKbArticleFlow(self._page)
+
+    # KB article edit metadata Flow
+    @cached_property
+    def edit_article_metadata_flow(self):
+        return EditArticleMetaFlow(self._page)
+
+    # KB add article media Flow
+    @cached_property
+    def add_kb_media_flow(self):
+        return AddKbMediaFlow(self._page)
+
+    # User Group Flow
+    @cached_property
+    def user_group_flow(self):
+        return UserGroupFlow(self._page)
+
+    # KB article threads Flow
+    @cached_property
+    def kb_article_thread_flow(self):
+        return KbThreads(self._page)
+
+    # Common Web Elements
+    @cached_property
+    def common_web_elements(self):
+        return CommonWebElements(self._page)

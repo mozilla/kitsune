@@ -16,6 +16,17 @@ from playwright_tests.messages.my_profile_pages_messages.my_profile_page_message
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
+def _submit_firefox_question(utilities: Utilities, sumo_pages: SumoPages) -> dict:
+    """Navigate to the Firefox AAQ form and submit a standard question."""
+    firefox_data = utilities.aaq_question_test_data["valid_firefox_question"]
+    utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+    return sumo_pages.aaq_flow.submit_an_aaq_question(
+        subject=firefox_data["subject"],
+        topic_name=firefox_data["topic_value"],
+        body=firefox_data["question_body"],
+    )
+
+
 # C891529
 @pytest.mark.editUserProfileTests
 def test_username_field_is_automatically_populated(page: Page, create_user_factory):
@@ -45,19 +56,13 @@ def test_edit_profile_field_validation_with_symbols(page: Page, create_user_fact
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Posting a freemium question to the Firefox forum"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        article_details = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-        )
+        article_details = _submit_firefox_question(utilities, sumo_pages)
 
     usernames = utilities.profile_edit_test_data["valid_user_edit_with_symbols"]
     with allure.step("Navigating to the profile edit page"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
 
-    for key in usernames:
-        value = usernames[key]
+    for value in usernames.values():
         with allure.step("Clearing the username, display name fields and inserting the new one"):
             sumo_pages.edit_my_profile_page.clear_username_field()
             sumo_pages.edit_my_profile_page.clear_display_name_field()
@@ -120,9 +125,7 @@ def test_username_with_invalid_symbols(page: Page, create_user_factory):
     original_username = sumo_pages.edit_my_profile_page.get_username_input_field_value()
     usernames = utilities.profile_edit_test_data["invalid_username_with_symbols"]
 
-    for key in usernames:
-        value = usernames[key]
-
+    for value in usernames.values():
         with allure.step("Navigating to the profile edit page"):
             sumo_pages.top_navbar.click_on_edit_profile_option()
 
@@ -679,16 +682,24 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         return "00:00 AM" if current_time in ["00:00 PM", "00:00 AM"] else (
             f"Today at {current_time.lstrip('0')}")
 
+    def assert_reply_time_matches_timezone(reply_id: int, timezone: str):
+        """Post a reply, then verify its displayed time matches the expected timezone."""
+        displayed = sumo_pages.question_page.get_time_from_reply(reply_id)
+        displayed_clean = displayed.replace("\u202f", " ").replace("Today at ", "")
+        expected_clean = normalize_time(timezone).replace("Today at ", "")
+        time_difference = abs(
+            (datetime.datetime.strptime(displayed_clean, "%I:%M %p")
+             - datetime.datetime.strptime(expected_clean, "%I:%M %p")).total_seconds() / 60
+        )
+        assert time_difference <= 1, (
+            f"Time difference is more than 1 minute: {time_difference} minutes"
+        )
+
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Posting a freemium question to the Firefox forum"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        article_details = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-        )
+        article_details = _submit_firefox_question(utilities, sumo_pages)
 
     with allure.step("Accessing the 'Edit My Profile' page and changing the timezone to "
                      "'Europe/Bucharest'"):
@@ -703,20 +714,7 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         utilities.navigate_to_link(article_details["question_page_url"])
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=test_user["username"], reply="Test test test")
-
-        # Verifying that the time difference is less than 1 minute
-        time_difference = abs(
-            (datetime.datetime.strptime(
-                sumo_pages.question_page.get_time_from_reply(reply_id).replace("\u202f",
-                                                                               " ").replace(
-                    "Today at ", ""),
-                "%I:%M %p") - datetime.datetime.strptime(
-                normalize_time("Europe/Bucharest").replace("Today at ", ""),
-                "%I:%M %p")).total_seconds() / 60
-        )
-
-        assert time_difference <= 1, (f"Time difference is more than 1 minute: {time_difference} "
-                                      f"minutes")
+        assert_reply_time_matches_timezone(reply_id, "Europe/Bucharest")
 
     with allure.step("Accessing the 'Edit My Profile' page and changing the timezone "
                      "to 'US / Central'"):
@@ -731,19 +729,7 @@ def test_timezone_preference_change(page: Page, create_user_factory):
         utilities.navigate_to_link(article_details["question_page_url"])
         reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
             repliant_username=test_user["username"], reply="Test test test")
-
-        # Verifying that the time difference is less than 1 minute
-        time_difference = abs(
-            (datetime.datetime.strptime(
-                sumo_pages.question_page.get_time_from_reply(reply_id).replace("\u202f",
-                                                                               " ").replace(
-                    "Today at ", ""),
-                "%I:%M %p") - datetime.datetime.strptime(
-                normalize_time("US/Central").replace("Today at ", ""),
-                "%I:%M %p")).total_seconds() / 60
-        )
-        assert time_difference <= 1, (f"Time difference is more than 1 minute: {time_difference} "
-                                      f"minutes")
+        assert_reply_time_matches_timezone(reply_id, "US/Central")
 
 # C891532
 @pytest.mark.editUserProfileTests

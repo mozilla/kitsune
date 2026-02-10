@@ -92,6 +92,7 @@ class EditArticleMetaFlow:
                 self.kb_article_edit_metadata_page.add_related_documents(document)
 
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
+        self.utilities.wait_for_page_to_load()
 
     @retry_on_502
     def remove_a_restricted_visibility_group(self, groups:[str, list[str]]):
@@ -102,3 +103,4 @@ class EditArticleMetaFlow:
             self.edit_kb_article_page.click_on_edit_anyway_option()
         self.kb_article_edit_metadata_page.delete_a_restricted_visibility_group_metadata(groups)
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
+        self.utilities.wait_for_page_to_load()

@@ -1,3 +1,5 @@
+import random
+import string
 import allure
 import pytest
 from pytest_check import check
@@ -13,6 +15,18 @@ from playwright_tests.messages.my_profile_pages_messages.my_profile_page_message
 from playwright_tests.messages.my_profile_pages_messages.user_profile_navbar_messages import (
     UserProfileNavbarMessages)
 from playwright_tests.pages.sumo_pages import SumoPages
+
+
+def _submit_firefox_question(utilities: Utilities, sumo_pages: SumoPages) -> dict:
+    """Navigate to the Firefox AAQ form and submit a standard question."""
+    firefox_data = utilities.aaq_question_test_data["valid_firefox_question"]
+    utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+    return sumo_pages.aaq_flow.submit_an_aaq_question(
+        subject=firefox_data["subject"],
+        topic_name=firefox_data["topic_value"],
+        body=firefox_data["question_body"],
+        expected_locator=sumo_pages.question_page.questions_header
+    )
 
 
 # C891409
@@ -76,16 +90,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page, create_
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question for "
                      "the Firefox product"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        question_info = (
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-        )
+        question_info = _submit_firefox_question(utilities, sumo_pages)
 
     with allure.step("Posting a reply to the question"):
         utilities.start_existing_session(cookies=second_user)
@@ -160,18 +165,7 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page, crea
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question"):
-        utilities.navigate_to_link(
-            utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
-        )
-        question_info = (
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-        )
+        question_info = _submit_firefox_question(utilities, sumo_pages)
 
     with allure.step("Posting a reply for the question"):
         reply_text = utilities.question_test_data["non_solution_reply"]
@@ -193,8 +187,9 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page, crea
 
     with allure.step("Updating the question title and question reply"):
         sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
-        updated_title_text = ("Updated Question Title " + utilities.
-                              generate_random_number(1,1000))
+        updated_title_text = (
+            "Updated Question Title ".join(random.choice(string.ascii_lowercase + string.digits
+                                                         ) for _ in range(10)))
         updated_reply_text = "Updated reply"
         sumo_pages.aaq_flow.editing_question_flow(subject=updated_title_text, submit_edit=True)
         sumo_pages.aaq_flow.editing_reply_flow(
@@ -255,7 +250,8 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page, create_
                 get_text_of_document_links())
 
     with allure.step("Navigating to the article and changing the title"):
-        new_article_title = "Updated title test " + utilities.generate_random_number(1, 1000)
+        new_article_title = "Updated ".join(random.choice(string.ascii_lowercase + string.digits
+                                                          ) for _ in range(10))
         sumo_pages.my_documents_page.click_on_a_particular_document(
             article_details['article_title'])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(title=new_article_title)
