@@ -31,14 +31,14 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
         user = request.user
 
         if user.is_authenticated:
-            first_seen_str = request.session.get("first_seen")
-            if first_seen_str:
-                # Convert ISO string back to datetime for comparison
-                try:
-                    first_seen = datetime.fromisoformat(first_seen_str)
-                except (ValueError, AttributeError):
-                    # Handle legacy pickle-serialized datetime objects or invalid strings
-                    first_seen = None
+            first_seen = request.session.get("first_seen")
+            # Gracefully handle legacy pickle-serialized datetime objects.
+            if first_seen and isinstance(first_seen, str | datetime):
+                if isinstance(first_seen, str):
+                    try:
+                        first_seen = datetime.fromisoformat(first_seen)
+                    except ValueError:
+                        first_seen = None
 
                 if first_seen:
                     change_time = user.profile.fxa_password_change
