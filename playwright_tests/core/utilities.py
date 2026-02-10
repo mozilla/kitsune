@@ -689,6 +689,42 @@ class Utilities:
         print(f"Search result is: {search_result}")
         return search_term in search_result
 
+    def reindex_document(self, doc_type: str, obj_id: int):
+        """Force-reindex a specific document in Elasticsearch so it becomes immediately
+        searchable.
+
+        Args:
+            doc_type (str): The ES document type name (e.g. "WikiDocument",
+                "QuestionDocument", "AnswerDocument", "ForumDocument", "ProfileDocument").
+            obj_id (int): The primary key of the object to reindex.
+        """
+        session_id = self.get_session_id(
+            self.username_extraction_from_email(self.staff_user)
+        )
+        endpoint = HomepageMessages.STAGE_HOMEPAGE_URL_EN_US + "search/api/reindex-document"
+        headers = {
+            "Content-Type": "application/json",
+            "Cookie": f"session_id={session_id}",
+            "User-Agent": Utilities.user_agent,
+        }
+        request_body = {"doc_type": doc_type, "obj_id": obj_id}
+
+        for attempt in range(3):
+            response = requests.post(url=endpoint, json=request_body, headers=headers)
+            if response.status_code == 200:
+                print(f"Reindex succeeded: {response.json()}")
+                return response.json()
+            print(
+                f"Reindex attempt {attempt + 1}/3 failed "
+                f"(status={response.status_code}): {response.text}"
+            )
+            self.wait_for_given_timeout(2000)
+
+        raise RuntimeError(
+            f"Failed to reindex {doc_type} {obj_id} after 3 attempts. "
+            f"Last response: {response.status_code} {response.text}"
+        )
+
     def get_api_response(self, page: Page, api_url: str):
         """Get the API response
 
