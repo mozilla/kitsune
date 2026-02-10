@@ -504,15 +504,14 @@ wheels = [
 
 [[package]]
 name = "dj-database-url"
-version = "1.3.0"
+version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
-    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/39/b6/b80a3b18855d19c56b489334017e45319828d200a17927c5f26b69e77317/dj-database-url-1.3.0.tar.gz", hash = "sha256:87be5f7c4c83d9b3d8ce94b834f96cea14b3986f3629aac097afdd9318d7b098", size = 7787, upload-time = "2023-03-28T13:30:36.05Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/95/c6/88676a7333fb7c668e626b55f8bfc8527dd863973eb1c40412b95d27747d/dj_database_url-3.1.0.tar.gz", hash = "sha256:d80218426b83f9302c8d27d4fccf52de5cf0cab179f0645fb2839f37605d1353", size = 7924, upload-time = "2026-01-04T09:18:32.693Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/20/8a/f41e4fe501bd276ac4d87c61c154be8862d640b1d41ff0503208d46b6c44/dj_database_url-1.3.0-py3-none-any.whl", hash = "sha256:80a115bd7675c9fe14a900b2f8b5c8b1822b5a279b333bf9b2804de681656c7c", size = 7405, upload-time = "2023-03-28T13:31:30.861Z" },
+    { url = "https://files.pythonhosted.org/packages/68/1b/e84f7472ab0bdacc3fd09556eb4dd40d88246941d465cc103b36a8dabcd8/dj_database_url-3.1.0-py3-none-any.whl", hash = "sha256:155a56fbbecbaaf1348ccd73bf29138b4c9988363ba08261a0f0145e392e638c", size = 8849, upload-time = "2026-01-04T09:18:43.77Z" },
 ]
 
 [[package]]
@@ -1848,7 +1847,7 @@ requires-dist = [
     { name = "cffi", specifier = ">=1.16.0,<2" },
     { name = "commonware", specifier = ">=0.6.0,<0.7" },
     { name = "dennis", specifier = ">=1.1.0,<2" },
-    { name = "dj-database-url", specifier = ">=1.3.0,<2" },
+    { name = "dj-database-url", specifier = ">=1.3.0,<4" },
     { name = "django", specifier = ">=4.2.25,<5" },
     { name = "django-activity-stream", specifier = ">=1.4.2,<2" },
     { name = "django-allow-cidr", specifier = ">=0.6.0,<0.7" },
