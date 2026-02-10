@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import UTC, datetime, timedelta
 
-import bleach
 from dateutil import parser
 from django.utils.text import slugify
 from elasticsearch.dsl import Q as DSLQ
@@ -26,6 +25,7 @@ from kitsune.search.parser.operators import (
     SpaceOperator,
 )
 from kitsune.search.parser.tokens import ExactToken, RangeToken, TermToken
+from kitsune.sumo.sanitize import clean
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.parser import wiki_to_html
@@ -67,11 +67,7 @@ def first_highlight(hit):
 
 
 def strip_html(summary):
-    return bleach.clean(
-        summary,
-        tags=[HIGHLIGHT_TAG],
-        strip=True,
-    )
+    return clean(summary, tags=[HIGHLIGHT_TAG])
 
 
 def same_base_index(a, b):
@@ -168,9 +164,7 @@ class QuestionSearch(SumoSearch):
             # only return questions created within QUESTION_DAYS_DELTA
             DSLQ(
                 "range",
-                question_created={
-                    "gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)
-                },
+                question_created={"gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)},
             ),
         ]
 

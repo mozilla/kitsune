@@ -2,7 +2,6 @@ import re
 from datetime import datetime, timedelta
 from unittest import mock
 
-import bleach
 import waffle
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -13,6 +12,7 @@ from django.test.client import RequestFactory
 from django.utils import timezone
 
 from kitsune.kbadge.utils import get_or_create_badge
+from kitsune.sumo.sanitize import clean
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.badges import WIKI_BADGES
@@ -197,7 +197,7 @@ class TestDocumentRenderCascades(TestCase):
     def _clean(self, d):
         """Get a clean and normalized version of a documents html."""
         html = Document.objects.get(slug=d.slug).html
-        return re.sub(r"\s+", " ", bleach.clean(html, strip=True)).strip()
+        return re.sub(r"\s+", " ", clean(html)).strip()
 
     def test_cascade(self):
         d1, _, _ = doc_rev_parser(

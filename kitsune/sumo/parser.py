@@ -11,6 +11,7 @@ from wikimarkup.parser import ALLOWED_TAGS, Parser
 
 from kitsune.gallery.models import Image, Video
 from kitsune.sumo import email_utils
+from kitsune.sumo.sanitize import clean, linkify
 from kitsune.sumo.urlresolvers import reverse
 
 ALLOWED_ATTRIBUTES = {
@@ -294,6 +295,13 @@ class WikiParser(Parser):
             html = self.add_ui_component_embeds(html)
 
         return html
+
+    def bleach(self, text, nofollow, attributes, styles, strip_comments):
+        """Override wikimarkup.parser.Parser's bleach method to use justhtml instead."""
+        text = linkify(text, nofollow=nofollow)
+        return clean(
+            text, tags=self.tags, attributes=attributes, css_properties=styles, strip=False
+        )
 
     def _abbr_tag_hook(self, parser, body, attributes):
         """<abbr[ title="FullText"]>An Abbreviation</abbr>"""

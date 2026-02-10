@@ -1,4 +1,3 @@
-import bleach
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -7,6 +6,7 @@ from django.utils.translation import gettext as _
 
 from kitsune.announcements.models import Announcement
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
+from kitsune.sumo.sanitize import clean
 
 
 @shared_task
@@ -19,7 +19,7 @@ def send_group_email(announcement_id):
 
     groups = announcement.groups.all()  # noqa: group-leak
     users = User.objects.filter(groups__in=groups).distinct()
-    plain_content = bleach.clean(announcement.content_parsed, tags=[], strip=True).strip()
+    plain_content = clean(announcement.content_parsed).strip()
     email_kwargs = {
         "content": plain_content,
         "content_html": announcement.content_parsed,

@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = "==3.11.*"
 
 [[package]]
@@ -1710,12 +1710,20 @@ wheels = [
 ]
 
 [[package]]
+name = "justhtml"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2c/48/a924797e4d8557f55ab385428a9362eb1034339c0b8376c694f5b6dceb29/justhtml-1.5.0.tar.gz", hash = "sha256:3bdab5af41845de7c315814e90d729a5632b9c289934795fe32ecc61d4181067", size = 357581, upload-time = "2026-02-01T23:16:47.248Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/5e/e78b8281d5e980a6db71cc9e27ed896c85e5b2cf6c9577ba6be1c3fe615a/justhtml-1.5.0-py3-none-any.whl", hash = "sha256:62efb0c641f15371ca67ac677515de65a0ef1042cdb8b5b0848d82eb69960729", size = 126068, upload-time = "2026-02-01T23:16:45.275Z" },
+]
+
+[[package]]
 name = "kitsune"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "babel" },
-    { name = "bleach", extra = ["css"] },
     { name = "boto3" },
     { name = "celery" },
     { name = "cffi" },
@@ -1764,6 +1772,7 @@ dependencies = [
     { name = "html5lib" },
     { name = "idna" },
     { name = "jinja2" },
+    { name = "justhtml" },
     { name = "langchain" },
     { name = "langchain-google-vertexai" },
     { name = "lxml" },
@@ -1834,7 +1843,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "babel", specifier = ">=2.14.0,<3" },
-    { name = "bleach", extras = ["css"], specifier = ">=6.1.0,<7" },
     { name = "boto3", specifier = ">=1.34.17,<2" },
     { name = "celery", specifier = "==5.6.0" },
     { name = "cffi", specifier = ">=1.16.0,<2" },
@@ -1883,6 +1891,7 @@ requires-dist = [
     { name = "html5lib", specifier = "~=1.1" },
     { name = "idna", specifier = "~=3.7" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
+    { name = "justhtml", specifier = ">=1.5.0,<2" },
     { name = "langchain", specifier = "==0.3.27" },
     { name = "langchain-google-vertexai", specifier = "==2.0.28" },
     { name = "lxml", specifier = ">=4.9.4,<5" },
