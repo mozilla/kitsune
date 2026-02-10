@@ -1,6 +1,8 @@
 import avatar from "sumo/img/avatar.png";
 
-var imgs = document.querySelectorAll('img.avatar');
+const imgs = Array.from(new Set(
+  document.querySelectorAll('img.avatar, .avatar img')
+));
 
 if (imgs) {
   imgs.forEach(function(e) {
