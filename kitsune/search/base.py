@@ -203,7 +203,7 @@ class SumoDocument(DSLDocument):
             kwargs.update({"refresh": True})
 
         if not action or action == "index":
-            return payload if is_bulk else self.save(**kwargs)
+            return payload if is_bulk else self.save(skip_empty=False, **kwargs)
         elif action == "update":
             # add any additional args like doc_as_upsert
             payload.update(kwargs)
