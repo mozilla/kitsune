@@ -108,13 +108,14 @@ class EditQuestionForm(forms.ModelForm):
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL,
                 required=False,
+                widget=forms.TextInput(attrs={"maxlength": 30 - len("Firefox ")}),
             )
 
         if "tb_version" in extra_fields:
             self.fields["tb_version"] = forms.CharField(
                 label=TB_VERSION_LABEL,
                 required=False,
-                widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER}),
+                widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER, "maxlength": 30 - len("Thunderbird ")}),
             )
 
         if "os" in extra_fields:
