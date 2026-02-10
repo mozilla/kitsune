@@ -154,7 +154,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
                 "user": {
                     "id": user.meta.id,
                     "username": user.username,
-                    "display_name": user.name,
+                    "display_name": getattr(user, "name", None),
                     "avatar": getattr(getattr(user, "avatar", None), "url", None),
                     "days_since_last_activity": user_info["days_since_last_activity"],
                 },
