@@ -17,6 +17,7 @@ from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.cache import patch_vary_headers
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
@@ -803,7 +804,7 @@ def review_revision(request, document_slug, revision_id):
             # Don't allow revisions to be reviewed twice
             rev.is_approved = "approve" in request.POST
             rev.reviewer = request.user
-            rev.reviewed = datetime.now()
+            rev.reviewed = timezone.now()
 
             if should_ask_significance and form.cleaned_data["significance"]:
                 rev.significance = form.cleaned_data["significance"]
@@ -1456,7 +1457,7 @@ def get_helpful_votes_async(request, document_slug):
     max_created = datetime.combine(max(created_list), datetime_time.max)
 
     # Zero fill the data.
-    end = time.mktime(datetime.now().timetuple())
+    end = time.mktime(timezone.now().timetuple())
     while timestamp <= end:
         if timestamp not in timestamps_with_data:
             datums.append(

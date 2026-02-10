@@ -1,8 +1,7 @@
-from datetime import datetime
-
 import factory
 from django.conf import settings
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 
 from kitsune.products.models import Product
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -101,7 +100,7 @@ class RevisionFactory(factory.django.DjangoModelFactory):
 
 class ApprovedRevisionFactory(RevisionFactory):
     is_approved = True
-    reviewed = factory.LazyAttribute(lambda o: datetime.now())
+    reviewed = factory.LazyAttribute(lambda o: timezone.now())
 
 
 class TranslatedRevisionFactory(ApprovedRevisionFactory):

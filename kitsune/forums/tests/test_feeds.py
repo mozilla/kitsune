@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import Mock
 
 from django.http import Http404
+from django.utils import timezone
 from pyquery import PyQuery as pq
 
 from kitsune.forums.feeds import PostsFeed, ThreadsFeed
@@ -13,7 +14,7 @@ from kitsune.forums.tests import (
 from kitsune.sumo.tests import TestCase, get
 from kitsune.users.tests import UserFactory
 
-YESTERDAY = datetime.now() - timedelta(days=1)
+YESTERDAY = timezone.now() - timedelta(days=1)
 
 
 class ForumTestFeeds(TestCase):
@@ -31,7 +32,7 @@ class ForumTestFeeds(TestCase):
 
     def test_posts_sort(self):
         """Ensure that posts are being sorted properly by date/time."""
-        now = datetime.now()
+        now = timezone.now()
         yesterday = now - timedelta(days=1)
         t = ThreadFactory(posts__created=yesterday)
         p = PostFactory(thread=t, created=now)

@@ -1,4 +1,7 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
+
+from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from kitsune.community.utils import (
     deleted_contribution_metrics_by_contributor,
@@ -149,12 +152,12 @@ class TopContributorTests(ElasticTestCase):
 
         a1 = AnswerFactory(
             creator=ContributorFactory(),
-            created=datetime.now() - timedelta(days=3),
+            created=timezone.now() - timedelta(days=3),
             question__product=firefox,
         )
         a2 = AnswerFactory(
             creator=a1.creator,
-            created=datetime.now() - timedelta(days=2),
+            created=timezone.now() - timedelta(days=2),
             question__product=firefox,
         )
         a3 = AnswerFactory(
@@ -163,17 +166,17 @@ class TopContributorTests(ElasticTestCase):
         )
         a4 = AnswerFactory(
             creator=ContributorFactory(),
-            created=datetime.now() - timedelta(days=91),
+            created=timezone.now() - timedelta(days=91),
             question__product=firefox,
         )
         a5 = AnswerFactory(
             creator=a1.creator,
-            created=datetime.now() - timedelta(days=1),
+            created=timezone.now() - timedelta(days=1),
             question__product=fxos,
         )
         a6 = AnswerFactory(
             creator=a4.creator,
-            created=datetime.now() - timedelta(days=30),
+            created=timezone.now() - timedelta(days=30),
             question=a4.question,
         )
 
@@ -226,7 +229,7 @@ class DeletedContributionsTests(TestCase):
         mobile = ProductFactory(slug="ios")
         firefox = ProductFactory(slug="firefox")
 
-        now = datetime.now()
+        now = timezone_now()
         one_day_ago = now - timedelta(days=1)
         two_days_ago = now - timedelta(days=2)
         three_days_ago = now - timedelta(days=3)
@@ -396,6 +399,18 @@ class DeletedContributionsTests(TestCase):
             document__parent=rev3.document, document__locale="it", is_approved=True, based_on=rev3
         )
 
+        # Refresh objects from database to get timezone-aware UTC datetimes
+        rev1.refresh_from_db()
+        rev3.refresh_from_db()
+        rev4.refresh_from_db()
+        rev5.refresh_from_db()
+
+        # Store created timestamps before deletion
+        rev1_created = rev1.created
+        rev3_created = rev3.created
+        rev4_created = rev4.created
+        rev5_created = rev5.created
+
         # Revs 4 and 5 are deleted via cascade on based_on.
         Revision.objects.filter(id__in=[rev1.id, rev2.id, rev3.id]).delete()
 
@@ -413,16 +428,16 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(
             list(result.items()),
             [
-                (rev1.creator.id, (2, rev3.created)),
-                (rev4.creator.id, (1, rev4.created)),
-                (rev5.creator.id, (1, rev5.created)),
+                (rev1.creator.id, (2, rev3_created)),
+                (rev4.creator.id, (1, rev4_created)),
+                (rev5.creator.id, (1, rev5_created)),
             ],
         )
 
         result = deleted_contribution_metrics_by_contributor(Revision, metadata__is_approved=True)
         self.assertEqual(
             list(result.items()),
-            [(rev1.creator.id, (1, rev1.created)), (rev5.creator.id, (1, rev5.created))],
+            [(rev1.creator.id, (1, rev1_created)), (rev5.creator.id, (1, rev5_created))],
         )
 
         # Ensure cascade delete when contributor deleted.
@@ -443,6 +458,16 @@ class DeletedContributionsTests(TestCase):
         rev5 = RevisionFactory(document=doc, is_approved=True)
         rev6 = RevisionFactory(document=doc, is_approved=True)
 
+        # Refresh objects from database to get timezone-aware UTC datetimes
+        rev3.refresh_from_db()
+        rev4.refresh_from_db()
+        rev5.refresh_from_db()
+
+        # Store created timestamps before deletion
+        rev3_created = rev3.created
+        rev4_created = rev4.created
+        rev5_created = rev5.created
+
         rev6.delete()  # Creates another contributor without an approved revision.
 
         doc.delete()
@@ -456,9 +481,9 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(
             list(result.items()),
             [
-                (rev3.creator.id, (1, rev3.created)),
-                (rev4.creator.id, (1, rev4.created)),
-                (rev5.creator.id, (1, rev5.created)),
+                (rev3.creator.id, (1, rev3_created)),
+                (rev4.creator.id, (1, rev4_created)),
+                (rev5.creator.id, (1, rev5_created)),
             ],
         )
 
@@ -466,9 +491,9 @@ class DeletedContributionsTests(TestCase):
         self.assertEqual(
             list(result.items()),
             [
-                (rev3.creator.id, (1, rev3.created)),
-                (rev4.creator.id, (1, rev4.created)),
-                (rev5.creator.id, (1, rev5.created)),
+                (rev3.creator.id, (1, rev3_created)),
+                (rev4.creator.id, (1, rev4_created)),
+                (rev5.creator.id, (1, rev5_created)),
             ],
         )
 

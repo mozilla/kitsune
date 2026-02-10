@@ -3,10 +3,10 @@ name = "kitsune"
 version = "0.1.0"
 description = "Mozilla Support Platform"
 authors = [{ name = "Your Name", email = "you@example.com" }]
-requires-python = ">=3.11, <3.12"
+requires-python = ">=3.11, <3.15"
 license = "BSD-3-Clause"
 dependencies = [
-    "Django>=4.2.25,<5",
+    "Django>=5.2,<6",
     "Pillow>=11.0.0,<12",
     "justhtml>=1.5.0,<2",
     "boto3>=1.34.17,<2",
@@ -16,9 +16,8 @@ dependencies = [
     "dj-database-url>=1.3.0,<2",
     "django-jinja>=2.11.0,<3",
     "lxml>=4.9.4,<5",
-    "elasticsearch>=9.0.2,<10",
+    "elasticsearch>=9.2.1,<10",
     "gunicorn>=22.0.0,<23",
-    "gevent>=23.9.1,<24",
     "django-waffle>=3.0.0,<6",
     "python-decouple~=3.8",
     "sentry-sdk>=2.43.0,<3",
@@ -87,10 +86,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "psycopg2-binary>=2.9.9,<3"
+    "psycopg[binary,pool]>=3.1.0,<4"
 ]
 prod = [
-    "psycopg2>=2.9.9,<3"
+    "psycopg[binary,pool]>=3.1.0,<4"
 ]
 
 [tool.black]

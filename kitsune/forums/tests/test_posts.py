@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.conf import settings
+from django.utils import timezone
 
 from kitsune.forums.models import Forum, Thread, ThreadLockedError
 from kitsune.forums.tests import PostFactory, ThreadFactory
@@ -62,7 +63,7 @@ class PostTestCase(TestCase):
     def test_sticky_threads_first(self):
         # Sticky threads should come before non-sticky threads.
         t = ThreadFactory()
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         sticky = ThreadFactory(forum=t.forum, is_sticky=True, posts=[{"created": yesterday}])
 
         # The older sticky thread shows up first.
@@ -73,7 +74,7 @@ class PostTestCase(TestCase):
         # created date of the last post.
 
         # Make sure the datetimes are different.
-        PostFactory(created=datetime.now() - timedelta(days=1))
+        PostFactory(created=timezone.now() - timedelta(days=1))
         PostFactory()
         Thread(is_sticky=True)
 
@@ -82,7 +83,7 @@ class PostTestCase(TestCase):
 
     def test_post_sorting(self):
         """Posts should be sorted chronologically."""
-        now = datetime.now()
+        now = timezone.now()
         t = ThreadFactory(posts=[{"created": now - timedelta(days=n)} for n in [0, 1, 4, 7, 11]])
         posts = t.post_set.all()
         for i in range(len(posts) - 1):
@@ -105,7 +106,7 @@ class PostTestCase(TestCase):
     def test_sorting_last_post_desc(self):
         """Sorting threads by last_post descendingly."""
         ThreadFactory(posts=[{}, {}, {}])
-        PostFactory(created=datetime.now() - timedelta(days=1))
+        PostFactory(created=timezone.now() - timedelta(days=1))
         threads = sort_threads(Thread.objects, 5, 1)
         self.assertTrue(threads[0].last_post.created >= threads[1].last_post.created)
 

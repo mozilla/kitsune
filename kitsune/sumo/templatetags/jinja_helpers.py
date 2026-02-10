@@ -14,9 +14,10 @@ from django.db.models.fields.files import FieldFile
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
+from django.utils import timezone
 from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlencode
-from django.utils.timezone import get_default_timezone, is_aware, is_naive
+from django.utils.timezone import is_aware, is_naive
 from django.utils.timezone import now as django_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
@@ -254,8 +255,6 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
 
     default_tzinfo = convert_tzinfo = ZoneInfo(settings.TIME_ZONE)
     if is_naive(value):
-        # Since Python 3.9, due to the introduction of the new "fold" parameter, this is the
-        # recommended way to convert a datetime instance from "naive" to "aware".
         new_value = value.replace(tzinfo=default_tzinfo)
     else:
         new_value = value
@@ -269,9 +268,16 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
                     )
                 except (Profile.DoesNotExist, AttributeError):
                     pass
-            request.session["timezone"] = convert_tzinfo
+            request.session["timezone"] = str(convert_tzinfo)
         else:
-            convert_tzinfo = request.session["timezone"] or default_tzinfo
+            tz_str = request.session.get("timezone")
+            if tz_str:
+                try:
+                    convert_tzinfo = ZoneInfo(tz_str)
+                except Exception:
+                    convert_tzinfo = default_tzinfo
+            else:
+                convert_tzinfo = default_tzinfo
 
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
@@ -394,9 +400,9 @@ def timesince(d, now=None):
     ]
     if not now:
         if is_aware(d):
-            now = datetime.datetime.now(get_default_timezone())
+            now = timezone.now()
         else:
-            now = datetime.datetime.now()
+            now = timezone.now().replace(tzinfo=None)
 
     # Ignore microsecond part of 'd' since we removed it from 'now'
     delta = now - (d - datetime.timedelta(0, 0, d.microsecond))
@@ -474,7 +480,7 @@ def static(path):
 
 @library.global_function
 def now():
-    return datetime.datetime.now()
+    return timezone.now()
 
 
 @library.filter
@@ -567,4 +573,5 @@ def safe_file_url(file: FieldFile) -> str | None:
     try:
         return file.url
     except (AttributeError, ValueError):
+        return None
         return None

@@ -99,7 +99,7 @@ services:
       - pgvolume:/var/lib/postgresql/data
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.2
     environment:
       - discovery.type=single-node
       - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
@@ -114,7 +114,7 @@ services:
       - ./kitsune/search/dictionaries/synonyms:/usr/share/elasticsearch/config/synonyms
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:9.0.2
+    image: docker.elastic.co/kibana/kibana:9.2.2
     ports:
       - 5601:5601
     environment:

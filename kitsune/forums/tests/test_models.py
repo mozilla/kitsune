@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from django.utils import timezone
+
 from kitsune.flagit.models import FlaggedObject
 from kitsune.forums import POSTS_PER_PAGE
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
@@ -14,7 +16,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 
-YESTERDAY = datetime.now() - timedelta(days=1)
+YESTERDAY = timezone.now() - timedelta(days=1)
 
 
 class ForumModelTestCase(TestCase):
@@ -234,7 +236,7 @@ class SaveDateTestCase(TestCase):
     def test_save_thread_no_created(self):
         """Saving a new thread should behave as if auto_add_now was set."""
         t = ThreadFactory(forum=self.forum, title="foo", creator=self.user)
-        now = datetime.now()
+        now = timezone.now()
         self.assertDateTimeAlmostEqual(now, t.created, self.delta)
 
     def test_save_thread_created(self):
@@ -260,7 +262,7 @@ class SaveDateTestCase(TestCase):
         # Saving a new post should behave as if auto_add_now was set on
         # created and auto_now set on updated.
         p = PostFactory(thread=self.thread, content="bar", author=self.user)
-        now = datetime.now()
+        now = timezone.now()
         self.assertDateTimeAlmostEqual(now, p.created, self.delta)
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
 
@@ -275,7 +277,7 @@ class SaveDateTestCase(TestCase):
         p.content = "baz"
         p.updated_by = self.user
         p.save()
-        now = datetime.now()
+        now = timezone.now()
 
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
         self.assertEqual(created, p.created)

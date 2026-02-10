@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from django.conf import settings
+from django.utils import timezone
 
 from kitsune.dashboards import LAST_30_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
@@ -489,30 +490,30 @@ class UnreviewedChangesTests(ReadoutTestCase):
     def test_unrevieweds_after_current(self):
         """Show unreviewed revisions with later creation dates than current"""
         rev1 = TranslatedRevisionFactory(
-            document__locale="de", reviewed=None, is_approved=True, created=datetime(2000, 1, 1)
+            document__locale="de", reviewed=None, is_approved=True, created=datetime(2000, 1, 1, tzinfo=UTC)
         )
-        rev2 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 2, 1))
-        rev3 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 3, 1))
+        rev2 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 2, 1, tzinfo=UTC))
+        rev3 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 3, 1, tzinfo=UTC))
 
         doc_de = TranslatedRevisionFactory(
-            document__locale="de", reviewed=None, is_approved=True, created=datetime(2023, 1, 1)
+            document__locale="de", reviewed=None, is_approved=True, created=datetime(2023, 1, 1, tzinfo=UTC)
         ).document
         rev4 = TranslatedRevisionFactory(
-            document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 1, 2)
+            document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 1, 2, tzinfo=UTC)
         )
-        rev5 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 2, 1))
-        rev6 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 3, 1))
+        rev5 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 2, 1, tzinfo=UTC))
+        rev6 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 3, 1, tzinfo=UTC))
 
         group1 = GroupFactory(name="group1")
         doc_en = DocumentFactory(restrict_to_groups=[group1])
         doc_de = DocumentFactory(parent=doc_en, locale="de")
         TranslatedRevisionFactory(
-            document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 4, 1)
+            document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 4, 1, tzinfo=UTC)
         )
-        RevisionFactory(reviewed=None, document=doc_de, created=datetime(2023, 5, 1))
-        RevisionFactory(reviewed=None, document=doc_de, created=datetime(2023, 6, 1))
-        rev7 = RevisionFactory(reviewed=None, document=doc_en, created=datetime(2023, 7, 15))
-        rev8 = RevisionFactory(reviewed=None, document=doc_en, created=datetime(2023, 8, 20))
+        RevisionFactory(reviewed=None, document=doc_de, created=datetime(2023, 5, 1, tzinfo=UTC))
+        RevisionFactory(reviewed=None, document=doc_de, created=datetime(2023, 6, 1, tzinfo=UTC))
+        rev7 = RevisionFactory(reviewed=None, document=doc_en, created=datetime(2023, 7, 15, tzinfo=UTC))
+        rev8 = RevisionFactory(reviewed=None, document=doc_en, created=datetime(2023, 8, 20, tzinfo=UTC))
 
         WikiDocumentVisits.objects.create(document=rev1.document, visits=5, period=LAST_30_DAYS)
         WikiDocumentVisits.objects.create(document=rev4.document, visits=3, period=LAST_30_DAYS)
@@ -522,7 +523,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["title"], rev1.document.title)
         self.assertEqual(rows[0]["visits"], 5)
-        self.assertEqual(rows[0]["updated"], datetime(2000, 3, 1))
+        self.assertEqual(rows[0]["updated"], datetime(2000, 3, 1, tzinfo=UTC))
         self.assertEqual(
             rows[0]["users"],
             ", ".join(
@@ -536,7 +537,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
         )
         self.assertEqual(rows[1]["title"], rev4.document.title)
         self.assertEqual(rows[1]["visits"], 3)
-        self.assertEqual(rows[1]["updated"], datetime(2023, 3, 1))
+        self.assertEqual(rows[1]["updated"], datetime(2023, 3, 1, tzinfo=UTC))
         self.assertEqual(
             rows[1]["users"],
             ", ".join(
@@ -559,7 +560,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["title"], doc_en.title)
         self.assertEqual(rows[0]["visits"], None)
-        self.assertEqual(rows[0]["updated"], datetime(2023, 8, 20))
+        self.assertEqual(rows[0]["updated"], datetime(2023, 8, 20, tzinfo=UTC))
         self.assertEqual(
             rows[0]["users"],
             ", ".join(
@@ -583,7 +584,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
     def test_rejected_newer_than_current(self):
         """Don't show reviewed but unapproved revs newer than current rev"""
         rejected = TranslatedRevisionFactory(
-            document__locale="de", reviewed=datetime.now(), is_approved=False
+            document__locale="de", reviewed=timezone.now(), is_approved=False
         )
         assert rejected.document.title not in self.titles()
 
@@ -801,7 +802,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
     def test_one_rejected_revision(self):
         """Translation with 1 rejected rev shows as Needs Translation"""
         TranslatedRevisionFactory(
-            document__locale="de", is_approved=False, reviewed=datetime.now()
+            document__locale="de", is_approved=False, reviewed=timezone.now()
         )
 
         # A document will be excluded for anonymous users, if its
@@ -927,7 +928,7 @@ class UnreadyTests(ReadoutTestCase):
             document=d, is_approved=False, reviewed=None, is_ready_for_localization=False
         )
         RevisionFactory(
-            document=d, is_approved=False, reviewed=datetime.now(), is_ready_for_localization=False
+            document=d, is_approved=False, reviewed=timezone.now(), is_ready_for_localization=False
         )
         self.assertEqual([], self.titles())
 
@@ -939,7 +940,7 @@ class UnreadyTests(ReadoutTestCase):
 
         """
         r = ApprovedRevisionFactory(
-            reviewed=datetime.now(), is_ready_for_localization=False, significance=None
+            reviewed=timezone.now(), is_ready_for_localization=False, significance=None
         )
         self.assertEqual([r.document.title], self.titles())
 

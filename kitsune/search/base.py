@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Self, overload
 
 from django.conf import settings
@@ -163,14 +163,14 @@ class SumoDocument(DSLDocument):
                         and isinstance(value, datetime)
                         and timezone.is_naive(value)
                     ):
-                        value = timezone.make_aware(value).astimezone(timezone.utc)
+                        value = timezone.make_aware(value).astimezone(UTC)
 
                     if not parent_id:
                         setattr(obj, f, value)
         else:
             obj.es_discard_doc = "unindex_me"
 
-        obj.indexed_on = datetime.now(timezone.utc)
+        obj.indexed_on = timezone.now()
         obj.meta.id = instance.pk
         if parent_id:
             obj.meta.id = parent_id

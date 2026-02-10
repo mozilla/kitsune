@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.cache import cache
+from django.utils import timezone
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -28,7 +29,7 @@ class ForumTestFeeds(TestCase):
 
         q = QuestionFactory()
         q.tags.add("green")
-        q.updated = datetime.now() + timedelta(days=1)
+        q.updated = timezone.now() + timedelta(days=1)
         q.save()
         items = TaggedQuestionsFeed().items(t)
         self.assertEqual(2, len(items))

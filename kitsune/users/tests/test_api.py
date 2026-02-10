@@ -1,11 +1,12 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from http.cookies import SimpleCookie
 from unittest import mock
 
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.test.utils import override_settings
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from kitsune.questions.tests import (
@@ -133,7 +134,7 @@ class TestUserView(TestCase):
         self.assertEqual(res.status_code, 405)
 
     def test_weekly_solutions(self):
-        eight_days_ago = datetime.now() - timedelta(days=8)
+        eight_days_ago = timezone.now() - timedelta(days=8)
         # First one is a solution, but it is too old.
         # second answer is not a solution.
         SolutionAnswerFactory(created=eight_days_ago)

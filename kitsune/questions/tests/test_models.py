@@ -1,11 +1,12 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import mock
 
 import waffle
 from actstream.models import Action, Follow
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.utils import timezone
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
@@ -90,7 +91,7 @@ class TestAnswer(TestCase):
 
     def test_delete_last_answer_of_question(self):
         """Deleting the last_answer of a Question should update the question."""
-        yesterday = datetime.now() - timedelta(days=1)
+        yesterday = timezone.now() - timedelta(days=1)
         q = AnswerFactory(created=yesterday).question
         last_answer = q.last_answer
 
@@ -335,7 +336,7 @@ class QuestionTests(TestCase):
     def test_recent_counts(self):
         """Verify recent_asked_count and recent unanswered count."""
         # create a question for each of past 4 days
-        now = datetime.now()
+        now = timezone.now()
         QuestionFactory(created=now)
         QuestionFactory(created=now - timedelta(hours=12), is_locked=True)
         q = QuestionFactory(created=now - timedelta(hours=23))
@@ -351,7 +352,7 @@ class QuestionTests(TestCase):
         """Verify that recent_asked_count and recent_unanswered_count
         respect filters passed."""
 
-        now = datetime.now()
+        now = timezone.now()
         QuestionFactory(created=now, locale="en-US")
         q = QuestionFactory(created=now, locale="en-US")
         AnswerFactory(question=q)
@@ -412,14 +413,14 @@ class QuestionTests(TestCase):
         assert q.editable  # unlocked/unarchived
 
     def test_age(self):
-        now = datetime.now()
+        now = timezone.now()
         ten_days_ago = now - timedelta(days=10)
         thirty_seconds_ago = now - timedelta(seconds=30)
 
         q1 = QuestionFactory(created=ten_days_ago)
         q2 = QuestionFactory(created=thirty_seconds_ago)
 
-        # This test relies on datetime.now() being called in the age
+        # This test relies on timezone.now() being called in the age
         # property, so this delta check makes it less likely to fail
         # randomly.
         assert abs(q1.age - 10 * 24 * 60 * 60) < 2, "q1.age ({}) != 10 days".format(q1.age)
@@ -431,7 +432,7 @@ class QuestionTests(TestCase):
         self.assertEqual(q.is_taken, False)
 
         q.taken_by = u
-        q.taken_until = datetime.now() + timedelta(seconds=600)
+        q.taken_until = timezone.now() + timedelta(seconds=600)
         q.save()
         self.assertEqual(q.is_taken, True)
 
@@ -462,7 +463,7 @@ class QuestionTests(TestCase):
 
     def test_take_twice_same_user_refreshes_time(self):
         u = UserFactory()
-        first_taken_until = datetime.now() - timedelta(minutes=5)
+        first_taken_until = timezone.now() - timedelta(minutes=5)
         q = QuestionFactory(taken_by=u, taken_until=first_taken_until)
         q.take(u)
         assert q.taken_until > first_taken_until
@@ -479,11 +480,11 @@ class QuestionTests(TestCase):
         u = UserFactory()
         q = QuestionFactory()
         q.take(u)
-        assert q.taken_until > datetime.now()
+        assert q.taken_until > timezone.now()
 
     def test_is_taken_clears(self):
         u = UserFactory()
-        taken_until = datetime.now() - timedelta(seconds=30)
+        taken_until = timezone.now() - timedelta(seconds=30)
         q = QuestionFactory(taken_by=u, taken_until=taken_until)
         # Testin q.is_taken should clear out ``taken_by`` and ``taken_until``,
         # since taken_until is in the past.
@@ -555,17 +556,17 @@ class OldQuestionsArchiveTest(ElasticTestCase):
     search_tests = True
 
     def test_archive_old_questions(self):
-        last_updated = datetime.now() - timedelta(days=100)
+        last_updated = timezone.now() - timedelta(days=100)
 
         # created just now
         q1 = QuestionFactory()
 
         # created 200 days ago
-        q2 = QuestionFactory(created=datetime.now() - timedelta(days=200), updated=last_updated)
+        q2 = QuestionFactory(created=timezone.now() - timedelta(days=200), updated=last_updated)
 
         # created 200 days ago, already archived
         q3 = QuestionFactory(
-            created=datetime.now() - timedelta(days=200),
+            created=timezone.now() - timedelta(days=200),
             is_archived=True,
             updated=last_updated,
         )

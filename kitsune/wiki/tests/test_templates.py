@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+from django.utils import timezone
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -1005,7 +1006,7 @@ class NewRevisionTests(TestCase):
         """When editing based on current revision, we should show a warning if
         there are newer unapproved revisions."""
         # Create a new revision that is at least 1 second newer than current
-        created = datetime.now() + timedelta(seconds=1)
+        created = timezone.now() + timedelta(seconds=1)
         r = RevisionFactory(document=doc, created=created)
 
         # Verify there is a warning box
@@ -1820,7 +1821,7 @@ class ReviewRevisionTests(TestCase):
 
         """
         user = UserFactory()
-        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
+        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=timezone.now())
 
         # Create the translated document based on the current revision
         es_document = DocumentFactory(locale="es", parent=en_revision.document)
@@ -1970,7 +1971,7 @@ class ReviewRevisionTests(TestCase):
 
         # Check that there is no comment of the revisions which is older than Current Revision
         # Also there is no comment of Current Revision
-        revs[4].reviewed = datetime.now()
+        revs[4].reviewed = timezone.now()
         revs[4].is_approved = True
         revs[4].save()
         d.current_revision = revs[4]
@@ -2255,7 +2256,7 @@ class TranslateTests(TestCase):
         add_permission(user, Revision, "review_revision")
         self.client.login(username=user.username, password="testpass")
         user = UserFactory()
-        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
+        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=timezone.now())
 
         url = reverse("wiki.translate", locale="es", args=[en_revision.document.slug])
         response = self.client.get(url)

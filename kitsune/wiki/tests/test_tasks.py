@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import mock
 
 import waffle
@@ -121,7 +121,7 @@ class ReviewMailTestCase(TestCase):
 
     def _approve_and_send(self, revision, reviewer, message):
         revision.reviewer = reviewer
-        revision.reviewed = datetime.now()
+        revision.reviewed = timezone.now()
         revision.is_approved = True
         revision.save()
         send_reviewed_notification(revision.id, message)
@@ -223,7 +223,7 @@ class TestMaybeAwardBadge(TestCase):
     def test_maybe_award_badge_for_kb(self):
         badge = get_or_create_badge(
             WIKI_BADGES["kb-badge"],
-            year=datetime.now().year,
+            year=timezone.now().year,
         )
 
         rev1 = ApprovedRevisionFactory()
@@ -254,7 +254,7 @@ class TestMaybeAwardBadge(TestCase):
     def test_maybe_award_badge_for_l10n(self):
         badge = get_or_create_badge(
             WIKI_BADGES["l10n-badge"],
-            year=datetime.now().year,
+            year=timezone.now().year,
         )
 
         rev1 = ApprovedRevisionFactory(document__locale="de")
