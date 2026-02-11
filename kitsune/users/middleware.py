@@ -31,17 +31,14 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
         if not request.user.is_authenticated:
             return
 
-        match request.session.get("first_seen"):
-            case str() as first_seen:
+        match first_seen := request.session.get("first_seen"):
+            case str():
                 try:
                     first_seen = datetime.fromisoformat(first_seen)
                 except ValueError:
                     first_seen = None
-            case datetime() as first_seen:
-                # Legacy pickle-serialized datetime object.
-                pass
             case _:
-                first_seen = None
+                pass
 
         if first_seen is None:
             request.session["first_seen"] = timezone_now().isoformat()
