@@ -75,3 +75,27 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
         self._process_request(self.request)
 
         self.assertEqual(user, self.request.user)
+
+    def test_handles_legacy_datetime_first_seen(self):
+        """Old sessions stored timezone_now() directly as a datetime object."""
+        self.request.user = ProfileFactory(
+            fxa_password_change=timezone_now() + timedelta(minutes=5)
+        ).user
+        self.request.session["first_seen"] = timezone_now()
+
+        response = self._process_request(self.request)
+
+        self.assertTrue(isinstance(self.request.user, AnonymousUser))
+        self.assertTrue(isinstance(response, HttpResponseRedirect))
+
+    def test_handles_legacy_datetime_first_seen_no_logout(self):
+        """Old sessions with datetime objects should still work when no logout is needed."""
+        self.request.user = user = ProfileFactory(
+            fxa_password_change=timezone_now() - timedelta(minutes=5)
+        ).user
+        self.request.session["first_seen"] = timezone_now()
+
+        response = self._process_request(self.request)
+
+        self.assertEqual(user, self.request.user)
+        self.assertFalse(isinstance(response, HttpResponseRedirect))
