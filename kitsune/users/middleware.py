@@ -28,22 +28,26 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        user = request.user
+        if not request.user.is_authenticated:
+            return
 
-        if user.is_authenticated:
-            first_seen = request.session.get("first_seen")
-            # Gracefully handle legacy pickle-serialized datetime objects.
-            if first_seen and isinstance(first_seen, str | datetime):
-                if isinstance(first_seen, str):
-                    try:
-                        first_seen = datetime.fromisoformat(first_seen)
-                    except ValueError:
-                        first_seen = None
+        match request.session.get("first_seen"):
+            case str() as first_seen:
+                try:
+                    first_seen = datetime.fromisoformat(first_seen)
+                except ValueError:
+                    first_seen = None
+            case datetime() as first_seen:
+                # Legacy pickle-serialized datetime object.
+                pass
+            case _:
+                first_seen = None
 
-                if first_seen:
-                    change_time = user.profile.fxa_password_change
-                    if change_time and change_time > first_seen:
-                        logout(request)
-                        return HttpResponseRedirect(reverse("home"))
-            else:
-                request.session["first_seen"] = timezone_now().isoformat()
+        if first_seen is None:
+            request.session["first_seen"] = timezone_now().isoformat()
+            return
+
+        change_time = request.user.profile.fxa_password_change
+        if change_time and change_time > first_seen:
+            logout(request)
+            return HttpResponseRedirect(reverse("home"))
