@@ -202,7 +202,9 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
             repliant_username=test_user["username"],
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
-        utilities.wait_for_given_timeout(65000)
+        question_id = utilities.number_extraction_from_string(
+            question_info["question_id"])
+        utilities.reindex_document("QuestionDocument", question_id)
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
 
     product_filter = sumo_pages.search_page.get_the_highlighted_side_nav_item()
