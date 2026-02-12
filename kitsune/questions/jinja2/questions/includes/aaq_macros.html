@@ -225,9 +225,16 @@
         {{ _('You can also post your question directly to our support team for assistance.') }}
       {% endif %}
     </p>
-    <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="sumo-button secondary-button">
-      {{ _('Continue') }}
-    </a>
+    <div class="switcher-actions">
+      <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug) | urlparams(support_type=switch_to_type, next=next_url) }}" class="sumo-button secondary-button">
+        {{ _('Continue') }}
+      </a>
+      {% if localized_forum_link %}
+      <a href="{{ url('questions.aaq_step3', product_slug=current_product.slug, locale=localized_forum_link.locale) | urlparams(support_type=switch_to_type, next=next_url) }}">
+        {{ localized_forum_link.text }}
+      </a>
+      {% endif %}
+    </div>
   </div>
 {%- endmacro %}
 
