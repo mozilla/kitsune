@@ -7,7 +7,12 @@ from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import ProductSupportConfig
-from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.questions.models import (
     AAQConfig,
     Answer,
@@ -43,7 +48,7 @@ class AAQSearchTests(ElasticTestCase):
             product=p,
             forum_config=aaq_config,
             is_active=True,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
         topic = TopicFactory(slug="troubleshooting", products=[p], in_aaq=True)
         data = {
@@ -99,7 +104,7 @@ class AAQTests(TestCase):
             product=product,
             forum_config=aaq_config,
             is_active=True,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
 
     def test_non_authenticated_user(self):
@@ -136,6 +141,68 @@ class AAQTests(TestCase):
         response = self.client.get(url, follow=True)
         assert not template_used(response, "users/auth.html")
         assert template_used(response, "questions/new_question.html")
+
+
+class AAQZendeskRedirectLocaleTests(TestCase):
+    """Tests that the Zendesk redirect preserves the original locale for the community switcher."""
+
+    def setUp(self):
+        self.product = ProductFactory(title="Firefox", slug="firefox")
+        en_locale, _ = QuestionLocale.objects.get_or_create(locale="en-US")
+        fr_locale, _ = QuestionLocale.objects.get_or_create(locale="fr")
+        aaq_config = AAQConfigFactory(
+            product=self.product,
+            enabled_locales=[en_locale, fr_locale],
+            is_active=True,
+        )
+        ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=aaq_config,
+            zendesk_config=ZendeskConfigFactory(),
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+        )
+        self.user = UserFactory(is_superuser=False)
+        self.client.login(username=self.user.username, password="testpass")
+
+    def test_zendesk_redirect_includes_from_locale(self):
+        """When a non-English user hits the Zendesk form, the redirect includes from_locale."""
+        url = reverse("questions.aaq_step3", locale="fr", args=["firefox"])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("from_locale=fr", response["Location"])
+
+    def test_localized_forum_link_set_when_forum_enabled(self):
+        """When from_locale differs from current locale and the forum supports it,
+        a localized forum link appears in the switcher widget."""
+        url = reverse("questions.aaq_step3", locale="en-US", args=["firefox"])
+        response = self.client.get(url, {"from_locale": "fr"})
+        self.assertEqual(response.status_code, 200)
+        doc = pq(response.content)
+        # The widget is rendered twice (sidebar + inline), so expect 2 links.
+        links = doc(".switcher-actions a:not(.sumo-button)")
+        self.assertEqual(len(links), 2)
+        for link in links.items():
+            self.assertIn("/fr/questions/new/firefox/form", link.attr("href"))
+            self.assertIn(settings.LANGUAGES_DICT["fr"], link.text())
+
+    def test_no_localized_forum_link_without_from_locale(self):
+        """When from_locale is absent, no localized forum link appears."""
+        url = reverse("questions.aaq_step3", locale="en-US", args=["firefox"])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        doc = pq(response.content)
+        links = doc(".switcher-actions a:not(.sumo-button)")
+        self.assertEqual(len(links), 0)
+
+    def test_no_localized_forum_link_for_unsupported_locale(self):
+        """When from_locale is a locale the forum doesn't support, no localized link appears."""
+        url = reverse("questions.aaq_step3", locale="en-US", args=["firefox"])
+        response = self.client.get(url, {"from_locale": "de"})
+        self.assertEqual(response.status_code, 200)
+        doc = pq(response.content)
+        links = doc(".switcher-actions a:not(.sumo-button)")
+        self.assertEqual(len(links), 0)
 
 
 class TestQuestionUpdates(TestCase):
