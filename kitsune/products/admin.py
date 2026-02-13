@@ -181,6 +181,7 @@ class ZendeskTopicConfigurationInline(admin.TabularInline):
     Inline editor for topic-to-config associations.
     Shows which topics are included in this config with their settings.
     """
+
     model = ZendeskTopicConfiguration
     extra = 1
     autocomplete_fields = ("zendesk_topic",)
@@ -200,7 +201,13 @@ class ZendeskTopicAdmin(admin.ModelAdmin):
 
 
 class ZendeskConfigAdmin(admin.ModelAdmin):
-    list_display = ("name", "ticket_form_id", "enable_os_field", "skip_spam_moderation", "topic_count")
+    list_display = (
+        "name",
+        "ticket_form_id",
+        "enable_os_field",
+        "skip_spam_moderation",
+        "topic_count",
+    )
     list_display_links = ("name",)
     list_editable = ("enable_os_field", "skip_spam_moderation")
     list_filter = ("enable_os_field", "skip_spam_moderation")
@@ -309,19 +316,27 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
         if not obj.zendesk_config:
             return "—"
 
-        topic_configs = obj.zendesk_config.topic_configurations.all().select_related("zendesk_topic")
+        topic_configs = obj.zendesk_config.topic_configurations.all().select_related(
+            "zendesk_topic"
+        )
         if not topic_configs:
             return format_html("<em>No topics configured</em>")
 
         topic_items = []
         for topic_config in topic_configs:
             topic = topic_config.zendesk_topic
-            loginless_badge = " <span style='color: #666;'>(loginless only)</span>" if topic_config.loginless_only else ""
+            loginless_badge = (
+                " <span style='color: #666;'>(loginless only)</span>"
+                if topic_config.loginless_only
+                else ""
+            )
             topic_items.append(
                 f"<li><strong>{topic.slug}</strong>: {topic.topic}{loginless_badge}</li>"
             )
 
-        return format_html("<ul style='margin: 0; padding-left: 20px;'>{}</ul>", "".join(topic_items))
+        return format_html(
+            "<ul style='margin: 0; padding-left: 20px;'>{}</ul>", "".join(topic_items)
+        )
 
 
 class ZendeskTopicConfigurationAdmin(admin.ModelAdmin):

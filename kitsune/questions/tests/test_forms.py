@@ -3,7 +3,8 @@ import json
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
 from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 from kitsune.sumo.tests import TestCase
@@ -43,10 +44,14 @@ class TestNewQuestionForm(TestCase):
         self.locale = QuestionLocaleFactory(locale=settings.LANGUAGE_CODE)
         self.product = ProductFactory(slug="firefox")
         self.aaq_config = AAQConfigFactory(
-            product=self.product,
             enabled_locales=[self.locale],
-            is_active=True,
             extra_fields=["troubleshooting", "ff_version", "os"],
+        )
+        ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=self.aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
 
     def test_metadata_keys(self):
