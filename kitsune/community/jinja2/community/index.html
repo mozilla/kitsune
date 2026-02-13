@@ -93,33 +93,33 @@
           </div>
 
 
-      {# Product Filter #}
-        <div class="mzp-c-menu-list selector">
-          <p class="mzp-c-menu-list-title has-icon text-body-md" data-has-dropdown>
-            {% if not product %}
-              {{ _('Filter by Product') }}
-            {% else %}
-              {{ pgettext('DB: products.Product.title', product.title) }}
-            {% endif %}
-          </p>
-          <ul class="mzp-c-menu-list-list">
-            {% set base_url = url('community.home') %}
-            {% if locale %}
-              {% set base_url = base_url|urlparams(locale=locale) %}
-            {% endif %}
-            <li class="mzp-c-menu-list-item {% if not product %}is-selected{% endif %}">
-              <a href="{{ base_url }}">
-                {{ _('All products') }}
-              </a>
-            </li>
-            {% for p in products %}
-              <li class="mzp-c-menu-list-item {% if p == product %}is-selected{% endif %}">
-                <a href="{{ base_url|urlparams(product=p.slug) }}">
-                  <span>{{ pgettext('DB: products.Product.title', p.title) }}</span>
+          {# Product Filter #}
+          <div class="mzp-c-menu-list selector">
+            <p class="mzp-c-menu-list-title has-icon text-body-md" data-has-dropdown>
+              {% if not product %}
+                {{ _('Filter by Product') }}
+              {% else %}
+                {{ pgettext('DB: products.Product.title', product.title) }}
+              {% endif %}
+            </p>
+            <ul class="mzp-c-menu-list-list">
+              {% set base_url = url('community.home') %}
+              {% if locale %}
+                {% set base_url = base_url|urlparams(locale=locale) %}
+              {% endif %}
+              <li class="mzp-c-menu-list-item {% if not product %}is-selected{% endif %}">
+                <a href="{{ base_url }}">
+                  {{ _('All products') }}
                 </a>
               </li>
-            {% endfor %}
-          </ul>
+              {% for p in products %}
+                <li class="mzp-c-menu-list-item {% if p == product %}is-selected{% endif %}">
+                  <a href="{{ base_url|urlparams(product=p.slug) }}">
+                    <span>{{ pgettext('DB: products.Product.title', p.title) }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
 
@@ -157,7 +157,7 @@
       <li>
         {% set tooltip = _('{user} - {num} contributions in last 90 days')|f(user=result['user']['display_name'], num=result['count']) %}
         <a rel="nofollow" href="{{ url('users.profile', result['user']['id']) }}" title="{{ tooltip }}">
-          <img src="{{ result['user']['avatar'] }}" alt="{{ tooltip }}" />
+          <img class="avatar" src="{{ result['user']['avatar'] }}" alt="{{ tooltip }}" />
         </a>
       </li>
     {% endfor %}

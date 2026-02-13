@@ -38,7 +38,7 @@
 <ul class="awardees">
   {% for award in award_list %}
     <li>
-      <a href="{{ award.get_absolute_url() }}"><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}"></a>
+      <a href="{{ award.get_absolute_url() }}"><img class="avatar" src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}"></a>
     </li>
   {% endfor %}
 </ul>

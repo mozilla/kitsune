@@ -106,7 +106,7 @@
           {% for result in results %}
             <div class="card elevation-01 results-user">
               {% if result['user']['avatar'] %}
-                <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results card--img" />
+                <img src="{{ result['user']['avatar'] }}" alt="" class="avatar card--img" />
               {% endif %}
               <span class="numbered">{{ loop.index + ((page - 1) * page_size) }}</span>
               <div class="card--details user-details">

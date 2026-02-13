@@ -31,7 +31,7 @@
             {% for result in results %}
               <section class="card elevation-01 results-user">
                 {% if result['avatar'] %}
-		              <img src="{{ result['avatar']['url'] }}" alt="" class="user-img-results card--img" />
+		              <img src="{{ result['avatar']['url'] }}" alt="" class="avatar card--img" />
                 {% endif %}
                 <div class="card--details user-details">
                   <h2 class="card--title">{{ result['name'] }}</h2>
