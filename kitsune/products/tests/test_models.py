@@ -1,4 +1,14 @@
-from kitsune.products.tests import ProductFactory, TopicFactory
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+)
+from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 from kitsune.sumo.tests import TestCase
 
 
@@ -42,3 +52,84 @@ class ProductModelTests(TestCase):
         expected = "/en-US/products/{p}".format(p=p.slug)
         actual = p.get_absolute_url()
         self.assertEqual(actual, expected)
+
+
+class ProductSupportConfigCleanTests(TestCase):
+    def test_forum_config_with_no_locales_raises(self):
+        """Active config with forum_config that has no enabled locales should fail."""
+        aaq_config = AAQConfigFactory()
+        product = ProductFactory()
+        psc = ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            is_active=True,
+        )
+        with self.assertRaises(ValidationError):
+            psc.clean()
+
+    def test_forum_config_with_locales_passes(self):
+        """Active config with forum_config that has enabled locales should pass."""
+        locale = QuestionLocaleFactory(locale="en-US")
+        aaq_config = AAQConfigFactory(enabled_locales=[locale])
+        product = ProductFactory()
+        psc = ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            is_active=True,
+        )
+        psc.clean()  # Should not raise
+
+    def test_active_with_zendesk_only_passes(self):
+        """Active config with only zendesk_config should pass."""
+        zendesk_config = ZendeskConfigFactory()
+        product = ProductFactory()
+        psc = ProductSupportConfigFactory(
+            product=product,
+            zendesk_config=zendesk_config,
+            is_active=True,
+        )
+        psc.clean()  # Should not raise
+
+    def test_active_with_both_channels_passes(self):
+        """Active config with both channels should pass."""
+        locale = QuestionLocaleFactory(locale="en-US")
+        aaq_config = AAQConfigFactory(enabled_locales=[locale])
+        zendesk_config = ZendeskConfigFactory()
+        product = ProductFactory()
+        psc = ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            zendesk_config=zendesk_config,
+            is_active=True,
+        )
+        psc.clean()  # Should not raise
+
+    def test_inactive_skips_validation(self):
+        """Inactive config skips all validation."""
+        aaq_config = AAQConfigFactory()
+        zendesk_config = ZendeskConfigFactory()
+        product = ProductFactory()
+        psc = ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            zendesk_config=zendesk_config,
+            is_active=False,
+        )
+        psc.clean()  # Should not raise even though forum_config has no locales
+
+    def test_active_with_no_channels_raises(self):
+        """Active config with no support channels should fail validation."""
+        product = ProductFactory()
+        psc = ProductSupportConfig(product=product, is_active=True)
+        with self.assertRaises(ValidationError):
+            psc.clean()
+
+    def test_save_with_no_channels_raises_integrity_error(self):
+        """Saving with no support channels should fail due to DB constraint."""
+        product = ProductFactory()
+        with self.assertRaises(IntegrityError):
+            ProductSupportConfigFactory(
+                product=product,
+                forum_config=None,
+                zendesk_config=None,
+            )

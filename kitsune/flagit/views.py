@@ -320,7 +320,11 @@ def moderate_content(request):
             "objects": objects,
             "locale": request.LANGUAGE_CODE,
             "products": [
-                (p.slug, p.title) for p in Product.active.filter(aaq_configs__is_active=True)
+                (p.slug, p.title)
+                for p in Product.active.filter(
+                    support_configs__is_active=True,
+                    support_configs__forum_config__enabled_locales__isnull=False,
+                ).distinct()
             ],
             "selected_product": product_slug,
             "assignees": sorted(
