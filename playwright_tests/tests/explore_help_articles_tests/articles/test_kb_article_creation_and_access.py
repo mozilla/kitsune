@@ -642,7 +642,7 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
 
     with allure.step("Clicking on the top navbar sumo nav logo"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("WikiDocument", article_details["article_id"])
 
     if user_type == 'Simple user':
         with allure.step(f"Signing in with {test_user['username']} user account"):
@@ -766,9 +766,7 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
 
     with allure.step("Clicking on the top navbar sumo nav logo"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-
-    with allure.step("Wait for ~1 minute until the kb article is available in search"):
-        utilities.wait_for_given_timeout(60000)
+        utilities.reindex_document("WikiDocument", article_details["article_id"])
 
     with allure.step("Signing out"):
         utilities.delete_cookies()
@@ -1832,9 +1830,7 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
             test_article_titles.append(article_info["article_title"])
             test_articles_url.append(article_info["article_url"])
             counter += 1
-
-    with allure.step("Wait for ~1 minute until the kb article is available in search"):
-        utilities.wait_for_given_timeout(90000)
+            utilities.reindex_document("WikiDocument", article_info["article_id"])
 
     with allure.step(f"Navigating to the f{test_article_titles[0]} and adding the rest as related "
                      f"documents"):
@@ -1887,9 +1883,7 @@ def test_same_article_cannot_be_added_as_related_article(page: Page, create_user
     with allure.step("Creating a new KB article"):
         article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             product="MDN Plus", article_topic="MDN test topic", approve_first_revision=True)
-
-    with allure.step("Wait for ~1 minute until the kb article is available in search"):
-        utilities.wait_for_given_timeout(90000)
+        utilities.reindex_document("WikiDocument", article_info["article_id"])
 
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying that "
                             "the same article cannot be added inside the 'Related documents' "
@@ -1923,9 +1917,7 @@ def test_restricted_visibility_related_document_in_article_page(page: Page, crea
             test_article_titles.append(article_info["article_title"])
             test_articles_url.append(article_info["article_url"])
             counter += 1
-
-    with allure.step("Wait for ~1 minute until the kb article is available in search"):
-        utilities.wait_for_given_timeout(90000)
+            utilities.reindex_document("WikiDocument", article_info["article_id"])
 
     with allure.step(f"Navigating to the article: f{test_article_titles[1]} and "
                      f"restricting the visibility of the article to 'Mobile' group"):

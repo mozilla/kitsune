@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from playwright.sync_api import Page
@@ -17,6 +18,7 @@ from playwright_tests.pages.explore_help_articles.articles.kb_translate_article_
 
 class KbArticleTranslationFlow:
     def __init__(self, page: Page):
+        self.page = page
         self.utilities = Utilities(page)
         self.kb_article_page = KBArticlePage(page)
         self.translate_article_page = TranslateArticlePage(page)
@@ -68,14 +70,20 @@ class KbArticleTranslationFlow:
         if approve_translation_revision:
             self.approve_kb_translation(revision_id=first_revision_id)
 
+        article_page_url = self.utilities.get_page_url().removesuffix("/history")
+        response = self.page.request.get(article_page_url)
+        match = re.search(r'data-document-id="(\d+)"', response.text())
+        translation_id = int(match.group(1)) if match else None
+
         return {
-            "translation_url": self.utilities.get_page_url().removesuffix("/history"),
+            "translation_url": article_page_url,
             "translation_title": translation_title,
             "translation_slug": translation_slug,
             "translation_keyword": translation_keyword,
             "translation_summary": translation_summary,
             "translation_body": translation_body,
-            "revision_id": first_revision_id
+            "revision_id": first_revision_id,
+            "translation_id": translation_id
         }
 
     def approve_kb_translation(self, revision_id: str):

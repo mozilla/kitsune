@@ -174,9 +174,7 @@ def test_restricted_visibility_in_search_results(page: Page, create_user_factory
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, single_group=whitelisted_group[0]
         )
-
-    with allure.step("Wait for ~1 minute until the kb article is available in search"):
-        utilities.wait_for_given_timeout(60000)
+        utilities.reindex_document("WikiDocument", article_details["article_id"])
 
     with allure.step("Clicking on the top-navbar sumo logo"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()

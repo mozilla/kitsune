@@ -118,7 +118,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page, create_
         assert not sumo_pages.my_profile_page.is_solutions_displayed()
 
 
-# C1318760
+# C1318760, C2245214
 @pytest.mark.userProfile
 def test_number_of_answers_and_questions_for_contributor_thread_contributions(page: Page,
                                                                               create_user_factory):

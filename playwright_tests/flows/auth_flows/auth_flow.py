@@ -40,7 +40,7 @@ class AuthFlowPage:
         self.auth_page.click_on_enter_your_email_submit_button()
 
         self.auth_page.add_data_to_password_input_field(password)
-        with self.utilities.page.expect_navigation():
+        with self.page.expect_navigation(wait_until="commit"):
             if new_account:
                 self.auth_page.click_on_create_account_button()
             else:

@@ -1,6 +1,3 @@
-import random
-import string
-
 import allure
 import pytest
 from playwright.sync_api import Page, expect
@@ -24,6 +21,7 @@ def test_create_user_sessions_for_test_accounts(page: Page):
     )
     utilities.store_session_cookies(utilities.username_extraction_from_email(staff_user))
 
+# C3067317
 @pytest.mark.loginSessions
 def test_new_account_creation(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)

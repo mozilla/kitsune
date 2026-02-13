@@ -183,33 +183,13 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
     test_article_name = "DoNotDelete"
     test_user = create_user_factory()
     search_page_messages = SearchPageMessage()
+    question = _create_test_question(page, test_user)
 
-    with allure.step("Submitting a new Firefox AAQ question and using the searchbar to search for "
-                     "a particular kb Article and for the submitted question"):
-        utilities.start_existing_session(cookies=test_user)
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        question_info = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-            expected_locator=sumo_pages.question_page.questions_header
-        )
-        question_tile = question_info["aaq_subject"]
-
-    with allure.step("Leaving a question reply so the question will be returned in search "
-                     "results"):
-        sumo_pages.aaq_flow.post_question_reply_flow(
-            repliant_username=test_user["username"],
-            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        question_id = utilities.number_extraction_from_string(
-            question_info["question_id"])
-        utilities.reindex_document("QuestionDocument", question_id)
+    with allure.step("Searching for the test article inside the sidebar"):
         sumo_pages.search_page.fill_into_searchbar(test_article_name, is_sidebar=True)
+        product_filter = sumo_pages.search_page.get_the_highlighted_side_nav_item()
 
-    product_filter = sumo_pages.search_page.get_the_highlighted_side_nav_item()
-
-    with check, allure.step("Verifying that the question is successfully returned"):
+    with check, allure.step("Verifying that the test article is successfully returned"):
         assert test_article_name in sumo_pages.search_page.get_all_search_results_article_titles()
 
     with check, allure.step("Verifying that the filter by product is applied to the correct "
@@ -255,7 +235,7 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
 
     with allure.step("Using the searchbar to search for a particular question"):
         sumo_pages.search_page.clear_the_searchbar(is_sidebar=True)
-        sumo_pages.search_page.fill_into_searchbar(question_tile, is_sidebar=True)
+        sumo_pages.search_page.fill_into_searchbar(question["aaq_subject"], is_sidebar=True)
         result_count = utilities.number_extraction_from_string(
             sumo_pages.search_page.get_search_results_header())
 
@@ -263,13 +243,13 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
                             "1. The question is successfully returned inside the search results."
                             "2. The correct doctype filter is applied."
                             "3. The correct search results message is returned."):
-        assert (question_tile in sumo_pages.search_page.
+        assert (question["aaq_subject"] in sumo_pages.search_page.
                 get_all_search_results_article_titles())
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
         assert sumo_pages.search_page.get_doctype_filter() == "Community Discussion Only"
         assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
                 expected_found_search_results_message(search_results_count=str(result_count),
-                                                      search_string=question_tile,
+                                                      search_string=question["aaq_subject"],
                                                       product_filter_option=product_filter))
 
     with check, allure.step("Clicking on the 'Help Articles Only' doctype filter and verifying:"
@@ -278,12 +258,12 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
                             "3. The correct search results message is returned."):
         sumo_pages.search_page.click_on_help_articles_only_doctype_filter()
         utilities.wait_for_given_timeout(2000)
-        assert (question_tile not in sumo_pages.search_page.
+        assert (question["aaq_subject"] not in sumo_pages.search_page.
                 get_all_search_results_article_titles())
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
         assert sumo_pages.search_page.get_doctype_filter() == "Help Articles Only"
         assert (sumo_pages.search_page.get_search_results_header() in search_page_messages.
-                expected_no_results_search_results_message(search_string=question_tile,
+                expected_no_results_search_results_message(search_string=question["aaq_subject"],
                                                            product_filter_option=product_filter))
 
     with check, allure.step("Clicking on the 'View All' doctype filter and verifying:"
@@ -294,13 +274,13 @@ def test_searchbar_functionality_and_search_filters(page: Page, create_user_fact
         utilities.wait_for_given_timeout(2000)
         result_count = utilities.number_extraction_from_string(
             sumo_pages.search_page.get_search_results_header())
-        assert (question_tile in sumo_pages.search_page.
+        assert (question["aaq_subject"] in sumo_pages.search_page.
                 get_all_search_results_article_titles())
         assert sumo_pages.search_page.get_the_highlighted_side_nav_item() == "All Products"
         assert sumo_pages.search_page.get_doctype_filter() == "View All"
         assert (sumo_pages.search_page.get_search_results_header() == search_page_messages.
                 expected_found_search_results_message(search_results_count=str(result_count),
-                                                      search_string=question_tile,
+                                                      search_string=question["aaq_subject"],
                                                       product_filter_option=product_filter))
 
 
@@ -739,7 +719,8 @@ def test_keywords_field_and_content_operator(page: Page, create_user_factory):
         article_keyword=search_term_keyword.replace("field:keywords.en-US:", ""),
         article_content=search_term_content.replace("field:content.en-US:", "")
     )
-    utilities.wait_for_given_timeout(65000)
+
+    utilities.reindex_document("WikiDocument", article_details["article_id"])
     sumo_pages.top_navbar.click_on_sumo_nav_logo()
     with allure.step("Searching for an article using the keywords field operator"):
         sumo_pages.search_page.fill_into_searchbar(search_term_keyword)
@@ -833,7 +814,6 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         locale='ja'
     )
 
-    utilities.wait_for_given_timeout(65000)
     sumo_pages.top_navbar.click_on_sumo_nav_logo()
 
     with allure.step("Switching the locale to ro"):
@@ -841,6 +821,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         utilities.wait_for_given_timeout(2000)
 
     with allure.step("Searching for the ro article using the title field operator"):
+        utilities.reindex_document("WikiDocument", ro_article_info['translation_id'])
         sumo_pages.search_page.fill_into_searchbar(
             "field:title.ro:" + ro_article_info['translation_title'])
 
@@ -882,6 +863,7 @@ def test_field_operators_for_non_us_locales(page: Page, create_user_factory):
         sumo_pages.footer_section.switch_to_a_locale('ja')
 
     with allure.step("Searching for the ja article using the title field operator"):
+        utilities.reindex_document("WikiDocument", ja_article_info['translation_id'])
         sumo_pages.search_page.fill_into_searchbar(
             "field:title.ja:" + ja_article_info['translation_title'])
 
@@ -961,7 +943,7 @@ def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
     with allure.step("Submitting a new KB article"):
         test_article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True)
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("WikiDocument", test_article['article_id'])
 
     with allure.step("Verifying that the article is successfully returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
@@ -972,7 +954,8 @@ def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
     with allure.step("Marking the article as obsolete"):
         utilities.navigate_to_link(test_article["article_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=True)
-        utilities.wait_for_given_timeout(65000)
+        utilities.wait_for_given_timeout(5000)
+        utilities.reindex_document("WikiDocument", test_article['article_id'])
 
     with allure.step("Verifying that the article is no longer returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
@@ -983,7 +966,7 @@ def test_obsolete_marked_documents_visibility(page: Page, create_user_factory):
     with allure.step("Unmarking the article as obsolete"):
         utilities.navigate_to_link(test_article["article_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(obsolete=False)
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("WikiDocument", test_article['article_id'])
 
     with allure.step("Verifying that the article is returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
@@ -1005,7 +988,7 @@ def test_article_product_metadata_update_and_search_filter_by_product(page: Page
     with allure.step("Submitting a new KB article"):
         test_article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True)
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("WikiDocument", test_article['article_id'])
 
     with check, allure.step("Searching for the article and verifying that the article is returned "
                             "inside the search results if the filter is applied to"
@@ -1033,7 +1016,7 @@ def test_article_product_metadata_update_and_search_filter_by_product(page: Page
     with allure.step("Editing the article by adding 'Firefox for Android' as a product"):
         utilities.navigate_to_link(test_article["article_url"])
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(product="Firefox for Android")
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("WikiDocument", test_article['article_id'])
 
     with check, allure.step("Searching for the article and verifying that the article is returned "
                             "in both 'Firefox' and 'Firefox for Android' product filters"):
@@ -1068,44 +1051,26 @@ def test_archived_questions_are_returned_in_advanced_search_results_only(page: P
     utilities = Utilities(page)
     test_user = create_user_factory()
     user = utilities.username_extraction_from_email(utilities.staff_user)
+    question = _create_test_question(page, test_user)
+    question_id = utilities.number_extraction_from_string(question["question_id"])
 
-    with allure.step("Posting a Firefox product question"):
-        utilities.start_existing_session(cookies=test_user)
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-
-        question_details = sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=sumo_pages.aaq_form_page.get_aaq_form_topic_options()[0],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-            attach_image=False,
-            expected_locator=sumo_pages.question_page.questions_header
-        )
-
-    with allure.step("Leaving a question reply so that the question is returned in search "
-                     "results"):
-        question_reply = (
-            utilities.aaq_question_test_data['valid_firefox_question']['question_reply'])
-        sumo_pages.aaq_flow.post_question_reply_flow(repliant_username=test_user['username'],
-                                                     reply=question_reply)
+    with allure.step("Singing in with an admin account and archiving the question."):
         utilities.start_existing_session(session_file_name=user)
         sumo_pages.question_page.click_on_archive_this_question_option()
-
-    with allure.step("Waiting for 1 minute so that the question is successfully returned in "
-                     "search results"):
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("QuestionDocument", question_id)
 
     with allure.step("Searching for the question inside the searchbar"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
-        sumo_pages.search_page.fill_into_searchbar(question_details["aaq_subject"])
-        assert (question_details["aaq_subject"] not in sumo_pages.search_page.
+        sumo_pages.search_page.fill_into_searchbar(question["aaq_subject"])
+        assert (question["aaq_subject"] not in sumo_pages.search_page.
                 get_all_search_results_article_titles())
 
     with allure.step("Searching for the question inside the searchbar using advanced search"
                      "syntax"):
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(
-            f"field:question_title.en-US:{question_details['aaq_subject']}")
-        assert (question_details["aaq_subject"] in sumo_pages.search_page.
+            f"field:question_title.en-US:{question['aaq_subject']}")
+        assert (question["aaq_subject"] in sumo_pages.search_page.
                 get_all_search_results_article_titles())
 
         sumo_pages.search_page.clear_the_searchbar()
@@ -1115,14 +1080,14 @@ def test_archived_questions_are_returned_in_advanced_search_results_only(page: P
 
         while sumo_pages.common_web_elements.is_next_pagination_item_visible():
             search_titles = sumo_pages.search_page.get_all_search_results_article_titles()
-            if question_details['aaq_subject'] in search_titles:
+            if question['aaq_subject'] in search_titles:
                 assert True
                 break
 
             sumo_pages.common_web_elements.click_on_next_pagination_item()
             utilities.wait_for_given_timeout(2000)
         search_titles = sumo_pages.search_page.get_all_search_results_article_titles()
-        assert question_details['aaq_subject'] in search_titles
+        assert question['aaq_subject'] in search_titles
 
 
 #  C2874873, C2873851, C1358450
@@ -1355,7 +1320,7 @@ def _create_test_question(page: Page, user, sign_out=True):
     with allure.step("Navigating to the AAQ form and posting a new AAQ question"):
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
 
-    question = sumo_pages.aaq_flow.submit_an_aaq_question(
+    question_info = sumo_pages.aaq_flow.submit_an_aaq_question(
         subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
         topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
         body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
@@ -1368,9 +1333,10 @@ def _create_test_question(page: Page, user, sign_out=True):
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
-    with allure.step("Waiting until the test question is returned in search results"):
-        utilities.wait_for_given_timeout(65000)
+    with allure.step("Forcing a question reindex"):
+        question_id = utilities.number_extraction_from_string(question_info["question_id"])
+        utilities.reindex_document("QuestionDocument", question_id)
         if sign_out:
             utilities.delete_cookies()
 
-    return question
+    return question_info

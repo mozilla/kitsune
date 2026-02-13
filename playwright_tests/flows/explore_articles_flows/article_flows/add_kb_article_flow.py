@@ -1,4 +1,5 @@
 import random
+import re
 import string
 from typing import Any
 from playwright.sync_api import Page
@@ -172,6 +173,14 @@ class AddKbArticleFlow:
             self.approve_kb_revision(revision_id=first_revision_id,
                                      ready_for_l10n=ready_for_localization)
 
+        article_id = None
+        if first_revision_id:
+            article_page_url = article_url.removesuffix("/history")
+            response = self.page.request.get(article_page_url)
+            match = re.search(r'data-document-id="(\d+)"', response.text())
+            if match:
+                article_id = int(match.group(1))
+
         return {"article_title": kb_article_title,
                 "article_content": kb_article_test_data["article_content"],
                 "article_content_html": kb_article_test_data['article_content_html_rendered'],
@@ -186,7 +195,8 @@ class AddKbArticleFlow:
                 "expiry_date": kb_article_test_data["expiry_date"],
                 "article_url": article_url.removesuffix("/history"),
                 "article_show_history_url":article_url,
-                "first_revision_id": first_revision_id
+                "first_revision_id": first_revision_id,
+                "article_id": article_id
                 }
 
     @retry_on_502
