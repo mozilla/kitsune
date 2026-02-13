@@ -4,12 +4,12 @@ import warnings
 import requests
 import allure
 import pytest
-from playwright.sync_api import Page, Error
+from playwright.sync_api import Page
 from requests import JSONDecodeError
 from slugify import slugify
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright._impl._errors import TimeoutError
+from playwright._impl._errors import TargetClosedError, TimeoutError
 
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -154,7 +154,6 @@ def create_user_factory(page: Page, request):
 @pytest.fixture()
 def restmail_test_account_creation(page: Page, request):
     sumo_pages = SumoPages(page)
-    utilities = Utilities(page)
     """Creates and deletes a restmail test account on teardown."""
     username = 'Test'.join(random.choice(
         string.ascii_lowercase + string.digits) for _ in range(3)) + "@restmail.net"
@@ -166,12 +165,21 @@ def restmail_test_account_creation(page: Page, request):
         new_account=True
     )
 
-    yield user, user_password
+    browser = page.context.browser
 
-    page.goto(utilities.different_endpoints['fxa_stage'])
-    sumo_pages.auth_page.click_on_user_logged_in_sign_in_button()
-    sumo_pages.auth_page.click_on_delete_account_button()
-    sumo_pages.auth_page.check_all_acknowledge_fxa_page_checkboxes()
-    sumo_pages.auth_page.click_on_continue_deletion_button()
-    sumo_pages.auth_page.add_fxa_password(password)
-    sumo_pages.auth_page.click_on_the_delete_confirmation_button()
+    def _cleanup():
+        try:
+            sumo_pages.auth_flow_page.delete_test_account_flow(username, password)
+        except TargetClosedError as e:
+            cleanup_context = browser.new_context()
+            cleanup_page = cleanup_context.new_page()
+            try:
+                cleanup_sumo_pages = SumoPages(cleanup_page)
+                cleanup_sumo_pages.auth_flow_page.delete_test_account_flow(username, password)
+            except Exception as e:
+                print(f"Restmail test account cleanup failed: {e}")
+            finally:
+                cleanup_context.close()
+
+    request.addfinalizer(_cleanup)
+    return user, user_password

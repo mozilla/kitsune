@@ -69,7 +69,7 @@ class AAQFormPage(BasePage):
         """Locators belonging to the Share Data section."""
         self.share_data_button = page.locator("button#share-data")
         self.troubleshooting_information_textarea = page.locator("textarea#id_troubleshooting")
-        self.try_these_manual_steps_link = page.locator("p#troubleshooting-manual a")
+        self.try_these_manual_steps_link = page.locator("div#troubleshooting-manual a")
         self.show_details_option = page.locator("a[class='show']")
         self.product_version_input = page.locator("input#id_ff_version")
         self.product_os = page.locator("input#id_os")

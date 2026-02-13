@@ -14,6 +14,7 @@ class CommonWebElements(BasePage):
         self.learn_more_button = page.locator("div#id_scam_alert").get_by_role("link")
 
         """Locators belonging to the Still need help widget."""
+        self.aaq_widget = page.locator("div[class*='aaq-widget']")
         self.aaq_button = page.locator("div[class*='aaq-widget']").get_by_role("link")
         self.still_need_help_subheading = page.locator("div.aaq-widget p")
 
@@ -51,7 +52,7 @@ class CommonWebElements(BasePage):
 
         """Locators belonging to the pagination elements."""
         self.pagination_item = lambda pagination_item: page.locator(
-            "ol[class='pagination']").get_by_role("link").filter(has_text=pagination_item)
+            f"//ol[@class='pagination']//a[text()={pagination_item}]")
         self.selected_pagination_item = page.locator(
             "ol[class='pagination'] li[class='selected']").get_by_role("link")
         self.previous_pagination_item = page.locator(

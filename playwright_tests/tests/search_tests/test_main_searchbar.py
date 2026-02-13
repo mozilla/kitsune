@@ -1110,7 +1110,7 @@ def test_archived_questions_are_returned_in_advanced_search_results_only(page: P
 
         sumo_pages.search_page.clear_the_searchbar()
         sumo_pages.search_page.fill_into_searchbar(
-            f"field:question_content.en-US:I'm experiencing an accessibility issue "
+            f"field:question_content.en-US:Each time when accessing the following link "
         )
 
         while sumo_pages.common_web_elements.is_next_pagination_item_visible():

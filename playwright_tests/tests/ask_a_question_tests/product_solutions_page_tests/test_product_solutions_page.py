@@ -91,13 +91,15 @@ def test_popular_topics_redirect(page: Page):
 # T5696588
 @pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
-def test_ask_now_widget_redirect(page: Page):
+def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
-    count = 0
+        utilities.delete_cookies()
+
     for freemium_product in utilities.general_test_data["freemium_products"]:
         with allure.step(f"Clicking on the {freemium_product} card "):
             sumo_pages.contact_support_page.click_on_a_particular_card(freemium_product)
@@ -113,14 +115,7 @@ def test_ask_now_widget_redirect(page: Page):
         with allure.step("Clicking on the AAQ button and verifying that the auth page is "
                          "displayed"):
             sumo_pages.common_web_elements.click_on_aaq_button()
-            if count == 0:
-                sumo_pages.auth_flow_page.sign_in_flow(
-                    username=utilities.staff_user,
-                    account_password=utilities.user_secrets_pass,
-                )
-                count += 1
-            else:
-                sumo_pages.auth_flow_page.login_with_existing_session()
+            sumo_pages.auth_flow_page.login_with_existing_session()
 
         with allure.step("Verifying that we are on the correct AAQ form page"):
             expect(page).to_have_url(
@@ -136,13 +131,15 @@ def test_ask_now_widget_redirect(page: Page):
 # C890382
 @pytest.mark.smokeTest
 @pytest.mark.productSolutionsPage
-def test_contact_support_widget_redirect(page: Page):
+def test_contact_support_widget_redirect(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
-    count = 0
+        utilities.delete_cookies()
+
     for premium_product in utilities.general_test_data["premium_products"]:
         with allure.step(f"Clicking on the {premium_product} card"):
             sumo_pages.contact_support_page.click_on_a_particular_card(premium_product)
@@ -159,15 +156,7 @@ def test_contact_support_widget_redirect(page: Page):
         with allure.step("Clicking on the AAQ button, verifying that the auth page is "
                          "displayed and signing in to SUMO"):
             sumo_pages.common_web_elements.click_on_aaq_button()
-
-            if count == 0:
-                sumo_pages.auth_flow_page.sign_in_flow(
-                    username=utilities.staff_user,
-                    account_password=utilities.user_secrets_pass,
-                )
-                count += 1
-            else:
-                sumo_pages.auth_flow_page.login_with_existing_session()
+            sumo_pages.auth_flow_page.login_with_existing_session()
 
         with allure.step("Verifying that we are on the correct AAQ form page"):
             expect(page).to_have_url(

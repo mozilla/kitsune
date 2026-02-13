@@ -1323,14 +1323,10 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
         posted_question = post_firefox_product_question_flow(page, test_user)
     question_id = sumo_pages.question_page.get_question_id()
 
-    with allure.step("Deleting user session, clicking on the 'Quote' option for the question "
-                     "and verifying that the url has updated to contain the correct fragment"
-                     " identifier"):
+    with check, allure.step("Deleting user session and verifying that the 'More options' dropdown"
+                            " menu is not accessible"):
         utilities.delete_cookies()
-        sumo_pages.question_page.click_on_reply_more_options_button(question_id)
-        sumo_pages.question_page.click_on_quote_for_a_certain_reply(question_id)
-        expect(page).to_have_url(
-            posted_question['question_details']['question_page_url'] + "#question-reply")
+        assert sumo_pages.question_page.more_options_for_answer(question_id).is_hidden()
 
     with allure.step("Verifying that the reply textarea field is not displayed"):
         expect(sumo_pages.question_page.post_a_reply_textarea).to_be_hidden()
@@ -1356,15 +1352,10 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
-    with allure.step("Deleting user session, clicking on the quote option fro the reply and "
-                     "verifying that the url has updated to contain the correct fragment "
-                     "identifier"):
+    with allure.step("Deleting user session and verifying that the 'More options dropdown menu "
+                     "is not accessible.'"):
         utilities.delete_cookies()
-        sumo_pages.question_page.click_on_reply_more_options_button(reply_id)
-        sumo_pages.question_page.click_on_quote_for_a_certain_reply(reply_id)
-        expect(page).to_have_url(
-            posted_question['question_details']['question_page_url'] + "#question-reply"
-        )
+        assert sumo_pages.question_page.more_options_for_answer(reply_id).is_hidden()
 
     with allure.step("Verifying that the reply textarea field is not displayed"):
         expect(sumo_pages.question_page.post_a_reply_textarea).to_be_hidden()
