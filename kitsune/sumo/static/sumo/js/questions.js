@@ -122,7 +122,10 @@ function initQuestion(action) {
   if (!questionForm) return;
   let aaq = new AAQSystemInfo(questionForm);
   if (action === "editing") {
-    questionForm.querySelector("#troubleshooting-field").style.display = "block";
+    let troubleshootingField = questionForm.querySelector("#troubleshooting-field");
+    if (troubleshootingField) {
+      troubleshootingField.style.display = "block";
+    }
   } else {
     aaq.fillDetails();
     hideDetails(questionForm);
