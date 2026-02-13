@@ -406,15 +406,15 @@ def has_support_config(product=None):
         except Product.DoesNotExist:
             return False
 
-    # Check ProductSupportConfig with either:
-    # 1. Active forum support (AAQConfig.is_active=True), OR
+    # Check for the existence of a ProductSupportConfig with either:
+    # 1. Forum support with at least one enabled locale, OR
     # 2. Zendesk support configured
     return (
         ProductSupportConfig.objects.filter(
             product=product,
             is_active=True,
         )
-        .filter(Q(forum_config__is_active=True) | Q(zendesk_config__isnull=False))
+        .filter(Q(forum_config__enabled_locales__isnull=False) | Q(zendesk_config__isnull=False))
         .exists()
     )
 

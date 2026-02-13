@@ -340,20 +340,21 @@ class WebpackStaticTests(TestCase):
 class HasSupportConfigTests(TestCase):
     def test_product_support_config_inactive(self):
         from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
-        from kitsune.questions.tests import AAQConfigFactory
+        from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 
         product = ProductFactory()
-        aaq_config = AAQConfigFactory(product=product, is_active=True)
+        locale = QuestionLocaleFactory(locale="en-US")
+        aaq_config = AAQConfigFactory(enabled_locales=[locale])
         ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=False)
 
         self.assertFalse(has_support_config(product))
 
-    def test_aaq_config_inactive(self):
+    def test_forum_config_no_locales(self):
         from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
         from kitsune.questions.tests import AAQConfigFactory
 
         product = ProductFactory()
-        aaq_config = AAQConfigFactory(product=product, is_active=False)
+        aaq_config = AAQConfigFactory()
         ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
 
         self.assertFalse(has_support_config(product))
@@ -373,10 +374,11 @@ class HasSupportConfigTests(TestCase):
 
     def test_forum_support_active(self):
         from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory
-        from kitsune.questions.tests import AAQConfigFactory
+        from kitsune.questions.tests import AAQConfigFactory, QuestionLocaleFactory
 
         product = ProductFactory()
-        aaq_config = AAQConfigFactory(product=product, is_active=True)
+        locale = QuestionLocaleFactory(locale="en-US")
+        aaq_config = AAQConfigFactory(enabled_locales=[locale])
         ProductSupportConfigFactory(product=product, forum_config=aaq_config, is_active=True)
 
         self.assertTrue(has_support_config(product))

@@ -25,7 +25,7 @@ from product_details import product_details
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.tasks import question_classifier
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product, ProductSupportConfig, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AAQConfigManager, AnswerManager, QuestionManager
 from kitsune.sumo.i18n import split_into_language_and_path
@@ -257,13 +257,14 @@ class Question(AAQBase):
 
     @property
     def product_config(self):
-        """Return the product config this question is about or None"""
+        """Return the AAQ config for this question's product, or None."""
         try:
-            aaq_config = AAQConfig.objects.get(is_active=True, product=self.product)
-        except AAQConfig.DoesNotExist:
+            psc = ProductSupportConfig.objects.select_related("forum_config").get(
+                product=self.product, is_active=True
+            )
+        except ProductSupportConfig.DoesNotExist:
             return None
-        else:
-            return aaq_config
+        return psc.forum_config
 
     @property
     def product_slug(self):
@@ -859,7 +860,6 @@ class QuestionLocale(ModelBase):
 
 class AAQConfig(ModelBase):
     title = models.CharField(max_length=255, default="")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="aaq_configs")
     pinned_article_config = models.ForeignKey(
         "wiki.PinnedArticleConfig",
         null=True,
@@ -871,20 +871,15 @@ class AAQConfig(ModelBase):
     )
     associated_tags = models.ManyToManyField(SumoTag, null=True, blank=True)
     enabled_locales = models.ManyToManyField(QuestionLocale)
-    # Whether the configuration is active or not. Only one can be active per product
-    is_active = models.BooleanField(default=False)
     extra_fields = models.JSONField(default=list, blank=True)
 
     objects = AAQConfigManager()
 
     class Meta:
         verbose_name = "AAQ configuration"
-        constraints = [
-            models.UniqueConstraint(fields=["product", "is_active"], name="unique_active_config")
-        ]
 
     def __str__(self):
-        return f"{self.product} Configuration"
+        return self.title or f"AAQ Configuration {self.pk}"
 
 
 class Answer(AAQBase):

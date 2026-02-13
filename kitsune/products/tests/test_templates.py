@@ -2,8 +2,8 @@ from django.conf import settings
 from django.core.cache import cache
 from pyquery import PyQuery as pq
 
-from kitsune.products.models import HOT_TOPIC_SLUG
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import HOT_TOPIC_SLUG, ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.search.tests import ElasticTestCase
@@ -19,8 +19,12 @@ class ProductViewsTestCase(ElasticTestCase):
         # Create some products.
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         for i in range(3):
-            p = ProductFactory(visible=True)
-            AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
+            ProductSupportConfigFactory(
+                is_active=True,
+                product=ProductFactory(visible=True),
+                forum_config=AAQConfigFactory(enabled_locales=[locale]),
+                default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            )
 
         # GET the products page and verify the content.
         r = self.client.get(reverse("products"), follow=True)
@@ -33,7 +37,12 @@ class ProductViewsTestCase(ElasticTestCase):
         # Create a product.
         p = ProductFactory()
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
+        ProductSupportConfigFactory(
+            product=p,
+            is_active=True,
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
 
         # Create some topics.
         TopicFactory(slug=HOT_TOPIC_SLUG, products=[p], visible=True)
@@ -65,7 +74,6 @@ class ProductViewsTestCase(ElasticTestCase):
         # Create a topic and product.
         p = ProductFactory()
         t1 = TopicFactory(products=[p])
-        AAQConfigFactory(product=p)
         # Create 3 documents with the topic and product and one without.
         ApprovedRevisionFactory.create_batch(3, document__products=[p], document__topics=[t1])
         ApprovedRevisionFactory()
@@ -83,7 +91,6 @@ class ProductViewsTestCase(ElasticTestCase):
         # Create topic, product and documents.
         p = ProductFactory()
         t = TopicFactory(products=[p])
-        AAQConfigFactory(product=p)
         docs = []
         # FIXME: Can't we do this with create_batch and build the document
         # in the approvedrevisionfactory
@@ -136,7 +143,6 @@ class ProductViewsTestCase(ElasticTestCase):
         # Create a topic and product.
         p = ProductFactory()
         t = TopicFactory(products=[p], visible=True)
-        AAQConfigFactory(product=p)
 
         # Create a documents with the topic and product
         doc = DocumentFactory(products=[p], topics=[t])

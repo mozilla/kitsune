@@ -10,7 +10,8 @@ from requests.exceptions import HTTPError
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory, UserFactory
@@ -999,8 +1000,20 @@ class GetPinnedArticlesTests(TestCase):
         self.user_g1 = UserFactory(groups=[group1])
         self.product1 = ProductFactory(slug="firefox")
         self.product2 = ProductFactory(slug="mobile")
-        self.aaq_config1 = AAQConfigFactory(product=self.product1)
-        self.aaq_config2 = AAQConfigFactory(product=self.product2)
+        self.aaq_config1 = AAQConfigFactory()
+        self.aaq_config2 = AAQConfigFactory()
+        ProductSupportConfigFactory(
+            product=self.product1,
+            forum_config=self.aaq_config1,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        ProductSupportConfigFactory(
+            product=self.product2,
+            forum_config=self.aaq_config2,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
 
         self.en_doc = ApprovedRevisionFactory(
             document__locale="en-US",

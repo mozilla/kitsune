@@ -7,9 +7,9 @@ from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.products.models import Topic
+from kitsune.products.models import ProductSupportConfig, Topic
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.models import AAQConfig, Answer, Question
+from kitsune.questions.models import Answer, Question
 from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
@@ -22,7 +22,9 @@ CRASH_ID_LABEL = _lazy("Crash ID(s)")
 # if you want to use the following string, update it to remove "en-US" from the link first
 # when updating, don't remove the original string, just mark it as deprecated and create a new one
 # L10n: Unused. A description of the "Crash ID(s)" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
-CRASH_ID_HELP = _lazy("If you submit information to Mozilla when you crash, you'll be given a crash ID which uniquely identifies your crash and lets us look at details that may help identify the cause. To find your recently submitted crash IDs, go to <strong>about:crashes</strong> in your location bar. <a href='https://support.mozilla.com/en-US/kb/Firefox+crashes#Getting_the_most_accurate_help_with_your_Firefox_crash' target='_blank'>Click for detailed instructions</a>.")
+CRASH_ID_HELP = _lazy(
+    "If you submit information to Mozilla when you crash, you'll be given a crash ID which uniquely identifies your crash and lets us look at details that may help identify the cause. To find your recently submitted crash IDs, go to <strong>about:crashes</strong> in your location bar. <a href='https://support.mozilla.com/en-US/kb/Firefox+crashes#Getting_the_most_accurate_help_with_your_Firefox_crash' target='_blank'>Click for detailed instructions</a>."
+)
 # L10n: Unused. A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 FREQUENCY_LABEL = _lazy("This happens")
 FREQUENCY_CHOICES = [
@@ -49,7 +51,9 @@ DEVICE_LABEL = _lazy("Mobile device")
 # L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 TROUBLESHOOTING_LABEL = _lazy("Troubleshooting Information")
 # L10n: A description of the "Troubleshooting Information" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
-TROUBLESHOOTING_HELP = _lazy("This information gives details about the internal workings of your browser that will help in answering your question.")
+TROUBLESHOOTING_HELP = _lazy(
+    "This information gives details about the internal workings of your browser that will help in answering your question."
+)
 # L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 TITLE_LABEL = _lazy("Summarize your question")
 # L10n: A description of the "Summarize your question" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
@@ -57,7 +61,9 @@ TITLE_HELP_TEXT = _lazy("Please summarize your question in one sentence:")
 # L10n: A label for a field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 CONTENT_LABEL = _lazy("How can we help?")
 # L10n: A description of the "How can we help?" field, displayed when filing a question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
-CONTENT_HELP_TEXT = _lazy('Please include as much detail as possible. Also, remember to follow our <a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">rules and guidelines</a>.')
+CONTENT_HELP_TEXT = _lazy(
+    'Please include as much detail as possible. Also, remember to follow our <a href="https://support.mozilla.org/kb/mozilla-support-rules-guidelines" target="_blank">rules and guidelines</a>.'
+)
 # L10n: A label for a field, displayed when filing a Firefox-related question form (e.g., on https://support.mozilla.org/questions/new/firefox/form).
 FF_VERSION_LABEL = _lazy("Firefox version")
 # L10n: A label for a field, displayed when filing a Thunderbird-related question form (e.g., on https://support.mozilla.org/questions/new/thunderbird/form).
@@ -82,7 +88,9 @@ class EditQuestionForm(forms.ModelForm):
 
     title = forms.CharField(label=TITLE_LABEL, help_text=TITLE_HELP_TEXT, min_length=5)
 
-    content = forms.CharField(label=CONTENT_LABEL, help_text=CONTENT_HELP_TEXT, min_length=5, widget=forms.Textarea())
+    content = forms.CharField(
+        label=CONTENT_LABEL, help_text=CONTENT_HELP_TEXT, min_length=5, widget=forms.Textarea()
+    )
 
     class Meta:
         model = Question
@@ -101,14 +109,20 @@ class EditQuestionForm(forms.ModelForm):
         extra_fields = []
 
         if product:
-            aaq_config = AAQConfig.objects.get(product=product, is_active=True)
-            extra_fields = aaq_config.extra_fields
+            try:
+                psc = product.support_configs.select_related("forum_config").get(
+                    is_active=True, forum_config__isnull=False
+                )
+            except ProductSupportConfig.DoesNotExist:
+                pass
+            else:
+                extra_fields = psc.forum_config.extra_fields
 
         if "ff_version" in extra_fields:
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL,
                 required=False,
-                max_length=30-len("Firefox "),
+                max_length=30 - len("Firefox "),
                 strip=True,  # default, but we want to ensure this
             )
 
@@ -116,7 +130,7 @@ class EditQuestionForm(forms.ModelForm):
             self.fields["tb_version"] = forms.CharField(
                 label=TB_VERSION_LABEL,
                 required=False,
-                max_length=30-len("Thunderbird "),
+                max_length=30 - len("Thunderbird "),
                 strip=True,  # default, but we want to ensure this
                 widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER}),
             )
