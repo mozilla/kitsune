@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.timezone import now as timezone_now
 
 from kitsune.sumo.urlresolvers import reverse
 
@@ -37,11 +37,15 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
                     first_seen = datetime.fromisoformat(first_seen)
                 except ValueError:
                     first_seen = None
+            case datetime():
+                # Convert legacy, pickle-serialized, naive datetime objects
+                # created with "datetime.utcnow()" to timezone-aware objects.
+                first_seen = timezone.make_aware(first_seen, timezone=UTC)
             case _:
                 pass
 
         if first_seen is None:
-            request.session["first_seen"] = timezone_now().isoformat()
+            request.session["first_seen"] = timezone.now().isoformat()
             return
 
         change_time = request.user.profile.fxa_password_change
