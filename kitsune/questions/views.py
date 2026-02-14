@@ -52,7 +52,7 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import AAQConfig, Answer, AnswerVote, Question, QuestionVote
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionVote
 from kitsune.questions.utils import (
     get_ga_submit_event_parameters_as_json,
     get_mobile_product_from_ua,
@@ -321,7 +321,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         question_qs = question_qs.filter(topic__in=topics)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
-    if request.LANGUAGE_CODE in AAQConfig.objects.locales_list():
+    if request.LANGUAGE_CODE in ProductSupportConfig.objects.locales_list():
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
         locale_query = Q(locale=request.LANGUAGE_CODE)
@@ -540,8 +540,9 @@ def edit_details(request, question_id):
         topic = Topic.active.get(id=request.POST.get("topic"), products=product)
         locale = request.POST.get("locale")
 
-        # If locale is not in AAQ_LANGUAGES throws a ValueError
-        tuple(AAQConfig.objects.locales_list()).index(locale)
+        # Ensure that questions are enabled for this product and locale.
+        if not (locale and product.questions_enabled(locale)):
+            raise ValueError
     except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 

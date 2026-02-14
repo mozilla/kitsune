@@ -9,7 +9,6 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.models import (
-    AAQConfig,
     Answer,
     AnswerVote,
     Question,
@@ -38,12 +37,11 @@ class AAQSearchTests(ElasticTestCase):
         """Make sure posting new questions is ratelimited"""
         p = ProductFactory(slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        aaq_config = AAQConfigFactory(product=p, enabled_locales=[locale], is_active=True)
         ProductSupportConfigFactory(
             product=p,
-            forum_config=aaq_config,
             is_active=True,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
         topic = TopicFactory(slug="troubleshooting", products=[p], in_aaq=True)
         data = {
@@ -93,13 +91,12 @@ class AAQTests(TestCase):
     def setUp(self):
         product = ProductFactory(title="Firefox", slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        aaq_config = AAQConfigFactory(product=product, enabled_locales=[locale], is_active=True)
         # Create ProductSupportConfig for routing
         ProductSupportConfigFactory(
             product=product,
-            forum_config=aaq_config,
             is_active=True,
-            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM
+            forum_config=AAQConfigFactory(enabled_locales=[locale]),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
         )
 
     def test_non_authenticated_user(self):
@@ -287,7 +284,12 @@ class TestQuestionList(TestCase):
         self.assertEqual(Question.objects.count(), 0)
         p = ProductFactory(slug="firefox")
         TopicFactory(title="Fix problems", slug="fix-problems", products=[p])
-        AAQConfigFactory(product=p, is_active=True, enabled_locales=QuestionLocale.objects.all())
+        ProductSupportConfigFactory(
+            product=p,
+            is_active=True,
+            forum_config=AAQConfigFactory(enabled_locales=QuestionLocale.objects.all()),
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
 
         QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
         QuestionFactory(title="question donuts?", product=p, locale="en-US")
@@ -652,7 +654,7 @@ class TestEditDetails(TestCase):
         assert u.has_perm("questions.change_question")
         self.user = u
 
-        AAQConfigFactory(
+        self.aaq_config = AAQConfigFactory(
             enabled_locales=[
                 QuestionLocaleFactory(locale=settings.LANGUAGE_CODE),
                 QuestionLocaleFactory(locale="hu"),
@@ -660,6 +662,14 @@ class TestEditDetails(TestCase):
         )
 
         self.product = ProductFactory()
+        self.product2 = ProductFactory()
+        for product in [self.product, self.product2]:
+            ProductSupportConfigFactory(
+                is_active=True,
+                product=product,
+                forum_config=self.aaq_config,
+                default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+            )
         self.topic = TopicFactory(products=[self.product])
         self.question = QuestionFactory(product=self.product, topic=self.topic)
 
@@ -735,8 +745,8 @@ class TestEditDetails(TestCase):
 
     def test_change_product(self):
         """Test changing the product"""
-        t_new = TopicFactory(products=[ProductFactory()])
-        p_new = t_new.products.first()
+        p_new = self.product2
+        t_new = TopicFactory(products=[p_new])
 
         assert self.topic.id != t_new.id
         assert self.product.id != p_new.id
@@ -750,10 +760,24 @@ class TestEditDetails(TestCase):
         self.assertEqual(p_new.id, q.product.id)
         self.assertEqual(t_new.id, q.topic.id)
 
+    def test_change_to_unsupported_product(self):
+        """Test changing to an unsupported product"""
+        p_new = ProductFactory()
+        t_new = TopicFactory(products=[p_new])
+
+        assert self.topic.id != t_new.id
+        assert self.product.id != p_new.id
+
+        data = {"product": p_new.id, "topic": t_new.id, "locale": self.question.locale}
+
+        response = self._request(data=data)
+        # The new product has no associated ProductSupportConfig.
+        self.assertEqual(400, response.status_code)
+
     def test_change_locale(self):
         locale = "hu"
 
-        assert locale in AAQConfig.objects.locales_list()
+        assert locale in ProductSupportConfig.objects.locales_list()
         assert locale != self.question.locale
 
         data = {"product": self.product.id, "topic": self.topic.id, "locale": locale}
@@ -763,3 +787,14 @@ class TestEditDetails(TestCase):
 
         q = Question.objects.get(id=self.question.id)
         self.assertEqual(q.locale, locale)
+
+    def test_change_to_unsupported_locale(self):
+        locale = "fr"
+
+        assert locale != self.question.locale
+
+        data = {"product": self.product.id, "topic": self.topic.id, "locale": locale}
+
+        response = self._request(data=data)
+        # The French locale is not supported.
+        self.assertEqual(400, response.status_code)
