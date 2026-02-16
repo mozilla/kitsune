@@ -10,7 +10,7 @@ from playwright_tests.messages.my_profile_pages_messages.my_profile_page_message
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# T5697937
+# T5697937, C3335940
 @pytest.mark.userContributionTests
 def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -36,20 +36,20 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
     contribution_options = (sumo_pages.edit_my_profile_con_areas_page
                             .get_contrib_areas_checkbox_labels())
 
-    with check, allure.step("Accessing the my profile page and verifying that the displayed"
-                            " groups are the correct ones"):
+    with check, allure.step("Accessing the my profile page and verifying that the profile-less "
+                            "groups are not displayed"):
         sumo_pages.user_navbar.click_on_my_profile_option()
         for option in contribution_options:
-            assert option in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
+            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
 
     with allure.step(f"Signing in with {second_user['username']} user account and verifying that "
-                     f"the original user groups are displayed"):
+                     f"the profile-less groups are not displayed"):
         utilities.start_existing_session(cookies=second_user)
 
     with check, allure.step("Navigating to the user page and verifying that the user groups is"
                             " successfully displayed"):
         for option in contribution_options:
-            assert option in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
+            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
 
     with allure.step(f"Signing in back with {first_user['username']} user account"):
         utilities.start_existing_session(cookies=first_user)
@@ -62,8 +62,8 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
         assert sumo_pages.edit_my_profile_con_areas_page.edit_con_areas_pref_banner_txt(
         ) == EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT
 
-    with check, allure.step("Verifying that the profile groups section is no longer displayed"
-                            " inside the profile section"):
+    with check, allure.step("Verifying that the groups section is not displayed inside the profile"
+                            " section"):
         sumo_pages.user_navbar.click_on_my_profile_option()
         for option in contribution_options:
             assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
@@ -72,7 +72,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
                      f"original user profile"):
         utilities.start_existing_session(cookies=second_user)
 
-    with allure.step("Navigating to the my profile page and verifying that the added groups are "
-                     "no longer displayed"):
+    with allure.step("Navigating to the my profile page and verifying that the profile-less "
+                     "groups are not displayed"):
         for option in contribution_options:
             assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())

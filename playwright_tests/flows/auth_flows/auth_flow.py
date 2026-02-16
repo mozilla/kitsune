@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.auth_page import AuthPage
 from playwright_tests.pages.top_navbar import TopNavbar
@@ -88,3 +88,19 @@ class AuthFlowPage:
             )
         self.utilities.wait_for_dom_to_load()
         return username, account_password
+
+    def delete_test_account_flow(self, username: str, password: str):
+        self.page.goto(self.utilities.different_endpoints['fxa_stage'])
+        try:
+            self.auth_page.enter_your_email_input_field.wait_for(state="visible", timeout=3500)
+            self.auth_page.add_data_to_email_input_field(username)
+            self.auth_page.click_on_enter_your_email_submit_button()
+            self.auth_page.add_data_to_password_input_field(password)
+            self.auth_page.click_on_enter_your_password_submit_button()
+        except PlaywrightTimeoutError:
+            self.auth_page.click_on_user_logged_in_sign_in_button()
+        self.auth_page.click_on_delete_account_button()
+        self.auth_page.check_all_acknowledge_fxa_page_checkboxes()
+        self.auth_page.click_on_continue_deletion_button()
+        self.auth_page.add_fxa_password(password)
+        self.auth_page.click_on_the_delete_confirmation_button()

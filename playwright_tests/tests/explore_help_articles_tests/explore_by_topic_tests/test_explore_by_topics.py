@@ -33,17 +33,12 @@ def test_explore_by_topic_product_filter(page: Page):
             if product.strip() == "All Products":
                 continue
             else:
-                with page.expect_navigation(timeout=3000) as navigation_info:
-                    sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(
-                        product.strip())
-                response = navigation_info.value
-                if response is None:
-                    utilities.refresh_page()
+                sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product.strip())
                 if not sumo_pages.explore_by_topic_page.get_metadata_of_all_listed_articles():
                     pytest.fail(f"There is no sublist for {product}")
 
                 for sublist in (sumo_pages.explore_by_topic_page
-                                .get_metadata_of_all_listed_articles()):
+                    .get_metadata_of_all_listed_articles()):
                     assert product in sublist
 
 
@@ -79,10 +74,11 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
                     assert (sumo_pages.common_web_elements
                             .get_aaq_widget_text() == AAQWidgetMessages
                             .PREMIUM_AAQ_SUBHEADING_TEXT)
-                else:
-                    assert (sumo_pages.common_web_elements
-                            .get_aaq_widget_text() == AAQWidgetMessages.
-                            NEUTRAL_AAQ_SUBHEADING_TEXT)
+                elif (product not in utilities.general_test_data['premium_products'] and
+                      product not in utilities.general_test_data['freemium_products']):
+                    with allure.step("Verifying that the AAQ widget is not displayed for the "
+                                     "product which has both AAQ and Zendesk configs disabled"):
+                        assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
 
 
 # C2663960
@@ -106,18 +102,21 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
             product = product.strip()
             current_url = utilities.get_page_url()
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
-            with page.expect_navigation() as navigation_info:
-                sumo_pages.common_web_elements.click_on_aaq_button()
-            response = navigation_info.value
-            assert response.status == 200
+
             if product == "All Products":
+                sumo_pages.common_web_elements.click_on_aaq_button()
                 assert ContactSupportMessages.PAGE_URL == utilities.get_page_url()
-            elif product not in utilities.aaq_question_test_data['products_aaq_url']:
-                assert utilities.get_page_url() == ContactSupportMessages.PAGE_URL
+            elif (product not in utilities.general_test_data['premium_products'] and
+                product not in utilities.general_test_data['freemium_products']):
+                with allure.step("Verifying that the AAQ widget is not displayed for the "
+                                 "product which has both AAQ and Zendesk configs disabled"):
+                    assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+
             else:
+                sumo_pages.common_web_elements.click_on_aaq_button()
                 assert (utilities.
-                        aaq_question_test_data['products_aaq_url'][product] == utilities.
-                        get_page_url())
+                       aaq_question_test_data['products_aaq_url'][product] == utilities.
+                       get_page_url())
 
             utilities.navigate_to_link(current_url)
 

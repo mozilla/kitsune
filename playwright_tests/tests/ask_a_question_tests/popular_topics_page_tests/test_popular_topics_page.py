@@ -64,11 +64,12 @@ def test_learn_more_redirect(page: Page):
 # T5696738
 @pytest.mark.smokeTest
 @pytest.mark.productTopicsPage
-def test_aaq_redirect(page: Page):
+def test_aaq_redirect(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    utilities.delete_cookies()
+
     with allure.step("Navigating to product topics pages"):
-        count = 0
         for product_topic in utilities.general_test_data["product_topics"]:
             topic_url = utilities.general_test_data["product_topics"][product_topic]
             utilities.navigate_to_link(topic_url)
@@ -90,14 +91,7 @@ def test_aaq_redirect(page: Page):
 
             with allure.step("Signing in to SUMO and verifying that we are on the correct AAQ "
                              "form page"):
-                if count == 0:
-                    sumo_pages.auth_flow_page.sign_in_flow(
-                        username=utilities.staff_user,
-                        account_password=utilities.user_secrets_pass
-                    )
-                    count += 1
-                else:
-                    sumo_pages.auth_flow_page.login_with_existing_session()
+                sumo_pages.auth_flow_page.login_with_existing_session()
                 expect(page).to_have_url(
                     utilities.aaq_question_test_data["products_aaq_url"][product_topic],
                     timeout=30000)
