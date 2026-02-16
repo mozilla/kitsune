@@ -157,6 +157,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True
         )
+        utilities.reindex_document("WikiDocument", article_details["article_id"])
 
     with allure.step("Navigating to the localization dashboard and verifying that the correct"
                      " status is displayed"):
@@ -184,6 +185,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
 
     with allure.step("Navigating to the localization dashboard and verifying that the correct"
                      " status is displayed"):
+        utilities.reindex_document("WikiDocument", article_details["article_id"])
         sumo_pages.kb_article_show_history_page.is_revision_current(translation['revision_id'])
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
@@ -204,6 +206,7 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
     with allure.step("Navigating to the localization dashboard an verifying that the correct"
                      " status is displayed"):
         sumo_pages.kb_article_show_history_page.is_revision_current(translation['revision_id'])
+        utilities.reindex_document("WikiDocument", article_details["article_id"])
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )

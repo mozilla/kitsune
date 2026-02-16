@@ -194,11 +194,11 @@ def test_searching_in_contributor_forums_return_results_only_to_that_forum(page,
             "SUMO community discussions")
 
     with allure.step("Creating a new forum thread"):
-        sumo_pages.contributor_thread_flow.post_a_new_thread(
+        post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title,
             thread_body="Contributor Thread body test"
         )
-        utilities.wait_for_given_timeout(65000)
+        utilities.reindex_document("ForumDocument", post_id)
 
     with allure.step("Navigating back to the SUMO community discussions page"):
         sumo_pages.forum_thread_page.click_on_a_breadcrumb_link("SUMO community discussions")
