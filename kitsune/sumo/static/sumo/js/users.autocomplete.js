@@ -42,10 +42,11 @@ import { safeString, safeInterpolate } from "sumo/js/main";
       preventDuplicates: true,
       resultsFormatter: function(item) {
         var term = $('#token-input-id_to').val();
+        // The "avatar" class is applied to avatars for the JS-level fallback in profile-avatars.js
         if (item.display_name) {
-          return safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
+          return safeInterpolate('<li><img src="%(avatar)s" class="avatar"/><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
         }
-        return safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(username)s</div></li>', item, true);
+        return safeInterpolate('<li><img src="%(avatar)s" class="avatar"/><div class="name_search">%(username)s</div></li>', item, true);
       },
       onAdd: function (item) {
         $(this).closest('.single').closest('form').submit();

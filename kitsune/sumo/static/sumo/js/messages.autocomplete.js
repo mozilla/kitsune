@@ -64,10 +64,11 @@ import { safeString, safeInterpolate } from "sumo/js/main";
       hintText: 'Search for a user or group. Group mail requires Staff group membership.',
       placeholder: 'Type a user or group name',
       resultsFormatter: function(item) {
+        // The "avatar" class is applied to avatars for the JS-level fallback in profile-avatars.js
         if ((item.display_name) && (item.type === 'user')) {
-          return safeInterpolate('<li class="%(type)s"><img src="%(type_icon)s" alt="icon for %(type)s"><img src="%(avatar)s"/><div class="name_search">%(display_name)s [%(name)s]</div></li>', item, true);
+          return safeInterpolate('<li class="%(type)s"><img src="%(type_icon)s" alt="icon for %(type)s"><img src="%(avatar)s" class="avatar"/><div class="name_search">%(display_name)s [%(name)s]</div></li>', item, true);
         }
-        return safeInterpolate('<li class="%(type)s"><img src="%(type_icon)s" alt="icon for %(type)s"><img src="%(avatar)s"/><div class="name_search">%(name)s</div></li>', item, true);
+        return safeInterpolate('<li class="%(type)s"><img src="%(type_icon)s" alt="icon for %(type)s"><img src="%(avatar)s" class="avatar"/><div class="name_search">%(name)s</div></li>', item, true);
       }
     });
   });
