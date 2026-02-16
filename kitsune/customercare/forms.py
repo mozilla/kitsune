@@ -20,6 +20,28 @@ OS_CHOICES = [
     ("other", _lazy("Other")),
 ]
 
+UPDATE_CHANNEL_CHOICES = [
+    ("", "Select update channel"),
+    ("esr", "ESR"),
+    ("rapid_release", "Rapid Release"),
+    ("full_release", "Full Release"),
+    ("beta", "Beta"),
+    ("other", "Other"),
+]
+
+POLICY_DISTRIBUTION_CHOICES = [
+    ("", "Select policy distribution method"),
+    ("group_policy_admx", "Windows Group Policy (ADMX)"),
+    ("windows_mdm", "Windows MDM (Intune / OMA-URI / ADMX-backed)"),
+    (
+        "macos_config_profiles",
+        "macOS Configuration Profiles (.mobileconfig / .plist, including MDM tools like Jamf)",
+    ),
+    ("policies_json", "policies.json (manual deployment, all platforms)"),
+    ("autoconfig", "Autoconfig (mozilla.cfg + autoconfig.js)"),
+    ("not_sure", "Not sure / Need help selecting"),
+]
+
 ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
 
 
@@ -37,6 +59,18 @@ class ZendeskForm(forms.Form):
     os = forms.ChoiceField(
         label=_lazy("What operating system does your device use?"),
         choices=OS_CHOICES,
+        required=False,
+    )
+    update_channel = forms.ChoiceField(
+        label="What update channel are you using?",
+        choices=UPDATE_CHANNEL_CHOICES,
+        widget=forms.HiddenInput,
+        required=False,
+    )
+    policy_distribution = forms.ChoiceField(
+        label="How are you distributing policies?",
+        choices=POLICY_DISTRIBUTION_CHOICES,
+        widget=forms.HiddenInput,
         required=False,
     )
     subject = forms.CharField(label=_lazy("Subject"))
@@ -66,10 +100,13 @@ class ZendeskForm(forms.Form):
         if support_config and support_config.zendesk_config:
             zendesk_config = support_config.zendesk_config
 
-            topic_configs = ZendeskTopicConfiguration.objects.filter(
-                zendesk_config=zendesk_config,
-                loginless_only=is_loginless
-            ).select_related("zendesk_topic").order_by("display_order")
+            topic_configs = (
+                ZendeskTopicConfiguration.objects.filter(
+                    zendesk_config=zendesk_config, loginless_only=is_loginless
+                )
+                .select_related("zendesk_topic")
+                .order_by("display_order")
+            )
 
             category_choices = [(None, _lazy("Select a reason for contacting"))]
             for topic_config in topic_configs:
@@ -80,6 +117,12 @@ class ZendeskForm(forms.Form):
 
             if not zendesk_config.enable_os_field:
                 self.fields["os"].widget = forms.HiddenInput()
+
+            if zendesk_config.enable_deployment_fields:
+                self.fields["update_channel"].widget = forms.Select()
+                self.fields["update_channel"].required = True
+                self.fields["policy_distribution"].widget = forms.Select()
+                self.fields["policy_distribution"].required = True
 
         self.label_suffix = ""
 
@@ -143,6 +186,8 @@ class ZendeskForm(forms.Form):
             email=self.cleaned_data["email"],
             os=self.cleaned_data.get("os", ""),
             country=self.cleaned_data.get("country", ""),
+            update_channel=self.cleaned_data.get("update_channel", ""),
+            policy_distribution=self.cleaned_data.get("policy_distribution", ""),
             product=product,
             user=user if (user and user.is_authenticated) else None,
             zendesk_tags=zendesk_tags,

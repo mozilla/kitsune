@@ -10,7 +10,7 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import Topic
+from kitsune.products.models import ProductSupportConfig, Topic
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
 
@@ -114,6 +114,9 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         else submission.product.slug
     )
 
+    support_config = ProductSupportConfig.objects.get(product=submission.product, is_active=True)
+    ticket_form_id = support_config.zendesk_config.ticket_form_id
+
     client = ZendeskClient()
     ticket_fields = {
         "subject": submission.subject,
@@ -122,9 +125,12 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         "email": submission.email,
         "os": submission.os,
         "country": submission.country,
+        "update_channel": submission.update_channel,
+        "policy_distribution": submission.policy_distribution,
         "product": zendesk_product,
         "product_title": submission.product.title,
         "zendesk_tags": submission.zendesk_tags,
+        "ticket_form_id": int(ticket_form_id),
     }
 
     try:
