@@ -153,8 +153,14 @@ aside .aaq-widget {
     color: var(--color-text);
   }
 
-  // Continue button - centered but not stretched
-  text-align: center;
+  // Actions area with button and optional localized link
+  .switcher-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: p.$spacing-lg;
+    text-align: center;
+  }
 
   // Reduced motion support
   @media (prefers-reduced-motion: reduce) {

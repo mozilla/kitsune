@@ -26,7 +26,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -681,14 +681,28 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
             messages.add_message(request, messages.WARNING, msg)
 
+            params = request.GET.copy()
+            params["from_locale"] = request.LANGUAGE_CODE
             return HttpResponseRedirect(
                 reverse(
                     "questions.aaq_step3",
                     locale=settings.WIKI_DEFAULT_LANGUAGE,
                     args=[product.slug],
                 )
-                + (f"?{request.GET.urlencode()}" if request.GET else "")
+                + f"?{params.urlencode()}"
             )
+
+        if (
+            (from_locale := request.GET.get("from_locale"))
+            and from_locale != request.LANGUAGE_CODE
+            and product.questions_enabled(locale=from_locale)
+        ):
+            language = settings.LANGUAGES_DICT[from_locale.lower()]
+            with translation.override(from_locale):
+                context["localized_forum_link"] = {
+                    "locale": from_locale,
+                    "text": _("Continue in {language}").format(language=language),
+                }
 
         context["next_url"] = next_url = get_next_url(request)
 
