@@ -75,6 +75,7 @@ aside .aaq-widget {
   background: var(--color-callout-bg);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
 
   // Hide sidebar version on mobile, show inline version
   &.switcher-sidebar {
@@ -159,7 +160,6 @@ aside .aaq-widget {
     flex-direction: column;
     align-items: center;
     gap: p.$spacing-lg;
-    text-align: center;
   }
 
   // Reduced motion support
