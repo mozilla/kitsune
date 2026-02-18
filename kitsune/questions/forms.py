@@ -97,7 +97,7 @@ class EditQuestionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.label_suffix = None
 
-        #  Extra fields required by product/category selected
+        # Extra fields required by product/category selected
         extra_fields = []
 
         if product:
@@ -108,14 +108,17 @@ class EditQuestionForm(forms.ModelForm):
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL,
                 required=False,
-                widget=forms.TextInput(attrs={"maxlength": 30 - len("Firefox ")}),
+                max_length=30-len("Firefox "),
+                strip=True,  # default, but we want to ensure this
             )
 
         if "tb_version" in extra_fields:
             self.fields["tb_version"] = forms.CharField(
                 label=TB_VERSION_LABEL,
                 required=False,
-                widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER, "maxlength": 30 - len("Thunderbird ")}),
+                max_length=30-len("Thunderbird "),
+                strip=True,  # default, but we want to ensure this
+                widget=forms.TextInput(attrs={"placeholder": TB_VERSION_PLACEHOLDER}),
             )
 
         if "os" in extra_fields:
