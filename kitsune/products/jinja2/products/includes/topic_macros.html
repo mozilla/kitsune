@@ -41,10 +41,10 @@
 
 
 
-{% macro support_callout(product=None, aaq_context=None) %}
+{% macro support_callout(product=None, aaq_context=None, extra_class=None) %}
 {% set is_ticketed = (aaq_context.current_support_type == 'zendesk') if aaq_context else False %}
 {% if product and has_support_config and not settings.READ_ONLY %}
-  <section class="support-callouts mzp-l-content sumo-page-section--inner">
+  <section class="support-callouts mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <div class="card card--ribbon is-inverse heading-is-one-line">
       <div class="card--details">
         <h3 class="card--title">

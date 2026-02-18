@@ -70,6 +70,22 @@
   }
 }
 
+body[data-product-slug="firefox-enterprise"] {
+  .support-callouts--bottom {
+    display: none;
+  }
+
+  &.search-results-visible {
+    .support-callouts--top {
+      display: none;
+    }
+
+    .support-callouts--bottom {
+      display: block;
+    }
+  }
+}
+
 .sumo-page-subheader {
   display: flex;
   flex-direction: column-reverse;

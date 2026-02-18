@@ -114,7 +114,7 @@
 </section>
 
 {% if product.slug == 'firefox-enterprise' %}
-  {{ support_callout(product=product, aaq_context=aaq_context) }}
+  {{ support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--top') }}
 {% endif %}
 
 {% endblock %}
@@ -167,6 +167,10 @@
     {% include "landings/includes/join-our-community-callout.html" %}
   </section>
 </div>
+
+{% if product.slug == 'firefox-enterprise' %}
+  {{ support_callout(product=product, aaq_context=aaq_context, extra_class='support-callouts--bottom') }}
+{% endif %}
 
 {% endblock %}
 
