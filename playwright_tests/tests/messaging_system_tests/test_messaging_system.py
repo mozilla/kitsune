@@ -271,15 +271,6 @@ def test_new_message_field_validation(page: Page, create_user_factory):
         expect(sumo_pages.new_message_page.textarea_remaining_characters_message
                ).to_have_css("color", NewMessagePageMessages.ENOUGH_CHARACTERS_REMAINING_COLOR)
 
-    # elif self.browser == "firefox":
-    #     check.equal(
-    #         self.pages.new_message_page.get_characters_remaining_text_color(),
-    #         NewMessagePageMessages.ENOUGH_CHARACTERS_REMAINING_COLOR_FIREFOX,
-    #         f"Incorrect color displayed. "
-    #         f"Expected: {NewMessagePageMessages.ENOUGH_CHARACTERS_REMAINING_COLOR_FIREFOX} "
-    #         f"Received: {self.pages.new_message_page.get_characters_remaining_text_color()}",
-    #     )
-
     with allure.step("Adding one character inside the textarea field"):
         sumo_pages.new_message_page.type_into_textarea_body(
             text=utilities.user_message_test_data["valid_user_message"]
@@ -294,15 +285,6 @@ def test_new_message_field_validation(page: Page, create_user_factory):
         expect(sumo_pages.new_message_page.textarea_remaining_characters_message
                ).to_have_css("color", NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR)
 
-    # elif self.browser == "firefox":
-    #     check.equal(
-    #         self.pages.new_message_page.get_characters_remaining_text_color(),
-    #         NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR_FIREFOX,
-    #         f"Incorrect color displayed. "
-    #         f"Expected: {NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR_FIREFOX} "
-    #         f"Received: {self.pages.new_message_page.get_characters_remaining_text_color()}",
-    #     )
-
     with allure.step("Adding 9 characters inside the textarea field"):
         sumo_pages.new_message_page.type_into_textarea_body(
             text=utilities.user_message_test_data["valid_user_message"]
@@ -314,28 +296,10 @@ def test_new_message_field_validation(page: Page, create_user_factory):
             sumo_pages.new_message_page.textarea_remaining_characters_message
         ).to_have_css("color", NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR)
 
-    # elif self.browser == "firefox":
-    #     check.equal(
-    #         self.pages.new_message_page.get_characters_remaining_text_color(),
-    #         NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR_FIREFOX,
-    #         f"Incorrect color displayed. "
-    #         f"Expected: {NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR_FIREFOX} "
-    #         f"Received: {self.pages.new_message_page.get_characters_remaining_text_color()}",
-    #     )
-
     with allure.step("Verifying that the characters remaining color is the expected one"):
         expect(
             sumo_pages.new_message_page.textarea_remaining_characters_message
         ).to_have_css("color", NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR)
-
-    # elif self.browser == "firefox":
-    #     check.equal(
-    #         self.pages.new_message_page.get_characters_remaining_text_color(),
-    #         NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR_FIREFOX,
-    #         f"Incorrect color displayed. "
-    #         f"Expected: {NewMessagePageMessages.NO_CHARACTERS_REMAINING_COLOR_FIREFOX} "
-    #         f"Received: {self.pages.new_message_page.get_characters_remaining_text_color()}",
-    #     )
 
 
 # C891417
@@ -416,6 +380,18 @@ def test_messaging_system_unread_notification_after_message_deletion(page: Page,
             expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
         )
 
+    def assert_unread_notification_matches_inbox():
+        """Verify the navbar unread counter matches the actual unread inbox count."""
+        unread_count = len(sumo_pages.inbox_page.all_unread_messages.all())
+        sumo_pages.top_navbar.mouse_over_profile_avatar()
+        if unread_count == 0:
+            assert sumo_pages.top_navbar.unread_message_count.is_hidden()
+            assert sumo_pages.top_navbar.unread_message_profile_notification.is_hidden()
+        else:
+            assert (sumo_pages.top_navbar
+                    .get_unread_message_notification_counter_value() == unread_count)
+            assert sumo_pages.top_navbar.unread_message_profile_notification.is_visible()
+
     with allure.step("Signing in with the recipient"):
         utilities.start_existing_session(cookies=test_user_two)
 
@@ -424,11 +400,7 @@ def test_messaging_system_unread_notification_after_message_deletion(page: Page,
 
     with allure.step("Verifying that the avatar notification and the new message counter is "
                      "correct"):
-        inbox_messages_count = len(sumo_pages.inbox_page.all_unread_messages.all())
-        sumo_pages.top_navbar.mouse_over_profile_avatar()
-        assert (sumo_pages.top_navbar
-                .get_unread_message_notification_counter_value() == inbox_messages_count)
-        assert sumo_pages.top_navbar.unread_message_profile_notification.is_visible()
+        assert_unread_notification_matches_inbox()
 
     with allure.step("Marking the first received message as read"):
         sumo_pages.inbox_page.check_a_particular_message_based_on_excerpt(content_first_message)
@@ -439,11 +411,7 @@ def test_messaging_system_unread_notification_after_message_deletion(page: Page,
 
     with allure.step("Verifying that the new message notification counter resembles the unread "
                      "inbox message count"):
-        inbox_messages_count = len(sumo_pages.inbox_page.all_unread_messages.all())
-        sumo_pages.top_navbar.mouse_over_profile_avatar()
-        assert (sumo_pages.top_navbar
-                .get_unread_message_notification_counter_value() == inbox_messages_count)
-        assert sumo_pages.top_navbar.unread_message_profile_notification.is_visible()
+        assert_unread_notification_matches_inbox()
 
     with allure.step("Deleting the first message"):
         sumo_pages.messaging_system_flow.delete_message_flow(
@@ -453,11 +421,7 @@ def test_messaging_system_unread_notification_after_message_deletion(page: Page,
 
     with allure.step("Verifying that the new message notification counter resembles the unread "
                      "inbox message count"):
-        inbox_messages_count = len(sumo_pages.inbox_page.all_unread_messages.all())
-        sumo_pages.top_navbar.mouse_over_profile_avatar()
-        assert (sumo_pages.top_navbar
-                .get_unread_message_notification_counter_value() == inbox_messages_count)
-        assert sumo_pages.top_navbar.unread_message_profile_notification.is_visible()
+        assert_unread_notification_matches_inbox()
 
     with allure.step("Marking the second received message as read"):
         sumo_pages.inbox_page.check_a_particular_message_based_on_excerpt(content_second_message)
@@ -465,15 +429,7 @@ def test_messaging_system_unread_notification_after_message_deletion(page: Page,
 
     with allure.step("Verifying that the new message notification counter resembles the unread "
                      "inbox message count"):
-        inbox_messages_count = len(sumo_pages.inbox_page.all_unread_messages.all())
-        sumo_pages.top_navbar.mouse_over_profile_avatar()
-        if inbox_messages_count == 0:
-            assert sumo_pages.top_navbar.unread_message_count.is_hidden()
-            assert sumo_pages.top_navbar.unread_message_profile_notification.is_hidden()
-        else:
-            assert (sumo_pages.top_navbar
-                    .get_unread_message_notification_counter_value() == inbox_messages_count)
-            assert sumo_pages.top_navbar.unread_message_profile_notification.is_visible()
+        assert_unread_notification_matches_inbox()
 
     with allure.step("Deleting the second received message"):
         sumo_pages.messaging_system_flow.delete_message_flow(
@@ -483,13 +439,7 @@ def test_messaging_system_unread_notification_after_message_deletion(page: Page,
 
     with allure.step("Verifying that the new message notification counter resembles the unread "
                      "inbox message count"):
-        inbox_messages_count = len(sumo_pages.inbox_page.all_unread_messages.all())
-        sumo_pages.top_navbar.mouse_over_profile_avatar()
-        if inbox_messages_count == 0:
-            assert sumo_pages.top_navbar.unread_message_count.is_hidden()
-        else:
-            assert (sumo_pages.top_navbar
-                    .get_unread_message_notification_counter_value() == inbox_messages_count)
+        assert_unread_notification_matches_inbox()
 
 
 # C891418

@@ -145,6 +145,9 @@ class KBArticlePage(BasePage):
     def is_helpfulness_widget_displayed(self) -> bool:
         return self._is_element_visible(self.helpfulness_widget)
 
+    def wait_for_helpfulness_widget_to_be_hidden(self, timeout=7000):
+        self._wait_for_locator_to_be_hidden(self.helpfulness_widget, timeout=timeout)
+
     def click_on_helpful_button(self):
         self._click(self.helpful_button)
 

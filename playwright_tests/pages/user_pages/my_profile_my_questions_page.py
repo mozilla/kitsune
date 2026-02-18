@@ -35,7 +35,7 @@ class MyProfileMyQuestionsPage(BasePage):
 
     def get_text_of_listed_question_by_index(self, index: int) -> str:
         """Returns the text of the first listed question."""
-        return self._get_element_inner_text_from_page(self.questions_by_index(index))
+        return self._get_text_of_element(self.questions_by_index(index))
 
 
     def get_all_my_posted_questions(self) -> list[str]:

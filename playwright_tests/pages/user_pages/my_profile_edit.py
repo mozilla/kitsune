@@ -74,11 +74,11 @@ class MyProfileEdit(BasePage):
 
     def get_timezone_select_value(self) -> str:
         """Return the selected value of the timezone dropdown"""
-        return self._get_element_inner_text_from_page(self.selected_timezone)
+        return self._get_text_of_element(self.selected_timezone)
 
     def get_preferred_locale_select_value(self) -> str:
         """Return the selected value of the preferred locale dropdown"""
-        return self._get_element_inner_text_from_page(self.selected_locale)
+        return self._get_text_of_element(self.selected_locale)
 
     def get_involved_with_mozilla_month_select_value(self) -> str:
         """Return the selected value of the involved with mozilla month dropdown"""

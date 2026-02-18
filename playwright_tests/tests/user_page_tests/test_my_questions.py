@@ -8,6 +8,18 @@ from playwright_tests.messages.my_profile_pages_messages.my_questions_page_messa
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
+def _submit_firefox_question(utilities: Utilities, sumo_pages: SumoPages) -> dict:
+    """Navigate to the Firefox AAQ form and submit a standard question."""
+    firefox_data = utilities.aaq_question_test_data["valid_firefox_question"]
+    utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
+    return sumo_pages.aaq_flow.submit_an_aaq_question(
+        subject=firefox_data["subject"],
+        topic_name=firefox_data["topic_value"],
+        body=firefox_data["question_body"],
+        expected_locator=sumo_pages.question_page.questions_header
+    )
+
+
 #  C2094280,  C890790
 @pytest.mark.userQuestions
 def test_number_of_questions_is_incremented_when_posting_a_question(page: Page,
@@ -20,14 +32,7 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page,
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the AAQ form and posting a new AAQ question"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-
-        sumo_pages.aaq_flow.submit_an_aaq_question(
-            subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-            topic_name=utilities.aaq_question_test_data["valid_firefox_question"]["topic_value"],
-            body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-            expected_locator=sumo_pages.question_page.questions_header
-        )
+        _submit_firefox_question(utilities, sumo_pages)
 
     with allure.step("Navigating back to the profile page and verifying that the number of "
                      "questions has incremented"):
@@ -48,19 +53,8 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Submitting two new questions"):
-        counter = 0
-        while counter < 2:
-            utilities.navigate_to_link(
-                utilities.aaq_question_test_data["products_aaq_url"]["Firefox"]
-            )
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-            counter += 1
+        for _ in range(2):
+            _submit_firefox_question(utilities, sumo_pages)
 
     with allure.step("Accessing the 'My profile' and extracting the number of questions "
                      "listed inside the my profile page"):
@@ -100,16 +94,7 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question for "
                      "the Firefox product"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        question_info = (
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities
-                .aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-        )
+        question_info = _submit_firefox_question(utilities, sumo_pages)
 
     with check, allure.step("Accessing the my questions page and verifying that the no question"
                             " message is no longer displayed"):
@@ -142,26 +127,8 @@ def test_question_page_reflects_posted_questions_and_redirects_to_question(page:
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the Firefox AAQ form and posting a new AAQ question"):
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        first_question = (
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-        )
-        utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
-        second_question = (
-            sumo_pages.aaq_flow.submit_an_aaq_question(
-                subject=utilities.aaq_question_test_data["valid_firefox_question"]["subject"],
-                topic_name=utilities.
-                aaq_question_test_data["valid_firefox_question"]["topic_value"],
-                body=utilities.aaq_question_test_data["valid_firefox_question"]["question_body"],
-                expected_locator=sumo_pages.question_page.questions_header
-            )
-        )
+        first_question = _submit_firefox_question(utilities, sumo_pages)
+        second_question = _submit_firefox_question(utilities, sumo_pages)
 
     with check, allure.step("Navigating to my questions profile page and verifying that the first "
                             "element from the My Questions page is the recently posted question"):
@@ -181,4 +148,3 @@ def test_question_page_reflects_posted_questions_and_redirects_to_question(page:
         utilities.navigate_back()
         sumo_pages.my_questions_page.click_on_a_question_by_index(2)
         expect(page).to_have_url(first_question["question_page_url"])
-

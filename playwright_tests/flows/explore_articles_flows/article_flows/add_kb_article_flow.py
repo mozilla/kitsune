@@ -229,6 +229,7 @@ class AddKbArticleFlow:
             significance_options[significance_type]()
 
         self.kb_article_review_revision_page.click_accept_revision_accept_button()
+        self.kb_article_show_history_page.is_revision_current(revision_id)
 
     @retry_on_502
     def submit_new_kb_revision(self, keywords=None, search_result_summary=None, content=None,

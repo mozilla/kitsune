@@ -20,7 +20,6 @@ def test_popular_topics_navbar(page: Page):
     with allure.step("Navigating to product topics pages"):
         for product_topic in utilities.general_test_data["product_topics"]:
             topic_url = utilities.general_test_data["product_topics"][product_topic]
-            page.wait_for_timeout(400)
             utilities.navigate_to_link(topic_url)
             utilities.wait_for_url_to_be(topic_url)
 

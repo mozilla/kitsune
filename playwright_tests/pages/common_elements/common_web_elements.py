@@ -51,6 +51,7 @@ class CommonWebElements(BasePage):
             f"[normalize-space(text())='{card_title}']/../../following-sibling::a")
 
         """Locators belonging to the pagination elements."""
+        self.pagination_items = page.locator("//ol[@class='pagination']//a")
         self.pagination_item = lambda pagination_item: page.locator(
             f"//ol[@class='pagination']//a[text()={pagination_item}]")
         self.selected_pagination_item = page.locator(
@@ -176,6 +177,10 @@ class CommonWebElements(BasePage):
     def click_on_next_pagination_item(self):
         """Clicking on the next pagination item."""
         self._click(self.next_pagination_item)
+
+    def click_on_last_pagination_item(self):
+        """Clicking on the last pagination item."""
+        self._click(self.pagination_items.last)
 
     def is_next_pagination_item_visible(self) -> bool:
         """Return if the next pagination item is visible or not."""

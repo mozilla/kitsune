@@ -1118,11 +1118,14 @@ def test_aaq_question_id_and_is_archived_fields_search(page:Page, create_user_fa
         assert sumo_pages.question_page.get_thread_locked_text(
         ) == QuestionPageMessages.ARCHIVED_THREAD_BANNER
 
-    with check, allure.step("Navigating back and searching for the question_is_archived:false"
+    with check, allure.step("Navigating back and searching for the question_is_archived:false "
                             "and verifying that the returned search results are only unarchived "
                             "questions"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar("field:question_is_archived:false")
+        utilities.wait_for_given_timeout(2000)
+        sumo_pages.common_web_elements.click_on_last_pagination_item()
+        utilities.wait_for_given_timeout(2000)
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
         if sumo_pages.question_page.is_thread_locked_banner_displayed():

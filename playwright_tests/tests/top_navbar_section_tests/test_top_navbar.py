@@ -1,9 +1,7 @@
-import re
 import allure
 import pytest
 from playwright.sync_api import Page
 from pytest_check import check
-import requests
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import \
     ContactSupportMessages
@@ -19,12 +17,13 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.mark.topNavbarTests
 def test_number_of_options_not_signed_in(page: Page):
     sumo_pages = SumoPages(page)
+    utilities = Utilities(page)
 
     with check, allure.step("Verifying that the SUMO logo is successfully displayed"):
         image = sumo_pages.top_navbar.get_sumo_nav_logo()
         image_link = image.get_attribute("src")
-        response = requests.get(image_link, stream=True)
-        assert response.status_code < 400
+        response = utilities.get_api_response(page, image_link)
+        assert response.status < 400
 
     with allure.step("Verifying that the top-navbar for signed in users contains: Explore "
                      "Help Articles, Community Forums, Ask a Question and Contribute"):
@@ -47,14 +46,14 @@ def test_number_of_options_signed_in(page: Page, create_user_factory):
     with check, allure.step("Verifying that the SUMO logo is successfully displayed"):
         image = sumo_pages.top_navbar.get_sumo_nav_logo()
         image_link = image.get_attribute("src")
-        response = requests.get(image_link, stream=True)
-        assert response.status_code < 400
+        response = utilities.get_api_response(page, image_link)
+        assert response.status < 400
 
     with allure.step("Verifying that the top-navbar contains: Explore Help Articles, "
                      "Community Forums, Ask a Question, Contribute"):
         top_navbar_items = sumo_pages.top_navbar.get_available_menu_titles()
         assert top_navbar_items == TopNavbarMessages.TOP_NAVBAR_OPTIONS, (
-            "Incorrect elements displayed in top-navbar for " "signed-in state"
+            "Incorrect elements displayed in top-navbar for signed-in state"
         )
 
 
@@ -69,15 +68,11 @@ def test_explore_by_product_redirects(page: Page):
                      "redirect"):
         for index, option in enumerate(
             sumo_pages.top_navbar.get_all_explore_by_product_options_locators()):
-            if index > 0:
-                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
-            current_option = re.sub(
-                r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
-            if sumo_pages.top_navbar._is_locator_visible(option):
-                sumo_pages.top_navbar._click(option)
-            else:
-                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
-                sumo_pages.top_navbar._click(option)
+            current_option = sumo_pages.top_navbar.get_text_of_option_and_click(
+                option,
+                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option,
+                is_first=index == 0,
+            )
 
             if current_option == "Firefox desktop":
                 current_option = utilities.remove_character_from_string(current_option, 'desktop')
@@ -99,15 +94,11 @@ def test_explore_by_topic_redirects(page: Page):
     with allure.step("Clicking on all options from the 'Explore by topic' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar.get_all_explore_by_topic_locators()):
-            if index > 0:
-                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
-            current_option = re.sub(
-                r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
-            if sumo_pages.top_navbar._is_locator_visible(option):
-                sumo_pages.top_navbar._click(option)
-            else:
-                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option()
-                sumo_pages.top_navbar._click(option)
+            current_option = sumo_pages.top_navbar.get_text_of_option_and_click(
+                option,
+                sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option,
+                is_first=index == 0,
+            )
 
             assert (current_option == sumo_pages.explore_by_topic_page
                     .get_explore_by_topic_page_header())
@@ -136,15 +127,11 @@ def test_browse_by_product_community_forum_redirect(page: Page, create_user_fact
                      "redirect"):
         for index, option in enumerate(
             sumo_pages.top_navbar.get_all_browse_by_product_options_locators()):
-            if index > 0:
-                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
-            current_option = re.sub(
-                r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
-            if sumo_pages.top_navbar._is_locator_visible(option):
-                sumo_pages.top_navbar._click(option)
-            else:
-                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
-                sumo_pages.top_navbar._click(option)
+            current_option = sumo_pages.top_navbar.get_text_of_option_and_click(
+                option,
+                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option,
+                is_first=index == 0,
+            )
 
             if current_option == "Firefox desktop":
                 current_option = utilities.remove_character_from_string(
@@ -170,15 +157,11 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page, create_user_fact
                      "verifying the redirect"):
         for index, option in enumerate(
             sumo_pages.top_navbar.get_all_browse_all_forum_threads_by_topic_locators()):
-            if index > 0:
-                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
-            current_option = re.sub(
-                r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
-            if sumo_pages.top_navbar._is_locator_visible(option):
-                sumo_pages.top_navbar._click(option)
-            else:
-                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option()
-                sumo_pages.top_navbar._click(option)
+            current_option = sumo_pages.top_navbar.get_text_of_option_and_click(
+                option,
+                sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option,
+                is_first=index == 0,
+            )
 
             assert (sumo_pages.product_support_page.get_product_support_title_text()
                     == "All Products Community Forum")
@@ -198,15 +181,11 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
     with allure.step("Clicking on all options from the 'Ask a Question' and verifying the "
                      "redirect"):
         for index, option in enumerate(sumo_pages.top_navbar.get_all_ask_a_question_locators()):
-            if index > 0:
-                sumo_pages.top_navbar.hover_over_ask_a_question_top_navbar()
-            current_option = re.sub(
-                r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
-            if sumo_pages.top_navbar._is_locator_visible(option):
-                sumo_pages.top_navbar._click(option)
-            else:
-                sumo_pages.top_navbar.hover_over_ask_a_question_top_navbar()
-                sumo_pages.top_navbar._click(option)
+            current_option = sumo_pages.top_navbar.get_text_of_option_and_click(
+                option,
+                sumo_pages.top_navbar.hover_over_ask_a_question_top_navbar,
+                is_first=index == 0,
+            )
 
             if current_option == "Firefox desktop":
                 current_option = utilities.remove_character_from_string(
@@ -240,15 +219,11 @@ def test_contribute_top_navbar_redirects(page: Page, create_user_factory):
                      "the redirects"):
         for index, option in enumerate(sumo_pages.top_navbar
                                        .get_all_contributor_discussions_locators()):
-            if index > 0:
-                sumo_pages.top_navbar.hover_over_contribute_top_navbar()
-            current_option = re.sub(
-                r'\s+', ' ', sumo_pages.top_navbar._get_text_of_locator(option)).strip()
-            if sumo_pages.top_navbar._is_locator_visible(option):
-                sumo_pages.top_navbar._click(option)
-            else:
-                sumo_pages.top_navbar.hover_over_contribute_top_navbar()
-                sumo_pages.top_navbar._click(option)
+            current_option = sumo_pages.top_navbar.get_text_of_option_and_click(
+                option,
+                sumo_pages.top_navbar.hover_over_contribute_top_navbar,
+                is_first=index == 0,
+            )
 
             if current_option == "Article discussions":
                 assert (sumo_pages.forum_discussions_page.get_forum_discussions_page_title()

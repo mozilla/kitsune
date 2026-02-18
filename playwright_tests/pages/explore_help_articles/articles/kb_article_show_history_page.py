@@ -206,4 +206,4 @@ class KBArticleShowHistoryPage(BasePage):
 
     def get_revision_creator(self, revision_id: str) -> str:
         """Get the revision creator based on the revision id."""
-        return self._get_element_inner_text_from_page(self.revision_creator(revision_id))
+        return self._get_text_of_element(self.revision_creator(revision_id))

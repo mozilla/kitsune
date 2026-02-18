@@ -95,7 +95,7 @@ def test_group_edit_buttons_visibility(page: Page, create_user_factory):
 
 
 # C2783730, C2715807
-@pytest.mark.skip
+@pytest.mark.skip(reason="Visual comparison test - requires baseline images")
 @pytest.mark.userGroupsTests
 def test_change_group_avatar(page: Page, create_user_factory):
     utilities = Utilities(page)

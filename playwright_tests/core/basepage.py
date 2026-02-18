@@ -17,13 +17,6 @@ class BasePage:
             self.wait_for_dom_to_load()
         return self.page.locator(xpath)
 
-    def _get_elements_locators(self, xpath: str) -> list[Locator]:
-        """
-        This helper function returns a list of element locators from a given xpath.
-        """
-        self.wait_for_dom_to_load()
-        return self.page.locator(xpath).all()
-
     def _get_current_page_url(self) -> str:
         """
         This helper function returns the current page URL.
@@ -56,12 +49,6 @@ class BasePage:
         This helper function returns the inner text of a given locator.
         """
         self.wait_for_dom_to_load()
-        return locator.inner_text()
-
-    def _get_text_of_locator(self, locator: Locator) -> str:
-        """
-        This helper function returns the inner text of a given locator.
-        """
         return locator.inner_text()
 
     def _is_element_empty(self, locator: Locator) -> bool:
@@ -105,12 +92,6 @@ class BasePage:
         This helper function returns the input value of a given element locator.
         """
         return locator.input_value()
-
-    def _get_element_inner_text_from_page(self, locator: Locator) -> str:
-        """
-        This helper function returns the inner text of a given locator via the page instance.
-        """
-        return locator.inner_text()
 
     def _get_element_text_content(self, locator: Locator) -> str:
         """
@@ -284,12 +265,6 @@ class BasePage:
         else:
             return False
 
-    def _is_locator_visible(self, locator: Locator) -> bool:
-        """
-        This helper function checks if the given locator is visible.
-        """
-        return locator.is_visible()
-
     def _is_checkbox_checked(self, locator: Locator) -> bool:
         """
         This helper function checks if a given element locator is checked.
@@ -341,15 +316,6 @@ class BasePage:
         y (int): The y-coordinate.
         """
         self.page.mouse.move(x, y)
-
-    def wait_for_page_to_load(self):
-        """
-        This helper function awaits for the load event to be fired.
-        """
-        try:
-            self.page.wait_for_load_state("load")
-        except PlaywrightTimeoutError:
-            print("Load event was not fired. Continuing...")
 
     def eval_on_selector_for_last_child_text(self, element: str) -> str:
         """

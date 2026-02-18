@@ -32,7 +32,7 @@ class Homepage(BasePage):
         """Returns the link text of the user notification links."""
         text = []
         for element in self.user_notification_links:
-            text.append(self._get_text_of_locator(element))
+            text.append(self._get_text_of_element(element))
         return text
 
     def click_on_a_certain_notification_link(self, link_text: str):
