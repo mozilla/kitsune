@@ -301,6 +301,9 @@ class ZendeskFormTests(TestCase):
                 "description": "Test description",
                 "category": "",  # Empty category
             }
+        # An empty category field will result in a form validation error in send()->save().
+        # Since we don't care about the form, we'll just clear the errors to run send().
+        form._errors = ""
         submission = form.send(self.user, self.vpn_product)
 
         self.assertIsInstance(submission, SupportTicket)

@@ -23,7 +23,7 @@ OS_CHOICES = [
 ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
 
 
-class ZendeskForm(forms.Form):
+class ZendeskForm(forms.ModelForm):
     """Form for submitting a ticket to Zendesk."""
 
     required_css_class = "required"
@@ -42,6 +42,10 @@ class ZendeskForm(forms.Form):
     subject = forms.CharField(label=_lazy("Subject"))
     description = forms.CharField(label=_lazy("Tell us more"), widget=forms.Textarea())
     country = forms.CharField(widget=forms.HiddenInput, required=False)
+
+    class Meta:
+        model = SupportTicket
+        fields = ["subject", "description", "category", "email", "os", "country"]
 
     def __init__(self, *args, product, user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,6 +112,7 @@ class ZendeskForm(forms.Form):
 
     def send(self, user, product):
         """Create a SupportTicket record and trigger async classification."""
+
         selected_category_slug = self.cleaned_data.get("category")
         zendesk_tags = []
 
@@ -136,18 +141,12 @@ class ZendeskForm(forms.Form):
         if settings.STAGE:
             zendesk_tags.append("stage")
 
-        submission = SupportTicket.objects.create(
-            subject=self.cleaned_data["subject"],
-            description=self.cleaned_data["description"],
-            category=self.cleaned_data.get("category", ""),
-            email=self.cleaned_data["email"],
-            os=self.cleaned_data.get("os", ""),
-            country=self.cleaned_data.get("country", ""),
-            product=product,
-            user=user if (user and user.is_authenticated) else None,
-            zendesk_tags=zendesk_tags,
-            status=SupportTicket.STATUS_PENDING,
-        )
+        self.instance.product = product
+        self.instance.user = user if (user and user.is_authenticated) else None
+        self.instance.zendesk_tags = zendesk_tags
+        self.instance.status = SupportTicket.STATUS_PENDING
+
+        submission = super().save()
 
         from kitsune.customercare.tasks import zendesk_submission_classifier
 
