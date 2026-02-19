@@ -61,14 +61,14 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with a user which is part of the whitelisted group"):
         utilities.start_existing_session(cookies=test_user_three)
 
-    with allure.step("Navigating to the article and verifying that group and verifying that 404 is"
-                     " not returned"):
+    with check, allure.step("Navigating to the article as a member of the whitelisted group and "
+                            "verifying that 404 is not returned"):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(article_url)
         response = navigation_info.value
         assert response.status != 404
 
-    with allure.step("Verifying that the correct restricted banner is displayed"):
+    with check, allure.step("Verifying that the correct restricted banner is displayed"):
         assert (KBArticlePageMessages.KB_ARTICLE_RESTRICTED_BANNER in sumo_pages.kb_article_page
                 .get_restricted_visibility_banner_text())
 
@@ -108,7 +108,7 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
     with allure.step("Signing in with a user which is not part of the whitelisted groups"):
         utilities.start_existing_session(cookies=test_user_two)
 
-    with allure.step("Navigating to the article and verifying that 404 is returned"):
+    with check, allure.step("Navigating to the article and verifying that 404 is returned"):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(article_url)
         response = navigation_info.value
@@ -153,7 +153,7 @@ def test_kb_restrict_visibility(page: Page, is_template, create_user_factory):
         response = navigation_info.value
         assert response.status != 404
 
-    with allure.step("Verifying that the restricted banner is no longer displayed"):
+    with check, allure.step("Verifying that the restricted banner is no longer displayed"):
         assert not sumo_pages.kb_article_page.is_restricted_visibility_banner_text_displayed()
 
 
@@ -267,7 +267,7 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
         utilities.start_existing_session(cookies=test_user_three)
         sumo_pages.top_navbar.click_on_recent_revisions_option()
 
-    with allure.step("Verifying that the article is displayed"):
+    with check, allure.step("Verifying that the article is displayed"):
         assert utilities.expect_locator_visibility(
             sumo_pages.recent_revisions_page.recent_revision_based_on_article(
                 article_details['article_title'])
@@ -279,8 +279,8 @@ def test_restricted_visibility_in_recent_revisions(page: Page, is_template, crea
         sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
             whitelisted_groups)
 
-    with allure.step("Navigating to the recent revisions page, signing out and verifying "
-                     "that the article is displayed"):
+    with check, allure.step("Navigating to the recent revisions page, signing out and verifying "
+                            "that the article is displayed"):
         utilities.delete_cookies()
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['recent_revisions']
@@ -346,8 +346,8 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
     with allure.step("Signing in with an account that is part of the whitelisted group"):
         utilities.start_existing_session(cookies=test_user_two)
 
-    with allure.step("Verifying that the article is displayed for users belonging to a "
-                     "whitelisted inside the 'Articles image list'"):
+    with check, allure.step("Verifying that the article is displayed for users belonging to a "
+                            "whitelisted group inside the 'Articles image list'"):
         assert article_details['article_title'] in (sumo_pages.media_gallery
                                                     .get_image_in_documents_list_items_text())
 
@@ -371,8 +371,8 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
             utilities.kb_article_test_data['article_image']
         )
 
-    with allure.step("Verifying that the article is displayed for users belonging to the "
-                     "second whitelisted group"):
+    with check, allure.step("Verifying that the article is displayed for users belonging to the "
+                            "second whitelisted group"):
         utilities.start_existing_session(cookies=test_user_three)
         assert article_details['article_title'] in (sumo_pages.media_gallery
                                                     .get_image_in_documents_list_items_text())
@@ -382,8 +382,8 @@ def test_kb_restricted_visibility_media_gallery(page: Page, is_template, create_
         sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
             whitelisted_groups)
 
-    with allure.step("Navigating to the media gallery image page and verifying that the "
-                     "article is displayed for signed out users"):
+    with check, allure.step("Navigating to the media gallery image page and verifying that the "
+                            "article is displayed for signed out users"):
         sumo_pages.top_navbar.click_on_media_gallery_option()
         utilities.delete_cookies()
         sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(
@@ -453,9 +453,9 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
             single_group=whitelisted_groups[1]
         )
 
-    with allure.step("Navigating to the article discussion page and verifying that the "
-                     "article is displayed inside the article discussions list for the "
-                     "second whitelisted group user"):
+    with check, allure.step("Navigating to the article discussion page and verifying that the "
+                            "article is displayed inside the article discussions list for the "
+                            "second whitelisted group user"):
         utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(
             utilities.general_test_data['discussions_links']['article_discussions']
@@ -470,8 +470,8 @@ def test_kb_restricted_visibility_discussion(page: Page, is_template, create_use
         sumo_pages.edit_article_metadata_flow.remove_a_restricted_visibility_group(
             whitelisted_groups)
 
-    with allure.step("Navigating to the article discussion page and verifying that the "
-                     "article is displayed for signed out users"):
+    with check, allure.step("Navigating to the article discussion page and verifying that the "
+                            "article is displayed for signed out users"):
         utilities.delete_cookies()
         utilities.navigate_to_link(
             utilities.general_test_data['discussions_links']['article_discussions']
@@ -544,8 +544,8 @@ def test_kb_restricted_visibility_in_topics_page(page: Page, create_user_factory
             article_details['article_topic'][0]
         )
 
-    with allure.step("Verifying that the article is displayed for the second whitelisted "
-                     "group"):
+    with check, allure.step("Verifying that the article is displayed for the second whitelisted "
+                            "group"):
         utilities.start_existing_session(cookies=test_user_three)
         assert utilities.expect_locator_visibility(
             sumo_pages.product_topics_page.get_a_particular_article_locator(
@@ -614,8 +614,8 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
     with allure.step("Clicking on the documents link"):
         sumo_pages.my_profile_page.click_on_my_profile_document_link()
 
-    with allure.step("Verifying that the article is displayed inside the op document "
-                     "contributions list for the newly whitelisted users group"):
+    with check, allure.step("Verifying that the article is displayed inside the op document "
+                            "contributions list for the newly whitelisted users group"):
         utilities.start_existing_session(cookies=test_user_three)
         assert utilities.expect_locator_visibility(
             sumo_pages.my_documents_page.document_by_name(article_details['article_title'])
@@ -634,8 +634,8 @@ def test_kb_restricted_visibility_profile_level(page: Page, is_template, create_
     with allure.step("Clicking on the documents link"):
         sumo_pages.my_profile_page.click_on_my_profile_document_link()
 
-    with allure.step("Verifying that the article is displayed inside the op document list "
-                     "for signed out users"):
+    with check, allure.step("Verifying that the article is displayed inside the op document list "
+                            "for signed out users"):
         utilities.delete_cookies()
         assert utilities.expect_locator_visibility(
             sumo_pages.my_documents_page.document_by_name(article_details['article_title'])
@@ -694,8 +694,8 @@ def test_kb_restricted_visibility_in_l10n_dashboards(page: Page, is_template, cr
             whitelisted_group
         )
 
-    with allure.step("Signing out and verifying that the article is displayed inside the "
-                     "kb-overview dashboard"):
+    with check, allure.step("Signing out and verifying that the article is displayed inside the "
+                            "kb-overview dashboard"):
         utilities.delete_cookies()
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations'])
@@ -753,8 +753,8 @@ def test_kb_restricted_visibility_in_dashboards(page: Page, is_template, create_
             whitelisted_group
         )
 
-    with allure.step("Signing out and verifying that the article is displayed inside the "
-                     "kb-overview dashboard"):
+    with check, allure.step("Signing out and verifying that the article is displayed inside the "
+                            "kb-overview dashboard"):
         utilities.delete_cookies()
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
         assert utilities.expect_locator_visibility(
@@ -825,8 +825,8 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
     with allure.step("Navigating to the test article linked to the document"):
         utilities.navigate_to_link(utilities.general_test_data['test_article_link'])
 
-    with allure.step("Navigating to the 'What Links Here' page and verifying that the linked "
-                     "article is displayed to the newly added group members"):
+    with check, allure.step("Navigating to the 'What Links Here' page and verifying that the "
+                            "linked article is displayed to the newly added group members"):
         sumo_pages.kb_article_page.click_on_what_links_here_option()
         assert utilities.expect_locator_visibility(
             sumo_pages.kb_what_links_here_page
@@ -843,8 +843,8 @@ def test_kb_restricted_visibility_what_links_here_page(page: Page, is_template,
     with allure.step("Navigating to the test article linked to the document"):
         utilities.navigate_to_link(utilities.general_test_data['test_article_link'])
 
-    with allure.step("Navigating to the 'What Links Here' page and verifying that the "
-                     "article is displayed for signed out users"):
+    with check, allure.step("Navigating to the 'What Links Here' page and verifying that the "
+                            "article is displayed for signed out users"):
         sumo_pages.kb_article_page.click_on_what_links_here_option()
         utilities.delete_cookies()
         assert utilities.expect_locator_visibility(
@@ -908,8 +908,8 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
             single_group=whitelisted_groups[1]
         )
 
-    with allure.step("Verifying that the restricted kb article is displayed for the second "
-                     "whitelisted group users"):
+    with check, allure.step("Verifying that the restricted kb article is displayed for the second "
+                            "whitelisted group users"):
         utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_page.click_on_show_history_option()
@@ -929,8 +929,8 @@ def test_kb_restricted_visibility_category_page(page: Page, is_template, create_
     sumo_pages.kb_article_page.click_on_show_history_option()
     sumo_pages.kb_article_show_history_page.click_on_show_history_category()
 
-    with allure.step("Navigating to the article discussion page and verifying that the "
-                     "article is displayed for signed out users"):
+    with check, allure.step("Navigating to the category page and verifying that the "
+                            "article is displayed for signed out users"):
         utilities.delete_cookies()
         assert utilities.expect_locator_visibility(
             sumo_pages.kb_category_page.article_from_list(article_details['article_title'])

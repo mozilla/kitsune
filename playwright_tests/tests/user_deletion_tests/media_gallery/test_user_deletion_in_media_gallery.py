@@ -62,8 +62,8 @@ def test_media_file_is_displayed_in_kb_after_owner_deletion(page: Page, create_u
                                                                    description=media_description)
         image_preview_url = utilities.get_page_url()
 
-    with allure.step("Signing in with the staff user and creating a new kb article by including "
-                     "the newly added image inside the kb content"):
+    with allure.step("Signing in with the second test account and creating a new kb article by "
+                     "including the newly added image inside the kb content"):
         utilities.start_existing_session(cookies=test_user_two)
         article_info = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             media_file_type="Images", media_file_name=media_title, approve_first_revision=True,
@@ -122,12 +122,9 @@ def test_media_gallery_image_is_preserved_after_editor_deletion(page: Page, crea
     with allure.step("Deleting the second user account"):
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the image and verifying that: "
-                     "1. The image ownership is kept to the first user."
-                     "2. The image description is kept to the edited version"):
+    with check, allure.step("Navigating back to the image and verifying that: "
+                            "1. The image ownership is kept to the first user. "
+                            "2. The image description is kept to the edited version"):
         utilities.navigate_to_link(image_preview_url)
         assert sumo_pages.media_gallery.get_image_creator_text() == test_user["username"]
         assert sumo_pages.media_gallery.get_image_description() == new_media_description
-
-
-

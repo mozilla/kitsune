@@ -61,7 +61,7 @@ def test_contact_support_page_cards_redirect(page: Page):
             assert sumo_pages.product_solutions_page.get_current_milestone_text(
             ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
 
-        with allure.step("Click on the 'Change Product' milestone"):
+        with allure.step("Clicking on the 'Change Product' milestone"):
             sumo_pages.product_solutions_page.click_on_the_completed_milestone()
 
 

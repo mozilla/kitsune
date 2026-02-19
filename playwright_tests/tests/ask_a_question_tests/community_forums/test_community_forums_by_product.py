@@ -29,9 +29,10 @@ def test_product_community_cards_are_redirecting_to_the_correct_forum(page: Page
             with allure.step("Navigating back to the all products community forum page"):
                 utilities.navigate_back()
 
-    with allure.step("Clicking on the 'All Products Community Forums and verifying that the user "
-                     "is redirected to the correct forum page'"):
+    with allure.step("Clicking on the 'All Products Community Forums' button"):
         sumo_pages.all_community_forums_page.click_on_all_products_support_forum_button()
+
+    with check, allure.step("Verifying that the user is redirected to the correct forum page"):
         assert (sumo_pages.product_support_forum.
                 get_text_of_product_community_forum_header() == "All Products Community Forum")
 
@@ -55,11 +56,14 @@ def test_ask_the_community_button_redirect(page: Page):
                     replace("Community Forum", "Solutions"))
             utilities.navigate_to_link(SupportForumsPageMessages.PAGE_URL)
 
-    with allure.step("Clicking on the 'All Products Community Forums' and verifying that the "
-                     "'Ask the Community' button redirects to the 'Contact Support' page"):
+    with allure.step("Clicking on the 'All Products Community Forums' button and clicking on "
+                     "'Ask the Community'"):
         sumo_pages.all_community_forums_page.click_on_all_products_support_forum_button()
         with page.expect_navigation() as navigation_info:
             sumo_pages.product_support_forum.click_on_the_ask_the_community_button()
+
+    with check, allure.step("Verifying that the 'Ask the Community' button redirects to the "
+                            "'Contact Support' page"):
         assert navigation_info.value.url == ContactSupportMessages.PAGE_URL
 
 
@@ -131,7 +135,7 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
                                                      reply="Test Reply")
 
     with check, allure.step("Navigating back to the 'Attention needed' tab filter and verifying "
-                            "that the  question is displayed"):
+                            "that the question is displayed"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
         assert (question_details["question_id"] in sumo_pages.product_support_forum.
                 get_ids_of_all_listed_questions())
@@ -325,6 +329,7 @@ def test_spam_marked_question_does_not_transition_from_spam_tab_filter(page: Pag
                 question_details["question_id"]
             )
 
+
 #  C3170429
 @pytest.mark.communityForums
 @pytest.mark.parametrize("question_status", ["has_solution", "is_archived", "is_locked"])
@@ -442,8 +447,8 @@ def test_questions_transitions_on_status_change(page: Page, create_user_factory,
         assert not sumo_pages.product_support_forum.is_question_locked_indicator_displayed(
             question_details["question_id"])
 
-    with allure.step("Clicking on the 'Done' tab filter and verifying that the question is "
-                     "not displayed."):
+    with check, allure.step("Clicking on the 'Done' tab filter and verifying that the question "
+                            "is not displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Done")
         assert (question_details["question_id"] not in sumo_pages.product_support_forum.
                 get_ids_of_all_listed_questions())

@@ -73,7 +73,7 @@ def test_popular_topics_redirect(page: Page):
     topic_card = random.choice(sumo_pages.common_web_elements.get_frequent_topic_card_titles())
     with allure.step(f"Verifying that the {topic_card} card heading redirects to the correct "
                      f"page topic listing page"):
-        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities,sumo_pages,
+        assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
                                                                          topic_card, "heading")
 
     with allure.step(f"Verifying that the listed articles for the {topic_card} card are is "
@@ -103,7 +103,7 @@ def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
     for freemium_product in utilities.general_test_data["freemium_products"]:
         with allure.step(f"Clicking on the {freemium_product} card "):
             sumo_pages.contact_support_page.click_on_a_particular_card(freemium_product)
-        with check, allure.step("verifying that the correct 'Still need help' subtext is "
+        with check, allure.step("Verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
             assert sumo_pages.common_web_elements.get_aaq_widget_text(
             ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT

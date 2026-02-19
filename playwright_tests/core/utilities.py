@@ -452,6 +452,8 @@ class Utilities:
         """
         try:
             self.page.reload()
+            # Scrolling to the top of the page.
+            self.page.keyboard.press("Home")
             self.wait_for_dom_to_load()
         except PlaywrightError as e:
             msg = str(e)

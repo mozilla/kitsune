@@ -26,41 +26,71 @@ def test_contribute_localization_page_text(page: Page):
             ContributeLocalizationMessages.STAGE_CONTRIBUTE_LOCALIZATION_PAGE_URL
         )
 
-    with check, allure.step("Verifying that the Contribute localization page contains the correct "
-                            "strings"):
+    with check, allure.step("Verifying that the page header is successfully displayed and contains"
+                            " the correct strings"):
         assert sumo_pages.ways_to_contribute_pages.get_hero_main_header_text(
         ) == ContributeLocalizationMessages.HERO_PAGE_TITLE
+
+    with check, allure.step("Verifying that the h2 is successfully displayed and contains the"
+                            " correct strings"):
         assert sumo_pages.ways_to_contribute_pages.get_hero_second_header(
         ) == ContributeLocalizationMessages.HERO_SECOND_TITLE
+
+    with check, allure.step("Verifying that the paragraph under h2 is successfully displayed and"
+                            " contains the correct strings"):
         assert sumo_pages.ways_to_contribute_pages.get_hero_text(
         ) == ContributeLocalizationMessages.HERO_TEXT
+
+    with check, allure.step("Verifying that the 'How you can contribute_messages' header is"
+                            " successfully displayed and contains the correct strings"):
         assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_header_text(
         ) == ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_HEADER
 
-        # Need to add a check for the logged in state as well.
-        # Excluding option four from the list since we are using a different locator
+    # Need to add a check for the logged in state as well.
+    # Excluding option four from the list since we are using a different locator
 
-        card_titles = [
-            ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT,
-            ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_TWO,
-            ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_THREE,
-            ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_FIVE,
-        ]
+    card_titles = [
+        ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT,
+        ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_TWO,
+        ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_THREE,
+        ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_FIVE,
+    ]
+
+    with check, allure.step("Verifying that the 'How you can contribute_messages' cards are "
+                            "successfully displayed"):
         assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_link_options(
         ) == card_titles
+
+    with check, allure.step("Signing up with a FxA contributor account and Verifying that the"
+                            " step 4 option is successfully displayed and the text contains the"
+                            " expected string"):
+        # We need to add here the check for when the user is signed in with a contributor
+        # account
         assert sumo_pages.ways_to_contribute_pages.get_how_to_contribute_option_four(
         ) == ContributeLocalizationMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR
+
+    with check, allure.step("Verifying that the first line from the fact text is successfully"
+                            " displayed and contains the expected string"):
         assert sumo_pages.ways_to_contribute_pages.get_first_fact_text(
         ) == ContributeLocalizationMessages.FACT_FIRST_LINE
+
+    with check, allure.step("Verifying that the second line from the fact section text is "
+                            "successfully displayed and contains the expected string"):
         assert sumo_pages.ways_to_contribute_pages.get_second_fact_text(
         ) == ContributeLocalizationMessages.FACT_SECOND_LINE
+
+    with check, allure.step("Verifying that the 'Other ways to contribute_messages' header is "
+                            "successfully displayed and contains the expected string"):
         assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_header(
         ) == ContributeLocalizationMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER
 
-        other_ways_to_contribute_card_titles = [
-            ContributeLocalizationMessages.ANSWER_QUESTIONS_IN_SUPPORT_FORUM_TITLE,
-            ContributeLocalizationMessages.WRITE_ARTICLES_CARD_TITLE
-        ]
+    other_ways_to_contribute_card_titles = [
+        ContributeLocalizationMessages.ANSWER_QUESTIONS_IN_SUPPORT_FORUM_TITLE,
+        ContributeLocalizationMessages.WRITE_ARTICLES_CARD_TITLE
+    ]
+
+    with check, allure.step("Verifying that the 'Other ways to contribute_messages' are "
+                            "successfully displayed and in the correct order"):
         assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_cards(
         ) == other_ways_to_contribute_card_titles
 
@@ -100,24 +130,18 @@ def test_contribute_localization_page_breadcrumbs(page: Page):
         ]
         assert sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs() == breadcrumbs
 
-    counter = 1
-    for breadcrumb in sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs():
-        breadcrumb_to_click = (
-            sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[counter]
-        )
-        sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(breadcrumb_to_click)
+    sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(
+        sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[1]
+    )
+    with allure.step("Verifying that the Contribute breadcrumb redirects to the Contribute page"):
+        assert utilities.get_page_url() == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
+    utilities.navigate_forward()
 
-        if counter == 1:
-            with allure.step("Verifying that the Contribute breadcrumb redirects to the Contribute"
-                             " page"):
-                assert utilities.get_page_url(
-                ) == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
-
-            utilities.navigate_forward()
-            counter -= 1
-        elif counter == 0:
-            with allure.step("Verifying that the Home breadcrumb redirects to the Homepage"):
-                assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+    sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(
+        sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[0]
+    )
+    with allure.step("Verifying that the Home breadcrumb redirects to the Homepage"):
+        assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
 
 
 # Need to add tests for "How you can contribute_messages" section
@@ -127,7 +151,7 @@ def test_contribute_localization_page_breadcrumbs(page: Page):
 def test_contribute_localization_other_ways_to_contribute_redirect_to_the_correct_page(page: Page):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    with allure.step("Accessing the Contribute Forum page"):
+    with allure.step("Accessing the Contribute localization page"):
         utilities.navigate_to_link(
             ContributeLocalizationMessages.STAGE_CONTRIBUTE_LOCALIZATION_PAGE_URL
         )
@@ -137,14 +161,12 @@ def test_contribute_localization_other_ways_to_contribute_redirect_to_the_correc
         ContributeHelpArticlesMessages.STAGE_CONTRIBUTE_HELP_ARTICLES_PAGE_URL
     ]
 
-    counter = 0
-    for element in sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list():
+    for counter, expected_url in enumerate(ways_to_contribute_links):
         card = (
             sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list()[counter]
         )
         sumo_pages.ways_to_contribute_pages.click_on_other_way_to_contribute_card(card)
-        with allure.step("Verifying that the 'other ways to contribute_messages' cards are"
-                         " redirecting to the correct SUMO page"):
-            assert ways_to_contribute_links[counter] == utilities.get_page_url()
+        with allure.step("Verifying that the 'other ways to contribute' cards are redirecting to "
+                         "the correct SUMO page"):
+            assert expected_url == utilities.get_page_url()
         utilities.navigate_back()
-        counter += 1

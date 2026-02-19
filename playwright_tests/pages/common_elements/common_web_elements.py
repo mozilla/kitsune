@@ -179,8 +179,8 @@ class CommonWebElements(BasePage):
         self._click(self.next_pagination_item)
 
     def click_on_last_pagination_item(self):
-        """Clicking on the last pagination item."""
-        self._click(self.pagination_items.last)
+        """Clicking on the second to last pagination item."""
+        self._click(self.pagination_items.nth(-2))
 
     def is_next_pagination_item_visible(self) -> bool:
         """Return if the next pagination item is visible or not."""

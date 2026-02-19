@@ -1,6 +1,7 @@
 import allure
 import pytest
 from playwright.sync_api import Page
+from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
     AAQWidgetMessages,
@@ -19,13 +20,13 @@ def test_explore_by_topic_product_filter(page: Page):
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
 
-    with allure.step("Navigating to the /topics/  Browse  page"):
+    with allure.step("Navigating to the /topics/ Browse page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
     for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options():
         topic = topic.strip()
         if topic != "Browse":
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
-        with allure.step("Verifying that the correct page header is displayed"):
+        with check, allure.step("Verifying that the correct page header is displayed"):
             assert topic == (sumo_pages.explore_by_topic_page
                              .get_explore_by_topic_page_header().strip())
         for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
@@ -39,7 +40,9 @@ def test_explore_by_topic_product_filter(page: Page):
 
                 for sublist in (sumo_pages.explore_by_topic_page
                     .get_metadata_of_all_listed_articles()):
-                    assert product in sublist
+                    with check, allure.step(f"Verifying that '{product}' is listed in the "
+                                            f"article metadata"):
+                        assert product in sublist
 
 
 # C2462867
@@ -52,7 +55,7 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
-    with allure.step("Navigating to the /topics/  Browse  page"):
+    with allure.step("Navigating to the /topics/ Browse page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
     for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options():
         topic = topic.strip()
@@ -61,7 +64,8 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
         for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
             product = product.strip()
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
-            with allure.step("Verifying the correct AAQ widget text is displayed for products"):
+            with check, allure.step("Verifying the correct AAQ widget text is displayed for "
+                                    "products"):
                 if product == "All Products":
                     assert (sumo_pages.common_web_elements
                             .get_aaq_widget_text() == AAQWidgetMessages
@@ -91,7 +95,7 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)
 
-    with allure.step("Navigating to the /topics/  Browse  page"):
+    with allure.step("Navigating to the /topics/ Browse page"):
         utilities.navigate_to_link(troubleshooting_topic_url)
 
     for topic in sumo_pages.explore_by_topic_page.get_all_topics_side_navbar_options():
@@ -104,19 +108,22 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
 
             if product == "All Products":
-                sumo_pages.common_web_elements.click_on_aaq_button()
-                assert ContactSupportMessages.PAGE_URL == utilities.get_page_url()
+                with allure.step("Clicking on the AAQ button"):
+                    sumo_pages.common_web_elements.click_on_aaq_button()
+                with check, allure.step("Verifying that the contact support page URL is correct"):
+                    assert ContactSupportMessages.PAGE_URL == utilities.get_page_url()
             elif (product not in utilities.general_test_data['premium_products'] and
-                product not in utilities.general_test_data['freemium_products']):
-                with allure.step("Verifying that the AAQ widget is not displayed for the "
-                                 "product which has both AAQ and Zendesk configs disabled"):
+                  product not in utilities.general_test_data['freemium_products']):
+                with check, allure.step("Verifying that the AAQ widget is not displayed for the "
+                                        "product which has both AAQ and Zendesk configs disabled"):
                     assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
-
             else:
-                sumo_pages.common_web_elements.click_on_aaq_button()
-                assert (utilities.
-                       aaq_question_test_data['products_aaq_url'][product] == utilities.
-                       get_page_url())
+                with allure.step("Clicking on the AAQ button"):
+                    sumo_pages.common_web_elements.click_on_aaq_button()
+                with check, allure.step("Verifying that the correct AAQ form URL is displayed"):
+                    assert (utilities.
+                            aaq_question_test_data['products_aaq_url'][product] == utilities.
+                            get_page_url())
 
             utilities.navigate_to_link(current_url)
 
@@ -128,4 +135,5 @@ def test_incorrect_kb_topic_listing_redirect(page: Page):
     with page.expect_navigation() as navigation_info:
         utilities.navigate_to_link("https://support.allizom.org/en-US/topics/testt")
     response = navigation_info.value
-    assert response.status == 404
+    with check, allure.step("Verifying that the page returns a 404 status code"):
+        assert response.status == 404

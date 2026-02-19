@@ -82,7 +82,7 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page, create
         expect(sumo_pages.localization_unreviewed_page.listed_article(
             translation['translation_title'])).to_be_visible()
 
-    with allure.step("Verifying that the correct modified by text is displayed"):
+    with check, allure.step("Verifying that the correct modified by text is displayed"):
         assert (sumo_pages.localization_unreviewed_page.get_modified_by_text(
             translation['translation_title']) == kb_translation_messages.
             get_unreviewed_localization_modified_by_text(test_user["username"]))
@@ -118,8 +118,8 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page, create
         sumo_pages.kb_article_show_history_page.click_on_submit_l10n_readiness_button(
             revision_id=article_details['first_revision_id'])
 
-    with allure.step("Navigating to the localization dashboard and verifying that the article is"
-                     " displayed with the correct status"):
+    with check, allure.step("Navigating to the localization dashboard and verifying that the "
+                            "article is displayed with the correct status"):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['l10n_most_visited_translations']
         )
@@ -132,8 +132,8 @@ def test_not_ready_for_localization_articles_dashboard_status(page: Page, create
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    with allure.step("Manually navigating to the 'Discuss' endpoint and verifying that the 404"
-                     " page is returned"):
+    with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying that "
+                            "the 404 page is returned"):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(translation["translation_url"])
         response = navigation_info.value
@@ -159,8 +159,8 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
         )
         utilities.reindex_document("WikiDocument", article_details["article_id"])
 
-    with allure.step("Navigating to the localization dashboard and verifying that the correct"
-                     " status is displayed"):
+    with check, allure.step("Navigating to the localization dashboard and verifying that the "
+                            "correct status is displayed"):
         expect(sumo_pages.kb_article_show_history_page.revision_status(
             article_details["first_revision_id"])).to_be_visible()
         utilities.navigate_to_link(
@@ -183,8 +183,8 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
             approve_translation_revision=False
         )
 
-    with allure.step("Navigating to the localization dashboard and verifying that the correct"
-                     " status is displayed"):
+    with check, allure.step("Navigating to the localization dashboard and verifying that the "
+                            "correct status is displayed"):
         utilities.reindex_document("WikiDocument", article_details["article_id"])
         sumo_pages.kb_article_show_history_page.is_revision_current(translation['revision_id'])
         utilities.navigate_to_link(
@@ -203,8 +203,8 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
         )
         sumo_pages.submit_kb_translation_flow.approve_kb_translation(translation['revision_id'])
 
-    with allure.step("Navigating to the localization dashboard an verifying that the correct"
-                     " status is displayed"):
+    with check, allure.step("Navigating to the localization dashboard and verifying that the "
+                            "correct status is displayed"):
         sumo_pages.kb_article_show_history_page.is_revision_current(translation['revision_id'])
         utilities.reindex_document("WikiDocument", article_details["article_id"])
         utilities.navigate_to_link(
@@ -219,8 +219,8 @@ def test_ready_for_localization_articles_dashboard_status(page: Page, create_use
         utilities.navigate_to_link(article_details['article_url'])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    with allure.step("Manually navigating to the 'Discuss' endpoint and verifying that the 404"
-                     " page is returned"):
+    with check, allure.step("Manually navigating to the 'Discuss' endpoint and verifying that "
+                            "the 404 page is returned"):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(translation["translation_url"])
         response = navigation_info.value
@@ -307,8 +307,8 @@ def test_fallback_languages(page: Page):
 @pytest.mark.kbArticleTranslation
 def test_supported_languages(page: Page):
     utilities = Utilities(page)
-    with allure.step("Verifying that the users are redirected to the supported locales "
-                     "successfully"):
+    with check, allure.step("Verifying that the users are redirected to the supported locales "
+                            "successfully"):
         for locale in SUMO_LANGUAGES:
             if locale == 'xx':
                 continue
@@ -492,38 +492,38 @@ def test_article_translation_on_locale_switch(page: Page, create_user_factory):
         utilities.navigate_to_link(article_url)
         utilities.delete_cookies()
 
-    with allure.step("Switching the page locale to 'ro' and verifying that the translated version"
-                     " is successfully displayed"):
+    with check, allure.step("Switching the page locale to 'ro' and verifying that the translated "
+                            "version is successfully displayed"):
         sumo_pages.footer_section.switch_to_a_locale("ro")
         expect(page).to_have_url(
             HomepageMessages.STAGE_HOMEPAGE_URL + "/ro/kb/" + ro_translation['translation_slug'])
         assert (sumo_pages.kb_article_page.
                 get_text_of_article_title() == ro_translation['translation_title'])
 
-    with allure.step("Switch the page locale to 'de' and verifying that the translated version is"
-                     " successfully displayed"):
+    with check, allure.step("Switching the page locale to 'de' and verifying that the translated "
+                            "version is successfully displayed"):
         sumo_pages.footer_section.switch_to_a_locale("de")
         expect(page).to_have_url(
             HomepageMessages.STAGE_HOMEPAGE_URL + "/de/kb/" + de_translation['translation_slug'])
         assert (sumo_pages.kb_article_page.
                 get_text_of_article_title() == de_translation['translation_title'])
 
-    with allure.step("Switching to the 'fr' locale and verifying that 404 is returned"):
+    with check, allure.step("Switching to the 'fr' locale and verifying that 404 is returned"):
         with page.expect_response("**/kb/**") as response_info:
             sumo_pages.footer_section.switch_to_a_locale("fr")
         response = response_info.value
         assert response.status == 404
 
-    with allure.step("Switching back to the 'en-US' locale and verifying that the article is"
-                     " displayed in the english form"):
+    with check, allure.step("Switching back to the 'en-US' locale and verifying that the article "
+                            "is displayed in the english form"):
         sumo_pages.footer_section.switch_to_a_locale("en-US")
         expect(page).to_have_url(
             HomepageMessages.STAGE_HOMEPAGE_URL + "/en-US/kb/" + article_details['article_slug'])
         assert (sumo_pages.kb_article_page.
                 get_text_of_article_title() == article_details['article_title'])
 
-    with allure.step("Switching to the 'fr' locale and verifying that the article is displayed in"
-                     " the english form"):
+    with check, allure.step("Switching to the 'fr' locale and verifying that the article is "
+                            "displayed in the english form"):
         sumo_pages.footer_section.switch_to_a_locale("fr")
         expect(page).to_have_url(
             HomepageMessages.STAGE_HOMEPAGE_URL + "/fr/kb/" + article_details['article_slug'])
@@ -548,7 +548,8 @@ def test_locale_redirect_from_article_without_en_us_parent(page: Page, create_us
         )
         article_url = utilities.get_page_url()
 
-    with allure.step("Switching the page locale to en-US and verifying that 404 is returned"):
+    with check, allure.step("Switching the page locale to en-US and verifying that 404 is "
+                            "returned"):
         with page.expect_response("**/kb/**") as response_info:
             sumo_pages.footer_section.switch_to_a_locale("en-US")
         response = response_info.value
@@ -557,7 +558,7 @@ def test_locale_redirect_from_article_without_en_us_parent(page: Page, create_us
     with allure.step("Navigating back to the article"):
         utilities.navigate_to_link(article_url)
 
-    with allure.step("Switching the locale to de and verifying that 404 is returned"):
+    with check, allure.step("Switching the locale to de and verifying that 404 is returned"):
         with page.expect_response("**/kb/**") as response_info:
             sumo_pages.footer_section.switch_to_a_locale("de")
         response = response_info.value

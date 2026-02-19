@@ -43,11 +43,12 @@ def test_anti_spam_banner(page: Page, user_type, create_user_factory):
             assert sumo_pages.common_web_elements.get_scam_banner_text() == (
                 CommonElementsMessages.AVOID_SCAM_BANNER_TEXT)
 
-    with allure.step("Navigating to the posted question and verifying that the scam banner is "
-                     "displayed"):
+    with allure.step("Navigating to the posted question"):
         utilities.navigate_to_link(question_info_one["question_page_url"])
-        assert sumo_pages.common_web_elements.get_scam_banner_text() == (CommonElementsMessages.
-                                                                         AVOID_SCAM_BANNER_TEXT)
+
+    with check, allure.step("Verifying that the scam banner is displayed"):
+        assert sumo_pages.common_web_elements.get_scam_banner_text() == (
+            CommonElementsMessages.AVOID_SCAM_BANNER_TEXT)
 
 
 # C946274
@@ -82,9 +83,10 @@ def test_valid_tld_in_question_comment(page: Page, create_user_factory):
             repliant_username=test_user_two["username"], reply=invalid_tld
         )
 
-    with check, allure.step("Verifying that the invalid TLD comment is not marked as spam "
-                            "and the spam banner is not displayed"):
+    with check, allure.step("Verifying that the spam banner is not displayed"):
         assert not sumo_pages.question_page.is_spam_marked_banner_displayed()
+
+    with check, allure.step("Verifying that the invalid TLD comment is not marked as spam"):
         assert sumo_pages.question_page.is_reply_displayed(reply_one)
 
     with allure.step("Leaving a comment with a valid TLD"):
@@ -92,17 +94,18 @@ def test_valid_tld_in_question_comment(page: Page, create_user_factory):
             repliant_username=test_user_two["username"], reply=valid_tld
         )
 
-    with check, allure.step("Verifying that the valid TLD comment is marked as spam and the "
-                            "banner is successfully displayed"):
+    with check, allure.step("Verifying that the spam banner is successfully displayed"):
         assert (QuestionPageMessages.SPAM_FLAGGED_REPLY == sumo_pages.question_page.
                 get_text_of_spam_marked_banner())
+
+    with check, allure.step("Verifying that the valid TLD comment is marked as spam"):
         assert not sumo_pages.question_page.is_reply_with_content_displayed(valid_tld)
 
     with check, allure.step("Signing out and verifying that the reply is not displayed"):
         utilities.delete_cookies()
         assert not sumo_pages.question_page.is_reply_with_content_displayed(valid_tld)
 
-    with check, allure.step("Signing in with an admin account and verifying that the Marked as"
+    with check, allure.step("Signing in with an admin account and verifying that the Marked as "
                             "spam reply is visible"):
         utilities.start_existing_session(cookies=test_user)
         assert sumo_pages.question_page.is_reply_with_content_displayed(valid_tld)

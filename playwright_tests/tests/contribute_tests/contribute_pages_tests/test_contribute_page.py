@@ -58,7 +58,7 @@ def test_contribute_page_text(page: Page):
         assert sumo_pages.contribute_page._get_about_us_header_text(
         ) == ContributePageMessages.ABOUT_US_HEADER
 
-    with allure.step("Verifying that the correct about us subtext is displayed"):
+    with check, allure.step("Verifying that the correct about us subtext is displayed"):
         assert sumo_pages.contribute_page._get_about_us_subtext(
         ) == ContributePageMessages.ABOUT_US_CONTENT
 
@@ -112,12 +112,10 @@ def test_way_to_contribute_redirects_to_correct_page(page: Page):
         ContributeLocalizationMessages.STAGE_CONTRIBUTE_LOCALIZATION_PAGE_URL
     ]
 
-    counter = 0
-    for element in sumo_pages.contribute_page._get_list_of_contribute_cards():
+    for counter, expected_url in enumerate(ways_to_contribute_links):
         card = sumo_pages.contribute_page._get_list_of_contribute_cards()[counter]
         sumo_pages.contribute_page._click_on_way_to_contribute_card(card)
-        with allure.step("Verifying that the 'way to contribute_messages' cards are redirecting"
-                         " to the correct SUMO page"):
-            assert ways_to_contribute_links[counter] == utilities.get_page_url()
+        with allure.step("Verifying that the 'way to contribute' cards are redirecting to the "
+                         "correct SUMO page"):
+            assert expected_url == utilities.get_page_url()
         utilities.navigate_back()
-        counter += 1

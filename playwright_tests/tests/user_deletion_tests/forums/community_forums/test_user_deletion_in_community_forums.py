@@ -42,7 +42,8 @@ def test_user_deletion_on_archived_locked_no_replies_and_votes_question(page: Pa
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the posted question and verifying that 404 is returned"):
+    with check, allure.step("Navigating back to the posted question and verifying that 404 is "
+                            "returned"):
         assert utilities.navigate_to_link(question_details["question_page_url"]).status == 404
 
 
@@ -77,12 +78,12 @@ def test_user_deletion_on_spam_no_replies_and_votes_question(page: Page, questio
                 sumo_pages.question_page.click_on_archive_this_question_option()
                 sumo_pages.question_page.click_on_mark_as_spam_option()
 
-
     with allure.step("Signing in with the test user and initiating the user deletion flow"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the posted question and verifying that 404 is returned"):
+    with check, allure.step("Navigating back to the posted question and verifying that 404 is "
+                            "returned"):
         utilities.start_existing_session(session_file_name=staff)
         assert utilities.navigate_to_link(question_details["question_page_url"]).status == 404
 
@@ -136,6 +137,7 @@ def test_user_deletion_on_archived_locked_with_replies_question(page: Page, ques
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
 
+
 # C2979648, C2807894
 @pytest.mark.userDeletion
 @pytest.mark.parametrize("question_type", ["spam", "archived-locked"])
@@ -172,7 +174,8 @@ def test_user_deletion_on_spam_with_replies_question(page: Page, question_type,
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the posted question and verifying that 404 is returned"):
+    with check, allure.step("Navigating back to the posted question and verifying that 404 is "
+                            "returned"):
         utilities.start_existing_session(session_file_name=staff)
         assert utilities.navigate_to_link(question_details["question_page_url"]).status == 404
 
@@ -202,12 +205,12 @@ def test_user_deletion_on_question_with_spam_replies(page: Page, create_user_fac
                                                                 reply="Test Reply")
         sumo_pages.aaq_flow.spam_marking_a_reply(reply_id=reply_id)
 
-
     with allure.step("Signing in with the test user and initiating the user deletion flow"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the posted question and verifying that 404 is returned"):
+    with check, allure.step("Navigating back to the posted question and verifying that 404 is "
+                            "returned"):
         utilities.start_existing_session(session_file_name=staff)
         assert utilities.navigate_to_link(question_details["question_page_url"]).status == 404
 
@@ -245,19 +248,18 @@ def test_user_deletion_on_question_with_replies_from_other_user(page: Page, ques
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the posted question and verifying that the question "
-                     "ownership is assigned to the system account"):
+    with check, allure.step("Navigating back to the posted question and verifying that the "
+                            "question ownership is assigned to the system account"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(question_details["question_page_url"])
-        with check, allure.step("Verifying that the question ownership is assigned to the "
-                                "system account"):
-            assert (sumo_pages.question_page.get_question_author_name() == utilities.
-                    general_test_data["system_account_name"])
-            assert (sumo_pages.question_page
-                    .get_display_name_of_question_reply_author(reply_id) == staff)
+        assert (sumo_pages.question_page.get_question_author_name() == utilities.
+                general_test_data["system_account_name"])
+        assert (sumo_pages.question_page
+                .get_display_name_of_question_reply_author(reply_id) == staff)
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
+
 
 # C2807314
 @pytest.mark.userDeletion
@@ -288,7 +290,6 @@ def test_user_deletion_on_question_with_replies_from_same_user(page: Page, quest
             sumo_pages.question_page.click_on_archive_this_question_option()
             utilities.start_existing_session(cookies=test_user)
 
-
     with allure.step("Initiating the user deletion flow"):
         sumo_pages.edit_profile_flow.close_account()
 
@@ -304,6 +305,7 @@ def test_user_deletion_on_question_with_replies_from_same_user(page: Page, quest
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
+
 
 # C2807314
 @pytest.mark.smokeTest
@@ -355,6 +357,7 @@ def test_user_deletion_on_question_with_solution(page: Page, question_type, crea
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
 
+
 # C2807314
 @pytest.mark.userDeletion
 @pytest.mark.parametrize("question_type", ["archived", "non-archived"])
@@ -389,7 +392,7 @@ def test_user_deletion_on_voted_question(page: Page, question_type, create_user_
     utilities.start_existing_session(session_file_name=staff)
     response = utilities.navigate_to_link(question_details["question_page_url"])
 
-    with allure.step("Verifying that the question was deleted"):
+    with check, allure.step("Verifying that the question was deleted"):
         assert response.status == 404
 
 
@@ -406,7 +409,7 @@ def test_user_deletion_on_question_reply_for_archived_questions(page: Page, answ
     test_user = create_user_factory()
     staff = utilities.username_extraction_from_email(utilities.staff_user)
 
-    with allure.step("Signing in with the staff user  and posting a question to a freemium "
+    with allure.step("Signing in with the staff user and posting a question to a freemium "
                      "product"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
@@ -431,7 +434,7 @@ def test_user_deletion_on_question_reply_for_archived_questions(page: Page, answ
         sumo_pages.question_page.click_reply_vote_thumbs_down_button(reply_id=reply_id)
         utilities.start_existing_session(cookies=test_user)
 
-    if question_type  == "archived":
+    if question_type == "archived":
         utilities.start_existing_session(session_file_name=staff)
         sumo_pages.question_page.click_on_archive_this_question_option()
         utilities.start_existing_session(cookies=test_user)
@@ -450,4 +453,3 @@ def test_user_deletion_on_question_reply_for_archived_questions(page: Page, answ
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
-
