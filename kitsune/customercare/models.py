@@ -143,8 +143,8 @@ class SupportTicket(ModelBase):
     }
 
     subject = models.CharField(max_length=255)
-    description = models.TextField()
-    category = models.CharField(max_length=255)
+    description = models.TextField(max_length=65535)
+    category = models.CharField(max_length=255, blank=True, default="")
     email = models.EmailField()
     os = models.CharField(max_length=50, blank=True, default="")
     country = models.CharField(max_length=255, blank=True, default="")
