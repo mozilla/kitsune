@@ -122,7 +122,10 @@ def get_pinned_articles(
     qs = PinnedArticleConfig.objects
 
     if fetch_for_aaq:
-        qs = qs.filter(aaq_configs__product=product, aaq_configs__is_active=True)
+        qs = qs.filter(
+            aaq_configs__support_configs__product=product,
+            aaq_configs__support_configs__is_active=True,
+        )
     elif product:
         qs = qs.filter(products=product)
     else:
