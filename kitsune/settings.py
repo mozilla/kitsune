@@ -1392,6 +1392,11 @@ STALE_ANCHOR_RECORD_RETENTION_DAYS = config(
     "STALE_ANCHOR_RECORD_RETENTION_DAYS", default=90, cast=int
 )
 
+# Threshold for how long inactive users are allowed to remain in groups.
+INACTIVE_GROUP_MEMBER_RETENTION_DAYS = config(
+    "INACTIVE_GROUP_MEMBER_RETENTION_DAYS", default=180, cast=int
+)
+
 # Celery beat configuration
 DJANGO_CELERY_BEAT_TZ_AWARE = config("USE_TZ", default=True, cast=bool)
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"

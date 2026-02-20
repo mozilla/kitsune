@@ -1,6 +1,9 @@
 import os
 
+from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core.files import File
+from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
@@ -218,3 +221,132 @@ class JoinContributorsTests(TestCase):
         self.assertEqual(302, r.status_code)
         self.assertEqual(next, r["location"])
         assert self.user.groups.filter(name="Contributors").exists()
+
+
+class DeactivatedMemberVisibilityTests(TestCase):
+    """Test that deactivated users are hidden from group profile for non-privileged viewers."""
+
+    def setUp(self):
+        super().setUp()
+        self.group_profile = GroupProfileFactory()
+
+        self.active_leader = UserFactory()
+        self.group_profile.leaders.add(self.active_leader)
+        self.group_profile.group.user_set.add(self.active_leader)
+
+        self.deactivated_leader = UserFactory(is_active=False)
+        self.group_profile.leaders.add(self.deactivated_leader)
+        self.group_profile.group.user_set.add(self.deactivated_leader)
+
+        self.active_member = UserFactory()
+        self.group_profile.group.user_set.add(self.active_member)
+
+        self.deactivated_member = UserFactory(is_active=False)
+        self.group_profile.group.user_set.add(self.deactivated_member)
+
+        self.url = reverse("groups.profile", args=[self.group_profile.slug])
+
+    def _get_profile_doc(self):
+        r = self.client.get(self.url)
+        self.assertEqual(200, r.status_code)
+        return pq(r.content)
+
+    def _leader_names(self, doc):
+        return {pq(el).text() for el in doc("ul.users.leaders .user-name")}
+
+    def _member_names(self, doc):
+        return {pq(el).text() for el in doc("ul.users.members .user-name")}
+
+    def _group_count(self, doc, label):
+        for el in doc(".group-stats .stat-item"):
+            item = pq(el)
+            if item(".stat-label").text() == label:
+                return int(item(".stat-value").text())
+        raise AssertionError(f"Stat '{label}' not found in .group-stats")
+
+    def test_regular_user_sees_only_active_members(self):
+        """A regular (non-leader) user sees only active leaders and members."""
+        regular_user = UserFactory()
+        self.client.login(username=regular_user.username, password="testpass")
+        doc = self._get_profile_doc()
+        self.assertEqual(self._leader_names(doc), {self.active_leader.profile.display_name})
+        self.assertEqual(
+            self._member_names(doc),
+            {self.active_leader.profile.display_name, self.active_member.profile.display_name},
+        )
+        self.assertEqual(self._group_count(doc, "Leaders"), 1)
+        self.assertEqual(self._group_count(doc, "Members"), 2)
+
+    def test_staff_user_sees_all_members(self):
+        """A user with is_staff=True sees both active and deactivated leaders/members."""
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password="testpass")
+        doc = self._get_profile_doc()
+
+        self.assertEqual(
+            self._leader_names(doc),
+            {
+                self.active_leader.profile.display_name,
+                self.deactivated_leader.profile.display_name,
+            },
+        )
+        self.assertEqual(
+            self._member_names(doc),
+            {
+                self.active_leader.profile.display_name,
+                self.deactivated_leader.profile.display_name,
+                self.active_member.profile.display_name,
+                self.deactivated_member.profile.display_name,
+            },
+        )
+        self.assertEqual(self._group_count(doc, "Leaders"), 2)
+        self.assertEqual(self._group_count(doc, "Members"), 4)
+
+    def test_staff_group_member_sees_all_members(self):
+        """A member of the Staff group sees both active and deactivated leaders/members."""
+        staff_group, _ = Group.objects.get_or_create(name=settings.STAFF_GROUP)
+        staff_group_member = UserFactory()
+        staff_group_member.groups.add(staff_group)
+        self.client.login(username=staff_group_member.username, password="testpass")
+        doc = self._get_profile_doc()
+        self.assertEqual(
+            self._leader_names(doc),
+            {
+                self.active_leader.profile.display_name,
+                self.deactivated_leader.profile.display_name,
+            },
+        )
+        self.assertEqual(
+            self._member_names(doc),
+            {
+                self.active_leader.profile.display_name,
+                self.deactivated_leader.profile.display_name,
+                self.active_member.profile.display_name,
+                self.deactivated_member.profile.display_name,
+            },
+        )
+        self.assertEqual(self._group_count(doc, "Leaders"), 2)
+        self.assertEqual(self._group_count(doc, "Members"), 4)
+
+    def test_group_leader_sees_all_members(self):
+        """A direct leader of the group sees both active and deactivated leaders/members."""
+        self.client.login(username=self.active_leader.username, password="testpass")
+        doc = self._get_profile_doc()
+        self.assertEqual(
+            self._leader_names(doc),
+            {
+                self.active_leader.profile.display_name,
+                self.deactivated_leader.profile.display_name,
+            },
+        )
+        self.assertEqual(
+            self._member_names(doc),
+            {
+                self.active_leader.profile.display_name,
+                self.deactivated_leader.profile.display_name,
+                self.active_member.profile.display_name,
+                self.deactivated_member.profile.display_name,
+            },
+        )
+        self.assertEqual(self._group_count(doc, "Leaders"), 2)
+        self.assertEqual(self._group_count(doc, "Members"), 4)

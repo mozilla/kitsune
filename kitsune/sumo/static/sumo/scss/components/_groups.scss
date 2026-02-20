@@ -450,6 +450,24 @@ body:has(#group-profile) {
         }
       }
 
+      .inactive-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: p.$spacing-xs;
+        padding: 2px p.$spacing-xs;
+        background: var(--color-marketing-gray-02);
+        color: var(--color-marketing-gray-08);
+        border-radius: p.$border-radius-sm;
+        @include c.text-body-xs;
+        font-weight: 600;
+        margin-top: p.$spacing-xs;
+
+        svg {
+          width: 12px;
+          height: 12px;
+        }
+      }
+
       .pm {
         margin-top: p.$spacing-xs;
 
