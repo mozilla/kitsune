@@ -36,9 +36,7 @@ def get_autocomplete_suggestions(request):
 
     suggestions = []
     user_criteria = Q(username__istartswith=pre) | Q(profile__name__istartswith=pre)
-    users = User.objects.filter(
-        user_criteria, is_active=True, profile__is_fxa_migrated=True
-    ).select_related("profile")[:10]
+    users = User.objects.filter(user_criteria, is_active=True).select_related("profile")[:10]
 
     for user in users:
         suggestions.append(create_suggestion(user))
