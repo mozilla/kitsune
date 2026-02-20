@@ -38,7 +38,6 @@ class BaseProductTopic(ModelBase):
 
 
 class Product(BaseProductTopic):
-    codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
     image = ImagePlusField(
         upload_to=settings.PRODUCT_IMAGE_PATH,
@@ -377,8 +376,7 @@ class ZendeskConfig(ModelBase):
         default=False, help_text="Show operating system selector in the support form"
     )
     skip_spam_moderation = models.BooleanField(
-        default=False,
-        help_text="Skip AI-based spam checking for this product"
+        default=False, help_text="Skip AI-based spam checking for this product"
     )
     topics = models.ManyToManyField(
         "ZendeskTopic",
