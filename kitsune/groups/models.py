@@ -179,6 +179,16 @@ class GroupProfile(TreeModelBase):
         children = self.get_children()
         return self.__class__.objects.visible(user).filter(pk__in=children)
 
+    def can_view_inactive_members(self, user):
+        """Check if user can view deactivated members/leaders of this group."""
+        if not (user and user.is_authenticated):
+            return False
+        if user.is_staff:
+            return True
+        if user.profile.in_staff_group:
+            return True
+        return self.can_moderate_group(user)
+
     def can_remove_leader(self):
         """
         Check if a leader can be removed from this group.

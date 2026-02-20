@@ -1,8 +1,10 @@
 """Tests for GroupProfile model and visibility manager."""
 
-from django.contrib.auth.models import Group
+from django.conf import settings
+from django.contrib.auth.models import AnonymousUser, Group
 
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import GroupFactory, GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -1210,3 +1212,52 @@ class LeaderRemovalValidationTests(TestCase):
         sub = root.add_child(group=sub_group, slug="sub")
 
         self.assertTrue(sub.can_remove_leader())
+
+
+class CanViewInactiveMembersTests(TestCase):
+    """Test can_view_inactive_members() permission checks."""
+
+    def setUp(self):
+        self.root = GroupProfileFactory(visibility=GroupProfile.Visibility.PUBLIC)
+        self.child = self.root.add_child(group=GroupFactory())
+
+        self.leader = UserFactory()
+        self.root.leaders.add(self.leader)
+
+        self.child_leader = UserFactory()
+        self.child.leaders.add(self.child_leader)
+
+        self.regular_member = UserFactory()
+        self.root.group.user_set.add(self.regular_member)
+
+    def test_anonymous_user_cannot_view_inactive(self):
+        """Anonymous (None) user cannot see deactivated members."""
+        self.assertFalse(self.root.can_view_inactive_members(None))
+
+    def test_unauthenticated_user_cannot_view_inactive(self):
+        """Unauthenticated user object cannot see deactivated members."""
+        self.assertFalse(self.root.can_view_inactive_members(AnonymousUser()))
+
+    def test_is_staff_user_can_view_inactive(self):
+        """Users with is_staff=True can see deactivated members."""
+        staff_user = UserFactory(is_staff=True)
+        self.assertTrue(self.root.can_view_inactive_members(staff_user))
+
+    def test_staff_group_member_can_view_inactive(self):
+        """Members of the Staff group can see deactivated members."""
+        staff_group, _ = Group.objects.get_or_create(name=settings.STAFF_GROUP)
+        staff_member = UserFactory()
+        staff_member.groups.add(staff_group)
+        self.assertTrue(self.root.can_view_inactive_members(staff_member))
+
+    def test_direct_leader_can_view_inactive(self):
+        """Direct leader of the group can see deactivated members."""
+        self.assertTrue(self.root.can_view_inactive_members(self.leader))
+
+    def test_root_leader_can_view_inactive_in_child(self):
+        """Root group leader can see deactivated members in child groups (via can_moderate_group)."""
+        self.assertTrue(self.child.can_view_inactive_members(self.leader))
+
+    def test_regular_member_cannot_view_inactive(self):
+        """Regular (non-leader) members cannot see deactivated members."""
+        self.assertFalse(self.root.can_view_inactive_members(self.regular_member))
