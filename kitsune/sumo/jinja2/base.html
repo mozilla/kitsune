@@ -189,7 +189,7 @@
 {% endblock %}
 
 {% if messages %}
-  <ul class="user-messages">
+  <ul class="user-messages" id="user-messages">
     {% for message in messages %}
       {% if not message.message.startswith('fxa_notification') %}
       <li class="mzp-c-notification-bar {% if message.level_tag %}mzp-t-{{ message.level_tag }}{% endif %}">
