@@ -286,25 +286,34 @@ class Question(AAQBase):
             for tag in product_config.associated_tags.all():
                 tags.append(tag)
 
-        version = self.metadata.get("ff_version", "")
+        version = self.metadata.get("ff_version", "") or self.metadata.get("tb_version", "")
 
-        # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
-        version = re.split("[a-b]", version)[0]
+        # Remove from the version string anything following the version number.
+        # A version number is a sequence of digits and dots, starting and ending with a digit.
+        versionMatch = re.match(r'\d(?:[\d.]*\d)?', version)
+        version = versionMatch.group(0) if versionMatch else ""
+        # If there are no dots, version is an integer, and we need to add ".0" to find matches among major versions.
+        if '.' not in version:
+            version += ".0"
 
-        dev_releases = product_details.firefox_history_development_releases
+        development_releases = product_details.firefox_history_development_releases or product_details.thunderbird_history_development_releases
+        stability_releases = product_details.firefox_history_stability_releases or product_details.thunderbird_history_stability_releases
+        major_releases = product_details.firefox_history_major_releases or product_details.thunderbird_history_major_releases
 
-        if (
-            version in dev_releases
-            or version in product_details.firefox_history_stability_releases
-            or version in product_details.firefox_history_major_releases
-        ):
-            tags.append("Firefox {}".format(version))
-            tenths = _tenths_version(version)
-            if tenths:
-                tags.append("Firefox {}".format(tenths))
-        elif _has_beta(version, dev_releases):
-            tags.append("Firefox {}".format(version))
-            tags.append("beta")
+        if version:
+            product_name = "Firefox" if self.metadata.get("ff_version", "") else "Thunderbird"
+            if (
+                version in development_releases
+                or version in stability_releases
+                or version in major_releases
+            ):
+                tags.append(product_name + " {}".format(version))
+                tenths = _tenths_version(version)
+                if tenths:
+                    tags.append(product_name + " {}".format(tenths))
+            elif _has_beta(version, development_releases):
+                tags.append(product_name + " {}".format(version))
+                tags.append("beta")
 
         # Add a tag for the OS but only if it already exists as a non-segmentation tag.
         if os := self.metadata.get("os"):
