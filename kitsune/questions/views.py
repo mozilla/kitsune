@@ -737,7 +737,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 )
 
                 url = reverse("products.product", args=[product.slug])
-                return HttpResponseRedirect(url)
+                return HttpResponseRedirect(f"{url}#user-messages")
 
             if getattr(request, "limited", False):
                 messages.add_message(
