@@ -17,7 +17,6 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
     @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
     @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
-    @patch("django.conf.settings.ZENDESK_TICKET_FORM_ID", 456)
     def test_create_ticket_includes_zendesk_tags_for_authenticated_user(self, mock_zenpy):
         """Test that create_ticket includes taxonomy tags for authenticated users."""
         mock_client = Mock()
@@ -36,6 +35,7 @@ class ZendeskClientTests(TestCase):
             "category": "accounts",
             "os": "win10",
             "country": "US",
+            "ticket_form_id": 456,
             "zendesk_tags": [
                 "accounts",  # legacy
                 "t1-passwords-and-sign-in",  # tier1
@@ -65,7 +65,6 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
     @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
     @patch("django.conf.settings.ZENDESK_CONTACT_LABEL_ID", 127)
-    @patch("django.conf.settings.ZENDESK_TICKET_FORM_ID", 456)
     def test_create_ticket_includes_loginless_tag_plus_zendesk_tags(self, mock_zenpy):
         """Test that loginless tickets include both loginless tag and taxonomy tags."""
         from django.contrib.auth.models import AnonymousUser
@@ -85,6 +84,7 @@ class ZendeskClientTests(TestCase):
             "description": "Test description",
             "category": "fxa-2fa-lockout",
             "email": "test@example.com",
+            "ticket_form_id": 456,
             "zendesk_tags": [
                 "accounts",  # legacy
                 "t1-passwords-and-sign-in",  # tier1
@@ -114,7 +114,6 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
     @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
     @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
-    @patch("django.conf.settings.ZENDESK_TICKET_FORM_ID", 456)
     def test_create_ticket_without_zendesk_tags(self, mock_zenpy):
         """Test that tickets without zendesk_tags don't include extra tags."""
         # Mock the Zenpy client
@@ -135,6 +134,7 @@ class ZendeskClientTests(TestCase):
             "category": "accounts",
             "os": "win10",
             "country": "US",
+            "ticket_form_id": 456,
         }
 
         client.create_ticket(self.user, ticket_fields)
@@ -152,7 +152,6 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
     @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
     @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
-    @patch("django.conf.settings.ZENDESK_TICKET_FORM_ID", 456)
     def test_create_ticket_with_empty_zendesk_tags(self, mock_zenpy):
         """Test that tickets with empty zendesk_tags list don't include tags."""
         mock_client = Mock()
@@ -172,6 +171,7 @@ class ZendeskClientTests(TestCase):
             "category": "accounts",
             "os": "win10",
             "country": "US",
+            "ticket_form_id": 456,
             "zendesk_tags": [],  # Empty list
         }
 
@@ -189,7 +189,6 @@ class ZendeskClientTests(TestCase):
     @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
     @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
     @patch("django.conf.settings.ZENDESK_CONTACT_LABEL_ID", 127)
-    @patch("django.conf.settings.ZENDESK_TICKET_FORM_ID", 456)
     def test_create_ticket_with_none_user(self, mock_zenpy):
         """Test that create_ticket works with user=None (loginless ticket)."""
         mock_client = Mock()
@@ -206,6 +205,7 @@ class ZendeskClientTests(TestCase):
             "description": "Test description",
             "category": "fxa-2fa-lockout",
             "email": "test@example.com",
+            "ticket_form_id": 456,
             "zendesk_tags": ["accounts"],
         }
 
@@ -217,3 +217,85 @@ class ZendeskClientTests(TestCase):
 
         # Should include loginless tag
         self.assertIn(LOGINLESS_TAG, call_args.tags)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    @patch("django.conf.settings.ZENDESK_UPDATE_CHANNEL_FIELD_ID", 127)
+    @patch("django.conf.settings.ZENDESK_POLICY_DISTRIBUTION_FIELD_ID", 128)
+    def test_create_ticket_includes_deployment_fields(self, mock_zenpy):
+        """Test that create_ticket includes deployment fields when provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+        self.user.profile.zendesk_id = "123"
+
+        client = ZendeskClient()
+        client.update_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "firefox",
+            "product_title": "Firefox",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "technical",
+            "os": "win10",
+            "country": "US",
+            "ticket_form_id": 456,
+            "update_channel": "esr",
+            "policy_distribution": "group_policy_admx",
+        }
+
+        client.create_ticket(self.user, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        custom_fields = call_args.custom_fields
+        field_dict = {field["id"]: field["value"] for field in custom_fields}
+
+        self.assertEqual(field_dict[127], "esr")
+        self.assertEqual(field_dict[128], "group_policy_admx")
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    @patch("django.conf.settings.ZENDESK_UPDATE_CHANNEL_FIELD_ID", 127)
+    @patch("django.conf.settings.ZENDESK_POLICY_DISTRIBUTION_FIELD_ID", 128)
+    def test_create_ticket_omits_empty_deployment_fields(self, mock_zenpy):
+        """Test that create_ticket omits deployment fields when not provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+        self.user.profile.zendesk_id = "123"
+
+        client = ZendeskClient()
+        client.update_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "firefox",
+            "product_title": "Firefox",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "technical",
+            "os": "win10",
+            "country": "US",
+            "ticket_form_id": 456,
+            "update_channel": "",
+            "policy_distribution": "",
+        }
+
+        client.create_ticket(self.user, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        custom_fields = call_args.custom_fields
+        field_ids = [field["id"] for field in custom_fields]
+
+        self.assertNotIn(127, field_ids)
+        self.assertNotIn(128, field_ids)

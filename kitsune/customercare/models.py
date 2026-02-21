@@ -28,6 +28,8 @@ class SupportTicket(ModelBase):
     email = models.EmailField()
     os = models.CharField(max_length=50, blank=True, default="")
     country = models.CharField(max_length=255, blank=True, default="")
+    update_channel = models.CharField(max_length=100, blank=True, default="")
+    policy_distribution = models.CharField(max_length=255, blank=True, default="")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="support_tickets")
     topic = models.ForeignKey(
         Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name="support_tickets"
