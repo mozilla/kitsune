@@ -8,7 +8,12 @@ from kitsune.customercare.utils import (
     generate_classification_tags,
     send_support_ticket_to_zendesk,
 )
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    TopicFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.sumo.tests import TestCase
 
 
@@ -210,6 +215,10 @@ class SendSupportTicketToZendeskTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.product = ProductFactory(slug="mozilla-vpn", title="Mozilla VPN")
+        self.zendesk_config = ZendeskConfigFactory(name="Test Config", ticket_form_id="12345")
+        ProductSupportConfigFactory(
+            product=self.product, zendesk_config=self.zendesk_config, forum_config=None
+        )
         self.submission = Mock(spec=SupportTicket)
         self.submission.product = self.product
         self.submission.user = None
@@ -219,6 +228,8 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.submission.email = "test@example.com"
         self.submission.os = "win10"
         self.submission.country = "US"
+        self.submission.update_channel = ""
+        self.submission.policy_distribution = ""
         self.submission.zendesk_tags = []
 
     @patch("kitsune.customercare.utils.ZendeskClient")

@@ -438,3 +438,52 @@ class ZendeskFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
+
+    def test_deployment_fields_hidden_by_default(self):
+        """Test that deployment fields are hidden when not enabled."""
+        form = ZendeskForm(product=self.vpn_product, user=self.user)
+
+        self.assertEqual(form.fields["update_channel"].widget.__class__.__name__, "HiddenInput")
+        self.assertEqual(
+            form.fields["policy_distribution"].widget.__class__.__name__, "HiddenInput"
+        )
+        self.assertFalse(form.fields["update_channel"].required)
+        self.assertFalse(form.fields["policy_distribution"].required)
+
+    def test_deployment_fields_shown_when_enabled(self):
+        """Test that deployment fields are shown and required when enabled."""
+        self.vpn_zendesk.enable_deployment_fields = True
+        self.vpn_zendesk.save()
+
+        form = ZendeskForm(product=self.vpn_product, user=self.user)
+
+        self.assertEqual(form.fields["update_channel"].widget.__class__.__name__, "Select")
+        self.assertEqual(form.fields["policy_distribution"].widget.__class__.__name__, "Select")
+        self.assertTrue(form.fields["update_channel"].required)
+        self.assertTrue(form.fields["policy_distribution"].required)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_stores_deployment_fields(self, mock_task):
+        """Test that deployment field values are stored in SupportTicket."""
+        self.vpn_zendesk.enable_deployment_fields = True
+        self.vpn_zendesk.save()
+
+        form = ZendeskForm(
+            data={
+                "email": "test@example.com",
+                "category": "vpn-connection-issues",
+                "subject": "Test subject",
+                "description": "Test description",
+                "update_channel": "esr",
+                "policy_distribution": "group_policy_admx",
+            },
+            product=self.vpn_product,
+            user=self.user,
+        )
+
+        self.assertTrue(form.is_valid())
+        submission = form.send(self.user, self.vpn_product)
+
+        self.assertEqual(submission.update_channel, "esr")
+        self.assertEqual(submission.policy_distribution, "group_policy_admx")
+        mock_task.assert_called_once_with(submission.id)

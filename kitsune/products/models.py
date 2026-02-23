@@ -376,9 +376,12 @@ class ZendeskConfig(ModelBase):
     enable_os_field = models.BooleanField(
         default=False, help_text="Show operating system selector in the support form"
     )
-    skip_spam_moderation = models.BooleanField(
+    enable_deployment_fields = models.BooleanField(
         default=False,
-        help_text="Skip AI-based spam checking for this product"
+        help_text="Show deployment-related fields (update channel and policy distribution) in the support form",
+    )
+    skip_spam_moderation = models.BooleanField(
+        default=False, help_text="Skip AI-based spam checking for this product"
     )
     topics = models.ManyToManyField(
         "ZendeskTopic",

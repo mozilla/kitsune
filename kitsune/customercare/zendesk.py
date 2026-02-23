@@ -115,11 +115,27 @@ class ZendeskClient:
             {"id": settings.ZENDESK_OS_FIELD_ID, "value": ticket_fields.get("os")},
             {"id": settings.ZENDESK_COUNTRY_FIELD_ID, "value": ticket_fields.get("country")},
         ]
+
+        if ticket_fields.get("update_channel"):
+            custom_fields.append(
+                {
+                    "id": settings.ZENDESK_UPDATE_CHANNEL_FIELD_ID,
+                    "value": ticket_fields.get("update_channel"),
+                }
+            )
+
+        if ticket_fields.get("policy_distribution"):
+            custom_fields.append(
+                {
+                    "id": settings.ZENDESK_POLICY_DISTRIBUTION_FIELD_ID,
+                    "value": ticket_fields.get("policy_distribution"),
+                }
+            )
         ticket_kwargs = {
             "subject": ticket_fields.get("subject")
             or f"{ticket_fields.get('product_title', 'Product')} support",
             "comment": {"body": ticket_fields.get("description") or str(NO_RESPONSE)},
-            "ticket_form_id": settings.ZENDESK_TICKET_FORM_ID,
+            "ticket_form_id": ticket_fields.get("ticket_form_id"),
         }
 
         tags = []
