@@ -92,7 +92,7 @@
     "sinon": "^21.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
-    "@stylistic/stylelint-plugin": "^4.0.0",
+    "@stylistic/stylelint-plugin": "^5.0.1",
     "style-loader": "^3.3.1",
     "stylelint": "^16.26.1",
     "stylelint-config-recommended-scss": "^16.0.2",
