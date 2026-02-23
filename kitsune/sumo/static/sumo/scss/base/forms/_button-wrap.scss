@@ -52,6 +52,12 @@
         (margin, 0 0 p.$spacing-sm p.$spacing-md, 0 p.$spacing-md p.$spacing-sm 0),
       ));
     }
+
+    .me-too {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
   }
 
   &.align-full {
