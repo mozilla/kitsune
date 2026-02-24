@@ -451,7 +451,7 @@ class ZendeskFormTests(TestCase):
         self.assertFalse(form.fields["policy_distribution"].required)
 
     def test_deployment_fields_shown_when_enabled(self):
-        """Test that deployment fields are shown and required when enabled."""
+        """Test that deployment fields are shown, required, and have choices when enabled."""
         self.vpn_zendesk.enable_deployment_fields = True
         self.vpn_zendesk.save()
 
@@ -461,6 +461,14 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(form.fields["policy_distribution"].widget.__class__.__name__, "Select")
         self.assertTrue(form.fields["update_channel"].required)
         self.assertTrue(form.fields["policy_distribution"].required)
+
+        update_channel_values = [v for v, _ in form.fields["update_channel"].widget.choices if v]
+        self.assertIn("esr", update_channel_values)
+        self.assertIn("beta", update_channel_values)
+
+        policy_values = [v for v, _ in form.fields["policy_distribution"].widget.choices if v]
+        self.assertIn("group_policy_admx", policy_values)
+        self.assertIn("autoconfig", policy_values)
 
     @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
     def test_send_stores_deployment_fields(self, mock_task):

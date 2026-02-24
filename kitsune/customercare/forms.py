@@ -120,8 +120,10 @@ class ZendeskForm(forms.Form):
 
             if zendesk_config.enable_deployment_fields:
                 self.fields["update_channel"].widget = forms.Select()
+                self.fields["update_channel"].choices = UPDATE_CHANNEL_CHOICES
                 self.fields["update_channel"].required = True
                 self.fields["policy_distribution"].widget = forms.Select()
+                self.fields["policy_distribution"].choices = POLICY_DISTRIBUTION_CHOICES
                 self.fields["policy_distribution"].required = True
 
         self.label_suffix = ""
