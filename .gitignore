@@ -76,3 +76,4 @@ chromedriver.log
 .gk/
 gcloud/
 .claude
+.copilot
