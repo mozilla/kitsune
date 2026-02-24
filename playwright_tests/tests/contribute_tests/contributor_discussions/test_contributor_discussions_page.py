@@ -16,12 +16,10 @@ from playwright_tests.messages.contribute_messages.con_discussions.localization_
 from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
     OffTopicForumMessages,
 )
-from playwright_tests.messages.contribute_messages.con_discussions.support_forum_discussions import \
-    SupportForumDiscussionsMessages
-from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import (
-    MyProfileMessages,
+from playwright_tests.messages.contribute_messages.con_discussions.support_forum_discussions import (
+    SupportForumDiscussionsMessages,
 )
+from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -31,7 +29,7 @@ def test_contributor_discussions_forums_description(page: Page, create_user_fact
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["forum-contributors"])
 
-    with allure.step("Signing in with an contributor account"):
+    with allure.step("Signing in with a contributor account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigate to the Contributor Discussions page"):
@@ -52,7 +50,7 @@ def test_contributor_discussions_side_nav_redirect(page: Page, create_user_facto
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["forum-contributors"])
 
-    with allure.step("Signing in with an contributor account"):
+    with allure.step("Signing in with a contributor account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigate to the Contributor Discussions page"):
@@ -88,7 +86,7 @@ def test_contributor_discussions_forums_title_redirect(page: Page, create_user_f
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["forum-contributors"])
 
-    with allure.step("Signing in with an contributor account"):
+    with allure.step("Signing in with a contributor account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigate to the Contributor Discussions page"):
@@ -169,7 +167,7 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
     test_user = create_user_factory(groups=["forum-contributors"],
                                     permissions=["delete_forum_thread"])
 
-    with allure.step("Signing in with an moderator account"):
+    with allure.step("Signing in with a moderator account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Contributor Discussions' page and fetching the number of "
@@ -195,8 +193,8 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
     with allure.step("Fetching the thread post date/time"):
         post_time = sumo_pages.forum_thread_page.get_post_time(post_id, "US/Central")
 
-    with allure.step("Verifying that the number of threads has incremented successfully inside "
-                     "the contributor threads"):
+    with check, allure.step("Verifying that the number of threads has incremented successfully "
+                            "inside the contributor threads"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         thread_count += 1
 
@@ -209,7 +207,7 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
             "\u202f", " ") == (sumo_pages.contributor_discussions_page.
                                get_forum_last_post_date(target_topic))
 
-    with check, allure.step("Verifying that the correct username is displayed inside the last post"
+    with check, allure.step("Verifying that the correct username is displayed inside the last post "
                             "section"):
         assert (test_user["username"] == sumo_pages.contributor_discussions_page.
                 get_forum_last_post_by(OffTopicForumMessages.PAGE_TITLE))
@@ -226,12 +224,12 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
         assert thread_count == (sumo_pages.contributor_discussions_page.
                                 get_forum_thread_count(target_topic))
 
-    with check, allure.step("Verifying that the previous post time is n longer displayed inside "
+    with check, allure.step("Verifying that the previous post time is no longer displayed inside "
                             "the last post section"):
         assert "Today at " + post_time.strftime("%#I:%M %p") != (
             sumo_pages.contributor_discussions_page.get_forum_last_post_date(target_topic))
 
-    with check, allure.step("Verifying that username is no longer displayed inside the last post"
+    with check, allure.step("Verifying that username is no longer displayed inside the last post "
                             "section"):
         assert (test_user["username"] != sumo_pages.contributor_discussions_page.
                 get_forum_last_post_by(OffTopicForumMessages.PAGE_TITLE))
@@ -241,7 +239,6 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
 @pytest.mark.contributorDiscussions
 def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(page: Page,
                                                                               create_user_factory):
-
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     original_forum = LocalizationDiscussionsMessages.PAGE_TITLE
@@ -249,7 +246,7 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
     test_user = create_user_factory(groups=["forum-contributors"],
                                     permissions=["move_forum_thread"])
 
-    with allure.step("Signing in with an moderator account"):
+    with allure.step("Signing in with a moderator account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Contributor Discussions' page and fetching the number of "
@@ -278,8 +275,8 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
     with allure.step("Fetching the thread post date/time"):
         post_time = sumo_pages.forum_thread_page.get_post_time(post_id, "US/Central")
 
-    with allure.step("Verifying that the number of threads has incremented successfully inside "
-                     "the contributor threads"):
+    with check, allure.step("Verifying that the number of threads has incremented successfully "
+                            "inside the contributor threads"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         original_forum_count += 1
         assert (original_forum_count == sumo_pages.contributor_discussions_page.
@@ -291,12 +288,12 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
             "\u202f", " ") == (sumo_pages.contributor_discussions_page.
                                get_forum_last_post_date(original_forum))
 
-    with check, allure.step("Verifying that the correct username is displayed inside the last post"
+    with check, allure.step("Verifying that the correct username is displayed inside the last post "
                             "section"):
         assert (test_user["username"] == sumo_pages.contributor_discussions_page.
                 get_forum_last_post_by(original_forum))
 
-    with allure.step("Moving the thread to the 'Support forum"):
+    with allure.step("Moving the thread to the 'Support forum'"):
         utilities.navigate_to_link(thread_link)
         sumo_pages.contributor_thread_flow.move_thread_to_a_different_forum(target_forum)
 
@@ -347,8 +344,8 @@ def test_contributor_discussions_breadcrumb_redirect(page: Page):
         assert (sumo_pages.contributor_discussions_page.
                 get_contributor_discussions_breadcrumbs()[1] == ConDiscussionsMessages.PAGE_TITLE)
 
-    with allure.step("Clicking on the 'Home' breadcrumb and verifying that the user is redirected "
-                     "to the homepage successfully"):
+    with check, allure.step("Clicking on the 'Home' breadcrumb and verifying that the user is "
+                            "redirected to the homepage successfully"):
         sumo_pages.contributor_discussions_page.click_on_first_breadcrumb()
         assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
 
@@ -361,7 +358,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
     test_user = create_user_factory(groups=["forum-contributors"])
     test_user_two = create_user_factory()
 
-    with allure.step("Signing in with an contributor account"):
+    with allure.step("Signing in with a contributor account"):
         utilities.start_existing_session(cookies=test_user)
 
     with allure.step("Navigating to the 'Support Forum' forum and posting a new thread"):
@@ -393,8 +390,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
             SupportForumDiscussionsMessages.PAGE_TITLE
         )
-        assert (test_user["username"] in MyProfileMessages.
-                get_my_profile_stage_url(test_user["username"]))
+        assert test_user["username"] in utilities.get_page_url()
 
     with allure.step("Signing in with a different user and leaving a reply to the posted thread"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -424,5 +420,4 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
             SupportForumDiscussionsMessages.PAGE_TITLE
         )
-        assert (test_user_two["username"] in MyProfileMessages.
-                get_my_profile_stage_url(test_user_two["username"]))
+        assert test_user_two["username"] in utilities.get_page_url()

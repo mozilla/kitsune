@@ -26,7 +26,7 @@ def test_thread_with_no_replies_is_not_assigned_to_system_user(page: Page, creat
     with allure.step("Deleting the user"):
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the thread and verifying that 404 is returned"):
+    with check, allure.step("Navigating back to the thread and verifying that 404 is returned"):
         assert utilities.navigate_to_link(thread_url).status == 404
 
 
@@ -48,7 +48,8 @@ def test_locked_thread_with_no_replies_is_not_assigned_to_system_user(page: Page
     with allure.step("Locking the forum thread"):
         sumo_pages.forum_thread_page.click_lock_this_thread_option()
 
-    with allure.step("Deleting the account and verifying that the contributor thread is deleted"):
+    with check, allure.step("Deleting the account and verifying that the contributor thread is "
+                            "deleted"):
         sumo_pages.edit_profile_flow.close_account()
         assert utilities.navigate_to_link(thread_url).status == 404
 
@@ -71,7 +72,8 @@ def test_sticky_thread_with_no_replies_is_not_assigned_to_system_user(page:Page,
     with allure.step("Marking the thread as sticky"):
         sumo_pages.forum_thread_page.click_sticky_this_thread_option()
 
-    with allure.step("Deleting the account and verifying that the contributor thread is deleted"):
+    with check, allure.step("Deleting the account and verifying that the contributor thread is "
+                            "deleted"):
         sumo_pages.edit_profile_flow.close_account()
         assert utilities.navigate_to_link(thread_url).status == 404
 
@@ -97,7 +99,8 @@ def test_edited_thread_with_no_replies_is_not_assigned_to_system_user(page: Page
         sumo_pages.contributor_thread_flow.edit_thread_title(new_thread_title)
         sumo_pages.contributor_thread_flow.edit_thread_post(thread_id, "Edited thread body")
 
-    with allure.step("Deleting the account and verifying that the contributor thread is deleted"):
+    with check, allure.step("Deleting the account and verifying that the contributor thread is "
+                            "deleted"):
         sumo_pages.edit_profile_flow.close_account()
         assert utilities.navigate_to_link(thread_url).status == 404
 
@@ -122,8 +125,8 @@ def test_deleting_the_user_which_locked_the_thread(page: Page, create_user_facto
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.forum_thread_page.click_lock_this_thread_option()
 
-    with allure.step("Deleting the forum moderator account and verifying that the thread was "
-                     "not affected by this deletion"):
+    with check, allure.step("Deleting the forum moderator account and verifying that the thread "
+                            "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
         assert "Locked" in sumo_pages.forum_thread_page.get_thread_meta_information()
@@ -133,11 +136,11 @@ def test_deleting_the_user_which_locked_the_thread(page: Page, create_user_facto
         utilities.start_existing_session(cookies=test_user_three)
         sumo_pages.forum_thread_page.click_unlock_this_thread_option()
 
-    with allure.step("Deleting the forum moderator account and verifying that the thread was not "
-                     "affected by this deletion"):
+    with check, allure.step("Deleting the forum moderator account and verifying that the thread "
+                            "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
-        assert not "Locked" in sumo_pages.forum_thread_page.get_thread_meta_information()
+        assert "Locked" not in sumo_pages.forum_thread_page.get_thread_meta_information()
         assert sumo_pages.forum_thread_page.get_post_author(thread) == test_user["username"]
 
 
@@ -161,8 +164,8 @@ def test_deleting_the_user_which_stickied_the_thread(page: Page, create_user_fac
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.forum_thread_page.click_sticky_this_thread_option()
 
-    with allure.step("Deleting the forum moderator account and verifying that the thread was "
-                     "not affected by this deletion"):
+    with check, allure.step("Deleting the forum moderator account and verifying that the thread "
+                            "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
         assert "Sticky" in sumo_pages.forum_thread_page.get_thread_meta_information()
@@ -172,11 +175,11 @@ def test_deleting_the_user_which_stickied_the_thread(page: Page, create_user_fac
         utilities.start_existing_session(cookies=test_user_three)
         sumo_pages.forum_thread_page.click_unsticky_this_thread_option()
 
-    with allure.step("Deleting the forum moderator account and verifying that the thread was not "
-                     "affected by this deletion"):
+    with check, allure.step("Deleting the forum moderator account and verifying that the thread "
+                            "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
-        assert not "Sticky" in sumo_pages.forum_thread_page.get_thread_meta_information()
+        assert "Sticky" not in sumo_pages.forum_thread_page.get_thread_meta_information()
         assert sumo_pages.forum_thread_page.get_post_author(thread) == test_user["username"]
 
 
@@ -196,11 +199,9 @@ def test_edited_threads_are_assigned_successfully_to_system_account(page: Page,
             thread_title="Test op deletion", thread_body="Test op deletion thread body")
         thread_url = utilities.get_page_url()
 
-
     with allure.step("Posting a new thread reply using a different account"):
         utilities.start_existing_session(cookies=test_user_two)
         thread_reply_id = sumo_pages.contributor_thread_flow.post_thread_reply("Test Reply")
-
 
     with allure.step("Signing in back with the first user and editing the second thread post"):
         utilities.start_existing_session(cookies=test_user)
@@ -208,10 +209,10 @@ def test_edited_threads_are_assigned_successfully_to_system_account(page: Page,
         sumo_pages.contributor_thread_flow.edit_thread_post(thread_reply_id, new_thread_body)
 
     with check, allure.step("Deleting the second user and verifying that: "
-                            "1. The edited thread reply body is kept"
-                            "2. The edited thread reply is assigned to SuMo bot "
-                            "3. The editor is successfully displayed inside the 'Modified by "
-                            "section'"):
+                            "1. The edited thread reply body is kept. "
+                            "2. The edited thread reply is assigned to SuMo bot. "
+                            "3. The editor is successfully displayed inside the 'Modified by' "
+                            "section"):
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
@@ -323,10 +324,9 @@ def test_thread_replies_are_assigned_to_system_account(page: Page, create_user_f
         thread_reply_id = sumo_pages.contributor_thread_flow.post_thread_reply("Test Reply")
 
     with check, allure.step("Deleting the second user and verifying that: "
-                            "1. The first forum post remains assigned to the first user, "
-                            "2. The second forum post is assigned to SumoBot."
-                            "3. Verifying that the 'Last Post' from the targeted forum/thread "
-                            "shows SumoBot."):
+                            "1. The first forum post remains assigned to the first user. "
+                            "2. The second forum post is assigned to SumoBot. "
+                            "3. The 'Last Post' from the targeted forum/thread shows SumoBot."):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
@@ -368,8 +368,8 @@ def test_quoted_first_post_is_moved_to_system_account(page: Page, create_user_fa
         thread_reply_id = sumo_pages.contributor_thread_flow.quote_thread_post(thread)
 
     with check, allure.step("Deleting the second user and verifying that: "
-                            "1. The first forum post remains assigned to the first user, "
-                            "2. The second forum post is assigned to SumoBot."
+                            "1. The first forum post remains assigned to the first user. "
+                            "2. The second forum post is assigned to SumoBot. "
                             "3. The user one is displayed inside the quoted field"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
@@ -414,10 +414,10 @@ def test_quoted_replies_are_moved_to_system_account(page: Page, create_user_fact
             second_thread_reply)
 
     with check, allure.step("Deleting the second user and verifying that: "
-                            "1. The first forum post remains assigned to the first user, "
-                            "2. The second forum post is assigned to SumoBot."
-                            "3. The reply which quotes the second reply belongs to the first user "
-                            "4. The reply which quotes the second reply contains the username of  "
+                            "1. The first forum post remains assigned to the first user. "
+                            "2. The second forum post is assigned to SumoBot. "
+                            "3. The reply which quotes the second reply belongs to the first user. "
+                            "4. The reply which quotes the second reply contains the username of "
                             "the deleted user inside the mention section"):
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.edit_profile_flow.close_account()

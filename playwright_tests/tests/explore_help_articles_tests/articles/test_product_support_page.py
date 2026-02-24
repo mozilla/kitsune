@@ -131,19 +131,19 @@ def test_product_support_frequent_topics_redirects(page: Page):
         sumo_pages.products_page.click_on_a_particular_product_support_card(random.choice(product))
 
     topic_card = random.choice(sumo_pages.common_web_elements.get_frequent_topic_card_titles())
-    with allure.step(f"Verifying that the {topic_card} card heading redirects to the correct "
-                     f"page topic listing page"):
+    with check, allure.step(f"Verifying that the {topic_card} card heading redirects to the "
+                            f"correct topic listing page"):
         assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
                                                                          topic_card, "heading")
 
-    with allure.step(f"Verifying that the listed articles for the {topic_card} card are is "
-                     f"redirecting to the article page successfully"):
+    with check, allure.step(f"Verifying that the listed articles for the {topic_card} card are "
+                            f"redirecting to the article page successfully"):
         assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
                                                                          topic_card, "article")
 
-    with allure.step(f"Verifying that the 'View all articles' link for the {topic_card} card "
-                     f"redirects the user to the correct topic listing page and the counter "
-                     f"successfully reflects the number of articles for that topic"):
+    with check, allure.step(f"Verifying that the 'View all articles' link for the {topic_card} "
+                            f"card redirects the user to the correct topic listing page and the "
+                            f"counter successfully reflects the number of articles for that topic"):
         assert sumo_pages.common_web_elements.verify_topic_card_redirect(utilities, sumo_pages,
                                                                          topic_card, "counter")
 
@@ -192,8 +192,10 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
                                 .get_featured_articles_header_text()
                                 ) == (ProductSupportPageMessages
                                       .PRODUCT_SUPPORT_PAGE_FREQUENT_ARTICLES_TITLE)
-                    assert _verify_featured_article_card_redirect(
-                        page, sumo_pages.product_support_page.get_feature_articles_count())
+                    with check, allure.step("Verifying that the featured article cards redirect "
+                                            "successfully"):
+                        assert _verify_featured_article_card_redirect(
+                            page, sumo_pages.product_support_page.get_feature_articles_count())
                 else:
                     print(f"{card} has no featured articles displayed!!!")
 
@@ -283,11 +285,13 @@ def test_still_need_help_button_redirect(page: Page, create_user_factory):
                     with allure.step("Navigating to the 'Contributors Support' product page"):
                         sumo_pages.top_navbar.click_on_guides_option()
 
-                    assert (sumo_pages.product_support_page.get_product_support_title_text()
-                            == "Contributors" + ProductSupportPageMessages.
-                            PRODUCT_SUPPORT_PAGE_TITLE)
+                    with check, allure.step("Verifying that the correct page header is displayed"):
+                        assert (sumo_pages.product_support_page.get_product_support_title_text()
+                                == "Contributors" + ProductSupportPageMessages.
+                                PRODUCT_SUPPORT_PAGE_TITLE)
 
-                    with allure.step("Verifying that the still need help CTA is no displayed"):
+                    with check, allure.step("Verifying that the still need help CTA is not "
+                                            "displayed"):
                         assert not (sumo_pages.product_support_page
                                     .is_still_need_help_widget_displayed())
 

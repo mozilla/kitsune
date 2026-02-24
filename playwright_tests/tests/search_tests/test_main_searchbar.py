@@ -1096,11 +1096,19 @@ def test_aaq_question_id_and_is_archived_fields_search(page:Page, create_user_fa
     sumo_pages = SumoPages(page)
     utilities = Utilities(page)
     test_user = create_user_factory(groups=["Forum Moderators"])
-    utilities.start_existing_session(cookies=test_user)
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+    question = _create_test_question(page, test_user, sign_out=False)
+
+    with allure.step("Submitting a new AAQ question and marking the question as archived"):
+        question_id = utilities.number_extraction_from_string(question["question_id"])
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.question_page.click_on_archive_this_question_option()
+        utilities.reindex_document("QuestionDocument", question_id)
 
     with check, allure.step("Searching archived questions using the question_is_archived:true and "
-                            "verifying that the returned search results are only archived "
-                            "questions"):
+                            "verifying that no search results are returned for help articles."):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        utilities.delete_cookies()
         sumo_pages.search_page.fill_into_searchbar("field:question_is_archived:true")
         sumo_pages.search_page.click_on_help_articles_only_doctype_filter()
         utilities.wait_for_given_timeout(2000)
@@ -1110,41 +1118,46 @@ def test_aaq_question_id_and_is_archived_fields_search(page:Page, create_user_fa
                 search_page.get_no_search_results_message())
 
     with check, allure.step("Clicking on the 'Community Discussions Only' doctype filter and "
-                            "verifying that the returned search results are archived questions"):
+                            "verifying that the archived question is returned."):
         sumo_pages.search_page.click_on_community_discussions_only_doctype_filter()
-        utilities.wait_for_given_timeout(2000)
-        results = sumo_pages.search_page.get_all_search_results_handles()
-        random.choice(results).click()
+        utilities.wait_for_given_timeout(4000)
+        sumo_pages.common_web_elements.click_on_last_pagination_item()
+        sumo_pages.search_page.click_on_a_particular_article(question['aaq_subject'])
         assert sumo_pages.question_page.get_thread_locked_text(
         ) == QuestionPageMessages.ARCHIVED_THREAD_BANNER
 
+    with allure.step("Submitting a new question"):
+        second_question = _create_test_question(page, test_user)
+        second_question_id = utilities.number_extraction_from_string(
+            second_question["question_id"])
+        utilities.reindex_document("QuestionDocument", second_question_id)
+
     with check, allure.step("Navigating back and searching for the question_is_archived:false "
-                            "and verifying that the returned search results are only unarchived "
-                            "questions"):
+                            "and verifying that the archived question is no longer returned "):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        utilities.delete_cookies()
         sumo_pages.search_page.fill_into_searchbar("field:question_is_archived:false")
-        utilities.wait_for_given_timeout(2000)
+        utilities.wait_for_given_timeout(4000)
         sumo_pages.common_web_elements.click_on_last_pagination_item()
         utilities.wait_for_given_timeout(2000)
-        results = sumo_pages.search_page.get_all_search_results_handles()
-        random.choice(results).click()
-        if sumo_pages.question_page.is_thread_locked_banner_displayed():
-            assert sumo_pages.question_page.get_thread_locked_text() not in (
-                [QuestionPageMessages.LOCKED_AND_ARCHIVED_BANNER,
-                 QuestionPageMessages.ARCHIVED_THREAD_BANNER]
-            )
-        else:
-            assert True
+        assert (question['aaq_subject'] not in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+        assert (second_question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
-    question_id = utilities.number_extraction_from_string_endpoint("/questions/",
-                                                                   utilities.get_page_url())
-    question_title = sumo_pages.question_page.get_question_header()
-
-    with check, allure.step("Navigating back and searching for the question_id and verifying that "
-                            "the correct question is returned"):
+    with check, allure.step("Navigating back, searching for the question_id and verifying that "
+                            "the correct archived question is returned"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
         sumo_pages.search_page.fill_into_searchbar(f"field:question_id:{question_id}")
-        assert [question_title] == sumo_pages.search_page.get_all_search_results_article_titles()
+        assert (question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
+
+    with check, allure.step("Navigating back, searching for the question_id and verifying that "
+                            "the correct non-archived question is returned"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.search_page.fill_into_searchbar(f"field:question_id:{second_question_id}")
+        assert (second_question['aaq_subject'] in sumo_pages.search_page.
+                get_all_search_results_article_titles())
 
 
 # C2874062

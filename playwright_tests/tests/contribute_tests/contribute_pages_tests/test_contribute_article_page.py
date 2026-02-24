@@ -93,8 +93,8 @@ def test_contribute_article_page_text(page: Page):
         ContributeHelpArticlesMessages.LOCALIZE_CONTENT_CARD_TITLE
     ]
 
-    with allure.step("Verifying that the 'Other ways to contribute_messages' are successfully"
-                     " displayed and in the correct order"):
+    with check, allure.step("Verifying that the 'Other ways to contribute_messages' are "
+                            "successfully displayed and in the correct order"):
         assert sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_cards(
         ) == other_ways_to_contribute_card_titles
 
@@ -135,23 +135,18 @@ def test_contribute_article_page_breadcrumbs(page: Page):
     with allure.step("Verifying that the correct breadcrumbs are displayed"):
         assert sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs() == breadcrumbs
 
-    counter = 1
-    for breadcrumb in sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs():
-        breadcrumb_to_click = (
-            sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[counter]
-        )
-        sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(breadcrumb_to_click)
+    sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(
+        sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[1]
+    )
+    with allure.step("Verifying that the Contribute breadcrumb redirects to the Contribute page"):
+        assert utilities.get_page_url() == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
+    utilities.navigate_forward()
 
-        if counter == 1:
-            with allure.step("Verifying that the Contribute breadcrumb redirects to the Contribute"
-                             " page"):
-                assert utilities.get_page_url(
-                ) == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
-            utilities.navigate_forward()
-            counter -= 1
-        elif counter == 0:
-            with allure.step("Verifying that the Home breadcrumb redirects to the Homepage"):
-                assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+    sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(
+        sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[0]
+    )
+    with allure.step("Verifying that the Home breadcrumb redirects to the Homepage"):
+        assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
 
 
 # Need to add tests for "How you can contribute_messages" section
@@ -170,14 +165,11 @@ def test_contribute_article_other_ways_to_contribute_redirect_to_the_correct_pag
         ContributeLocalizationMessages.STAGE_CONTRIBUTE_LOCALIZATION_PAGE_URL
     ]
 
-    counter = 0
-    for element in sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list():
+    for counter, expected_url in enumerate(ways_to_contribute_links):
         card = (
             sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list()[counter]
         )
         sumo_pages.ways_to_contribute_pages.click_on_other_way_to_contribute_card(card)
-        with allure.step(f"Verifying that the {ways_to_contribute_links[counter]} redirects to the"
-                         f" correct page"):
-            assert ways_to_contribute_links[counter] == utilities.get_page_url()
+        with allure.step(f"Verifying that the {expected_url} redirects to the correct page"):
+            assert expected_url == utilities.get_page_url()
         utilities.navigate_back()
-        counter += 1

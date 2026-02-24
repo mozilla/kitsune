@@ -17,7 +17,7 @@ def test_by_thread_title(page: Page, create_user_factory):
     test_user = create_user_factory(groups=["forum-contributors"])
     thread_title = "contribution"
 
-    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor"
+    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor "
                      f"forums"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -26,7 +26,7 @@ def test_by_thread_title(page: Page, create_user_factory):
         sumo_pages.contributor_discussions_page.click_on_an_available_contributor_forum(
             "SUMO community discussions")
 
-    with check, allure.step("Searching for the test string and verifying that all search results"
+    with check, allure.step("Searching for the test string and verifying that all search results "
                             "include the searched term"):
         sumo_pages.forum_discussions_page.search_in_community_discussion(
             f"field:thread_title:{thread_title}")
@@ -93,7 +93,7 @@ def test_and_or_not_operators_in_contributor_forums(page: Page, create_user_fact
     search_term_one = "test"
     search_term_two = "thread"
 
-    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor"
+    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor "
                      f"forums"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -102,7 +102,7 @@ def test_and_or_not_operators_in_contributor_forums(page: Page, create_user_fact
         sumo_pages.contributor_discussions_page.click_on_an_available_contributor_forum(
             "SUMO community discussions")
 
-    with check, allure.step("Searching for the test string and verifying that all search results"
+    with check, allure.step("Searching for the test string and verifying that all search results "
                             "include the searched term"):
         sumo_pages.forum_discussions_page.search_in_community_discussion(
             search_term_one + ' ' + search_term_two)
@@ -144,7 +144,7 @@ def test_and_or_not_operators_in_contributor_forums(page: Page, create_user_fact
                          get_all_thread_content_from_search_results())
         )
 
-    with check, allure.step("Navigating back, searching for the search term by using the 'NOT'"
+    with check, allure.step("Navigating back, searching for the search term by using the 'NOT' "
                             "operator and verifying that the search results include the first "
                             "but not the second search term"):
         utilities.navigate_back()
@@ -231,7 +231,7 @@ def test_by_thread_locked_status(page: Page, create_user_factory):
     test_user = create_user_factory(groups=["forum-contributors"],
                                     permissions=["lock_forum_thread"])
 
-    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor"
+    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor "
                      f"forums"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -241,7 +241,7 @@ def test_by_thread_locked_status(page: Page, create_user_factory):
             "SUMO community discussions")
         forum_url = utilities.get_page_url()
 
-    with check, allure.step("Searching for locked threads and verifying that the returned search"
+    with check, allure.step("Searching for locked threads and verifying that the returned search "
                             "results are locked."):
         sumo_pages.forum_discussions_page.search_in_community_discussion(
             "field:thread_is_locked:true")
@@ -273,7 +273,7 @@ def test_by_sticky_status(page: Page, create_user_factory):
     test_user = create_user_factory(groups=["forum-contributors"],
                                     permissions=["sticky_forum_thread"])
 
-    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor"
+    with allure.step(f"Signing in with {test_user['username']} and navigating to the contributor "
                      f"forums"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
@@ -283,7 +283,7 @@ def test_by_sticky_status(page: Page, create_user_factory):
             "SUMO community discussions")
         forum_url = utilities.get_page_url()
 
-    with check, allure.step("Searching for sticky threads and verifying that the returned search"
+    with check, allure.step("Searching for sticky threads and verifying that the returned search "
                             "results are sticky."):
         sumo_pages.forum_discussions_page.search_in_community_discussion(
             "field:thread_is_sticky:true")

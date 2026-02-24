@@ -4,7 +4,6 @@ from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.sumo_pages import SumoPages
-from playwright_tests.tests.conftest import create_user_factory
 
 
 # C2952002, C2952017
@@ -56,8 +55,8 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the article and verifying that all revisions belong "
-                     "to SuMo Bot"):
+    with check, allure.step("Navigating back to the article and verifying that all revisions "
+                            "belong to SuMo Bot"):
         utilities.navigate_to_link(article_details["article_url"] + "/history")
         utilities.start_existing_session(session_file_name=staff)
 
@@ -69,6 +68,7 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
 
     with allure.step("Deleting the test article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
 
 # C2952003, C2952016
 @pytest.mark.smokeTest
@@ -88,8 +88,8 @@ def test_unreviewed_revisions_are_not_assigned_to_system_account(page: Page, cre
                      "'Close account and delete all profile information' option"):
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Signing in with a staff account, navigating to the article page and "
-                     "verifying that 404 is returned"):
+    with check, allure.step("Signing in with a staff account, navigating to the article page and "
+                            "verifying that 404 is returned"):
         utilities.start_existing_session(session_file_name=staff)
         assert utilities.navigate_to_link(article_details["article_url"]).status == 404
 
@@ -102,7 +102,7 @@ def test_deferred_revisions_are_not_assigned_to_system_account(page:Page, create
     test_user = create_user_factory()
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
-    with allure.step("Creating a new article and approving it's first revision"):
+    with allure.step("Creating a new article and approving its first revision"):
         utilities.start_existing_session(cookies=test_user_two)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True)
@@ -116,7 +116,7 @@ def test_deferred_revisions_are_not_assigned_to_system_account(page:Page, create
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.submit_kb_article_flow.defer_revision(second_revision["revision_id"])
 
-    with allure.step("Deleting the first user and verifying that the revision was deleted"):
+    with check, allure.step("Deleting the first user and verifying that the revision was deleted"):
         utilities.start_existing_session(cookies=test_user)
         sumo_pages.edit_profile_flow.close_account()
         utilities.start_existing_session(cookies=test_user_two)
@@ -135,7 +135,7 @@ def test_localization_revisions_are_assigned_to_system_account(page: Page, creat
     staff = utilities.username_extraction_from_email(utilities.staff_user)
 
     with allure.step("Signing in with the KB reviewer and creating a new kb article, approving "
-                     "it's first revision and marking it as ready for localization"):
+                     "its first revision and marking it as ready for localization"):
         utilities.start_existing_session(cookies=test_user)
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True, ready_for_localization=True)
@@ -152,6 +152,7 @@ def test_localization_revisions_are_assigned_to_system_account(page: Page, creat
 
     with allure.step("Deleting the article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
 
 # C2979502
 @pytest.mark.userDeletion
@@ -182,8 +183,8 @@ def test_reviewed_by_assignment_to_system_account(page: Page, create_user_factor
     with allure.step("Deleting the user"):
         sumo_pages.edit_profile_flow.close_account()
 
-    with allure.step("Navigating back to the show history page and verifying that the reviewer of "
-                     "both revisions is Sumo Bot"):
+    with check, allure.step("Navigating back to the show history page and verifying that the "
+                            "reviewer of both revisions is Sumo Bot"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(article_details["article_url"] + "/history")
         sumo_pages.kb_article_show_history_page.click_on_a_revision_date(

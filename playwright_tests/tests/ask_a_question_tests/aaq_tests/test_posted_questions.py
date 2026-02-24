@@ -70,11 +70,12 @@ def test_edit_this_question_functionality_not_signed_in(page: Page, create_user_
         utilities.delete_cookies()
         expect(sumo_pages.question_page.edit_this_question_option).to_be_hidden()
 
-    with allure.step("Navigating to the edit endpoint and verifying that the user is "
-                     "redirected to the auth page"):
+    with allure.step("Navigating to the edit endpoint"):
         utilities.navigate_to_link(
             utilities.get_page_url() + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT
         )
+
+    with check, allure.step("Verifying that the user is redirected to the auth page"):
         assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
 
@@ -175,7 +176,7 @@ def test_edit_this_question_functionality(page: Page, user_type, create_user_fac
 
     with allure.step("Signing in with a non Forum Moderator user account and posting a Firefox "
                      "product question"):
-        posted_question = post_firefox_product_question_flow(page,test_user)
+        posted_question = post_firefox_product_question_flow(page, test_user)
 
     if user_type == 'Forum Moderator':
         with allure.step("Signing in with a Forum Moderator account"):
@@ -236,7 +237,7 @@ def test_delete_question_cancel_button(page: Page, create_user_factory):
                      "Firefox product question"):
         posted_question_two = post_firefox_product_question_flow(page, test_user_two)
 
-    with allure.step("Navigating to the posted question by a different user an verifying "
+    with allure.step("Navigating to the posted question by a different user and verifying "
                      "that the 'Delete this question' option is not available"):
         utilities.navigate_to_link(posted_question_one['question_details']['question_page_url'])
         expect(sumo_pages.question_page.delete_this_question_option).to_be_hidden()
@@ -259,7 +260,7 @@ def test_delete_question_cancel_button(page: Page, create_user_factory):
                             "403 is returned"):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(
-                posted_question_one['question_details']
+                posted_question_two['question_details']
                 ['question_page_url'] + QuestionPageMessages.DELETE_QUESTION_URL_ENDPOINT)
         response = navigation_info.value
         assert response.status == 403
@@ -290,7 +291,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
         posted_question = post_firefox_product_question_flow(page, test_user)
 
     with allure.step("Signing in with a different user account and posting a different question"):
-        utilities.start_existing_session(test_user_two)
+        utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(utilities.aaq_question_test_data["products_aaq_url"]["Firefox"])
 
         question_info_two = sumo_pages.aaq_flow.submit_an_aaq_question(
@@ -359,7 +360,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
         utilities.navigate_back()
 
     if status == "locked":
-        with allure.step("Verifying that the 'Unlock this question option' is not available'"):
+        with allure.step("Verifying that the 'Unlock this question option' is not available"):
             expect(sumo_pages.question_page.lock_this_question_option).to_be_hidden()
     elif status == "archived":
         with allure.step("Verifying that the 'Archive this question' options is not "
@@ -397,7 +398,7 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
 
     with allure.step("Signing in with a normal user account and verifying that the admin's "
                      "reply is visible"):
-        utilities.start_existing_session(test_user)
+        utilities.start_existing_session(cookies=test_user)
         expect(sumo_pages.question_page.question(reply_id)).to_be_visible()
 
     with allure.step("Signing in with a superuser account"):
@@ -476,13 +477,13 @@ def test_subscribe_to_feed_option(page: Page, is_firefox, create_user_factory):
                 sumo_pages.question_page.click_on_subscribe_to_feed_option()
             download = download_info.value
 
-            with allure.step("Verifying that the received file contains the correct name"):
+            with check, allure.step("Verifying that the received file contains the correct name"):
                 assert QuestionPageMessages.FEED_FILE_NAME in download.suggested_filename
 
-            with allure.step("Verifying that the received file is not empty"):
+            with check, allure.step("Verifying that the received file is not empty"):
                 assert os.path.getsize(download.path()) > 0
 
-    with allure.step("Navigating to the first question, clicking on the 'Subscribe to feed' "
+    with allure.step("Navigating to the second question, clicking on the 'Subscribe to feed' "
                      "option and verifying that the url is updated to the feed endpoint ("
                      "Chrome) or has the correct download info (Firefox)"):
         utilities.navigate_to_link(question_info_two['question_page_url'])
@@ -501,12 +502,12 @@ def test_subscribe_to_feed_option(page: Page, is_firefox, create_user_factory):
                                     "name"):
                 assert QuestionPageMessages.FEED_FILE_NAME in download.suggested_filename
 
-            with allure.step("Verifying that the received file is not empty"):
+            with check, allure.step("Verifying that the received file is not empty"):
                 assert os.path.getsize(download.path()) > 0
 
-    with allure.step("Signing out and Navigating to the first question,clicking on the "
-                     "'Subscribe to feed' option and verifying that the url is updated to "
-                     "the feed endpoint (Chrome) or has the correct download info (Firefox)"):
+    with allure.step("Signing out and clicking on the 'Subscribe to feed' option and verifying "
+                     "that the url is updated to the feed endpoint (Chrome) or has the correct "
+                     "download info (Firefox)"):
         utilities.delete_cookies()
 
         if not is_firefox:
@@ -524,13 +525,12 @@ def test_subscribe_to_feed_option(page: Page, is_firefox, create_user_factory):
                                     "name"):
                 assert QuestionPageMessages.FEED_FILE_NAME in download.suggested_filename
 
-            with allure.step("Verifying that the received file is not empty"):
+            with check, allure.step("Verifying that the received file is not empty"):
                 assert os.path.getsize(download.path()) > 0
 
-    with allure.step("Signing in with an admin account and Navigating to the first question,"
-                     "clicking on the 'Subscribe to feed' option and verifying that the url "
-                     "is updated to the feed endpoint (Chrome) or has the correct download "
-                     "info (Firefox)"):
+    with allure.step("Signing in with an admin account and clicking on the 'Subscribe to feed' "
+                     "option and verifying that the url is updated to the feed endpoint (Chrome) "
+                     "or has the correct download info (Firefox)"):
         utilities.start_existing_session(cookies=test_user_three)
 
         if not is_firefox:
@@ -547,7 +547,7 @@ def test_subscribe_to_feed_option(page: Page, is_firefox, create_user_factory):
             with check, allure.step("Verifying that the received file contains the correct name"):
                 assert QuestionPageMessages.FEED_FILE_NAME in download.suggested_filename
 
-            with allure.step("Verifying that the received file is not empty"):
+            with check, allure.step("Verifying that the received file is not empty"):
                 assert os.path.getsize(download.path()) > 0
 
 
@@ -671,7 +671,7 @@ def test_question_topics(page: Page, user_type, create_user_factory):
 
     with allure.step("Verifying that the question tags are acting as filters"):
         for question in sumo_pages.question_page.get_question_tag_options(is_moderator=False):
-            with check, allure.step(f"Clicking on the {question} tag and verifying tha the "
+            with check, allure.step(f"Clicking on the {question} tag and verifying that the "
                                     f"filter is applied to the clicked tag"):
                 time.sleep(1)
                 sumo_pages.question_page.click_on_a_certain_tag(
@@ -726,11 +726,11 @@ def test_email_updates_option_visibility(page: Page, create_user_factory):
     test_user_two = create_user_factory()
     test_user_three = create_user_factory(groups=["Forum Moderators"])
 
-    with allure.step(f"Signing in with f{test_user['username']} user account and posting a Firefox"
+    with allure.step(f"Signing in with {test_user['username']} user account and posting a Firefox"
                      f" product question"):
         post_firefox_product_question_flow(page, test_user)
 
-    with allure.step("Deleting user session and verifying that the 'Get  email updates' "
+    with allure.step("Deleting user session and verifying that the 'Get email updates' "
                      "option is displayed"):
         utilities.delete_cookies()
         expect(sumo_pages.question_page.stop_email_updates_option).to_be_visible()
@@ -769,7 +769,7 @@ def test_mark_reply_as_spam(page: Page, create_user_factory):
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
-    with allure.step("Signin in with a different simple user and submitting a reply to the "
+    with allure.step("Signing in with a different simple user and submitting a reply to the "
                      "question"):
         utilities.start_existing_session(cookies=test_user_two)
         reply_id_two = sumo_pages.aaq_flow.post_question_reply_flow(
@@ -878,7 +878,7 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
             reply_id) == QuestionPageMessages.QUESTION_REPLY_OWNER
 
     if user_type == 'Simple user':
-        with allure.step("Signin in with a different simple user"):
+        with allure.step("Signing in with a different simple user"):
             utilities.start_existing_session(cookies=test_user_two)
             user_two = test_user_two["username"]
 
@@ -894,8 +894,8 @@ def test_edit_reply(page: Page, user_type, create_user_factory):
                     page_url + QuestionPageMessages.EDIT_REPLY_URL + str(
                         utilities.number_extraction_from_string(reply_id))
                 )
-                response = navigation_info.value
-                assert response.status == 403
+            response = navigation_info.value
+            assert response.status == 403
 
         with check, allure.step("Navigating back and verifying that the reply contains the "
                                 "correct name and no user status"):
@@ -985,8 +985,8 @@ def test_delete_reply(page: Page, user_type, create_user_factory):
                 page_url + QuestionPageMessages.DELETE_QUESTION_REPLY_URL + str(
                     utilities.number_extraction_from_string(reply_id))
             )
-            response = navigation_info.value
-            assert response.status == 403
+        response = navigation_info.value
+        assert response.status == 403
 
     with allure.step("Navigating back to the question and posting a reply to it"):
         utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
@@ -1011,8 +1011,8 @@ def test_delete_reply(page: Page, user_type, create_user_factory):
                         page_url + QuestionPageMessages.DELETE_QUESTION_REPLY_URL + str(
                             utilities.number_extraction_from_string(reply_id))
                     )
-                    response = navigation_info.value
-                    assert response.status == 403
+                response = navigation_info.value
+                assert response.status == 403
 
             utilities.navigate_to_link(posted_question['question_details']['question_page_url'])
 
@@ -1046,7 +1046,7 @@ def test_i_have_this_problem_too(page: Page, create_user_factory):
         expect(sumo_pages.question_page.i_have_this_problem_too_button).to_be_hidden()
 
     with check, allure.step("Deleting the user session, clicking on the 'I have this problem "
-                            "too' button and verifying tha the 'have this problem' counter "
+                            "too' button and verifying that the 'have this problem' counter "
                             "was successfully incremented"):
         utilities.delete_cookies()
         problem_counter += 1
@@ -1067,7 +1067,7 @@ def test_i_have_this_problem_too(page: Page, create_user_factory):
                      "displayed"):
         expect(sumo_pages.question_page.i_have_this_problem_too_button).to_be_hidden()
 
-    with check, allure.step("Signing in with an Forum Moderator account, clicking on the 'I have "
+    with check, allure.step("Signing in with a Forum Moderator account, clicking on the 'I have "
                             "this problem too' and verifying that the 'have this problem' counter "
                             "incremented successfully"):
         utilities.start_existing_session(cookies=test_user_three)
@@ -1299,12 +1299,12 @@ def test_quote_reply_functionality(page: Page, quote_on, create_user_factory):
         sumo_pages.question_page.click_posted_reply_said_link(quote_id)
 
     if quote_on == "reply":
-        with allure.step("Verifying that the correct url is displayed"):
+        with check, allure.step("Verifying that the correct url is displayed"):
             expect(page).to_have_url(
                 question_details['question_page_url'] + "#" + reply_id
             )
     else:
-        with allure.step("Verifying that the correct url is displayed"):
+        with check, allure.step("Verifying that the correct url is displayed"):
             expect(page).to_have_url(
                 question_details['question_page_url'] + "#" + question_id
             )
@@ -1343,7 +1343,7 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
         sumo_pages.question_page.click_on_start_a_new_question_signed_out_card_link()
         expect(page).to_have_url(ContactSupportMessages.PAGE_URL)
 
-    with allure.step("Navigating back to the question page,signing in back with the op and "
+    with allure.step("Navigating back to the question page, signing in back with the op and "
                      "leaving a question reply"):
         utilities.navigate_back()
         utilities.start_existing_session(cookies=test_user)
@@ -1352,8 +1352,8 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
             reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
-    with allure.step("Deleting user session and verifying that the 'More options dropdown menu "
-                     "is not accessible.'"):
+    with check, allure.step("Deleting user session and verifying that the 'More options' "
+                            "dropdown menu is not accessible"):
         utilities.delete_cookies()
         assert sumo_pages.question_page.more_options_for_answer(reply_id).is_hidden()
 
@@ -1664,8 +1664,9 @@ def test_common_responses(page: Page, create_user_factory):
         )
         utilities.wait_for_given_timeout(3000)
 
-    with allure.step("Verifying that the only item in the category field is the searched "
-                     "option"):
+    with check, allure.step("Verifying that the only item in the category field is the searched "
+                            "option"):
+        expect(sumo_pages.question_page.common_responses_responses_options).to_have_count(1)
         response_options = sumo_pages.question_page.get_list_of_responses()
         assert (
             len(response_options) == 1 and response_options[0] == utilities.
@@ -1694,8 +1695,9 @@ def test_common_responses(page: Page, create_user_factory):
         )
         utilities.wait_for_given_timeout(3000)
 
-    with allure.step("Verifying that the only item in the category field is the searched "
-                     "option"):
+    with check, allure.step("Verifying that the only item in the category field is the searched "
+                            "option"):
+        expect(sumo_pages.question_page.common_responses_responses_options).to_have_count(1)
         response_options = sumo_pages.question_page.get_list_of_responses()
         assert (
             len(response_options) == 1 and response_options[0] == utilities

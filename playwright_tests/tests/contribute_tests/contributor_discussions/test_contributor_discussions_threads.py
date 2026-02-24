@@ -1,15 +1,19 @@
 from urllib.parse import urlsplit
+
 import allure
 import pytest
 from playwright.sync_api import Page, expect
 from pytest_check import check
+
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
-from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
-    OffTopicForumMessages
+from playwright_tests.messages.contribute_messages.con_discussions.off_topic import (
+    OffTopicForumMessages,
+)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.mess_system_pages_messages.sent_messages_page_messages import \
-    SentMessagesPageMessages
+from playwright_tests.messages.mess_system_pages_messages.sent_messages_page_messages import (
+    SentMessagesPageMessages,
+)
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
@@ -22,7 +26,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
     valid_thread_title = "testt"
     test_user = create_user_factory(groups=["forum-contributors"])
 
-    with allure.step("Signing in with an moderator account and navigating to the Off Topic forum"):
+    with allure.step("Signing in with a moderator account and navigating to the Off Topic forum"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
 
@@ -78,7 +82,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
     sumo_pages.new_thread_page.clear_content_textarea_field()
 
     with check, allure.step("Adding 5 characters in both the body & title fields, clicking on the "
-                            "'Post Thread' button and verifying that we thread was submitted "
+                            "'Post Thread' button and verifying that the thread was submitted "
                             "successfully"):
         sumo_pages.new_thread_page.fill_title_input_field(valid_thread_title)
         sumo_pages.new_thread_page.fill_content_textarea_field("testt")
@@ -124,7 +128,7 @@ def test_thread_title_edit(page: Page, create_user_factory):
     test_user_two = create_user_factory(groups=["forum-contributors"])
     test_user_three = create_user_factory(permissions=["edit_forum_thread"])
 
-    with allure.step("Signing in with a contributor account and navigating to the Off topic"
+    with allure.step("Signing in with a contributor account and navigating to the Off topic "
                      "forum"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
@@ -207,7 +211,7 @@ def test_thread_deletion(page: Page, create_user_factory):
     test_user_three = create_user_factory(groups=["forum-contributors"],
                                           permissions=["delete_forum_thread"])
 
-    with allure.step("Signing in with a contributor account and navigating to the Off topic"
+    with allure.step("Signing in with a contributor account and navigating to the Off topic "
                      "forum"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
@@ -249,8 +253,8 @@ def test_thread_deletion(page: Page, create_user_factory):
         utilities.navigate_to_link(thread_url)
         sumo_pages.contributor_thread_flow.delete_thread()
 
-    with allure.step("Navigating to the forum page and verifying that the thread is no longer "
-                     "displayed"):
+    with check, allure.step("Navigating to the forum page and verifying that the thread is no "
+                            "longer displayed"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
         assert not sumo_pages.forum_discussions_page.is_thread_displayed(thread_title)
 
@@ -312,8 +316,8 @@ def test_thread_locking(page: Page, create_user_factory):
         assert (sumo_pages.forum_discussions_page.
                 is_thread_type_image_displayed(thread_title, "Locked"))
 
-    with allure.step("Navigating back to the thread, signing in with the op and verifying that "
-                     "the 'Unlock this thread' option is not displayed"):
+    with check, allure.step("Navigating back to the thread, signing in with the op and verifying "
+                            "that the 'Unlock this thread' option is not displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.start_existing_session(cookies=test_user)
         assert not sumo_pages.forum_thread_page.is_unlock_this_thread_option_visible()
@@ -334,7 +338,8 @@ def test_thread_locking(page: Page, create_user_factory):
         assert not sumo_pages.forum_thread_page.is_thread_locked_message_displayed()
         assert "Locked" not in sumo_pages.forum_thread_page.get_thread_meta_information()
 
-    with allure.step("Verifying that the lock image is not displayed inside the threads table"):
+    with check, allure.step("Verifying that the lock image is not displayed inside the threads "
+                            "table"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
         assert not (sumo_pages.forum_discussions_page.
                     is_thread_type_image_displayed(thread_title, "Locked"))
@@ -466,7 +471,7 @@ def test_thread_breadcrumbs(page: Page, create_user_factory):
             elif breadcrumb == OffTopicForumMessages.PAGE_TITLE:
                 assert (breadcrumb == sumo_pages.forum_discussions_page.
                         get_forum_discussions_page_title())
-            else :
+            else:
                 assert (breadcrumb == sumo_pages.contributor_discussions_page.
                         get_contributor_discussions_page_title())
 
@@ -631,7 +636,7 @@ def test_edit_forum_posts(page: Page, create_user_factory):
         utilities.navigate_to_link(edit_url)
         assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
-    with check, allure.step("Singing in with a user that has the necesarry permissions to edit a"
+    with check, allure.step("Signing in with a user that has the necessary permissions to edit a"
                             " thread and verifying that the 'Edit this post' option is displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.start_existing_session(cookies=test_user_three)
@@ -774,7 +779,7 @@ def test_quote_this_post(page: Page, create_user_factory):
                 get_thread_post_quote_text(second_quote).strip() == thread_body.strip())
 
     with check, allure.step("Clicking on the 'said' link and verifying that the user is redirected"
-                            "to the correct section of the page"):
+                            " to the correct section of the page"):
         sumo_pages.forum_thread_page.click_on_post_mention_link(second_quote)
         assert f"#post-{thread_id}" in utilities.get_page_url()
 

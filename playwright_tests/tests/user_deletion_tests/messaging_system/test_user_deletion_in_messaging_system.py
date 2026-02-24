@@ -46,8 +46,8 @@ def test_deleted_user_is_displayed_in_both_inbox_and_outbox(page: Page, create_u
         assert (sumo_pages.inbox_page.
                 get_sender_by_excerpt(second_message_body) == deleted_user_username)
 
-    with check, allure.step("Clicking on the message excerpt and verifying that the 'delete user "
-                            "is successfully displayed as the message sender'"):
+    with check, allure.step("Clicking on the message excerpt and verifying that the 'deleted user' "
+                            "is successfully displayed as the message sender"):
         sumo_pages.inbox_page.click_on_message_by_excerpt(second_message_body)
         assert (deleted_user_username in sumo_pages.inbox_page.
                 get_the_deleted_user_message_sender_text())
@@ -58,15 +58,15 @@ def test_deleted_user_is_displayed_in_both_inbox_and_outbox(page: Page, create_u
                 get_the_deleted_user_information_text() == ReadMessagePageMessages.
                 DELETED_USER_INFO)
 
-    with check, allure.step("Navigating to the outbox and verifying that the 'delete user' is the "
+    with check, allure.step("Navigating to the outbox and verifying that the 'deleted user' is the "
                             "recipient of the sent message"):
         sumo_pages.mess_system_user_navbar.click_on_messaging_system_nav_sent_messages()
         assert (sumo_pages.sent_message_page.
                 get_deleted_user_recipient_based_on_excerpt(first_message_body
                                                             ) == deleted_user_username)
 
-    with check, allure.step("Clicking on the message subject and verifying that the 'delete user'"
-                            " is successfully displayed inside the TO field"):
+    with check, allure.step("Clicking on the message subject and verifying that the 'deleted user' "
+                            "is successfully displayed inside the TO field"):
         sumo_pages.sent_message_page.click_on_sent_message_subject(first_message_body)
         assert deleted_user_username in sumo_pages.sent_message_page.get_deleted_user()
 

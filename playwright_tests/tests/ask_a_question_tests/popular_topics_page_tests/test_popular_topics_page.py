@@ -37,7 +37,7 @@ def test_popular_topics_navbar(page: Page):
                 with check, allure.step("Verifying that the correct option is displayed"):
                     assert sumo_pages.product_topics_page.get_page_title() == option
 
-                with allure.step("Verifying that the correct nav option is selected"):
+                with check, allure.step("Verifying that the correct nav option is selected"):
                     assert sumo_pages.product_topics_page.get_selected_navbar_option() == option
 
 

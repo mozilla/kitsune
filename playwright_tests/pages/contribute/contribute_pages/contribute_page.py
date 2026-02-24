@@ -21,8 +21,7 @@ class ContributePage(BasePage):
         """Locators belonging to the Ways to contribute messages section."""
         self.way_to_contribute_header = page.locator("//nav/preceding-sibling::h2")
         self.way_to_contribute_cards = page.locator(
-            "//h2[contains(text(),'Pick a way to contribute_messages')]/following-sibling::"
-            "nav/ul/a")
+            "//h2[contains(text(),'Pick a way to contribute')]/following-sibling::nav/ul/a")
         self.way_to_contribute_card_titles = page.locator("nav ul a li span")
 
         """Locators belonging to the about us section."""

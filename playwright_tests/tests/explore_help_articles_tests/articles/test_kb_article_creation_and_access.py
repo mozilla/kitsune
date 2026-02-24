@@ -94,19 +94,19 @@ def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
             KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details
             ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT)
 
-    with allure.step("Verifying that the revision contains the correct status"):
+    with check, allure.step("Verifying that the revision contains the correct status"):
         status = sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         )
         assert KBArticlePageMessages.UNREVIEWED_REVISION_STATUS == status
 
-    with allure.step("Clicking on the 'Article' navbar menu and verifying that the doc content"
-                     " contains the correct string"):
+    with check, allure.step("Clicking on the 'Article' navbar menu and verifying that the doc "
+                            "content contains the correct string"):
         sumo_pages.kb_article_page.click_on_article_option()
         assert sumo_pages.kb_article_page.get_text_of_kb_article_content(
         ) == KBArticlePageMessages.KB_ARTICLE_NOT_APPROVED_CONTENT
 
-    with allure.step("Deleting user session and verifying that the 404 page is received"):
+    with check, allure.step("Deleting user session and verifying that the 404 page is received"):
         with page.expect_navigation() as navigation_info:
             utilities.delete_cookies()
             response = navigation_info.value
@@ -115,8 +115,8 @@ def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
     with allure.step(f"Signing in with {test_user_two['username']} user account"):
         utilities.start_existing_session(cookies=test_user_two)
 
-    with allure.step("Clicking on the 'Show History' option and verifying that the revision"
-                     " contains the correct status"):
+    with check, allure.step("Clicking on the 'Show History' option and verifying that the "
+                            "revision contains the correct status"):
         sumo_pages.kb_article_page.click_on_show_history_option()
         status = (
             sumo_pages.kb_article_show_history_page.get_status_of_reviewable_revision(
@@ -208,7 +208,7 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
         sumo_pages.kb_article_review_revision_page.click_on_approve_revision_button()
         sumo_pages.kb_article_review_revision_page.click_accept_revision_accept_button()
 
-    with allure.step("Verifying that the review status updates to 'Current'"):
+    with check, allure.step("Verifying that the review status updates to 'Current'"):
         assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
@@ -237,7 +237,7 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
         utilities.start_existing_session(cookies=test_user_two)
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
-    with allure.step("Verifying that the first approved revision is marked as the current"):
+    with check, allure.step("Verifying that the first approved revision is marked as the current"):
         assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
@@ -246,8 +246,8 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=second_revision['revision_id'])
 
-    with allure.step("Verifying that the first revision status is 'Approved', and the second is "
-                     "'Current'"):
+    with check, allure.step("Verifying that the first revision status is 'Approved', and the "
+                            "second is 'Current'"):
         assert sumo_pages.kb_article_show_history_page.get_revision_status(
             article_details['first_revision_id']
         ) == KBArticlePageMessages.PREVIOUS_APPROVED_REVISION_STATUS
@@ -326,8 +326,8 @@ def test_articles_discussions_allowed(page: Page, create_user_factory):
             article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
 
-    with allure.step("Clicking on the 'Post a new thread' option and verifying that the user "
-                     "is redirected to the auth page"):
+    with check, allure.step("Clicking on the 'Post a new thread' option and verifying that the "
+                            "user is redirected to the auth page"):
         sumo_pages.kb_article_discussion_page.click_on_post_a_new_thread_option()
         assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
 
@@ -677,8 +677,8 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
             )
         ).to_be_visible()
 
-    with allure.step("Verifying that the correct kb summary is displayed inside the search "
-                     "results"):
+    with check, allure.step("Verifying that the correct kb summary is displayed inside the "
+                            "search results"):
         assert (sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
             article_details['article_title'])) == article_details['search_results_summary']
 
@@ -1188,7 +1188,7 @@ def test_archived_kb_article_edit(page: Page, create_user_factory):
 
         sumo_pages.kb_edit_article_page.click_edit_article_changes_panel_submit_button()
 
-    with allure.step("Verifying that the revision was successfully submitted"):
+    with check, allure.step("Verifying that the revision was successfully submitted"):
         second_revision = sumo_pages.kb_article_show_history_page.get_last_revision_id()
         assert (article_details['first_revision_id'] != second_revision)
 
@@ -1323,8 +1323,8 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         utilities.navigate_to_link(second_article_details["article_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    with allure.step("Verifying that the article is no longer displayed inside the topic card and"
-                     "the 'View all {x} articles' counter has decremented"):
+    with check, allure.step("Verifying that the article is no longer displayed inside the topic "
+                            "card and the 'View all {x} articles' counter has decremented"):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
@@ -1338,7 +1338,7 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         utilities.navigate_to_link(article_details["article_url"])
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
-    with allure.step("Verifying that the topic card is not displayed"):
+    with check, allure.step("Verifying that the topic card is not displayed"):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
@@ -1855,8 +1855,8 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
         sumo_pages.kb_article_edit_article_metadata_page.click_on_save_changes_button()
         utilities.wait_for_page_to_load()
 
-    with allure.step(f"Verifying that the f{test_article_titles[1]} is no longer listed inside "
-                     "'Related Articles' section"):
+    with check, allure.step(f"Verifying that the f{test_article_titles[1]} is no longer listed "
+                            f"inside the 'Related Articles' section"):
         assert (test_article_titles[1] not in sumo_pages.kb_article_page.
                 get_list_of_related_articles())
 

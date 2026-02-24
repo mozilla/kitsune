@@ -70,7 +70,7 @@ def test_community_card_and_helpful_tip_not_displayed_for_premium_products(page:
 
 # C1511570
 @pytest.mark.aaqPage
-@pytest.mark.parametrize("user_type", ['','Simple User', 'Forum Moderator'])
+@pytest.mark.parametrize("user_type", ['', 'Simple User', 'Forum Moderator'])
 def test_scam_banner_premium_products_not_displayed(page: Page, user_type, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
@@ -87,17 +87,18 @@ def test_scam_banner_premium_products_not_displayed(page: Page, user_type, creat
                 utilities.general_test_data["product_solutions"][premium_product]
             )
 
-            with check, allure.step(f"Verifying that the sam banner is not displayed for "
+            with check, allure.step(f"Verifying that the scam banner is not displayed for "
                                     f"{premium_product} card"):
                 expect(sumo_pages.product_solutions_page.support_scams_banner).to_be_hidden()
 
             if user_type != '':
-                with allure.step("Clicking on the Ask Now button and verifying that the scam "
-                                 "banner is not displayed"):
+                with allure.step("Clicking on the Ask Now button"):
                     sumo_pages.common_web_elements.click_on_aaq_button()
                     utilities.wait_for_url_to_be(
                         utilities.aaq_question_test_data["products_aaq_url"][premium_product]
                     )
+
+                with check, allure.step("Verifying that the scam banner is not displayed"):
                     expect(sumo_pages.product_solutions_page.support_scams_banner).to_be_hidden()
 
 
@@ -112,7 +113,7 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, user_type,
     test_user_two = create_user_factory(groups=["Forum Moderators"])
     user_map = {'Simple User': test_user, 'Forum Moderator': test_user_two}
 
-    with allure.step("Sign in to SUMO"):
+    with allure.step("Signing in to SUMO"):
         utilities.start_existing_session(cookies=user_map.get(user_type))
 
     with allure.step("Navigating to each freemium product solutions page"):
@@ -127,12 +128,14 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, user_type,
                 ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
             if user_type != '':
-                with check, allure.step("Clicking on the Ask Now button and verifying that "
-                                        "the 'Learn More' button contains the correct link"):
+                with allure.step("Clicking on the Ask Now button"):
                     sumo_pages.common_web_elements.click_on_aaq_button()
                     utilities.wait_for_url_to_be(
                         utilities.aaq_question_test_data["products_aaq_url"][freemium_product]
                     )
+
+                with check, allure.step("Verifying that the 'Learn More' button contains the "
+                                        "correct link"):
                     assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
                     ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
 
@@ -153,13 +156,8 @@ def test_corresponding_aaq_product_name_and_image_are_displayed(page: Page, crea
                 utilities.aaq_question_test_data["products_aaq_url"][product])
 
             # This needs to change when we add the Mozilla Account icon/product.
-            if product != "Mozilla Account":
-                with check, allure.step("Verifying that the product image is displayed"):
-                    expect(sumo_pages.aaq_form_page.aaq_page_logo).to_be_visible()
-            else:
-                with check, allure.step("Verifying that the product image is hidden for Mozilla "
-                                        "Account product"):
-                    expect(sumo_pages.aaq_form_page.aaq_page_logo).to_be_visible()
+            with check, allure.step("Verifying that the product image is displayed"):
+                expect(sumo_pages.aaq_form_page.aaq_page_logo).to_be_visible()
 
             with check, allure.step("Verifying that the correct product header is displayed"):
                 assert sumo_pages.aaq_form_page.get_aaq_form_page_heading() == product
@@ -263,8 +261,8 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page, create_
                         expected_locator=sumo_pages.question_page.questions_header
                     )
 
-                with allure.step("Verifying that the correct implicit tags are added to the "
-                                 "question"):
+                with check, allure.step("Verifying that the correct implicit tags are added to "
+                                       "the question"):
                     topic_s = utilities.aaq_question_test_data['aaq_topic_tags'][product][topic]
                     if isinstance(topic_s, list):
                         slugs = topic_s
@@ -284,14 +282,14 @@ def test_post_aaq_questions_for_all_freemium_products_topics(page: Page, create_
                             slugs))
                     )
 
-                with allure.step("Clicking on the 'My Questions' banner option and Verifying "
+                with allure.step("Clicking on the 'My Questions' banner option and verifying "
                                  "that the posted question is displayed inside the 'My "
                                  "Questions page"):
                     sumo_pages.question_page.click_on_my_questions_banner_option()
                     expect(sumo_pages.my_questions_page.question_by_name(
                         question_info['aaq_subject'])).to_be_visible()
 
-                with allure.step(f"Navigating back to the {product} product aa form"):
+                with allure.step(f"Navigating back to the {product} product aaq form"):
                     utilities.navigate_to_link(
                         utilities.aaq_question_test_data["products_aaq_url"][product])
 
@@ -371,10 +369,13 @@ def test_additional_system_details_user_agent_information(page: Page, create_use
                     expected_locator=sumo_pages.question_page.questions_header
                 )
 
-            with check, allure.step("Verifying that the correct user-agent information is "
-                                    "displayed"):
+            with allure.step("Clicking on the question details button and opening the more "
+                             "system details panel"):
                 sumo_pages.question_page.click_on_question_details_button()
                 sumo_pages.question_page.click_on_more_system_details_option()
+
+            with check, allure.step("Verifying that the correct user-agent information is "
+                                    "displayed"):
                 assert "User Agent: " + utilities.get_user_agent(
                 ) == sumo_pages.question_page.get_user_agent_information()
 
@@ -392,7 +393,7 @@ def test_system_details_information(page: Page, create_user_factory):
     with allure.step("Signing in with a Forum Moderator user account"):
         utilities.start_existing_session(cookies=test_user)
 
-    with allure.step("Navigating to each product aaq form and and adding data without "
+    with allure.step("Navigating to each product aaq form and adding data without "
                      "submitting the form"):
         for product in utilities.general_test_data["freemium_products"]:
             if product == "Thunderbird" or product == "Thunderbird for Android":
@@ -417,9 +418,7 @@ def test_system_details_information(page: Page, create_user_factory):
                         utilities.aaq_question_test_data["troubleshoot_product_and_os_versions"][0]
                     )
 
-                with check, allure.step("Submitting the AAQ question and verifying that the "
-                                        "correct provided troubleshooting information is "
-                                        "displayed"):
+                with allure.step("Submitting the AAQ question"):
                     with utilities.page.expect_navigation():
                         retry_on_502(
                             sumo_pages.aaq_form_page.click_aaq_form_submit_button(
@@ -427,6 +426,8 @@ def test_system_details_information(page: Page, create_user_factory):
                             )
                         )
 
+                with check, allure.step("Verifying that the correct provided troubleshooting "
+                                        "information is displayed"):
                     sumo_pages.question_page.click_on_question_details_button()
                     assert sumo_pages.question_page.get_system_details_information(
                     ) == troubleshooting_info
@@ -450,33 +451,24 @@ def test_premium_products_aaq(page: Page):
             )
             utilities.wait_for_dom_to_load()
             premium_form_link = utilities.get_page_url()
-            if premium_product == 'Mozilla VPN':
-                sumo_pages.aaq_flow.submit_an_aaq_question(
-                    subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
-                    body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
-                    is_premium=True,
-                    expected_locator= sumo_pages.aaq_form_page.premium_ticket_message,
-                    form_url=premium_form_link
-                )
-            else:
-                sumo_pages.aaq_flow.submit_an_aaq_question(
-                    subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
-                    body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
-                    is_premium=True,
-                    expected_locator=sumo_pages.aaq_form_page.premium_ticket_message,
-                    form_url=premium_form_link
-                )
-                if utilities.get_page_url() == premium_form_link:
-                    with utilities.page.expect_navigation():
-                        retry_on_502(
-                            sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True,
-                            expected_locator=sumo_pages.question_page.questions_header)
-                        )
+            sumo_pages.aaq_flow.submit_an_aaq_question(
+                subject=utilities.aaq_question_test_data['premium_aaq_question']['subject'],
+                body=utilities.aaq_question_test_data['premium_aaq_question']['body'],
+                is_premium=True,
+                expected_locator=sumo_pages.aaq_form_page.premium_ticket_message,
+                form_url=premium_form_link
+            )
+            if premium_product != 'Mozilla VPN' and utilities.get_page_url() == premium_form_link:
+                with utilities.page.expect_navigation():
+                    retry_on_502(
+                        sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True,
+                        expected_locator=sumo_pages.question_page.questions_header)
+                    )
 
-        with allure.step("Verifying that the correct success message is displayed"):
-            assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
-            ) == aaq_form_messages.get_premium_ticket_submission_success_message(
-                utilities.staff_user)
+            with check, allure.step("Verifying that the correct success message is displayed"):
+                assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
+                ) == aaq_form_messages.get_premium_ticket_submission_success_message(
+                    utilities.staff_user)
 
 
 # C2635907
@@ -487,8 +479,7 @@ def test_loginless_mozilla_account_aaq(page: Page):
     aaq_form_messages = AAQFormMessages()
     with allure.step("Sending 4 loginless tickets and verifying that the user is successfully "
                      "blocked after 3 submissions"):
-        i = 1
-        while i <= 4:
+        for i in range(1, 5):
             # In case a 502 error occurs we might end up in the auth page after the automatic
             # refresh/retry so we need to skip the signin_signup button click since the
             # element is not available.
@@ -498,16 +489,16 @@ def test_loginless_mozilla_account_aaq(page: Page):
                 is_premium=True,
                 email=utilities.staff_user,
                 is_loginless=True,
-                expected_locator= sumo_pages.aaq_form_page.premium_ticket_message
+                expected_locator=sumo_pages.aaq_form_page.premium_ticket_message
             )
             if i <= 3:
-                with allure.step("Verifying that the correct success message is displayed"):
+                with check, allure.step("Verifying that the correct success message is "
+                                        "displayed"):
                     assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
                     ) == aaq_form_messages.get_premium_ticket_submission_success_message(
                         utilities.staff_user
                     )
             else:
-                with allure.step("Verifying that submission error message is displayed"):
+                with check, allure.step("Verifying that submission error message is displayed"):
                     assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
                     ) == aaq_form_messages.LOGINLESS_RATELIMIT_REACHED_MESSAGE
-            i += 1
