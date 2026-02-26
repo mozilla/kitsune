@@ -101,6 +101,12 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.sumo.tasks.remove_expired_mail",
         "schedule": crontab(hour="12", minute="0", day_of_week="0"),
     },
+    # Groups Periodic Tasks
+    # Every Sunday at 04:30.
+    "remove_inactive_users_from_groups": {
+        "task": "kitsune.groups.tasks.remove_inactive_users_from_groups",
+        "schedule": crontab(hour="4", minute="30", day_of_week="0"),
+    },
     # Users Periodic Tasks
     # Every Sunday at 03:00.
     "cleanup_expired_users": {
