@@ -13,7 +13,7 @@ class ProductManager(NonArchivedManager):
     def with_question_forums(self, language_code: str = ""):
         q_kwargs: dict[str, Any] = {
             "support_configs__is_active": True,
-            "support_configs__forum_config__is_active": True,
+            "support_configs__forum_config__enabled_locales__isnull": False,
         }
 
         if language_code:

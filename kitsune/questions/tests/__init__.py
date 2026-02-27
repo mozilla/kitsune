@@ -1,7 +1,6 @@
 import factory
 from django.utils import timezone
 
-from kitsune.products.tests import ProductFactory
 from kitsune.questions.models import (
     AAQConfig,
     Answer,
@@ -66,8 +65,6 @@ class AAQConfigFactory(factory.django.DjangoModelFactory):
         model = AAQConfig
 
     title = FuzzyUnicode()
-    product = factory.SubFactory(ProductFactory)
-    is_active = True
 
     @factory.post_generation
     def enabled_locales(self, create, extracted, **kwargs):

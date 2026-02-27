@@ -22,7 +22,7 @@ from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.questions.models import AAQConfig
+from kitsune.products.models import ProductSupportConfig
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -400,7 +400,10 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(top_20_translated, 20 if total_docs > 20 else total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("These are the top 20 most visited articles in the last 30 days, which account for over 50% of the traffic to the Knowledge Base."),
+            "description": _(
+                "These are the top 20 most visited articles in the last 30 days, which "
+                "account for over 50% of the traffic to the Knowledge Base."
+            ),
         },
         "top-50": {
             # L10n: This is an entry header for the Overview table, displayed on
@@ -411,7 +414,7 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(top_50_translated, 50 if total_docs > 50 else total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("These are the top 50 most visited articles " "in the last 30 days."),
+            "description": _("These are the top 50 most visited articles in the last 30 days."),
         },
         "top-100": {
             # L10n: This is an entry header for the Overview table, displayed on
@@ -422,7 +425,10 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(top_100_translated, 100 if total_docs > 100 else total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("These are the top 100 most visited articles in the last 30 days, which account for over 99% of the traffic to the Knowledge Base."),
+            "description": _(
+                "These are the top 100 most visited articles in the last 30 days, "
+                "which account for over 99% of the traffic to the Knowledge Base."
+            ),
         },
         "templates": {
             # This string is reused in different contexts, so we should avoid providing an l10n comment.
@@ -433,7 +439,11 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(translated_templates, total_templates),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("Templates are a way of reusing pieces of content across KB articles. You can create and update a set of instructions in one place, and then refer to it in other pages."),
+            "description": _(
+                "Templates are a way of reusing pieces of content across KB articles. "
+                "You can create and update a set of instructions in one place, and then "
+                "refer to it in other pages."
+            ),
         },
         "all": {
             # L10n: This is an entry header for the Overview table, displayed on
@@ -444,7 +454,9 @@ def l10n_overview_rows(locale, product=None, user=None):
             "percent": percent_or_100(translated_docs, total_docs),
             # L10n: This is an entry description for the Overview table, displayed on
             # https://support.mozilla.org/localization (for non-en-US locales).
-            "description": _("This is the number of all Knowledge Base articles that are ready to be localized."),
+            "description": _(
+                "This is the number of all Knowledge Base articles that are ready to be localized."
+            ),
         },
     }
 
@@ -512,7 +524,7 @@ class Readout:
             visits = r["visits"]
             r["percent"] = (
                 0
-                if visits is None or not max_visits
+                if (visits is None or not max_visits)
                 else round(visits / float(max_visits) * 100)
             )
 
@@ -1121,7 +1133,9 @@ class UnhelpfulReadout(Readout):
                 return None
 
         helpfulness = Markup(
-            '<span title="{:+.1f}%">{:.1f}%</span>'.format(float(result[3]) * 100, float(result[2]) * 100)
+            '<span title="{:+.1f}%">{:.1f}%</span>'.format(
+                float(result[3]) * 100, float(result[2]) * 100
+            )
         )
         return {
             "title": str(result[6]),
@@ -1140,7 +1154,9 @@ class UnreadyForLocalizationReadout(Readout):
     title = _lazy("Changes Not Ready For Localization")
     # L10n: Unused. This is a description for the Changes Not Ready For Localization table,
     # displayed on https://support.mozilla.org/contributors/unready.
-    description = _lazy("Articles which have approved revisions newer than the latest ready-for-localization one")
+    description = _lazy(
+        "Articles which have approved revisions newer than the latest ready-for-localization one"
+    )
     # No short_title; the Contributors dash lacks an Overview readout
     # L10n: Unused. This is a link to be displayed under the Changes Not Ready For Localization overview table,
     # which redirects users to the full Changes Not Ready For Localization table (https://support.mozilla.org/contributors/unready).
@@ -1274,7 +1290,7 @@ class CannedResponsesReadout(Readout):
 
     @classmethod
     def should_show_to(cls, request):
-        return request.LANGUAGE_CODE in AAQConfig.objects.locales_list()
+        return request.LANGUAGE_CODE in ProductSupportConfig.objects.locales_list()
 
     def get_queryset(self, max=None):
         qs = (
@@ -1366,7 +1382,8 @@ READOUTS = L10N_READOUTS.copy()
 READOUTS.update(CONTRIBUTOR_READOUTS)
 
 GROUP_L10N_READOUTS = OrderedDict(
-    (t.slug, t) for t in [MostVisitedTranslationsReadout, UnreviewedReadout]  # type: ignore
+    (t.slug, t)  # type: ignore
+    for t in [MostVisitedTranslationsReadout, UnreviewedReadout]
 )
 # English group locale is the same as l10n dashboard.
 GROUP_CONTRIBUTOR_READOUTS = CONTRIBUTOR_READOUTS

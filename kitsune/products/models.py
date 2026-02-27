@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from kitsune.products.managers import (
@@ -106,7 +107,6 @@ class Product(BaseProductTopic):
         """Check if product has an active public forum in the given locale."""
         return self.support_configs.filter(
             is_active=True,
-            forum_config__is_active=True,
             forum_config__enabled_locales__locale=locale,
         ).exists()
 
@@ -341,6 +341,28 @@ class ProductSupportConfig(ModelBase):
 
     def __str__(self):
         return f"{self.product} Support Configuration"
+
+    def clean(self):
+        super().clean()
+        if not self.is_active:
+            return
+
+        # Ensure that at least one support channel is configured.
+        if self.forum_config_id is None and self.zendesk_config_id is None:
+            raise ValidationError(
+                "No support channel has been configured. "
+                "Assign a Zendesk and/or forum configuration."
+            )
+
+        # Check that a selected forum config has at least one enabled locale.
+        if self.forum_config_id is not None:
+            from kitsune.questions.models import AAQConfig
+
+            if not AAQConfig.objects.filter(
+                pk=self.forum_config_id,
+                enabled_locales__isnull=False,
+            ).exists():
+                raise ValidationError("The selected forum configuration has no enabled locales.")
 
     @property
     def is_hybrid(self):

@@ -1235,7 +1235,13 @@ class QuestionEditingTests(TestCase):
         """The edit-question form should show appropriate metadata fields."""
         product = ProductFactory()
         question_id = QuestionFactory(product=product).id
-        AAQConfigFactory(product=product)
+        aaq_config = AAQConfigFactory()
+        ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
         response = get(self.client, "questions.edit_question", kwargs={"question_id": question_id})
         self.assertEqual(response.status_code, 200)
 
@@ -1262,7 +1268,13 @@ class QuestionEditingTests(TestCase):
         """Posting a valid edit form should save the question."""
         p = ProductFactory(slug="firefox")
         q = QuestionFactory(product=p)
-        AAQConfigFactory(product=p)
+        aaq_config = AAQConfigFactory()
+        ProductSupportConfigFactory(
+            product=p,
+            forum_config=aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
         response = post(
             self.client,
             "questions.edit_question",
@@ -1325,7 +1337,7 @@ class AAQTemplateTestCase(TestCase):
 
         self.user = UserFactory()
         self.product = ProductFactory(title="Firefox", slug="firefox")
-        self.aaq_config = AAQConfigFactory(product=self.product, is_active=True)
+        self.aaq_config = AAQConfigFactory()
         # Create ProductSupportConfig for routing
         ProductSupportConfigFactory(
             product=self.product,
@@ -1420,12 +1432,8 @@ class ProductForumTemplateTestCase(TestCase):
         mza = ProductFactory(title="Mozilla Account", slug="mozilla-account")
 
         lcl, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
-        firefox_forum_config = AAQConfigFactory(
-            product=firefox, is_active=True, enabled_locales=[lcl]
-        )
-        android_forum_config = AAQConfigFactory(
-            product=android, is_active=True, enabled_locales=[lcl]
-        )
+        firefox_forum_config = AAQConfigFactory(enabled_locales=[lcl])
+        android_forum_config = AAQConfigFactory(enabled_locales=[lcl])
 
         ProductSupportConfigFactory(product=firefox, forum_config=firefox_forum_config)
         ProductSupportConfigFactory(product=android, forum_config=android_forum_config)

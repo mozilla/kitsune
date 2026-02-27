@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.forms import BaseInlineFormSet
 
 from kitsune.questions.models import AAQConfig, QuestionLocale
 from kitsune.sumo.utils import PrettyJSONEncoder
@@ -42,27 +43,53 @@ class QuestionLocaleInlineForm(forms.ModelForm):
         fields = ["locale"]
 
 
+class QuestionLocaleInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        # Calculate how many locales actually remain after deletions.
+        num_locales = self.total_form_count() - len(self.deleted_forms)
+
+        active_configs = self.instance.support_configs.filter(is_active=True)
+
+        if (num_locales == 0) and self.instance.pk and active_configs.exists():
+            product_names = ", ".join(active_configs.values_list("product__title", flat=True))
+            raise forms.ValidationError(
+                "Cannot remove all enabled locales. This configuration is used "
+                f"by product support configuration(s) for: {product_names}. "
+                "Remove this forum configuration from those configurations first."
+            )
+
+
 class QuestionLocaleAdmin(admin.TabularInline):
     form = QuestionLocaleInlineForm
+    formset = QuestionLocaleInlineFormSet
     model = AAQConfig.enabled_locales.through
     extra = 0
 
 
 class AAQConfigAdmin(admin.ModelAdmin):
     form = AAQConfigForm
-    list_display = ("title", "product", "is_active", "pinned_article_config")
-    list_editable = ("is_active",)
+    list_display = ("title", "pinned_article_config", "used_by_products")
     inlines = [QuestionLocaleAdmin]
-    search_fields = ("title", "product__title", "product__slug")
+    search_fields = ("title",)
     fields = (
         "title",
-        "product",
-        "is_active",
         "pinned_article_config",
         "associated_tags",
         "extra_fields",
     )
     autocomplete_fields = ("pinned_article_config",)
+    readonly_fields = ("used_by_products",)
+
+    @admin.display(description="Used by products")
+    def used_by_products(self, obj):
+        if not obj.pk:
+            return "-"
+        products = obj.support_configs.select_related("product").values_list(
+            "product__title", flat=True
+        )
+        return ", ".join(products) if products else "-"
 
 
 admin.site.register(AAQConfig, AAQConfigAdmin)

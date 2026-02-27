@@ -8,7 +8,8 @@ from django.utils import timezone
 from rest_framework.exceptions import APIException
 from rest_framework.test import APIClient
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions import api
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import (
@@ -521,7 +522,13 @@ class TestQuestionViewSet(TestCase):
         """Test that questions created via the API are auto-tagged."""
         tag = TagFactory(name="desktop")
         product = ProductFactory()
-        AAQConfigFactory(product=product, is_active=True, associated_tags=[tag])
+        aaq_config = AAQConfigFactory(associated_tags=[tag])
+        ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
 
         q = QuestionFactory(product=product)
         self.client.force_authenticate(user=q.creator)

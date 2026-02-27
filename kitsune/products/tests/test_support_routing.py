@@ -33,7 +33,7 @@ class SupportRoutingTests(TestCase):
 
     def test_forum_only_routing(self):
         """Forum-only product returns (SUPPORT_TYPE_FORUM, False)."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
             forum_config=aaq_config,
@@ -73,7 +73,7 @@ class SupportRoutingTests(TestCase):
 
     def test_hybrid_no_groups_default_forum(self):
         """Hybrid product with no groups defaults to forum, allows switching."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
@@ -95,7 +95,7 @@ class SupportRoutingTests(TestCase):
 
     def test_hybrid_no_groups_default_zendesk(self):
         """Hybrid product with no groups defaults to Zendesk, allows switching."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
@@ -117,7 +117,7 @@ class SupportRoutingTests(TestCase):
 
     def test_hybrid_no_groups_honors_requested_type(self):
         """Hybrid product with no groups honors requested_type query param."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
@@ -139,7 +139,7 @@ class SupportRoutingTests(TestCase):
 
     def test_hybrid_with_groups_user_not_in_group(self):
         """Hybrid with groups: user NOT in group is locked to default."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
         config = ProductSupportConfigFactory(
@@ -163,7 +163,7 @@ class SupportRoutingTests(TestCase):
 
     def test_hybrid_with_groups_user_in_group_can_switch(self):
         """Hybrid with groups: user IN group can switch."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
         config = ProductSupportConfigFactory(
@@ -190,7 +190,7 @@ class SupportRoutingTests(TestCase):
 
     def test_hybrid_group_default_override(self):
         """Hybrid with groups: group_default_support_type overrides default."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
         config = ProductSupportConfigFactory(
@@ -219,7 +219,7 @@ class SupportRoutingTests(TestCase):
 
     def test_invalid_requested_type_ignored(self):
         """Invalid requested_type query param is ignored."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
@@ -242,7 +242,7 @@ class SupportRoutingTests(TestCase):
 
     def test_anonymous_user_hybrid_no_groups(self):
         """Anonymous user on hybrid product with no groups can switch."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         ProductSupportConfigFactory(
             product=self.product,
@@ -264,7 +264,7 @@ class SupportRoutingTests(TestCase):
 
     def test_anonymous_user_hybrid_with_groups(self):
         """Anonymous user on hybrid with groups is locked to default."""
-        aaq_config = AAQConfigFactory(product=self.product)
+        aaq_config = AAQConfigFactory()
         zendesk_config = ZendeskConfigFactory()
         group = GroupFactory(name="beta-testers")
         config = ProductSupportConfigFactory(
