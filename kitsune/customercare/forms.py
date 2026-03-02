@@ -140,7 +140,7 @@ class ZendeskForm(forms.Form):
         except DjangoValidationError:
             is_invalid = True
 
-        if re.search(r"\.[a-zA-Z]{2,}\d+", email):
+        if "@" in email and re.search(r"\.[a-zA-Z]{2,}\d+", email.split("@", 1)[1]):
             is_invalid = True
 
         if email.count("@") != 1 or " " in email:

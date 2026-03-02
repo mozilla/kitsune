@@ -423,6 +423,23 @@ class ZendeskFormTests(TestCase):
         self.assertIn("email", form.errors)
 
     @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
+    def test_valid_email_with_dot_and_numbers_in_local_part(self):
+        """Test that emails with dots and numbers in local part are accepted (issue 2830)."""
+        anonymous_user = AnonymousUser()
+        form = ZendeskForm(
+            data={
+                "email": "mozilla.test334@example.com",
+                "category": "fxa-2fa-lockout",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.accounts_product,
+            user=anonymous_user,
+        )
+
+        self.assertTrue(form.is_valid())
+
+    @patch("django.conf.settings.LOGIN_EXCEPTIONS", ["mozilla-account"])
     def test_valid_email_passes_validation(self):
         """Test that valid emails pass validation."""
         anonymous_user = AnonymousUser()
