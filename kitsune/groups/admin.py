@@ -16,7 +16,7 @@ class GroupProfileAdmin(TreeAdmin):
     search_fields = ["slug", "group__name"]
 
     def get_readonly_fields(self, request, obj=None):
-        """Make visibility and visible_to_groups read-only for subgroups (non-root nodes)."""
+        """Make visibility, visible_to_groups, and isolation_enabled read-only for subgroups."""
         readonly = list(super().get_readonly_fields(request, obj))
 
         if obj and not obj.is_root():
@@ -24,11 +24,13 @@ class GroupProfileAdmin(TreeAdmin):
                 readonly.append("visibility")
             if "visible_to_groups" not in readonly:
                 readonly.append("visible_to_groups")
+            if "isolation_enabled" not in readonly:
+                readonly.append("isolation_enabled")
 
         return readonly
 
     def get_form(self, request, obj=None, **kwargs):
-        """Add help text for visibility and visible_to_groups fields based on node type."""
+        """Add help text for visibility, visible_to_groups, and isolation_enabled fields."""
         # Since these fields can be read-only, this must happen before the super() call.
         help_texts = kwargs.setdefault("help_texts", {})
 
@@ -41,6 +43,10 @@ class GroupProfileAdmin(TreeAdmin):
                 "Groups with view-only access are inherited from the parent and cannot "
                 "be changed. To change, update the root group."
             )
+            help_texts["isolation_enabled"] = (
+                "Isolation is controlled by the root group and cannot be changed here. "
+                "To change, update the root group."
+            )
         else:
             help_texts["visibility"] = (
                 "Who can see this group. Children automatically inherit parent's visibility. "
@@ -49,6 +55,10 @@ class GroupProfileAdmin(TreeAdmin):
             help_texts["visible_to_groups"] = (
                 "Groups with view-only access to this group (for auditing/compliance). "
                 "All descendants will automatically inherit these settings."
+            )
+            help_texts["isolation_enabled"] = (
+                "When enabled, members can only see their own hierarchy. "
+                "This setting applies to the entire tree — subgroups always inherit it from here."
             )
 
         return super().get_form(request, obj, **kwargs)
