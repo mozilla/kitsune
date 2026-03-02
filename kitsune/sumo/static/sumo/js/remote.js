@@ -4,11 +4,11 @@ export default class RemoteTroubleshooting {
    *
    * @param {integer} timeout - Timeout in milliseconds for calling
    * the callback with {} if the event hasn't yet gotten dispatched.
-   * Defaults to 1000 ms (aka 1 second).
+   * Defaults to 2000 ms (aka 2 seconds).
    *
    * @returns {object} with data in it or {}
    */
-  async getData(timeout = 1000) {
+  async getData(timeout = 2000) {
     // If we've already gotten the data, return that.
     if (this.data) {
       return this.data;
