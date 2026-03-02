@@ -1,8 +1,11 @@
 import os
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.files import File
+from django.http import HttpResponse
+from django.test import RequestFactory
 from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
@@ -11,6 +14,46 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
+
+
+class GroupListSubgroupCountTests(TestCase):
+    """Subgroup counts on the list page respect visibility and isolation."""
+
+    def setUp(self):
+        super().setUp()
+        # Build: root_a (private, isolated) -> [sub_b, sub_d] -> sub_d -> [sub_e, sub_f]
+        self.root_a = GroupProfile.add_root(
+            group=Group.objects.create(name="Root A"),
+            slug="root-a",
+            visibility=GroupProfile.Visibility.PRIVATE,
+            isolation_enabled=True,
+        )
+        self.sub_b = self.root_a.add_child(group=Group.objects.create(name="Sub B"), slug="sub-b")
+        self.sub_d = self.root_a.add_child(group=Group.objects.create(name="Sub D"), slug="sub-d")
+        self.sub_e = self.sub_d.add_child(group=Group.objects.create(name="Sub E"), slug="sub-e")
+        self.sub_f = self.sub_d.add_child(group=Group.objects.create(name="Sub F"), slug="sub-f")
+
+        self.member = UserFactory()
+        self.member.groups.add(self.sub_e.group)
+
+    def _get_groups_by_id(self):
+        from kitsune.groups import views as groups_views
+
+        request = RequestFactory().get(reverse("groups.list"))
+        request.user = self.member
+        with mock.patch("kitsune.groups.views.render", return_value=HttpResponse()) as mock_render:
+            groups_views.list(request)
+        groups = mock_render.call_args.args[2]["groups"]
+        return {g.id: g for g in groups}
+
+    def test_isolated_member_sees_filtered_subgroup_counts(self):
+        """An isolated member should see counts of only their visible subgroups."""
+        groups_by_id = self._get_groups_by_id()
+
+        # root_a has 2 real children (sub_b, sub_d) but member can only see sub_d
+        self.assertEqual(groups_by_id[self.root_a.id].visible_numchild, 1)
+        # sub_d has 2 real children (sub_e, sub_f) but member can only see sub_e
+        self.assertEqual(groups_by_id[self.sub_d.id].visible_numchild, 1)
 
 
 class EditGroupProfileTests(TestCase):

@@ -1,3 +1,5 @@
+from collections import Counter
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
@@ -54,12 +56,21 @@ def _remove_group_member(profile, user, request, remove_from_group=True):
 
 def list(request):
     """List all groups visible to the user."""
-    groups = GroupProfile.objects.visible(request.user).select_related("group")
+    groups = [*GroupProfile.objects.visible(request.user).select_related("group")]
 
-    for group in groups:
-        group.has_children = group.numchild > 0
-        parent = group.get_parent()
-        group.parent_id = parent.id if parent else None
+    path_to_id = {g.path: g.id for g in groups}
+
+    visible_child_counts = Counter(
+        path_to_id[g.path[:-GroupProfile.steplen]]
+        for g in groups
+        if g.depth > 1 and g.path[:-GroupProfile.steplen] in path_to_id
+    )
+
+    for g in groups:
+        count = visible_child_counts.get(g.id, 0)
+        g.visible_numchild = count
+        g.has_children = count > 0
+        g.parent_id = path_to_id.get(g.path[:-GroupProfile.steplen]) if g.depth > 1 else None
 
     return render(request, "groups/list.html", {"groups": groups})
 

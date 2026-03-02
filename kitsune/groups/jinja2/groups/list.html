@@ -25,8 +25,8 @@
           {% endif %}
 
           <a href="{{ profile.get_absolute_url() }}">{{ profile.group.name }}</a>
-          {% if profile.numchild > 0 %}
-            <span class="muted">({{ profile.numchild }} {% if profile.numchild == 1 %}{{ _('subgroup') }}{% else %}{{ _('subgroups') }}{% endif %})</span>
+          {% if profile.visible_numchild > 0 %}
+            <span class="muted">({{ profile.visible_numchild }} {% if profile.visible_numchild == 1 %}{{ _('subgroup') }}{% else %}{{ _('subgroups') }}{% endif %})</span>
           {% endif %}
         </li>
       {% endfor %}
