@@ -2,46 +2,66 @@
 
 {% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (None, _('Recently Awarded'))] %}
 
-{% block content %}
-  <div class="grid_12">
+{% block contentwrap %}
+<div id="main-content">
+  <section class="mzp-l-content sumo-page-section--inner">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
     {% if badge %}
-      {% trans badge_name=pgettext('DB: badger.Badge.title', badge.title) %}
-        <h2>Recently awarded &quot;{{ badge_name }}&quot; badges</h2>
-      {% endtrans %}
+      <h1 class="sumo-page-heading">
+        {% trans badge_name=pgettext('DB: badger.Badge.title', badge.title) %}
+          Recently awarded &quot;{{ badge_name }}&quot; badges
+        {% endtrans %}
+      </h1>
     {% else %}
-      <h2>{{ _('Recently awarded badges') }}</h2>
+      <h1 class="sumo-page-heading">{{ _('Recently awarded badges') }}</h1>
     {% endif %}
-  </div>
+  </section>
 
-  <ul class="cf" id="awards-list">
-    {% for award in awards.object_list %}
-      {% if award.image %}
-        {% set award_image = award.image.url %}
-      {% elif award.badge.image %}
-        {% set award_image = award.badge.image.url %}
-      {% else %}
-        {% set award_image = webpack_static('kbadge/img/default-badge.png') %}
-      {% endif %}
-      <li class="grid_4">
-        <a class="cf" href="{{ award.get_absolute_url() }}">
-          <div class="badge">
-            <img src="{{ award_image }}" alt="" title="{{ pgettext('DB: badger.Badge.title', award.badge.title) }}">
-            <span>{{ pgettext('DB: badger.Badge.title', award.badge.title) }}</span>
-          </div>
-          <div class="award">
-            {{ _('awarded to') }}
-            <br><img class="avatar" src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}">
-            <br>{{ award.user }}
-          </div>
-          <div class="meta">
-            {{ datetimeformat(award.created) }}
-          </div>
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
-
-  {% if awards.object_list %}
-    {{ awards|quick_paginator }}
-  {% endif %}
+  <section class="mzp-l-content sumo-page-section--inner">
+    {% if awards.object_list %}
+      <div class="table-scroll">
+        <table class="awards-table">
+          <thead>
+            <tr>
+              <th>{{ _('Badge') }}</th>
+              <th>{{ _('Awarded to') }}</th>
+              <th>{{ _('Date') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for award in awards.object_list %}
+              {% if award.image %}
+                {% set award_image = award.image.url %}
+              {% elif award.badge.image %}
+                {% set award_image = award.badge.image.url %}
+              {% else %}
+                {% set award_image = webpack_static('kbadge/img/default-badge.png') %}
+              {% endif %}
+              <tr>
+                <td>
+                  <a href="{{ award.get_absolute_url() }}">
+                    <img src="{{ award_image }}" alt="" width="32" height="32">
+                    {{ pgettext('DB: badger.Badge.title', award.badge.title) }}
+                  </a>
+                </td>
+                <td>
+                  <a rel="nofollow" href="{{ profile_url(award.user) }}">
+                    <img class="avatar" src="{{ profile_avatar(award.user) }}" alt="" width="24" height="24">
+                    {{ award.user }}
+                  </a>
+                </td>
+                <td>{{ datetimeformat(award.created) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {{ awards|paginator }}
+    {% else %}
+      <p>{{ _('No awards have been given yet.') }}</p>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}
