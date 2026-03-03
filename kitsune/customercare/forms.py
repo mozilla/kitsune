@@ -42,6 +42,23 @@ POLICY_DISTRIBUTION_CHOICES = [
     ("not_sure", "Not sure / Need help selecting"),
 ]
 
+UPDATE_CHANNEL_TAGS = {
+    "esr": "seg-rel-esr",
+    "rapid_release": "seg-rel-rapid-release",
+    "full_release": "seg-rel-full-release",
+    "beta": "seg-rel-beta",
+    "other": "seg-rel-channel-other",
+}
+
+POLICY_DISTRIBUTION_TAGS = {
+    "group_policy_admx": "seg-policy-windows-gpo",
+    "windows_mdm": "seg-policy-windows-mdm",
+    "macos_config_profiles": "seg-policy-macos-config-profiles",
+    "policies_json": "seg-policy-json",
+    "autoconfig": "seg-policy-autoconfig",
+    "not_sure": "seg-policy-dist-other",
+}
+
 ZENDESK_PRODUCT_SLUGS = {v: k for k, v in PRODUCT_SLUG_ALIASES.items()}
 
 
@@ -177,6 +194,14 @@ class ZendeskForm(forms.Form):
                                 zendesk_tags.extend(tag_value)
                             else:
                                 zendesk_tags.append(tag_value)
+
+        if update_channel := self.cleaned_data.get("update_channel"):
+            if tag := UPDATE_CHANNEL_TAGS.get(update_channel):
+                zendesk_tags.append(tag)
+
+        if policy_distribution := self.cleaned_data.get("policy_distribution"):
+            if tag := POLICY_DISTRIBUTION_TAGS.get(policy_distribution):
+                zendesk_tags.append(tag)
 
         if settings.STAGE:
             zendesk_tags.append("stage")
