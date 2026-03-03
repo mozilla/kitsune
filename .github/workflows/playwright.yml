@@ -62,9 +62,11 @@ jobs:
   playwright_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          persist-credentials: false
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
           python-version: '3.11'
       - name: Install dependencies
@@ -82,12 +84,12 @@ jobs:
             echo "BROWSER=${{inputs.Browsers}}" >> $GITHUB_ENV
       - name: Ensure Playwright browsers are installed
         run: |
-            source .venv/bin/activate && playwright install ${{ env.BROWSER }}
+            source .venv/bin/activate && playwright install ${BROWSER}
       - name: Creating User Sessions for ${{ env.BROWSER }}
         id: create-sessions
         working-directory: playwright_tests
         run: |
-         source ../.venv/bin/activate && pytest -m loginSessions --browser ${{ env.BROWSER }} --reruns 1 -v
+         source ../.venv/bin/activate && pytest -m loginSessions --browser ${BROWSER} --reruns 1 -v
       - name: Run ${{inputs.TestSuite}} Playwright Tests
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
@@ -97,34 +99,34 @@ jobs:
             declare all_test_suites=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productSupportPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard" "kbRestrictedVisibility" "kbArticleTranslation" "exploreByTopics" "searchTests" "contributorForumSearch" "userGroupsTests" "antiSpamTests" "contributorDiscussions" "contributorDiscussionsThreads" "userDeletion" "communityForums")
             if [ "$dispatch_test_suite" == "All" ] ; then
                 for test in "${all_test_suites[@]}"; do
-                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${BROWSER} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "User Pages" ]; then
                 for test in "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions"; do
-                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${BROWSER} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "AAQ" ]; then
                 for test in "aaqPage" "postedQuestions"; do
-                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${BROWSER} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "KB Articles" ]; then
                 for test in "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory"; do
-                    if ! pytest -m ${test} --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                    if ! pytest -m ${test} --numprocesses 6 --browser ${BROWSER} --reruns 2 -v; then
                         any_failures=true
                     fi
                 done
             elif [ "$dispatch_test_suite" == "KB Article Translation" ]; then
-                if ! pytest -m kbArticleTranslation --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                if ! pytest -m kbArticleTranslation --numprocesses 6 --browser ${BROWSER} --reruns 2 -v; then
                     any_failures=true
                 fi
             else
-                if ! pytest -m $dispatch_test_suite --numprocesses 6 --browser ${{ env.BROWSER }} --reruns 2 -v; then
+                if ! pytest -m $dispatch_test_suite --numprocesses 6 --browser ${BROWSER} --reruns 2 -v; then
                         any_failures=true
                 fi
             fi
@@ -141,7 +143,7 @@ jobs:
 
       - name: Upload the combined test report as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
             name: Playwright test report
             path: playwright_tests/allure-report
