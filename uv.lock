@@ -710,15 +710,14 @@ sdist = { url = "https://files.pythonhosted.org/packages/06/af/d4de926a0a0d86e6e
 
 [[package]]
 name = "django-allow-cidr"
-version = "0.6.0"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
-    { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/35/297e64de25efbb094d9de69157d6d78ded0573080b2977d3a51ef809eb12/django-allow-cidr-0.6.0.tar.gz", hash = "sha256:24b71f70257e97bab9fdb5ad8342c96eeea1d45bc06a36332978574252219401", size = 6180, upload-time = "2023-01-05T10:03:40.78Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/e0/d811149809b1e4cb2daf357b44b71f240feea0718549b0a2ab2af3c4f63f/django_allow_cidr-0.8.0.tar.gz", hash = "sha256:d6f80230621dd5b19ec1665b85abf8218b02556ff7cf0ddda41e2607267a3277", size = 6982, upload-time = "2025-04-08T08:52:14.456Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/4c/c76c6bc534ed93ed0efae5cfa6a040bed0f17beff9dc072d76258ee5ec2e/django_allow_cidr-0.6.0-py2.py3-none-any.whl", hash = "sha256:6709f4581dfd2a00476a134741a738a7f67714ec4f8596c55b22cf3b2ac5a12e", size = 4823, upload-time = "2023-01-05T10:03:39.402Z" },
+    { url = "https://files.pythonhosted.org/packages/99/2a/10ebaba1950c113efae2b38dc5e1ec38a86e1141e97b7e729f2fb4bbb87b/django_allow_cidr-0.8.0-py2.py3-none-any.whl", hash = "sha256:724ce76b7b4a25c641ddcd33777e2e95da622dd2c11937f0d76d0cd3d54b1622", size = 4975, upload-time = "2025-04-08T08:52:13.198Z" },
 ]
 
 [[package]]
@@ -2126,7 +2125,7 @@ requires-dist = [
     { name = "dj-database-url", specifier = ">=1.3.0,<4" },
     { name = "django", specifier = ">=5.2,<6" },
     { name = "django-activity-stream", specifier = ">=1.4.2,<2" },
-    { name = "django-allow-cidr", specifier = ">=0.6.0,<0.7" },
+    { name = "django-allow-cidr", specifier = ">=0.6.0,<0.9" },
     { name = "django-cache-url", specifier = ">=3.4.5,<4" },
     { name = "django-celery-beat", specifier = ">=2.8.1,<3" },
     { name = "django-cors-headers", specifier = ">=3.14.0,<4" },
