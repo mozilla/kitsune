@@ -44,7 +44,9 @@ jobs:
           REF_ID: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref }}
         run: echo "REF_ID=$REF_ID" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
       - name: Create version.json
         run: |
           # create a version.json per
@@ -57,11 +59,12 @@ jobs:
 
       - id: checkout_application_repo
         name: checkout application repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
           fetch-tags: true
           ref: ${{ env.REF_ID }}
+          persist-credentials: false
 
       - id: resolve_image_tag
         name: Resolve Docker image tag
@@ -92,11 +95,11 @@ jobs:
             echo DEPLOYMENT_REALM=none >> "$GITHUB_ENV"
           fi
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - id: gcp_auth
         name: GCP authentication
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
         with:
           token_format: access_token
           service_account: artifact-writer@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com
@@ -104,7 +107,7 @@ jobs:
 
       - id: docker_login
         name: Log in to the container registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.GAR_LOCATION }}-docker.pkg.dev
           username: oauth2accesstoken
@@ -112,7 +115,7 @@ jobs:
 
       - id: build_and_push
         name: Build and push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: .
           tags: |
@@ -136,7 +139,7 @@ jobs:
     steps:
       - id: gcp_auth
         name: gcp auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
         with:
           token_format: access_token
           service_account: deploy-${{ needs.build.outputs.deployment_env }}@moz-fx-sumo-${{ needs.build.outputs.deployment_realm }}.iam.gserviceaccount.com
@@ -144,14 +147,14 @@ jobs:
 
       - id: docker_login
         name: docker login
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.GAR_LOCATION }}-docker.pkg.dev
           username: oauth2accesstoken
           password: ${{ steps.gcp_auth.outputs.access_token }}
 
       - id: setup-gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2
 
       - id: upload-assets
         name: upload static assets
