@@ -1074,6 +1074,13 @@ def question_vote(request, question_id):
         raise PermissionDenied
 
     if not question.has_voted(request):
+        if request.limited:
+            msg = _("You've hit your voting limit for now. Please try again later.")
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return HttpResponse(json.dumps({"message": str(msg), "ignored": True}))
+            messages.add_message(request, messages.WARNING, msg)
+            return HttpResponseRedirect(question.get_absolute_url())
+
         vote = QuestionVote(question=question)
 
         if request.user.is_authenticated:
@@ -1081,19 +1088,18 @@ def question_vote(request, question_id):
         else:
             vote.anonymous_id = request.anonymous.anonymous_id
 
-        if not request.limited:
-            vote.save()
+        vote.save()
 
-            if "referrer" in request.GET:
-                referrer = request.GET.get("referrer")
-                vote.add_metadata("referrer", referrer)
+        if "referrer" in request.GET:
+            referrer = request.GET.get("referrer")
+            vote.add_metadata("referrer", referrer)
 
-                if referrer == "search" and "query" in request.GET:
-                    vote.add_metadata("query", request.GET.get("query"))
+            if referrer == "search" and "query" in request.GET:
+                vote.add_metadata("query", request.GET.get("query"))
 
-            ua = request.META.get("HTTP_USER_AGENT")
-            if ua:
-                vote.add_metadata("ua", ua)
+        ua = request.META.get("HTTP_USER_AGENT")
+        if ua:
+            vote.add_metadata("ua", ua)
 
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             tmpl = "questions/includes/question_vote_thanks.html"
@@ -1107,7 +1113,11 @@ def question_vote(request, question_id):
                 },
             )
 
-            return HttpResponse(json.dumps({"html": html, "ignored": request.limited}))
+            return HttpResponse(json.dumps({"html": html}))
+
+    # We've already voted, so don't do anything.
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return HttpResponse(json.dumps({"ignored": True}))
 
     return HttpResponseRedirect(question.get_absolute_url())
 
@@ -1128,13 +1138,14 @@ def answer_vote(request, question_id, answer_id):
     if not answer.question.editable:
         raise PermissionDenied
 
-    if request.limited:
-        if request.headers.get("x-requested-with") == "XMLHttpRequest":
-            return HttpResponse(json.dumps({"ignored": True}))
-        else:
+    if not answer.has_voted(request):
+        if request.limited:
+            msg = _("You've hit your voting limit for now. Please try again later.")
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return HttpResponse(json.dumps({"message": msg, "ignored": True}))
+            messages.add_message(request, messages.WARNING, msg)
             return HttpResponseRedirect(answer.get_absolute_url())
 
-    if not answer.has_voted(request):
         vote = AnswerVote(answer=answer, creator=request.user)
 
         if "helpful" in request.POST:

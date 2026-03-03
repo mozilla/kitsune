@@ -258,10 +258,9 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
             $(boxSelector).html($(response.html).children());
           }
         } else if (response.message) {
-          var html = '<div class="msg"></div>';
-          $(boxSelector)
-          .html(html)
-          .find('.msg').text(response.message);
+          $form.find('[type="submit"]').prop('disabled', true);
+          $form.siblings('.vote-rate-limit-msg').remove();
+          $form.after($('<p class="vote-rate-limit-msg"></p>').text(response.message));
         }
 
         if (!response.ignored) {

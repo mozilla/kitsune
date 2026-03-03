@@ -79,6 +79,10 @@
   z-index: 98;
 }
 
+#vote-thanks-kbox {
+  @include c.elevation-01;
+}
+
 #upload-kbox {
   top: 10%;
   left: 50%;
