@@ -227,13 +227,14 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
         "enable_zendesk_support",
         "is_hybrid",
         "default_support_type",
+        "subscription_only",
     )
     list_display_links = ("product",)
     list_editable = ("is_active",)
     list_filter = ("is_active", "default_support_type")
     search_fields = ("product__title", "product__slug")
     filter_horizontal = ("hybrid_support_groups",)
-    autocomplete_fields = ("product", "forum_config", "zendesk_config")
+    autocomplete_fields = ("product", "forum_config", "zendesk_config", "unsubscribed_redirect_product")
     readonly_fields = (
         "is_hybrid",
         "enable_forum_support",
@@ -270,6 +271,17 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
             {
                 "fields": ("default_support_type", "group_default_support_type"),
                 "description": "Set default support type for all users and optionally for hybrid group members.",
+            },
+        ),
+        (
+            "Subscription Routing",
+            {
+                "fields": ("subscription_only", "unsubscribed_redirect_product"),
+                "description": (
+                    "When subscription_only is enabled, only users with an active product subscription "
+                    "can access support. Unsubscribed users are redirected to the specified product's AAQ, "
+                    "or the entire AAQ flow returns 404 if no redirect product is set."
+                ),
             },
         ),
         (

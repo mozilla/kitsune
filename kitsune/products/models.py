@@ -323,6 +323,25 @@ class ProductSupportConfig(ModelBase):
         blank=True,
         help_text="Default support type for users in hybrid groups (if not set, uses default_support_type)",
     )
+    subscription_only = models.BooleanField(
+        default=False,
+        help_text=(
+            "If enabled, only users with an active product subscription can access support. "
+            "Unsubscribed users are redirected to another product's AAQ if one is configured, "
+            "otherwise the support widget is hidden."
+        ),
+    )
+    unsubscribed_redirect_product = models.ForeignKey(
+        "Product",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="redirect_target_for",
+        help_text=(
+            "When subscription_only is enabled, redirect unsubscribed users to this product's AAQ. "
+            "If not set, the support widget is hidden for unsubscribed users."
+        ),
+    )
 
     objects = ProductSupportConfigManager()
 
@@ -363,6 +382,15 @@ class ProductSupportConfig(ModelBase):
                 enabled_locales__isnull=False,
             ).exists():
                 raise ValidationError("The selected forum configuration has no enabled locales.")
+
+        if not self.subscription_only and self.unsubscribed_redirect_product_id:
+            raise ValidationError(
+                {
+                    "unsubscribed_redirect_product": (
+                        "Redirect product should only be set when subscription_only is enabled."
+                    )
+                }
+            )
 
     @property
     def is_hybrid(self):

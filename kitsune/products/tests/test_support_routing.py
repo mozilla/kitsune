@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, TestCase
 
+from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
@@ -299,3 +300,89 @@ class SupportRoutingTests(TestCase):
             )
 
         self.assertIn("at_least_one_support_channel", str(context.exception))
+
+
+class SubscriptionRoutingTests(TestCase):
+    """Tests for subscription_only routing in route_support_request()."""
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.product = ProductFactory(slug="mozilla-vpn")
+        self.zendesk_config = ZendeskConfigFactory()
+        self.user = UserFactory()
+        self.config = ProductSupportConfigFactory(
+            product=self.product,
+            forum_config=None,
+            zendesk_config=self.zendesk_config,
+            is_active=True,
+            subscription_only=True,
+        )
+
+    def test_subscriber_routes_to_zendesk(self):
+        """Subscribed user on a subscription_only product is routed to ZD."""
+        self.user.profile.products.add(self.product)
+
+        request = self.factory.get("/")
+        request.user = self.user
+
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, self.product
+        )
+
+        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertFalse(can_switch)
+
+    def test_non_subscriber_with_redirect_returns_redirect_sentinel(self):
+        """Non-subscribed user is returned SUPPORT_TYPE_REDIRECT when redirect product is set."""
+        redirect_product = ProductFactory(slug="firefox")
+        self.config.unsubscribed_redirect_product = redirect_product
+        self.config.save()
+
+        request = self.factory.get("/")
+        request.user = self.user  # has no subscription
+
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, self.product
+        )
+
+        self.assertEqual(support_type, ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT)
+        self.assertFalse(can_switch)
+
+    def test_non_subscriber_without_redirect_returns_hide_sentinel(self):
+        """Non-subscribed user is returned SUPPORT_TYPE_HIDE when no redirect product is set."""
+        request = self.factory.get("/")
+        request.user = self.user  # has no subscription, no redirect product configured
+
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, self.product
+        )
+
+        self.assertEqual(support_type, ProductSupportConfigManager.SUPPORT_TYPE_HIDE)
+        self.assertFalse(can_switch)
+
+    def test_anonymous_user_returns_hide_sentinel(self):
+        """Anonymous users on a subscription_only product are treated as non-subscribers."""
+        request = self.factory.get("/")
+        request.user = AnonymousUser()
+
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, self.product
+        )
+
+        self.assertEqual(support_type, ProductSupportConfigManager.SUPPORT_TYPE_HIDE)
+        self.assertFalse(can_switch)
+
+    def test_subscription_only_false_bypasses_check(self):
+        """When subscription_only is False, all users pass through to normal routing."""
+        self.config.subscription_only = False
+        self.config.save()
+
+        request = self.factory.get("/")
+        request.user = self.user  # no subscription, but subscription_only is off
+
+        support_type, can_switch = ProductSupportConfig.objects.route_support_request(
+            request, self.product
+        )
+
+        self.assertEqual(support_type, ProductSupportConfig.SUPPORT_TYPE_ZENDESK)
+        self.assertFalse(can_switch)

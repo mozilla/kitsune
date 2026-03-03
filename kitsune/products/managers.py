@@ -31,6 +31,9 @@ class ProductSupportConfigManager(Manager):
             .distinct()
         )
 
+    SUPPORT_TYPE_REDIRECT = "redirect_unsubscribed"
+    SUPPORT_TYPE_HIDE = "hide_unsubscribed"
+
     def route_support_request(self, request, product):
         """
         Determines which support channel to route a request to (forum or Zendesk).
@@ -44,7 +47,8 @@ class ProductSupportConfigManager(Manager):
 
         Returns:
             tuple: (support_type, can_switch)
-                - support_type: SUPPORT_TYPE_FORUM, SUPPORT_TYPE_ZENDESK, or None
+                - support_type: SUPPORT_TYPE_FORUM, SUPPORT_TYPE_ZENDESK,
+                  SUPPORT_TYPE_REDIRECT, SUPPORT_TYPE_HIDE, or None
                 - can_switch: whether user can toggle between channels
                 - Returns (None, False) if no config exists - view should handle error
         """
@@ -57,6 +61,18 @@ class ProductSupportConfigManager(Manager):
             return (None, False)
 
         user = request.user
+
+        # Subscription gate: check before any other routing logic
+        if support_config.subscription_only:
+            is_subscribed = (
+                user.is_authenticated
+                and user.profile.products.filter(id=product.id).exists()
+            )
+            if not is_subscribed:
+                if support_config.unsubscribed_redirect_product_id:
+                    return (self.SUPPORT_TYPE_REDIRECT, False)
+                return (self.SUPPORT_TYPE_HIDE, False)
+
         requested_type = request.GET.get("support_type")
 
         # Validate requested_type
