@@ -115,7 +115,8 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
     )
 
     support_config = ProductSupportConfig.objects.get(product=submission.product, is_active=True)
-    ticket_form_id = support_config.zendesk_config.ticket_form_id
+    zendesk_config = support_config.zendesk_config
+    ticket_form_id = zendesk_config.ticket_form_id
 
     client = ZendeskClient()
     ticket_fields = {
@@ -131,6 +132,7 @@ def send_support_ticket_to_zendesk(submission: SupportTicket) -> bool:
         "product_title": submission.product.title,
         "zendesk_tags": submission.zendesk_tags,
         "ticket_form_id": int(ticket_form_id),
+        "brand_id": zendesk_config.brand_id,
     }
 
     try:

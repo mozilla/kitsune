@@ -373,6 +373,11 @@ class ZendeskConfig(ModelBase):
         blank=True,
         help_text="Zendesk ticket form ID to use for this product (leave blank to use global default)",
     )
+    brand_id = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Zendesk brand ID to associate tickets with for this product",
+    )
     enable_os_field = models.BooleanField(
         default=False, help_text="Show operating system selector in the support form"
     )

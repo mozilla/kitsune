@@ -138,6 +138,9 @@ class ZendeskClient:
             "ticket_form_id": ticket_fields.get("ticket_form_id"),
         }
 
+        if brand_id := ticket_fields.get("brand_id"):
+            ticket_kwargs["brand_id"] = int(brand_id)
+
         tags = []
         # If this is the normal, athenticated form we want to use the category field
         if user and user.is_authenticated:
