@@ -840,6 +840,7 @@ WIKI_VIDEO_WIDTH = 640
 WIKI_VIDEO_HEIGHT = 480
 
 IMAGE_MAX_FILESIZE = 10485760  # 10 megabytes, in bytes
+IMAGE_MAX_PIXELS = 20_000_000  # 20 megapixels
 THUMBNAIL_SIZE = 120  # Thumbnail size, in pixels
 THUMBNAIL_UPLOAD_PATH = "uploads/images/thumbnails/"
 IMAGE_UPLOAD_PATH = "uploads/images/"

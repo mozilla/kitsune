@@ -5,7 +5,7 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from kitsune.groups.models import GroupProfile
-from kitsune.upload.tasks import create_image_thumbnail
+from kitsune.upload.utils import create_image_thumbnail
 
 
 class GroupProfileAdmin(TreeAdmin):

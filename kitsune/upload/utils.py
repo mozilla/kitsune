@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.html import escape
 from django.utils.translation import gettext_lazy as _lazy
@@ -11,6 +12,26 @@ from PIL import Image
 from kitsune.upload.forms import ImageAttachmentUploadForm
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import _scale_dimensions, compress_image, generate_thumbnail
+
+
+class FileTooLargeError(Exception):
+    pass
+
+
+def open_as_pil_image(fileobj):
+    """Open fileobj as a PIL image, raising FileTooLargeError if dimensions exceed IMAGE_MAX_PIXELS."""
+    msg = _lazy("Image exceeds the maximum allowed size of %d megapixels.") % (
+        settings.IMAGE_MAX_PIXELS // 1_000_000,
+    )
+    try:
+        image = Image.open(fileobj)
+    except Image.DecompressionBombError:
+        raise FileTooLargeError(msg)
+
+    if image.width * image.height > settings.IMAGE_MAX_PIXELS:
+        raise FileTooLargeError(msg)
+
+    return image
 
 
 def check_file_size(f, max_allowed_size):
@@ -65,7 +86,7 @@ def create_imageattachment(files, user, obj):
 
 
 def _image_to_png(up_file):
-    with Image.open(up_file) as image:
+    with open_as_pil_image(up_file) as image:
         # This approach is recommended by pillow for checking if an image is animated.
         is_animated = getattr(image, "is_animated", False)
 
@@ -91,8 +112,35 @@ def _image_to_png(up_file):
     return (up_file, is_animated)
 
 
-class FileTooLargeError(Exception):
-    pass
+def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
+    """Pads a rectangular image with transparency to make it square."""
+    square_image = Image.new("RGBA", (side, side), (255, 255, 255, 0))
+    width = (side - source_image.size[0]) // 2
+    height = (side - source_image.size[1]) // 2
+    square_image.paste(source_image, (width, height))
+    return square_image
+
+
+def create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=False):
+    """
+    Returns a thumbnail file with a set longest side.
+    """
+    original_image = open_as_pil_image(fileobj)
+    original_image = original_image.convert("RGBA")
+    file_width, file_height = original_image.size
+
+    width, height = _scale_dimensions(file_width, file_height, longest_side)
+    resized_image = original_image.resize((width, height), Image.LANCZOS)
+
+    data = io.BytesIO()
+
+    if pad:
+        padded_image = _make_image_square(resized_image, longest_side)
+        padded_image.save(data, "PNG")
+    else:
+        resized_image.save(data, "PNG")
+
+    return ContentFile(data.getvalue())
 
 
 def upload_imageattachment(request, obj):

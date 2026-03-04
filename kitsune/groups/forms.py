@@ -7,7 +7,7 @@ from kitsune.groups.models import GroupProfile
 from kitsune.sumo.form_fields import MultiUsernameField
 from kitsune.sumo.widgets import ImageWidget
 from kitsune.upload.forms import LimitedImageField
-from kitsune.upload.utils import FileTooLargeError, check_file_size
+from kitsune.upload.utils import FileTooLargeError, check_file_size, open_as_pil_image
 
 
 class GroupProfileForm(forms.ModelForm):
@@ -44,6 +44,11 @@ class GroupAvatarForm(forms.ModelForm):
             # Validate file size
             try:
                 check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
+            except FileTooLargeError as e:
+                raise forms.ValidationError(e.args[0])
+            try:
+                with open_as_pil_image(avatar):
+                    pass
             except FileTooLargeError as e:
                 raise forms.ValidationError(e.args[0])
 
