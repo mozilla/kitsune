@@ -159,7 +159,7 @@ def test_localization_revisions_are_assigned_to_system_account(page: Page, creat
 def test_reviewed_by_assignment_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory()
+    test_user = create_user_factory(permissions=["delete_document"])
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers"])
 
     with allure.step("Signing in and creating a new kb article"):

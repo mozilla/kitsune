@@ -50,7 +50,7 @@ class MyProfileEdit(BasePage):
             "p.delete-account-link a")
         self.close_account_username_modal = page.locator("input#delete-profile-confirmation-input")
         self.close_account_username_modal_confirmation_code = page.locator(
-            "//div[@id='delete-profile']//strong")
+            "//div[@data-modal-id='delete-profile']//strong")
         self.close_account_delete_button = page.locator("button#delete-profile-button")
         self.close_modal_button = page.locator("button[class='mzp-c-modal-button-close']")
 

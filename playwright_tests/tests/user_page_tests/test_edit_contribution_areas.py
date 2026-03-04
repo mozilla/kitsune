@@ -1,7 +1,7 @@
 import allure
 import pytest
 from pytest_check import check
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.mess_system_pages_messages.edit_cont_areas_page_messages import (
     EditContributionAreasPageMessages)
@@ -33,23 +33,18 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
             sumo_pages.edit_my_profile_con_areas_page.are_all_cont_pref_checked()
         ), "Not all checkbox options are checked!"
 
-    contribution_options = (sumo_pages.edit_my_profile_con_areas_page
-                            .get_contrib_areas_checkbox_labels())
-
     with check, allure.step("Accessing the my profile page and verifying that the profile-less "
                             "groups are not displayed"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        for option in contribution_options:
-            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
+        expect(sumo_pages.my_profile_page.groups_section).to_be_hidden()
 
     with allure.step(f"Signing in with {second_user['username']} user account and verifying that "
                      f"the profile-less groups are not displayed"):
         utilities.start_existing_session(cookies=second_user)
 
-    with check, allure.step("Navigating to the user page and verifying that the user groups is"
-                            " successfully displayed"):
-        for option in contribution_options:
-            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
+    with check, allure.step("Navigating to the user page and verifying that the user groups "
+                            "are not displayed"):
+        expect(sumo_pages.my_profile_page.groups_section).to_be_hidden()
 
     with allure.step(f"Signing in back with {first_user['username']} user account"):
         utilities.start_existing_session(cookies=first_user)
@@ -65,8 +60,7 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
     with check, allure.step("Verifying that the groups section is not displayed inside the profile"
                             " section"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        for option in contribution_options:
-            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
+        expect(sumo_pages.my_profile_page.groups_section).to_be_hidden()
 
     with allure.step(f"Logging in with {second_user['username']} user account and accessing the "
                      f"original user profile"):
@@ -74,5 +68,4 @@ def test_all_checkboxes_can_be_selected_and_saved(page: Page, create_user_factor
 
     with allure.step("Navigating to the my profile page and verifying that the profile-less "
                      "groups are not displayed"):
-        for option in contribution_options:
-            assert option not in (sumo_pages.my_profile_page.get_my_profile_groups_items_text())
+        expect(sumo_pages.my_profile_page.groups_section).to_be_hidden()

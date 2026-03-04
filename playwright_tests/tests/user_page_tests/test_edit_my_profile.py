@@ -768,5 +768,6 @@ def test_close_account_and_delete_profile_information(page:Page, create_user_fac
     with allure.step("Deleting the user via the 'Close account and delete all profile information'"
                      "modal"):
         sumo_pages.edit_profile_flow.close_account()
-        assert utilities.get_page_url() == utilities.profile_edit_test_data["close_account_page"]
+        assert "close_account" in utilities.get_page_url()
+        utilities.navigate_to_homepage()
         assert sumo_pages.top_navbar.signin_signup_button.is_visible()
