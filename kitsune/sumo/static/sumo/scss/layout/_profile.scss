@@ -1,6 +1,29 @@
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
+.awards-table {
+  table-layout: fixed;
+  width: 100%;
+
+  td {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  td a {
+    display: inline-flex;
+    align-items: center;
+    gap: p.$spacing-sm;
+    max-width: 100%;
+    min-width: 0;
+
+    @media screen and (max-width: 767px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+}
+
 .badges-list {
   display: flex;
   flex-wrap: wrap;
