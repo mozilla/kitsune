@@ -172,7 +172,7 @@ def question_list(request, product_slug=None, topic_slug=None):
     if show not in FILTER_GROUPS:
         show = "needs-attention"
 
-    tagged = request.GET.get("tagged")
+    tagged = request.GET.get("tagged", "").replace("\x00", "") or None
     tags = None
     topic_slug = request.GET.get("topic", "") or topic_slug
 
