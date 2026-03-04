@@ -13,9 +13,9 @@ from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import (
     _scale_dimensions,
     compress_image,
-    create_image_thumbnail,
     generate_thumbnail,
 )
+from kitsune.upload.utils import FileTooLargeError, create_image_thumbnail
 from kitsune.users.tests import UserFactory
 
 
@@ -73,6 +73,12 @@ class CreateThumbnailTestCase(TestCase):
 
         self.assertEqual(expected_thumb.width, actual_thumb.width)
         self.assertEqual(expected_thumb.height, actual_thumb.height)
+
+    @override_settings(IMAGE_MAX_PIXELS=1)
+    def test_image_too_large(self):
+        """create_image_thumbnail raises FileTooLargeError for an oversized image."""
+        with self.assertRaises(FileTooLargeError):
+            create_image_thumbnail("kitsune/upload/tests/media/test.jpg")
 
     def test_create_image_thumbnail_avatar(self):
         """An avatar is created from an image file."""

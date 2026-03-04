@@ -15,7 +15,7 @@ from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
-from kitsune.upload.tasks import create_image_thumbnail
+from kitsune.upload.utils import create_image_thumbnail
 
 
 def _remove_group_member(profile, user, request, remove_from_group=True):
