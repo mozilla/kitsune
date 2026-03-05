@@ -8,6 +8,7 @@ from product_details import product_details
 
 from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
+from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, Topic, TopicSlugHistory
 from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
@@ -70,7 +71,9 @@ def product_landing(request: HttpRequest, slug: str) -> HttpResponse:
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product=product, locale=request.LANGUAGE_CODE),
-            "has_support_config": bool(aaq_context),
+            "has_support_config": bool(aaq_context)
+            and aaq_context.get("current_support_type")
+            != ProductSupportConfigManager.SUPPORT_TYPE_HIDE,
             "aaq_context": aaq_context,
         },
     )

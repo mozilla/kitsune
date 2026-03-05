@@ -424,13 +424,32 @@ def get_aaq_context(request, product, multiple_products=False):
     Given a request and a product, determine the AAQ context and return it.
 
     Returns an empty dict when there is no support config for the product.
+
+    When subscription_only is enabled and the user lacks a subscription:
+    - current_support_type is SUPPORT_TYPE_REDIRECT with redirect_url set, or
+    - current_support_type is SUPPORT_TYPE_HIDE (caller should return Http404)
     """
+    from kitsune.products.managers import ProductSupportConfigManager
     from kitsune.products.models import ProductSupportConfig
 
     if not has_support_config(product):
         return {}
 
     support_type, can_switch = ProductSupportConfig.objects.route_support_request(request, product)
+
+    if support_type == ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT:
+        config = ProductSupportConfig.objects.get(product=product, is_active=True)
+        redirect_url = reverse(
+            "questions.aaq_step2",
+            kwargs={"product_slug": config.unsubscribed_redirect_product.slug},
+        )
+        return {
+            "current_support_type": support_type,
+            "redirect_url": redirect_url,
+        }
+
+    if support_type == ProductSupportConfigManager.SUPPORT_TYPE_HIDE:
+        return {"current_support_type": support_type}
 
     aaq_context = {
         "product_slug": product.slug,
@@ -467,6 +486,11 @@ def get_aaq_url(aaq_context, topic=None):
 
     Expects a dict as returned by get_aaq_context (may be empty).
     """
+    from kitsune.products.managers import ProductSupportConfigManager
+
+    if aaq_context.get("current_support_type") == ProductSupportConfigManager.SUPPORT_TYPE_REDIRECT:
+        return aaq_context.get("redirect_url")
+
     is_ticketed = aaq_context.get("current_support_type") == "zendesk"
     has_forum = aaq_context.get("has_public_forum", False)
     multiple_products = aaq_context.get("multiple_products", False)
