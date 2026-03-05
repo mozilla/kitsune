@@ -299,3 +299,71 @@ class ZendeskClientTests(TestCase):
 
         self.assertNotIn(127, field_ids)
         self.assertNotIn(128, field_ids)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    def test_create_ticket_includes_brand_id(self, mock_zenpy):
+        """Test that create_ticket sets brand_id on the ticket when provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+        self.user.profile.zendesk_id = "123"
+
+        client = ZendeskClient()
+        client.update_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "firefox",
+            "product_title": "Firefox",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "technical",
+            "os": "win10",
+            "country": "US",
+            "ticket_form_id": 456,
+            "brand_id": "360000001234",
+        }
+
+        client.create_ticket(self.user, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        self.assertEqual(call_args.brand_id, 360000001234)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_PRODUCT_FIELD_ID", 123)
+    @patch("django.conf.settings.ZENDESK_OS_FIELD_ID", 124)
+    @patch("django.conf.settings.ZENDESK_COUNTRY_FIELD_ID", 125)
+    @patch("django.conf.settings.ZENDESK_CATEGORY_FIELD_ID", 126)
+    def test_create_ticket_omits_brand_id_when_not_set(self, mock_zenpy):
+        """Test that create_ticket does not set brand_id when not provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.tickets.create.return_value = Mock(id=789)
+        self.user.profile.zendesk_id = "123"
+
+        client = ZendeskClient()
+        client.update_user = Mock(return_value=Mock(id=456))
+
+        ticket_fields = {
+            "product": "firefox",
+            "product_title": "Firefox",
+            "subject": "Test subject",
+            "description": "Test description",
+            "category": "technical",
+            "os": "win10",
+            "country": "US",
+            "ticket_form_id": 456,
+            "brand_id": "",
+        }
+
+        client.create_ticket(self.user, ticket_fields)
+
+        mock_client.tickets.create.assert_called_once()
+        call_args = mock_client.tickets.create.call_args[0][0]
+
+        self.assertFalse(hasattr(call_args, "brand_id") and call_args.brand_id)
