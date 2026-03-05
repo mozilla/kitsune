@@ -10,7 +10,7 @@ from playwright_tests.messages.ask_a_question_messages.contact_support_messages 
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# C3040845
+# C3040845. C891278, C891277
 @pytest.mark.communityForums
 def test_product_community_cards_are_redirecting_to_the_correct_forum(page: Page):
     sumo_pages = SumoPages(page)

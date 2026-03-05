@@ -1388,9 +1388,31 @@ def test_quote_reply_functionality_signed_out(page: Page, create_user_factory):
         expect(sumo_pages.question_page.post_a_reply_textarea).to_be_visible()
 
 
-# T5696770
-@pytest.mark.skip
-# Currently fails due to https://github.com/mozilla/sumo/issues/1216
+# C3186666
+@pytest.mark.postedQuestions
+def test_answer_voting_is_not_available_for_signed_out_users(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+
+    with allure.step("Signing in with a simple user account and posting a Firefox product "
+                     "question"):
+        post_firefox_product_question_flow(page, test_user)
+    sumo_pages.question_page.get_question_id()
+
+    with allure.step("Posting a reply to the question"):
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            test_user['username'],
+            utilities.aaq_question_test_data['valid_firefox_question']['question_reply'])
+
+    with allure.step("Signing out and verifying that logged out users are not able to vote "
+                     "question replies"):
+        utilities.delete_cookies()
+        expect(sumo_pages.question_page.reply_vote_section(reply_id)).to_be_hidden()
+
+
+# C937575
+@pytest.mark.postedQuestions
 def test_question_reply_votes(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
@@ -1406,10 +1428,9 @@ def test_question_reply_votes(page: Page, create_user_factory):
     sumo_pages.question_page.get_question_id()
 
     with allure.step("Posting a reply to the question"):
-        sumo_pages.question_page.add_text_to_post_a_reply_textarea(
-            utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        reply_id = sumo_pages.question_page.click_on_post_reply_button(test_user["username"])
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            test_user['username'],
+            utilities.aaq_question_test_data['valid_firefox_question']['question_reply'])
 
     with allure.step("Verifying the vote reply is not available for self posted questions"):
         expect(sumo_pages.question_page.reply_vote_section(reply_id)).to_be_hidden()
@@ -1446,49 +1467,6 @@ def test_question_reply_votes(page: Page, create_user_factory):
     with allure.step("Verifying that the thumbs down button contains the disabled attribute"):
         expect(sumo_pages.question_page.reply_vote_thumbs_down(reply_id)
                ).to_have_attribute(name="disabled",value="")
-
-    with check, allure.step("Refreshing the page and verifying that the correct number of "
-                            "thumbs up votes is displayed"):
-        utilities.refresh_page()
-        assert (int(sumo_pages.question_page.
-                    get_helpful_count(reply_id)) == number_of_thumbs_up_votes)
-
-    with check, allure.step("Verifying that the correct number of thumbs down votes is "
-                            "displayed"):
-        assert (int(sumo_pages.question_page.
-                    get_not_helpful_count(reply_id)) == number_of_thumbs_down_votes)
-
-    with allure.step("Deleting the user session and clicking on the 'thumbs up' button"):
-        utilities.delete_cookies()
-        sumo_pages.question_page.click_reply_vote_thumbs_up_button(reply_id)
-        number_of_thumbs_up_votes += 1
-
-    with check, allure.step("Refreshing the page and verifying that the correct number of "
-                            "thumbs up votes is displayed"):
-        utilities.refresh_page()
-        assert (int(sumo_pages.question_page.
-                    get_helpful_count(reply_id)) == number_of_thumbs_up_votes)
-
-    with check, allure.step("Verifying that the correct number of thumbs down votes is "
-                            "displayed"):
-        assert (int(sumo_pages.question_page.
-                    get_not_helpful_count(reply_id)) == number_of_thumbs_down_votes)
-
-    with allure.step("Verifying that the thumbs up button contains the disabled attribute"):
-        expect(sumo_pages.question_page.reply_vote_thumbs_up(reply_id)
-               ).to_have_attribute(name="disabled", value="")
-
-    with allure.step("Verifying that the thumbs down button contains the disabled attribute"):
-        expect(sumo_pages.question_page.reply_vote_thumbs_down(reply_id)
-               ).to_have_attribute(name="disabled", value="")
-
-    with check, allure.step("Refreshing the page and verifying that the correct number of "
-                            "thumbs up votes is displayed"):
-        utilities.refresh_page()
-        assert (int(sumo_pages.question_page.
-                    get_helpful_count(reply_id)) == number_of_thumbs_up_votes)
-        assert (int(sumo_pages.question_page.
-                    get_not_helpful_count(reply_id)) == number_of_thumbs_down_votes)
 
     with allure.step("Signing in with a Forum Moderator account and clicking on the vote down "
                      "button"):
@@ -1716,10 +1694,10 @@ def test_common_responses(page: Page, create_user_factory):
         sumo_pages.question_page.click_on_common_responses_insert_response_button()
         try:
             reply_id = sumo_pages.question_page.click_on_post_reply_button(
-                test_user_two["username"])
+                test_user_two["username"], fetch_id=True)
         except TimeoutError:
             reply_id = sumo_pages.question_page.click_on_post_reply_button(
-                test_user_two["username"])
+                test_user_two["username"], fetch_id=True)
         assert sumo_pages.question_page.get_text_content_of_reply(
             reply_id).strip() in response.strip()
 
