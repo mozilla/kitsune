@@ -30,6 +30,11 @@ def process_event_delete_user(event_id):
     except AccountEvent.DoesNotExist:
         return
 
+    if event.profile is None:
+        event.status = AccountEvent.IGNORED
+        event.save(update_fields=["status"])
+        return
+
     user = event.profile.user
     event.profile = None
     event.save(update_fields=["profile"])
@@ -49,6 +54,11 @@ def process_event_subscription_state_change(event_id):
     try:
         event = AccountEvent.objects.get(id=event_id, status=AccountEvent.UNPROCESSED)
     except AccountEvent.DoesNotExist:
+        return
+
+    if event.profile is None:
+        event.status = AccountEvent.IGNORED
+        event.save(update_fields=["status"])
         return
 
     body = json.loads(event.body)
@@ -82,6 +92,11 @@ def process_event_password_change(event_id):
     except AccountEvent.DoesNotExist:
         return
 
+    if event.profile is None:
+        event.status = AccountEvent.IGNORED
+        event.save(update_fields=["status"])
+        return
+
     body = json.loads(event.body)
 
     change_time = datetime.fromtimestamp(body["changeTime"] / 1000.0, UTC)
@@ -103,6 +118,11 @@ def process_event_profile_change(event_id):
     try:
         event = AccountEvent.objects.get(id=event_id, status=AccountEvent.UNPROCESSED)
     except AccountEvent.DoesNotExist:
+        return
+
+    if event.profile is None:
+        event.status = AccountEvent.IGNORED
+        event.save(update_fields=["status"])
         return
 
     refresh_token = event.profile.fxa_refresh_token
