@@ -47,12 +47,15 @@ class QuestionLocaleInlineFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
 
+        if not self.instance.pk:
+            return
+
         # Calculate how many locales actually remain after deletions.
         num_locales = self.total_form_count() - len(self.deleted_forms)
 
         active_configs = self.instance.support_configs.filter(is_active=True)
 
-        if (num_locales == 0) and self.instance.pk and active_configs.exists():
+        if (num_locales == 0) and active_configs.exists():
             product_names = ", ".join(active_configs.values_list("product__title", flat=True))
             raise forms.ValidationError(
                 "Cannot remove all enabled locales. This configuration is used "
