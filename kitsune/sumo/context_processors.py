@@ -1,8 +1,7 @@
-
 from django.conf import settings
 from django.utils import timezone, translation
 
-from kitsune.questions.models import AAQConfig
+from kitsune.products.models import ProductSupportConfig
 
 
 def global_settings(request):
@@ -21,7 +20,7 @@ def i18n(request):
 
 def aaq_languages(request):
     """Adds the list of AAQ languages to the context."""
-    return {"AAQ_LANGUAGES": AAQConfig.objects.locales_list()}
+    return {"AAQ_LANGUAGES": ProductSupportConfig.objects.locales_list()}
 
 
 def current_year(request):

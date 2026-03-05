@@ -10,7 +10,8 @@ from django.utils import timezone
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.models import ProductSupportConfig
+from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.models import (
     AlreadyTakenException,
     Answer,
@@ -24,9 +25,11 @@ from kitsune.questions.models import (
 )
 from kitsune.questions.tasks import auto_archive_old_questions, update_answer_pages
 from kitsune.questions.tests import (
+    AAQConfigFactory,
     AnswerFactory,
     AnswerVoteFactory,
     QuestionFactory,
+    QuestionLocaleFactory,
     QuestionVoteFactory,
     tags_eq,
 )
@@ -523,6 +526,26 @@ class QuestionTests(TestCase):
         question.save()
         with self.subTest("ignore the solution"):
             self.assertEqual(list(question.helpful_replies), [answer3])
+
+    def test_product_config_via_psc(self):
+        """Question.product_config returns AAQConfig via ProductSupportConfig."""
+        locale = QuestionLocaleFactory(locale="en-US")
+        aaq_config = AAQConfigFactory(enabled_locales=[locale])
+        product = ProductFactory()
+        ProductSupportConfigFactory(
+            product=product,
+            forum_config=aaq_config,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_FORUM,
+        )
+        question = QuestionFactory(product=product)
+        self.assertEqual(question.product_config, aaq_config)
+
+    def test_question_product_config_returns_none_without_psc(self):
+        """Question.product_config returns None when no active PSC exists."""
+        product = ProductFactory()
+        question = QuestionFactory(product=product)
+        self.assertIsNone(question.product_config)
 
 
 class AddExistingTagTests(TestCase):
