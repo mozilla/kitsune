@@ -53,7 +53,6 @@ class CheckFileSizeTestCase(TestCase):
         with self.assertRaises(FileTooLargeError):
             with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
                 up_file = File(f)
-                # This should raise
                 check_file_size(up_file, 0)
 
 
