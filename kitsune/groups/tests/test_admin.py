@@ -1,11 +1,15 @@
+from unittest import mock
+
 from django import forms
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Group
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory
 
-from kitsune.groups.admin import GroupProfileAdmin
+from kitsune.groups.admin import GroupProfileAdmin, GroupProfileAdminForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.tests import TestCase
+from kitsune.upload.utils import FileTooLargeError
 from kitsune.users.tests import UserFactory
 
 
@@ -94,3 +98,39 @@ class GroupProfileAdminTests(TestCase):
         self.admin.save_related(mock_request, mock_form, [], change=True)
 
         self.assertEqual(sub_profile.leaders.count(), 0)
+
+    @mock.patch("kitsune.groups.admin.open_as_pil_image")
+    def test_avatar_too_large_pixels(self, mock_open):
+        """Uploading an avatar that exceeds pixel limits shows a form validation error."""
+        mock_open.side_effect = FileTooLargeError("Image exceeds the maximum allowed size.")
+
+        avatar = SimpleUploadedFile("test.png", b"fake-image-data", content_type="image/png")
+        group = Group.objects.create(name="Avatar Test Group")
+        profile = GroupProfile.add_root(group=group, slug="avatar-test-group")
+
+        form = GroupProfileAdminForm(
+            data={"group": group.pk, "slug": "avatar-test-group"},
+            files={"avatar": avatar},
+            instance=profile,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("avatar", form.errors)
+        self.assertIn("Image exceeds the maximum allowed size.", form.errors["avatar"][0])
+
+    @mock.patch("kitsune.groups.admin.check_file_size")
+    def test_avatar_too_large_file_size(self, mock_check):
+        """Uploading an avatar that exceeds file size limits shows a form validation error."""
+        mock_check.side_effect = FileTooLargeError("File is too large.")
+
+        avatar = SimpleUploadedFile("test.png", b"fake-image-data", content_type="image/png")
+        group = Group.objects.create(name="Size Test Group")
+        profile = GroupProfile.add_root(group=group, slug="size-test-group")
+
+        form = GroupProfileAdminForm(
+            data={"group": group.pk, "slug": "size-test-group"},
+            files={"avatar": avatar},
+            instance=profile,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("avatar", form.errors)
+        self.assertIn("File is too large.", form.errors["avatar"][0])
