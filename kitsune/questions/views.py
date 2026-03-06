@@ -840,6 +840,8 @@ def aaq_step3(request, product_slug):
         request.headers.get("hx-trigger-name") == "category"
     ):
         topic_id = request.GET.get("category")
+        if not topic_id:
+            return HttpResponse(status=204)
         product = get_object_or_404(Product.active, slug=product_slug)
         topic = get_object_or_404(Topic.active.filter(products=product, in_aaq=True), pk=topic_id)
         response = HttpResponse(status=204)
