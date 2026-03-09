@@ -2,7 +2,11 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser
 
-from kitsune.customercare.forms import ZendeskForm
+from kitsune.customercare.forms import (
+    POLICY_DISTRIBUTION_TAGS,
+    UPDATE_CHANNEL_TAGS,
+    ZendeskForm,
+)
 from kitsune.customercare.models import SupportTicket
 from kitsune.products.tests import (
     ProductFactory,
@@ -512,3 +516,72 @@ class ZendeskFormTests(TestCase):
         self.assertEqual(submission.update_channel, "esr")
         self.assertEqual(submission.policy_distribution, "group_policy_admx")
         mock_task.assert_called_once_with(submission.id)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_appends_update_channel_segmentation_tag(self, mock_task):
+        """Test that update_channel value is mapped to its segmentation tag."""
+        self.vpn_zendesk.enable_deployment_fields = True
+        self.vpn_zendesk.save()
+
+        for channel, expected_tag in UPDATE_CHANNEL_TAGS.items():
+            with self.subTest(channel=channel):
+                form = ZendeskForm(
+                    data={
+                        "email": "test@example.com",
+                        "category": "vpn-connection-issues",
+                        "subject": "Test subject",
+                        "description": "Test description",
+                        "update_channel": channel,
+                        "policy_distribution": "group_policy_admx",
+                    },
+                    product=self.vpn_product,
+                    user=self.user,
+                )
+                self.assertTrue(form.is_valid())
+                submission = form.send(self.user, self.vpn_product)
+                self.assertIn(expected_tag, submission.zendesk_tags)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_appends_policy_distribution_segmentation_tag(self, mock_task):
+        """Test that policy_distribution value is mapped to its segmentation tag."""
+        self.vpn_zendesk.enable_deployment_fields = True
+        self.vpn_zendesk.save()
+
+        for distribution, expected_tag in POLICY_DISTRIBUTION_TAGS.items():
+            with self.subTest(distribution=distribution):
+                form = ZendeskForm(
+                    data={
+                        "email": "test@example.com",
+                        "category": "vpn-connection-issues",
+                        "subject": "Test subject",
+                        "description": "Test description",
+                        "update_channel": "esr",
+                        "policy_distribution": distribution,
+                    },
+                    product=self.vpn_product,
+                    user=self.user,
+                )
+                self.assertTrue(form.is_valid())
+                submission = form.send(self.user, self.vpn_product)
+                self.assertIn(expected_tag, submission.zendesk_tags)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_no_deployment_tags_when_fields_empty(self, mock_task):
+        """Test that no deployment segmentation tags are added when fields are empty."""
+        form = ZendeskForm(
+            data={
+                "email": "test@example.com",
+                "category": "vpn-connection-issues",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.vpn_product,
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid())
+        submission = form.send(self.user, self.vpn_product)
+
+        for tag in UPDATE_CHANNEL_TAGS.values():
+            self.assertNotIn(tag, submission.zendesk_tags)
+        for tag in POLICY_DISTRIBUTION_TAGS.values():
+            self.assertNotIn(tag, submission.zendesk_tags)

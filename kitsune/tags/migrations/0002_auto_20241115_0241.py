@@ -180,6 +180,19 @@ ZENDESK_TAGS = [
     ("VPN::Unsupported::No OS Named", "seg-vpn-unsup-none"),
     ("VPN::Unsupported::Hardware", "seg-vpn-unsup-hrdware"),
     ("VPN::Unsupported::Windows", "seg-vpn-unsup-win"),
+    # Update Channel segmentation tags
+    ("Release channel: ESR", "seg-rel-esr"),
+    ("Release channel: Rapid Release", "seg-rel-rapid-release"),
+    ("Release channel: Full Release", "seg-rel-full-release"),
+    ("Release channel: Beta", "seg-rel-beta"),
+    ("Release channel: Other", "seg-rel-channel-other"),
+    # Policy Distribution segmentation tags
+    ("Policy distribution: Windows Group Policy (ADMX)", "seg-policy-windows-gpo"),
+    ("Policy distribution: Windows MDM", "seg-policy-windows-mdm"),
+    ("Policy distribution: macOS Configuration Profiles", "seg-policy-macos-config-profiles"),
+    ("Policy distribution: policies.json", "seg-policy-json"),
+    ("Policy distribution: Autoconfig", "seg-policy-autoconfig"),
+    ("Policy distribution: Not sure / Need help selecting", "seg-policy-dist-other"),
 ]
 
 
