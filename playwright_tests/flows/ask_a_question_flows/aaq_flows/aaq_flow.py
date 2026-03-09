@@ -159,8 +159,9 @@ class AAQFlow:
             reply_body (str): The new reply body content.
             submit_reply: If the edits should be submitted or not.
         """
-        self.question_page.click_on_reply_more_options_button(answer_id)
-        self.question_page.click_on_edit_this_post_for_a_certain_reply(answer_id)
+        if self.aaq_form_page.form_update_answer_button.is_hidden():
+            self.question_page.click_on_reply_more_options_button(answer_id)
+            self.question_page.click_on_edit_this_post_for_a_certain_reply(answer_id)
 
         self.aaq_form_page.clear_the_question_body_textarea_field()
         self.aaq_form_page.add_text_to_aaq_textarea_field(reply_body)
@@ -184,7 +185,7 @@ class AAQFlow:
 
     @retry_on_502
     def post_question_reply_flow(self, repliant_username: str, reply='', submit_reply=True,
-                                 quoted_reply=False, reply_for_id='') -> str:
+                                 quoted_reply=False, reply_for_id='', fetch_id=True) -> str:
         """
         Flow for posting a question reply.
         Args:
@@ -206,7 +207,7 @@ class AAQFlow:
             self.question_page.add_text_to_post_a_reply_textarea(reply)
 
         if submit_reply:
-            return self.question_page.click_on_post_reply_button(repliant_username)
+            return self.question_page.click_on_post_reply_button(repliant_username, fetch_id)
 
     def report_question_abuse(self, answer_id: str, text=''):
         """

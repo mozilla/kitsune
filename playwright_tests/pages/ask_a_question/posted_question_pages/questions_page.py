@@ -234,8 +234,6 @@ class QuestionPage(BasePage):
     def get_text_of_spam_marked_banner(self) -> str:
         return self._get_text_of_element(self.reply_flagged_as_spam_banner)
 
-    def is_spam_marked_banner_displayed(self) -> bool:
-        return self._is_element_visible(self.reply_flagged_as_spam_banner)
 
     """Actions against the report abuse section locators."""
     def click_abuse_modal_close_button(self):
@@ -423,10 +421,16 @@ class QuestionPage(BasePage):
     def get_posted_reply_modified_by_text(self, reply_id: str) -> str:
         return self._get_text_of_element(self.modified_by_text(reply_id))
 
-    def click_on_post_reply_button(self, repliant_username) -> str:
+    def click_on_post_reply_button(self, repliant_username, fetch_id: bool) -> str:
+        """Post the question reply.
+        Args:
+            repliant_username (str): The username of the repliant. Acts as a wait.
+            fetch_id (bool): If we should return the question reply id or not.
+        """
         self._click(self.post_reply_button,
                     expected_locator=self.repliant_username(repliant_username))
-        return self._get_element_attribute_value(self.answer_by_username(repliant_username), "id")
+        if fetch_id:
+            return self._get_element_attribute_value(self.answer_by_username(repliant_username), "id")
 
     """Actions against the question tools section locators."""
     def get_thread_locked_text(self) -> str:
