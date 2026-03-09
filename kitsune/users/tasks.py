@@ -22,6 +22,15 @@ shared_task_with_retry = shared_task(
 log = logging.getLogger("k.task")
 
 
+def ignore_if_missing_profile(event: AccountEvent) -> bool:
+    """Checks if an event has an associated profile and, if not, marks it as ignored."""
+    if event.profile is None:
+        event.status = AccountEvent.IGNORED
+        event.save(update_fields=["status"])
+        return True
+    return False
+
+
 @shared_task_with_retry
 @transaction.atomic
 def process_event_delete_user(event_id):
@@ -30,9 +39,7 @@ def process_event_delete_user(event_id):
     except AccountEvent.DoesNotExist:
         return
 
-    if event.profile is None:
-        event.status = AccountEvent.IGNORED
-        event.save(update_fields=["status"])
+    if ignore_if_missing_profile(event):
         return
 
     user = event.profile.user
@@ -56,9 +63,7 @@ def process_event_subscription_state_change(event_id):
     except AccountEvent.DoesNotExist:
         return
 
-    if event.profile is None:
-        event.status = AccountEvent.IGNORED
-        event.save(update_fields=["status"])
+    if ignore_if_missing_profile(event):
         return
 
     body = json.loads(event.body)
@@ -92,9 +97,7 @@ def process_event_password_change(event_id):
     except AccountEvent.DoesNotExist:
         return
 
-    if event.profile is None:
-        event.status = AccountEvent.IGNORED
-        event.save(update_fields=["status"])
+    if ignore_if_missing_profile(event):
         return
 
     body = json.loads(event.body)
@@ -120,9 +123,7 @@ def process_event_profile_change(event_id):
     except AccountEvent.DoesNotExist:
         return
 
-    if event.profile is None:
-        event.status = AccountEvent.IGNORED
-        event.save(update_fields=["status"])
+    if ignore_if_missing_profile(event):
         return
 
     refresh_token = event.profile.fxa_refresh_token

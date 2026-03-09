@@ -586,15 +586,33 @@ class WebhookView(View):
         for long_id, event in events.items():
             short_id = long_id.replace(SET_ID_PREFIX, "")
 
-            account_event = AccountEvent.objects.create(
-                issued_at=payload["iat"],
-                jwt_id=payload["jti"],
-                fxa_uid=fxa_uid,
-                status=AccountEvent.UNPROCESSED if profile_obj else AccountEvent.IGNORED,
-                body=json.dumps(event),
-                event_type=short_id,
-                profile=profile_obj,
-            )
+            if profile_obj and (short_id == AccountEvent.DELETE_USER):
+                # Avoid duplicate unprocessed delete-user events for the same profile.
+                account_event, created = AccountEvent.objects.get_or_create(
+                    profile=profile_obj,
+                    event_type=short_id,
+                    status=AccountEvent.UNPROCESSED,
+                    defaults={
+                        "fxa_uid": fxa_uid,
+                        "jwt_id": payload["jti"],
+                        "body": json.dumps(event),
+                        "issued_at": payload["iat"],
+                    },
+                )
+                if not created:
+                    # An unprocessed delete-user event for the same user already exists, and
+                    # has already been queued for processing, so no need to queue it again.
+                    continue
+            else:
+                account_event = AccountEvent.objects.create(
+                    issued_at=payload["iat"],
+                    jwt_id=payload["jti"],
+                    fxa_uid=fxa_uid,
+                    status=AccountEvent.UNPROCESSED if profile_obj else AccountEvent.IGNORED,
+                    body=json.dumps(event),
+                    event_type=short_id,
+                    profile=profile_obj,
+                )
 
             if profile_obj:
                 match short_id:
