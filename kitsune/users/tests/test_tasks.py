@@ -14,6 +14,7 @@ from kitsune.users.models import AccountEvent, Profile
 from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
+    process_event_profile_change,
     process_event_subscription_state_change,
 )
 from kitsune.users.tests import AccountEventFactory, GroupFactory, ProfileFactory, UserFactory
@@ -266,3 +267,55 @@ class AccountEventsTasksTestCase(TestCase):
 
         self.assertIs(profile.fxa_password_change, None)
         self.assertEqual(account_event.status, AccountEvent.UNPROCESSED)
+
+    def test_process_delete_user_without_profile(self):
+        account_event = AccountEventFactory(
+            body=json.dumps({}),
+            event_type=AccountEvent.DELETE_USER,
+            status=AccountEvent.UNPROCESSED,
+            profile=None,
+        )
+
+        process_event_delete_user(account_event.id)
+        account_event.refresh_from_db()
+
+        self.assertEqual(account_event.status, AccountEvent.IGNORED)
+
+    def test_process_subscription_state_change_without_profile(self):
+        account_event = AccountEventFactory(
+            body=json.dumps({"capabilities": ["capability_1"], "isActive": True, "changeTime": 1}),
+            event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE,
+            status=AccountEvent.UNPROCESSED,
+            profile=None,
+        )
+
+        process_event_subscription_state_change(account_event.id)
+        account_event.refresh_from_db()
+
+        self.assertEqual(account_event.status, AccountEvent.IGNORED)
+
+    def test_process_password_change_without_profile(self):
+        account_event = AccountEventFactory(
+            body=json.dumps({"changeTime": 2000}),
+            event_type=AccountEvent.PASSWORD_CHANGE,
+            status=AccountEvent.UNPROCESSED,
+            profile=None,
+        )
+
+        process_event_password_change(account_event.id)
+        account_event.refresh_from_db()
+
+        self.assertEqual(account_event.status, AccountEvent.IGNORED)
+
+    def test_process_profile_change_without_profile(self):
+        account_event = AccountEventFactory(
+            body=json.dumps({}),
+            event_type=AccountEvent.PROFILE_CHANGE,
+            status=AccountEvent.UNPROCESSED,
+            profile=None,
+        )
+
+        process_event_profile_change(account_event.id)
+        account_event.refresh_from_db()
+
+        self.assertEqual(account_event.status, AccountEvent.IGNORED)
