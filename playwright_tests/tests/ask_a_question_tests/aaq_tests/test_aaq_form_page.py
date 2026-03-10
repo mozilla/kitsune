@@ -152,6 +152,9 @@ def test_corresponding_aaq_product_name_and_image_are_displayed(page: Page, crea
 
     with allure.step("Navigating to each product aaq form"):
         for product in utilities.aaq_question_test_data["products_aaq_url"]:
+            redirect_target = utilities.general_test_data['subscription_redirects'].get(
+                product
+            )
             utilities.navigate_to_link(
                 utilities.aaq_question_test_data["products_aaq_url"][product])
 
@@ -160,7 +163,11 @@ def test_corresponding_aaq_product_name_and_image_are_displayed(page: Page, crea
                 expect(sumo_pages.aaq_form_page.aaq_page_logo).to_be_visible()
 
             with check, allure.step("Verifying that the correct product header is displayed"):
-                assert sumo_pages.aaq_form_page.get_aaq_form_page_heading() == product
+                if redirect_target:
+                    assert (sumo_pages.product_solutions_page.
+                            get_product_solutions_heading() == redirect_target +" Solutions")
+                else:
+                    assert sumo_pages.aaq_form_page.get_aaq_form_page_heading() == product
 
 
 # T5696594, T5696595
@@ -175,20 +182,32 @@ def test_progress_milestone_redirect(page: Page, create_user_factory):
 
     with allure.step("Navigating to each product AAQ form"):
         for product in utilities.aaq_question_test_data["products_aaq_url"]:
+            redirect_target = utilities.general_test_data['subscription_redirects'].get(
+                product
+            )
             utilities.navigate_to_link(
                 utilities.aaq_question_test_data["products_aaq_url"][product])
 
             with check, allure.step("Verifying that the correct in progress milestone is "
                                     "displayed"):
-                assert sumo_pages.aaq_form_page.get_in_progress_item_label(
-                ) == AAQFormMessages.IN_PROGRESS_MILESTONE
+                if redirect_target:
+                    assert sumo_pages.aaq_form_page.get_in_progress_item_label(
+                    ) == AAQFormMessages.COMPLETED_MILESTONE_TWO
+                else:
+                    assert sumo_pages.aaq_form_page.get_in_progress_item_label(
+                    ) == AAQFormMessages.IN_PROGRESS_MILESTONE
 
             with check, allure.step(f"Clicking on the {AAQFormMessages.COMPLETED_MILESTONE_TWO} "
                                     f"milestone and verifying that we are on the correct product "
                                     f"solutions page"):
                 sumo_pages.aaq_form_page.click_on_a_particular_completed_milestone(
                     AAQFormMessages.COMPLETED_MILESTONE_TWO)
-                expect(page).to_have_url(utilities.general_test_data["product_solutions"][product])
+                if redirect_target:
+                    expect(page).to_have_url(
+                        utilities.general_test_data["product_solutions"][redirect_target] + "#")
+                else:
+                    expect(page).to_have_url(
+                        utilities.general_test_data["product_solutions"][product])
 
             with allure.step(f"Navigating back to the aaq form and clicking on the "
                              f"{AAQFormMessages.COMPLETED_MILESTONE_ONE} milestone"):
@@ -458,7 +477,7 @@ def test_premium_products_aaq(page: Page):
                 expected_locator=sumo_pages.aaq_form_page.premium_ticket_message,
                 form_url=premium_form_link
             )
-            if premium_product != 'Mozilla VPN' and utilities.get_page_url() == premium_form_link:
+            if utilities.get_page_url() == premium_form_link:
                 with utilities.page.expect_navigation():
                     retry_on_502(
                         sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True,

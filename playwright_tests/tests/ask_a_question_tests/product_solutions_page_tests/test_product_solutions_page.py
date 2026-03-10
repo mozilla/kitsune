@@ -141,13 +141,20 @@ def test_contact_support_widget_redirect(page: Page, restmail_test_account_creat
         utilities.delete_cookies()
 
     for premium_product in utilities.general_test_data["premium_products"]:
+        redirect_target = utilities.general_test_data['subscription_redirects'].get(
+            premium_product
+        )
         with allure.step(f"Clicking on the {premium_product} card"):
             sumo_pages.contact_support_page.click_on_a_particular_card(premium_product)
 
         with check, allure.step("Verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
-            assert sumo_pages.common_web_elements.get_aaq_widget_text(
-            ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+            if redirect_target:
+                assert sumo_pages.common_web_elements.get_aaq_widget_text(
+                ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+            else:
+                assert sumo_pages.common_web_elements.get_aaq_widget_text(
+                ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
             assert sumo_pages.common_web_elements.get_aaq_widget_button_name(
@@ -159,9 +166,14 @@ def test_contact_support_widget_redirect(page: Page, restmail_test_account_creat
             sumo_pages.auth_flow_page.login_with_existing_session()
 
         with allure.step("Verifying that we are on the correct AAQ form page"):
-            expect(page).to_have_url(
-                utilities.aaq_question_test_data["products_aaq_url"][premium_product],
-                timeout=30000)
+            if redirect_target:
+                expect(page).to_have_url(
+                    utilities.aaq_question_test_data["products_aaq_url"][redirect_target],
+                    timeout=30000)
+            else:
+                expect(page).to_have_url(
+                    utilities.aaq_question_test_data["products_aaq_url"][premium_product],
+                    timeout=30000)
 
         with allure.step("Signing out and access the contact support page via the top navbar "
                          "Get Help > Browse All products"):

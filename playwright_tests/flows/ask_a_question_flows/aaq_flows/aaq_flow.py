@@ -109,6 +109,10 @@ class AAQFlow:
         # Note: Some premium products forms (example: Mozilla VPN) has an extra "os" dropdown.
         if self.aaq_form_page.is_os_dropdown_menu_visible():
             self.aaq_form_page.select_random_os_by_value()
+        if self.aaq_form_page.update_channel_dropdown.is_visible():
+            self.aaq_form_page.select_random_update_channel_by_value()
+        if self.aaq_form_page.distributing_policies_dropdown.is_visible():
+            self.aaq_form_page.select_random_distributing_policies_by_value()
         self.aaq_form_page.add_text_to_premium_aaq_form_subject_field(subject)
         self.aaq_form_page.add_text_to_premium_aaq_textarea_body_field(body)
 

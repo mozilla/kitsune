@@ -2,6 +2,8 @@ import allure
 import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
+
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
     ContactSupportMessages)
 from playwright_tests.messages.ask_a_question_messages.community_forums_messages import (
@@ -44,6 +46,7 @@ def test_contact_support_page_content(page: Page):
 @pytest.mark.smokeTest
 @pytest.mark.contactSupportPage
 def test_contact_support_page_cards_redirect(page: Page):
+    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Accessing the contact support page via the top navbar Ask a Question > "
                      "View All"):
@@ -54,8 +57,11 @@ def test_contact_support_page_cards_redirect(page: Page):
             sumo_pages.contact_support_page.click_on_a_particular_card(card)
 
         with check, allure.step("Verifying that we are on the correct product solutions page"):
-            assert sumo_pages.product_solutions_page.get_product_solutions_heading(
-            ) == card + ProductSolutionsMessages.PAGE_HEADER
+            assert (
+                sumo_pages.product_solutions_page.get_product_solutions_heading()
+                == (utilities.general_test_data['subscription_redirects'].get(card) or card)
+                + ProductSolutionsMessages.PAGE_HEADER
+            )
 
         with check, allure.step("Verifying that we are on the correct milestone"):
             assert sumo_pages.product_solutions_page.get_current_milestone_text(

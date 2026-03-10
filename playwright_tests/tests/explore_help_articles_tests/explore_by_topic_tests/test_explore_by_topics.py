@@ -26,22 +26,24 @@ def test_explore_by_topic_product_filter(page: Page):
         topic = topic.strip()
         if topic != "Browse":
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
-        with check, allure.step("Verifying that the correct page header is displayed"):
+        with check, allure.step("Verifying that the correct page header is displayed for the"
+                                f"{topic} topic"):
             assert topic == (sumo_pages.explore_by_topic_page
                              .get_explore_by_topic_page_header().strip())
         for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
+            utilities.wait_for_dom_to_load()
             product = product.strip()
             if product.strip() == "All Products":
                 continue
             else:
                 sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product.strip())
                 if not sumo_pages.explore_by_topic_page.get_metadata_of_all_listed_articles():
-                    pytest.fail(f"There is no sublist for {product}")
+                    pytest.fail(f"There is no sublist for {product} for the {topic} filter")
 
                 for sublist in (sumo_pages.explore_by_topic_page
                     .get_metadata_of_all_listed_articles()):
                     with check, allure.step(f"Verifying that '{product}' is listed in the "
-                                            f"article metadata"):
+                                            f"article metadata for the {topic} topic filter"):
                         assert product in sublist
 
 
@@ -65,11 +67,14 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
             product = product.strip()
             sumo_pages.explore_by_topic_page.select_a_filter_by_product_option(product)
             with check, allure.step("Verifying the correct AAQ widget text is displayed for "
-                                    "products"):
+                                    f"{product}"):
                 if product == "All Products":
                     assert (sumo_pages.common_web_elements
                             .get_aaq_widget_text() == AAQWidgetMessages
                             .NEUTRAL_AAQ_SUBHEADING_TEXT)
+                elif product in utilities.general_test_data['subscription_redirects']:
+                    with check, allure.step("Verifying that the AAQ widget is not displayed"):
+                        assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
                 elif product in utilities.general_test_data['freemium_products']:
                     assert (sumo_pages.common_web_elements
                             .get_aaq_widget_text() == AAQWidgetMessages
@@ -112,6 +117,9 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
                     sumo_pages.common_web_elements.click_on_aaq_button()
                 with check, allure.step("Verifying that the contact support page URL is correct"):
                     assert ContactSupportMessages.PAGE_URL == utilities.get_page_url()
+            elif product in utilities.general_test_data['subscription_redirects']:
+                with check, allure.step("Verifying that the AAQ widget is not displayed"):
+                    assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
             elif (product not in utilities.general_test_data['premium_products'] and
                   product not in utilities.general_test_data['freemium_products']):
                 with check, allure.step("Verifying that the AAQ widget is not displayed for the "
