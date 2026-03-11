@@ -1,9 +1,31 @@
 import json
 
 import yaml
+from django.core.cache import cache
 from django.db.models import Prefetch, Q
 
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product, ProductSupportConfig, Topic
+
+_ENTERPRISE_BANNER_CACHE_TIMEOUT = 3600  # 1 hour
+
+
+def is_enterprise_user(user) -> bool:
+    """Return True if the user is in a hybrid support group for firefox-enterprise."""
+    if not user.is_authenticated:
+        return False
+
+    cache_key = f"enterprise_hybrid_banner:{user.pk}"
+    result = cache.get(cache_key)
+
+    if result is None:
+        result = ProductSupportConfig.objects.filter(
+            product__slug="firefox-enterprise",
+            is_active=True,
+            hybrid_support_groups__user=user,
+        ).exists()
+        cache.set(cache_key, result, timeout=_ENTERPRISE_BANNER_CACHE_TIMEOUT)
+
+    return result
 
 
 def get_taxonomy(

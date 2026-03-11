@@ -29,6 +29,9 @@
 
 {% block contentwrap %}
 <div id="main-content">
+  {% if display_enterprise_banner %}
+    {% include "products/includes/enterprise_banner.html" %}
+  {% endif %}
   <section class="mzp-l-content sumo-page-section--inner">
     <div class="text-center-to-left-on-large">
       <h2 class="sumo-page-subheading">{{ _('Get Help') }}</h2>

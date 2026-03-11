@@ -3,6 +3,7 @@ from django.shortcuts import render
 from jinja2 import TemplateNotFound
 
 from kitsune.products.models import Product
+from kitsune.products.utils import is_enterprise_user
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.utils import get_featured_articles
 
@@ -16,6 +17,7 @@ def home(request):
         {
             "products": Product.active.filter(visible=True),
             "featured": get_featured_articles(locale=request.LANGUAGE_CODE),
+            "display_enterprise_banner": is_enterprise_user(request.user),
         },
     )
 

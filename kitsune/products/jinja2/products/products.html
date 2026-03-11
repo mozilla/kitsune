@@ -25,6 +25,9 @@
 
 
 {% block contentwrap %}
+  {% if display_enterprise_banner %}
+    {% include "products/includes/enterprise_banner.html" %}
+  {% endif %}
   <section class="mzp-l-content sumo-page-section" id="main-content">
     {{ product_cards(products) }}
   </section>
