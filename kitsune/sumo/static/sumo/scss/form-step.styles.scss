@@ -1,14 +1,14 @@
 @use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
 
 // Base elements - general HTML elements
-@import "protocol/css/base/elements/reset";
-@import "protocol/css/base/elements/common";
-@import "protocol/css/base/elements/forms";
+@use "protocol/css/base/elements/reset";
+@use "protocol/css/base/elements/common";
+@use "protocol/css/base/elements/forms";
 
 // Components from protocol-extra.scss
-@import "protocol/css/components/button";
+@use "protocol/css/components/button";
 
-@import "./base/typography";
+@use "./base/typography";
 
 :root,
 :host {

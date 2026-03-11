@@ -232,8 +232,9 @@
 <footer class="mzp-c-footer">
   <div class="mzp-l-content">
     <nav class="mzp-c-footer-primary">
-      <div class="mzp-c-footer-cols">
-        <section class="mzp-c-footer-col">
+      <div class="mzp-c-footer-primary-logo"><a href="https://www.mozilla.org/">{{ _('Mozilla') }}</a></div>
+      <div class="mzp-c-footer-sections">
+        <section class="mzp-c-footer-section">
           <h5 class="mzp-c-footer-heading">{{ _('Mozilla') }}</h5>
           <ul class="mzp-c-footer-list">
             <li><a href="https://www.mozilla.org/about/legal/defend-mozilla-trademarks/">{{ _('Report Trademark Abuse') }}</a></li>
@@ -256,7 +257,7 @@
           </ul>
         </section>
 
-        <section class="mzp-c-footer-col">
+        <section class="mzp-c-footer-section">
           <h5 class="mzp-c-footer-heading">{{ _('Firefox') }}</h5>
           <ul class="mzp-c-footer-list">
             <li><a href="https://www.firefox.com/thanks/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download') }}</a></li>
@@ -267,7 +268,7 @@
           </ul>
         </section>
 
-        <section class="mzp-c-footer-col">
+        <section class="mzp-c-footer-section">
           <h5 class="mzp-c-footer-heading">{{ _('Firefox for Developers') }}</h5>
           <ul class="mzp-c-footer-list">
             <li><a href="https://www.firefox.com/channel/desktop/developer/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Developer Edition') }}</a></li>
@@ -278,7 +279,7 @@
           </ul>
         </section>
 
-        <section class="mzp-c-footer-col">
+        <section class="mzp-c-footer-section">
           <h5 class="mzp-c-footer-heading">{{ _('Mozilla Account') }}</h5>
           <ul class="mzp-c-footer-list">
             {% if not request.user.is_authenticated %}
@@ -311,64 +312,59 @@
             </li>
           </ul>
         </section>
-
-        <section class="mzp-c-footer-col lang-col">
-          <form class="mzp-c-language-switcher" method="get" action="#">
-            <a class="mzp-c-language-switcher-link" href="{{ locale_picker_url }}">{{ _('Language') }}</a>
-            <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
-            <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
-             name="lang">
-              {% for locale in settings.LANGUAGE_CHOICES %}
-                  <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
-              {% endfor %}
-            </select>
-            <!-- form submit button is shown when JavaScript is not enabled -->
-            <button type="submit">{{ _('Go') }}</button>
-          </form>
-          <ul class="mzp-c-footer-links-social">
-            <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
-            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>
-            <li><a class="instagram" href="https://www.instagram.com/firefox">Instagram<span> (firefox)</span></a></li>
-          </ul>
-        </section>
-
       </div>
     </nav>
 
     <nav class="mzp-c-footer-secondary">
-      <div class="mzp-c-footer-link-col">
-        <div class="mzp-c-footer-primary-logo"><a href="https://www.mozilla.org/">{{ _('Mozilla') }}</a></div>
-        <div class="mzp-c-footer-legal">
-          <ul>
-            <li><a href="https://www.mozilla.org/">{{ _('mozilla.org') }}</a></li>
-            <li><a href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Terms of Service') }}</a></li>
-            <li><a href="https://www.mozilla.org/privacy/websites/">{{ _('Privacy') }}</a></li>
-            <li><a href="https://www.mozilla.org/privacy/websites/#user-choices">{{ _('Cookies') }}</a></li>
-            <li><a href="https://www.mozilla.org/contact/">{{ _('Contact') }}</a></li>
-          </ul>
-        </div>
+      <div class="mzp-c-footer-language">
+        <form class="mzp-c-language-switcher" method="get" action="#">
+          <a class="mzp-c-language-switcher-link" href="{{ locale_picker_url }}">{{ _('Language') }}</a>
+          <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
+          <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
+           name="lang">
+            {% for locale in settings.LANGUAGE_CHOICES %}
+                <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
+            {% endfor %}
+          </select>
+          <!-- form submit button is shown when JavaScript is not enabled -->
+          <button type="submit">{{ _('Go') }}</button>
+        </form>
       </div>
-      <div class="mzp-c-footer-legal-col">
-        <p>
-          {% trans
-            moco_link_open='<a href="https://www.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Corporation">'|safe,
-            mofo_link_open='<a href="https://foundation.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Foundation">'|safe,
-            link_close='</a>'|safe
-          %}
-            Visit {{ moco_link_open }}Mozilla Corporation’s{{ link_close }}
-            not-for-profit parent, the {{ mofo_link_open }}Mozilla Foundation{{ link_close }}.
-          {% endtrans %}
-        </p>
-        <p>
-          {% trans
-            year=CURRENT_YEAR,
-            link_open='<a rel="external noopener" href="https://www.mozilla.org/foundation/licensing/website-content/">'|safe,
-            link_close='</a>'|safe
-          %}
-            Portions of this content are ©1998–{{ year }} by individual mozilla.org contributors. Content available under a
-            {{ link_open }}Creative Commons license{{ link_close }}.
-          {% endtrans %}
-        </p>
+      <ul class="mzp-c-footer-links-social">
+        <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
+        <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>
+        <li><a class="instagram" href="https://www.instagram.com/firefox">Instagram<span> (firefox)</span></a></li>
+      </ul>
+      <div class="mzp-c-footer-legal">
+        <div class="mzp-c-footer-license">
+          <p>
+            {% trans
+              moco_link_open='<a href="https://www.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Corporation">'|safe,
+              mofo_link_open='<a href="https://foundation.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Foundation">'|safe,
+              link_close='</a>'|safe
+            %}
+              Visit {{ moco_link_open }}Mozilla Corporation's{{ link_close }}
+              not-for-profit parent, the {{ mofo_link_open }}Mozilla Foundation{{ link_close }}.
+            {% endtrans %}
+          </p>
+          <p>
+            {% trans
+              year=CURRENT_YEAR,
+              link_open='<a rel="external noopener" href="https://www.mozilla.org/foundation/licensing/website-content/">'|safe,
+              link_close='</a>'|safe
+            %}
+              Portions of this content are ©1998–{{ year }} by individual mozilla.org contributors. Content available under a
+              {{ link_open }}Creative Commons license{{ link_close }}.
+            {% endtrans %}
+          </p>
+        </div>
+        <ul class="mzp-c-footer-terms">
+          <li><a href="https://www.mozilla.org/">{{ _('mozilla.org') }}</a></li>
+          <li><a href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Terms of Service') }}</a></li>
+          <li><a href="https://www.mozilla.org/privacy/websites/">{{ _('Privacy') }}</a></li>
+          <li><a href="https://www.mozilla.org/privacy/websites/#user-choices">{{ _('Cookies') }}</a></li>
+          <li><a href="https://www.mozilla.org/contact/">{{ _('Contact') }}</a></li>
+        </ul>
       </div>
     </nav>
   </div>

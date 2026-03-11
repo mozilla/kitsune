@@ -9,6 +9,7 @@ import "sumo/js/libs/django/prepopulate";
 import "sumo/js/codemirror.sumo-hint";
 import "sumo/js/codemirror.sumo-mode";
 import "sumo/js/protocol";
+import Modal from "protocol/js/modal";
 import AjaxPreview from "sumo/js/ajaxpreview";
 import { initDiff } from "sumo/js/diff";
 import Marky from "sumo/js/markup";
@@ -425,10 +426,10 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
           success: function (response) {
             $('#' + checkbox_id).removeClass('markasready').addClass('yes');
             $('#' + checkbox_id).off('click');
-            Mzp.Modal.closeModal()
+            Modal.closeModal()
           },
           error: function () {
-            Mzp.Modal.closeModal()
+            Modal.closeModal()
           }
         });
       }

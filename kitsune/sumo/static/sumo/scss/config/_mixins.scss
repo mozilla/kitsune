@@ -2,6 +2,8 @@
 @use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
 @use 'sass:map';
 @use 'sass:math';
+@use 'sass:meta';
+@use 'sass:string';
 
 // Think in pixels, but use rems. Takes a whole number.
 @function rem-calc($size, $multiplier:1) {
@@ -43,7 +45,7 @@
 
 @mixin line-height($size) {
   // When unit is pixels, pass it through and convert to rem
-  @if (unit($size) == 'px') {
+  @if (math.unit($size) == 'px') {
     line-height: $size;
     line-height: p.remify($size);
   }
@@ -95,7 +97,7 @@
   // each item in size map
   @each $key1, $val1 in $map-name {
     // maps require a second loop
-    @if type-of($val1) == "map" {
+    @if meta.type-of($val1) == "map" {
       @each $key2, $val2 in $val1 {
         --color-#{$key1}-#{$key2}: #{$val2};
       }
@@ -114,10 +116,10 @@
   $encoded: '';
   $slice: 2000;
   $index: 0;
-  $loops: ceil(math.div(str-length($svg), $slice));
+  $loops: math.ceil(math.div(string.length($svg), $slice));
 
   @for $i from 1 through $loops {
-    $chunk: str-slice($svg, $index, $index + $slice - 1);
+    $chunk: string.slice($svg, $index, $index + $slice - 1);
     // Encode (may need a few extra replacements)
     $chunk: str-replace($chunk,'"','\'');
     $chunk: str-replace($chunk,'<','%3C');
@@ -133,12 +135,12 @@
 
 //  Helper function to replace characters in a string
 @function str-replace($string, $search, $replace: '') {
-  $index: str-index($string, $search);
+  $index: string.index($string, $search);
 
   @if $index {
-    @return str-slice($string, 1, $index - 1) + $replace +
-      str-replace(str-slice($string, $index +
-      str-length($search)), $search, $replace);
+    @return string.slice($string, 1, $index - 1) + $replace +
+      str-replace(string.slice($string, $index +
+      string.length($search)), $search, $replace);
   }
   @return $string;
 }

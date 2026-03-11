@@ -1,9 +1,10 @@
-import "sumo/js/protocol";
+import Navigation from "protocol/js/navigation";
+import Menu from "protocol/js/menu";
 
 (function () {
   'use strict';
-  Mzp.Navigation.init();
-  Mzp.Menu.init();
+  Navigation.init();
+  Menu.init();
 })();
 
 var toggleNavButtons = document.querySelectorAll('[data-sumo-toggle-nav]');

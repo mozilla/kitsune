@@ -9,5 +9,5 @@
 
 @use './device-migration-wizard';
 
-@import "../../../../../node_modules/codemirror/lib/codemirror";
-@import "../../../../../node_modules/codemirror/addon/hint/show-hint";
+@use "../../../../../node_modules/codemirror/lib/codemirror";
+@use "../../../../../node_modules/codemirror/addon/hint/show-hint";

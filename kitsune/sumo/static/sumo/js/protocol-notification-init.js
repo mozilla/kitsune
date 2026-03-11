@@ -1,4 +1,5 @@
 import "sumo/js/protocol";
+import Notification from "protocol/js/notification-bar";
 
   (function() {
     'use strict';
@@ -15,7 +16,7 @@ import "sumo/js/protocol";
     if (notificationButton) {
       notificationButton.addEventListener('click', function(e) {
         e.preventDefault();
-        Mzp.Notification.init(e.target, {
+        Notification.init(e.target, {
           closeText: 'Close notification',
           hasDismiss: true,
         });

@@ -1,4 +1,5 @@
 import "sumo/js/protocol";
+import Modal from "protocol/js/modal";
 
 (function () {
   'use strict';
@@ -8,7 +9,7 @@ import "sumo/js/protocol";
       var dialogLink = e.dataset.sumoModal;
       var content = document.getElementById(dialogLink);
       function openThisDialog(e) {
-        Mzp.Modal.createModal(e.target, content, {
+        Modal.createModal(e.target, content, {
           closeText: 'Close modal',
           content: document.getElementById(e.target.dataset.sumoModal),
         });
@@ -21,7 +22,7 @@ import "sumo/js/protocol";
   var closeButtons = document.querySelectorAll('[data-sumo-modal-close]');
   if (closeButtons) {
     closeButtons.forEach((button) => {
-      button.addEventListener("click", () => Mzp.Modal.closeModal());
+      button.addEventListener("click", () => Modal.closeModal());
     });
   }
 })();
