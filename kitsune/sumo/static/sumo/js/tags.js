@@ -1,4 +1,5 @@
 import TomSelect from 'tom-select';
+import 'tom-select/dist/css/tom-select.default.css';
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tag-select').forEach(dropdown => {
