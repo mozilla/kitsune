@@ -68,7 +68,7 @@ def test_aaq_redirect(page: Page, restmail_test_account_creation):
     sumo_pages = SumoPages(page)
     utilities.delete_cookies()
 
-    with allure.step("Navigating to product topics pages"):
+    with (allure.step("Navigating to product topics pages")):
         for product_topic in utilities.general_test_data["product_topics"]:
             topic_url = utilities.general_test_data["product_topics"][product_topic]
             utilities.navigate_to_link(topic_url)
@@ -76,13 +76,22 @@ def test_aaq_redirect(page: Page, restmail_test_account_creation):
 
             with check, allure.step(f"Verifying that the correct subheading page for"
                                     f" {product_topic} is displayed"):
-                if product_topic in utilities.general_test_data["premium_products"]:
+                redirect_target = utilities.general_test_data['subscription_redirects'].get(
+                    product_topic
+                )
+
+                if redirect_target:
+                    with check, allure.step("Verifying that the aaq widget is not displayed for "
+                                            f"{product_topic}"):
+                        assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+                        continue
+                if product_topic in utilities.general_test_data['freemium_products']:
                     assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                    ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
+                    ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
                         f"Incorrect AAQ widget text displayed for the {product_topic} product")
                 else:
                     assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                    ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
+                    ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
                         f"Incorrect AAQ widget text displayed for the {product_topic} product")
 
             with allure.step("Clicking on the AAQ button"):

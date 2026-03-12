@@ -186,6 +186,9 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
                 sumo_pages.top_navbar.hover_over_ask_a_question_top_navbar,
                 is_first=index == 0,
             )
+            redirect_target = utilities.general_test_data['subscription_redirects'].get(
+                current_option
+            )
 
             if current_option == "Firefox desktop":
                 current_option = utilities.remove_character_from_string(
@@ -193,7 +196,10 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
             elif current_option == "Monitor":
                 current_option = f"Mozilla {current_option}"
 
-            if current_option != "View all":
+            if redirect_target:
+                assert (f"{redirect_target} Solutions" == sumo_pages.product_solutions_page
+                        .get_product_solutions_heading())
+            elif current_option != "View all":
                 assert (f"{current_option} Solutions" == sumo_pages.product_solutions_page
                         .get_product_solutions_heading())
             else:

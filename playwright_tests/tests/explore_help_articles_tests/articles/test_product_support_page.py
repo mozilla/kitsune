@@ -204,6 +204,8 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
 
 
 # C890932
+# skipped until https://github.com/mozilla/sumo/issues/2818 is fixed
+@pytest.mark.skip
 @pytest.mark.smokeTest
 @pytest.mark.productSupportPage
 def test_still_need_help_button_redirect(page: Page, create_user_factory):

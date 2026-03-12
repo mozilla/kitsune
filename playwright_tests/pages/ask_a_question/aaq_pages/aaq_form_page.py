@@ -29,7 +29,7 @@ class AAQFormPage(BasePage):
         """Locators belonging to the loginless form."""
         self.loginless_contact_email_input_field = page.locator("input#id_email")
 
-        """"Locators belonging to the product topi dropdown."""
+        """"Locators belonging to the product topic dropdown."""
         self.product_topic_options = page.locator("select#id_category option")
         self.product_topic_options_without_default_none = page.locator(
             "select#id_category option:not([value=''])")
@@ -41,6 +41,18 @@ class AAQFormPage(BasePage):
         """Locators belonging to the product os dropdown (Specific to Mozilla VPN)"""
         self.product_os_select_dropdown_options = page.locator("select#id_os option")
         self.product_os_select_dropdown = page.locator("select#id_os")
+
+        """Locators belonging to the update channel (Firefox for Enterprise product) dropdown"""
+        self.update_channel_dropdown_options = page.locator(
+            "//select[@id='id_update_channel']/option")
+        self.update_channel_dropdown = page.locator("//select[@id='id_update_channel']")
+
+        """Locators belonging to the ways of distributing policies (Firefox for enterprise product)
+        dropdown.
+        """
+        self.distributing_policies_dropdown_options = page.locator(
+            "//select[@id='id_policy_distribution']/option")
+        self.distributing_policies_dropdown = page.locator("//select[@id='id_policy_distribution']")
 
         """Locators belonging to the how can we help textarea field."""
         self.how_can_we_help_textarea = page.locator("textarea#id_content")
@@ -181,6 +193,14 @@ class AAQFormPage(BasePage):
     def select_random_topic_by_value(self):
         self._select_random_option_by_value(self.product_topic_select_dropdown,
                                             self.product_topic_options)
+
+    def select_random_update_channel_by_value(self):
+        self._select_random_option_by_value(self.update_channel_dropdown,
+                                            self.update_channel_dropdown_options)
+
+    def select_random_distributing_policies_by_value(self):
+        self._select_random_option_by_value(self.distributing_policies_dropdown,
+                                            self.distributing_policies_dropdown_options)
 
     def click_on_share_data_button(self):
         self._click(self.share_data_button)

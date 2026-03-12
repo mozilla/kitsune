@@ -10,11 +10,14 @@
   ],
   "premium_products": [
     "MDN Plus",
-    "Mozilla VPN",
     "Firefox Relay",
     "Mozilla Account",
     "Mozilla Monitor"
   ],
+  "subscription_redirects":
+      {
+          "Mozilla VPN": "Firefox"
+      },
   "kb_article_categories": [
     "Troubleshooting",
     "How to",
