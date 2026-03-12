@@ -1,4 +1,3 @@
-import io
 import logging
 import os
 import subprocess
@@ -9,7 +8,6 @@ from django.apps import apps
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from PIL import Image
 
 log = logging.getLogger("k.task")
 
@@ -23,6 +21,7 @@ def generate_thumbnail(
     optionally the "max_size" of its longest side. The model name must be in the form of
     "<app>.<model-name>", so for example, "gallery.Image" or "upload.ImageAttachment".
     """
+    from kitsune.upload.utils import create_image_thumbnail
 
     # Get the model of the object, and then get the object itself.
     model = apps.get_model(obj_model_name)
@@ -49,37 +48,6 @@ def generate_thumbnail(
     # E.g. when generating two thumbnails for different fields of a single
     # object.
     obj.update(**{to_field: to_.name})
-
-
-def create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=False):
-    """
-    Returns a thumbnail file with a set longest side.
-    """
-    original_image = Image.open(fileobj)
-    original_image = original_image.convert("RGBA")
-    file_width, file_height = original_image.size
-
-    width, height = _scale_dimensions(file_width, file_height, longest_side)
-    resized_image = original_image.resize((width, height), Image.LANCZOS)
-
-    data = io.BytesIO()
-
-    if pad:
-        padded_image = _make_image_square(resized_image, longest_side)
-        padded_image.save(data, "PNG")
-    else:
-        resized_image.save(data, "PNG")
-
-    return ContentFile(data.getvalue())
-
-
-def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
-    """Pads a rectangular image with transparency to make it square."""
-    square_image = Image.new("RGBA", (side, side), (255, 255, 255, 0))
-    width = (side - source_image.size[0]) // 2
-    height = (side - source_image.size[1]) // 2
-    square_image.paste(source_image, (width, height))
-    return square_image
 
 
 def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
