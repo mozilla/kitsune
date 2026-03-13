@@ -38,8 +38,7 @@ module.exports = mergeWithRules({
             emitCss: false,
             preprocess: sveltePreprocess(),
             compilerOptions: {
-              generate: "ssr",
-              hydratable: true,
+              generate: "server",
             },
           },
         },
@@ -53,6 +52,14 @@ module.exports = mergeWithRules({
       },
     ],
   },
+  externals: [
+    ({ request }, callback) => {
+      if (/^svelte(\/|$)/.test(request)) {
+        return callback(null, `commonjs2 ${request}`);
+      }
+      callback();
+    },
+  ],
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist/pre-render"),

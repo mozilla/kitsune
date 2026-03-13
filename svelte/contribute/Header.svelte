@@ -1,5 +1,5 @@
 <script>
-    import { Link } from "svelte-navigator";
+    import { Link } from "../lib/router";
     import { srcset, gettext } from "../lib/utils";
 
     export let area = "";

@@ -1,10 +1,10 @@
 <script>
-    import { Router, Route } from "svelte-navigator";
+    import { Router, Route } from "../lib/router";
     import Area from "./Area";
     import Landing from "./Landing";
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
-    import { createClient, setContextClient } from "@urql/svelte";
+    import { createClient, setContextClient, cacheExchange, fetchExchange } from "@urql/svelte";
     import { GRAPHQL_ENDPOINT } from "../lib/constants";
     import { queryStore, gql, getContextClient } from "@urql/svelte";
 
@@ -34,6 +34,7 @@
 
     const gqlClient = createClient({
         url: GRAPHQL_ENDPOINT,
+        exchanges: [cacheExchange, fetchExchange],
     });
     setContextClient(gqlClient);
     const contributorQ = queryStore({
@@ -49,11 +50,10 @@
 </script>
 
 <Router basepath="/{locale}/contribute" {url}>
-    <Route path="forum" let:location>
+    <Route path="forum">
         <Area
             area={gettext("Support forum")}
             images={[imgHeadsPng, imgHeadsWebp, imgHeads2xWebp]}
-            {location}
             steps={{
                 steps: [
                     [
@@ -100,7 +100,7 @@
             </p>
         </Area>
     </Route>
-    <Route path="kb" let:location>
+    <Route path="kb">
         <Area
             area={gettext("Help articles")}
             images={[
@@ -108,7 +108,6 @@
                 imgIntroductionWebp,
                 imgIntroduction2xWebp,
             ]}
-            {location}
             steps={{
                 steps: [
                     [
@@ -161,11 +160,10 @@
             </p>
         </Area>
     </Route>
-    <Route path="l10n" let:location>
+    <Route path="l10n">
         <Area
             area={gettext("Localization")}
             images={[imgFoundationPng, imgFoundationWebp, imgFoundation2xWebp]}
-            {location}
             steps={{
                 steps: [
                     [

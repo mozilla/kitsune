@@ -1,5 +1,5 @@
 <script>
-    import { Link } from "svelte-navigator";
+    import { Link } from "../lib/router";
 
     export let to;
     export let img;
