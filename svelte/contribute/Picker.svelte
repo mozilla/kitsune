@@ -1,4 +1,5 @@
 <script>
+    import { getContext } from "svelte";
     import Tile from "./Tile";
     import { gettext } from "../lib/utils";
 
@@ -6,7 +7,7 @@
     import kbImg from "./img/Support Articles.svg";
     import l10nImg from "./img/Localization.svg";
 
-    export let location;
+    const { location } = getContext("route");
 </script>
 
 <section class="mzp-l-content">

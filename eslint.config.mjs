@@ -38,7 +38,7 @@ export default [
         },
         rules: {
             "no-undef": 2,
-            "import/extensions": 2,
+            "import/extensions": ["error", "ignorePackages", { svelte: "always" }],
             "import/first": 2,
             "import/no-self-import": 2,
             "import/no-cycle": 2,
