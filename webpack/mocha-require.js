@@ -7,6 +7,7 @@ const dom = new JSDOM("<html></html>", {
   referrer: "http://google.com/?q=cookies",
 });
 global.window = dom.window;
+global.self = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 global.sessionStorage = dom.window.sessionStorage;

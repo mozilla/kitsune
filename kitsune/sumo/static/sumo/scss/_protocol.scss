@@ -5,59 +5,61 @@
 // These are general styles for elements/components that occur on every page.
 // Individual pages may include additional component styles as needed.
 
-// These are the default values from protocol, but they are overriden in the
-// @use Default media paths can be overwritten globally.
-$font-path: 'protocol/fonts' !default;
-$image-path: 'protocol/img' !default;
+// Configure protocol lib with paths that webpack can resolve via the 'protocol' alias.
 // Note: --load-path for these files is set to node_modules/@mozilla-protocol/core
 // (and not deeper) to avoid conflicts
+@use 'protocol/css/includes/lib' with (
+  $font-path: 'protocol/fonts',
+  $image-path: 'protocol/img'
+);
 
 
 // Fonts
-@import 'protocol/css/includes/fonts/inter';
-@import 'protocol/css/includes/fonts/metropolis';
-@import 'protocol/css/includes/fonts/zilla-slab';
+@use 'protocol/css/includes/fonts/inter';
+@use 'protocol/css/includes/fonts/metropolis';
+@use 'protocol/css/includes/fonts/mozilla-headline';
+@use 'protocol/css/includes/fonts/mozilla-text';
 
 
 // Base elements - general HTML elements
-@import 'protocol/css/base/elements/reset';
-@import 'protocol/css/base/elements/common';
-@import 'protocol/css/base/elements/containers';
-@import 'protocol/css/base/elements/details';
-@import 'protocol/css/base/elements/document';
-// @import 'protocol/css/base/elements/forms';
-@import 'protocol/css/base/elements/links';
-@import 'protocol/css/base/elements/lists';
-@import 'protocol/css/base/elements/quotes';
-@import 'protocol/css/base/elements/tables';
-@import 'protocol/css/base/elements/titles';
+@use 'protocol/css/base/elements/reset';
+@use 'protocol/css/base/elements/common';
+@use 'protocol/css/base/elements/containers';
+@use 'protocol/css/base/elements/details';
+@use 'protocol/css/base/elements/document';
+// @use 'protocol/css/base/elements/forms';
+@use 'protocol/css/base/elements/links';
+@use 'protocol/css/base/elements/lists';
+@use 'protocol/css/base/elements/quotes';
+@use 'protocol/css/base/elements/tables';
+@use 'protocol/css/base/elements/titles';
 
 // Base includes - animations
-@import 'protocol/css/base/includes';
+@use 'protocol/css/base/includes';
 
 // Global components
-@import 'protocol/css/components/card';
-@import 'protocol/css/components/footer';
-@import 'protocol/css/components/language-switcher';
-@import 'protocol/css/components/menu';
-@import 'protocol/css/components/menu-item';
-@import 'protocol/css/components/navigation';
+@use 'protocol/css/components/card';
+@use 'protocol/css/components/footer';
+@use 'protocol/css/components/language-switcher';
+@use 'protocol/css/components/menu';
+@use 'protocol/css/components/menu-item';
+@use 'protocol/css/components/navigation';
 
 // all components from protocol-extra.scss
-@import 'protocol/css/components/article';
-@import 'protocol/css/components/billboard';
-// @import 'components/button';
-@import 'protocol/css/components/call-out';
-@import 'protocol/css/components/emphasis-box';
-@import 'protocol/css/components/feature-card';
-@import 'protocol/css/components/split';
-@import 'protocol/css/components/inline-list';
-@import 'protocol/css/components/modal';
-@import 'protocol/css/components/menu-list';
-@import 'protocol/css/components/newsletter-form';
-@import 'protocol/css/components/notification-bar';
-@import 'protocol/css/components/picto';
-@import 'protocol/css/components/sidebar-menu';
-@import 'protocol/css/components/zap';
-@import 'protocol/css/templates/card-layout';
-@import 'protocol/css/templates/main-with-sidebar';
+@use 'protocol/css/components/article';
+@use 'protocol/css/components/billboard';
+// @use 'components/button';
+@use 'protocol/css/components/callout';
+@use 'protocol/css/components/emphasis-box';
+@use 'protocol/css/components/feature-card';
+@use 'protocol/css/components/split';
+@use 'protocol/css/components/inline-list';
+@use 'protocol/css/components/modal';
+@use 'protocol/css/components/menu-list';
+@use 'protocol/css/components/newsletter-form';
+@use 'protocol/css/components/notification-bar';
+@use 'protocol/css/components/picto';
+@use 'protocol/css/components/sidebar-menu';
+@use 'protocol/css/components/zap';
+@use 'protocol/css/templates/card-layout';
+@use 'protocol/css/templates/main-with-sidebar';

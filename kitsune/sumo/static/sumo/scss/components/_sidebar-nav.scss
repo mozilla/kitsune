@@ -186,12 +186,12 @@
       position: relative;
       top: 7px;
       margin-left: 5px;
-      content: url('protocol/img/icons/arrow-down.svg');
+      content: url('protocol/img/icons/caret-down.svg');
       filter: invert(27%) sepia(48%) saturate(3683%) hue-rotate(204deg) brightness(91%) contrast(106%);
     }
 
     &.expanded::after {
-      content: url('protocol/img/icons/arrow-up.svg');
+      content: url('protocol/img/icons/caret-up.svg');
     }
   }
 

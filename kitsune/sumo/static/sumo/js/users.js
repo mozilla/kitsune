@@ -2,6 +2,7 @@
  * users.js
  * Make public emails clickable.
  */
+import Modal from "protocol/js/modal";
 
 (function ($) {
   function makeEmailsClickable() {
@@ -33,9 +34,7 @@
       var $form = $(this).closest('form');
       
       // Close modals - keep both systems for compatibility
-      if (typeof Mzp !== 'undefined' && Mzp.Modal) {
-        Mzp.Modal.closeModal();
-      }
+      Modal.closeModal();
       
       if ($.kbox) {
         $.kbox.close();
