@@ -1,7 +1,7 @@
-import Contribute from "./Contribute";
+import { hydrate } from "svelte";
+import Contribute from "./Contribute.svelte";
 
-new Contribute({
+hydrate(Contribute, {
   target: document.querySelector("#svelte"),
-  hydrate: true,
   props: { locale: window.location.pathname.split("/")[1] },
 });

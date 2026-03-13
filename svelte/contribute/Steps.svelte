@@ -1,4 +1,5 @@
 <script>
+    import { getContext } from "svelte";
     import { queryStore, gql, getContextClient } from "@urql/svelte";
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
@@ -6,7 +7,8 @@
 
     export let steps = [];
     export let fact = {};
-    export let location = "";
+
+    const { location } = getContext("route");
 
     const contributorQ = queryStore({
         client: getContextClient(),

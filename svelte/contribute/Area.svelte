@@ -1,4 +1,5 @@
 <script>
+    import { getContext } from "svelte";
     import Header from "./Header";
     import Steps from "./Steps";
     import Picker from "./Picker";
@@ -7,7 +8,8 @@
     export let area;
     export let images;
     export let steps;
-    export let location;
+
+    const { location } = getContext("route");
 </script>
 
 <svelte:head>
