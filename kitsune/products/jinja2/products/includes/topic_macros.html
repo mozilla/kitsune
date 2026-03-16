@@ -43,6 +43,8 @@
 
 {% macro support_callout(product=None, aaq_context=None, extra_class=None) %}
 {% set is_ticketed = (aaq_context.current_support_type == 'zendesk') if aaq_context else False %}
+{% set is_enterprise = (product.slug == "firefox-enterprise") if product else False %}
+{% set enterprise_logged_out_url = "https://qsurvey.mozilla.com/s3/firefox-support-plan?src=sumo-products-firefox-enterprise" %}
 {% if product and has_support_config and not settings.READ_ONLY %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner{% if extra_class %} {{ extra_class }}{% endif %}">
     <div class="card card--ribbon is-inverse heading-is-one-line">
@@ -57,31 +59,35 @@
             </g>
           </svg>
 
-          {% if is_ticketed and (product.slug == "firefox-enterprise") %}
-            {{ _('Get Help') }}
+          {% if is_enterprise and is_ticketed %}
+            {{ _('Partner Support') }}
+          {% elif is_enterprise and not user.is_authenticated %}
+            {{ _('Support for Organizations') }}
           {% else %}
             {{ _('Still need help?') }}
           {% endif %}
         </h3>
         <p class="card--desc">
-          {% if is_ticketed %}
-            {% if product.slug == "firefox-enterprise" %}
-              {{ _("If you're a Firefox Support for Organizations admin, contact us for technical assistance, deployment guidance, and priority help.") }}
-            {% else %}
-              {{ _("We're here for you! If you haven't found a solution after exploring our help articles, you can get in touch with our support team.") }}
-            {% endif %}
+          {% if is_enterprise and is_ticketed %}
+            {{ _("Get dedicated technical assistance and deployment guidance from our team, with expert support tailored to your organization's needs.") }}
+          {% elif is_enterprise and not user.is_authenticated %}
+            {{ _("Dedicated technical assistance and deployment guidance are available to Firefox Support for Organizations customers.") }}
+          {% elif is_ticketed %}
+            {{ _("We're here for you! If you haven't found a solution after exploring our help articles, you can get in touch with our support team.") }}
           {% else %}
             {{ _("We're here for you. Post a question to our support forums and get answers from our community of experts.") }}
           {% endif %}
         </p>
         <a class="sumo-button primary-button button-lg"
-          href="{{ get_aaq_url(aaq_context or {}) }}"
+          href="{% if is_enterprise and not user.is_authenticated %}{{ enterprise_logged_out_url }}{% else %}{{ get_aaq_url(aaq_context or {}) }}{% endif %}"
           data-event-name="link_click"
           data-event-parameters='{
-            "link_name": "{% if product.slug == 'firefox-enterprise' %}enterprise-banner.aaq-step-3{% else %}aaq-banner.aaq-step-3{% endif %}",
+            "link_name": "{% if is_enterprise and (is_ticketed or not user.is_authenticated) %}enterprise-banner.aaq-step-3{% else %}aaq-banner.aaq-step-3{% endif %}",
             "link_detail": "{{ product.slug }}"
           }'>
-          {% if is_ticketed %}
+          {% if is_enterprise and not user.is_authenticated %}
+            {{ _("Talk to an Expert") }}
+          {% elif is_ticketed %}
             {{ _("Contact Support") }}
           {% else %}
             {{ _("Ask the Community") }}
