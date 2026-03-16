@@ -312,7 +312,7 @@ class AIContentManager(WikiContentManager):
                 else translated_content.get("title", {}).get("translation")
             )
 
-            target_doc, _ = Document.objects.get_or_create(
+            target_doc, created = Document.objects.get_or_create(
                 parent=document,
                 locale=target_locale,
                 defaults={
@@ -324,6 +324,11 @@ class AIContentManager(WikiContentManager):
                     "allow_discussion": document.allow_discussion,
                 },
             )
+
+            if not created and not target_doc.current_revision:
+                target_doc.title = title
+                target_doc.slug = document.slug
+                target_doc.save()
 
             document = target_doc
 

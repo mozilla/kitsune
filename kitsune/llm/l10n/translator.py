@@ -47,8 +47,8 @@ def translate(doc: Document, target_locale: str) -> dict[str, dict[str, Any]]:
     target_doc = doc.translated_to(target_locale)
 
     # Generate a translation of the title only if the doc is not a template
-    # and it doesn't already have a child in the target locale.
-    if not doc.is_template and not target_doc:
+    # and the target doc either doesn't exist or has no approved revision.
+    if not doc.is_template and (not target_doc or not target_doc.current_revision):
         content_attributes.append("title")
 
     def get_source_text(content_attribute):

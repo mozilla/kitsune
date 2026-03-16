@@ -4,6 +4,7 @@ from kitsune.llm.l10n.translator import (
     resolve_anchors,
     resolve_external_anchors,
     resolve_internal_anchors,
+    translate,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.models import RevisionAnchorRecord
@@ -433,3 +434,50 @@ class ResolveAnchorsTestCase(TestCase):
         # Should call get_anchor_map once when resolving the internal anchors and one
         # more time (only one external document) when resolving the external anchors.
         self.assertEqual(get_anchor_map_mock.call_count, 2)
+
+
+class TranslateTestCase(TestCase):
+    def _setup_mock_chain(self, mock_prompt):
+        from unittest.mock import MagicMock
+
+        mock_chain = MagicMock()
+        mock_chain.invoke.return_value = {"translation": "Translated", "explanation": ""}
+        mock_prompt.__or__.return_value.__or__.return_value = mock_chain
+
+    @patch("kitsune.llm.l10n.translator.translation_prompt")
+    @patch("kitsune.llm.l10n.translator.get_llm")
+    def test_title_translated_when_target_doc_has_no_current_revision(
+        self, mock_get_llm, mock_prompt
+    ):
+        """Title is included in the result when target doc exists but has no approved revision."""
+        self._setup_mock_chain(mock_prompt)
+
+        parent_doc = DocumentFactory(locale="en-US")
+        ApprovedRevisionFactory(document=parent_doc, is_ready_for_localization=True)
+        parent_doc.refresh_from_db()
+
+        DocumentFactory(parent=parent_doc, locale="fr")  # no current_revision
+
+        result = translate(parent_doc, "fr")
+
+        self.assertIn("title", result)
+
+    @patch("kitsune.llm.l10n.translator.translation_prompt")
+    @patch("kitsune.llm.l10n.translator.get_llm")
+    def test_title_not_translated_when_target_doc_has_current_revision(
+        self, mock_get_llm, mock_prompt
+    ):
+        """Title is excluded from the result when target doc already has an approved revision."""
+        self._setup_mock_chain(mock_prompt)
+
+        parent_doc = DocumentFactory(locale="en-US")
+        ApprovedRevisionFactory(document=parent_doc, is_ready_for_localization=True)
+        parent_doc.refresh_from_db()
+
+        target_doc = DocumentFactory(parent=parent_doc, locale="fr")
+        ApprovedRevisionFactory(document=target_doc)
+        target_doc.refresh_from_db()
+
+        result = translate(parent_doc, "fr")
+
+        self.assertNotIn("title", result)
