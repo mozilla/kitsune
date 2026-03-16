@@ -25,7 +25,7 @@ def is_mozilla_domain_email(email: str) -> bool:
     if not email:
         return False
 
-    domain = email.split('@')[-1].lower()
+    domain = email.split("@")[-1].lower()
     return domain in [d.lower() for d in settings.MOZILLA_DOMAINS]
 
 
@@ -193,11 +193,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             sub_response.raise_for_status()
         except requests.exceptions.RequestException:
             log.error("Failed to fetch subscription status", exc_info=True)
-            # if something went wrong, just return whatever the profile endpoint holds
             return user_info
-        # This will override whatever the profile endpoint returns
-        # until https://github.com/mozilla/fxa/issues/2463 is fixed
-        user_info["subscriptions"] = sub_response.json().get("subscriptions", [])
+        sub_status = sub_response.json().get("subscriptionsByClientId", {})
+        user_info["subscriptions"] = list({v[0] for v in sub_status.values() if v})
         return user_info
 
     def update_user(self, user, claims):
