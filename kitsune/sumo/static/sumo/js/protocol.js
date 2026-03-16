@@ -1,6 +1,6 @@
 import MzpBase from "protocol/js/base";
 import MzpSupports from "protocol/js/supports";
-import "protocol/js/utils";
+import MzpUtils from "protocol/js/utils";
 import "protocol/js/details";
 import "protocol/js/footer";
 import "protocol/js/menu";
@@ -16,5 +16,6 @@ import "protocol/js/lang-switcher";
 // addListener() which was removed in Chrome 127+ (2024).
 MzpSupports.matchMedia = typeof window.matchMedia !== 'undefined';
 window.MzpSupports = MzpSupports;
+window.MzpUtils = MzpUtils;
 
 MzpBase.init();
