@@ -160,6 +160,13 @@ class TruncationException(Exception):
     pass
 
 
+def strip_nul_bytes(value):
+    """Strip NUL bytes from a string to prevent database errors."""
+    if value is None:
+        return None
+    return value.replace("\x00", "")
+
+
 def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     """Dump an object to JSON, and ensure the dump is less than ``max_length``.
 

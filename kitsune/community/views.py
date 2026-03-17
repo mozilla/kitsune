@@ -15,7 +15,7 @@ from kitsune.products.models import Product, ProductSupportConfig
 from kitsune.search.base import SumoSearchPaginator
 from kitsune.search.search import ProfileSearch
 from kitsune.sumo.parser import get_object_fallback
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import paginate, strip_nul_bytes
 from kitsune.users.models import ContributionAreas
 from kitsune.wiki.models import Document
 
@@ -31,7 +31,7 @@ def home(request):
 
     community_news = get_object_fallback(Document, COMMUNITY_NEWS_DOC, request.LANGUAGE_CODE)
     locale = _validate_locale(request.GET.get("locale"))
-    product = request.GET.get("product")
+    product = strip_nul_bytes(request.GET.get("product"))
     if product:
         product = get_object_or_404(Product, slug=product)
 
@@ -107,7 +107,7 @@ def top_contributors(request, area):
     page_size = 100
 
     locale = _validate_locale(request.GET.get("locale"))
-    product = request.GET.get("product")
+    product = strip_nul_bytes(request.GET.get("product"))
     if product:
         product = get_object_or_404(Product, slug=product)
 

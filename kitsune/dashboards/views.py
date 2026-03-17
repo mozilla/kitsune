@@ -18,8 +18,9 @@ from kitsune.dashboards.readouts import (
 )
 from kitsune.dashboards.utils import get_locales_by_visit, render_readouts
 from kitsune.products.models import Product
+from kitsune.sumo.i18n import normalize_language
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import smart_int
+from kitsune.sumo.utils import smart_int, strip_nul_bytes
 from kitsune.wiki.config import CATEGORIES
 
 log = logging.getLogger("k.dashboards")
@@ -178,11 +179,12 @@ def wiki_rows(request, readout_slug):
     """Return the table contents HTML for the given readout and mode."""
     product = _get_product(request)
 
+    locale = normalize_language(request.GET.get("locale"))
     readout = _kb_readout(
         request,
         readout_slug,
         READOUTS,
-        locale=request.GET.get("locale"),
+        locale=locale,
         mode=smart_int(request.GET.get("mode"), None),
         product=product,
     )
@@ -247,7 +249,7 @@ def aggregated_metrics(request):
 
 
 def _get_product(request):
-    product_slug = request.GET.get("product")
+    product_slug = strip_nul_bytes(request.GET.get("product"))
     if product_slug:
         return get_object_or_404(Product, slug=product_slug)
 

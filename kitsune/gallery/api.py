@@ -44,7 +44,7 @@ class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
         # locale may come from the Accept-language header, but it can be
         # overridden via the query string.
         locale = normalize_language(self.get_locale())
-        locale = self.request.query_params.get("locale", locale)
+        locale = normalize_language(self.request.query_params.get("locale")) or locale
         if locale is not None:
             queryset = queryset.filter(locale=locale)
 

@@ -5,7 +5,7 @@ from django.views.decorators.http import require_GET
 
 from kitsune.access.decorators import login_required
 from kitsune.sumo.decorators import json_view
-from kitsune.sumo.utils import webpack_static
+from kitsune.sumo.utils import strip_nul_bytes, webpack_static
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
 
 
@@ -14,7 +14,7 @@ from kitsune.users.templatetags.jinja_helpers import profile_avatar
 @json_view
 def get_autocomplete_suggestions(request):
     """An API to provide auto-complete data for user names or groups."""
-    pre = request.GET.get("term", "") or request.GET.get("query", "")
+    pre = strip_nul_bytes(request.GET.get("term", "") or request.GET.get("query", ""))
     if not pre or not request.user.is_authenticated:
         return []
 

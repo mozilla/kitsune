@@ -38,6 +38,7 @@ from kitsune.sumo.utils import (
     paginate,
     set_aaq_context,
     smart_int,
+    strip_nul_bytes,
     truncated_json_dumps,
 )
 from kitsune.users.models import Profile
@@ -226,8 +227,8 @@ def document(request, document_slug, document=None):
         return maybe_vary_on_accept_language(HttpResponseRedirect(url))
 
     # Get "redirected from" doc if we were redirected:
-    redirect_slug = request.GET.get("redirectslug")
-    redirect_locale = request.GET.get("redirectlocale")
+    redirect_slug = strip_nul_bytes(request.GET.get("redirectslug"))
+    redirect_locale = normalize_language(request.GET.get("redirectlocale"))
     redirected_from = None
     if redirect_slug and redirect_locale:
         try:
@@ -696,7 +697,7 @@ def preview_revision(request):
 @require_GET
 def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
-    locale = request.GET.get("locale", request.LANGUAGE_CODE)
+    locale = normalize_language(request.GET.get("locale")) or request.LANGUAGE_CODE
 
     doc = get_visible_document_or_404(
         request.user,
@@ -888,7 +889,7 @@ def compare_revisions(request, document_slug):
     The ids are passed as query string parameters (to and from).
 
     """
-    locale = request.GET.get("locale", request.LANGUAGE_CODE)
+    locale = normalize_language(request.GET.get("locale")) or request.LANGUAGE_CODE
     doc = get_visible_document_or_404(request.user, locale=locale, slug=document_slug)
     if "from" not in request.GET or "to" not in request.GET:
         raise Http404
@@ -1266,9 +1267,9 @@ def json_view(request):
     """Return some basic document info in a JSON blob."""
     kwargs = {"locale": request.LANGUAGE_CODE, "current_revision__isnull": False}
     if "title" in request.GET:
-        kwargs["title"] = request.GET["title"]
+        kwargs["title"] = strip_nul_bytes(request.GET["title"])
     elif "slug" in request.GET:
-        kwargs["slug"] = request.GET["slug"]
+        kwargs["slug"] = strip_nul_bytes(request.GET["slug"])
     else:
         return HttpResponseBadRequest()
 
@@ -1773,7 +1774,7 @@ def recent_revisions(request):
 @require_GET
 def what_links_here(request, document_slug):
     """List all documents that link to a document."""
-    locale = request.GET.get("locale", request.LANGUAGE_CODE)
+    locale = normalize_language(request.GET.get("locale")) or request.LANGUAGE_CODE
 
     doc = get_visible_document_or_404(
         request.user,
