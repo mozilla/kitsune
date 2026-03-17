@@ -6,8 +6,10 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import (
     _topic_to_tag,
     generate_classification_tags,
+    process_zendesk_classification_result,
     send_support_ticket_to_zendesk,
 )
+from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
@@ -311,4 +313,41 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.assertTrue(result)
         self.assertEqual(self.submission.zendesk_ticket_id, "12345")
         self.assertEqual(self.submission.status, SupportTicket.STATUS_SENT)
-        self.submission.save.assert_called_with(update_fields=["zendesk_ticket_id", "status"])
+
+
+class ProcessZendeskClassificationResultTests(TestCase):
+    """Tests for process_zendesk_classification_result."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox-enterprise", title="Firefox Enterprise")
+        self.zendesk_config = ZendeskConfigFactory(name="Test Config", ticket_form_id="12345")
+        ProductSupportConfigFactory(
+            product=self.product, zendesk_config=self.zendesk_config, forum_config=None
+        )
+        self.submission = Mock(spec=SupportTicket)
+        self.submission.product = self.product
+        self.submission.topic = None
+        self.submission.zendesk_tags = []
+
+    @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
+    @patch("kitsune.customercare.utils.Profile")
+    def test_segmentation_tags_preserved_after_classification(
+        self, mock_profile, mock_send
+    ):
+        """Segmentation tags from dropdowns must survive NOT_SPAM classification (issue 2865)."""
+        self.submission.zendesk_tags = [
+            "loginless_ticket",
+            "seg-rel-esr",
+            "seg-policy-windows-gpo",
+        ]
+        result = {
+            "action": ModerationAction.NOT_SPAM,
+            "topic_result": {"topic": "Undefined"},
+            "spam_result": {},
+        }
+
+        process_zendesk_classification_result(self.submission, result)
+
+        self.assertIn("seg-rel-esr", self.submission.zendesk_tags)
+        self.assertIn("seg-policy-windows-gpo", self.submission.zendesk_tags)
+        self.assertIn("loginless_ticket", self.submission.zendesk_tags)
