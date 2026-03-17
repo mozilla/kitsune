@@ -9,39 +9,55 @@
     {% endtrans %}
   </h1>
 
-  <dl class="sumo-dl badge-details" data-slug="{{ badge.slug }}">
-    {% if badge.image %}
-      <dt>{{ _('Image:') }}</dt>
-      <dd class="image"><a href="{{ badge.get_absolute_url() }}" class="image"><img src="{{ badge.image.url }}" width="256" height="256" /></a></dd>
-    {% endif %}
+  <div class="card elevation-01 lg-pad mb" data-slug="{{ badge.slug }}">
+    <div class="avatar-group">
+      {% if badge.image %}
+        <figure class="avatar-group--figure text-center">
+          <a href="{{ badge.get_absolute_url() }}">
+            <img src="{{ badge.image.url }}" alt="{{ pgettext('DB: badger.Badge.title', badge.title) }}" width="160" height="160" />
+          </a>
+        </figure>
+      {% endif %}
 
-    {% if badge.description %}
-      <dt>{{ _('Description:') }}</dt>
-      <dd class="description">{{ pgettext('DB: badger.Badge.description', badge.description) }}</dd>
-    {% endif %}
+      <div class="avatar-group--details">
+        <dl class="sumo-dl">
+          {% if badge.description %}
+            <dt><strong>{{ _('Description:') }}</strong></dt>
+            <dd>{{ pgettext('DB: badger.Badge.description', badge.description) }}</dd>
+          {% endif %}
 
-    {% if badge.creator %}
-      <dt>{{ _('Creator:') }}</dt>
-      <dd><a rel="nofollow" href="{{ profile_url(badge.creator) }}">{{ display_name(badge.creator) }}</a></dd>
-    {% endif %}
+          {% if badge.creator %}
+            <dt><strong>{{ _('Creator:') }}</strong></dt>
+            <dd>
+              <img class="avatar" src="{{ profile_avatar(badge.creator) }}" alt="{{ display_name(badge.creator) }}" width="24" height="24" />
+              <a rel="nofollow" href="{{ profile_url(badge.creator) }}">{{ display_name(badge.creator) }}</a>
+            </dd>
+          {% endif %}
 
-    <dt>{{ _('Created:') }}</dt>
-    <dd>{{ datetimeformat(badge.created) }}</dd>
+          <dt><strong>{{ _('Created:') }}</strong></dt>
+          <dd>{{ datetimeformat(badge.created) }}</dd>
 
-    <dt>{{ _('Modified:') }}</dt>
-    <dd>{{ datetimeformat(badge.modified) }}</dd>
-  </dl>
-</div>
+          <dt><strong>{{ _('Modified:') }}</strong></dt>
+          <dd>{{ datetimeformat(badge.modified) }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
 
-{% if award_list %}
-<h2 class="sumo-page-subheading">{{ _('Recent awardees') }}</h2>
-<ul class="awardees">
-  {% for award in award_list %}
-    <li>
-      <a href="{{ award.get_absolute_url() }}"><img class="avatar" src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}"></a>
-    </li>
-  {% endfor %}
-</ul>
-{% endif %}
+  {% if award_list %}
+    <h2 class="sumo-page-subheading">{{ _('Recent awardees') }}</h2>
+    <ul class="badges-list">
+      {% for award in award_list %}
+        <li>
+          <a class="display-block" href="{{ award.get_absolute_url() }}" title="{{ display_name(award.user) }}">
+            <figure>
+              <img class="avatar display-block" src="{{ profile_avatar(award.user) }}" alt="{{ display_name(award.user) }}" width="64" height="64" />
+              <figcaption>{{ display_name(award.user) }}</figcaption>
+            </figure>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
 {% endblock %}
