@@ -6,6 +6,7 @@ from rest_framework import generics, serializers, status
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.api_utils import GenericAPIException, LocaleNegotiationMixin
 from kitsune.sumo.i18n import normalize_language
+from kitsune.sumo.utils import strip_nul_bytes
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.models import Document
 
@@ -37,26 +38,26 @@ class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
     serializer_class = DocumentShortSerializer
 
     def get_queryset(self):
-        locales = self.request.query_params.get("locales")
+        locales = strip_nul_bytes(self.request.query_params.get("locales"))
         if locales:
             # Multiple locales are separated by commas.
             locales = locales.replace(",", " ").split()
         elif locale := normalize_language(self.get_locale()):
             locales = [locale]
 
-        categories = self.request.query_params.get("categories")
+        categories = strip_nul_bytes(self.request.query_params.get("categories"))
         if categories:
             # Multiple categories are separated by commas.
             categories = categories.replace(",", " ").split()
         else:
             categories = settings.IA_DEFAULT_CATEGORIES
 
-        product = self.request.query_params.get("product")
-        topic = self.request.query_params.get("topic")
+        product = strip_nul_bytes(self.request.query_params.get("product"))
+        topic = strip_nul_bytes(self.request.query_params.get("topic"))
         is_template = bool(self.request.query_params.get("is_template", False))
         is_archived = bool(self.request.query_params.get("is_archived", False))
         is_redirect = bool(self.request.query_params.get("is_redirect", False))
-        title_query = self.request.query_params.get("q")
+        title_query = strip_nul_bytes(self.request.query_params.get("q"))
 
         queryset = Document.objects.visible(self.request.user, category__in=categories)
 
