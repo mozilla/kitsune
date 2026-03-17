@@ -76,7 +76,7 @@ dependencies = [
     "django-silk>=5.1.0,<6",
     "requests>=2.32.4,<3",
     "fuzzywuzzy>=0.18.0,<0.19",
-    "django-ses==4.4.0",
+    "django-ses==4.7.2",
     "django-post-office==3.10.1",
     "langchain==0.3.27",
     "langchain-google-vertexai==2.0.28",

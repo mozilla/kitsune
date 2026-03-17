@@ -917,15 +917,15 @@ wheels = [
 
 [[package]]
 name = "django-ses"
-version = "4.4.0"
+version = "4.7.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/ab/ec149480af4ed1bb6f1e66cf3ee37d51f528509599ec84fff3895efabb6c/django_ses-4.4.0.tar.gz", hash = "sha256:8cf9213f84de0315dd03b0ddc0e126d39c79847af5ba27000adcac3314f4bfae", size = 67303, upload-time = "2025-01-31T00:17:42.314Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/25/25838da8e213c9f125b26a25360f0bb8ac57f07c24977451f3e7a0d63ddd/django_ses-4.7.2.tar.gz", hash = "sha256:a36f2af0e4ce060bf36053ed4c94feac1703ea3351e677c6f6421abd01433a35", size = 71828, upload-time = "2026-02-20T19:22:35.078Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/fd/f8ccaa712f4353f08cc44c00e9a1cabe50b38afda31e9569c480d97c0b33/django_ses-4.4.0-py3-none-any.whl", hash = "sha256:1d310c34b307a380f3c9a2091e6e7fc2cf19650f229d1df044b19e140fb77b63", size = 36214, upload-time = "2025-01-31T00:17:38.908Z" },
+    { url = "https://files.pythonhosted.org/packages/84/f2/15d4bd54bd01e68e8a116e0b66243c91cb62a3fa0d780a39d2af6654e8ae/django_ses-4.7.2-py3-none-any.whl", hash = "sha256:f3db567fb6f43c01d7d890f5c991e1ebbfa48220de0be24d497ba6332004abcb", size = 37796, upload-time = "2026-02-20T19:22:32.819Z" },
 ]
 
 [[package]]
@@ -2141,7 +2141,7 @@ requires-dist = [
     { name = "django-post-office", specifier = "==3.10.1" },
     { name = "django-ratelimit", specifier = ">=4.1.0,<5" },
     { name = "django-redis", specifier = ">=5.4.0,<6" },
-    { name = "django-ses", specifier = "==4.4.0" },
+    { name = "django-ses", specifier = "==4.7.2" },
     { name = "django-silk", specifier = ">=5.1.0,<6" },
     { name = "django-statici18n", specifier = ">=2.4.0,<3" },
     { name = "django-storages", extras = ["google"], specifier = ">=1.14.2,<2" },
