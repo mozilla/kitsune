@@ -18,3 +18,4 @@ timeout = int(getenv("WSGI_TIMEOUT", 30))
 graceful_timeout = int(getenv("WSGI_GRACEFUL_TIMEOUT", 10))
 max_requests = getenv("WSGI_MAX_REQUESTS", 1300)
 max_requests_jitter = getenv("WSGI_MAX_REQUESTS_JITTER", 30)
+control_socket_disable = True
