@@ -223,7 +223,9 @@ def process_zendesk_classification_result(
 
             # Preserve system tags
             system_tags = [
-                tag for tag in submission.zendesk_tags if tag in ["loginless_ticket", "stage"]
+                tag
+                for tag in submission.zendesk_tags
+                if tag in ["loginless_ticket", "stage"] or tag.startswith("seg-")
             ]
 
             # Generate classification tags
