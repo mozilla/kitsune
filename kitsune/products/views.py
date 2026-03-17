@@ -10,6 +10,7 @@ from kitsune.flagit.views import get_hierarchical_topics
 from kitsune.products import get_product_redirect_response
 from kitsune.products.managers import ProductSupportConfigManager
 from kitsune.products.models import Product, Topic, TopicSlugHistory
+from kitsune.products.utils import is_enterprise_user
 from kitsune.sumo.utils import get_aaq_context, set_aaq_context
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
@@ -22,7 +23,14 @@ def product_list(request):
     """The product picker page."""
     template = "products/products.html"
     products = Product.active.filter(visible=True)
-    return render(request, template, {"products": products})
+    return render(
+        request,
+        template,
+        {
+            "products": products,
+            "display_enterprise_banner": is_enterprise_user(request.user),
+        },
+    )
 
 
 @check_simple_wiki_locale
