@@ -18,6 +18,7 @@ class SveltePreRenderPlugin {
       (file, { outputPath, targetPath }) => {
         const routes = this.options[file];
         if (routes) {
+          const { render } = require("svelte/server");
           const Component = rerequire(targetPath).default;
 
           for (const locale of locales) {
@@ -25,9 +26,8 @@ class SveltePreRenderPlugin {
             Object.assign(global, jsi18n);
 
             for (const route of routes) {
-              const { head = "", html } = Component.render({
-                url: `/${locale}${route}`,
-                locale,
+              const { head = "", body: html } = render(Component, {
+                props: { url: `/${locale}${route}`, locale },
               });
 
               fs.mkdirSync(

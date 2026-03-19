@@ -7,7 +7,6 @@
     export let area;
     export let images;
     export let steps;
-    export let location;
 </script>
 
 <svelte:head>
@@ -20,5 +19,5 @@
     <slot />
 </Header>
 
-<Steps {location} {...steps} />
-<Picker {location} />
+<Steps {...steps} />
+<Picker />

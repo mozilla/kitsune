@@ -12,10 +12,10 @@ module.exports = {
       sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),
       community: path.resolve(__dirname, "kitsune/community/static/community"),
       kpi: path.resolve(__dirname, "kitsune/kpi/static/kpi"),
-      svelte: path.resolve("node_modules", "svelte"),
     },
     extensions: [".mjs", ".js", ".svelte"],
     mainFields: ["svelte", "browser", "module", "main"],
+    conditionNames: ["svelte", "browser", "import"],
   },
   module: {
     rules: [
@@ -50,9 +50,6 @@ module.exports = {
           options: {
             emitCss: true,
             preprocess: sveltePreprocess(),
-            compilerOptions: {
-              hydratable: true,
-            },
           },
         },
       },
