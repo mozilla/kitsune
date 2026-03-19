@@ -33,7 +33,7 @@ def create_imageattachment(files, user, obj):
     Given an uploaded file, a user and an object, it creates an ImageAttachment
     owned by `user` and attached to `obj`.
     """
-    up_file = list(files.values())[0]
+    up_file = files["image"]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     (up_file, is_animated) = _image_to_png(up_file)
@@ -69,7 +69,9 @@ def _image_to_png(up_file):
         # This approach is recommended by pillow for checking if an image is animated.
         is_animated = getattr(image, "is_animated", False)
 
-        if not is_animated:
+        if is_animated:
+            up_file.name = os.path.splitext(up_file.name)[0] + ".gif"
+        else:
             options = {}
             if "transparency" in image.info:
                 options["transparency"] = image.info["transparency"]
