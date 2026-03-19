@@ -37,6 +37,7 @@
   "dependencies": {
     "@alpinejs/csp": "^3.15.8",
     "@babel/runtime": "^7.28.6",
+    "@mozmeao/dnt-helper": "^1.0.0",
     "@urql/svelte": "^4.0.0",
     "codemirror": "^5.65.21",
     "d3": "^3.5.17",
@@ -53,8 +54,8 @@
     "@babel/core": "^7.29.0",
     "@babel/plugin-transform-runtime": "^7.29.0",
     "@babel/preset-env": "^7.29.0",
-    "@stylistic/stylelint-plugin": "^4.0.1",
     "@mozilla-protocol/core": "22.0.0",
+    "@stylistic/stylelint-plugin": "^4.0.1",
     "@types/underscore": "^1.13.0",
     "autoprefixer": "^10.4.27",
     "babel-loader": "^9.2.1",
