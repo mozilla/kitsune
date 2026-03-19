@@ -12,9 +12,13 @@ from kitsune.products.models import ProductSupportConfig, ZendeskTopic, ZendeskT
 
 OS_CHOICES = [
     (None, _lazy("Select platform")),
-    ("win10", _lazy("Windows")),
-    ("mac", _lazy("Mac OS")),
-    ("linux", _lazy("Linux")),
+    ("win64", _lazy("Windows 64-bit")),
+    ("win_arm64", _lazy("Windows ARM64/AArch64")),
+    ("win32", _lazy("Windows 32-bit")),
+    ("mac", _lazy("macOS")),
+    ("linux64", _lazy("Linux 64-bit")),
+    ("linux_arm64", _lazy("Linux ARM64/AArch64")),
+    ("linux32", _lazy("Linux 32-bit")),
     ("android", _lazy("Android")),
     ("ios", _lazy("iOS")),
     ("other", _lazy("Other")),
@@ -41,6 +45,19 @@ POLICY_DISTRIBUTION_CHOICES = [
     ("autoconfig", "Autoconfig (mozilla.cfg + autoconfig.js)"),
     ("not_sure", "Not sure / Need help selecting"),
 ]
+
+OS_TAGS = {
+    "win64": "seg-platform-win64",
+    "win_arm64": "seg-platform-win-arm64",
+    "win32": "seg-platform-win32",
+    "mac": "seg-platform-mac",
+    "linux64": "seg-platform-linux64",
+    "linux_arm64": "seg-platform-linux-arm64",
+    "linux32": "seg-platform-linux32",
+    "android": "seg-platform-android",
+    "ios": "seg-platform-ios",
+    "other": "seg-platform-other",
+}
 
 UPDATE_CHANNEL_TAGS = {
     "esr": "seg-rel-esr",
@@ -194,6 +211,10 @@ class ZendeskForm(forms.Form):
                                 zendesk_tags.extend(tag_value)
                             else:
                                 zendesk_tags.append(tag_value)
+
+        if os := self.cleaned_data.get("os"):
+            if tag := OS_TAGS.get(os):
+                zendesk_tags.append(tag)
 
         if update_channel := self.cleaned_data.get("update_channel"):
             if tag := UPDATE_CHANNEL_TAGS.get(update_channel):

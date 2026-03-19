@@ -228,7 +228,7 @@ class SendSupportTicketToZendeskTests(TestCase):
         self.submission.description = "Test description"
         self.submission.category = "test"
         self.submission.email = "test@example.com"
-        self.submission.os = "win10"
+        self.submission.os = "win64"
         self.submission.country = "US"
         self.submission.update_channel = ""
         self.submission.policy_distribution = ""
