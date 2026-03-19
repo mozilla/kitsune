@@ -290,10 +290,10 @@ describe('ShowFor', () => {
 
       showFor.showAndHide();
 
-      expect($elems.eq(0).css('display')).to.equal('');
+      expect($elems.eq(0).css('display')).to.equal('inline');
       expect($elems.eq(1).css('display')).to.equal('none');
       expect($elems.eq(2).css('display')).to.equal('none');
-      expect($elems.eq(3).css('display')).to.equal('');
+      expect($elems.eq(3).css('display')).to.equal('inline');
     });
   });
 
