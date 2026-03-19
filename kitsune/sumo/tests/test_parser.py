@@ -6,12 +6,15 @@ from pyquery import PyQuery as pq
 
 from kitsune.gallery.tests import ImageFactory
 from kitsune.sumo.parser import (
+    ALLOWED_ATTRIBUTES,
+    BASE_ALLOWED_ATTRIBUTES,
     IMAGE_PARAM_VALUES,
     IMAGE_PARAMS,
     WikiParser,
     _get_wiki_link,
     build_hook_params,
     get_object_fallback,
+    wiki_to_html,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.models import Document
@@ -611,3 +614,32 @@ class TestWikiImageTags(TestCase):
         img = img_a("img")
         assert "frameless" in img.attr("class")
         self.assertEqual("/en-US/kb/installing-firefox", img_a.attr("href"))
+
+
+class AllowedAttributesTests(TestCase):
+    PAYLOAD = '<div id="x" class="c" data-target="#btn" data-modal="true">content</div>'
+
+    def test_base_strips_dangerous_div_attributes(self):
+        """BASE_ALLOWED_ATTRIBUTES removes id, data-target and data-modal from divs."""
+        result = pq(wiki_to_html(self.PAYLOAD, attributes=BASE_ALLOWED_ATTRIBUTES))("div")
+        self.assertIsNone(result.attr("id"))
+        self.assertIsNone(result.attr("data-target"))
+        self.assertIsNone(result.attr("data-modal"))
+        self.assertEqual("c", result.attr("class"))
+
+    def test_wiki_attributes_preserve_div_id(self):
+        """ALLOWED_ATTRIBUTES (wiki) keeps id on divs."""
+        result = pq(wiki_to_html(self.PAYLOAD, attributes=ALLOWED_ATTRIBUTES))("div")
+        self.assertEqual("x", result.attr("id"))
+
+    def test_base_strips_heading_ids(self):
+        """BASE_ALLOWED_ATTRIBUTES removes id from headings."""
+        result = pq(wiki_to_html('<h2 id="sec">Title</h2>', attributes=BASE_ALLOWED_ATTRIBUTES))(
+            "h2"
+        )
+        self.assertIsNone(result.attr("id"))
+
+    def test_wiki_attributes_preserve_heading_ids(self):
+        """ALLOWED_ATTRIBUTES (wiki) generates anchor ids on headings."""
+        result = pq(wiki_to_html('<h2 id="sec">Title</h2>', attributes=ALLOWED_ATTRIBUTES))("h2")
+        self.assertIsNotNone(result.attr("id"))

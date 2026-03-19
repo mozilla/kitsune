@@ -1,7 +1,7 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% set title = _("Get email updates") %}
 
-<section id="email-subscribe" class="mzp-u-modal-content" title="{{ title }}">
+<section data-modal-id="email-subscribe" class="mzp-u-modal-content" title="{{ title }}">
   <h2 class="sumo-page-subheading">{{ title }}</h2>
   <form action="{{ url('questions.watch', question.id) }}" method="post">
     {% csrf_token %}

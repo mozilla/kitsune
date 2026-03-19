@@ -98,7 +98,7 @@
   {% endif %}
 
   {% if request.user == profile.user %}
-    <div class="mzp-u-modal-content kbox" title="{{ _('Are you sure') }}" id="delete-profile">
+    <div class="mzp-u-modal-content kbox" title="{{ _('Are you sure') }}" data-modal-id="delete-profile">
       <form method="post" action="{{ url('users.close_account') }}">
         {% csrf_token %}
         <p>

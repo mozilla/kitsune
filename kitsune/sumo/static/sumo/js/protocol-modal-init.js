@@ -7,11 +7,11 @@ import Modal from "protocol/js/modal";
   if (modalLink) {
     modalLink.forEach(function (e) {
       var dialogLink = e.dataset.sumoModal;
-      var content = document.getElementById(dialogLink);
+      var content = document.querySelector('[data-modal-id="' + CSS.escape(dialogLink) + '"]');
       function openThisDialog(e) {
         Modal.createModal(e.target, content, {
           closeText: 'Close modal',
-          content: document.getElementById(e.target.dataset.sumoModal),
+          content: document.querySelector('[data-modal-id="' + CSS.escape(e.target.dataset.sumoModal) + '"]'),
         });
         e.preventDefault();
       };

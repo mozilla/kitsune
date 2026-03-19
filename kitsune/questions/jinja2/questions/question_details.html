@@ -516,7 +516,7 @@
                 {% endblock %}
                 <a id="show-more-details" href="javascript:;" data-sumo-modal="more-system-details">{{ _('More system details') }}</a>
 
-                <section id="more-system-details" class="mzp-u-modal-content text-body-md" title="{{ _('Additional System Details') }}" data-target="#show-more-details">
+                <section data-modal-id="more-system-details" class="mzp-u-modal-content text-body-md" title="{{ _('Additional System Details') }}" data-target="#show-more-details">
                   <h2 class="sumo-page-subheading">{{ _('Additional System Details') }}</h2>
                   {% if question.metadata.crash_id %}
                   <h3 class="sumo-card-heading">{{ crash_id_label }}</h3>

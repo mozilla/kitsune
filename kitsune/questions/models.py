@@ -30,6 +30,7 @@ from kitsune.questions import config
 from kitsune.questions.managers import AAQConfigManager, AnswerManager, QuestionManager
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.parser import BASE_ALLOWED_ATTRIBUTES
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
@@ -1167,7 +1168,7 @@ def _content_parsed(obj, locale):
     cache_key = obj.html_cache_key % obj.id
     html = cache.get(cache_key)
     if html is None:
-        html = wiki_to_html(obj.content, locale)
+        html = wiki_to_html(obj.content, locale, attributes=BASE_ALLOWED_ATTRIBUTES)
         cache.add(cache_key, html, settings.CACHE_MEDIUM_TIMEOUT)
     return html
 

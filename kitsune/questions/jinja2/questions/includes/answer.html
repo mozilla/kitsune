@@ -97,7 +97,7 @@
     <div class="content">
       {% if is_preview %}
         {# Don't use cached content_parsed #}
-        {{ answer.content|wiki_to_html(locale=request.LANGUAGE_CODE) }}
+        {{ answer.content|wiki_to_html_questions(locale=request.LANGUAGE_CODE) }}
       {% else %}
         {{ answer.content_parsed|safe }}
       {% endif %}

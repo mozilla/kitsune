@@ -1,6 +1,6 @@
 {% macro flag_form(post_target, identifier, content_moderation=False) %}
   <a href="javascript:;" data-sumo-modal="report-abuse-{{ identifier }}">{{ _('Report Abuse') }}</a>
-  <section id="report-abuse-{{ identifier }}" class="mzp-u-modal-content">
+  <section data-modal-id="report-abuse-{{ identifier }}" class="mzp-u-modal-content">
     <h2 class="sumo-page-subheading">{{ _('Report this') }}</h2>
     <form action="{{ post_target }}" method="post">
       {% csrf_token %}
