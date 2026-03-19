@@ -4,6 +4,7 @@ from xml.sax.saxutils import quoteattr
 
 from django.conf import settings
 from django.utils import translation
+from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from html5lib import HTMLParser
@@ -50,13 +51,19 @@ BLOCK_LEVEL_ELEMENTS = [
 TEMPLATE_ARG_REGEX = re.compile("{{{([^{]+?)}}}")
 
 
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, doc_id=None, parser_cls=None):
+def wiki_to_html(
+    wiki_markup,
+    locale=settings.WIKI_DEFAULT_LANGUAGE,
+    doc_id=None,
+    parser_cls=None,
+    restrict_to_groups=None,
+):
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
     if parser_cls is None:
         parser_cls = WikiParser
 
     with translation.override(locale):
-        content = parser_cls(doc_id=doc_id).parse(
+        content = parser_cls(doc_id=doc_id, restrict_to_groups=restrict_to_groups).parse(
             wiki_markup,
             show_toc=False,
             locale=locale,
@@ -381,16 +388,16 @@ class WikiParser(sumo_parser.WikiParser):
 
     image_template = "wikiparser/hook_image_lazy.html"
 
-    def __init__(self, base_url=None, doc_id=None):
+    def __init__(self, base_url=None, doc_id=None, restrict_to_groups=None):
         """
-        doc_id -- If you want to be nice, pass the ID of the Document you are
-            rendering. This will make recursive inclusions fail immediately
-            rather than after the first round of recursion.
-
+        Pass the ID of the document being rendered to detect recursion immediately,
+        and pass "restrict_to_groups" to enforce restrictions on the parsed content.
         """
         super().__init__(base_url)
 
-        # Stack of document IDs to prevent Include or Template recursion:
+        self.restrict_to_groups = restrict_to_groups
+
+        # Stack of document IDs to prevent include/template recursion.
         self.inclusions = [doc_id] if doc_id else []
 
         # The wiki has additional hooks not used elsewhere
@@ -427,11 +434,35 @@ class WikiParser(sumo_parser.WikiParser):
 
         return html
 
+    @cached_property
+    def restrict_to_group_ids(self):
+        """The set of group IDs that restrict what content can be included."""
+        if self.restrict_to_groups is None:
+            return set()
+        return set(self.restrict_to_groups.values_list("pk", flat=True))
+
+    def _is_include_allowed(self, include_doc):
+        """
+        Check if the document can be included. Returns True only if the restrictions
+        specified for the parsed content are a subset of (or equal to) the included
+        document's restrictions, meaning every user who can view this parsed content
+        can also view the included content.
+        """
+        if self.restrict_to_group_ids:
+            return self.restrict_to_group_ids.issubset(
+                set(include_doc.original.restrict_to_groups.values_list("pk", flat=True))
+            )
+        # The parsed content is unrestricted, so the included document must be as well.
+        return not include_doc.is_restricted
+
     def _hook_include(self, parser, space, title):
         """Returns the document's parsed content."""
         message = _('The document "%s" does not exist.') % title
         include = get_object_fallback(Document, title, locale=self.locale)
         if not include or not include.current_revision:
+            return message
+
+        if not self._is_include_allowed(include):
             return message
 
         if include.id in parser.inclusions:
@@ -462,6 +493,9 @@ class WikiParser(sumo_parser.WikiParser):
         )
 
         if not template or not template.current_revision:
+            return message
+
+        if not self._is_include_allowed(template):
             return message
 
         if template.id in parser.inclusions:

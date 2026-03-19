@@ -687,9 +687,18 @@ def preview_revision(request):
         doc = get_visible_document_or_404(request.user, locale=locale, slug=slug)
         products = doc.get_products()
     else:
+        doc = None
         products = Product.active.all()
 
-    data = {"content": wiki_to_html(wiki_content, request.LANGUAGE_CODE), "products": products}
+    data = {
+        "content": wiki_to_html(
+            wiki_content,
+            request.LANGUAGE_CODE,
+            doc_id=doc.id if doc else None,
+            restrict_to_groups=doc.original.restrict_to_groups if doc else None,
+        ),
+        "products": products,
+    }
     return render(request, "wiki/preview.html", data)
 
 
