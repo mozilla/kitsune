@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import dntEnabled from "./libs/dnt-helper";
+import dntEnabled from "@mozmeao/dnt-helper";
 
 (function (w) {
   'use strict';
@@ -17,9 +17,13 @@ import dntEnabled from "./libs/dnt-helper";
   w.gtag = function () {
     w.dataLayer.push(arguments)
   }
-  // If doNotTrack is not enabled, it is ok to add GTM
-  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1217896 for more details
-  if (typeof dntEnabled === 'function' && !dntEnabled() && GTM_CONTAINER_ID) {
+  // Block GTM if GPC or DNT is enabled.
+  // GPC is the modern replacement for DNT (Firefox removed DNT in v135, Feb 2025).
+  // @see https://globalprivacycontrol.org/
+  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1217896
+  let trackingBlocked = navigator.globalPrivacyControl ||
+                        (typeof dntEnabled === 'function' && dntEnabled());
+  if (!trackingBlocked && GTM_CONTAINER_ID) {
     (function (w, d, s, l, i, j, f, dl, k, q) {
       w[l] = w[l] || []; w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' }); f = d.getElementsByTagName(s)[0];
       k = i.length; q = '//www.googletagmanager.com/gtag/js?id=@&l=' + (l || 'dataLayer');
