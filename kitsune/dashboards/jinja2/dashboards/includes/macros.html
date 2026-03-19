@@ -139,7 +139,7 @@
       {{ pgettext('l10n dashboard', 'Subscribe...') }}
     </button>
 
-    <div id="subscribe-modal" class="mzp-u-modal-content">
+    <div data-modal-id="subscribe-modal" class="mzp-u-modal-content">
       <form action="" method="POST">
         {% csrf_token %}
         <table>

@@ -8,7 +8,7 @@
   $(function () {
     $('[data-sumo-modal]').each(function () {
       var identifier = $(this).data('sumo-modal');
-      $('#' + identifier + ' [type="submit"]').on('click', function (ev) {
+      $('[data-modal-id="' + identifier + '"] [type="submit"]').on('click', function (ev) {
         ev.preventDefault();
         var $this = $(this);
         var $form = $this.closest('form');

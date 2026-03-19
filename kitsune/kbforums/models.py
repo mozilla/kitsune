@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from kitsune import kbforums
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.parser import BASE_ALLOWED_ATTRIBUTES
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.models import NotificationsMixin
@@ -153,4 +154,4 @@ class Post(ModelBase):
 
     @property
     def content_parsed(self):
-        return wiki_to_html(self.content)
+        return wiki_to_html(self.content, attributes=BASE_ALLOWED_ATTRIBUTES)

@@ -14,15 +14,9 @@ from kitsune.sumo import email_utils
 from kitsune.sumo.sanitize import clean, linkify
 from kitsune.sumo.urlresolvers import reverse
 
-ALLOWED_ATTRIBUTES = {
+BASE_ALLOWED_ATTRIBUTES = {
     "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
-    "div": ["id", "class", "style", "data-for", "title", "data-target", "data-modal"],
-    "h1": ["id"],
-    "h2": ["id"],
-    "h3": ["id"],
-    "h4": ["id"],
-    "h5": ["id"],
-    "h6": ["id"],
+    "div": ["class", "style", "data-for", "title"],
     "li": ["class"],
     "span": ["class", "data-for"],
     "img": ["class", "src", "data-original-src", "alt", "title", "height", "width", "style"],
@@ -36,6 +30,17 @@ ALLOWED_ATTRIBUTES = {
         "data-height",
     ],
     "source": ["src", "type"],
+}
+
+ALLOWED_ATTRIBUTES = {
+    **BASE_ALLOWED_ATTRIBUTES,
+    "div": BASE_ALLOWED_ATTRIBUTES["div"] + ["id", "data-target", "data-modal"],
+    "h1": ["id"],
+    "h2": ["id"],
+    "h3": ["id"],
+    "h4": ["id"],
+    "h5": ["id"],
+    "h6": ["id"],
 }
 ALLOWED_STYLES = ["vertical-align"]
 IMAGE_PARAMS = ["alt", "align", "caption", "valign", "frame", "page", "link", "width", "height"]

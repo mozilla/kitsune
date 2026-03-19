@@ -26,6 +26,7 @@ from django_jinja import library
 from markupsafe import Markup, escape
 
 from kitsune.sumo import parser, sanitize
+from kitsune.sumo.parser import BASE_ALLOWED_ATTRIBUTES
 from kitsune.sumo.sanitize import ALLOWED_BIO_ATTRIBUTES, ALLOWED_BIO_TAGS, clean
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
@@ -133,6 +134,12 @@ def wiki_to_html(
             wiki_markup, locale=locale, nofollow=nofollow, tags=tags, attributes=attributes
         )
     )
+
+
+@library.filter
+def wiki_to_html_questions(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE):
+    """Wiki Markup -> HTML using the restricted questions allowlist."""
+    return wiki_to_html(wiki_markup, locale=locale, attributes=BASE_ALLOWED_ATTRIBUTES)
 
 
 @library.filter
