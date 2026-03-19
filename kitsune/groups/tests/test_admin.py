@@ -99,7 +99,7 @@ class GroupProfileAdminTests(TestCase):
 
         self.assertEqual(sub_profile.leaders.count(), 0)
 
-    @mock.patch("kitsune.groups.admin.open_as_pil_image")
+    @mock.patch("kitsune.upload.utils.open_as_pil_image")
     def test_avatar_too_large_pixels(self, mock_open):
         """Uploading an avatar that exceeds pixel limits shows a form validation error."""
         mock_open.side_effect = FileTooLargeError("Image exceeds the maximum allowed size.")
@@ -118,7 +118,7 @@ class GroupProfileAdminTests(TestCase):
         self.assertIn("avatar", form.errors)
         self.assertIn("Image exceeds the maximum allowed size.", form.errors["avatar"][0])
 
-    @mock.patch("kitsune.groups.admin.check_file_size")
+    @mock.patch("kitsune.upload.utils.check_file_size")
     def test_avatar_too_large_file_size(self, mock_check):
         """Uploading an avatar that exceeds file size limits shows a form validation error."""
         mock_check.side_effect = FileTooLargeError("File is too large.")

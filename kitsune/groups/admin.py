@@ -5,27 +5,14 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from kitsune.groups.models import GroupProfile
-from kitsune.upload.utils import (
-    FileTooLargeError,
-    check_file_size,
-    create_image_thumbnail,
-    open_as_pil_image,
-)
+from kitsune.upload.utils import create_image_thumbnail, validate_avatar_size
 
 
 class GroupProfileAdminForm(movenodeform_factory(GroupProfile)):  # type: ignore[misc]
     def clean_avatar(self):
         avatar = self.cleaned_data.get("avatar")
         if avatar and hasattr(avatar, "size"):
-            try:
-                check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
-            except FileTooLargeError as e:
-                raise forms.ValidationError(e.args[0])
-            try:
-                with open_as_pil_image(avatar):
-                    pass
-            except FileTooLargeError as e:
-                raise forms.ValidationError(e.args[0])
+            validate_avatar_size(avatar)
         return avatar
 
 

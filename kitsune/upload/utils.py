@@ -1,6 +1,7 @@
 import io
 import os
 
+from django import forms
 from django.conf import settings
 from django.core.files import File
 from django.core.files.base import ContentFile
@@ -47,6 +48,19 @@ def check_file_size(f, max_allowed_size):
             max_allowed_size >> 10,
         )
         raise FileTooLargeError(message)
+
+
+def validate_avatar_size(avatar):
+    """Validate the size of the avatar."""
+    try:
+        check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
+    except FileTooLargeError as e:
+        raise forms.ValidationError(e.args[0])
+    try:
+        with open_as_pil_image(avatar):
+            pass
+    except FileTooLargeError as e:
+        raise forms.ValidationError(e.args[0])
 
 
 def create_imageattachment(files, user, obj):
