@@ -5,11 +5,19 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
 from kitsune.groups.models import GroupProfile
-from kitsune.upload.tasks import create_image_thumbnail
+from kitsune.upload.utils import create_image_thumbnail, validate_avatar_size
+
+
+class GroupProfileAdminForm(movenodeform_factory(GroupProfile)):  # type: ignore[misc]
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get("avatar")
+        if avatar and hasattr(avatar, "size"):
+            validate_avatar_size(avatar)
+        return avatar
 
 
 class GroupProfileAdmin(TreeAdmin):
-    form = movenodeform_factory(GroupProfile)
+    form = GroupProfileAdminForm
     list_display = ["slug", "group", "visibility", "depth", "numchild"]
     list_filter = ["visibility"]
     raw_id_fields = ["leaders"]

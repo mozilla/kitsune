@@ -7,7 +7,7 @@ from kitsune.groups.models import GroupProfile
 from kitsune.sumo.form_fields import MultiUsernameField
 from kitsune.sumo.widgets import ImageWidget
 from kitsune.upload.forms import LimitedImageField
-from kitsune.upload.utils import FileTooLargeError, check_file_size
+from kitsune.upload.utils import validate_avatar_size
 
 
 class GroupProfileForm(forms.ModelForm):
@@ -41,11 +41,7 @@ class GroupAvatarForm(forms.ModelForm):
             avatar = self.request.FILES.get("avatar")
             if not avatar:
                 raise forms.ValidationError(_("You have not selected an image to upload."))
-            # Validate file size
-            try:
-                check_file_size(avatar, settings.MAX_AVATAR_FILE_SIZE)
-            except FileTooLargeError as e:
-                raise forms.ValidationError(e.args[0])
+            validate_avatar_size(avatar)
 
         return self.cleaned_data["avatar"]
 

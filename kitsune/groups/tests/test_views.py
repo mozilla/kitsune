@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.files import File
 from django.http import HttpResponse
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
@@ -126,6 +126,14 @@ class EditAvatarTests(TestCase):
         url = reverse("groups.profile", args=[self.group_profile.slug])
         self.assertEqual(url, r["location"])
         assert not os.path.exists(old_path), "Old avatar was not removed."
+
+    @override_settings(IMAGE_MAX_PIXELS=1)
+    def test_upload_avatar_too_large(self):
+        """Uploading an avatar that exceeds IMAGE_MAX_PIXELS fails form validation."""
+        url = reverse("groups.edit_avatar", locale="en-US", args=[self.group_profile.slug])
+        with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
+            r = self.client.post(url, {"avatar": f})
+        self.assertEqual(200, r.status_code)
 
     def test_delete_avatar(self):
         """Delete a group avatar."""
