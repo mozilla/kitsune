@@ -11,6 +11,7 @@ from kitsune.questions.models import Question
 from kitsune.sumo.feeds import Feed
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import strip_nul_bytes
 from kitsune.tags.models import SumoTag
 
 
@@ -27,8 +28,8 @@ class QuestionsFeed(Feed):
     def get_object(self, request):
         query = {}
 
-        product_slug = request.GET.get("product")
-        topic_slug = request.GET.get("topic")
+        product_slug = strip_nul_bytes(request.GET.get("product"))
+        topic_slug = strip_nul_bytes(request.GET.get("topic"))
         locale = request.LANGUAGE_CODE
 
         if product_slug and product_slug != "all":

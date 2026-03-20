@@ -20,8 +20,9 @@ from kitsune.gallery import ITEMS_PER_PAGE
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image, Video
 from kitsune.gallery.utils import check_media_permissions, upload_image
+from kitsune.sumo.i18n import normalize_language
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import paginate, strip_nul_bytes
 from kitsune.upload.tasks import compress_image, generate_thumbnail
 from kitsune.upload.utils import FileTooLargeError
 from kitsune.wiki.tasks import schedule_rebuild_kb
@@ -114,8 +115,8 @@ def gallery_async(request):
     """
     # Maybe refactor this into existing views and check request.is_ajax?
     media_type = request.GET.get("type", "image")
-    term = request.GET.get("q")
-    media_locale = request.GET.get("locale", settings.WIKI_DEFAULT_LANGUAGE)
+    term = strip_nul_bytes(request.GET.get("q"))
+    media_locale = normalize_language(request.GET.get("locale")) or settings.WIKI_DEFAULT_LANGUAGE
     if media_type == "image":
         media_qs = Image.objects
     elif media_type == "video":
@@ -136,7 +137,7 @@ def gallery_async(request):
 def search(request, media_type):
     """Search the media gallery."""
 
-    term = request.GET.get("q")
+    term = strip_nul_bytes(request.GET.get("q", ""))
     if not term:
         url = reverse("gallery.gallery", args=[media_type])
         return HttpResponseRedirect(url)

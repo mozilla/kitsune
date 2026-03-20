@@ -31,6 +31,8 @@ from kitsune.kpi.models import (
 )
 from kitsune.questions.models import Answer, AnswerVote, Question
 from kitsune.sumo.api_utils import OrderingFilter
+from kitsune.sumo.i18n import normalize_language
+from kitsune.sumo.utils import strip_nul_bytes
 from kitsune.wiki.models import HelpfulVote
 
 
@@ -124,8 +126,8 @@ class QuestionsMetricList(CachedAPIView):
 
     def get_objects(self, request):
         # Set up the queries for the data we need
-        locale = request.GET.get("locale")
-        product = request.GET.get("product")
+        locale = normalize_language(request.GET.get("locale"))
+        product = strip_nul_bytes(request.GET.get("product"))
 
         # Set up the query for the data we need.
         qs = _daily_qs_for(Question)
@@ -191,8 +193,8 @@ class KBVoteMetricList(CachedAPIView):
 
     def get_objects(self, request):
         # Set up the queries for the data we need
-        locale = request.GET.get("locale")
-        product = request.GET.get("product")
+        locale = normalize_language(request.GET.get("locale"))
+        product = strip_nul_bytes(request.GET.get("product"))
 
         # Use "__range" to ensure the database index is used in Postgres,
         # and only show the helpful votes from the last 365 days.

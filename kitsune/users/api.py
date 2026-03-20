@@ -27,6 +27,7 @@ from kitsune.questions.models import Answer
 from kitsune.questions.utils import num_answers, num_questions, num_solutions
 from kitsune.sumo.api_utils import DateTimeUTCField, OrderingFilter, PermissionMod
 from kitsune.sumo.decorators import json_view
+from kitsune.sumo.utils import strip_nul_bytes
 from kitsune.users.models import Profile, Setting
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
 
@@ -54,8 +55,8 @@ class TimezoneField(serializers.Field):
 @json_view
 def usernames(request):
     """An API to provide auto-complete data for user names."""
-    term = request.GET.get("term", "")
-    query = request.GET.get("query", "")
+    term = strip_nul_bytes(request.GET.get("term", ""))
+    query = strip_nul_bytes(request.GET.get("query", ""))
     pre = term or query
 
     if not pre:
