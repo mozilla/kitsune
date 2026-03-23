@@ -33,4 +33,21 @@
     max-width: 150px;
     margin: 0 20px 20px 0;
   }
+
+  figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: p.$spacing-xs;
+  }
+
+  figcaption {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    @include c.text-body-xs;
+    text-align: center;
+    color: var(--color-marketing-gray-07);
+  }
 }
