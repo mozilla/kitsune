@@ -407,17 +407,18 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
   function initReadyForL10n() {
     var $watchDiv = $('#revision-list .l10n'),
+      $modal = $('[data-modal-id="ready-for-l10n-modal"]'),
       post_url, checkbox_id;
 
     $watchDiv.find('a.markasready').on("click", function () {
       var $check = $(this);
       post_url = $check.data('url');
       checkbox_id = $check.attr('id');
-      $('#ready-for-l10n-modal span.revtime').html('(' + $check.data('revdate') + ')');
+      $modal.find('span.revtime').html('(' + $check.data('revdate') + ')');
     });
 
-    $('#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]').on("click", function () {
-      var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val();
+    $modal.find('input[type=submit], button[type=submit]').on("click", function () {
+      var csrf = $modal.find('input[name=csrfmiddlewaretoken]').val();
       if (post_url !== undefined && checkbox_id !== undefined) {
         $.ajax({
           type: 'POST',
