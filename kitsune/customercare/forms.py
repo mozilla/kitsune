@@ -21,7 +21,6 @@ OS_CHOICES = [
     ("linux32", _lazy("Linux 32-bit")),
     ("android", _lazy("Android")),
     ("ios", _lazy("iOS")),
-    ("other", _lazy("Other")),
 ]
 
 UPDATE_CHANNEL_CHOICES = [

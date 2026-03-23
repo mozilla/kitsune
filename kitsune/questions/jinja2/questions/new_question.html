@@ -35,7 +35,11 @@
   <h2 class="sumo-page-heading">
     {% if current_support_type == SUPPORT_TYPE_ZENDESK %}
       {# L10n: A header, displayed when asking a new question (on https://support.mozilla.org/questions/new and in Premium product question forms). #}
-      {{ _('Contact Support') }}
+      {% if is_enterprise %}
+        {{ _('Support for Organizations') }}
+      {% else %}
+        {{ _('Contact Support') }}
+      {% endif %}
     {% else %}
       {{ _('Ask your question') }}
     {% endif %}

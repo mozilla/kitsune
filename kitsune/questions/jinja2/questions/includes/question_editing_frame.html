@@ -12,6 +12,7 @@ behaviors like editing them can be provided by overriding blocks.
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
 {% set scripts = ('questions', 'questions.geo',) %}
+{% set is_enterprise = current_product and current_product.slug == 'firefox-enterprise' %}
 
 {% set hide_aaq_link = True %}
 
@@ -88,10 +89,16 @@ behaviors like editing them can be provided by overriding blocks.
                   to contact our support staff.
                 {% endtrans %}
               {% elif current_support_type == SUPPORT_TYPE_ZENDESK %}
-                {% trans %}
-                  Be specific. Telling us “YouTube videos are always choppy”
-                  is much more helpful than “something is broken".
-                {% endtrans %}
+                {% if is_enterprise %}
+                  {% trans %}
+                    Submissions via this form are only visible to Mozilla employees and authorized support agents and are not publicly visible. If your issue involves sensitive information, limit the details submitted, avoiding full logs or traces.
+                  {% endtrans %}
+                {% else %}
+                  {% trans %}
+                    Be specific. Telling us “YouTube videos are always choppy”
+                    is much more helpful than “something is broken”.
+                  {% endtrans %}
+                {% endif %}
               {% else %}
                 {# L10n: An advice, displayed when filing a new question form (e.g., on https://support.mozilla.org/questions/new/firefox/form). #}
                 {% trans %}
