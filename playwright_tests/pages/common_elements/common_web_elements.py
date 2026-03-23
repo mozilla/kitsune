@@ -8,6 +8,12 @@ class CommonWebElements(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+        """Locators belonging to the announcement banner."""
+        self.announcement_banner = lambda banner_id: page.locator(
+            f"//div[@id='announcements']/div[@id='announce-{banner_id}']")
+        self.announcement_banner_close_button = lambda banner_id: page.locator(
+            f"//button[@data-close-id='announce-{banner_id}']")
+
         """Locators belonging to the spam banner."""
         self.scam_banner = page.locator("div#id_scam_alert")
         self.scam_banner_text = page.locator("//div[@id='id_scam_alert']//p[@class='heading']")
@@ -60,6 +66,12 @@ class CommonWebElements(BasePage):
             "//ol[@class='pagination']//span[text()='Previous']/..")
         self.next_pagination_item= page.locator(
             "//ol[@class='pagination']//span[text()='Next']/..")
+
+
+    """Actions against the announcement banner locators."""
+    def click_on_announcement_banner_close_button(self, banner_id: str):
+        """Clicks on the announcement banner close button."""
+        self._click(self.announcement_banner_close_button(banner_id))
 
     """Actions against the Avoid Spam banner locators."""
     def get_scam_banner_text(self) -> str:

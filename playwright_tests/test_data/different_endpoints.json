@@ -9,5 +9,7 @@
             "Templates": "https://support.allizom.org/en-US/kb/category/60",
             "Canned Responses": "https://support.allizom.org/en-US/kb/category/70"
           },
-  "fxa_stage": "https://accounts.stage.mozaws.net"
+  "fxa_stage": "https://accounts.stage.mozaws.net",
+  "admin": "https://support.allizom.org/admin/",
+  "admin_announcement_page": "https://support.allizom.org/admin/announcements/announcement/"
 }

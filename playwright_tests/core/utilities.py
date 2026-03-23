@@ -775,6 +775,19 @@ class Utilities:
         """
         return self.page.evaluate("() => window.scrollY")
 
+    def fetch_session_storage_banner_key(self, banner_id: str) -> str:
+        """
+        This helper function returns the value of the announcement banner session storage key.
+        """
+        return self.page.evaluate(f"() => sessionStorage.getItem('announce-{banner_id}.closed')")
+
+    def set_session_storage_banner_key(self, banner_id: str, value: str):
+        """
+        This helper functions sets a new value to the announcement banner session storage key.
+        """
+        self.page.evaluate(f"() => sessionStorage.setItem('announce-{banner_id}.closed',"
+                           f"'{value}')")
+
     def expect_locator_visibility(self, locator: Locator) -> bool:
         for attempt in range(3):
             try:
