@@ -448,12 +448,19 @@ class WikiParser(sumo_parser.WikiParser):
         document's restrictions, meaning every user who can view this parsed content
         can also view the included content.
         """
-        if self.restrict_to_group_ids:
-            return self.restrict_to_group_ids.issubset(
-                set(include_doc.original.restrict_to_groups.values_list("pk", flat=True))
-            )
-        # The parsed content is unrestricted, so the included document must be as well.
-        return not include_doc.is_restricted
+        if not include_doc.is_restricted:
+            # Unrestricted documents can always be included.
+            return True
+
+        if not self.restrict_to_group_ids:
+            # Restricted documents cannot be included in unrestricted documents.
+            return False
+
+        # Only documents restricted to a superset of the restricted groups of the
+        # containing document can be included.
+        return self.restrict_to_group_ids.issubset(
+            set(include_doc.original.restrict_to_groups.values_list("pk", flat=True))
+        )
 
     def _hook_include(self, parser, space, title):
         """Returns the document's parsed content."""

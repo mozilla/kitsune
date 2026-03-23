@@ -449,6 +449,18 @@ class TestWikiInclude(TestCase):
             restrict_to_groups=source_doc.original.restrict_to_groups,
         )
 
+    def test_include_unrestricted_document_from_restricted(self):
+        """A restricted doc including an unrestricted doc should work."""
+        group = GroupFactory()
+        unrestricted = DocumentFactory(title="Public Doc")
+        ApprovedRevisionFactory(document=unrestricted, content="Public content")
+
+        including = DocumentFactory(title="Restricted Source", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=including)
+        p = self._make_parser(including)
+        doc = pq(p.parse("[[Include:Public Doc]]"))
+        self.assertEqual("Public content", doc.text())
+
     def test_include_restricted_document_from_unrestricted(self):
         """An unrestricted doc including a restricted doc should not reveal its content."""
         group = GroupFactory()
