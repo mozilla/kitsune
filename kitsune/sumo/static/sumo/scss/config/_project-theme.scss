@@ -36,7 +36,8 @@
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem;
-  --heading-font-family-moz: 'Mozilla Headline', Inter, X-LocaleSpecific, serif;
+  --heading-font-family-moz: 'Mozilla Headline', 'Helvetica Neue', Arial, X-LocaleSpecific, sans-serif;
+  --body-font-family-moz: 'Mozilla Text', 'Helvetica Neue', Arial, X-LocaleSpecific, sans-serif;
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
   --heading-alt-font-family: var(--heading-font-family);
   --code-font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
@@ -53,6 +54,7 @@
 [lang="de"], [lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --heading-font-family-moz: var(--base-font-family);
+  --body-font-family-moz: var(--base-font-family);
   --heading-font-family: var(--base-font-family);
   --heading-alt-font-family: var(--base-font-family);
 }

@@ -21,6 +21,9 @@
 @use 'protocol/css/includes/fonts/mozilla-text';
 
 
+// Theme - defines CSS custom properties for fonts, colors, and type scale
+@use 'protocol/css/includes/themes';
+
 // Base elements - general HTML elements
 @use 'protocol/css/base/elements/reset';
 @use 'protocol/css/base/elements/common';

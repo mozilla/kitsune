@@ -57,6 +57,7 @@ h1, h2, h3, h4, h5, h6,
 
 .has-moz-headings {
   color: var(--color-moz-text);
+  font-family: var(--body-font-family-moz);
 
   h1, h2, h3, h4, h5, h6, [class*=text-display] {
     font-family: var(--heading-font-family-moz);
