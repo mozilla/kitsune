@@ -9,6 +9,7 @@ import kitsune.sumo.tests.test_parser
 from kitsune.gallery.models import Video
 from kitsune.gallery.tests import ImageFactory, VideoFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import GroupFactory
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import PATTERNS, RECURSION_MESSAGE, ForParser, WikiParser, _key_split
@@ -440,6 +441,146 @@ class TestWikiInclude(TestCase):
             "Paper Wooden {} Bats Cups".format(recursion_message),
             re.sub(r"</?p>|\n", "", boo.content_parsed),
         )
+
+    def _make_parser(self, source_doc):
+        """Helper to create a WikiParser with the restriction context of a source document."""
+        return WikiParser(
+            doc_id=source_doc.id,
+            restrict_to_groups=source_doc.original.restrict_to_groups,
+        )
+
+    def test_include_restricted_document_from_unrestricted(self):
+        """An unrestricted doc including a restricted doc should not reveal its content."""
+        group = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        # Parse from an unrestricted document context.
+        unrestricted = DocumentFactory(title="Public Doc")
+        ApprovedRevisionFactory(document=unrestricted)
+        p = self._make_parser(unrestricted)
+        doc = pq(p.parse("[[Include:Restricted Doc]]"))
+        self.assertNotIn("Secret content", doc.text())
+
+    def test_include_restricted_document_from_same_group(self):
+        """A restricted doc including another doc restricted to the same group should work."""
+        group = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        # Parse from a document restricted to the same group.
+        including = DocumentFactory(title="Also Restricted", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=including)
+        p = self._make_parser(including)
+        doc = pq(p.parse("[[Include:Restricted Doc]]"))
+        self.assertEqual("Secret content", doc.text())
+
+    def test_include_restricted_document_from_subset_group(self):
+        """A doc restricted to a subset of an included doc's groups should work."""
+        group_a = GroupFactory()
+        group_b = GroupFactory()
+        # Included doc is accessible to members of group_a OR group_b.
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group_a, group_b])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        # Including doc is restricted to only group_a (a subset), so all its
+        # viewers are guaranteed to also have access to the included doc.
+        including = DocumentFactory(title="Narrower Doc", restrict_to_groups=[group_a])
+        ApprovedRevisionFactory(document=including)
+        p = self._make_parser(including)
+        doc = pq(p.parse("[[Include:Restricted Doc]]"))
+        self.assertEqual("Secret content", doc.text())
+
+    def test_include_restricted_document_from_non_subset_group(self):
+        """A doc whose groups aren't a subset of the included doc's groups should not work."""
+        group_a = GroupFactory()
+        group_b = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group_a])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        # Including doc is restricted to group_b, which is NOT a subset of {group_a}.
+        # A group_b member could see the including doc but not the included doc.
+        including = DocumentFactory(title="Other Group Doc", restrict_to_groups=[group_b])
+        ApprovedRevisionFactory(document=including)
+        p = self._make_parser(including)
+        doc = pq(p.parse("[[Include:Restricted Doc]]"))
+        self.assertNotIn("Secret content", doc.text())
+
+    def test_include_restricted_document_without_source_context(self):
+        """Restricted includes should be blocked when there is no source document context."""
+        group = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        # No source doc — e.g., parsing from questions, forums, or a brand-new doc preview.
+        p = WikiParser()
+        doc = pq(p.parse("[[Include:Restricted Doc]]"))
+        self.assertNotIn("Secret content", doc.text())
+
+    def test_include_restricted_translation_from_unrestricted(self):
+        """Including a translation of a restricted doc should be blocked for unrestricted sources."""
+        group = GroupFactory()
+        parent = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=parent, content="Secret content")
+
+        translation = DocumentFactory(title="Restricted Doc", locale="fr", parent=parent)
+        ApprovedRevisionFactory(document=translation, content="Contenu secret")
+
+        unrestricted = DocumentFactory(title="Public Doc")
+        ApprovedRevisionFactory(document=unrestricted)
+        p = self._make_parser(unrestricted)
+        doc = pq(p.parse("[[Include:Restricted Doc]]", locale="fr"))
+        self.assertNotIn("Contenu secret", doc.text())
+
+    def test_include_restricted_translation_from_same_group(self):
+        """Including a translation of a restricted doc should work when groups match."""
+        group = GroupFactory()
+        parent = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=parent, content="Secret content")
+
+        translation = DocumentFactory(title="Restricted Doc", locale="fr", parent=parent)
+        ApprovedRevisionFactory(document=translation, content="Contenu secret")
+
+        including = DocumentFactory(title="Also Restricted", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=including)
+        p = self._make_parser(including)
+        doc = pq(p.parse("[[Include:Restricted Doc]]", locale="fr"))
+        self.assertEqual("Contenu secret", doc.text())
+
+
+class TestWikiTemplateRestricted(TestCase):
+    def _make_parser(self, source_doc):
+        """Helper to create a WikiParser with the restriction context of a source document."""
+        return WikiParser(
+            doc_id=source_doc.id,
+            restrict_to_groups=source_doc.original.restrict_to_groups,
+        )
+
+    def test_template_restricted_from_unrestricted(self):
+        """An unrestricted doc using a restricted template should not reveal its content."""
+        group = GroupFactory()
+        restricted = TemplateDocumentFactory(restrict_to_groups=[group])
+        template_name = restricted.title.removeprefix(TEMPLATE_TITLE_PREFIX)
+        ApprovedRevisionFactory(document=restricted, content="Secret template content")
+
+        unrestricted = DocumentFactory(title="Public Doc")
+        ApprovedRevisionFactory(document=unrestricted)
+        p = self._make_parser(unrestricted)
+        doc = pq(p.parse(f"[[Template:{template_name}]]"))
+        self.assertNotIn("Secret template content", doc.text())
+
+    def test_template_restricted_from_same_group(self):
+        """A restricted doc using a template restricted to the same group should work."""
+        group = GroupFactory()
+        restricted = TemplateDocumentFactory(restrict_to_groups=[group])
+        template_name = restricted.title.removeprefix(TEMPLATE_TITLE_PREFIX)
+        ApprovedRevisionFactory(document=restricted, content="Secret template content")
+
+        including = DocumentFactory(title="Also Restricted", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=including)
+        p = self._make_parser(including)
+        doc = pq(p.parse(f"[[Template:{template_name}]]"))
+        self.assertIn("Secret template content", doc.text())
 
 
 class TestWikiVideo(TestCase):

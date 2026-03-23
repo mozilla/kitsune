@@ -689,6 +689,7 @@ class Document(NotificationsMixin, ModelBase, DocumentPermissionMixin):
             locale=self.locale,
             doc_id=self.id,
             parser_cls=WhatLinksHereParser,
+            restrict_to_groups=self.original.restrict_to_groups,
         )
 
     def links_from(self):
@@ -1024,7 +1025,12 @@ class Revision(ModelBase, AbstractRevision):
     def content_parsed(self):
         from kitsune.wiki.parser import wiki_to_html
 
-        return wiki_to_html(self.content, locale=self.document.locale, doc_id=self.document.id)
+        return wiki_to_html(
+            self.content,
+            locale=self.document.locale,
+            doc_id=self.document.id,
+            restrict_to_groups=self.document.original.restrict_to_groups,
+        )
 
     def can_be_translated(self):
         """Return whether this revision can be handled by translation strategy."""

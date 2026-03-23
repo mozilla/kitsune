@@ -81,7 +81,7 @@ def translate(doc: Document, target_locale: str) -> dict[str, dict[str, Any]]:
 
             if content_attribute == "content":
                 result["content"]["translation"] = resolve_anchors(
-                    source_locale=doc.locale,
+                    source_doc=doc,
                     source_content=payload["source_text"],
                     target_locale=target_locale,
                     target_content=result["content"]["translation"],
@@ -98,7 +98,7 @@ def translate(doc: Document, target_locale: str) -> dict[str, dict[str, Any]]:
 
 
 def resolve_anchors(
-    source_locale: str, source_content: str, target_locale: str, target_content: str
+    source_doc: Document, source_content: str, target_locale: str, target_content: str
 ) -> str:
     """
     Resolves both internal and external anchor references in translated wiki content.
@@ -109,7 +109,7 @@ def resolve_anchors(
     locale-specific anchor IDs.
 
     Args:
-        source_locale: The locale code of the source content (e.g., "en-US").
+        source_doc: The source document.
         source_content: The original wiki markup content before translation.
         target_locale: The locale code of the target translation (e.g., "fr").
         target_content: The translated wiki markup content with outdated anchor references.
@@ -118,13 +118,15 @@ def resolve_anchors(
         The target content with all anchor references updated to match the target locale.
     """
     target_content = resolve_internal_anchors(
-        source_locale, source_content, target_locale, target_content
+        source_doc, source_content, target_locale, target_content
     )
-    return resolve_external_anchors(source_locale, source_content, target_locale, target_content)
+    return resolve_external_anchors(
+        source_doc.locale, source_content, target_locale, target_content
+    )
 
 
 def resolve_internal_anchors(
-    source_locale: str, source_content: str, target_locale: str, target_content: str
+    source_doc: Document, source_content: str, target_locale: str, target_content: str
 ) -> str:
     """
     Resolves internal anchor references (links within the same document).
@@ -134,7 +136,7 @@ def resolve_internal_anchors(
     source anchor IDs to their translated equivalents and updates all references.
 
     Args:
-        source_locale: The locale code of the source content.
+        source_doc: The source document.
         source_content: The original wiki markup content.
         target_locale: The locale code of the target translation.
         target_content: The translated wiki markup content.
@@ -144,7 +146,7 @@ def resolve_internal_anchors(
         anchors are found in the source content, returns target_content unchanged.
     """
     if not (
-        source_locale
+        source_doc
         and target_locale
         and target_content
         and INTERNAL_ANCHOR_REGEX.search(source_content)
@@ -153,10 +155,17 @@ def resolve_internal_anchors(
 
     from kitsune.wiki.parser import wiki_to_html
 
-    source_html = wiki_to_html(source_content, locale=source_locale)
-    target_html = wiki_to_html(target_content, locale=target_locale)
+    source_html = wiki_to_html(
+        source_content,
+        locale=source_doc.locale,
+        doc_id=source_doc.id,
+        restrict_to_groups=source_doc.restrict_to_groups,
+    )
+    target_html = wiki_to_html(
+        target_content, locale=target_locale, restrict_to_groups=source_doc.restrict_to_groups
+    )
 
-    anchor_map_result = get_anchor_map(source_locale, source_html, target_locale, target_html)
+    anchor_map_result = get_anchor_map(source_doc.locale, source_html, target_locale, target_html)
     anchor_map = anchor_map_result["map"]
 
     if source_anchors := {

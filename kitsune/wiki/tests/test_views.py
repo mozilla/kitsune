@@ -389,6 +389,62 @@ class PreviewRevisionVisibilityTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_preview_blocks_restricted_include(self):
+        """Preview of an unrestricted doc should not render restricted includes."""
+        group = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        source = ApprovedRevisionFactory()
+        user = UserFactory(is_superuser=True)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data={
+                "content": "[[Include:Restricted Doc]]",
+                "slug": source.document.slug,
+                "locale": source.document.locale,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Secret content")
+
+    def test_preview_allows_restricted_include_when_same_group(self):
+        """Preview of a restricted doc should render includes restricted to the same group."""
+        group = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        source = DocumentFactory(title="Source Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=source)
+        user = UserFactory(is_superuser=True)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data={
+                "content": "[[Include:Restricted Doc]]",
+                "slug": source.slug,
+                "locale": source.locale,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Secret content")
+
+    def test_preview_without_slug_blocks_restricted_include(self):
+        """Preview without a source doc (new doc) should block restricted includes."""
+        group = GroupFactory()
+        restricted = DocumentFactory(title="Restricted Doc", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=restricted, content="Secret content")
+
+        user = UserFactory(is_superuser=True)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data={"content": "[[Include:Restricted Doc]]"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Secret content")
+
 
 class DocumentRevisionsVisibilityTests(TestCase):
     """Document revisions visibility tests."""

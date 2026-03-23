@@ -7,6 +7,7 @@ from kitsune.llm.l10n.translator import (
     translate,
 )
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import GroupFactory
 from kitsune.wiki.models import RevisionAnchorRecord
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -19,7 +20,8 @@ class ResolveInternalAnchorsTestCase(TestCase):
     """Tests for the resolve_internal_anchors function."""
 
     def setUp(self):
-        self.source_locale = "en-US"
+        self.source_doc = DocumentFactory(locale="en-US")
+        ApprovedRevisionFactory(document=self.source_doc)
         self.target_locale = "fr"
 
     @patch("kitsune.llm.l10n.translator.get_anchor_map")
@@ -35,7 +37,7 @@ class ResolveInternalAnchorsTestCase(TestCase):
         }
 
         result = resolve_internal_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
+            self.source_doc, source_content, self.target_locale, target_content
         )
 
         self.assertEqual(result, "Voir la section [[ #w_pour-commencer |pour commencer]].")
@@ -53,7 +55,7 @@ class ResolveInternalAnchorsTestCase(TestCase):
         }
 
         result = resolve_internal_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
+            self.source_doc, source_content, self.target_locale, target_content
         )
 
         self.assertEqual(
@@ -77,7 +79,7 @@ class ResolveInternalAnchorsTestCase(TestCase):
         }
 
         result = resolve_internal_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
+            self.source_doc, source_content, self.target_locale, target_content
         )
 
         self.assertEqual(result, "Liens: [[#w_fou]] et [[#w_fou-barre]].")
@@ -90,7 +92,7 @@ class ResolveInternalAnchorsTestCase(TestCase):
         target_content = "Ce contenu n'a pas d'ancres internes."
 
         result = resolve_internal_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
+            self.source_doc, source_content, self.target_locale, target_content
         )
 
         self.assertEqual(result, target_content)
@@ -112,7 +114,7 @@ class ResolveInternalAnchorsTestCase(TestCase):
         }
 
         result = resolve_internal_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
+            self.source_doc, source_content, self.target_locale, target_content
         )
 
         self.assertEqual(result, target_content)
@@ -125,21 +127,39 @@ class ResolveInternalAnchorsTestCase(TestCase):
         target_content = ""
 
         result = resolve_internal_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
+            self.source_doc, source_content, self.target_locale, target_content
         )
 
         self.assertEqual(result, "")
         wiki_to_html_mock.assert_not_called()
         get_anchor_map_mock.assert_not_called()
 
-    @patch("kitsune.llm.l10n.translator.get_anchor_map")
-    @patch("kitsune.wiki.parser.wiki_to_html")
-    def test_empty_source_locale(self, wiki_to_html_mock, get_anchor_map_mock):
-        """Test that empty source locale returns target content unchanged."""
-        result = resolve_internal_anchors("", "content", "fr", "contenu")
+    def test_none_source_doc(self):
+        """Test that a None source doc returns target content unchanged."""
+        result = resolve_internal_anchors(None, "content", "fr", "contenu")
         self.assertEqual(result, "contenu")
-        wiki_to_html_mock.assert_not_called()
-        get_anchor_map_mock.assert_not_called()
+
+    def test_passes_restrict_to_groups_to_wiki_to_html(self):
+        """Test that the source doc's restrict_to_groups is passed to wiki_to_html."""
+        group = GroupFactory()
+        source_doc = DocumentFactory(locale="en-US", restrict_to_groups=[group])
+        ApprovedRevisionFactory(document=source_doc)
+
+        with (
+            patch(
+                "kitsune.wiki.parser.wiki_to_html", return_value="<h2>heading</h2>"
+            ) as wiki_to_html_mock,
+            patch("kitsune.llm.l10n.translator.get_anchor_map") as get_anchor_map_mock,
+        ):
+            get_anchor_map_mock.return_value = {"map": {}, "explanation": ""}
+            resolve_internal_anchors(
+                source_doc, "See [[#w_intro|intro]].", "fr", "Voir [[#w_intro|intro]]."
+            )
+
+        # Both calls (source and target) should pass the source doc's restrict_to_groups.
+        self.assertEqual(wiki_to_html_mock.call_count, 2)
+        for call in wiki_to_html_mock.call_args_list:
+            self.assertEqual(call.kwargs["restrict_to_groups"], source_doc.restrict_to_groups)
 
 
 class ResolveExternalAnchorsTestCase(TestCase):
@@ -394,20 +414,25 @@ class ResolveAnchorsTestCase(TestCase):
     """Tests for the resolve_anchors function (orchestrator)."""
 
     def setUp(self):
-        self.source_locale = "en-US"
         self.target_locale = "fr"
 
     @patch("kitsune.llm.l10n.translator.get_anchor_map")
     def test_resolve_anchors_integration_both_types(self, get_anchor_map_mock):
         """Integration test with both internal and external anchors."""
-        # Create external document
-        source_doc = DocumentFactory(locale=self.source_locale, title="External Doc")
-        source_rev = ApprovedRevisionFactory(document=source_doc, is_ready_for_localization=True)
+        # Create the source document being translated.
+        source_doc = DocumentFactory(locale="en-US", title="Main Doc")
+        ApprovedRevisionFactory(document=source_doc)
 
-        target_doc = DocumentFactory(
-            locale=self.target_locale, title="Doc Externe", parent=source_doc
+        # Create external document referenced by the source content.
+        external_doc = DocumentFactory(locale="en-US", title="External Doc")
+        external_rev = ApprovedRevisionFactory(
+            document=external_doc, is_ready_for_localization=True
         )
-        ApprovedRevisionFactory(document=target_doc, based_on=source_rev)
+
+        external_translation = DocumentFactory(
+            locale=self.target_locale, title="Doc Externe", parent=external_doc
+        )
+        ApprovedRevisionFactory(document=external_translation, based_on=external_rev)
 
         source_content = "See [[#w_intro|intro]] and [[External Doc#w_ext|external]]."
         target_content = "Voir [[#w_intro|introduction]] et [[External Doc#w_ext|externe]]."
@@ -423,9 +448,7 @@ class ResolveAnchorsTestCase(TestCase):
             },
         ]
 
-        result = resolve_anchors(
-            self.source_locale, source_content, self.target_locale, target_content
-        )
+        result = resolve_anchors(source_doc, source_content, self.target_locale, target_content)
 
         # Both internal and external anchors should be resolved
         self.assertEqual(
