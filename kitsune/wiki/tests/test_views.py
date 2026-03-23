@@ -1514,6 +1514,30 @@ class JsonViewTests(TestCase):
         resp = self.client.get(url, {"title": "an article title ok."})
         self.assertEqual(404, resp.status_code)
 
+    def test_json_view_restricted_document(self):
+        """Restricted documents should not be visible to users outside the group."""
+        group = GroupFactory()
+        d = DocumentFactory(title="restricted article", restrict_to_groups=[group])
+        RevisionFactory(document=d, is_approved=True)
+        url = reverse("wiki.json")
+
+        # Anonymous user should get 404.
+        resp = self.client.get(url, {"title": "restricted article"})
+        self.assertEqual(404, resp.status_code)
+
+        # Logged-in user not in the group should get 404.
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+        resp = self.client.get(url, {"title": "restricted article"})
+        self.assertEqual(404, resp.status_code)
+
+        # User in the group should get 200.
+        user.groups.add(group)
+        resp = self.client.get(url, {"title": "restricted article"})
+        self.assertEqual(200, resp.status_code)
+        data = json.loads(resp.content)
+        self.assertEqual("restricted article", data["title"])
+
 
 class WhatLinksWhereTests(TestCase):
     def test_what_links_here(self):

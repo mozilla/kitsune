@@ -1272,7 +1272,7 @@ def json_view(request):
     else:
         return HttpResponseBadRequest()
 
-    document = get_object_or_404(Document, **kwargs)
+    document = get_visible_document_or_404(request.user, **kwargs)
     data = json.dumps(
         {
             "id": document.id,
