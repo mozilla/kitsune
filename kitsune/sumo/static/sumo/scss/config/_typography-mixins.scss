@@ -11,7 +11,7 @@ $text-display-line-height: 1.1 !default;
   @include c.line-height(72px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
-    font-family: var(--heading-font-family-moz);
+    font-family: var(--title-font-family);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -22,7 +22,7 @@ $text-display-line-height: 1.1 !default;
   @include c.line-height(64px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
-    font-family: var(--heading-font-family-moz);
+    font-family: var(--title-font-family);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -33,7 +33,7 @@ $text-display-line-height: 1.1 !default;
   @include c.line-height(56px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
-    font-family: var(--heading-font-family-moz);
+    font-family: var(--title-font-family);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -45,7 +45,7 @@ $text-display-line-height: 1.1 !default;
 
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
+      font-family: var(--title-font-family);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -57,7 +57,7 @@ $text-display-line-height: 1.1 !default;
 
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
+      font-family: var(--title-font-family);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -69,7 +69,7 @@ $text-display-line-height: 1.1 !default;
   font-weight: bold;
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
+      font-family: var(--title-font-family);
       color: var(--color-moz-heading);
   } @else {
     font-family: var(--heading-font-family);
@@ -80,7 +80,7 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xxs() {
   @include p.font-size(18px);
   @include c.line-height(24px);
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
   color: var(--color-heading);
   font-weight: bold;
 }
@@ -88,7 +88,7 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xxxs() {
   @include p.font-size(16px);
   line-height: $text-body-line-height;
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
   color: var(--color-heading);
   font-weight: bold;
 }
@@ -97,31 +97,31 @@ $text-display-line-height: 1.1 !default;
 @mixin text-body-lg {
   @include p.font-size(18px);
   line-height: $text-body-line-height;
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
 }
 
 @mixin text-body-md {
   @include p.font-size(16px);
   line-height: $text-body-line-height;
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
 }
 
 @mixin text-body-sm {
   @include p.font-size(14px);
   line-height: $text-body-line-height;
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
 }
 
 @mixin text-body-xs {
   @include p.font-size(12px);
   line-height: $text-body-line-height;
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
 }
 
 @mixin text-body-cta {
   @include p.font-size(16px);
   line-height: $text-body-line-height;
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
 }
 
 

@@ -57,10 +57,10 @@ h1, h2, h3, h4, h5, h6,
 
 .has-moz-headings {
   color: var(--color-moz-text);
-  font-family: var(--body-font-family-moz);
+  font-family: var(--body-font-family);
 
   h1, h2, h3, h4, h5, h6, [class*=text-display] {
-    font-family: var(--heading-font-family-moz);
+    font-family: var(--title-font-family);
     color: var(--color-moz-heading);
   }
 }
@@ -107,7 +107,7 @@ h4,
 }
 
 h5, h6, .text-display-sm {
-  font-family: var(--base-font-family);
+  font-family: var(--body-font-family);
   @include c.text-display-sm;
 }
 

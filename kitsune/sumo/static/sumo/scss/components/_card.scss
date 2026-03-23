@@ -209,7 +209,7 @@
       margin-bottom: p.$spacing-md;
 
       .card--title {
-        font-family: Inter;
+        font-family: var(--body-font-family);
         font-size: 16px;
         font-weight: 700;
         margin: 0;
@@ -297,7 +297,7 @@
     }
 
     &.has-moz-headings .card--title {
-      font-family: var(--heading-font-family-moz);
+      font-family: var(--title-font-family);
       color: var(--color-moz-heading);
     }
 
@@ -387,7 +387,7 @@
 
   &--title {
     @include c.sumo-card-heading();
-    font-family: var(--base-font-family);
+    font-family: var(--body-font-family);
     margin-bottom: 0;
 
     >a {

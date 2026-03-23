@@ -15,8 +15,7 @@
 
 
 // Fonts
-@use 'protocol/css/includes/fonts/inter';
-@use 'protocol/css/includes/fonts/metropolis';
+@use 'protocol/css/includes/fonts/inter'; // used as fallback for locales with partial Mozilla font support
 @use 'protocol/css/includes/fonts/mozilla-headline';
 @use 'protocol/css/includes/fonts/mozilla-text';
 
@@ -66,3 +65,16 @@
 @use 'protocol/css/components/zap';
 @use 'protocol/css/templates/card-layout';
 @use 'protocol/css/templates/main-with-sidebar';
+
+// Override Protocol components that hardcode Inter via the font-base mixin.
+// We use Mozilla Text for all body/UI text.
+.mzp-c-card .mzp-c-card-tag,
+.mzp-c-menu-category .mzp-c-menu-title,
+.mzp-c-menu h4,
+.mzp-c-menu h5,
+.mzp-c-menu h6,
+.mzp-c-modal-inner > header h2,
+.mzp-c-sidemenu-label,
+.mzp-c-sidemenu-title {
+  font-family: var(--body-font-family);
+}
