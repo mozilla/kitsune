@@ -29,11 +29,17 @@ def test_featured_articles_redirect(page: Page, is_chromium):
 
     with allure.step("Clicking on all product cards"):
         for card in sumo_pages.contact_support_page.get_all_product_card_titles():
+            redirect_target = utilities.general_test_data['subscription_redirects'].get(card)
             with check, allure.step(f"Clicking on the {card} and verifying that the correct"
                                     f" product solutions page header is displayed"):
                 sumo_pages.contact_support_page.click_on_a_particular_card(card)
-                assert sumo_pages.product_solutions_page.get_product_solutions_heading(
-                ) == card + ProductSolutionsMessages.PAGE_HEADER
+
+                if redirect_target:
+                    assert sumo_pages.product_solutions_page.get_product_solutions_heading(
+                    ) == redirect_target + ProductSolutionsMessages.PAGE_HEADER
+                else:
+                    assert sumo_pages.product_solutions_page.get_product_solutions_heading(
+                    ) == card + ProductSolutionsMessages.PAGE_HEADER
 
             if sumo_pages.product_solutions_page.is_featured_article_section_displayed():
                 for featured_article_card in (sumo_pages.product_solutions_page

@@ -90,7 +90,7 @@ class QuestionPage(BasePage):
             f"//a[@class='tag-name' and normalize-space(text())='{tag_name}']"
         )
         self.delete_tag = lambda tag_name: page.locator(
-            "//a[@class='tag-name' and normalize-space(text())='test']/following-sibling::"
+            f"//a[@class='tag-name' and normalize-space(text())='{tag_name}']/following-sibling::"
             "a[@class='remove']")
 
         """Locators belonging to the post a reply section."""
@@ -336,7 +336,7 @@ class QuestionPage(BasePage):
             .question_tags_options_for_non_moderators)]
 
     def add_text_to_add_a_tag_input_field(self, text: str):
-        self._fill(self.add_a_tag_input_field, text)
+        self._type(self.add_a_tag_input_field, text, 1000)
         self._wait_for_given_timeout(2000)
         self._press_a_key(self.add_a_tag_input_field, "Enter")
 
@@ -344,7 +344,7 @@ class QuestionPage(BasePage):
         self._click(self.tag_by_name(tag_name), expected_locator=expected_locator)
 
     def click_on_tag_remove_button(self, tag_name: str):
-        self._click(self.delete_tag(tag_name))
+        self._click(self.delete_tag(tag_name), expected_locator_to_be_hidden=self.tag(tag_name))
 
     """Actions against the more information section locators."""
     def get_user_agent_information(self) -> str:

@@ -810,20 +810,20 @@ def test_staff_users_can_send_messages_to_both_groups_and_user(page: Page, creat
 def test_removed_group_users_do_not_receive_group_messages(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    test_user = create_user_factory(groups=["Staff"], permissions=["change_groupprofile"])
-    test_user_two = create_user_factory(
+    test_user = create_user_factory(
         groups=[utilities.user_message_test_data['test_groups'][0]])
-    test_user_three = create_user_factory(
+    test_user_two = create_user_factory(
         groups=[utilities.user_message_test_data['test_groups'][0]])
     message_body = "Test " + utilities.generate_random_number(1, 1000)
     targeted_test_group = utilities.user_message_test_data['test_groups'][0]
 
     with allure.step("Signing in with a staff account and removing a user from the targeted "
                      "group"):
-        utilities.start_existing_session(cookies=test_user)
+        utilities.start_existing_session(
+            session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
         utilities.navigate_to_link(utilities.general_test_data['groups'])
         sumo_pages.user_groups.click_on_a_particular_group(targeted_test_group)
-        sumo_pages.user_group_flow.remove_a_user_from_group(test_user_two["username"])
+        sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"])
 
     with allure.step("Navigating to the new message page and sending a message to the group"):
         sumo_pages.top_navbar.click_on_inbox_option()
@@ -834,14 +834,14 @@ def test_removed_group_users_do_not_receive_group_messages(page: Page, create_us
             expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
         )
 
-    with allure.step(f"Signing in with {test_user_three['username']} user which is still part of "
+    with allure.step(f"Signing in with {test_user_two['username']} user which is still part of "
                      f"the group and verifying that the message was received"):
-        utilities.start_existing_session(cookies=test_user_three)
+        utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.top_navbar.click_on_inbox_option()
         expect(sumo_pages.inbox_page.inbox_message_by_excerpt(message_body)).to_be_visible()
 
     with allure.step("Verifying that the removed user has not received the group message"):
-        utilities.start_existing_session(cookies=test_user_two)
+        utilities.start_existing_session(cookies=test_user)
         expect(sumo_pages.inbox_page.inbox_message_by_excerpt(message_body)).to_be_hidden()
 
 

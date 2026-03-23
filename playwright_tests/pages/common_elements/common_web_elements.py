@@ -10,7 +10,7 @@ class CommonWebElements(BasePage):
 
         """Locators belonging to the spam banner."""
         self.scam_banner = page.locator("div#id_scam_alert")
-        self.scam_banner_text = page.locator("div#id_scam_alert p[class='heading']")
+        self.scam_banner_text = page.locator("//div[@id='id_scam_alert']//p[@class='heading']")
         self.learn_more_button = page.locator("div#id_scam_alert").get_by_role("link")
 
         """Locators belonging to the Still need help widget."""
@@ -64,7 +64,7 @@ class CommonWebElements(BasePage):
     """Actions against the Avoid Spam banner locators."""
     def get_scam_banner_text(self) -> str:
         """Returns the scam banner text."""
-        return self._get_text_of_element(self.scam_banner_text)
+        return self._get_text_of_element(self.scam_banner_text).strip()
 
     """Actions against the Still Need Help widget locators."""
     def click_on_aaq_button(self):

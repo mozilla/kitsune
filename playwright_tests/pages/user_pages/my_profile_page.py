@@ -21,7 +21,7 @@ class MyProfilePage(BasePage):
         self.private_message_button = page.locator("p.pm").get_by_role("link")
 
         """Locators belonging to the 'Report Abuse' section."""
-        self.report_abuse_panel = page.locator("section#report-abuse-")
+        self.report_abuse_panel = page.locator("//section[@data-modal-id='report-abuse-']")
         self.spam_or_other_unrelated_content_option = page.locator("label").filter(
             has_text="Spam or other unrelated content")
         self.inappropriate_language_or_dialog_option = page.locator("label").filter(
@@ -211,10 +211,6 @@ class MyProfilePage(BasePage):
     def click_on_people_directory_link(self):
         """Click on the people directory link."""
         self._click(self.people_directory_info)
-
-    def click_on_element(self, element: ElementHandle):
-        """Click on the given element."""
-        element.click()
 
     def click_my_profile_page_sign_out_button(self, expected_url=None):
         """Click on the profile page sign out button.
