@@ -41,6 +41,8 @@ class SupportTicket(ModelBase):
         (ZD_STATUS_CLOSED, _lazy("Closed")),
     )
 
+    VALID_ZD_STATUSES = frozenset(choice[0] for choice in ZD_STATUS_CHOICES)
+
     subject = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=255)
@@ -64,9 +66,7 @@ class SupportTicket(ModelBase):
         db_index=True,
     )
     zendesk_ticket_id = models.CharField(max_length=255, null=True, blank=True)
-    zd_status = models.CharField(
-        max_length=20, choices=ZD_STATUS_CHOICES, null=True, blank=True
-    )
+    zd_status = models.CharField(max_length=20, choices=ZD_STATUS_CHOICES, null=True, blank=True)
     zd_updated_at = models.DateTimeField(null=True, blank=True)
     last_synced_at = models.DateTimeField(null=True, blank=True)
     comments = models.JSONField(default=list, blank=True)

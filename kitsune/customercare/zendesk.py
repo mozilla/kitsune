@@ -1,8 +1,12 @@
+import requests
 from django.conf import settings
+from requests.adapters import HTTPAdapter
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
+
+from kitsune.customercare.models import SupportTicket
 
 NO_RESPONSE = "No response provided."
 LOGINLESS_TAG = "loginless_ticket"
@@ -19,6 +23,16 @@ class ZendeskClient:
             "subdomain": settings.ZENDESK_SUBDOMAIN,
         }
         self.client = Zenpy(**creds)
+        self.session = requests.Session()
+        self.session.mount("https://", HTTPAdapter(**Zenpy.http_adapter_kwargs()))
+        self.session.auth = (f"{settings.ZENDESK_USER_EMAIL}/token", settings.ZENDESK_API_TOKEN)
+
+    def _make_request(self, method, endpoint, data):
+        """Make a direct request to the Zendesk REST API."""
+        url = f"https://{settings.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/{endpoint}"
+        response = self.session.request(method, url, json=data)
+        response.raise_for_status()
+        return response.json()
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""
@@ -181,3 +195,27 @@ class ZendeskClient:
         else:
             ticket.requester_id = self.create_user(user, email=ticket_fields.get("email", "")).id
         return self.client.tickets.create(ticket)
+
+    def add_ticket_comment(self, ticket_id, comment_body, public=True, user=None):
+        """Add a comment to a ticket via the Zendesk REST API.
+
+        If a Django user is provided, the comment will be attributed to their
+        corresponding Zendesk user. The user must have a zendesk_id set on their profile.
+        """
+        comment = {"body": comment_body, "public": public}
+        if user:
+            if not (user.is_authenticated and (zendesk_id := user.profile.zendesk_id)):
+                raise ValueError(f'User "{user}" does not have a "zendesk_id".')
+            comment["author_id"] = int(zendesk_id)
+        data = {"ticket": {"comment": comment}}
+        return self._make_request("PUT", f"tickets/{ticket_id}", data)
+
+    def update_ticket_status(self, ticket_id, status):
+        """Update a ticket's status via the Zendesk REST API."""
+        if status not in SupportTicket.VALID_ZD_STATUSES:
+            raise ValueError(
+                f'Invalid status "{status}". Must be one of: '
+                f"{', '.join(sorted(SupportTicket.VALID_ZD_STATUSES))}"
+            )
+        data = {"ticket": {"status": status}}
+        return self._make_request("PUT", f"tickets/{ticket_id}", data)

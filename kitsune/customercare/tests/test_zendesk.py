@@ -367,3 +367,131 @@ class ZendeskClientTests(TestCase):
         call_args = mock_client.tickets.create.call_args[0][0]
 
         self.assertFalse(hasattr(call_args, "brand_id") and call_args.brand_id)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_SUBDOMAIN", "testsubdomain")
+    @patch("django.conf.settings.ZENDESK_USER_EMAIL", "test@example.com")
+    @patch("django.conf.settings.ZENDESK_API_TOKEN", "testtoken")
+    def test_add_ticket_comment_public(self, mock_zenpy):
+        """Test that add_ticket_comment sends a public comment."""
+        client = ZendeskClient()
+        client.session = Mock()
+        mock_response = Mock()
+        mock_response.json.return_value = {}
+        client.session.request.return_value = mock_response
+
+        result = client.add_ticket_comment(123, "Hello there", public=True)
+
+        client.session.request.assert_called_once_with(
+            "PUT",
+            "https://testsubdomain.zendesk.com/api/v2/tickets/123",
+            json={"ticket": {"comment": {"body": "Hello there", "public": True}}},
+        )
+        mock_response.raise_for_status.assert_called_once()
+        self.assertIsInstance(result, dict)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_SUBDOMAIN", "testsubdomain")
+    @patch("django.conf.settings.ZENDESK_USER_EMAIL", "test@example.com")
+    @patch("django.conf.settings.ZENDESK_API_TOKEN", "testtoken")
+    def test_add_ticket_comment_private(self, mock_zenpy):
+        """Test that add_ticket_comment sends a private comment (internal note)."""
+        client = ZendeskClient()
+        client.session = Mock()
+        mock_response = Mock()
+        mock_response.json.return_value = {}
+        client.session.request.return_value = mock_response
+
+        client.add_ticket_comment(123, "Internal note", public=False)
+
+        client.session.request.assert_called_once_with(
+            "PUT",
+            "https://testsubdomain.zendesk.com/api/v2/tickets/123",
+            json={"ticket": {"comment": {"body": "Internal note", "public": False}}},
+        )
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_SUBDOMAIN", "testsubdomain")
+    @patch("django.conf.settings.ZENDESK_USER_EMAIL", "test@example.com")
+    @patch("django.conf.settings.ZENDESK_API_TOKEN", "testtoken")
+    def test_update_ticket_status(self, mock_zenpy):
+        """Test that update_ticket_status sends the correct status payload."""
+        client = ZendeskClient()
+        client.session = Mock()
+        mock_response = Mock()
+        mock_response.json.return_value = {}
+        client.session.request.return_value = mock_response
+
+        result = client.update_ticket_status(123, "solved")
+
+        client.session.request.assert_called_once_with(
+            "PUT",
+            "https://testsubdomain.zendesk.com/api/v2/tickets/123",
+            json={"ticket": {"status": "solved"}},
+        )
+        mock_response.raise_for_status.assert_called_once()
+        self.assertIsInstance(result, dict)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_update_ticket_status_invalid(self, mock_zenpy):
+        """Test that update_ticket_status raises ValueError for invalid status."""
+        client = ZendeskClient()
+        client.session = Mock()
+
+        with self.assertRaises(ValueError) as ctx:
+            client.update_ticket_status(123, "invalid")
+
+        self.assertIn("invalid", str(ctx.exception))
+        client.session.request.assert_not_called()
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    @patch("django.conf.settings.ZENDESK_SUBDOMAIN", "testsubdomain")
+    @patch("django.conf.settings.ZENDESK_USER_EMAIL", "test@example.com")
+    @patch("django.conf.settings.ZENDESK_API_TOKEN", "testtoken")
+    def test_add_ticket_comment_with_user(self, mock_zenpy):
+        """Test that add_ticket_comment includes author_id when a user is provided."""
+        self.user.profile.zendesk_id = "789"
+
+        client = ZendeskClient()
+        client.session = Mock()
+        mock_response = Mock()
+        mock_response.json.return_value = {}
+        client.session.request.return_value = mock_response
+
+        client.add_ticket_comment(123, "User comment", user=self.user)
+
+        client.session.request.assert_called_once_with(
+            "PUT",
+            "https://testsubdomain.zendesk.com/api/v2/tickets/123",
+            json={
+                "ticket": {"comment": {"body": "User comment", "public": True, "author_id": 789}}
+            },
+        )
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_with_user_missing_zendesk_id(self, mock_zenpy):
+        """Test that add_ticket_comment raises ValueError when user has no zendesk_id."""
+        self.user.profile.zendesk_id = ""
+
+        client = ZendeskClient()
+        client.session = Mock()
+
+        with self.assertRaises(ValueError) as ctx:
+            client.add_ticket_comment(123, "Comment", user=self.user)
+
+        self.assertIn("zendesk_id", str(ctx.exception))
+        client.session.request.assert_not_called()
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_with_anonymous_user(self, mock_zenpy):
+        """Test that add_ticket_comment raises ValueError for anonymous users."""
+        from django.contrib.auth.models import AnonymousUser
+
+        client = ZendeskClient()
+        client.session = Mock()
+
+        with self.assertRaises(ValueError) as ctx:
+            client.add_ticket_comment(123, "Anon comment", user=AnonymousUser())
+
+        self.assertIn("zendesk_id", str(ctx.exception))
+        client.session.request.assert_not_called()
