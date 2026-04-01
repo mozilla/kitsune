@@ -1,8 +1,11 @@
 from unittest.mock import patch
 
+from django.utils import timezone
+
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
     process_failed_zendesk_tickets,
+    process_zendesk_update,
     zendesk_submission_classifier,
 )
 from kitsune.llm.spam.classifier import ModerationAction
@@ -23,9 +26,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
         self.product = ProductFactory(slug="firefox", title="Firefox")
         self.zendesk_config = ZendeskConfigFactory(name="Test Config")
         self.support_config = ProductSupportConfigFactory(
-            product=self.product,
-            is_active=True,
-            zendesk_config=self.zendesk_config
+            product=self.product, is_active=True, zendesk_config=self.zendesk_config
         )
 
     @patch("kitsune.customercare.tasks.classify_zendesk_submission")
@@ -45,7 +46,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING
+            submission_status=SupportTicket.STATUS_PENDING,
         )
 
         zendesk_submission_classifier(submission.id)
@@ -59,9 +60,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
 
     @patch("kitsune.customercare.tasks.classify_zendesk_submission")
     @patch("kitsune.customercare.tasks.process_zendesk_classification_result")
-    def test_classification_failure_marks_status(
-        self, mock_process, mock_classify
-    ):
+    def test_classification_failure_marks_status(self, mock_process, mock_classify):
         """Test that failed classification marks ticket as STATUS_PROCESSING_FAILED."""
         mock_classify.side_effect = Exception("LLM service unavailable")
 
@@ -71,7 +70,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING
+            submission_status=SupportTicket.STATUS_PENDING,
         )
 
         try:
@@ -86,7 +85,9 @@ class ZendeskSubmissionClassifierTests(TestCase):
     @patch("kitsune.llm.support.classifiers.get_taxonomy")
     @patch("kitsune.llm.support.classifiers.classify_spam")
     @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_skip_spam_moderation_enabled(self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment):
+    def test_skip_spam_moderation_enabled(
+        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
+    ):
         """Test that spam check is skipped when skip_spam_moderation=True."""
         self.zendesk_config.skip_spam_moderation = True
         self.zendesk_config.save()
@@ -103,7 +104,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
             category="deployment",
             email="admin@enterprise.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING
+            submission_status=SupportTicket.STATUS_PENDING,
         )
 
         result = classify_zendesk_submission(submission)
@@ -118,7 +119,9 @@ class ZendeskSubmissionClassifierTests(TestCase):
     @patch("kitsune.llm.support.classifiers.get_taxonomy")
     @patch("kitsune.llm.support.classifiers.classify_spam")
     @patch("kitsune.llm.support.classifiers.classify_topic")
-    def test_skip_spam_moderation_disabled(self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment):
+    def test_skip_spam_moderation_disabled(
+        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
+    ):
         """Test that spam check runs normally when skip_spam_moderation=False."""
         self.zendesk_config.skip_spam_moderation = False
         self.zendesk_config.save()
@@ -138,7 +141,7 @@ class ZendeskSubmissionClassifierTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING
+            submission_status=SupportTicket.STATUS_PENDING,
         )
 
         classify_zendesk_submission(submission)
@@ -155,9 +158,7 @@ class ProcessFailedZendeskTicketsTests(TestCase):
         self.product = ProductFactory(slug="firefox", title="Firefox")
         self.zendesk_config = ZendeskConfigFactory(name="Test Config")
         self.support_config = ProductSupportConfigFactory(
-            product=self.product,
-            is_active=True,
-            zendesk_config=self.zendesk_config
+            product=self.product, is_active=True, zendesk_config=self.zendesk_config
         )
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
@@ -171,7 +172,7 @@ class ProcessFailedZendeskTicketsTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED
+            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
         )
 
         process_failed_zendesk_tickets()
@@ -189,7 +190,7 @@ class ProcessFailedZendeskTicketsTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PENDING
+            submission_status=SupportTicket.STATUS_PENDING,
         )
         SupportTicket.objects.create(
             subject="Sent",
@@ -197,7 +198,7 @@ class ProcessFailedZendeskTicketsTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_SENT
+            submission_status=SupportTicket.STATUS_SENT,
         )
 
         process_failed_zendesk_tickets()
@@ -215,7 +216,7 @@ class ProcessFailedZendeskTicketsTests(TestCase):
             category="general",
             email="user@example.com",
             product=self.product,
-            submission_status=SupportTicket.STATUS_PROCESSING_FAILED
+            submission_status=SupportTicket.STATUS_PROCESSING_FAILED,
         )
 
         process_failed_zendesk_tickets()
@@ -224,3 +225,105 @@ class ProcessFailedZendeskTicketsTests(TestCase):
 
         submission.refresh_from_db()
         self.assertEqual(submission.submission_status, SupportTicket.STATUS_PROCESSING_FAILED)
+
+
+class ProcessZendeskUpdateTests(TestCase):
+    """Tests for process_zendesk_update Celery task."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox", title="Firefox")
+        self.ticket = SupportTicket.objects.create(
+            subject="Help",
+            description="Need help",
+            category="general",
+            email="user@example.com",
+            product=self.product,
+            submission_status=SupportTicket.STATUS_SENT,
+            zendesk_ticket_id="12345",
+        )
+
+    def test_updates_status(self):
+        before_update = timezone.now()
+        process_zendesk_update(
+            {
+                "ticket_id": "12345",
+                "status": "solved",
+                "updated_at": "2026-03-24T10:30:00Z",
+            }
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.comments, [])
+        self.assertEqual(self.ticket.internal_zd_tags, [])
+        self.assertEqual(self.ticket.zd_status, "solved")
+        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-24 10:30:00+00:00")
+        self.assertTrue(self.ticket.last_synced_at > before_update)
+
+    def test_appends_comment(self):
+        comment = {"body": "hey paul", "author": "ringo"}
+        before_update = timezone.now()
+        process_zendesk_update(
+            {
+                "ticket_id": "12345",
+                "latest_comment": comment,
+                "updated_at": "2026-03-25T10:30:00Z",
+            }
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(len(self.ticket.comments), 1)
+        self.assertEqual(self.ticket.comments[0]["body"], "hey paul")
+        self.assertEqual(self.ticket.comments[0]["author"], "ringo")
+        self.assertEqual(self.ticket.comments[0]["created_at"], "2026-03-25T10:30:00Z")
+        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-25 10:30:00+00:00")
+        self.assertTrue(self.ticket.last_synced_at > before_update)
+
+    def test_appends_multiple_comments(self):
+        """Successive webhook calls append to the comments list."""
+        comment1 = {"body": "First reply", "author": "ringo"}
+        comment2 = {"body": "Second reply", "author": "paul"}
+        process_zendesk_update(
+            {
+                "ticket_id": "12345",
+                "latest_comment": comment1,
+                "updated_at": "2026-03-26T10:30:00Z",
+            }
+        )
+        before_last_update = timezone.now()
+        process_zendesk_update(
+            {
+                "ticket_id": "12345",
+                "latest_comment": comment2,
+                "updated_at": "2026-03-26T10:35:00Z",
+            }
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(len(self.ticket.comments), 2)
+        self.assertEqual(self.ticket.comments[0]["body"], "First reply")
+        self.assertEqual(self.ticket.comments[0]["author"], "ringo")
+        self.assertEqual(self.ticket.comments[0]["created_at"], "2026-03-26T10:30:00Z")
+        self.assertEqual(self.ticket.comments[1]["body"], "Second reply")
+        self.assertEqual(self.ticket.comments[1]["author"], "paul")
+        self.assertEqual(self.ticket.comments[1]["created_at"], "2026-03-26T10:35:00Z")
+        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-26 10:35:00+00:00")
+        self.assertTrue(self.ticket.last_synced_at > before_last_update)
+
+    def test_updates_tags(self):
+        before_update = timezone.now()
+        process_zendesk_update(
+            {
+                "ticket_id": "12345",
+                "tags": ["tag1", "tag2"],
+                "updated_at": "2026-03-27T10:30:00Z",
+            }
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.internal_zd_tags, ["tag1", "tag2"])
+        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-27 10:30:00+00:00")
+        self.assertTrue(self.ticket.last_synced_at > before_update)
+
+    def test_no_matching_ticket_is_noop(self):
+        """Webhook for a ticket not in our DB should not raise."""
+        process_zendesk_update({"ticket_id": "99999", "status": "open"})
+
+    def test_missing_ticket_id_is_noop(self):
+        """Webhook payload without ticket_id should not raise."""
+        process_zendesk_update({"status": "open"})

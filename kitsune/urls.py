@@ -6,6 +6,7 @@ from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
+from kitsune.customercare.views import ZendeskWebhookView
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
 from kitsune.sumo.i18n import i18n_patterns
@@ -22,7 +23,9 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = i18n_patterns(
-    re_path(r"^kb$", redirect_to, {"url": "products.product", "slug": "firefox"}, name="wiki.landing"),
+    re_path(
+        r"^kb$", redirect_to, {"url": "products.product", "slug": "firefox"}, name="wiki.landing"
+    ),
     path("kb/", include("kitsune.wiki.urls")),
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
@@ -76,6 +79,11 @@ urlpatterns += [
     ),
     # GraphiQL
     path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
+    re_path(
+        r"^customercare/zendesk/updates/?$",
+        csrf_exempt(ZendeskWebhookView.as_view()),
+        name="customercare.zendesk_webhook",
+    ),
 ]
 
 # Handle 404 and 500 errors

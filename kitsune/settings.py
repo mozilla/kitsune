@@ -1235,6 +1235,11 @@ ZENDESK_UPDATE_CHANNEL_FIELD_ID = config(
 ZENDESK_POLICY_DISTRIBUTION_FIELD_ID = config(
     "ZENDESK_POLICY_DISTRIBUTION_FIELD_ID", default="45939778070036", cast=int
 )
+ZENDESK_WEBHOOK_SIGNING_SECRET = config("ZENDESK_WEBHOOK_SIGNING_SECRET", default="")
+ZENDESK_WEBHOOK_API_KEY_HEADER_NAME = config(
+    "ZENDESK_WEBHOOK_API_KEY_HEADER_NAME", default="zendesk-webhook-api-key"
+)
+ZENDESK_WEBHOOK_API_KEY = config("ZENDESK_WEBHOOK_API_KEY", default="")
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])

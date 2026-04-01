@@ -5,6 +5,7 @@ from celery import shared_task
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import process_zendesk_classification_result
@@ -82,7 +83,10 @@ def auto_reject_old_zendesk_spam() -> None:
     rejected_count = 0
 
     for flag in old_spam_flags:
-        if flag.content_object and flag.content_object.submission_status == SupportTicket.STATUS_FLAGGED:
+        if (
+            flag.content_object
+            and flag.content_object.submission_status == SupportTicket.STATUS_FLAGGED
+        ):
             flag.content_object.submission_status = SupportTicket.STATUS_REJECTED
             flag.content_object.save(update_fields=["submission_status"])
             rejected_count += 1
@@ -119,3 +123,52 @@ def process_failed_zendesk_tickets() -> None:
 
     if processed_count > 0:
         log.info(f"Processed {processed_count} failed Zendesk tickets")
+
+
+@shared_task
+@skip_if_read_only_mode
+def process_zendesk_update(payload: dict) -> None:
+    """Process an incoming Zendesk webhook payload.
+
+    Updates the matching SupportTicket with status, comments, and tags
+    from the payload. Handles partial payloads gracefully — only fields
+    present in the payload are updated.
+    """
+    if not (ticket_id := payload.get("ticket_id")):
+        log.warning("Zendesk webhook payload missing ticket_id.")
+        return
+
+    try:
+        ticket = SupportTicket.objects.get(zendesk_ticket_id=str(ticket_id))
+    except SupportTicket.DoesNotExist:
+        return
+
+    update_fields = []
+
+    if "updated_at" in payload:
+        ticket.zd_updated_at = parse_datetime(payload["updated_at"])
+        update_fields.append("zd_updated_at")
+
+    if "status" in payload:
+        ticket.zd_status = payload["status"]
+        update_fields.append("zd_status")
+
+    if "tags" in payload:
+        internal_zd_tags = payload["tags"]
+        if not isinstance(internal_zd_tags, list):
+            raise ValueError("Unexpected tags structure from Zendesk")
+        ticket.internal_zd_tags = internal_zd_tags
+        update_fields.append("internal_zd_tags")
+
+    if "latest_comment" in payload:
+        latest_comment = payload["latest_comment"]
+        if not isinstance(latest_comment, dict):
+            raise ValueError("Unexpected comment structure from Zendesk")
+        latest_comment["created_at"] = payload.get("updated_at")
+        ticket.comments.append(latest_comment)
+        update_fields.append("comments")
+
+    if update_fields:
+        update_fields.append("last_synced_at")
+        ticket.last_synced_at = timezone.now()
+        ticket.save(update_fields=update_fields)
