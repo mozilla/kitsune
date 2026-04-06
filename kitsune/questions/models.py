@@ -289,16 +289,23 @@ class Question(AAQBase):
         version = self.metadata.get("ff_version", "") or self.metadata.get("tb_version", "")
 
         # Remove from the version string anything following the version number.
-        # A version number is a sequence of digits and dots, starting and ending with a digit.
-        versionMatch = re.match(r'\d(?:[\d.]*\d)?', version)
-        version = versionMatch.group(0) if versionMatch else ""
+        # A version number is a string of the form X or X.Y or X.Y.Z where X, Y, and Z are non-negative integers.
+        # We also accept X.YrcN and X.Y.ZrcN
+        version_match = re.match(r'\d+(?:\.\d+(?:\.\d+)?(?:rc\d+)?)?', version)
+        version = version_match.group(0) if version_match else ""
         # If there are no dots, version is an integer, and we need to add ".0" to find matches among major versions.
-        if '.' not in version:
+        if version and '.' not in version:
             version += ".0"
 
-        development_releases = product_details.firefox_history_development_releases or product_details.thunderbird_history_development_releases
-        stability_releases = product_details.firefox_history_stability_releases or product_details.thunderbird_history_stability_releases
-        major_releases = product_details.firefox_history_major_releases or product_details.thunderbird_history_major_releases
+        development_releases = product_details.firefox_history_development_releases \
+                               if self.metadata.get("ff_version", "") else \
+                               product_details.thunderbird_history_development_releases
+        stability_releases = product_details.firefox_history_stability_releases \
+                             if self.metadata.get("ff_version", "") else \
+                             product_details.thunderbird_history_stability_releases
+        major_releases = product_details.firefox_history_major_releases \
+                         if self.metadata.get("ff_version", "") else \
+                         product_details.thunderbird_history_major_releases
 
         if version:
             product_name = "Firefox" if self.metadata.get("ff_version", "") else "Thunderbird"
@@ -307,12 +314,12 @@ class Question(AAQBase):
                 or version in stability_releases
                 or version in major_releases
             ):
-                tags.append(product_name + " {}".format(version))
+                tags.append(f"{product_name} {version}")
                 tenths = _tenths_version(version)
                 if tenths:
-                    tags.append(product_name + " {}".format(tenths))
+                    tags.append(f"{product_name} {tenths}")
             elif _has_beta(version, development_releases):
-                tags.append(product_name + " {}".format(version))
+                tags.append(f"{product_name} {version}")
                 tags.append("beta")
 
         # Add a tag for the OS but only if it already exists as a non-segmentation tag.
