@@ -249,10 +249,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     question_qs = question_qs.select_related(
         "creator",
-        "last_answer",
         "last_answer__creator",
-        "solution",
-        "solution__creator",
         "topic",
         "product",
     )

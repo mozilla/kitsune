@@ -126,7 +126,7 @@
         {{ question.get_zd_status_display() or _("Submitted") }}
       </span>
     {% else %}
-      {% if question.solution %}
+      {% if question.solution_id %}
         <span class="status-label status-label--resolved"
               title="{{ _('This question has a verified solution') }}">{{ _("Solved") }}</span>
       {% endif %}
@@ -138,7 +138,7 @@
         <span class="status-label status-label--neutral"
               title="{{ _('This question has been archived') }}">{{ _("Archived") }}</span>
       {% endif %}
-      {% if not question.is_locked and not question.is_archived and not question.solution %}
+      {% if not question.is_locked and not question.is_archived and not question.solution_id %}
         <span class="status-label status-label--open"
               title="{{ _('This question is open and awaiting a reply') }}">{{ _("Open") }}</span>
       {% endif %}
