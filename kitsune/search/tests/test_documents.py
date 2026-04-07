@@ -8,6 +8,7 @@ from kitsune.questions.tests import (
 )
 from kitsune.search.documents import AnswerDocument, QuestionDocument
 from kitsune.sumo.tests import TestCase
+from kitsune.tags.tests import TagFactory
 
 
 class QuestionDocumentTests(TestCase):
@@ -23,6 +24,37 @@ class QuestionDocumentTests(TestCase):
 
         document = QuestionDocument.prepare(annotated_question)
         self.assertEqual(document.question_num_votes, 4)
+
+    def test_tag_slugs_excludes_archived_tags(self):
+        active_tag = TagFactory(is_archived=False)
+        archived_tag = TagFactory(is_archived=True)
+        question = QuestionFactory()
+        AnswerFactory(question=question)
+        question.tags.add(active_tag)
+        question.tags.add(archived_tag)
+
+        document = QuestionDocument.prepare(question)
+        self.assertIn(active_tag.slug, document.question_tag_slugs)
+        self.assertNotIn(archived_tag.slug, document.question_tag_slugs)
+
+    def test_last_answer_is_by_creator_none_when_no_answers(self):
+        question = QuestionFactory()
+        document = QuestionDocument.prepare(question)
+        self.assertIsNone(document.question_last_answer_is_by_creator)
+
+    def test_last_answer_is_by_creator_true_when_creator_answered(self):
+        question = QuestionFactory()
+        AnswerFactory(question=question, creator=question.creator)
+        question.refresh_from_db()
+        document = QuestionDocument.prepare(question)
+        self.assertTrue(document.question_last_answer_is_by_creator)
+
+    def test_last_answer_is_by_creator_false_when_other_user_answered(self):
+        question = QuestionFactory()
+        AnswerFactory(question=question)
+        question.refresh_from_db()
+        document = QuestionDocument.prepare(question)
+        self.assertFalse(document.question_last_answer_is_by_creator)
 
 
 class AnswerDocumentTests(TestCase):

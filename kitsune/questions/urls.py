@@ -81,6 +81,9 @@ urlpatterns = [
         views.remove_tag_async,
         name="questions.remove_tag_async",
     ),
+    # Tag filter (HTMX partial)
+    # Note: this needs to be above questions.list because "tags" matches the product slug regex.
+    path("tags/", views.question_tags, name="questions.tags"),
     # Feeds
     # Note: this needs to be above questions.list because "feed"
     # matches the product slug regex.

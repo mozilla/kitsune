@@ -344,15 +344,18 @@ const TAGS_MAX_LIMIT = 50;
 function initSidebarTagFilter() {
   const container = document.querySelector("#sidebar-tag-filter");
   if (!container || container.dataset.initialized) return;
-  container.dataset.initialized = "true";
 
   const searchInput = container.querySelector(".sidebar-tags--search");
   const noResults = container.querySelector(".sidebar-tags--no-results");
   const showMoreBtn = container.querySelector(".sidebar-tags--show-more");
   const tagItems = container.querySelectorAll(".sidebar-tags--list li");
-  const total = parseInt(container.dataset.total || "0", 10);
+  const total = tagItems.length;
+
+  // Content not loaded yet (HTMX hasn't fired) — don't mark as initialized
+  if (!total) return;
+  container.dataset.initialized = "true";
   const maxLimit = Math.min(total, TAGS_MAX_LIMIT);
-  let limit = parseInt(container.dataset.initialLimit || TAGS_INITIAL_LIMIT, 10);
+  let limit = TAGS_INITIAL_LIMIT;
 
   const initialLimit = limit;
 
@@ -411,3 +414,24 @@ function initSidebarTagFilter() {
 
 document.addEventListener("DOMContentLoaded", initSidebarTagFilter);
 document.addEventListener("htmx:afterSettle", initSidebarTagFilter);
+
+document.addEventListener("htmx:pushedIntoHistory", () => {
+  const sidebar = document.getElementById("sidebar-tag-filter");
+  if (!sidebar) return;
+
+  const sidebarUrl = new URL(sidebar.getAttribute("hx-get"), window.location.origin);
+  const pageParams = new URLSearchParams(window.location.search);
+
+  sidebarUrl.searchParams.set("show", pageParams.get("show") || "needs-attention");
+  const tagged = pageParams.get("tagged") || "";
+  if (tagged) {
+    sidebarUrl.searchParams.set("tagged", tagged);
+  } else {
+    sidebarUrl.searchParams.delete("tagged");
+  }
+
+  const newUrl = sidebarUrl.pathname + sidebarUrl.search;
+  sidebar.setAttribute("hx-get", newUrl);
+  delete sidebar.dataset.initialized;
+  htmx.ajax("GET", newUrl, { target: sidebar, swap: "innerHTML" });
+});

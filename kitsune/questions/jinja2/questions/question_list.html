@@ -135,7 +135,7 @@
        hx-get="{{ questions_url(tagged=None) }}"
        hx-target="#questions-list"
        hx-select="#questions-list"
-       hx-select-oob="#sidebar-tag-filter,#tagged,#owner-tabs"
+       hx-select-oob="#tagged,#owner-tabs"
        hx-swap="outerHTML"
        hx-push-url="true"
        title="{{ _('Clear all tag filters') }}" aria-label="{{ _('Clear all tag filters') }}">
@@ -264,99 +264,13 @@
         </li>
       {% endif %}
 
-      {% if available_tags and show != "spam" %}
-        <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Tags') }}</li>
+      {% if show != "spam" %}
         <li>
-          {% set tags_initial_limit = 10 %}
           <div id="sidebar-tag-filter"
                class="sidebar-tags"
-               data-total="{{ available_tags | length }}"
-               data-initial-limit="{{ tags_initial_limit }}">
-
-            {% if tags %}
-              <div class="sidebar-tags-active">
-                <div class="sidebar-tags-active--header">
-                  <span class="sidebar-tags-active--label">{{ _('Active') }}</span>
-                  <a class="sidebar-tags-active--clear"
-                     href="{{ questions_url(tagged=None, page=None) }}"
-                     hx-get="{{ questions_url(tagged=None, page=None) }}"
-                     hx-target="#questions-list"
-                     hx-select="#questions-list"
-                     hx-select-oob="#sidebar-tag-filter,#tagged,#owner-tabs"
-                     hx-swap="outerHTML"
-                     hx-push-url="true">{{ _('Clear all') }}</a>
-                </div>
-                <div class="sidebar-tags-active--chips">
-                  {% for tag in tags %}
-                    {% set remaining = tags | map(attribute='slug') | reject('equalto', tag.slug) | list | join(',') %}
-                    <span class="sidebar-tag-chip">
-                      {{ tag.name }}
-                      <a class="sidebar-tag-chip--remove"
-                         href="{{ questions_url(tagged=remaining or None, page=None) }}"
-                         hx-get="{{ questions_url(tagged=remaining or None, page=None) }}"
-                         hx-target="#questions-list"
-                         hx-select="#questions-list"
-                         hx-select-oob="#sidebar-tag-filter,#tagged,#owner-tabs"
-                         hx-swap="outerHTML"
-                         hx-push-url="true"
-                         title="{{ _('{tag} — click to remove')|f(tag=tag.name) }}" aria-label="{{ _('{tag} — click to remove')|f(tag=tag.name) }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                             aria-hidden="true">
-                          <line x1="18" y1="6" x2="6" y2="18"/>
-                          <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                      </a>
-                    </span>
-                  {% endfor %}
-                </div>
-              </div>
-            {% endif %}
-
-            <input class="sidebar-tags--search"
-                   type="search"
-                   placeholder="{{ _('Search tags…') }}"
-                   aria-label="{{ _('Search tags') }}">
-
-            <ul class="sidebar-tags--list">
-              {% for tag_data in available_tags %}
-                {% set slug = tag_data.tags__slug %}
-                {% set is_selected = slug in tagged_set %}
-                {% if is_selected %}
-                  {% set new_tagged = (tags | map(attribute='slug') | reject('equalto', slug) | list | join(',')) or None %}
-                {% else %}
-                  {% set new_tagged = (tagged + ',' + slug) if tagged else slug %}
-                {% endif %}
-                <li data-rank="{{ loop.index0 }}"
-                    data-name="{{ tag_data.tags__name | lower }}"
-                    class="{{ 'is-hidden ' if loop.index0 >= tags_initial_limit else '' }}{% if is_selected %}is-selected{% endif %}">
-                  {% set _tag_url = questions_url(tagged=new_tagged, page=None) %}
-                  <a href="{{ _tag_url }}"
-                     hx-get="{{ _tag_url }}"
-                     hx-target="#questions-list"
-                     hx-select="#questions-list"
-                     hx-select-oob="#sidebar-tag-filter,#tagged,#owner-tabs"
-                     hx-swap="outerHTML"
-                     hx-push-url="true">
-                    <span>{{ tag_data.tags__name }}</span>
-                    <span class="sidebar-tags--count">{{ tag_data.count }}</span>
-                  </a>
-                </li>
-              {% endfor %}
-            </ul>
-
-            <p class="sidebar-tags--no-results" hidden>{{ _('No tags match your search.') }}</p>
-
-            {% if available_tags | length > tags_initial_limit %}
-              <button class="sidebar-tags--show-more" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-                <span></span>
-              </button>
-            {% endif %}
-
+               hx-get="{{ tags_url }}"
+               hx-trigger="load"
+               hx-swap="innerHTML">
           </div>
         </li>
       {% endif %}

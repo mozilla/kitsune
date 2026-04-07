@@ -31,6 +31,9 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
+from elasticsearch.dsl import A as DSLA
+from elasticsearch.dsl import Q as DSLQ
+from elasticsearch.exceptions import TransportError
 
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.customercare.forms import ZendeskForm
@@ -58,6 +61,7 @@ from kitsune.questions.utils import (
     get_ga_submit_event_parameters_as_json,
     get_mobile_product_from_ua,
 )
+from kitsune.search.documents import QuestionDocument
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -249,7 +253,10 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     question_qs = question_qs.select_related(
         "creator",
+        "last_answer",
         "last_answer__creator",
+        "solution",
+        "solution__creator",
         "topic",
         "product",
     )
@@ -333,6 +340,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         else:
             question_qs = Question.objects.none()
 
+    # Tags are loaded asynchronously via HTMX from the question_tags view.
     available_tags = []
     tagged_set = set(tagged.split(",")) if tagged else set()
 
@@ -420,7 +428,148 @@ def question_list(request, product_slug=None, topic_slug=None):
     if products:
         data["ga_products"] = f"/{'/'.join(product.slug for product in products)}/"
 
+    if show != "spam":
+        tags_url = urlparams(
+            reverse("questions.tags"),
+            product_slug=product_slug or None,
+            topic_slug=topic_slug or None,
+            topic_navigation="1" if topic_navigation else None,
+            show=show,
+            tagged=tagged or None,
+        )
+        data["tags_url"] = tags_url
+
     return render(request, "questions/question_list.html", data)
+
+
+@require_GET
+def question_tags(request):
+    """Return tag filter HTML for the sidebar, populated from Elasticsearch."""
+    show = request.GET.get("show", "needs-attention")
+    if show not in FILTER_GROUPS or show == "spam":
+        return HttpResponse("")
+
+    tagged = request.GET.get("tagged", "")
+    locale = request.LANGUAGE_CODE
+    product_slug = request.GET.get("product_slug", "")
+    topic_slug = request.GET.get("topic_slug", "")
+    topic_navigation = request.GET.get("topic_navigation") == "1"
+
+    product_ids = []
+    if product_slug and product_slug != "all":
+        product_ids = list(
+            Product.objects.filter(slug__in=product_slug.split(",")).values_list("id", flat=True)
+        )
+
+    topic_id = None
+    if topic_slug:
+        topic = Topic.active.filter(slug=topic_slug).first()
+        if topic:
+            topic_id = topic.id
+
+    if topic_navigation and topic_slug:
+        base_list_url = reverse("questions.list_by_topic", kwargs={"topic_slug": topic_slug})
+    elif product_slug:
+        base_list_url = reverse("questions.list", kwargs={"product_slug": product_slug})
+    else:
+        base_list_url = reverse("questions.list", kwargs={"product_slug": "all"})
+
+    preserve_params = {
+        k: v
+        for k, v in request.GET.items()
+        if k not in ("product_slug", "topic_slug", "topic_navigation", "tagged", "page")
+    }
+    base_list_url_with_params = urlparams(base_list_url, **preserve_params)
+
+    available_tags = []
+    try:
+        search = QuestionDocument.search()
+        search = search.exclude("exists", field="creator_id")
+
+        if product_ids:
+            search = search.filter("terms", question_product_id=product_ids)
+
+        if locale in ProductSupportConfig.objects.locales_list():
+            search = search.filter("term", locale=locale)
+        else:
+            search = search.filter(
+                DSLQ("term", locale=locale)
+                | DSLQ("term", locale=settings.WIKI_DEFAULT_LANGUAGE)
+            )
+
+        if topic_id:
+            search = search.filter("term", question_topic_id=topic_id)
+
+        now = timezone.now()
+        # Base filter: 2-year window, matching question_list view
+        search = search.filter(
+            "range", question_updated={"gte": now - timedelta(days=365 * 2)}
+        )
+
+        if show == "needs-attention":
+            search = (
+                search.filter("term", question_has_solution=False)
+                .filter("term", question_is_locked=False)
+                .filter("term", question_is_archived=False)
+                .filter("range", question_updated={"gte": now - timedelta(days=7)})
+                .filter(
+                    DSLQ("term", question_last_answer_is_by_creator=True)
+                    | ~DSLQ("exists", field="question_last_answer_is_by_creator")
+                )
+            )
+        elif show == "responded":
+            search = (
+                search.filter("term", question_has_solution=False)
+                .filter("term", question_is_locked=False)
+                .filter("term", question_is_archived=False)
+                .filter("exists", field="question_last_answer_is_by_creator")
+                .filter("term", question_last_answer_is_by_creator=False)
+            )
+        elif show == "done":
+            search = search.filter(
+                DSLQ("term", question_has_solution=True)
+                | DSLQ("term", question_is_locked=True)
+            )
+        # "all": no additional show filter (spam already excluded from ES index)
+
+        TAG_AGGREGATION_SIZE = 50
+        search = search.extra(size=0)
+        search.aggs.bucket("tags", DSLA("terms", field="question_tag_slugs", size=TAG_AGGREGATION_SIZE))
+
+        result = search.execute()
+        buckets = result.aggregations.tags.buckets
+
+        if buckets:
+            slugs = [b.key for b in buckets]
+            tag_name_map = dict(
+                SumoTag.objects.filter(slug__in=slugs).values_list("slug", "name")
+            )
+            available_tags = [
+                {"slug": b.key, "name": tag_name_map.get(b.key, b.key), "count": b.doc_count}
+                for b in buckets
+                if b.key in tag_name_map
+            ]
+    except TransportError:
+        pass
+
+    tags = None
+    if tagged:
+        tag_slugs = tagged.split(",")[:10]
+        tags = list(SumoTag.objects.active().filter(slug__in=tag_slugs))
+
+    tagged_set = set(tagged.split(",")) if tagged else set()
+
+    return render(
+        request,
+        "questions/includes/tag_filter.html",
+        {
+            "available_tags": available_tags,
+            "tagged": tagged,
+            "tagged_set": tagged_set,
+            "tags": tags,
+            "base_list_url_with_params": base_list_url_with_params,
+        },
+    )
 
 
 def parse_troubleshooting(troubleshooting_json):

@@ -137,6 +137,8 @@ class QuestionDocument(SumoDocument):
     question_taken_until = field.Date()
 
     question_tag_ids = field.Keyword(multi=True)
+    question_tag_slugs = field.Keyword(multi=True)
+    question_last_answer_is_by_creator = field.Boolean()
     question_num_votes = field.Integer()
 
     # store answer content to optimise searching for AAQ threads as a unit
@@ -159,6 +161,14 @@ class QuestionDocument(SumoDocument):
 
     def prepare_question_tag_ids(self, instance):
         return [tag.id for tag in instance.tags.all()]
+
+    def prepare_question_tag_slugs(self, instance):
+        return [tag.slug for tag in instance.tags.all() if not tag.is_archived]
+
+    def prepare_question_last_answer_is_by_creator(self, instance):
+        if instance.last_answer_id is None:
+            return None
+        return instance.last_answer.creator_id == instance.creator_id
 
     def prepare_question_has_solution(self, instance):
         return instance.solution_id is not None
@@ -193,7 +203,7 @@ class QuestionDocument(SumoDocument):
     @classmethod
     def get_queryset(cls):
         return (
-            Question.objects
+            Question.objects.select_related("last_answer")
             # prefetch answers which aren't spam to avoid extra queries when iterating over them
             .prefetch_related(
                 Prefetch(
