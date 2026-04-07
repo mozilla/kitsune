@@ -166,6 +166,8 @@ class QuestionSearch(SumoSearch):
                 "range",
                 question_created={"gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)},
             ),
+            # only return questions that have at least one answer
+            DSLQ("exists", field=f"answer_content.{self.locale}"),
         ]
 
         if self.is_simple_search():

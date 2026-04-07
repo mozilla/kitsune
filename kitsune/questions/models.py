@@ -631,6 +631,7 @@ class Question(AAQBase):
                 .filter("term", question_product_id=self.product.id)
                 .exclude("exists", field="updated")
                 .exclude("term", _id=self.id)
+                .filter("exists", field=f"answer_content.{self.locale}")
                 .query(
                     "more_like_this",
                     fields=[f"question_title.{self.locale}", f"question_content.{self.locale}"],

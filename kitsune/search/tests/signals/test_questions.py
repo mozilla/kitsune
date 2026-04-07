@@ -66,8 +66,8 @@ class QuestionDocumentSignalsTests(ElasticTestCase):
     def test_question_without_answer(self):
         self.answer.delete()
 
-        with self.assertRaises(NotFoundError):
-            self.get_doc()
+        doc = self.get_doc()
+        self.assertEqual(doc.answer_content["en-US"], [])
 
     def test_vote_delete(self):
         vote = QuestionVoteFactory(question=self.question)

@@ -152,9 +152,9 @@ class QuestionDocument(SumoDocument):
     @classmethod
     def prepare(cls, instance):
         """Override super method to exclude certain docs."""
-        # Add a discard field in the document if the following conditions are met
-        # Question document is spam or question doesn't have any answers
-        if isinstance(instance, Question) and any([instance.is_spam, instance.num_answers == 0]):
+        # Add a discard field in the document if the following conditions are met:
+        #   - Question document is spam
+        if isinstance(instance, Question) and instance.is_spam:
             instance.es_discard_doc = "unindex_me"
 
         return super().prepare(instance)
@@ -373,17 +373,17 @@ class ProfileDocument(SumoDocument):
         from kitsune.groups.models import GroupProfile
 
         # Get visible groups with GroupProfiles (public + moderated)
-        visible_group_profiles = GroupProfile.objects.filter(
-            group__user=instance.user
-        ).exclude(visibility=GroupProfile.Visibility.PRIVATE)
-        visible_group_ids = list(visible_group_profiles.values_list('group_id', flat=True))
+        visible_group_profiles = GroupProfile.objects.filter(group__user=instance.user).exclude(
+            visibility=GroupProfile.Visibility.PRIVATE
+        )
+        visible_group_ids = list(visible_group_profiles.values_list("group_id", flat=True))
 
         # Get groups without GroupProfiles (legacy groups) - include them by default
-        groups_with_profiles = GroupProfile.objects.filter(
-            group__user=instance.user
-        ).values_list('group_id', flat=True)
+        groups_with_profiles = GroupProfile.objects.filter(group__user=instance.user).values_list(
+            "group_id", flat=True
+        )
         legacy_group_ids = list(
-            instance.user.groups.exclude(id__in=groups_with_profiles).values_list('id', flat=True)
+            instance.user.groups.exclude(id__in=groups_with_profiles).values_list("id", flat=True)
         )
 
         # Combine visible + legacy
