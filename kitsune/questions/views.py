@@ -266,8 +266,6 @@ def question_list(request, product_slug=None, topic_slug=None):
         .filter(updated__range=(today - timedelta(days=365 * 2), Now()))
     )
 
-    question_qs = question_qs.prefetch_related("tags")
-
     # Annotate with visit counts to avoid N+1 queries
     question_qs = question_qs.annotate(visits_count=F("questionvisits__visits"))
 
@@ -344,8 +342,9 @@ def question_list(request, product_slug=None, topic_slug=None):
             question_qs = Question.objects.none()
 
     # Top 50 tags from the pre-tag-filtered set, ordered by frequency.
-    # Cache per product/topic/locale since this query is expensive and rarely changes.
-    _tags_cache_key = f"available_tags:{product_slug}:{topic_slug}:{request.LANGUAGE_CODE}"
+    # Cache per product/topic/locale/show — base_qs includes the show filter so each
+    # combination produces a different tag set.
+    _tags_cache_key = f"available_tags:{product_slug}:{topic_slug}:{request.LANGUAGE_CODE}:{show}"
     available_tags = cache.get(_tags_cache_key)
     if available_tags is None:
         available_tags = list(
@@ -378,14 +377,21 @@ def question_list(request, product_slug=None, topic_slug=None):
             url = build_paged_url(request)
             return HttpResponseRedirect(urlparams(url, page=1))
 
-    # Recent answered stats
+    # Recent answered stats — cached per product/locale, updated every 5 minutes.
     extra_filters = locale_query
 
     if products:
         extra_filters &= Q(product__in=products)
 
-    recent_asked_count = Question.recent_asked_count(extra_filters)
-    recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
+    _counts_cache_key = f"recent_counts:{product_slug}:{request.LANGUAGE_CODE}"
+    _cached_counts = cache.get(_counts_cache_key)
+    if _cached_counts is None:
+        recent_asked_count = Question.recent_asked_count(extra_filters)
+        recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
+        cache.set(_counts_cache_key, (recent_asked_count, recent_unanswered_count), 60 * 5)
+    else:
+        recent_asked_count, recent_unanswered_count = _cached_counts
+
     if recent_asked_count:
         recent_answered_percent = int(
             (float(recent_asked_count - recent_unanswered_count) / recent_asked_count) * 100
