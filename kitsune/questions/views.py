@@ -259,7 +259,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "solution__creator",
         "topic",
         "product",
-    )
+    ).prefetch_related("tags")
     today = date.today()
     question_qs = (
         question_qs.exclude(
@@ -423,6 +423,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "product_slug": product_slug,
         "topic_navigation": topic_navigation,
         "has_support_config": product_with_aaq,
+        "tag_base_url": None,
     }
 
     if products:
@@ -438,6 +439,19 @@ def question_list(request, product_slug=None, topic_slug=None):
             tagged=tagged or None,
         )
         data["tags_url"] = tags_url
+
+        tag_base_url = urlparams(
+            reverse(
+                "questions.list_by_topic" if topic_navigation else "questions.list",
+                kwargs=(
+                    {"topic_slug": topic_slug}
+                    if topic_navigation
+                    else {"product_slug": product_slug}
+                ),
+            ),
+            **{k: v for k, v in request.GET.items() if k not in ("tagged", "page")},
+        )
+        data["tag_base_url"] = tag_base_url
 
     return render(request, "questions/question_list.html", data)
 
@@ -493,8 +507,7 @@ def question_tags(request):
             search = search.filter("term", locale=locale)
         else:
             search = search.filter(
-                DSLQ("term", locale=locale)
-                | DSLQ("term", locale=settings.WIKI_DEFAULT_LANGUAGE)
+                DSLQ("term", locale=locale) | DSLQ("term", locale=settings.WIKI_DEFAULT_LANGUAGE)
             )
 
         if topic_id:
@@ -502,9 +515,7 @@ def question_tags(request):
 
         now = timezone.now()
         # Base filter: 2-year window, matching question_list view
-        search = search.filter(
-            "range", question_updated={"gte": now - timedelta(days=365 * 2)}
-        )
+        search = search.filter("range", question_updated={"gte": now - timedelta(days=365 * 2)})
 
         if show == "needs-attention":
             search = (
@@ -527,23 +538,22 @@ def question_tags(request):
             )
         elif show == "done":
             search = search.filter(
-                DSLQ("term", question_has_solution=True)
-                | DSLQ("term", question_is_locked=True)
+                DSLQ("term", question_has_solution=True) | DSLQ("term", question_is_locked=True)
             )
         # "all": no additional show filter (spam already excluded from ES index)
 
         TAG_AGGREGATION_SIZE = 50
         search = search.extra(size=0)
-        search.aggs.bucket("tags", DSLA("terms", field="question_tag_slugs", size=TAG_AGGREGATION_SIZE))
+        search.aggs.bucket(
+            "tags", DSLA("terms", field="question_tag_slugs", size=TAG_AGGREGATION_SIZE)
+        )
 
         result = search.execute()
         buckets = result.aggregations.tags.buckets
 
         if buckets:
             slugs = [b.key for b in buckets]
-            tag_name_map = dict(
-                SumoTag.objects.filter(slug__in=slugs).values_list("slug", "name")
-            )
+            tag_name_map = dict(SumoTag.objects.filter(slug__in=slugs).values_list("slug", "name"))
             available_tags = [
                 {"slug": b.key, "name": tag_name_map.get(b.key, b.key), "count": b.doc_count}
                 for b in buckets
