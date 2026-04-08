@@ -432,6 +432,8 @@ document.addEventListener("htmx:pushedIntoHistory", () => {
 
   const newUrl = sidebarUrl.pathname + sidebarUrl.search;
   sidebar.setAttribute("hx-get", newUrl);
-  delete sidebar.dataset.initialized;
-  htmx.ajax("GET", newUrl, { target: sidebar, swap: "innerHTML" });
+  htmx.ajax("GET", newUrl, { target: sidebar, swap: "innerHTML" }).then(() => {
+    delete sidebar.dataset.initialized;
+    initSidebarTagFilter();
+  });
 });
