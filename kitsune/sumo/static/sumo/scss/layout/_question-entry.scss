@@ -76,6 +76,11 @@
   @include c.text-body-md;
   color: var(--color-text-light);
   margin: 0;
+
+  .show-more-link {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .question-entry--meta-item {

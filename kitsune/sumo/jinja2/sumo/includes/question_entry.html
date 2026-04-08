@@ -93,7 +93,9 @@
         <a href="{{ question.get_absolute_url() }}" class="question-entry--title-link">{{ question.title }}</a>
       </h3>
       {% if question.content %}
-        <p class="question-entry--excerpt">{{ question.content | truncate(170) }}</p>
+        <div class="question-entry--excerpt ui-truncatable truncated">
+          {{ question.content_parsed | truncate_question(170, question.content_parsed) | safe }}
+        </div>
       {% endif %}
     </div>
   </div>
