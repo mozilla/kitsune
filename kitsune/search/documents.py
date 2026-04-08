@@ -138,6 +138,7 @@ class QuestionDocument(SumoDocument):
 
     question_tag_ids = field.Keyword(multi=True)
     question_tag_slugs = field.Keyword(multi=True)
+    question_has_answers = field.Boolean()
     question_last_answer_is_by_creator = field.Boolean()
     question_num_votes = field.Integer()
 
@@ -152,9 +153,8 @@ class QuestionDocument(SumoDocument):
     @classmethod
     def prepare(cls, instance):
         """Override super method to exclude certain docs."""
-        # Add a discard field in the document if the following conditions are met
-        # Question document is spam or question doesn't have any answers
-        if isinstance(instance, Question) and any([instance.is_spam, instance.num_answers == 0]):
+        # Add a discard field in the document if the question is spam
+        if isinstance(instance, Question) and instance.is_spam:
             instance.es_discard_doc = "unindex_me"
 
         return super().prepare(instance)
@@ -164,6 +164,9 @@ class QuestionDocument(SumoDocument):
 
     def prepare_question_tag_slugs(self, instance):
         return [tag.slug for tag in instance.tags.all() if not tag.is_archived]
+
+    def prepare_question_has_answers(self, instance):
+        return instance.num_answers > 0
 
     def prepare_question_last_answer_is_by_creator(self, instance):
         if instance.last_answer_id is None:

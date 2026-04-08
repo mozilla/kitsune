@@ -166,6 +166,8 @@ class QuestionSearch(SumoSearch):
                 "range",
                 question_created={"gte": datetime.now(UTC) - timedelta(days=QUESTION_DAYS_DELTA)},
             ),
+            # exclude unanswered questions from search results
+            DSLQ("term", question_has_answers=True),
         ]
 
         if self.is_simple_search():

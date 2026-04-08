@@ -29,13 +29,24 @@ class QuestionDocumentTests(TestCase):
         active_tag = TagFactory(is_archived=False)
         archived_tag = TagFactory(is_archived=True)
         question = QuestionFactory()
-        AnswerFactory(question=question)
         question.tags.add(active_tag)
         question.tags.add(archived_tag)
 
         document = QuestionDocument.prepare(question)
         self.assertIn(active_tag.slug, document.question_tag_slugs)
         self.assertNotIn(archived_tag.slug, document.question_tag_slugs)
+
+    def test_has_answers_false_when_no_answers(self):
+        question = QuestionFactory()
+        document = QuestionDocument.prepare(question)
+        self.assertFalse(document.question_has_answers)
+
+    def test_has_answers_true_when_answered(self):
+        question = QuestionFactory()
+        AnswerFactory(question=question)
+        question.refresh_from_db()
+        document = QuestionDocument.prepare(question)
+        self.assertTrue(document.question_has_answers)
 
     def test_last_answer_is_by_creator_none_when_no_answers(self):
         question = QuestionFactory()

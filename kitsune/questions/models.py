@@ -629,6 +629,7 @@ class Question(AAQBase):
             search = (
                 QuestionDocument.search()
                 .filter("term", question_product_id=self.product.id)
+                .filter("term", question_has_answers=True)
                 .exclude("exists", field="updated")
                 .exclude("term", _id=self.id)
                 .query(
