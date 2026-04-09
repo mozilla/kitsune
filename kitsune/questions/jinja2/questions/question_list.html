@@ -201,7 +201,7 @@
         <section class="forum--question-list questions">
           {% for question in questions.object_list %}
             <article id="question-{{ question.id }}" class="question-entry">
-              {{ question_entry(question, request=request, user_is_contributor=_user_is_contributor, tag_info={"base_url": tag_base_url, "tagged": tagged or '', "tagged_set": tagged_set}) }}
+              {{ question_entry(question, request=request, user_is_contributor=_user_is_contributor) }}
             </article>
           {% endfor %}
         </section>

@@ -53,7 +53,12 @@
     {% for tag in available_tags %}
       {% set slug = tag.slug %}
       {% set is_selected = slug in tagged_set %}
-      {% set _tag_url = base_list_url_with_params | urlparams(tagged=toggle_tag_slug(tagged, slug), page=None) %}
+      {% if is_selected %}
+        {% set _new_tagged = (tagged.split(',') | reject('equalto', slug) | list | join(',')) or None %}
+      {% else %}
+        {% set _new_tagged = (tagged + ',' + slug) if tagged else slug %}
+      {% endif %}
+      {% set _tag_url = base_list_url_with_params | urlparams(tagged=_new_tagged, page=None) %}
       <li data-rank="{{ loop.index0 }}"
           data-name="{{ tag.name | lower }}"
           class="{{ 'is-hidden ' if loop.index0 >= tags_initial_limit else '' }}{% if is_selected %}is-selected{% endif %}">

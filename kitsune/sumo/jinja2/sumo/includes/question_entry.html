@@ -74,7 +74,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro question_entry(question, profile_username=None, request=None, user_is_contributor=False, tag_info=None) %}
+{% macro question_entry(question, profile_username=None, request=None, user_is_contributor=False) %}
   {% set _base_url = url('users.questions', username=profile_username) if (question.channel == "direct_support" and profile_username) else None %}
   {% if _base_url %}
     {% set _product_url = (_base_url + '?channel=direct_support&product=' + question.product.slug) if question.product else None %}
@@ -208,22 +208,4 @@
       </span>
     {% endif %}
   </div>
-  {% if tag_info and user_is_contributor %}
-    {% set _question_tags = question.tags.all() %}
-    {% if _question_tags %}
-      <div class="question-entry--tags">
-        {% for tag in _question_tags %}
-          {% set _tag_url = tag_info.base_url | urlparams(tagged=toggle_tag_slug(tag_info.tagged, tag.slug), page=None) %}
-          <a class="question-entry--tag{% if tag_info.tagged_set and tag.slug in tag_info.tagged_set %} is-active{% endif %}"
-             href="{{ _tag_url }}"
-             hx-get="{{ _tag_url }}"
-             hx-target="#questions-list"
-             hx-select="#questions-list"
-             hx-select-oob="#tagged,#owner-tabs"
-             hx-swap="outerHTML"
-             hx-push-url="true">{{ tag.slug }}</a>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endif %}
 {% endmacro %}
