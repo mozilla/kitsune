@@ -27,7 +27,7 @@ import trackEvent from "sumo/js/analytics";
       }
     }, 100));
 
-    $('.ui-truncatable .show-more-link').on('click', function(ev) {
+    $(document).on('click', '.ui-truncatable .show-more-link', function(ev) {
       ev.preventDefault();
       $(this).closest('.ui-truncatable').removeClass('truncated');
     });
