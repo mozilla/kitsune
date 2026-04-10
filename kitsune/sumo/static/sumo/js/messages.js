@@ -46,7 +46,7 @@ $(function() {
     message = interpolate(gettext('%s characters remaining'), [delta]);
     $summaryCount.text(message);
     if (maxCount - currentCount >= 10) {
-      $summaryCount.css('color', 'black');
+      $summaryCount.css('color', '');
     } else {
       $summaryCount.css('color', 'red');
       if (currentCount >= maxCount) {

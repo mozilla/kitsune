@@ -11,12 +11,12 @@
     display: flex;
     width: 100%;
     box-sizing: border-box; // Include padding and border in width calculations
-    background-color: #fff;
+    background-color: var(--page-bg);
 
     .email-cell {
         padding: 8px;
-        background-color: #fff;
-        border: 1px solid #ddd;
+        background-color: var(--page-bg);
+        border: 1px solid var(--color-border);
         box-sizing: border-box; // Include padding and border in width calculations
         overflow: hidden; // Hide overflow content
         text-overflow: ellipsis; // Add ellipsis for overflowing text
@@ -35,7 +35,7 @@
     &.header {
         .email-cell {
             font-weight: bold;
-            background-color: #eef;
+            background-color: var(--color-shade-bg);
         }
     }
 
@@ -43,6 +43,32 @@
         .email-cell {
             font-weight: bold; // Differentiate unread messages with a bold font
         }
+
+        // In dark mode bold alone isn't enough — add a left border accent and
+        // a slightly elevated background so unread rows are clearly distinct.
+        @media (prefers-color-scheme: dark) {
+            border-left: 3px solid var(--color-click);
+
+            .email-cell {
+                background-color: var(--color-callout-bg);
+            }
+        }
+    }
+}
+
+[data-theme="dark"] .email-row.unread {
+    border-left: 3px solid var(--color-click);
+
+    .email-cell {
+        background-color: var(--color-callout-bg);
+    }
+}
+
+[data-theme="light"] .email-row.unread {
+    border-left: none;
+
+    .email-cell {
+        background-color: var(--page-bg);
     }
 }
 

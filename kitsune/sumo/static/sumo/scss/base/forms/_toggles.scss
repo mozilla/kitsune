@@ -61,7 +61,7 @@
     width: calc(var(--switch-size) / 2 - 6px);
     height:  calc(var(--switch-size) / 2 - 6px);
     border-radius: calc(var(--switch-size) / 2 - #{p.$spacing-xs});
-    background: #fff;
+    background: var(--color-white);
     content: "";
     transition: 0.1s;
   }

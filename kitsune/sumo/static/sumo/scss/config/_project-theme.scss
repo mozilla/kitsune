@@ -30,9 +30,24 @@
   --color-link-inverse-active-bg: #{rgba(c.color('marketing-gray', '02'), 0.2)};
   --color-border: var(--color-marketing-gray-02);
   --color-callout-bg: var(--color-marketing-gray-02);
-  --color-moz-heading: #000000;
+  --color-moz-heading: var(--color-black);
   --color-moz-text: var(--color-moz-heading);
   --color-moz-inverse-bg: var(--color-ink-08);
+
+  // elevation
+  --elevation-border: rgba(21, 20, 26, 0.26);
+  --elevation-shadow-01:
+    0 5px 10px -3px rgba(14, 13, 26, 0.12),
+    0 3px 16px 2px rgba(7, 48, 114, 0.12),
+    0 8px 12px 1px rgba(34, 0, 51, 0.04);
+  --elevation-shadow-02:
+    0 8px 12px -5px rgba(14, 13, 26, 0.12),
+    0 6px 32px 4px rgba(7, 48, 114, 0.12),
+    0 16px 24px 2px rgba(34, 0, 51, 0.04);
+  --elevation-shadow-03:
+    0 12px 16px -6px rgba(14, 13, 26, 0.12),
+    0 10px 48px 8px rgba(7, 48, 114, 0.12),
+    0 24px 38px 3px rgba(34, 0, 51, 0.04);
 
   --base-font-size: 1rem;
   --heading-font-family: var(--title-font-family);
@@ -44,6 +59,64 @@
 
   // form fields
   --focus-shadow: 0 0 0 #{p.$spacing-xs} rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
+}
+
+@mixin dark-theme {
+  // Backgrounds
+  --page-bg: var(--color-dark-gray-09);
+  --card-bg: var(--color-dark-gray-08);
+  --color-shade-bg: var(--color-dark-gray-08);
+  --color-callout-bg: var(--color-dark-gray-07);
+
+  // Inverse (flipped: light sections on a dark page)
+  --color-inverse-bg: var(--color-light-gray-03);
+  --color-inverse: var(--color-dark-gray-09);
+
+  // Text
+  --color-heading: var(--color-light-gray-02);
+  --color-text: var(--color-marketing-gray-04);
+  --color-text-light: var(--color-marketing-gray-05);
+  --color-secondary: var(--color-marketing-gray-05);
+
+  // Links & interactive
+  --color-click: var(--color-blue-05);
+  --color-link-visited: var(--color-purple-03);
+  --color-link-active-bg: var(--color-dark-gray-07);
+
+  // Border
+  --color-border: var(--color-dark-gray-06);
+
+  // Mozilla branding
+  --color-moz-heading: var(--color-white);
+  --color-moz-inverse-bg: var(--color-dark-gray-07);
+
+  // Elevation (dark bg → lighter subtle borders, stronger black shadows)
+  --elevation-border: rgba(255, 255, 255, 0.1);
+  --elevation-shadow-01:
+    0 5px 10px -3px rgba(0, 0, 0, 0.4),
+    0 3px 16px 2px rgba(0, 0, 0, 0.3),
+    0 8px 12px 1px rgba(0, 0, 0, 0.2);
+  --elevation-shadow-02:
+    0 8px 12px -5px rgba(0, 0, 0, 0.4),
+    0 6px 32px 4px rgba(0, 0, 0, 0.3),
+    0 16px 24px 2px rgba(0, 0, 0, 0.2);
+  --elevation-shadow-03:
+    0 12px 16px -6px rgba(0, 0, 0, 0.4),
+    0 10px 48px 8px rgba(0, 0, 0, 0.3),
+    0 24px 38px 3px rgba(0, 0, 0, 0.2);
+}
+
+// Automatic dark mode: respects OS preference
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include dark-theme;
+  }
+}
+
+// Manual override: set by JS theme toggle in Phase 4
+// [data-theme="light"] lets users opt back to light even on a dark-OS
+[data-theme="dark"] {
+  @include dark-theme;
 }
 
 // With locales where Mozilla Headline and Mozilla Text have partial character support,

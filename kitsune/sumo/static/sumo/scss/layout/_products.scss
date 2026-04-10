@@ -127,7 +127,7 @@ body[data-product-slug="firefox-enterprise"] {
   h2 {
     font-size: 24px;
     margin-bottom: 0px;
-    color: #333;
+    color: var(--color-heading);
   }
 
   @media #{p.$mq-sm} {

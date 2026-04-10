@@ -3,8 +3,14 @@
 {% if request.LANGUAGE_CODE == 'xx' %}
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
+{# Read the theme cookie set by theme-toggle.js so we can pre-render the correct     #}
+{# data-theme and background inline — this eliminates a potential navigation flash entirely  #}
+{# because the HTML arrives from the server already styled, before any JS runs.      #}
+{% set _theme_cookie = request.COOKIES.get('sumo-theme', '') %}
+{% set _is_dark = _theme_cookie == 'dark' %}
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.LANGUAGE_CODE }}"
+  {% if _is_dark %}data-theme="dark" style="background-color:#1C1B22;color-scheme:dark"{% elif _theme_cookie == 'light' %}data-theme="light" style="color-scheme:light"{% endif %}
   {% if DIR %}dir="{{ DIR }}"{% endif %}
   {% if settings.GTM_CONTAINER_ID %}data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}
   {% if ga_content_group %}data-ga-content-group="{{ ga_content_group }}"{% endif %}
@@ -15,6 +21,28 @@
   {% if settings.GA_CONSOLE_LOGGING %}data-ga-console-logging="true"{% endif %}
   {% if settings.GA_DEBUG_MODE %}data-ga-debug-mode="true"{% endif %}>
 <head>
+  {# ============================================================ #}
+  {# Theme flash prevention                                       #}
+  {# Primary: data-theme + style are pre-rendered by Django from  #}
+  {# the sumo-theme cookie (set by theme-toggle.js on toggle).   #}
+  {# Fallback: inline style + script cover first-time visitors    #}
+  {# (no cookie yet) who rely on OS dark mode.                   #}
+  {# #1C1B22 = --color-dark-gray-09 = --page-bg in dark mode.    #}
+  {# ============================================================ #}
+  <style>
+    :root { color-scheme: light dark; }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]),
+      html:not([data-theme="light"]) body { background-color: #1C1B22; color-scheme: dark; }
+    }
+    html[data-theme="dark"],
+    html[data-theme="dark"] body { background-color: #1C1B22; color-scheme: dark; }
+    html[data-theme="light"],
+    html[data-theme="light"] body { color-scheme: light; }
+  </style>
+  {# Fallback for first-time OS-dark visitors with no cookie yet. #}
+  <script>(function(){if(document.documentElement.getAttribute('data-theme'))return;var p=window.matchMedia('(prefers-color-scheme:dark)').matches;if(p){var e=document.documentElement;e.style.backgroundColor='#1C1B22';e.style.colorScheme='dark';}})();</script>
+
   {% include "includes/google-analytics.html" %}
 
   {% block head_top %}{% endblock %}
@@ -137,6 +165,19 @@
         {% endif %}
 
       </a>
+      <div class="sumo-nav--theme-toggle" x-data="themeToggle()">
+        <button
+          type="button"
+          class="sumo-nav--theme-toggle-button"
+          x-on:click="toggle()"
+          aria-label="{{ _('Toggle dark mode') }}">
+          {# Moon: shown in light mode — click to go dark #}
+          <svg class="theme-icon theme-icon--moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          {# Sun: shown in dark mode — click to go light #}
+          <svg class="theme-icon theme-icon--sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+
       <div class="mzp-c-navigation-items sumo-nav--list-wrap" id="main-navigation">
         <div class="mzp-c-navigation-menu">
           <nav class="mzp-c-menu mzp-is-basic">

@@ -144,6 +144,8 @@
 .dashboards td.status:has(.review),
 .dashboards td.status:has(.out-of-date){
     background-color: var(--color-warning);
+    // Yellow always needs dark text regardless of theme.
+    color: var(--color-dark-gray-10);
 }
 
 .dashboards td.status {
@@ -166,6 +168,36 @@
         color: #add575;
         margin-left: p.$spacing-xs;
     }
+}
+
+@media (prefers-color-scheme: dark) {
+  .dashboards td.status:has(.review),
+  .dashboards td.status:has(.out-of-date) {
+    background-color: rgba(255, 213, 0, 0.2);
+  }
+
+  .dashboards td.status .ok:after {
+    color: #6dbf6d;
+  }
+
+  .dashboards td.status .untranslated:after {
+    color: #ff6b6b;
+  }
+}
+
+[data-theme="dark"] {
+  .dashboards td.status:has(.review),
+  .dashboards td.status:has(.out-of-date) {
+    background-color: rgba(255, 213, 0, 0.2);
+  }
+
+  .dashboards td.status .ok:after {
+    color: #6dbf6d;
+  }
+
+  .dashboards td.status .untranslated:after {
+    color: #ff6b6b;
+  }
 }
 .dashboards td a {
     text-decoration:none;

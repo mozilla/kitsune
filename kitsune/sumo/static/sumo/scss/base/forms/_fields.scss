@@ -8,6 +8,31 @@
   --field-border-color-disabled: var(--color-marketing-gray-03);
   --field-background-color-disabled: var(--color-marketing-gray-01);
   --field-color-disabled: var(--color-marketing-gray-03);
+  --field-bg: var(--color-white);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --field-border-color-default: var(--color-border);
+    --field-border-color-hover: var(--color-click);
+    --field-border-color-disabled: var(--color-border);
+    --field-background-color-disabled: var(--color-shade-bg);
+    --field-color-disabled: var(--color-text-light);
+    --field-bg: var(--card-bg);
+  }
+}
+
+[data-theme="dark"] {
+  --field-border-color-default: var(--color-border);
+  --field-border-color-hover: var(--color-click);
+  --field-border-color-disabled: var(--color-border);
+  --field-background-color-disabled: var(--color-shade-bg);
+  --field-color-disabled: var(--color-text-light);
+  --field-bg: var(--card-bg);
+}
+
+[data-theme="light"] {
+  --field-bg: var(--color-white);
 }
 
 // Forms
@@ -58,7 +83,7 @@ label {
   display: block;
   margin-bottom: p.$spacing-sm;
   @include c.text-body-md;
-  color: var(--color-marketing-gray-07);
+  color: var(--color-text);
   font-weight: bold;
 
   .required {
@@ -217,8 +242,8 @@ textarea,
   height: 40px;
   border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
-  background-color: var(--color-white);
-  color: #0c0c0d;
+  background-color: var(--field-bg);
+  color: var(--color-text);
   outline: 0;
   transition-duration: 150ms;
   transition-property: border-color;
@@ -293,7 +318,7 @@ select,
 .ts-select-trigger {
   position: relative;
   background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
-  background-color: var(--color-white);
+  background-color: var(--field-bg);
   @include p.bidi(((background-position, top 14px right 14px, top 14px left 14px),
       (padding-right, 40px, p.$spacing-sm),
       (padding-left, p.$spacing-sm, 40px),
@@ -476,7 +501,7 @@ label.required::after {
 }
 
 .field > label.disabled {
-  color: #d0d0d7;
+  color: var(--color-text-light);
 }
 
 #edit-document {

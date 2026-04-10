@@ -71,7 +71,7 @@
     left: 0;
 }
 .ts-modal {
-    border: 1px solid #d4d4d4;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     min-width: 120%;
     max-height: 800%;
@@ -87,15 +87,14 @@
 }
 .options-filter input[type="text"] {
     padding: 5px 2%;
-    border: 1px solid #b2b2b2;
+    border: 1px solid var(--color-border);
     width: 100%;
     font-size: .8rem;
     border-radius: .2rem;
-    box-shadow: 0 1px rgba(255, 255, 255, 0.5);
 }
 .options-filter input[type="text"]:focus {
-    border: 1px solid #42a4e0;
-    box-shadow: 0 0 0 2px rgba(73, 173, 227, 0.4);
+    border: 1px solid var(--color-link);
+    box-shadow: var(--focus-shadow);
 }
 ul.ts-options {
     margin: 0;
@@ -104,17 +103,17 @@ ul.ts-options {
 }
 .ts-options a {
     display: block;
-    background-color: white;
-    color: black;
+    background-color: var(--page-bg);
+    color: var(--color-text);
     padding: .6rem .6rem .6rem 2rem;
     text-decoration: none;
 }
 .ts-options a:hover {
-    background-color: #005CB8;
-    color: #fff;
+    background-color: var(--color-link);
+    color: var(--color-inverse);
 }
 .ts-options li {
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--color-border);
     margin-bottom: 0;
 }
 .ts-options li:first-child {

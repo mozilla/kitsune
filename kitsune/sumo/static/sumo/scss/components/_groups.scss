@@ -34,7 +34,7 @@ body:has(#group-profile) {
   @include c.elevation-01;
   margin-bottom: p.$spacing-lg;
   padding: p.$spacing-lg;
-  background: white;
+  background: var(--card-bg);
 
   &--avatar-section {
     text-align: center;
@@ -68,7 +68,7 @@ body:has(#group-profile) {
     @include c.text-body-md;
     font-weight: 700;
     margin-bottom: p.$spacing-md;
-    color: var(--color-ink-09);
+    color: var(--color-heading);
   }
 
   &--content {
@@ -230,8 +230,8 @@ body:has(#group-profile) {
     padding: p.$spacing-xl;
     background: linear-gradient(
       135deg,
-      var(--color-marketing-gray-01) 0%,
-      var(--color-white) 100%
+      var(--color-shade-bg) 0%,
+      var(--card-bg) 100%
     );
     border-left: 4px solid var(--color-link);
     margin-bottom: p.$spacing-2xl;
@@ -253,7 +253,7 @@ body:has(#group-profile) {
     @include c.elevation-01;
     padding: p.$spacing-xl;
     margin-bottom: p.$spacing-2xl;
-    background: white;
+    background: var(--card-bg);
   }
 
   .section-heading {
@@ -344,7 +344,7 @@ body:has(#group-profile) {
         background: linear-gradient(
           135deg,
           rgba(12, 175, 89, 0.03) 0%,
-          var(--color-white) 100%
+          var(--card-bg) 100%
         );
 
         &:hover {
@@ -527,7 +527,7 @@ body:has(#group-profile) {
         gap: p.$spacing-xs;
         padding: p.$spacing-sm p.$spacing-md;
         margin-top: p.$spacing-sm;
-        background: var(--color-white);
+        background: var(--card-bg);
         border: 2px solid var(--color-link);
         border-radius: p.$border-radius-sm;
         color: var(--color-link);
@@ -644,7 +644,7 @@ body:has(#group-profile) {
       @include c.text-body-lg;
       font-weight: 700;
       margin-bottom: p.$spacing-lg;
-      color: var(--color-ink-09);
+      color: var(--color-heading);
       text-align: center;
     }
 
@@ -703,7 +703,7 @@ body:has(#group-profile) {
       @include c.text-body-lg;
       font-weight: 700;
       margin-bottom: p.$spacing-lg;
-      color: var(--color-ink-09);
+      color: var(--color-heading);
     }
 
     .form-errors {
@@ -733,7 +733,7 @@ body:has(#group-profile) {
       @include c.text-body-md;
       font-weight: 600;
       margin-bottom: p.$spacing-sm;
-      color: var(--color-ink-09);
+      color: var(--color-heading);
 
       .required {
         color: var(--color-red-60);
@@ -872,5 +872,132 @@ body:has(#group-profile) {
       font-size: 0.5rem;
       text-align: center;
     }
+  }
+}
+
+// Dark mode overrides for group pages
+@mixin groups-dark {
+  #group-profile .card,
+  .sumo-l-two-col--sidebar .group-avatar-card,
+  .sumo-l-two-col--sidebar .group-hierarchy-card,
+  .sumo-l-two-col--sidebar .group-actions-card {
+    border-color: var(--color-border);
+
+    &--avatar-section {
+      border-bottom-color: var(--color-border);
+    }
+
+    &--actions {
+      border-bottom-color: var(--color-border);
+    }
+
+    &--title {
+      color: var(--color-heading);
+    }
+  }
+
+  #group-profile .group-avatar,
+  .sumo-l-two-col--sidebar .group-avatar {
+    border-color: var(--color-border);
+  }
+
+  #group-profile .group-stats {
+    .stat-item {
+      background: var(--color-shade-bg);
+    }
+
+    .stat-label {
+      color: var(--color-text-light);
+    }
+  }
+
+  #group-profile .group-hierarchy-card,
+  .sumo-l-two-col--sidebar .group-hierarchy-card {
+    .hierarchy-item label {
+      color: var(--color-text-light);
+    }
+  }
+
+  #group-profile {
+    .group-header {
+      border-bottom-color: var(--color-border);
+
+      .badge {
+        background: var(--color-shade-bg);
+        color: var(--color-text);
+
+        &--visibility {
+          background: var(--color-shade-bg);
+          color: var(--color-click);
+        }
+
+        &--count {
+          color: var(--color-text-light);
+        }
+      }
+    }
+
+    .section-heading {
+      border-bottom-color: var(--color-border);
+
+      .section-count {
+        color: var(--color-text-light);
+      }
+    }
+
+    .users {
+      .inactive-badge {
+        background: var(--color-shade-bg);
+        color: var(--color-text-light);
+      }
+    }
+  }
+
+  .sumo-l-two-col--sidebar .group-actions-card {
+    .action-button {
+      &:hover {
+        background: var(--color-shade-bg);
+      }
+    }
+
+    .action-toggle:checked ~ .action-button {
+      color: var(--page-bg);
+    }
+  }
+
+  #change-avatar {
+    .form-errors {
+      background: rgba(255, 0, 0, 0.1);
+      border-left-color: var(--color-error);
+
+      .error-message {
+        color: var(--color-error);
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @include groups-dark;
+}
+
+[data-theme="dark"] {
+  @include groups-dark;
+}
+
+[data-theme="light"] {
+  #group-profile .card,
+  .sumo-l-two-col--sidebar .group-avatar-card,
+  .sumo-l-two-col--sidebar .group-hierarchy-card,
+  .sumo-l-two-col--sidebar .group-actions-card {
+    background: white;
+  }
+
+  #group-profile .group-section {
+    background: white;
+  }
+
+  .sumo-l-two-col--sidebar .group-actions-card .action-button {
+    background: var(--color-white);
   }
 }

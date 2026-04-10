@@ -50,20 +50,20 @@ article {
 
 .sidebar-nav {
   &.topics {
-    background-color: #fff;
+    background-color: var(--page-bg);
     // margin-top: p.$spacing-md;
 
     >li {
-      background-color: #fff;
+      background-color: var(--page-bg);
 
       &.selected {
 
         >a,
         >a:visited {
-          background: #f3f3f3;
+          background: var(--color-shade-bg);
           border: none;
-          border-left: p.$spacing-xs solid #000;
-          color: #000;
+          border-left: p.$spacing-xs solid var(--color-heading);
+          color: var(--color-heading);
           font-weight: bold;
 
           &:before {
@@ -71,13 +71,13 @@ article {
           }
 
           &:hover {
-            color: #000;
+            color: var(--color-heading);
           }
         }
 
         &.has-subtopics {
           >a {
-            background: #fff;
+            background: var(--page-bg);
           }
         }
       }
@@ -85,10 +85,10 @@ article {
       >a,
       >a:visited,
       {
-      color: #000;
-      background: #fff;
+      color: var(--color-text);
+      background: var(--page-bg);
       border: none;
-      border-left: p.$spacing-xs solid #e7e7e7;
+      border-left: p.$spacing-xs solid var(--color-border);
       text-transform: none;
 
       &:before {
@@ -104,8 +104,8 @@ article {
 
       >a,
       >a:visited {
-        background: #fff;
-        border-left: p.$spacing-xs solid #000;
+        background: var(--page-bg);
+        border-left: p.$spacing-xs solid var(--color-heading);
       }
     }
 
@@ -119,9 +119,9 @@ article {
 
         >a,
         >a:visited {
-          background: #f3f3f3;
+          background: var(--color-shade-bg);
           border-left: none;
-          color: #000;
+          color: var(--color-text);
           display: block;
           padding: 12px 20px;
           text-decoration: none;
@@ -135,11 +135,11 @@ article {
 
           >a,
           >a:visited {
-            border-left: p.$spacing-xs solid #000;
+            border-left: p.$spacing-xs solid var(--color-heading);
             font-weight: bold;
 
             &:hover {
-              color: #000;
+              color: var(--color-heading);
             }
           }
         }
@@ -153,7 +153,7 @@ article {
       >a,
       >a:visited {
         border-left: none;
-        border-right: p.$spacing-xs solid #000;
+        border-right: p.$spacing-xs solid var(--color-heading);
       }
     }
 
@@ -161,7 +161,7 @@ article {
     >a:visited,
     {
     border-left: none;
-    border-right: p.$spacing-xs solid #e7e7e7;
+    border-right: p.$spacing-xs solid var(--color-border);
   }
 
   &.subtopic-selected {
@@ -169,7 +169,7 @@ article {
     >a,
     >a:visited {
       border-left: none;
-      border-right: p.$spacing-xs solid #000;
+      border-right: p.$spacing-xs solid var(--color-heading);
     }
   }
 }
@@ -319,27 +319,27 @@ article {
       }
 
       &:nth-child(odd) {
-        background: #f2f2f2;
+        background: var(--color-shade-bg);
       }
 
       &.current {
-        background: #daedf6;
-        border-bottom: solid 2px #a3b1b8;
-        border-top: solid 2px #a3b1b8;
+        background: var(--color-callout-bg);
+        border-bottom: solid 2px var(--color-border);
+        border-top: solid 2px var(--color-border);
 
         .status {
-          color: #223d61;
+          color: var(--color-heading);
           font-weight: bold;
         }
       }
 
       &.rejected *,
       &.rejected div.creator {
-        color: #999;
+        color: var(--color-text-light);
       }
 
       &.header {
-        color: #666 !important;
+        color: var(--color-text-light) !important;
         font-weight: bold;
       }
     }
@@ -420,10 +420,11 @@ article {
 
   .title {
     .locale {
-      background: #ddd;
+      background: var(--color-shade-bg);
+      color: var(--color-text);
       padding: 0 2px;
       font-size: 0.7em;
-      box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 1px 0 var(--elevation-border);
       position: relative;
       bottom: 1px;
       margin-right: 5px;
@@ -528,6 +529,42 @@ article {
     display: none;
     height: 20px;
     width: 20px;
+  }
+}
+
+@mixin revision-list-icons-dark {
+  #revision-list {
+    .l10n a,
+    .edit a,
+    .delete a {
+      filter: invert(1);
+    }
+
+    .l10n span.not-approved,
+    .l10n span.trivial,
+    .l10n span.not-localizable,
+    .l10n span.translated {
+      filter: invert(1);
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @include revision-list-icons-dark;
+}
+
+[data-theme="dark"] {
+  @include revision-list-icons-dark;
+}
+
+[data-theme="light"] {
+  #revision-list {
+    .l10n a,
+    .edit a,
+    .delete a,
+    .l10n span {
+      filter: none;
+    }
   }
 }
 
@@ -645,7 +682,8 @@ article {
 
 #preview {
   .showfor {
-    background: #fff;
+    background: var(--card-bg);
+    color: var(--color-text);
     border-radius: var(--global-radius);
     @include c.elevation-01;
     right: 10px;
@@ -671,7 +709,7 @@ article {
       z-index: 6;
 
       &:hover {
-        color: #999;
+        color: var(--color-text-light);
         cursor: pointer;
       }
     }
@@ -705,9 +743,10 @@ article {
   }
 
   .showfor {
-    background: #fff;
+    background: var(--card-bg);
+    color: var(--color-text);
     border-radius: 10px;
-    box-shadow: 0 p.$spacing-xs 10px #999;
+    box-shadow: var(--elevation-shadow-01);
     display: none;
     left: 10px;
     margin: -90px 0 0;
@@ -1315,5 +1354,133 @@ article {
 
   >h1:before {
     transform: rotate(0);
+  }
+}
+
+// -------------------------------------------------------------------------
+// Dark mode overrides for the wiki article editor
+// -------------------------------------------------------------------------
+@mixin wiki-editor-dark {
+  // #content-fields heading and border
+  #content-fields {
+    h3 {
+      color: var(--color-text);
+    }
+
+    div.val {
+      border-color: var(--color-border);
+    }
+  }
+
+  // CodeMirror editor area
+  .CodeMirror {
+    background: var(--field-bg);
+    color: var(--color-text);
+  }
+
+  .CodeMirror-gutters {
+    background-color: var(--color-shade-bg);
+    border-right-color: var(--color-border);
+  }
+
+  .CodeMirror-linenumber {
+    color: var(--color-text-light);
+  }
+
+  .CodeMirror-cursor {
+    border-left-color: var(--color-text);
+  }
+
+  #editor {
+    border-color: var(--color-border);
+  }
+
+  // Syntax token overrides
+  .cm-bold {
+    color: var(--color-heading) !important;
+  }
+
+  .cm-other.cm-link {
+    color: var(--color-click) !important;
+  }
+
+  .cm-editor .cm-identifier,
+  .cm-editor .cm-italic,
+  .cm-editor .cm-underline {
+    color: var(--color-text) !important;
+  }
+
+  .cm-comment {
+    color: #6dbf6d !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @include wiki-editor-dark;
+}
+
+[data-theme="dark"] {
+  @include wiki-editor-dark;
+}
+
+[data-theme="light"] {
+  #content-fields h3 { color: #333; }
+}
+
+// Diff view dark mode
+@mixin diff-dark {
+  .diff-this {
+    table {
+      border-color: var(--color-border);
+      color: var(--color-text-light);
+    }
+
+    .output {
+      color: var(--color-text);
+    }
+
+    .fromLine {
+      background: #5c1a1a;
+    }
+
+    .toLine {
+      background: #1a3d1a;
+    }
+
+    .num {
+      background: var(--color-shade-bg);
+      border-right-color: var(--color-border);
+      color: var(--color-text-light);
+    }
+
+    ins {
+      background: #1a5c1a;
+      color: var(--color-text);
+    }
+
+    del {
+      background: #5c1a1a;
+      color: var(--color-text);
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @include diff-dark;
+}
+
+[data-theme="dark"] {
+  @include diff-dark;
+}
+
+[data-theme="light"] {
+  .diff-this {
+    table { border-color: #ddd; color: #666; }
+    .output { color: #333; }
+    .fromLine { background: #ffdddd; }
+    .toLine { background: #ddffdd; }
+    .num { background: #ececec; border-right-color: #ddd; color: #aaa; }
+    ins { background: #aaffaa; color: #000; }
+    del { background: #ffaaaa; color: #000; }
   }
 }

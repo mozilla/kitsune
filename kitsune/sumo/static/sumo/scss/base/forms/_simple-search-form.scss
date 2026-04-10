@@ -60,6 +60,20 @@
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  .search-button {
+    filter: invert(1);
+  }
+}
+
+[data-theme="dark"] .search-button {
+  filter: invert(1);
+}
+
+[data-theme="light"] .search-button {
+  filter: none;
+}
+
 .popular-searches {
   display: none;
 

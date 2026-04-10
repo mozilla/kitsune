@@ -28,7 +28,7 @@
 
   .aaq-form-buttons {
     padding-top: p.$spacing-2xl;
-    border-top: 1px solid var(--color-marketing-gray-03);
+    border-top: 1px solid var(--color-border);
   }
 
   // Make the community card more compact
@@ -53,6 +53,20 @@
     margin-bottom: 0;
     vertical-align: middle;
   }
+}
+
+@media (prefers-color-scheme: dark) {
+  .support-type-switcher-widget .switcher-icon {
+    filter: invert(1);
+  }
+}
+
+[data-theme="dark"] .support-type-switcher-widget .switcher-icon {
+  filter: invert(1);
+}
+
+[data-theme="light"] .support-type-switcher-widget .switcher-icon {
+  filter: none;
 }
 
 aside .aaq-widget {
@@ -125,6 +139,10 @@ aside .aaq-widget {
     @media #{p.$mq-lg} {
       margin-right: 0;
       margin-bottom: p.$spacing-sm;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      filter: invert(1);
     }
 
     @keyframes pulse {

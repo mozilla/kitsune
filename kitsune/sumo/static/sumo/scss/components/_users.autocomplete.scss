@@ -17,8 +17,8 @@ ul.token-input-list-facebook {
   min-height: p.$spacing-2xl;
   border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
-  background-color: var(--color-white);
-  color:#0c0c0d;
+  background-color: var(--field-bg);
+  color: var(--color-text);
   outline:0;
   transition-duration:150ms;
   transition-property:border-color;
@@ -49,7 +49,8 @@ ul.token-input-list-facebook li input {
     border: 0;
     width: 100px;
     padding: 3px p.$spacing-sm;
-    background: white;
+    background: var(--field-bg);
+    color: var(--color-text);
     margin: 2px 0;
     -webkit-appearance: caret;
 }
@@ -60,7 +61,7 @@ li.token-input-token-facebook {
     height: 15px;
     margin: 3px !important;
     padding: 1px 3px;
-    background-color: #eff2f7;
+    background-color: var(--color-shade-bg);
     color: var(--color-text);
     cursor: default;
     border: 1px solid var(--color-border);
@@ -98,7 +99,7 @@ div.token-input-dropdown-facebook {
     @include c.elevation-01;
     position: absolute;
     width: 400px;
-    background-color: var(--color-white);
+    background-color: var(--card-bg);
     overflow: hidden;
     border-radius: 0 0 var(--global-radius) var(--global-radius);
     cursor: default;

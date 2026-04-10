@@ -55,6 +55,8 @@
   border-radius: 36px;
   padding: p.$spacing-lg;
   min-width: 225px;
+  background-color: var(--card-bg);
+  color: var(--color-text);
 
   @at-root .hide-on-large & {
     padding: 20px;
@@ -72,7 +74,7 @@
   }
 
   .required-text {
-    color: red;
+    color: var(--color-error);
   }
 
   &.is-forum-answer {
@@ -159,6 +161,7 @@
     border: 0 none;
     appearance: none;
     background: transparent;
+    color: var(--color-text);
     will-change: transform;
     transition: transform 0.3s linear;
     cursor: pointer;
@@ -402,7 +405,7 @@
   }
 
   &.has-border-top {
-    border-top: 1px solid #EDEDF0;
+    border-top: 1px solid var(--color-border);
     margin-top: 12px;
     margin-bottom: 24px;
     padding-top: 12px;
@@ -421,6 +424,10 @@
       margin-right: 8px; // Optional, to add some space between the icon and text
     }
 
+    @media (prefers-color-scheme: dark) {
+      .pencil { filter: invert(1); }
+    }
+
     strong {
       font-weight: bold;
     }
@@ -437,6 +444,10 @@
 
     .thumbsup {
       margin-right: 8px; // Optional, to add some space between the icon and text
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .thumbsup { filter: invert(1); }
     }
 
     .helpful-count {
@@ -470,4 +481,14 @@
       }
     }
   }
+}
+
+[data-theme="dark"] {
+  .pencil { filter: invert(1); }
+  .thumbsup { filter: invert(1); }
+}
+
+[data-theme="light"] {
+  .pencil { filter: none; }
+  .thumbsup { filter: none; }
 }

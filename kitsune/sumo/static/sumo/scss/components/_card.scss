@@ -194,8 +194,8 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    background-color: p.$color-white;
-    border: 1px solid #ddd;
+    background-color: var(--card-bg);
+    border: 1px solid var(--color-border);
     border-radius: p.$border-radius-md;
     padding: p.$spacing-md;
     box-shadow: p.$box-shadow-sm;
@@ -245,7 +245,7 @@
         }
 
         a {
-          color: black;
+          color: var(--color-text);
           font-size: 14px;
           text-decoration: underline;
           display: -webkit-box;
@@ -262,12 +262,12 @@
     }
 
     .view-all-link {
-      border-top: 1px solid #ddd;
+      border-top: 1px solid var(--color-border);
       padding-top: 10px;
       margin-top: auto;
       display: block;
       font-size: 14px;
-      color: #000000;
+      color: var(--color-text);
       text-decoration: underline;
       font-weight: normal;
       white-space: nowrap;
@@ -533,3 +533,12 @@
 .elevation-03 {
   @include c.elevation-03;
 }
+
+// card--icon-sm: protocol SVGs with hardcoded dark fill/stroke, loaded as <img>.
+// Invert in dark mode so they're visible on dark backgrounds.
+@media (prefers-color-scheme: dark) {
+  .card--icon-sm { filter: invert(1); }
+}
+
+[data-theme="dark"] .card--icon-sm { filter: invert(1); }
+[data-theme="light"] .card--icon-sm { filter: none; }

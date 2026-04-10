@@ -1,0 +1,150 @@
+// Protocol Dark Mode Bridge
+//
+// Protocol components use two kinds of color references:
+//
+//   1. CSS custom properties (e.g. var(--background-color)) — these are
+//      remapped below via @mixin protocol-dark-vars so Protocol components
+//      that consume them adapt automatically.
+//
+//   2. Compile-time SCSS variables (e.g. $color-white) — these are baked
+//      into the compiled CSS and cannot be remapped. They require explicit
+//      selector overrides in @mixin protocol-dark-components.
+
+// -------------------------------------------------------------------------
+// 1. Protocol CSS custom property overrides
+//    Map Protocol's own tokens onto Kitsune's dark semantic tokens.
+// -------------------------------------------------------------------------
+@mixin protocol-dark-vars {
+  --background-color: var(--page-bg);
+  --background-color-secondary: var(--card-bg);
+  --background-color-tertiary: var(--color-callout-bg);
+  --body-text-color: var(--color-text);
+  --body-text-color-secondary: var(--color-text-light);
+  --title-text-color: var(--color-heading);
+  --link-color: var(--color-click);
+  --link-color-hover: var(--color-click);
+  --link-color-visited: var(--color-link-visited);
+}
+
+// -------------------------------------------------------------------------
+// 2. Explicit component overrides for hardcoded compile-time SCSS values
+// -------------------------------------------------------------------------
+@mixin protocol-dark-components {
+  // Navigation: Protocol's _navigation.scss hardcodes background: $color-white.
+  .mzp-c-navigation {
+    background-color: var(--page-bg);
+    color: var(--color-text);
+  }
+
+  // Sticky nav scroll shadow: replace ink-tinted rgba with dark-mode elevation token.
+  .mzp-c-navigation.mzp-is-sticky.mzp-is-scrolling {
+    box-shadow: var(--elevation-shadow-01);
+  }
+
+  // Menu panel (dropdown): Protocol's _menu.scss hardcodes background: $color-white.
+  .mzp-c-menu-panel {
+    background-color: var(--card-bg);
+    color: var(--color-text);
+  }
+
+  // Menu item separators: Protocol hardcodes $color-marketing-gray-30.
+  .mzp-c-menu-category-list > li,
+  .mzp-c-menu-item-list > li {
+    border-top-color: var(--color-border);
+  }
+
+  // Menu category titles (top-level nav items): hardcoded $color-black + border.
+  .mzp-c-menu-category .mzp-c-menu-title {
+    color: var(--color-text);
+    border-bottom-color: var(--color-border);
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: var(--color-heading);
+    }
+  }
+
+  // The animated underline highlight on menu titles uses background: $color-black.
+  .mzp-c-menu-category .mzp-c-menu-title::after {
+    background: var(--color-heading);
+  }
+
+  // Menu item links in the dropdown panel: hardcoded $color-black.
+  .mzp-c-menu-item .mzp-c-menu-item-link {
+    color: var(--color-text);
+
+    &:hover,
+    &:active,
+    &:focus {
+      .mzp-c-menu-item-title {
+        color: var(--color-heading);
+        border-bottom-color: var(--color-heading);
+      }
+    }
+  }
+
+  // Menu item list links (sub-items inside a dropdown): hardcoded $color-black.
+  .mzp-c-menu-item .mzp-c-menu-item-list a {
+    color: var(--color-text);
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: var(--color-heading);
+    }
+  }
+
+  // Hover box-shadow on menu items: $color-marketing-gray-20 (light gray, invisible on dark).
+  .mzp-c-menu-item:hover {
+    box-shadow: 0 0 0 4px var(--color-shade-bg);
+  }
+
+  // Menu button (mobile expand/collapse): hardcoded $color-black.
+  .mzp-c-menu-button {
+    color: var(--color-text);
+  }
+
+  // Menu panel close button: uses close.svg (dark icon), needs inversion.
+  .mzp-c-menu-button-close {
+    filter: invert(1);
+  }
+
+  // Nav section icons: SVGs use currentColor so they follow text colour.
+  .mzp-c-menu-item-icon {
+    color: var(--color-text);
+  }
+
+  // mzp-c-menu-list dropdown panel: hardcodes background-color: $color-white.
+  .mzp-c-menu-list-list {
+    background-color: var(--card-bg);
+    color: var(--color-text);
+  }
+
+  // mzp-c-menu-list item hover: hardcodes $color-marketing-gray-20 (light gray).
+  .mzp-c-menu-list-item a:hover,
+  .mzp-c-menu-list-item a:focus {
+    background: var(--color-shade-bg);
+    color: var(--color-heading);
+  }
+}
+
+// -------------------------------------------------------------------------
+// 3. Apply: OS-level automatic dark mode
+// -------------------------------------------------------------------------
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include protocol-dark-vars;
+  }
+
+  @include protocol-dark-components;
+}
+
+// -------------------------------------------------------------------------
+// 4. Apply: Manual override via JS theme toggle (set in Phase 4)
+// -------------------------------------------------------------------------
+[data-theme="dark"] {
+  @include protocol-dark-vars;
+
+  @include protocol-dark-components;
+}

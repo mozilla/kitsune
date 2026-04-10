@@ -215,9 +215,9 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         var currentCount = $summaryBox.val().length;
         $summaryCount.text(warningCount - currentCount);
         if (warningCount - currentCount >= 0) {
-          $summaryCount.css('color', 'black');
+          $summaryCount.css('color', '');
         } else {
-          $summaryCount.css('color', 'red');
+          $summaryCount.css('color', 'var(--color-error)');
           if (currentCount >= maxCount) {
             $summaryBox.val($summaryBox.val().substr(0, maxCount));
           }
