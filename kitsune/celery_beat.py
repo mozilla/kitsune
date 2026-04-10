@@ -91,6 +91,11 @@ PERIODIC_TASKS_ALL = {
         "schedule": crontab(hour="1", minute="40"),
     },
     # SUMO Periodic Tasks
+    # Every 5 minutes.
+    "watchdog": {
+        "task": "kitsune.sumo.tasks.watchdog",
+        "schedule": crontab(minute="*/5"),
+    },
     # Every 10 minutes.
     "enqueue_lag_monitor": {
         "task": "kitsune.sumo.tasks.enqueue_lag_monitor",
