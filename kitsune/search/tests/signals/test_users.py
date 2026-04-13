@@ -1,9 +1,7 @@
-from django.test.utils import override_settings
 from elasticsearch import NotFoundError
 
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.search.documents import AnswerDocument, ProfileDocument, QuestionDocument
+from kitsune.search.documents import ProfileDocument
 from kitsune.search.tests import ElasticTestCase
 from kitsune.users.tests import GroupFactory, UserFactory
 
@@ -76,51 +74,3 @@ class ProfileDocumentSignalsTests(ElasticTestCase):
         product.delete()
 
         self.assertEqual(self.get_doc().product_ids, [])
-
-
-@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
-class UserIsActiveReindexTests(ElasticTestCase):
-    def setUp(self):
-        self.user = UserFactory(is_active=True)
-        self.question = QuestionFactory(creator=self.user)
-        self.answer = AnswerFactory(question=self.question)
-
-    def test_deactivating_user_updates_question_document(self):
-        doc = QuestionDocument.get(self.question.id)
-        self.assertTrue(doc.question_creator_is_active)
-
-        self.user.is_active = False
-        self.user.save()
-
-        doc = QuestionDocument.get(self.question.id)
-        self.assertFalse(doc.question_creator_is_active)
-
-    def test_deactivating_user_updates_answer_document(self):
-        doc = AnswerDocument.get(self.answer.id)
-        self.assertTrue(doc.question_creator_is_active)
-
-        self.user.is_active = False
-        self.user.save()
-
-        doc = AnswerDocument.get(self.answer.id)
-        self.assertFalse(doc.question_creator_is_active)
-
-    def test_reactivating_user_updates_question_document(self):
-        self.user.is_active = False
-        self.user.save()
-
-        doc = QuestionDocument.get(self.question.id)
-        self.assertFalse(doc.question_creator_is_active)
-
-        self.user.is_active = True
-        self.user.save()
-
-        doc = QuestionDocument.get(self.question.id)
-        self.assertTrue(doc.question_creator_is_active)
-
-    def test_no_reindex_when_is_active_unchanged(self):
-        self.user.username = "newname"
-        self.user.save()
-
-        doc = QuestionDocument.get(self.question.id)
-        self.assertTrue(doc.question_creator_is_active)

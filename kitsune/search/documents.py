@@ -141,7 +141,6 @@ class QuestionDocument(SumoDocument):
     question_has_answers = field.Boolean()
     question_last_answer_is_by_creator = field.Boolean()
     question_num_votes = field.Integer()
-    question_creator_is_active = field.Boolean()
 
     # store answer content to optimise searching for AAQ threads as a unit
     answer_content = SumoLocaleAwareTextField(multi=True, term_vector="with_positions_offsets")
@@ -168,9 +167,6 @@ class QuestionDocument(SumoDocument):
 
     def prepare_question_has_answers(self, instance):
         return instance.num_answers > 0
-
-    def prepare_question_creator_is_active(self, instance):
-        return instance.creator.is_active
 
     def prepare_question_last_answer_is_by_creator(self, instance):
         if instance.last_answer_id is None:
@@ -210,7 +206,7 @@ class QuestionDocument(SumoDocument):
     @classmethod
     def get_queryset(cls):
         return (
-            Question.objects.select_related("last_answer", "creator")
+            Question.objects.select_related("last_answer")
             # prefetch answers which aren't spam to avoid extra queries when iterating over them
             .prefetch_related(
                 Prefetch(

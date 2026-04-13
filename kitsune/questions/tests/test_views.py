@@ -472,17 +472,6 @@ class TestQuestionTags(ElasticTestCase):
         self.assertIn("locked", tags)
         self.assertNotIn("unlocked", tags)
 
-    def test_inactive_creator_excluded(self):
-        """Tags on questions from inactive users should not appear in the sidebar."""
-        inactive_user = UserFactory(is_active=False)
-        QuestionFactory(product=self.product, creator=inactive_user, tags=[self.tag])
-        QuestionFactory(product=self.product, tags=[TagFactory(name="active", slug="active")])
-        self._refresh_es()
-
-        tags = self._get_tags(product_slug="firefox", show="all")
-        self.assertNotIn("crash", tags)
-        self.assertIn("active", tags)
-
 
 class TestQuestionList(TestCase):
     def test_locale_filter(self):

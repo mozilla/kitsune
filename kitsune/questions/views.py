@@ -513,9 +513,6 @@ def question_tags(request):
             DSLQ("range", question_created={"lt": now - timedelta(days=90)})
             & DSLQ("term", question_has_answers=False)
         )
-        # Only include questions from active creators
-        search = search.filter("term", question_creator_is_active=True)
-
         # Apply sub-filter if present, otherwise fall back to the show-level filter.
         match filter_:
             case "new":
