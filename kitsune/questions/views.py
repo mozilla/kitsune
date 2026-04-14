@@ -443,6 +443,39 @@ def question_list(request, product_slug=None, topic_slug=None):
     return render(request, "questions/question_list.html", data)
 
 
+def _apply_question_filters(
+    search,
+    is_locked=None,
+    is_archived=None,
+    has_answers=None,
+    has_solution=None,
+    last_answer_is_by_creator=None,
+    created=None,
+    updated=None,
+    tag_slugs=None,
+):
+    """Apply optional term/range filters to an ES search for QuestionDocuments."""
+    if is_locked is not None:
+        search = search.filter("term", question_is_locked=is_locked)
+    if has_solution is not None:
+        search = search.filter("term", question_has_solution=has_solution)
+    if is_archived is not None:
+        search = search.filter("term", question_is_archived=is_archived)
+    if has_answers is not None:
+        search = search.filter("term", question_has_answers=has_answers)
+    if last_answer_is_by_creator is not None:
+        search = search.filter(
+            "term", question_last_answer_is_by_creator=last_answer_is_by_creator
+        )
+    if created is not None:
+        search = search.filter("range", question_created=created)
+    if updated is not None:
+        search = search.filter("range", question_updated=updated)
+    if tag_slugs is not None:
+        search = search.filter("term", question_tag_slugs=tag_slugs)
+    return search
+
+
 @require_GET
 def question_tags(request):
     """Return tag filter HTML for the sidebar, populated from Elasticsearch."""
@@ -516,55 +549,61 @@ def question_tags(request):
         # Apply sub-filter if present, otherwise fall back to the show-level filter.
         match filter_:
             case "new":
-                search = (
-                    search.filter("term", question_has_answers=False)
-                    .filter("term", question_is_locked=False)
-                    .filter("range", question_created={"gte": now - timedelta(days=7)})
+                search = _apply_question_filters(
+                    search,
+                    is_locked=False,
+                    has_answers=False,
+                    created={"gte": now - timedelta(days=7)},
                 )
             case "unhelpful-answers":
-                search = (
-                    search.filter("term", question_has_solution=False)
-                    .filter("term", question_is_locked=False)
-                    .filter("term", question_last_answer_is_by_creator=True)
-                    .filter("range", question_created={"gte": now - timedelta(days=7)})
+                search = _apply_question_filters(
+                    search,
+                    is_locked=False,
+                    has_solution=False,
+                    last_answer_is_by_creator=True,
+                    created={"gte": now - timedelta(days=7)},
                 )
             case "needsinfo":
-                search = (
-                    search.filter("term", question_has_solution=False)
-                    .filter("term", question_is_locked=False)
-                    .filter("term", question_tag_slugs=config.NEEDS_INFO_TAG_NAME)
-                    .filter("term", question_has_answers=True)
-                    .filter("term", question_last_answer_is_by_creator=False)
+                search = _apply_question_filters(
+                    search,
+                    is_locked=False,
+                    has_answers=True,
+                    has_solution=False,
+                    last_answer_is_by_creator=False,
+                    tag_slugs=config.NEEDS_INFO_TAG_NAME,
                 )
             case "solved":
-                search = search.filter("term", question_has_solution=True)
+                search = _apply_question_filters(search, has_solution=True)
             case "locked":
-                search = search.filter("term", question_is_locked=True)
+                search = _apply_question_filters(search, is_locked=True)
             case "recently-unanswered":
-                search = (
-                    search.filter("term", question_has_answers=False)
-                    .filter("term", question_is_locked=False)
-                    .filter("range", question_created={"gte": now - timedelta(hours=24)})
+                search = _apply_question_filters(
+                    search,
+                    is_locked=False,
+                    has_answers=False,
+                    created={"gte": now - timedelta(hours=24)},
                 )
             case _:
                 if show == "needs-attention":
-                    search = (
-                        search.filter("term", question_has_solution=False)
-                        .filter("term", question_is_locked=False)
-                        .filter("term", question_is_archived=False)
-                        .filter("range", question_updated={"gte": now - timedelta(days=7)})
-                        .filter(
-                            DSLQ("term", question_last_answer_is_by_creator=True)
-                            | DSLQ("term", question_has_answers=False)
-                        )
+                    search = _apply_question_filters(
+                        search,
+                        is_locked=False,
+                        is_archived=False,
+                        has_solution=False,
+                        updated={"gte": now - timedelta(days=7)},
+                    )
+                    search = search.filter(
+                        DSLQ("term", question_last_answer_is_by_creator=True)
+                        | DSLQ("term", question_has_answers=False)
                     )
                 elif show == "responded":
-                    search = (
-                        search.filter("term", question_has_solution=False)
-                        .filter("term", question_is_locked=False)
-                        .filter("term", question_is_archived=False)
-                        .filter("term", question_has_answers=True)
-                        .filter("term", question_last_answer_is_by_creator=False)
+                    search = _apply_question_filters(
+                        search,
+                        is_locked=False,
+                        is_archived=False,
+                        has_solution=False,
+                        has_answers=True,
+                        last_answer_is_by_creator=False,
                     )
                 elif show == "done":
                     search = search.filter(
