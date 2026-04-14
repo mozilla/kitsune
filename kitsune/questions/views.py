@@ -533,7 +533,7 @@ def question_tags(request):
                     search.filter("term", question_has_solution=False)
                     .filter("term", question_is_locked=False)
                     .filter("term", question_tag_slugs=config.NEEDS_INFO_TAG_NAME)
-                    .filter("exists", field="question_last_answer_is_by_creator")
+                    .filter("term", question_has_answers=True)
                     .filter("term", question_last_answer_is_by_creator=False)
                 )
             case "solved":
@@ -555,7 +555,7 @@ def question_tags(request):
                         .filter("range", question_updated={"gte": now - timedelta(days=7)})
                         .filter(
                             DSLQ("term", question_last_answer_is_by_creator=True)
-                            | ~DSLQ("exists", field="question_last_answer_is_by_creator")
+                            | DSLQ("term", question_has_answers=False)
                         )
                     )
                 elif show == "responded":
@@ -563,7 +563,7 @@ def question_tags(request):
                         search.filter("term", question_has_solution=False)
                         .filter("term", question_is_locked=False)
                         .filter("term", question_is_archived=False)
-                        .filter("exists", field="question_last_answer_is_by_creator")
+                        .filter("term", question_has_answers=True)
                         .filter("term", question_last_answer_is_by_creator=False)
                     )
                 elif show == "done":
