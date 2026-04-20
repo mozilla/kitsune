@@ -1158,6 +1158,69 @@ class QuestionsTemplateTestCase(TestCase):
         # Filter on p3 -> No results
         check({"topic": t3.slug}, [])
 
+    def test_topic_notification_absent_without_filter(self):
+        response = self.client.get(reverse("questions.list", args=["all"]))
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+        self.assertEqual(0, len(doc(".topic-notification")))
+
+    def test_topic_notification_query_param(self):
+        p = ProductFactory()
+        topic = TopicFactory(title="Battery life", slug="battery-life", products=[p])
+        QuestionFactory(topic=topic, product=p)
+
+        url = urlparams(reverse("questions.list", args=["all"]), topic=topic.slug)
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+
+        banners = doc(".topic-notification")
+        self.assertEqual(1, len(banners))
+        self.assertIn("Battery life", banners.text())
+
+        clear = banners.find(".topic-notification--clear")
+        self.assertEqual(1, len(clear))
+        # Clear link drops the topic param but stays on the list view.
+        self.assertNotIn("topic=", clear.attr("href"))
+        self.assertIn("/questions/all", clear.attr("href"))
+
+    def test_topic_notification_for_topic_not_in_dropdown(self):
+        """A topic with in_aaq=False/in_nav=False is not in the dropdown but the
+        banner must still render so the user can clear the filter."""
+        p = ProductFactory()
+        topic = TopicFactory(
+            title="Hidden topic",
+            slug="hidden-topic",
+            in_aaq=False,
+            products=[p],
+        )
+        QuestionFactory(topic=topic, product=p)
+
+        url = urlparams(reverse("questions.list", args=["all"]), topic=topic.slug)
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+
+        self.assertEqual(1, len(doc(".topic-notification")))
+        # Dropdown should not list this topic as an option.
+        option_values = [opt.get("value", "") for opt in doc("#products-topics-dropdown option")]
+        self.assertFalse(any(f"topic={topic.slug}" in v for v in option_values))
+
+    def test_topic_notification_list_by_topic_clears_to_all(self):
+        topic = TopicFactory(title="Notifications", slug="notifications")
+        QuestionFactory(topic=topic)
+
+        url = reverse("questions.list_by_topic", args=[topic.slug])
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+
+        banners = doc(".topic-notification")
+        self.assertEqual(1, len(banners))
+        clear_href = banners.find(".topic-notification--clear").attr("href")
+        # Clear redirects to the all-products list so we don't stay on /topic/<slug>.
+        self.assertEqual(reverse("questions.list", args=["all"]), clear_href)
+
     def test_robots_noindex(self):
         """Verify the page is set for noindex by robots."""
         response = self.client.get(reverse("questions.list", args=["all"]))

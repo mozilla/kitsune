@@ -523,3 +523,17 @@ document.addEventListener("htmx:pushedIntoHistory", () => {
   sidebar.setAttribute("hx-get", newUrl);
   htmx.ajax("GET", newUrl, { target: sidebar, swap: "innerHTML" });
 });
+
+// Dispatch topic-dropdown change via HTMX. Each <option value> is a full URL;
+// htmx.ajax reads target/select/swap/oob/push-url from the <select> itself via
+// the source option. Delegated on document so the listener survives the
+// oob swap that replaces the <select>.
+document.addEventListener("change", (event) => {
+  const select = event.target;
+  if (select && select.id === "products-topics-dropdown") {
+    const url = select.value;
+    if (url) {
+      htmx.ajax("GET", url, { source: select });
+    }
+  }
+});

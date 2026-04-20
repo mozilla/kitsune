@@ -74,14 +74,20 @@
   {% endif %}
 {% endmacro %}
 
-{% macro question_entry(question, profile_username=None, request=None, user_is_contributor=False) %}
+{% macro question_entry(question, profile_username=None, request=None, user_is_contributor=False, preserve_params=None, use_htmx_filters=False) %}
   {% set _base_url = url('users.questions', username=profile_username) if (question.channel == "direct_support" and profile_username) else None %}
   {% if _base_url %}
     {% set _product_url = (_base_url + '?channel=direct_support&product=' + question.product.slug) if question.product else None %}
     {% set _topic_url = (_base_url + '?channel=direct_support&topic=' + question.topic.slug) if question.topic else None %}
   {% else %}
     {% set _product_url = url('questions.list', product_slug=question.product.slug) if question.product else None %}
-    {% set _topic_url = (_product_url + '?topic=' + question.topic.slug) if (question.topic and _product_url) else (url('questions.list_by_topic', topic_slug=question.topic.slug) if question.topic else None) %}
+    {% if question.topic and _product_url %}
+      {% set _topic_url = _product_url|urlparams(None, preserve_params, topic=question.topic.slug, page=None) %}
+    {% elif question.topic %}
+      {% set _topic_url = url('questions.list_by_topic', topic_slug=question.topic.slug)|urlparams(None, preserve_params, page=None) %}
+    {% else %}
+      {% set _topic_url = None %}
+    {% endif %}
   {% endif %}
 
   <div class="question-entry--link">
@@ -172,6 +178,14 @@
       {% if question.topic and _topic_url %}
         <a class="question-entry--meta-item"
            href="{{ _topic_url }}"
+           {% if use_htmx_filters -%}
+           hx-get="{{ _topic_url }}"
+           hx-target="#questions-list"
+           hx-select="#questions-list"
+           hx-select-oob="#tagged,#topic-notification,#owner-tabs,#products-topics-dropdown"
+           hx-swap="outerHTML"
+           hx-push-url="true"
+           {%- endif %}
            title="{{ _('{topic} questions')|f(topic=question.topic.title) }}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

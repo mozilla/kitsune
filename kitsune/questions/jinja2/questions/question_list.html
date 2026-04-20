@@ -4,6 +4,7 @@
 {% from "sumo/includes/question_entry.html" import question_entry %}
 
 {% set classes = 'questions' %}
+{% set scripts = ('questions',) %}
 {% set _user_is_contributor = is_contributor(request.user) %}
 
 {% if all_products %}
@@ -121,6 +122,36 @@
 {% endblock %}
 
 {% block content %}
+{# #topic-notification always renders so HTMX oob-swaps land on a valid target
+   even when transitioning from "topic active" to "no topic". #}
+<div id="topic-notification">
+  {% set _active_topic = topics|first %}
+  {% if _active_topic %}
+  {% set _clear_topic_url = url('questions.list', product_slug='all') if topic_navigation else questions_url(topic=None) %}
+  <div class="topic-notification">
+    {{ _('Showing questions for topic:') }}
+    <ul class="tag-list">
+      <li><span class="tag">{{ pgettext('DB: products.Topic.title', _active_topic.title) }}</span></li>
+    </ul>
+    <a class="topic-notification--clear"
+       href="{{ _clear_topic_url }}"
+       hx-get="{{ _clear_topic_url }}"
+       hx-target="#questions-list"
+       hx-select="#questions-list"
+       hx-select-oob="#tagged,#topic-notification,#owner-tabs,#products-topics-dropdown"
+       hx-swap="outerHTML"
+       hx-push-url="true"
+       title="{{ _('Clear topic filter') }}" aria-label="{{ _('Clear topic filter') }}">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+           aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </a>
+  </div>
+  {% endif %}
+</div>
 <div id="tagged">
   {% if tags %}
   <div class="tag-notification">
@@ -201,7 +232,7 @@
         <section class="forum--question-list questions">
           {% for question in questions.object_list %}
             <article id="question-{{ question.id }}" class="question-entry">
-              {{ question_entry(question, request=request, user_is_contributor=_user_is_contributor) }}
+              {{ question_entry(question, request=request, user_is_contributor=_user_is_contributor, preserve_params=request.GET, use_htmx_filters=True) }}
             </article>
           {% endfor %}
         </section>
@@ -246,7 +277,12 @@
       {% if topic_list and show != "spam" %}
         <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Topic') }}</li>
         <li>
-          <select id="products-topics-dropdown">
+          <select id="products-topics-dropdown"
+                  hx-target="#questions-list"
+                  hx-select="#questions-list"
+                  hx-select-oob="#tagged,#topic-notification,#owner-tabs,#products-topics-dropdown"
+                  hx-swap="outerHTML"
+                  hx-push-url="true">
             <option value="{% if topic_navigation %}{{ url('questions.list', product_slug='all') }}{% else %}{{ questions_url(topic=None) }}{% endif %}" {% if selected_topic_slug is none %}selected{% endif %}>
               {{ _('All Topics') }}
             </option>
