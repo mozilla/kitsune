@@ -1,3 +1,5 @@
+import re
+
 import allure
 from pytest_check import check
 import pytest
@@ -39,10 +41,8 @@ def test_kb_article_removal(page: Page, create_user_factory):
 
     with allure.step("Verifying that the delete button is not available for the only kb "
                      "revision"):
-        expect(
-            sumo_pages.kb_article_show_history_page.delete_revision(
-                article_details['first_revision_id'])
-        ).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.delete_revision(
+            article_details['first_revision_id'])).to_be_hidden()
 
     with allure.step("Manually navigating to the delete revision endpoint"):
         with page.expect_navigation() as navigation_info:
@@ -57,8 +57,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
     with allure.step("Navigating back and verifying that the delete button for the article "
                      "is not displayed"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
-        expect(sumo_pages.kb_article_show_history_page.delete_this_document_button
-        ).to_be_hidden()
+        expect(sumo_pages.kb_article_show_history_page.delete_this_document_button).to_be_hidden()
 
     with allure.step("Manually navigating to the delete endpoint"):
         with page.expect_navigation() as navigation_info:
@@ -81,7 +80,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
         ))
 
     with check, allure.step("Verifying that the auth page is returned"):
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
     with allure.step("Navigating back and manually navigating to the delete endpoint"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
@@ -92,7 +91,7 @@ def test_kb_article_removal(page: Page, create_user_factory):
         )
 
     with check, allure.step("Verifying that the auth page is returned"):
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
     with allure.step("Navigating back and verifying that the delete button is not available "
                      "for the only revision"):
@@ -114,15 +113,13 @@ def test_kb_article_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct 'Unable to delete the revision' page "
                              "header is displayed"):
-        assert (sumo_pages.kb_article_show_history_page.
-                get_unable_to_delete_revision_header() == KBArticleRevision.
-                KB_REVISION_CANNOT_DELETE_ONLY_REVISION_HEADER)
+        expect(sumo_pages.kb_article_show_history_page.unable_to_delete_revision_page_header
+               ).to_have_text(KBArticleRevision.KB_REVISION_CANNOT_DELETE_ONLY_REVISION_HEADER)
 
     with check, allure.step("Verifying that the correct 'Unable to delete the revision' page "
                              "sub-header is displayed"):
-        assert (sumo_pages.kb_article_show_history_page.
-                get_unable_to_delete_revision_subheader() == KBArticleRevision.
-                KB_REVISION_CANNOT_DELETE_ONLY_REVISION_SUBHEADER)
+        expect(sumo_pages.kb_article_show_history_page.unable_to_delete_revision_page_subheader
+               ).to_have_text(KBArticleRevision.KB_REVISION_CANNOT_DELETE_ONLY_REVISION_SUBHEADER)
 
     with allure.step("Clicking on the 'Go back to document history button' and verifying "
                      "that we are redirected to the document history page"):
@@ -193,28 +190,25 @@ def test_kb_article_category_link_and_header(page: Page, create_user_factory):
                 )
 
         with check, allure.step("Verifying that the correct page header is displayed"):
-            assert (sumo_pages.kb_article_show_history_page.
-                    get_show_history_page_title() == KBArticleShowHistoryPageMessages.
-                    PAGE_TITLE + article_info["article_title"])
+            expect(sumo_pages.kb_article_show_history_page.show_history_page_header).to_have_text(
+                KBArticleShowHistoryPageMessages.PAGE_TITLE + article_info["article_title"])
 
         with check, allure.step("Verifying that the correct category is displayed inside the "
                                  "'Show History' page"):
-            assert (sumo_pages.kb_article_show_history_page.
-                    get_show_history_category_text() == category)
+            expect(sumo_pages.kb_article_show_history_page.show_history_category_link
+                   ).to_have_text(category)
 
         with check, allure.step("Verifying that the correct revision history for locale is "
                                  "displayed"):
-            assert (sumo_pages.kb_article_show_history_page.
-                    get_show_history_revision_for_locale_text() == KBArticleShowHistoryPageMessages
-                    .DEFAULT_REVISION_FOR_LOCALE)
+            expect(sumo_pages.kb_article_show_history_page.show_history_revision_history_for
+                   ).to_have_text(KBArticleShowHistoryPageMessages.DEFAULT_REVISION_FOR_LOCALE)
 
         with allure.step("Clicking on the 'Category' link"):
             sumo_pages.kb_article_show_history_page.click_on_show_history_category()
 
         with check, allure.step("Verifying that the user is redirected to the correct page"):
-            expect(
-                page
-            ).to_have_url(utilities.different_endpoints['kb_categories_links'][category])
+            expect(page).to_have_url(
+                utilities.different_endpoints['kb_categories_links'][category])
 
         with allure.step("Deleting the document"):
             utilities.navigate_to_link(article_info["article_show_history_url"])
@@ -241,8 +235,8 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the user is not displayed inside the article "
                              "contributors section"):
-        assert (test_user["username"] not in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).not_to_contain_text(
+            [test_user["username"]])
 
     with allure.step("Navigating back to the 'Show History page and approving the revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -250,8 +244,8 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the username which created the revision is added "
                              "inside the 'Contributors' list"):
-        assert (test_user["username"] in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames).to_contain_text(
+            [test_user["username"]])
 
     sumo_pages.kb_article_show_history_page.click_on_edit_contributors_option()
     sumo_pages.kb_article_show_history_page.click_on_delete_button_for_a_particular_contributor(
@@ -265,8 +259,8 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the user is displayed inside the article "
                              "contributors section"):
-        assert (test_user["username"] in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).to_contain_text(
+            [test_user["username"]])
 
     with allure.step("Navigating back to the 'Show History page' and signing in with a non-admin "
                      "account"):
@@ -292,8 +286,8 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the user is not displayed inside the article "
                              "contributors section"):
-        assert (test_user_two["username"] not in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).not_to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Navigating back to the 'Show History page', deleting the user session "
                      "and verifying that the 'Edit Contributors' options is not displayed"):
@@ -305,7 +299,7 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
         utilities.navigate_to_link(deletion_link)
 
     with check, allure.step("Verifying that the user is redirected to the auth page"):
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
     with allure.step("Navigating back and signing in with a non-admin account"):
         utilities.navigate_to_link(article_details['article_url'])
@@ -313,8 +307,8 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that username two is not displayed inside the Contributors "
                              "list"):
-        assert (test_user_two["username"] not in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames
+               ).not_to_contain_text([test_user_two["username"]])
 
     with allure.step("Approving the revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -322,16 +316,16 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the second username is displayed inside the "
                              "Contributors list"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames).to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Clicking on the Article menu"):
         sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the user is displayed inside the article "
                              "contributors section"):
-        assert (test_user["username"] in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).to_contain_text(
+            [test_user["username"]])
 
     with allure.step("Clicking on the delete button for user two"):
         sumo_pages.kb_article_page.click_on_show_history_option()
@@ -341,9 +335,9 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct delete contributor page header is "
                              "displayed"):
-        assert (sumo_pages.kb_article_show_history_page.
-                get_delete_contributor_confirmation_page_header() == kb_show_history_page_messages.
-                get_remove_contributor_page_header(test_user_two["username"]))
+        expect(sumo_pages.kb_article_show_history_page.delete_contributor_confirmation_page_header
+               ).to_have_text(kb_show_history_page_messages.get_remove_contributor_page_header(
+            test_user_two["username"]))
 
     with allure.step("Clicking on the 'Cancel' button"):
         (sumo_pages.kb_article_show_history_page
@@ -351,16 +345,16 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the second username is displayed inside the "
                              "Contributors list"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames).to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Clicking on the Article menu option"):
         sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the user is displayed inside the article "
                              "contributors section"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Navigating back to the 'Show History' page and deleting the the second "
                      "contributor"):
@@ -372,22 +366,22 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
          click_on_delete_contributor_confirmation_page_confirm_button())
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert (sumo_pages.kb_article_show_history_page.
-                get_show_history_page_banner() == kb_show_history_page_messages.
-                get_contributor_removed_message(test_user_two["username"]))
+        expect(sumo_pages.kb_article_show_history_page.show_history_page_banner).to_have_text(
+            kb_show_history_page_messages.get_contributor_removed_message(
+                test_user_two["username"]))
 
     with check, allure.step("Verifying that second username is not displayed inside the "
                              "'Contributors' list"):
-        assert (test_user_two["username"] not in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames
+               ).not_to_contain_text([test_user_two["username"]])
 
     with allure.step("Clicking on the Article menu"):
         sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the user is not displayed inside the contributors "
                              "section"):
-        assert (test_user_two["username"] not in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).not_to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Signing in with the removed username and creating a new revision"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -400,16 +394,16 @@ def test_kb_article_contributor_removal(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that second username is displayed inside the 'Contributors'"
                              " list"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames).to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Clicking on the Article menu"):
         sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the user is displayed inside the contributors "
                              "section"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).to_contain_text(
+            [test_user_two["username"]])
 
 
 # C2101638
@@ -436,22 +430,21 @@ def test_contributors_can_be_manually_added(page: Page, create_user_factory):
         sumo_pages.kb_article_show_history_page.click_on_add_contributor_button()
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert (sumo_pages.kb_article_show_history_page.
-                get_show_history_page_banner() == kb_show_history_page_messages.
-                get_contributor_added_message(test_user_two["username"]))
+        expect(sumo_pages.kb_article_show_history_page.show_history_page_banner).to_have_text(
+            kb_show_history_page_messages.get_contributor_added_message(test_user_two["username"]))
 
     with check, allure.step("Verifying that the user was successfully added inside the "
                              "contributors list"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_show_history_page.
-                get_list_of_all_contributors())
+        expect(sumo_pages.kb_article_show_history_page.all_contributors_usernames).to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Clicking on the Article menu option"):
         sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the user is displayed inside the article "
                              "contributors section"):
-        assert (test_user_two["username"] in sumo_pages.kb_article_page.
-                get_list_of_kb_article_contributors())
+        expect(sumo_pages.kb_article_page.kb_article_contributors).to_contain_text(
+            [test_user_two["username"]])
 
     with allure.step("Deleting the document"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
@@ -572,10 +565,8 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
         )
 
     with check, allure.step("Verifying that the correct 'Is current revision?' text is displayed"):
-        assert (
-            sumo_pages.kb_article_preview_revision_page.
-            get_is_current_revision_text() == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS
-        )
+        expect(sumo_pages.kb_article_preview_revision_page.is_current_revision).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with allure.step("Navigating back and clicking on the revision time"):
         utilities.navigate_back()
@@ -583,37 +574,33 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
             second_revision_info['revision_id'])
 
     with allure.step("Verifying that the revision information content is expanded by default"):
-        expect(
-            sumo_pages.kb_article_preview_revision_page.revision_information_content
-        ).to_be_visible()
+        expect(sumo_pages.kb_article_preview_revision_page.revision_information_content
+               ).to_be_visible()
 
     with allure.step("Clicking on the 'Revision Information' foldout section and verifying "
                      "that the revision information content is collapsed/no longer displayed"):
         sumo_pages.kb_article_preview_revision_page.click_on_revision_information_foldout_section()
-        expect(
-            sumo_pages.kb_article_preview_revision_page.revision_information_content
-            ).to_be_hidden()
+        expect(sumo_pages.kb_article_preview_revision_page.revision_information_content
+               ).to_be_hidden()
 
     with allure.step("Clicking on the 'Revision Information' foldout section"):
         sumo_pages.kb_article_preview_revision_page.click_on_revision_information_foldout_section()
 
     with allure.step("Verifying that the revision information content is displayed"):
-        expect(
-            sumo_pages.kb_article_preview_revision_page.revision_information_content
-            ).to_be_visible()
+        expect(sumo_pages.kb_article_preview_revision_page.revision_information_content
+               ).to_be_visible()
 
     with check, allure.step("Verifying that the revision id is the correct one"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_id_text() == str(utilities.number_extraction_from_string(
-                                                      second_revision_info['revision_id'])))
+        expect(sumo_pages.kb_article_preview_revision_page.revision_id).to_have_text(
+            str(utilities.number_extraction_from_string(second_revision_info['revision_id'])))
 
     with check, allure.step("Verifying that the correct revision time is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_created_date_text() == revision_time)
+        expect(sumo_pages.kb_article_preview_revision_page.created_date).to_have_text(
+            revision_time)
 
     with check, allure.step("Verifying that the correct creator is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_creator_text() == test_user_two["username"])
+        expect(sumo_pages.kb_article_preview_revision_page.creator).to_have_text(
+            test_user_two["username"])
 
     with allure.step("Clicking on the creator link and verifying that we are redirected to "
                      "the username page"):
@@ -625,14 +612,12 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
         utilities.navigate_back()
 
     with check, allure.step("Verifying that the correct review comment is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_comment_text() == utilities.
-                kb_article_test_data['changes_description'])
+        expect(sumo_pages.kb_article_preview_revision_page.comment).to_have_text(
+            utilities.kb_article_test_data['changes_description'])
 
     with check, allure.step("Verifying that the correct reviewed status is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_reviewed_text() == KBArticleRevision.
-                KB_ARTICLE_REVISION_NO_STATUS)
+        expect(sumo_pages.kb_article_preview_revision_page.reviewed).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_NO_STATUS)
 
     with allure.step("Verifying that the reviewed by locator is hidden"):
         expect(sumo_pages.kb_article_preview_revision_page.reviewed_by).to_be_hidden()
@@ -645,13 +630,12 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
 
     with check, allure.step("Verifying that the correct ready for localization status is "
                              "displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_ready_for_localization_text() == KBArticleRevision.
-                KB_ARTICLE_REVISION_NO_STATUS)
+        expect(sumo_pages.kb_article_preview_revision_page.ready_for_localization).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_NO_STATUS)
 
     with allure.step("Verifying that the readied for localization by is hidden"):
         expect(sumo_pages.kb_article_preview_revision_page.readied_for_localization_by
-        ).to_be_hidden()
+               ).to_be_hidden()
 
     with allure.step("Verifying that the 'Edit article based on this revision' is not "
                      "displayed"):
@@ -666,9 +650,8 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
 
     with check, allure.step("Verifying that the 'Revision Source' textarea contains the correct "
                              "details"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_source_textarea_content() == utilities.
-                kb_article_test_data['updated_article_content'])
+        expect(sumo_pages.kb_article_preview_revision_page.revision_source_textarea).to_have_text(
+            utilities.kb_article_test_data['updated_article_content'])
 
     with check, allure.step("Verifying that the 'Revision Content' section is hidden by default"):
         expect(sumo_pages.kb_article_preview_revision_page.revision_content_html_section
@@ -696,39 +679,36 @@ def test_kb_article_revision_date_functionality(page: Page, create_user_factory)
         )
 
     with check, allure.step("Verifying that the correct reviewed status is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_reviewed_text() == KBArticleRevision.
-                KB_ARTICLE_REVISION_YES_STATUS)
+        expect(sumo_pages.kb_article_preview_revision_page.reviewed).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with check, allure.step("Verifying that the reviewed by date is displayed"):
         expect(sumo_pages.kb_article_preview_revision_page.reviewed_time).to_be_visible()
 
     with check, allure.step("Verifying that the correct 'Reviewed by' text is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_reviewed_by_text() == test_user["username"])
+        expect(sumo_pages.kb_article_preview_revision_page.reviewed_by).to_have_text(
+            test_user["username"])
 
     with check, allure.step("Verifying that the correct is approved status is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_is_approved_text() == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
+        expect(sumo_pages.kb_article_preview_revision_page.is_approved).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with check, allure.step("Verifying that the correct is current revision status is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_is_current_revision_text() == KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
+        expect(sumo_pages.kb_article_preview_revision_page.is_current_revision).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with check, allure.step("Verifying that the correct is ready for localization status is "
                              "displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                get_preview_revision_ready_for_localization_text() == KBArticleRevision.
-                KB_ARTICLE_REVISION_YES_STATUS)
+        expect(sumo_pages.kb_article_preview_revision_page.ready_for_localization).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_YES_STATUS)
 
     with allure.step("Verifying that the 'Readied for localization' date is displayed"):
-        expect(
-            sumo_pages.kb_article_preview_revision_page.readied_for_localization_date
-        ).to_be_visible()
+        expect(sumo_pages.kb_article_preview_revision_page.readied_for_localization_date
+               ).to_be_visible()
 
     with check, allure.step("Verifying that the correct localization by text is displayed"):
-        assert (sumo_pages.kb_article_preview_revision_page.
-                readied_for_localization_by_text() == test_user["username"])
+        expect(sumo_pages.kb_article_preview_revision_page.readied_for_localization_by
+               ).to_have_text(test_user["username"])
 
     with allure.step(f"Signing in with {test_user['username']} user account"):
         utilities.start_existing_session(cookies=test_user)

@@ -1,5 +1,6 @@
 class SentMessagesPageMessages:
     SENT_MESSAGES_PAGE_URL = "https://support.allizom.org/en-US/messages/sent"
+    NEW_MESSAGE_URL = "https://support.allizom.org/en-US/messages/new"
     SENT_MESSAGES_BREADCRUMB_ONE = "Home"
     SENT_MESSAGES_BREADCRUMB_TWO = "Messages"
     SENT_MESSAGES_BREADCRUMB_THREE = "Sent Messages"

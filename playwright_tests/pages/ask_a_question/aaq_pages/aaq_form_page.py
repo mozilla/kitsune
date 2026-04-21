@@ -42,6 +42,9 @@ class AAQFormPage(BasePage):
         self.product_os_select_dropdown_options = page.locator("select#id_os option")
         self.product_os_select_dropdown = page.locator("select#id_os")
 
+        """Locators belonging to the Thunderbird version input field"""
+        self.thunderbird_version_field = page.locator("//input[@id='id_tb_version']")
+
         """Locators belonging to the update channel (Firefox for Enterprise product) dropdown"""
         self.update_channel_dropdown_options = page.locator(
             "//select[@id='id_update_channel']/option")
@@ -93,25 +96,13 @@ class AAQFormPage(BasePage):
     def fill_contact_email_field(self, text: str):
         self._fill(self.loginless_contact_email_input_field, text)
 
-    def get_premium_card_submission_message(self) -> str:
-        return self._get_text_of_element(self.premium_ticket_message)
-
     """Actions against the breadcrumb locators."""
-    def get_in_progress_item_label(self) -> str:
-        return self._get_text_of_element(self.in_progress_item_label)
-
     def click_on_a_particular_completed_milestone(self, milestone_name: str):
         self._click(self.milestone_by_name(milestone_name))
 
     """Actions against the question subject locators."""
-    def get_value_of_subject_input_field(self) -> str:
-        return self._get_element_input_value(self.aaq_subject_input_field)
-
     def clear_subject_input_field(self):
         self._clear_field(self.aaq_subject_input_field)
-
-    def get_aaq_form_subject_error(self) -> str:
-        return self._get_text_of_element(self.aaq_subject_input_field_error_message)
 
     def add_text_to_aaq_form_subject_field(self, text: str):
         self._fill(self.aaq_subject_input_field, text)
@@ -123,14 +114,8 @@ class AAQFormPage(BasePage):
         self._fill(self.tell_us_more_premium_product_textarea, text)
 
     """Actions against the question body locators."""
-    def get_value_of_question_body_textarea_field(self) -> str:
-        return self._get_element_input_value(self.how_can_we_help_textarea)
-
     def clear_the_question_body_textarea_field(self):
         self._clear_field(self.how_can_we_help_textarea)
-
-    def get_aaq_form_body_error(self) -> str:
-        return self._get_text_of_element(self.how_can_we_help_textarea_error_field)
 
     def add_text_to_aaq_textarea_field(self, text: str):
         self._fill(self.how_can_we_help_textarea, text)
@@ -146,23 +131,7 @@ class AAQFormPage(BasePage):
             print("Uploaded image not displayed")
         return self.uploaded_image
 
-    def uploaded_images_handles(self) -> list[ElementHandle]:
-        return self._get_element_handles(self.uploaded_image)
-
-    """Actions against the general page content locators."""
-    def get_aaq_form_page_heading(self) -> str:
-        return self._get_text_of_element(self.aaq_page_product_heading)
-
-    def get_aaq_form_page_intro_text(self) -> str:
-        return self._get_text_of_element(self.aaq_page_intro_text)
-
-    def get_aaq_form_info_card_text(self) -> str:
-        return self._get_text_of_element(self.aaq_page_info_card)
-
     """Actions against the question topic locators."""
-    def get_aaq_form_topic_select_error(self) -> str:
-        return self._get_text_of_element(self.product_topic_select_dropdown_error_message)
-
     def get_aaq_form_topic_options(self) -> list[str]:
         # Returns all the non-default selectable topic options.
         return self._get_text_of_elements(self.product_topic_options_without_default_none)
@@ -176,15 +145,18 @@ class AAQFormPage(BasePage):
     def add_text_to_os_field(self, text: str):
         self._fill(self.product_os, text)
 
-    def select_aaq_form_os_value(self, value: str):
-        self._select_option_by_value(self.product_os_select_dropdown_options, value)
-
     """Actions against the Troubleshooting information section locators."""
     def add_text_to_troubleshooting_information_textarea(self, text: str):
         self._fill(self.troubleshooting_information_textarea, text)
 
     def is_os_dropdown_menu_visible(self) -> bool:
         return self._is_element_visible(self.product_os_select_dropdown)
+
+    def is_thunderbird_version_field_visible(self) -> bool:
+        return self._is_element_visible(self.thunderbird_version_field)
+
+    def add_text_to_thunderbird_version_field(self, txt: str):
+        self._fill(self.thunderbird_version_field, txt)
 
     def select_random_os_by_value(self):
         self._select_random_option_by_value(self.product_os_select_dropdown,
@@ -208,16 +180,7 @@ class AAQFormPage(BasePage):
     def click_on_show_details_option(self):
         self._click(self.show_details_option)
 
-    def get_try_these_manual_steps_link(self) -> str:
-        # Instead of clicking on the 'Try these manual steps' button we are going to perform the
-        # assertion by checking that the element has the correct href value. Navigating to prod can
-        # yield a 429 error which we want to avoid.
-        return self._get_element_attribute_value(self.try_these_manual_steps_link, "href")
-
     """Actions against the email me when someone answers the thread section locators."""
-    def click_on_email_me_when_someone_answers_the_thread_checkbox(self):
-        self._click(self.email_me_checkbox)
-
     def click_aaq_form_cancel_button(self):
         self._click(self.form_cancel_option)
 

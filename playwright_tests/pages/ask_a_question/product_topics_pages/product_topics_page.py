@@ -42,10 +42,6 @@ class ProductTopicPage(BasePage):
         self._click(self.article_link(article_title))
 
     """Actions against the navbar locators."""
-    def get_selected_navbar_option(self) -> str:
-        """Returns the text of the selected navbar option."""
-        return self._get_text_of_element(self.selected_nav_link)
-
     def click_on_a_navbar_option(self, option_name: str):
         """Clicks on a particular navbar option."""
         self._click(self.navbar_option(option_name))
@@ -58,6 +54,3 @@ class ProductTopicPage(BasePage):
         """Returns the href value of a particular navbar option."""
         return self._get_element_attribute_value(self.navbar_option(option_name),"href")
 
-    def is_article_helpfulness_metadata_displayed(self, article_title: str) -> bool:
-        """Checks if the article helpfulness metadata is displayed."""
-        return self._is_element_visible(self.article_helpfulness_count(article_title))

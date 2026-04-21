@@ -40,20 +40,8 @@ class ModerateForumContent(BasePage):
         self.paginator_section = page.locator("//ol[@class='pagination cf']")
         self.last_paginator_option = page.locator("//ol[@class='pagination cf']/li/a").last
 
-    def get_flag_reason(self, question_title: str) -> str:
-        return self._get_text_of_element(self.flagged_reason(question_title))
-
-    def get_flagged_question_content(self, question_title: str) -> str:
-        return self._get_text_of_element(self.flagged_question_content(question_title))
-
-    def get_created_by_link_text(self, question_info: str) -> str:
-        return self._get_text_of_element(self.created_by_link_text(question_info))
-
     def click_created_by_link(self, question_info: str):
         self._click(self.created_by_link_text(question_info))
-
-    def get_flagged_by_link_text(self, question_info: str) -> str:
-        return self._get_text_of_element(self.flagged_by_link_text(question_info))
 
     def click_flagged_by_link(self, question_info: str):
         self._click(self.flagged_by_link_text(question_info))

@@ -95,20 +95,20 @@ def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
             ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT)
 
     with check, allure.step("Verifying that the revision contains the correct status"):
-        status = sumo_pages.kb_article_show_history_page.get_revision_status(
-            article_details['first_revision_id']
-        )
-        assert KBArticlePageMessages.UNREVIEWED_REVISION_STATUS == status
+        expect(sumo_pages.kb_article_show_history_page.revision_status(
+            article_details['first_revision_id'])).to_have_text(
+            KBArticlePageMessages.UNREVIEWED_REVISION_STATUS)
 
     with check, allure.step("Clicking on the 'Article' navbar menu and verifying that the doc "
                             "content contains the correct string"):
         sumo_pages.kb_article_page.click_on_article_option()
-        assert sumo_pages.kb_article_page.get_text_of_kb_article_content(
-        ) == KBArticlePageMessages.KB_ARTICLE_NOT_APPROVED_CONTENT
+        expect(sumo_pages.kb_article_page.kb_article_content).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_NOT_APPROVED_CONTENT)
 
     with check, allure.step("Deleting user session and verifying that the 404 page is received"):
+        utilities.delete_cookies()
         with page.expect_navigation() as navigation_info:
-            utilities.delete_cookies()
+            utilities.refresh_page()
             response = navigation_info.value
             assert response.status == 404
 
@@ -118,10 +118,9 @@ def test_non_admin_users_kb_article_submission(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Show History' option and verifying that the "
                             "revision contains the correct status"):
         sumo_pages.kb_article_page.click_on_show_history_option()
-        status = (
-            sumo_pages.kb_article_show_history_page.get_status_of_reviewable_revision(
-                article_details['first_revision_id']))
-        assert KBArticlePageMessages.REVIEW_REVISION_STATUS == status
+        expect(sumo_pages.kb_article_show_history_page.reviewable_revision(
+            article_details['first_revision_id'])).to_have_text(
+            KBArticlePageMessages.REVIEW_REVISION_STATUS)
 
     with allure.step("Deleting the test article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
@@ -151,16 +150,17 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
         sumo_pages.kb_article_show_history_page.click_on_review_revision(
             article_details['first_revision_id']
         )
-        assert sumo_pages.kb_article_review_revision_page.get_revision_header(
-        ) == KBArticleRevision.KB_ARTICLE_REVISION_HEADER + article_details['article_title']
+        expect(sumo_pages.kb_article_review_revision_page.revision_header).to_have_text(
+            KBArticleRevision.KB_ARTICLE_REVISION_HEADER + article_details['article_title'])
 
     with check, allure.step("Verifying that the correct subtext is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page.get_reviewing_revision_text()
-                .replace("\n", "").strip() == kb_revision.get_kb_article_revision_details(
-            revision_id=re.findall(r'\d+', article_details['first_revision_id'])[0],
-            username=test_user["username"],
-            revision_comment=article_details['article_review_description']
-        ).strip())
+        expect(sumo_pages.kb_article_review_revision_page.reviewing_revision_text).to_have_text(
+            kb_revision.get_kb_article_revision_details(
+                revision_id=re.findall(r'\d+', article_details['first_revision_id'])[0],
+                username=test_user["username"],
+                revision_comment=article_details['article_review_description']
+            )
+        )
 
     with allure.step("Click on the 'Back to History' option and verifying that the user is "
                      "redirected to the article history page"):
@@ -175,62 +175,63 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
     with check, allure.step("Navigate back and verifying that the 'Keywords:' header is "
                             "displayed"):
         utilities.navigate_back()
-        assert sumo_pages.kb_article_review_revision_page.is_keywords_header_visible()
+        expect(sumo_pages.kb_article_review_revision_page.keywords_header).to_be_visible()
 
     with check, allure.step("Verifying that the correct keyword is displayed"):
-        assert sumo_pages.kb_article_review_revision_page.get_keywords_content(
-        ) == article_details['keyword']
+        expect(sumo_pages.kb_article_review_revision_page.keywords_content).to_have_text(
+            article_details['keyword'])
 
     with check, allure.step("Verifying that the correct header is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page.is_search_results_summary_visible())
+        expect(sumo_pages.kb_article_review_revision_page.search_results_summary_header
+               ).to_be_visible()
 
     with check, allure.step("Verifying that the correct search result summary is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page.get_search_results_summary_content(
-        ) == article_details['search_results_summary'])
+        expect(sumo_pages.kb_article_review_revision_page.search_results_summary_content
+               ).to_have_text(article_details['search_results_summary'])
 
     with check, allure.step("Verifying that the 'Revision source:' header is displayed"):
-        assert sumo_pages.kb_article_review_revision_page.is_revision_source_visible()
+        expect(sumo_pages.kb_article_review_revision_page.revision_source_header).to_be_visible()
 
     with check, allure.step("Verifying that the correct revision source content is displayed"):
-        assert sumo_pages.kb_article_review_revision_page.revision_source_content(
-        ) == article_details['article_content']
+        expect(sumo_pages.kb_article_review_revision_page.revision_source_content_locator
+               ).to_have_text(article_details['article_content'])
 
     with check, allure.step("Verifying that the correct header is displayed"):
-        assert (sumo_pages.kb_article_review_revision_page
-                .is_revision_rendered_html_header_visible())
+        expect(sumo_pages.kb_article_review_revision_page.revision_rendered_html_header
+               ).to_be_visible()
 
     with check, allure.step("Verifying that the correct 'Revision rendered html:' content is "
                             "displayed"):
-        assert (sumo_pages.kb_article_review_revision_page.get_revision_rendered_html_content(
-        ) == article_details['article_content_html'])
+        expect(sumo_pages.kb_article_review_revision_page.revision_rendered_html_content
+               ).to_have_text(article_details['article_content_html'])
 
     with allure.step("Approving the revision"):
         sumo_pages.kb_article_review_revision_page.click_on_approve_revision_button()
         sumo_pages.kb_article_review_revision_page.click_accept_revision_accept_button()
 
     with check, allure.step("Verifying that the review status updates to 'Current'"):
-        assert sumo_pages.kb_article_show_history_page.get_revision_status(
-            article_details['first_revision_id']
-        ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
+        expect(sumo_pages.kb_article_show_history_page.revision_status(
+            article_details['first_revision_id'])).to_have_text(
+            KBArticlePageMessages.CURRENT_REVISION_STATUS)
 
     with allure.step("Clicking on the 'Article' editing tools option"):
         sumo_pages.kb_article_page.click_on_article_option()
 
     with check, allure.step("Verifying that the correct html article content is displayed"):
-        assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
-        ) == article_details['article_content_html']
+        expect(sumo_pages.kb_article_page.kb_article_content_approved_content).to_have_text(
+            article_details['article_content_html'])
 
     with check, allure.step("Signing out and verifying that the correct article content is "
                             "displayed"):
         utilities.delete_cookies()
-        assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
-        ) == article_details['article_content_html']
+        expect(sumo_pages.kb_article_page.kb_article_content_approved_content).to_have_text(
+            article_details['article_content_html'])
 
     with check, allure.step(f"Signing in with {test_user_three['username']} user account and "
                             f"verifying if the correct content is displayed"):
         utilities.start_existing_session(cookies=test_user_three)
-        assert sumo_pages.kb_article_page.get_text_of_kb_article_content_approved(
-        ) == article_details['article_content_html']
+        expect(sumo_pages.kb_article_page.kb_article_content_approved_content).to_have_text(
+            article_details['article_content_html'])
 
     with allure.step(f"Signing in with {test_user_two['username']} user account and creating a "
                      f"new revision"):
@@ -238,9 +239,9 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
         second_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision()
 
     with check, allure.step("Verifying that the first approved revision is marked as the current"):
-        assert sumo_pages.kb_article_show_history_page.get_revision_status(
-            article_details['first_revision_id']
-        ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
+        expect(sumo_pages.kb_article_show_history_page.revision_status(
+            article_details['first_revision_id'])).to_have_text(
+            KBArticlePageMessages.CURRENT_REVISION_STATUS)
 
     with check, allure.step("Approving the second revision"):
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
@@ -248,13 +249,12 @@ def test_articles_revision_page_and_revision_approval(page: Page, create_user_fa
 
     with check, allure.step("Verifying that the first revision status is 'Approved', and the "
                             "second is 'Current'"):
-        assert sumo_pages.kb_article_show_history_page.get_revision_status(
-            article_details['first_revision_id']
-        ) == KBArticlePageMessages.PREVIOUS_APPROVED_REVISION_STATUS
-
-        assert sumo_pages.kb_article_show_history_page.get_revision_status(
-            second_revision['revision_id']
-        ) == KBArticlePageMessages.CURRENT_REVISION_STATUS
+        expect(sumo_pages.kb_article_show_history_page.revision_status(
+            article_details['first_revision_id'])).to_have_text(
+            KBArticlePageMessages.PREVIOUS_APPROVED_REVISION_STATUS)
+        expect(sumo_pages.kb_article_show_history_page.revision_status(
+            second_revision['revision_id'])).to_have_text(
+            KBArticlePageMessages.CURRENT_REVISION_STATUS)
 
 
 # C2091580, C954321
@@ -524,8 +524,8 @@ def test_kb_article_title_and_slug_validations(page: Page, create_user_factory):
             utilities.kb_article_test_data["changes_description"]
         )
         sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
-        assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
-        )[0] == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[0]
+        expect(sumo_pages.kb_submit_kb_article_form_page.all_kb_errors).to_contain_text(
+            [KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[0]])
 
     with allure.step("Navigate to the kb submission page and adding different title but same "
                      "slug"):
@@ -553,8 +553,8 @@ def test_kb_article_title_and_slug_validations(page: Page, create_user_factory):
             utilities.kb_article_test_data["changes_description"]
         )
         sumo_pages.kb_submit_kb_article_form_page.click_on_changes_submit_button()
-        assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
-        )[0] == KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
+        expect(sumo_pages.kb_submit_kb_article_form_page.all_kb_errors).to_contain_text(
+            [KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]])
 
     with allure.step("Deleting the test article"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
@@ -575,8 +575,8 @@ def test_kb_article_product_validations(page: Page, create_user_factory):
         expect(page).to_have_url(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
-        )[0] == KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR
+        expect(sumo_pages.kb_submit_kb_article_form_page.all_kb_errors).to_contain_text(
+            KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR)
 
 
 # C2091665, C2243453
@@ -594,8 +594,8 @@ def test_kb_article_topic_validation(page: Page, create_user_factory):
         expect(page).to_have_url(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        assert sumo_pages.kb_submit_kb_article_form_page.get_all_kb_errors(
-        )[0] == KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR
+        expect(sumo_pages.kb_submit_kb_article_form_page.all_kb_errors).to_contain_text(
+            [KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR])
 
 
 # C2091665
@@ -662,9 +662,8 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        assert (sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
-            article_details['article_title']
-        )) == article_details['search_results_summary']
+        expect(sumo_pages.search_page.article_search_summary(article_details['article_title'])
+               ).to_have_text(article_details['search_results_summary'])
 
     with allure.step("Clearing the searchbar, typing the article summary inside the search "
                      "field and verifying that the article is displayed inside the search "
@@ -679,14 +678,14 @@ def test_kb_article_keywords_and_summary(page: Page, user_type, create_user_fact
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        assert (sumo_pages.search_page.get_search_result_summary_text_of_a_particular_article(
-            article_details['article_title'])) == article_details['search_results_summary']
+        expect(sumo_pages.search_page.article_search_summary(article_details['article_title'])
+               ).to_have_text(article_details['search_results_summary'])
 
     with check, allure.step("Clicking on the article and verifying that the user is "
                             "redirected to the kb article"):
         sumo_pages.search_page.click_on_a_particular_article(article_details['article_title'])
-        assert sumo_pages.kb_article_page.get_text_of_article_title(
-        ) == article_details['article_title']
+        expect(sumo_pages.kb_article_page.kb_article_heading).to_have_text(
+            article_details['article_title'])
 
 
 # C2081445
@@ -752,9 +751,8 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
                             "correct notification banner is displayed stating that another "
                             "user is also working on an edit"):
         sumo_pages.kb_article_page.click_on_edit_article_option()
-        assert (sumo_pages.kb_edit_article_page.get_edit_article_warning_message() == kb_revision.
-                get_article_warning_message(test_user['username']))
-
+        expect(sumo_pages.kb_edit_article_page.edit_by_another_user_warning_banner
+               ).to_contain_text(kb_revision.get_article_warning_message(test_user['username']))
         sumo_pages.kb_edit_article_page.click_on_edit_anyway_option()
 
     with allure.step("Creating a new revision for the kb article and approving it"):
@@ -785,12 +783,8 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        assert (
-            sumo_pages.search_page.
-            get_search_result_summary_text_of_a_particular_article(article_details['article_title']
-                                                                   ) == utilities.
-            kb_article_test_data['updated_search_result_summary']
-        )
+        expect(sumo_pages.search_page.article_search_summary(article_details['article_title'])
+               ).to_have_text(utilities.kb_article_test_data['updated_search_result_summary'])
 
     with allure.step("Clearing the searchbar"):
         sumo_pages.search_page.clear_the_searchbar()
@@ -809,17 +803,14 @@ def test_kb_article_keyword_and_summary_update(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct kb summary is displayed inside the "
                             "search results"):
-        assert (
-            sumo_pages.search_page.
-            get_search_result_summary_text_of_a_particular_article(article_details['article_title']
-                                                                   ) == utilities.
-            kb_article_test_data['updated_search_result_summary'])
+        expect(sumo_pages.search_page.article_search_summary(article_details['article_title'])
+               ).to_have_text(utilities.kb_article_test_data['updated_search_result_summary'])
 
     with check, allure.step("Clicking on the article and verifying that the user is "
                             "redirected to the kb article"):
         sumo_pages.search_page.click_on_a_particular_article(article_details['article_title'])
-        assert (sumo_pages.kb_article_page.
-                get_text_of_article_title() == article_details['article_title'])
+        expect(sumo_pages.kb_article_page.kb_article_heading).to_have_text(
+            article_details['article_title'])
 
 
 # C2243447, C2243449
@@ -870,12 +861,11 @@ def test_edit_article_metadata_title(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
                             "that the updated title and original slug is displayed"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
-        assert (sumo_pages.kb_article_edit_article_metadata_page.
-                get_text_of_title_input_field() == utilities.
-                kb_article_test_data['updated_kb_article_title'] + article_details['article_title']
-                )
-        assert (sumo_pages.kb_article_edit_article_metadata_page.
-                get_slug_input_field() == article_details['article_slug'])
+        expect(sumo_pages.kb_article_edit_article_metadata_page.title_input_field).to_have_value(
+            utilities.kb_article_test_data['updated_kb_article_title'] + article_details[
+                'article_title'])
+        expect(sumo_pages.kb_article_edit_article_metadata_page.slug_input_field).to_have_value(
+            article_details['article_slug'])
 
 
 # C2243450, C2091589
@@ -898,9 +888,8 @@ def test_edit_article_metadata_slug(page: Page, create_user_factory):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(slug="donotdelete")
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        assert (sumo_pages.
-                kb_article_edit_article_metadata_page.get_error_message() == KBArticlePageMessages.
-                KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1])
+        expect(sumo_pages.kb_article_edit_article_metadata_page.edit_article_metadata_error
+               ).to_have_text(KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1])
 
     with allure.step("Changing the article slug"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
@@ -913,8 +902,8 @@ def test_edit_article_metadata_slug(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Edit Article Metadata' option and verifying "
                             "that the slug was updated"):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
-        assert (sumo_pages.kb_article_edit_article_metadata_page.
-                get_slug_input_field() == article_details['article_slug'] + "1")
+        expect(sumo_pages.kb_article_edit_article_metadata_page.slug_input_field).to_have_value(
+            article_details['article_slug'] + "1")
 
 
 # C2243451
@@ -937,9 +926,9 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(category="Templates")
 
     with check, allure.step("Verifying that the correct error message is displayed"):
-        assert (sumo_pages.kb_article_edit_article_metadata_page.
-                get_error_message() == kb_article_messages.
-                get_template_error(article_details['article_title']))
+        expect(sumo_pages.kb_article_edit_article_metadata_page.edit_article_metadata_error
+               ).to_have_text(kb_article_messages.get_template_error(
+            article_details['article_title']))
 
     with allure.step("Selecting a different category"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(category="Navigation")
@@ -950,17 +939,15 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
             utilities.different_endpoints['kb_categories_links']
             [article_details['article_category']]
         )
-        expect(
-            sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
-        ).to_be_hidden()
+        expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
+               ).to_be_hidden()
 
     with check, allure.step("Verifying that the article is displayed inside the new category"):
         utilities.navigate_to_link(
             utilities.different_endpoints['kb_categories_links']["Navigation"]
         )
-        expect(
-            sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
-        ).to_be_visible()
+        expect(sumo_pages.kb_category_page.article_from_list(article_details['article_title'])
+               ).to_be_visible()
 
     article_template_title = "Template:" + article_details['article_title']
     with allure.step("Changing the category and title of the kb article to match the "
@@ -975,17 +962,15 @@ def test_edit_article_metadata_category(page: Page, create_user_factory):
         utilities.navigate_to_link(
             utilities.different_endpoints['kb_categories_links']["Navigation"]
         )
-        expect(
-            sumo_pages.kb_category_page.article_from_list(article_template_title)
-        ).to_be_hidden()
+        expect(sumo_pages.kb_category_page.article_from_list(article_template_title)
+               ).to_be_hidden()
 
     with check, allure.step("Verifying that the article is displayed inside the new category"):
         utilities.navigate_to_link(
             utilities.different_endpoints['kb_categories_links']["Templates"]
         )
-        expect(
-            sumo_pages.kb_category_page.article_from_list(article_template_title)
-        ).to_be_visible()
+        expect(sumo_pages.kb_category_page.article_from_list(article_template_title)
+               ).to_be_visible()
 
 
 # C2243452, C2243453
@@ -1008,8 +993,8 @@ def test_edit_article_metadata_product_and_topic(page: Page, create_user_factory
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
             product=article_details['article_product']
         )
-        assert (sumo_pages.kb_article_edit_article_metadata_page.
-                get_error_message() == KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR)
+        expect(sumo_pages.kb_article_edit_article_metadata_page.edit_article_metadata_error
+               ).to_have_text(KBArticlePageMessages.KB_ARTICLE_PRODUCT_ERROR)
 
     with check, allure.step("Selecting a different product, deselecting the topics "
                             "option and verifying that the correct error message is "
@@ -1017,8 +1002,8 @@ def test_edit_article_metadata_product_and_topic(page: Page, create_user_factory
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
             product="Firefox for Android", topics=article_details['article_topic'][0]
         )
-        assert (sumo_pages.kb_article_edit_article_metadata_page.
-                get_error_message() == KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR)
+        expect(sumo_pages.kb_article_edit_article_metadata_page.edit_article_metadata_error
+               ).to_have_text(KBArticlePageMessages.KB_ARTICLE_TOPIC_ERROR)
 
     with allure.step("Selecting a different topic relevant to the product group"):
         sumo_pages.edit_article_metadata_flow.edit_article_metadata(
@@ -1026,7 +1011,7 @@ def test_edit_article_metadata_product_and_topic(page: Page, create_user_factory
         )
 
     with check, allure.step("Verifying that the correct breadcrumb is displayed"):
-        assert "Browse" in sumo_pages.kb_article_page.get_text_of_all_article_breadcrumbs()
+        expect(sumo_pages.kb_article_page.kb_article_breadcrumbs_list).to_contain_text(["Browse"])
 
 
 # C2243455
@@ -1129,9 +1114,9 @@ def test_edit_metadata_article_multiple_users(page: Page, create_user_factory):
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
 
     with check, allure.step("Verifying that the correct warning message is displayed"):
-        assert (sumo_pages.kb_edit_article_page.
-                get_edit_article_warning_message() == kb_revision.
-                get_article_warning_message(test_user_two['username']))
+        expect(sumo_pages.kb_edit_article_page.edit_by_another_user_warning_banner
+               ).to_contain_text(kb_revision.get_article_warning_message(test_user_two['username'])
+                                 )
 
     with allure.step("Clicking on the 'Edit Anyway' option and verifying that the warning "
                      "banner is no longer displayed"):
@@ -1209,8 +1194,9 @@ def test_revision_significance(page: Page, create_user_factory):
         )
 
     with check, allure.step("Verifying that the significance is the correct one"):
-        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
-            article_details['first_revision_id']) == KBArticlePageMessages.MAJOR_SIGNIFICANCE)
+        expect(sumo_pages.kb_article_show_history_page.revision_significance(
+            article_details['first_revision_id'])).to_have_text(
+            KBArticlePageMessages.MAJOR_SIGNIFICANCE)
 
     with check, allure.step("Creating a new revision, approving it wih minor significance "
                             "and verifying that the correct significance is displayed"):
@@ -1219,8 +1205,8 @@ def test_revision_significance(page: Page, create_user_factory):
             revision_id=second_revision['revision_id'],
             significance_type='minor'
         )
-        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
-            second_revision['revision_id']) == KBArticlePageMessages.MINOR_SIGNIFICANCE)
+        expect(sumo_pages.kb_article_show_history_page.revision_significance(
+            second_revision['revision_id'])).to_have_text(KBArticlePageMessages.MINOR_SIGNIFICANCE)
 
     with check, allure.step("Creating a new revision and approving it with normal "
                             "significance which is the default one and verifying that the "
@@ -1228,8 +1214,8 @@ def test_revision_significance(page: Page, create_user_factory):
         third_revision = sumo_pages.submit_kb_article_flow.submit_new_kb_revision(
             approve_revision=True
         )
-        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
-            third_revision['revision_id']) == KBArticlePageMessages.NORMAL_SIGNIFICANCE)
+        expect(sumo_pages.kb_article_show_history_page.revision_significance(
+            third_revision['revision_id'])).to_have_text(KBArticlePageMessages.NORMAL_SIGNIFICANCE)
 
     with check, allure.step("Creating a new revision, approving it with major significance "
                             "and verifying that the correct significance is displayed"):
@@ -1238,8 +1224,8 @@ def test_revision_significance(page: Page, create_user_factory):
             revision_id=forth_revision['revision_id'],
             significance_type='major'
         )
-        assert (sumo_pages.kb_article_show_history_page.get_revision_significance(
-            forth_revision['revision_id']) == KBArticlePageMessages.MAJOR_SIGNIFICANCE)
+        expect(sumo_pages.kb_article_show_history_page.revision_significance(
+            forth_revision['revision_id'])).to_have_text(KBArticlePageMessages.MAJOR_SIGNIFICANCE)
 
 
 # C2903832  C2903833 C2903945  C2903946
@@ -1268,8 +1254,8 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            assert not (sumo_pages.common_web_elements.
-                        is_frequent_topic_card_displayed(test_topic_card))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_header(test_topic_card)
+                   ).to_be_hidden()
 
     with allure.step("Creating a new kb article under the Test Topic and approving the revision"):
         article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1280,13 +1266,12 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            assert (test_topic_card in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_titles())
-            assert (article_details["article_title"] in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(test_topic_card))
-            assert (1 == utilities.number_extraction_from_string(
-                sumo_pages.common_web_elements.
-                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_headers).to_contain_text(
+                [test_topic_card])
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(test_topic_card)
+                   ).to_contain_text([article_details["article_title"]])
+            expect(sumo_pages.common_web_elements.frequent_topic_view_all_articles(test_topic_card)
+                   ).to_contain_text("1")
 
     with allure.step("Creating a new kb article and not approving the revision"):
         second_article_details = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
@@ -1298,11 +1283,10 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            assert (second_article_details["article_title"] not in sumo_pages.
-                    common_web_elements.get_frequent_topic_card_articles(test_topic_card))
-            assert (1 == utilities.number_extraction_from_string(
-                sumo_pages.common_web_elements.
-                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(test_topic_card)
+                   ).not_to_contain_text([second_article_details["article_title"]])
+            expect(sumo_pages.common_web_elements.frequent_topic_view_all_articles(test_topic_card)
+                   ).to_contain_text("1")
 
     with check, allure.step("Approving the first revision for the second article and verifying "
                             "that the article is now listed inside the topic card list and the"
@@ -1313,11 +1297,10 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            assert (second_article_details["article_title"] in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(test_topic_card))
-            assert (2 == utilities.number_extraction_from_string(
-                sumo_pages.common_web_elements.
-                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(test_topic_card)
+                   ).to_contain_text([second_article_details["article_title"]])
+            expect(sumo_pages.common_web_elements.frequent_topic_view_all_articles(test_topic_card)
+                   ).to_contain_text("2")
 
     with allure.step("Deleting the second article"):
         utilities.navigate_to_link(second_article_details["article_url"])
@@ -1328,11 +1311,10 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            assert (second_article_details["article_title"] not in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(test_topic_card))
-            assert (1 == utilities.number_extraction_from_string(
-                sumo_pages.common_web_elements.
-                get_frequent_topic_card_view_all_articles_link_text(test_topic_card)))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(test_topic_card)
+                   ).not_to_contain_text([second_article_details["article_title"]])
+            expect(sumo_pages.common_web_elements.frequent_topic_view_all_articles(test_topic_card)
+                   ).to_contain_text("1")
 
     with allure.step("Deleting the first article"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -1342,8 +1324,8 @@ def test_article_creation_and_frequent_topics_cards(page: Page, create_user_fact
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Firefox"])
-            assert not (sumo_pages.common_web_elements.
-                        is_frequent_topic_card_displayed(test_topic_card))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_header(test_topic_card)
+                   ).to_be_hidden()
 
 
 # C2903878
@@ -1369,10 +1351,9 @@ def test_article_update_and_frequent_topics_cards(page: Page, create_user_factor
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Thunderbird"])
-            assert (
-                new_article_name in sumo_pages.common_web_elements.
-                get_frequent_topic_card_articles(utilities.general_test_data["test_topics"]
-                                                 ["Thunderbird"]["topic_name"]))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
+            ).to_contain_text([new_article_name])
 
 
 # C2903948
@@ -1399,9 +1380,9 @@ def test_obsolete_articles_and_frequent_topics_cards(page: Page, create_user_fac
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Thunderbird"])
-            assert (article_details["article_title"] not in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(
-                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
+            ).not_to_contain_text([article_details["article_title"]])
 
     with allure.step("Unmarking the article as Obsolete via the 'Edit Article Metadata' page"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -1411,10 +1392,9 @@ def test_obsolete_articles_and_frequent_topics_cards(page: Page, create_user_fac
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["Thunderbird"])
-            assert (
-                article_details["article_title"] in sumo_pages.common_web_elements.
-                get_frequent_topic_card_articles(utilities.general_test_data["test_topics"]
-                                                 ["Thunderbird"]["topic_name"]))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
+            ).to_contain_text([article_details["article_title"]])
 
 
 # C2904497
@@ -1439,9 +1419,9 @@ def test_ignored_article_types_from_frequent_topics_cards(page: Page, category,
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(
                 utilities.general_test_data[link]["MDN Plus"])
-            assert (article["article_title"] not in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(
-                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"])
+            ).not_to_contain_text([article["article_title"]])
 
 
 # C2903871 C2903873 C2903874
@@ -1470,9 +1450,9 @@ def test_article_topic_and_product_change(page: Page, create_user_factory):
         for product in ["MDN Plus", "Thunderbird"]:
             for link in ["product_support", "product_solutions"]:
                 utilities.navigate_to_link(utilities.general_test_data[link][product])
-                assert (article_details["article_title"] in sumo_pages.common_web_elements.
-                        get_frequent_topic_card_articles(
-                    utilities.general_test_data["test_topics"][product]["topic_name"]))
+                expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                    utilities.general_test_data["test_topics"][product]["topic_name"])
+                ).to_contain_text([article_details["article_title"]])
 
     with check, allure.step("Removing the article from the Thunderbird product & topic"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -1484,12 +1464,12 @@ def test_article_topic_and_product_change(page: Page, create_user_factory):
                             "product &  topic"):
         for link in ["product_support", "product_solutions"]:
             utilities.navigate_to_link(utilities.general_test_data[link]["Thunderbird"])
-            assert (article_details["article_title"] not in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(
-                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"]))
-            assert (article_details["article_title"] not in sumo_pages.common_web_elements.
-                    get_frequent_topic_card_articles(
-                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"]))
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["Thunderbird"]["topic_name"])
+            ).not_to_contain_text([article_details["article_title"]])
+            expect(sumo_pages.common_web_elements.frequent_topic_card_articles(
+                utilities.general_test_data["test_topics"]["MDN Plus"]["topic_name"])
+            ).not_to_contain_text([article_details["article_title"]])
 
 
 # C2550394 C2877651 C2877652 C2877653 C2877654 C2843760 C2843762 C2844267 C2844282 C2844332
@@ -1535,19 +1515,16 @@ def test_article_helpfulness_votes(page: Page, vote_type, create_user_factory):
             assert events.items() <= ga_events[f'{slugify(vote_type).lower()}'].items()
 
         with check, allure.step("Verifying that the correct widget is displayed"):
-            assert (
-                sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
-                KB_SURVEY_FEEDBACK
-            )
+            expect(sumo_pages.kb_article_page.survey_message).to_have_text(
+                KBArticlePageMessages.KB_SURVEY_FEEDBACK)
 
         with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
-            sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
-            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+            expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
         with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                                 "displayed"):
             page.reload()
-            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+            expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
 
 # C2877655 C2843760 C2843762 C2844267 C2844282 C2844332  C2844333
@@ -1592,18 +1569,16 @@ def test_article_helpfulness_cancel_vote(page: Page, vote_type, create_user_fact
             assert events.items() <= ga_events['cancel_survey_helpful'].items()
 
         with check, allure.step("Verifying that the correct widget is displayed"):
-            assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
-                    KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
+            expect(sumo_pages.kb_article_page.survey_message).to_have_text(
+                KBArticlePageMessages.KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
 
         with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
-            sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
-            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+            expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
         with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                                 "displayed"):
             page.reload()
-            assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
-
+            expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
 # C2877656 C2877657 C2877658  C2877659 C2877660 C2844337 C2844339 C2844341 C2844342 C2844343
 # C2844345
@@ -1653,17 +1628,16 @@ def test_article_unhelpfulness_votes(page: Page, vote_type, create_user_factory)
                 ].items()
             )
     with check, allure.step("Verifying that the correct widget is displayed"):
-        assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
-                KB_SURVEY_FEEDBACK)
+        expect(sumo_pages.kb_article_page.survey_message).to_have_text(
+            KBArticlePageMessages.KB_SURVEY_FEEDBACK)
 
     with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
-        sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
-        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+        expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                             "displayed"):
         page.reload()
-        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+        expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
 
 # C2877661 C2844337 C2844339 C2844341 C2844342 C2844343 C2844345
@@ -1709,17 +1683,16 @@ def test_article_unhelpfulness_cancel_vote(page: Page, vote_type, create_user_fa
             assert events.items() <= ga_events['cancel_survey_unhelpful'].items()
 
     with check, allure.step("Verifying that the correct widget is displayed"):
-        assert (sumo_pages.kb_article_page.get_survey_message_text() == KBArticlePageMessages.
-                KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
+        expect(sumo_pages.kb_article_page.survey_message).to_have_text(
+            KBArticlePageMessages.KB_SURVEY_FEEDBACK_NO_ADDITIONAL_DETAILS)
 
     with check, allure.step("Verifying that the helpfulness widget is no longer displayed"):
-        sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
-        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+        expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
     with check, allure.step("Refreshing the page and verifying that the widget is no longer "
                             "displayed"):
         page.reload()
-        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+        expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
 
 # C2616585
@@ -1747,8 +1720,7 @@ def test_article_helpfulness_metadata_count(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct kb article metadata information is "
                             "displayed"):
-        assert (sumo_pages.kb_article_page.
-                get_text_of_kb_article_helpfulness_count_metadata() == "100%")
+        expect(sumo_pages.kb_article_page.kb_article_helpfulness_count).to_have_text("100%")
 
     with allure.step("Signing in with a different user"):
         utilities.start_existing_session(cookies=test_user)
@@ -1762,15 +1734,14 @@ def test_article_helpfulness_metadata_count(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct kb article metadata information is "
                             "displayed"):
-        assert (sumo_pages.kb_article_page.
-                get_text_of_kb_article_helpfulness_count_metadata() == "50%")
+        expect(sumo_pages.kb_article_page.kb_article_helpfulness_count).to_have_text("50%")
 
     with check, allure.step("Navigating to the topics page associated with this article and "
                             "verifying that the helpfulness percentage metadata information is "
                             "not displayed"):
         utilities.navigate_to_link(utilities.general_test_data["product_topics"]["Firefox"])
-        assert not (sumo_pages.product_topics_page.is_article_helpfulness_metadata_displayed(
-            article_info["article_title"]))
+        expect(sumo_pages.product_topics_page.article_helpfulness_count(
+            article_info["article_title"])).to_be_hidden()
 
 
 # C2895037
@@ -1802,8 +1773,7 @@ def test_voting_the_same_article_twice_is_not_possible(page: Page, context: Brow
 
     with check, allure.step("Verifying that the helpfulness widget is no longer displayed inside"
                             " first browser window"):
-        sumo_pages.kb_article_page.wait_for_helpfulness_widget_to_be_hidden()
-        assert not sumo_pages.kb_article_page.is_helpfulness_widget_displayed()
+        expect(sumo_pages.kb_article_page.helpfulness_widget).to_be_hidden()
 
 
 # C3065908 C3065909
@@ -1864,7 +1834,7 @@ def test_adding_and_removing_related_documents(page: Page, create_user_factory):
                             f"the f{test_article_titles[0]} is not listed inside the "
                             f"'Related documents' section"):
         utilities.navigate_to_link(test_articles_url[1])
-        assert not sumo_pages.kb_article_page.is_related_articles_section_displayed()
+        expect(sumo_pages.kb_article_page.related_articles_section).to_be_hidden()
 
 
 # C3059081
@@ -1888,9 +1858,8 @@ def test_same_article_cannot_be_added_as_related_article(page: Page, create_user
         sumo_pages.kb_article_page.click_on_edit_article_metadata()
         sumo_pages.kb_article_edit_article_metadata_page.add_related_documents(
             article_info["article_title"], submit=False)
-        utilities.wait_for_given_timeout(2000)
-        assert sumo_pages.kb_article_edit_article_metadata_page.is_no_related_documents_displayed()
-
+        expect(sumo_pages.kb_article_edit_article_metadata_page.
+               no_results_found_related_documents_message).to_be_visible()
 
 #  C3065910
 @pytest.mark.kbArticleCreationAndAccess

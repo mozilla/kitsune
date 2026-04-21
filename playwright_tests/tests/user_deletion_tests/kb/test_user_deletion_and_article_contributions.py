@@ -40,16 +40,15 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
                             "that the second revision was deleted since it was not approved"):
         utilities.navigate_to_link(article_details["article_url"] + "/history")
         utilities.start_existing_session(session_file_name=staff)
-
-        assert not sumo_pages.kb_article_show_history_page.is_revision_displayed(
-            second_revision["revision_id"])
+        expect(sumo_pages.kb_article_show_history_page.revision(second_revision["revision_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Verifying that the other revisions are belonging to the user which "
                             "was not deleted"):
-        assert sumo_pages.kb_article_show_history_page.get_revision_creator(
-            article_details["first_revision_id"]) == test_user["username"]
-        assert sumo_pages.kb_article_show_history_page.get_revision_creator(
-            third_revision["revision_id"]) == test_user["username"]
+        expect(sumo_pages.kb_article_show_history_page.revision_creator(
+            article_details["first_revision_id"])).to_have_text(test_user["username"])
+        expect(sumo_pages.kb_article_show_history_page.revision_creator(
+            third_revision["revision_id"])).to_have_text(test_user["username"])
 
     with allure.step("Signing in with the first user and deleting the account"):
         utilities.start_existing_session(cookies=test_user)
@@ -60,11 +59,12 @@ def test_reviewed_revisions_assignment_to_system_account(page: Page, create_user
         utilities.navigate_to_link(article_details["article_url"] + "/history")
         utilities.start_existing_session(session_file_name=staff)
 
-        assert (sumo_pages.kb_article_show_history_page.get_revision_creator(
-            article_details["first_revision_id"]
-        ) == utilities.general_test_data["system_account_name"])
-        assert (sumo_pages.kb_article_show_history_page.get_revision_creator(
-            third_revision["revision_id"]) == utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.kb_article_show_history_page.revision_creator(
+            article_details["first_revision_id"])).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.kb_article_show_history_page.revision_creator(
+            third_revision["revision_id"])).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
     with allure.step("Deleting the test article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()
@@ -121,8 +121,8 @@ def test_deferred_revisions_are_not_assigned_to_system_account(page:Page, create
         sumo_pages.edit_profile_flow.close_account()
         utilities.start_existing_session(cookies=test_user_two)
         utilities.navigate_to_link(article_details["article_url"] + "/history")
-        assert not sumo_pages.kb_article_show_history_page.is_revision_displayed(
-            second_revision["revision_id"])
+        expect(sumo_pages.kb_article_show_history_page.revision(second_revision["revision_id"])
+               ).to_be_hidden()
 
 
 #  C2979501, C2979502
@@ -189,11 +189,11 @@ def test_reviewed_by_assignment_to_system_account(page: Page, create_user_factor
         utilities.navigate_to_link(article_details["article_url"] + "/history")
         sumo_pages.kb_article_show_history_page.click_on_a_revision_date(
             article_details["first_revision_id"])
-        assert sumo_pages.kb_article_preview_revision_page.get_reviewed_by_text() == "SumoBot"
+        expect(sumo_pages.kb_article_preview_revision_page.reviewed_by).to_have_text("SumoBot")
         utilities.navigate_back()
         sumo_pages.kb_article_show_history_page.click_on_a_revision_date(
             second_revision["revision_id"])
-        assert sumo_pages.kb_article_preview_revision_page.get_reviewed_by_text() == "SumoBot"
+        expect(sumo_pages.kb_article_preview_revision_page.reviewed_by).to_have_text("SumoBot")
 
     with allure.step("Deleting the article"):
         sumo_pages.kb_article_deletion_flow.delete_kb_article()

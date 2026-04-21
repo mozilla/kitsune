@@ -6,6 +6,7 @@ from playwright_tests.pages.contribute.groups_page import GroupsPage
 
 class UserGroupFlow:
     def __init__(self, page: Page):
+        self.page = page
         self.utilities = Utilities(page)
         self.groups_page = GroupsPage(page)
 

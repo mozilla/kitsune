@@ -1,7 +1,7 @@
 import random
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_discussions.con_discussions_messages import \
@@ -62,7 +62,8 @@ def test_and_or_not_operators_in_community_hub(page: Page, create_user_factory):
         sumo_pages.community_hub_page.clear_search()
         sumo_pages.community_hub_page.search_for_contributor(
             target_user_first_name + " AND " + target_user_last_name)
-        assert cards == sumo_pages.community_hub_page.get_all_users_from_user_cards()
+        expect(sumo_pages.community_hub_page.user_titles_from_returned_cards).to_contain_text(
+            cards)
 
     with check, allure.step("Using the OR operator to search for full name and verifying that "
                             "cards containing the first name or the last name are returned"):
@@ -196,7 +197,7 @@ def test_searching_in_contributor_forums_return_results_only_to_that_forum(page,
     with allure.step("Creating a new forum thread"):
         post_id = sumo_pages.contributor_thread_flow.post_a_new_thread(
             thread_title=thread_title,
-            thread_body="Contributor Thread body test"
+            thread_body="Contributor Thread body test",
         )
         utilities.reindex_document("ForumDocument", post_id)
 
@@ -206,8 +207,8 @@ def test_searching_in_contributor_forums_return_results_only_to_that_forum(page,
     with check, allure.step("Searching this forum for the posted thread and verifying that the "
                             "thread is returned"):
         sumo_pages.forum_discussions_page.search_in_community_discussion(thread_title)
-        assert (thread_title in sumo_pages.forum_discussions_page.
-                get_all_thread_titles_from_search_results())
+        expect(sumo_pages.forum_discussions_page.search_results_headers).to_contain_text(
+            thread_title)
 
     with allure.step("Navigating back to the Contributor Discussions page"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
@@ -219,8 +220,7 @@ def test_searching_in_contributor_forums_return_results_only_to_that_forum(page,
     with check, allure.step("Searching this forum for the posted thread and verifying that the "
                             "thread is not returned"):
         sumo_pages.forum_discussions_page.search_in_community_discussion(thread_title)
-        assert (thread_title not in sumo_pages.forum_discussions_page.
-                get_all_thread_titles_from_search_results())
+        expect(sumo_pages.forum_discussions_page.search_results_headers).to_be_hidden()
 
 
 # C1359176
@@ -249,8 +249,8 @@ def test_by_thread_locked_status(page: Page, create_user_factory):
                    get_all_thread_titles_from_search_results_handles())
         random.choice(results).click()
 
-        assert sumo_pages.forum_thread_page.is_unlock_this_thread_option_visible()
-        assert "Locked" in sumo_pages.forum_thread_page.get_thread_meta_information()
+        expect(sumo_pages.forum_thread_page.unlock_this_thread_option).to_be_visible()
+        expect(sumo_pages.forum_thread_page.thread_meta.filter(has_text="Locked")).to_be_visible()
 
     with check, allure.step("Navigating back to the forum page, searching for unlocked threads "
                             "and verifying that the returned search results are unlocked."):
@@ -261,9 +261,8 @@ def test_by_thread_locked_status(page: Page, create_user_factory):
                    get_all_thread_titles_from_search_results_handles())
         random.choice(results).click()
 
-        assert sumo_pages.forum_thread_page.is_lock_this_thread_option_visible()
-        assert "Locked" not in sumo_pages.forum_thread_page.get_thread_meta_information()
-
+        expect(sumo_pages.forum_thread_page.lock_this_thread_option).to_be_visible()
+        expect(sumo_pages.forum_thread_page.thread_meta.filter(has_text="Locked")).to_be_hidden()
 
 # C1359177
 @pytest.mark.contributorForumSearch
@@ -291,8 +290,8 @@ def test_by_sticky_status(page: Page, create_user_factory):
                    get_all_thread_titles_from_search_results_handles())
         random.choice(results).click()
 
-        assert sumo_pages.forum_thread_page.is_unsticky_this_thread_option_visible()
-        assert "Sticky" in sumo_pages.forum_thread_page.get_thread_meta_information()
+        expect(sumo_pages.forum_thread_page.unsticky_this_thread_option).to_be_visible()
+        expect(sumo_pages.forum_thread_page.thread_meta.filter(has_text="Sticky")).to_be_visible()
 
     with check, allure.step("Navigating back to the forum page, searching for non sticky threads "
                             "and verifying that the returned search results are not sticky."):
@@ -303,7 +302,6 @@ def test_by_sticky_status(page: Page, create_user_factory):
                    get_all_thread_titles_from_search_results_handles())
         random.choice(results).click()
 
-        assert sumo_pages.forum_thread_page.is_sticky_this_thread_option_visible()
-        assert "Sticky" not in sumo_pages.forum_thread_page.get_thread_meta_information()
-
+        expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_visible()
+        expect(sumo_pages.forum_thread_page.thread_meta.filter(has_text="Sticky")).to_be_hidden()
 

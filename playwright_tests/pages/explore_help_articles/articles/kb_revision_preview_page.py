@@ -45,60 +45,23 @@ class KBArticleRevisionsPreviewPage(BasePage):
             "//summary[text()='Revision Content']")
         self.revision_content_html_section = page.locator("div#doc-content")
 
-    """Actions against the 'Preview Revision' page locators."""
-    def get_preview_revision_header(self) -> str:
-        return self._get_text_of_element(self.preview_revision_page_header)
-
     """Actions against the revision information section locators."""
     def click_on_revision_information_foldout_section(self):
         self._click(self.revision_information_foldout_section)
 
-    def get_preview_revision_id_text(self) -> str:
-        return self._get_text_of_element(self.revision_id)
-
-    def get_preview_revision_created_date_text(self) -> str:
-        return self._get_text_of_element(self.created_date)
-
-    def get_preview_revision_creator_text(self) -> str:
-        return self._get_text_of_element(self.creator)
-
     def click_on_creator_link(self):
         self._click(self.creator)
-
-    def get_preview_revision_comment_text(self) -> str:
-        return self._get_text_of_element(self.comment)
-
-    def get_preview_revision_reviewed_text(self) -> str:
-        return self._get_text_of_element(self.reviewed)
 
     """
     This locator is available inside the page only when a review was performed.
     The text returned is the username extracted from the e-mail address.
     """
-    def get_reviewed_by_text(self) -> str:
-        return self._get_text_of_element(self.reviewed_by)
-
-    def get_is_approved_text(self) -> str:
-        return self._get_text_of_element(self.is_approved)
-
-    def get_is_current_revision_text(self) -> str:
-        return self._get_text_of_element(self.is_current_revision)
-
-    def get_preview_revision_ready_for_localization_text(self) -> str:
-        return self._get_text_of_element(self.ready_for_localization)
-
-    def readied_for_localization_by_text(self) -> str:
-        return self._get_text_of_element(self.readied_for_localization_by)
-
     def click_on_edit_article_based_on_this_revision_link(self):
         self._click(self.edit_article_based_on_revision_link)
 
     """Actions against the revision source section locators."""
     def click_on_revision_source_foldout_section(self):
         self._click(self.revision_source_foldout_section)
-
-    def get_preview_revision_source_textarea_content(self) -> str:
-        return self._get_element_input_value(self.revision_source_textarea)
 
     """Actions against the revision content section locators."""
     def click_on_revision_content_foldout_section(self):

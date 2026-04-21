@@ -14,7 +14,7 @@ class SearchPage(BasePage):
         self.hidden_searchbar = page.locator("form#hidden-search input#search-q")
         self.searchbar_search_button = page.locator("form#support-search-masthead button")
         self.search_results_header = page.locator("//main[@id='search-results-list']/h2")
-        self.popular_searches = page.locator("div[class='popular-searches'] a")
+        self.popular_searches = page.locator("//p[@class='popular-searches']/a")
         self.popular_search = lambda option: page.locator(
             "p[class='popular-searches']").get_by_role("link", name=option, exact=True)
         self.search_results_section = page.locator("main#search-results-list")
@@ -73,24 +73,6 @@ class SearchPage(BasePage):
         self._click(self.popular_search(popular_search_option))
         self._wait_for_visibility_of_search_results_section()
 
-    def get_search_result_summary_text_of_a_particular_article(self, article_title) -> str:
-        """Get the search result summary text of a particular article
-
-        Args:
-            article_title (str): The title of the article
-        """
-        self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_element(self.article_search_summary(article_title))
-
-    def is_a_particular_article_visible(self, article_title: str) -> bool:
-        """Check if a particular article is visible
-
-        Args:
-            article_title (str): The title of the article
-        """
-        self._wait_for_visibility_of_search_results_section()
-        return self._is_element_visible(self.article(article_title))
-
     def click_on_a_particular_article(self, article_title: str):
         """Click on a particular article
 
@@ -99,11 +81,6 @@ class SearchPage(BasePage):
         """
         self._wait_for_visibility_of_search_results_section()
         self._click(self.article(article_title))
-
-    def get_all_bolded_content(self) -> list[str]:
-        """Get all the bolded content of the search results"""
-        self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_elements(self.all_bolded_article_content)
 
     def get_all_search_results_article_bolded_content(self, article_title: str) -> list[str]:
         """Get all the bolded content of a particular article
@@ -139,11 +116,6 @@ class SearchPage(BasePage):
         self._wait_for_visibility_of_search_results_section()
         return self._get_element_handles(self.search_results_titles)
 
-    def get_all_search_results_articles_summary(self) -> list[str]:
-        """Get all the summaries of the search results"""
-        self._wait_for_visibility_of_search_results_section()
-        return self._get_text_of_elements(self.search_results_articles_summary)
-
     def get_locator_of_a_particular_article(self, article_title: str) -> Locator:
         """Get the locator of a particular article
 
@@ -158,12 +130,7 @@ class SearchPage(BasePage):
         self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_elements(self.question_votes_meta_information)
 
-    def is_search_content_section_displayed(self) -> bool:
-        """Check if the search content section is displayed"""
-        return self._is_element_visible(self.search_results_content)
-
     """Actions against the search bar."""
-
     def get_text_of_searchbar_field(self) -> str:
         """Get the text of the search bar field"""
         return self._get_element_input_value(self.searchbar_homepage)
@@ -236,10 +203,6 @@ class SearchPage(BasePage):
         self._wait_for_visibility_of_search_results_section()
         return self._get_text_of_element(self.search_results_header)
 
-    def get_doctype_filter(self) -> str:
-        """Get the selected doctype filter"""
-        return self._get_text_of_element(self.selected_filter_locator)
-
     def click_on_view_all_doctype_filter(self):
         """Clicking on the 'Vew All' doctype filter."""
         self._click(self.view_all_filter)
@@ -251,7 +214,3 @@ class SearchPage(BasePage):
     def click_on_community_discussions_only_doctype_filter(self):
         """Clicking on the 'Community Discussions Only' filter"""
         self._click(self.community_discussions_only_filter)
-
-    def get_no_search_results_message(self) -> str:
-        """Returning the message displayed when no search results were returned."""
-        return self._get_text_of_element(self.no_search_results_message)

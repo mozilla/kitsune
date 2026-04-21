@@ -21,6 +21,7 @@ from playwright_tests.pages.contribute.contribute_pages.contributor_discussions\
 
 class ContributorThreadFlow:
     def __init__(self, page: Page):
+        self.page = page
         self.utilities = Utilities(page)
         self.new_thread_page = NewThreadPage(page)
         self.forum_discussions_page = ForumDiscussionsPage(page)
@@ -36,6 +37,7 @@ class ContributorThreadFlow:
                 thread_title (str): The title of the new thread.
                 thread_body (str): The body of the new thread.
                 cancel (bool): If True, click on the cancel button instead of posting the thread.
+                expected_locator: The expected locator after the thread post.
             returns:
                 str: The thread ID of the newly created thread which is fetched from the url.
         """
@@ -45,11 +47,12 @@ class ContributorThreadFlow:
         self.new_thread_page.fill_title_input_field(thread_title)
         self.new_thread_page.fill_content_textarea_field(thread_body)
 
-        action = self.new_thread_page.click_on_cancel_button if cancel else (
-            self.new_thread_page.click_on_post_thread_button)
-        action()
+        if cancel:
+            self.new_thread_page.click_on_cancel_button()
 
         if not cancel:
+            self.new_thread_page.click_on_post_thread_button()
+            print("This is the current page url: " + self.utilities.get_page_url())
             return re.search(r'last=(\d+)', self.utilities.get_page_url()).group(1)
 
     def move_thread_to_a_different_forum(self, target_forum: str):

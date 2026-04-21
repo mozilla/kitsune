@@ -37,8 +37,8 @@ def test_number_of_questions_is_incremented_when_posting_a_question(page: Page,
     with allure.step("Navigating back to the profile page and verifying that the number of "
                      "questions has incremented"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.my_profile_page.get_my_profile_questions_text()) == 1)
+        expect(sumo_pages.my_profile_page.questions_link).to_contain_text("1")
+
 
 
 # C1296000, #  C890790
@@ -67,10 +67,10 @@ def test_my_contributions_questions_reflects_my_questions_page_numbers(page: Pag
                      "number of questions from the my profile page matches the one from the "
                      "ones from my questions page"):
         sumo_pages.my_profile_page.click_on_my_profile_questions_link()
-        assert number_of_questions == sumo_pages.my_questions_page.get_number_of_questions()
+        expect(sumo_pages.my_questions_page.questions_list).to_have_count(number_of_questions)
 
 
-# T5697863
+# T5697863, C3961769
 @pytest.mark.userQuestions
 def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Page,
                                                                        create_user_factory):
@@ -85,9 +85,8 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
                             " message is displayed"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         sumo_pages.user_navbar.click_on_my_questions_option()
-        assert (sumo_pages.my_questions_page.
-                get_text_of_no_question_message() == MyQuestionsPageMessages.
-                NO_POSTED_QUESTIONS_MESSAGE)
+        expect(sumo_pages.my_questions_page.questions_no_question_message).to_have_text(
+            MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE)
 
     with check, allure.step("Verifying that the question list is not displayed"):
         expect(sumo_pages.my_questions_page.questions_list).to_be_hidden()
@@ -99,6 +98,7 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
     with check, allure.step("Accessing the my questions page and verifying that the no question"
                             " message is no longer displayed"):
         sumo_pages.top_navbar.click_on_view_profile_option()
+        expect(sumo_pages.my_profile_page.questions_link).to_contain_text("1")
         sumo_pages.user_navbar.click_on_my_questions_option()
         expect(sumo_pages.my_questions_page.questions_no_question_message).to_be_hidden()
 
@@ -107,12 +107,15 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
         sumo_pages.question_page.click_delete_this_question_question_tools_option()
         sumo_pages.question_page.click_delete_this_question_button()
 
+    with allure.step("Verifying that the questions counter is no longer displayed at the profile "
+                     "level"):
+        sumo_pages.top_navbar.click_on_view_profile_option()
+        expect(sumo_pages.my_profile_page.questions_link).to_be_hidden()
+
     with allure.step("Verifying that the question list is no longer displayed"):
         sumo_pages.top_navbar.click_on_my_questions_profile_option()
-        assert (
-            sumo_pages.my_questions_page.get_text_of_no_question_message()
-            == MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE
-        )
+        expect(sumo_pages.my_questions_page.questions_no_question_message).to_have_text(
+            MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE)
 
 
 # T5697862, T5697864, T5697865
@@ -133,10 +136,10 @@ def test_question_page_reflects_posted_questions_and_redirects_to_question(page:
     with check, allure.step("Navigating to my questions profile page and verifying that the first "
                             "element from the My Questions page is the recently posted question"):
         sumo_pages.top_navbar.click_on_my_questions_profile_option()
-        assert (sumo_pages.my_questions_page.get_text_of_listed_question_by_index(0).
-                strip() == second_question["aaq_subject"].strip())
-        assert (sumo_pages.my_questions_page.get_text_of_listed_question_by_index(1).
-                strip() == first_question["aaq_subject"].strip())
+        expect(sumo_pages.my_questions_page.questions_titles.nth(0)).to_have_text(
+            second_question["aaq_subject"])
+        expect(sumo_pages.my_questions_page.questions_titles.nth(1)).to_have_text(
+            first_question["aaq_subject"])
 
     with allure.step("Clicking on the first list item and verifying that the user is "
                      "redirected to the correct question"):

@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.sumo_pages import SumoPages
@@ -27,7 +27,7 @@ def test_media_file_ownership_reassignment_to_system_account(page: Page, create_
         image_preview_url = utilities.get_page_url()
 
     with check, allure.step("Verifying that the test user is added as the image creator"):
-        assert sumo_pages.media_gallery.get_image_creator_text() == test_user["username"]
+        expect(sumo_pages.media_gallery.image_creator).to_have_text(test_user["username"])
 
     with allure.step("Deleting the test user account"):
         sumo_pages.edit_profile_flow.close_account()
@@ -35,8 +35,8 @@ def test_media_file_ownership_reassignment_to_system_account(page: Page, create_
     with check, allure.step("Navigating back to the image preview and verifying that the system "
                             "account has taken ownership of the image"):
         utilities.navigate_to_link(image_preview_url)
-        assert (sumo_pages.media_gallery.get_image_creator_text() == utilities.
-                general_test_data["system_account_name"])
+        expect(sumo_pages.media_gallery.image_creator).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
     with allure.step("Deleting the uploaded test image"):
         utilities.start_existing_session(session_file_name=staff)
@@ -78,16 +78,16 @@ def test_media_file_is_displayed_in_kb_after_owner_deletion(page: Page, create_u
                             " article level"):
         utilities.navigate_to_link(utilities.remove_character_from_string(
             article_info["article_url"], "/history"))
-        assert sumo_pages.kb_article_page.is_article_content_image_displayed(media_title)
+        expect(sumo_pages.kb_article_page.kb_article_content_image(media_title)).to_be_visible()
 
     with check, allure.step("Navigating to the image and preview and verifying that: "
                             "1. The article is added inside the Articles list. "
                             "2. The image ownership is assigned to the system account"):
         utilities.navigate_to_link(image_preview_url)
-        assert (article_info["article_title"] in sumo_pages.media_gallery
-                .get_image_in_documents_list_items_text())
-        assert (sumo_pages.media_gallery.get_image_creator_text() == utilities.
-                general_test_data["system_account_name"])
+        expect(sumo_pages.media_gallery.image_in_documents_list).to_contain_text(
+            [article_info["article_title"]])
+        expect(sumo_pages.media_gallery.image_creator).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
     with allure.step("Deleting the attached image"):
         utilities.start_existing_session(session_file_name=staff)
@@ -126,5 +126,5 @@ def test_media_gallery_image_is_preserved_after_editor_deletion(page: Page, crea
                             "1. The image ownership is kept to the first user. "
                             "2. The image description is kept to the edited version"):
         utilities.navigate_to_link(image_preview_url)
-        assert sumo_pages.media_gallery.get_image_creator_text() == test_user["username"]
-        assert sumo_pages.media_gallery.get_image_description() == new_media_description
+        expect(sumo_pages.media_gallery.image_creator).to_have_text(test_user["username"])
+        expect(sumo_pages.media_gallery.image_description).to_have_text(new_media_description)

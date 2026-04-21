@@ -1,4 +1,6 @@
 import datetime
+import re
+
 import allure
 import pytest
 import pytz
@@ -41,8 +43,8 @@ def test_username_field_is_automatically_populated(page: Page, create_user_facto
 
     with allure.step("Verifying that username field is automatically populated with the correct "
                      "data"):
-        assert (sumo_pages.edit_my_profile_page.get_username_input_field_value(
-        ) == sumo_pages.top_navbar.get_text_of_logged_in_username())
+        expect(sumo_pages.edit_my_profile_page.username_input_field).to_have_value(
+            sumo_pages.top_navbar.get_text_of_logged_in_username())
 
 
 # C1491017, C1491019
@@ -75,16 +77,16 @@ def test_edit_profile_field_validation_with_symbols(page: Page, create_user_fact
 
         with check, allure.step("Verify that the newly set username is successfully applied to the"
                                 " my profile section"):
-            assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text() == value
+            expect(sumo_pages.my_profile_page.display_name_header).to_have_text(value)
 
         with check, allure.step("Verify that the newly set username is displayed inside the top"
                                 " navbar"):
-            assert sumo_pages.top_navbar.get_text_of_logged_in_username() == value
+            expect(sumo_pages.top_navbar.signed_in_username).to_have_text(value)
 
         with check, allure.step("Access a previously posted question and verify that the display"
                                 " name has changed"):
             utilities.navigate_to_link(article_details["question_page_url"])
-            assert sumo_pages.question_page.get_question_author_name() == value
+            expect(sumo_pages.question_page.question_author).to_have_text(value)
             sumo_pages.top_navbar.click_on_edit_profile_option()
 
     with allure.step("Going back to the my profile page and reverting the username back to the "
@@ -96,17 +98,16 @@ def test_edit_profile_field_validation_with_symbols(page: Page, create_user_fact
         )
 
     with check, allure.step("Verifying that the username was updated back to the original one"):
-        assert (sumo_pages.my_profile_page.
-                get_my_profile_display_name_header_text() == test_user["username"])
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(test_user["username"])
 
     with check, allure.step("Verify that the newly set username is displayed inside the top"
                             " navbar"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(test_user["username"])
 
     with allure.step("Access a previously posted question and verify that the display name has "
                      "changed"):
         utilities.navigate_to_link(article_details["question_page_url"])
-        assert sumo_pages.question_page.get_question_author_name() == test_user["username"]
+        expect(sumo_pages.question_page.question_author).to_have_text(test_user["username"])
 
 
 # C1491017, C1491019
@@ -137,15 +138,13 @@ def test_username_with_invalid_symbols(page: Page, create_user_factory):
         with check, allure.step("Clicking on the 'Update My Profile' button and verifying that"
                                 " the correct error message is displayed"):
             sumo_pages.edit_my_profile_page.click_update_my_profile_button()
-            assert (sumo_pages.edit_my_profile_page.
-                    get_username_error_message_text() == EditMyProfilePageMessages.
-                    USERNAME_INPUT_ERROR_MESSAGE)
+            expect(sumo_pages.edit_my_profile_page.username_error_message).to_have_text(
+                EditMyProfilePageMessages.USERNAME_INPUT_ERROR_MESSAGE)
 
         with allure.step("Accessing the Edit Profile page and verifying that the username was not "
                          "changed"):
             sumo_pages.top_navbar.click_on_view_profile_option()
-            assert (sumo_pages.my_profile_page.
-                    get_my_profile_display_name_header_text() == original_username)
+            expect(sumo_pages.my_profile_page.display_name_header).to_have_text(original_username)
 
 
 #  C891530,  C2107866
@@ -169,6 +168,7 @@ def test_cancel_profile_edit(page: Page, create_user_factory):
     with allure.step("Clicking on the 'Cancel' button and verifying that we are on the same "
                      "page and all input field values were reverted back to original"):
         sumo_pages.edit_my_profile_page.click_cancel_button()
+
         assert sumo_pages.edit_my_profile_page.get_value_of_all_fields() == original_values
 
 
@@ -192,7 +192,7 @@ def test_manage_firefox_account_redirects_to_firefox_account_settings_page(page:
                      "page in a new tab"):
         with page.context.expect_page() as tab:
             fxa_page = tab.value
-        assert FxAPageMessages.ACCOUNT_SETTINGS_URL in fxa_page.url
+            expect(fxa_page).to_have_url(FxAPageMessages.ACCOUNT_SETTINGS_URL)
 
 
 #  C1491461
@@ -217,19 +217,17 @@ def test_duplicate_usernames_are_not_allowed(page: Page, create_user_factory):
 
     with check, allure.step("Verify that the error message is displayed under the username input"
                             " field and is the correct one"):
-        assert (sumo_pages.edit_my_profile_page.
-                get_username_error_message_text() == EditMyProfilePageMessages.
-                DUPLICATE_USERNAME_ERROR_MESSAGE)
+        expect(sumo_pages.edit_my_profile_page.username_error_message).to_have_text(
+            EditMyProfilePageMessages.DUPLICATE_USERNAME_ERROR_MESSAGE)
 
     with check, allure.step("Verifying that the username displayed inside the top navbar is the"
                             " correct one"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(test_user["username"])
 
     with allure.step("Accessing the my profile page and verifying that the username "
                      "displayed inside the page is the correct one"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
-        ) == test_user["username"]
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(test_user["username"])
 
 
 #  C1491462
@@ -250,17 +248,16 @@ def test_profile_username_field_cannot_be_left_empty(page: Page, create_user_fac
         sumo_pages.edit_my_profile_page.click_update_my_profile_button()
 
     with check, allure.step("Verifying that we are still on the edit profile page"):
-        assert utilities.get_page_url() == EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL
+        expect(page).to_have_url(EditMyProfilePageMessages.STAGE_EDIT_MY_PROFILE_URL)
 
     with check, allure.step("Verifying that the displayed username inside the top navbar is the"
                             " original one"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(test_user["username"])
 
     with allure.step("Accessing the my profile page and verifying that the username is the "
                      "original one"):
         sumo_pages.user_navbar.click_on_my_profile_option()
-        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
-        ) == test_user["username"]
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(test_user["username"])
 
 
 # C1491018, C891531,C1491021
@@ -288,11 +285,11 @@ def test_username_can_contain_uppercase_and_lowercase_letters(page: Page, create
 
     with check, allure.step("Verifying that the username displayed inside the top-navbar updates "
                             "successfully"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_username
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(new_username)
 
     with check, allure.step("Verifying that the username displayed inside the my profile section"
                             " is the correct one"):
-        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text() == new_username
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(new_username)
 
     with allure.step("Reverting the username back to the original one"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
@@ -325,13 +322,12 @@ def test_display_name_replaces_the_username_text(page: Page, create_user_factory
 
     with check, allure.step("Verifying that the top navbar username updates with the display "
                             "name"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == new_display_name
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(new_display_name)
 
     with check, allure.step(f"Verifying that the 'My profile' display name contains "
                             f"{new_display_name}"):
-        assert (sumo_pages.my_profile_page.
-                get_my_profile_display_name_header_text() == f"{new_display_name} ("
-                                                             f"{test_user['username']})")
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(
+            f"{new_display_name} ({test_user['username']})")
 
     with allure.step("Reverting back and deleting the display name"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
@@ -342,12 +338,11 @@ def test_display_name_replaces_the_username_text(page: Page, create_user_factory
 
     with check, allure.step(f"Verifying that the displayed name inside the top navbar is reverted"
                             f" back to {test_user['username']}"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(test_user["username"])
 
     with allure.step("Verifying that the displayed name inside the main profile page is "
                      "reverted back to the username"):
-        assert sumo_pages.my_profile_page.get_my_profile_display_name_header_text(
-        ) == test_user["username"]
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(test_user["username"])
 
 
 # C2107866, C2107867, C2107868
@@ -393,9 +388,8 @@ def test_biography_field_accepts_html_tags(page: Page, create_user_factory):
            ).to_be_visible()
 
     # Ensure the <a> tag with 'Digi link' is displayed as text
-    assert "<a href='https://www.digi24.ro'>Digi link</a>" in (
-        sumo_pages.my_profile_page.get_my_profile_bio_text_paragraphs()
-    )
+    expect(sumo_pages.my_profile_page.bio_info).to_contain_text(
+        ["<a href='https://www.digi24.ro'>Digi link</a>"])
 
 
 #  T5697917, C2107899
@@ -429,7 +423,7 @@ def test_email_visibility(page: Page, create_user_factory):
         utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Verifying that the email address is displayed"):
-        assert sumo_pages.my_profile_page.get_text_of_publicly_displayed_username() == staff_email
+        expect(sumo_pages.my_profile_page.displayed_email_address).to_have_text(staff_email)
 
     with allure.step("Signing out"):
         utilities.delete_cookies()
@@ -539,7 +533,7 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
         utilities.navigate_to_link(
             EditMyProfilePageMessages.get_url_of_other_profile_edit_page(test_user["username"])
         )
-        assert sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
+        expect(sumo_pages.auth_page.continue_with_firefox_accounts_button).to_be_visible()
         expect(sumo_pages.edit_my_profile_page.edit_my_profile_edit_input_form).to_be_hidden()
 
     with allure.step(f"Signing in with {test_user_two['username']} user account and accessing "
@@ -555,14 +549,11 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
     with allure.step("Navigating to the profile edit link directly, verifying that the correct"
                      " message is displayed and that the edit form is not displayed"):
         utilities.navigate_to_link(
-            EditMyProfilePageMessages.get_url_of_other_profile_edit_page(test_user["username"])
-        )
-        assert (sumo_pages.edit_my_profile_page.
-                get_access_denied_header_text() == EditMyProfilePageMessages.
-                PROFILE_ACCESS_DENIED_HEADING)
-        assert (sumo_pages.edit_my_profile_page.
-                get_access_denied_subheading_text() == EditMyProfilePageMessages.
-                PROFILE_ACCESS_DENIED_SUBHEADING)
+            EditMyProfilePageMessages.get_url_of_other_profile_edit_page(test_user["username"]))
+        expect(sumo_pages.edit_my_profile_page.access_denied_main_header).to_have_text(
+            EditMyProfilePageMessages.PROFILE_ACCESS_DENIED_HEADING)
+        expect(sumo_pages.edit_my_profile_page.access_denied_subheading_message).to_have_text(
+            EditMyProfilePageMessages.PROFILE_ACCESS_DENIED_SUBHEADING)
         expect(sumo_pages.edit_my_profile_page.edit_my_profile_edit_input_form).to_be_hidden()
 
 
@@ -617,7 +608,7 @@ def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(pag
     with allure.step("Clicking on the 'Private Message' button and verifying that the non-signed "
                      "in user is redirected to the fxa page"):
         sumo_pages.my_profile_page.click_on_private_message_button()
-        assert sumo_pages.auth_page.is_continue_with_firefox_button_displayed()
+        expect(sumo_pages.auth_page.continue_with_firefox_accounts_button).to_be_visible()
 
 
 # C916055, C916054
@@ -747,13 +738,13 @@ def test_close_account_and_delete_profile_information(page:Page, create_user_fac
         sumo_pages.edit_my_profile_page.click_close_account_option()
 
     with allure.step("Verifying that the 'Delete Your Account' button is disabled by default"):
-        assert sumo_pages.edit_my_profile_page.is_delete_your_account_button_disabled()
+        expect(sumo_pages.edit_my_profile_page.close_account_delete_button).to_be_disabled()
 
     with allure.step("Adding a different code inside the input and verifying that the "
                      "'Delete Your Account' button is disabled"):
         sumo_pages.edit_my_profile_page.add_confirmation_code_to_close_account_modal(
             invalid_code=True)
-        assert sumo_pages.edit_my_profile_page.is_delete_your_account_button_disabled()
+        expect(sumo_pages.edit_my_profile_page.close_account_delete_button).to_be_disabled()
 
     with allure.step("Clearing the confirmation code input field, adding the correct code inside "
                      "the input field and closing the modal"):
@@ -763,11 +754,11 @@ def test_close_account_and_delete_profile_information(page:Page, create_user_fac
 
     with allure.step("Refreshing the page and verifying that the user was not deleted"):
         utilities.refresh_page()
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(test_user["username"])
 
     with allure.step("Deleting the user via the 'Close account and delete all profile information'"
                      "modal"):
         sumo_pages.edit_profile_flow.close_account()
-        assert "close_account" in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(r".*close_account.*"))
         utilities.navigate_to_homepage()
-        assert sumo_pages.top_navbar.signin_signup_button.is_visible()
+        expect(sumo_pages.top_navbar.signin_signup_button).to_be_visible()

@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import \
@@ -27,10 +27,8 @@ def test_number_of_options_not_signed_in(page: Page):
 
     with allure.step("Verifying that the top-navbar for signed in users contains: Explore "
                      "Help Articles, Community Forums, Ask a Question and Contribute"):
-        top_navbar_items = sumo_pages.top_navbar.get_available_menu_titles()
-        assert top_navbar_items == TopNavbarMessages.TOP_NAVBAR_OPTIONS, (
-            "Incorrect elements displayed in top-navbar for signed out state"
-        )
+        expect(sumo_pages.top_navbar.menu_titles).to_have_text(
+            TopNavbarMessages.TOP_NAVBAR_OPTIONS)
 
 
 # C876539
@@ -51,10 +49,8 @@ def test_number_of_options_signed_in(page: Page, create_user_factory):
 
     with allure.step("Verifying that the top-navbar contains: Explore Help Articles, "
                      "Community Forums, Ask a Question, Contribute"):
-        top_navbar_items = sumo_pages.top_navbar.get_available_menu_titles()
-        assert top_navbar_items == TopNavbarMessages.TOP_NAVBAR_OPTIONS, (
-            "Incorrect elements displayed in top-navbar for signed-in state"
-        )
+        expect(sumo_pages.top_navbar.menu_titles).to_have_text(
+            TopNavbarMessages.TOP_NAVBAR_OPTIONS)
 
 
 # C2462866
@@ -78,11 +74,11 @@ def test_explore_by_product_redirects(page: Page):
                 current_option = utilities.remove_character_from_string(current_option, 'desktop')
 
             if current_option != "View all products":
-                support_page = sumo_pages.product_support_page.get_product_support_title_text()
-                assert current_option in support_page
+                expect(sumo_pages.product_support_page.product_title).to_contain_text(
+                    current_option)
             else:
-                assert (sumo_pages.products_page.get_page_header() == ProductsPageMessages.
-                        PRODUCTS_PAGE_HEADER)
+                expect(sumo_pages.products_page.page_header).to_have_text(
+                    ProductsPageMessages.PRODUCTS_PAGE_HEADER)
 
 
 # C2462867, C2663957
@@ -99,19 +95,18 @@ def test_explore_by_topic_redirects(page: Page):
                 sumo_pages.top_navbar.hover_over_explore_by_product_top_navbar_option,
                 is_first=index == 0,
             )
-
-            assert (current_option == sumo_pages.explore_by_topic_page
-                    .get_explore_by_topic_page_header())
+            expect(sumo_pages.explore_by_topic_page.explore_by_topic_page_header).to_have_text(
+                current_option)
 
             with check, allure.step("Verifying that the correct option is selected inside the"
                                     " 'All Topics' side navbar"):
-                assert (current_option == sumo_pages.explore_by_topic_page
-                        .get_selected_topic_side_navbar_option())
+                expect(sumo_pages.explore_by_topic_page.all_topics_selected_option).to_have_text(
+                    current_option)
 
             with check, allure.step("Verifying that the 'All Products' option is displayed inside"
                                     " the 'Filter by product' dropdown"):
-                assert (sumo_pages.explore_by_topic_page
-                        .get_current_product_filter_dropdown_option()) == 'All Products'
+                expect(sumo_pages.explore_by_topic_page.filter_by_product_dropdown_selected_option
+                       ).to_have_text("All Products")
 
 
 # C2462868
@@ -138,10 +133,10 @@ def test_browse_by_product_community_forum_redirect(page: Page, create_user_fact
                     current_option, 'desktop').rstrip()
 
             if current_option != "View all forums":
-                assert (f"{current_option} Community Forum" == sumo_pages.product_support_page
-                        .get_product_support_title_text())
+                expect(sumo_pages.product_support_page.product_title).to_have_text(
+                    f"{current_option} Community Forum")
             else:
-                assert utilities.get_page_url() == SupportForumsPageMessages.PAGE_URL
+                expect(page).to_have_url(SupportForumsPageMessages.PAGE_URL)
 
 
 # C2462869
@@ -162,13 +157,12 @@ def test_browse_all_forum_threads_by_topic_redirect(page: Page, create_user_fact
                 sumo_pages.top_navbar.hover_over_community_forums_top_navbar_option,
                 is_first=index == 0,
             )
-
-            assert (sumo_pages.product_support_page.get_product_support_title_text()
-                    == "All Products Community Forum")
+            expect(sumo_pages.product_support_page.product_title).to_have_text(
+                "All Products Community Forum")
 
             with allure.step("Verifying that the correct default topic filter is selected"):
-                assert (sumo_pages.product_support_forum.get_selected_topic_option()
-                        == current_option)
+                expect(sumo_pages.product_support_forum.topic_dropdown_selected_option
+                       ).to_have_text(current_option)
 
 
 # T5696576, T5696591, C2663303
@@ -197,13 +191,13 @@ def test_ask_a_question_top_navbar_redirect(page: Page):
                 current_option = f"Mozilla {current_option}"
 
             if redirect_target:
-                assert (f"{redirect_target} Solutions" == sumo_pages.product_solutions_page
-                        .get_product_solutions_heading())
+                expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                    f"{redirect_target} Solutions")
             elif current_option != "View all":
-                assert (f"{current_option} Solutions" == sumo_pages.product_solutions_page
-                        .get_product_solutions_heading())
+                expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                    f"{current_option} Solutions")
             else:
-                assert utilities.get_page_url() == ContactSupportMessages.PAGE_URL
+                expect(page).to_have_url(ContactSupportMessages.PAGE_URL)
 
 
 # C2462871, C890957
@@ -218,8 +212,8 @@ def test_contribute_top_navbar_redirects(page: Page, create_user_factory):
     with allure.step("Clicking on the 'Contributor discussions' top-navbar option and verifying "
                      "the redirect"):
         sumo_pages.top_navbar.click_on_contributor_discussions_top_navbar_option()
-        assert (sumo_pages.contributor_discussions_page.get_contributor_discussions_page_title()
-                == "Contributor Discussions")
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_page_title
+               ).to_contain_text("Contributor Discussions", ignore_case=True)
 
     with allure.step("Clicking on the 'Contributor discussions' top-navbar options and verifying "
                      "the redirects"):
@@ -232,23 +226,19 @@ def test_contribute_top_navbar_redirects(page: Page, create_user_factory):
             )
 
             if current_option == "Article discussions":
-                assert (sumo_pages.forum_discussions_page.get_forum_discussions_page_title()
-                        .lower() == "english knowledge base discussions")
+                expect(sumo_pages.forum_discussions_page.forum_page_title).to_contain_text(
+                    "english knowledge base discussions", ignore_case=True)
                 with allure.step("Verifying that the correct option is highlighted inside the "
                                  "'Contributor discussions' side navbar"):
-                    assert (sumo_pages.forum_discussions_page
-                            .get_forum_discussions_side_nav_selected_option()
-                            == current_option)
+                    expect(sumo_pages.forum_discussions_page.forum_side_nav_selected_option
+                           ).to_contain_text(current_option, ignore_case=True)
             elif current_option == "View all discussions":
-                assert (sumo_pages.contributor_discussions_page
-                        .get_contributor_discussions_page_title().lower()
-                        == "contributor discussions")
+                expect(sumo_pages.contributor_discussions_page.contributor_discussions_page_title
+                       ).to_contain_text("contributor discussions", ignore_case=True)
             else:
-                assert (
-                    sumo_pages.forum_discussions_page.get_forum_discussions_page_title().lower()
-                    == current_option.lower())
+                expect(sumo_pages.forum_discussions_page.forum_page_title).to_contain_text(
+                    current_option, ignore_case=True)
                 with allure.step("Verifying that the correct option is highlighted inside the "
                                  "'Contributor discussions' side navbar"):
-                    assert (sumo_pages.forum_discussions_page
-                            .get_forum_discussions_side_nav_selected_option()
-                            == current_option)
+                    expect(sumo_pages.forum_discussions_page.forum_side_nav_selected_option
+                           ).to_contain_text(current_option, ignore_case=True)

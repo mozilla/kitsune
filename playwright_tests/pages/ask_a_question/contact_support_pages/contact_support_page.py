@@ -24,26 +24,13 @@ class ContactSupportPage(BasePage):
         self.product_card_by_name = lambda card_name: page.locator(
             "h3[class='card--title']").get_by_role("link", name=card_name, exact=True)
 
-    """"Actions against the breadcrumb locators."""
-    def get_text_of_current_milestone(self) -> str:
-        return self._get_text_of_element(self.current_milestone)
-
     """"Actions against the general page locators."""
-    def get_contact_support_main_heading(self) -> str:
-        return self._get_text_of_element(self.page_main_heading)
-
-    def get_contact_support_subheading_text(self) -> str:
-        return self._get_text_of_element(self.page_subheading)
-
     def click_on_browse_all_product_forums_button(self):
         self._click(self.browse_all_product_forums_button)
 
     """Actions against the product cards."""
     def get_all_product_card_titles(self) -> list[str]:
         return self._get_text_of_elements(self.product_cards_titles)
-
-    def get_product_card_subtitle(self, card_name: str) -> str:
-        return self._get_text_of_element(self.product_card_subtitle(card_name))
 
     def click_on_a_particular_card(self, card_name: str):
         self._click(self.product_card_by_name(card_name))

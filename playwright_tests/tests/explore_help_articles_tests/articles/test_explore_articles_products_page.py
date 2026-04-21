@@ -18,8 +18,8 @@ def test_products_page_content(page: Page):
     with check, allure.step("Navigating to products page via top-navbar and verifying that the "
                             "correct page header is displayed"):
         sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()
-        assert sumo_pages.products_page.get_page_header(
-        ) == ProductsPageMessages.PRODUCTS_PAGE_HEADER
+        expect(sumo_pages.products_page.page_header).to_have_text(
+            ProductsPageMessages.PRODUCTS_PAGE_HEADER)
 
     with allure.step("Clicking on the first 'Home' breadcrumb and verifying the redirect"):
         sumo_pages.products_page.click_on_first_breadcrumb()
@@ -31,9 +31,8 @@ def test_products_page_content(page: Page):
     for card in sumo_pages.products_page.get_all_product_support_titles():
         with check, allure.step(f"Verifying that the {card} card contains the correct subheading"):
             if card in ProductsPageMessages.PRODUCT_CARDS_SUBHEADING:
-                assert sumo_pages.products_page.get_subheading_of_card(
-                    card) == ProductsPageMessages.PRODUCT_CARDS_SUBHEADING[card]
-
+                expect(sumo_pages.products_page.card_subheading(card)).to_have_text(
+                    ProductsPageMessages.PRODUCT_CARDS_SUBHEADING[card])
 
 # C890846
 @pytest.mark.kbProductsPage

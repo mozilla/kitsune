@@ -34,19 +34,6 @@ class MyProfileEditSettingsPage(BasePage):
         self.my_profile_user_navbar_selected_element = page.locator("a[class='selected']")
 
     """Actions against the edit profile settings page locators."""
-    def get_edit_settings_page_header(self) -> str:
-        """Get edit settings page header text"""
-        return self._get_text_of_element(self.edit_settings_page_header)
-
-    def get_text_of_checkbox_options(self) -> list[str]:
-        """Get text of all checkbox options"""
-        return self._get_text_of_elements(self.edit_settings_checkbox_options_label)
-
-    def settings_saved_notif_banner_txt(self) -> str:
-        """Get text of the settings saved notification banner"""
-        return self._get_text_of_element(
-            self.your_settings_have_been_saved_notification_banner_text)
-
     def click_settings_saved_notification_banner(self):
         self._click(self.your_settings_have_been_saved_notification_banner_close_button)
 

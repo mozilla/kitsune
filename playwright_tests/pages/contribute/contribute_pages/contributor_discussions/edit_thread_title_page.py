@@ -19,14 +19,6 @@ class EditThreadTitle(BasePage):
             "button", name="Update thread")
         self.edit_thread_title_cancel_edit_button = page.get_by_role("link", name="Cancel")
 
-    def get_text_of_thread_title_input_field(self) -> str:
-        """
-            Get the text of the thread title input field.
-            returns:
-                str: The text of the thread title input field.
-        """
-        return self._get_element_input_value(self.edit_thread_title_input_field)
-
     def fill_into_thread_title_input_field(self, text: str):
         """
             Fill into the thread title input field.

@@ -23,22 +23,23 @@ def test_contact_support_page_content(page: Page):
         sumo_pages.top_navbar.click_on_browse_all_products_option()
 
     with check, allure.step("Verifying that the current milestone is the correct one"):
-        assert sumo_pages.contact_support_page.get_text_of_current_milestone(
-        ) == ContactSupportMessages.CURRENT_MILESTONE
+        expect(sumo_pages.contact_support_page.current_milestone).to_have_text(
+            ContactSupportMessages.CURRENT_MILESTONE)
 
     with check, allure.step("Verifying that the correct page header is displayed"):
-        assert sumo_pages.contact_support_page.get_contact_support_main_heading(
-        ) == ContactSupportMessages.MAIN_HEADER
+        expect(sumo_pages.contact_support_page.page_main_heading).to_have_text(
+            ContactSupportMessages.MAIN_HEADER)
 
     with check, allure.step("Verifying that the correct page subheading is displayed"):
-        assert sumo_pages.contact_support_page.get_contact_support_subheading_text(
-        ) == ContactSupportMessages.SUBHEADING
+        expect(sumo_pages.contact_support_page.page_subheading).to_have_text(
+            ContactSupportMessages.SUBHEADING)
 
     with allure.step("Verifying that each product card has the correct subheading"):
         for card in sumo_pages.contact_support_page.get_all_product_card_titles():
             with check, allure.step(f"Verifying {card} card has the correct subheading"):
-                assert (ContactSupportMessages.PRODUCT_CARDS_SUBHEADING[card] == sumo_pages.
-                        contact_support_page.get_product_card_subtitle(card))
+                expect(sumo_pages.contact_support_page.product_card_subtitle(card)).to_have_text(
+                    ContactSupportMessages.PRODUCT_CARDS_SUBHEADING[card]
+                )
 
 
 # C890368, C890387, C890388
@@ -57,15 +58,13 @@ def test_contact_support_page_cards_redirect(page: Page):
             sumo_pages.contact_support_page.click_on_a_particular_card(card)
 
         with check, allure.step("Verifying that we are on the correct product solutions page"):
-            assert (
-                sumo_pages.product_solutions_page.get_product_solutions_heading()
-                == (utilities.general_test_data['subscription_redirects'].get(card) or card)
-                + ProductSolutionsMessages.PAGE_HEADER
-            )
+            expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                (utilities.general_test_data['subscription_redirects'].get(
+                    card) or card) + ProductSolutionsMessages.PAGE_HEADER)
 
         with check, allure.step("Verifying that we are on the correct milestone"):
-            assert sumo_pages.product_solutions_page.get_current_milestone_text(
-            ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
+            expect(sumo_pages.product_solutions_page.current_progress_item_label).to_have_text(
+                ProductSolutionsMessages.CURRENT_MILESTONE_TEXT)
 
         with allure.step("Clicking on the 'Change Product' milestone"):
             sumo_pages.product_solutions_page.click_on_the_completed_milestone()

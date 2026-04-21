@@ -39,7 +39,7 @@ class SentMessagePage(BasePage):
             f"[@class='delete']")
         self.delete_by_excerpt_button = lambda excerpt: page.locator(
             f"//div[@class='email-cell excerpt']/a[normalize-space(text())='{excerpt}']/../..//"
-            f"a[@class='delete']")
+            f"a[contains(@class,'delete')]")
         self.sender_username = lambda username: page.locator(
             "div[class='email-cell to']").get_by_role("link", name=username, exact=True)
         self.sent_message_checkbox = lambda excerpt: page.locator(
@@ -65,21 +65,9 @@ class SentMessagePage(BasePage):
         self.to_user_list_items = page.locator("span.to a")
         self.to_deleted_user_list_item = page.locator("span.to")
 
-    """Actions against the Sent Messages page banner."""
-    def get_sent_message_deleted_banner_text(self) -> str:
-        """Get the text of the banner that appears when a sent message is deleted."""
-        return self._get_text_of_element(self.banner_text)
+        """Locators belonging to the pagination section"""
+        self.paginator_section = page.locator("//ol[@class='pagination cf']")
 
-    """Actions against the Sent Messages general page locators."""
-    def get_page_header(self) -> str:
-        """Get the header text of the Sent Messages page."""
-        return self._get_text_of_element(self.page_header)
-
-    def get_no_message_text(self) -> str:
-        """Get the text of the message that appears when there are no messages in the
-        Sent Messages page.
-        """
-        return self._get_text_of_element(self.no_messages_message)
 
     """Actions against the Sent Messages page buttons."""
     def click_on_delete_selected_button(self, expected_locator=None):
@@ -91,15 +79,6 @@ class SentMessagePage(BasePage):
         self._click(self.delete_selected_button, expected_locator=expected_locator)
 
     """Actions against the Sent Messages table."""
-    def get_sent_message_subject(self, username: str) -> str:
-        """
-            Get the subject of the sent message based on the username of the message recipient.
-            Args:
-                username (str): The username of the recipient.
-        """
-        return self._get_text_of_element(self.sent_message_subject(username))
-
-
     def click_on_sent_message_delete_button_by_user(self, username: str):
         """Click on the delete button of a sent message by the username of the recipient.
 
@@ -148,13 +127,13 @@ class SentMessagePage(BasePage):
         """
         self._click(self.sent_message_to_group(group_name))
 
-    def click_on_delete_page_delete_button(self, expected_url=None):
+    def click_on_delete_page_delete_button(self, expected_locator=None):
         """Click on the delete button on the delete message page.
 
         Args:
-            expected_url (str): The expected URL after the deletion.
+            expected_locator (str): The expected locator after the deletion.
         """
-        self._click(self.delete_button, expected_url=expected_url)
+        self._click(self.delete_button, expected_locator=expected_locator)
 
     def click_on_delete_page_cancel_button(self):
         """Click on the cancel button on the delete message page."""
@@ -169,30 +148,15 @@ class SentMessagePage(BasePage):
         return list(self._get_element_handles(
             self.sent_message_by_subject(excerpt)))
 
-    def are_sent_messages_displayed(self) -> bool:
-        """Check if the sent messages are displayed."""
-        return self._is_element_visible(self.sent_messages_section)
-
-    def delete_all_displayed_sent_messages(self, expected_url=None):
-        """Delete all the displayed sent messages.
-
-        Args:
-            expected_url (str): The expected URL after the deletion.
-        """
-        sent_elements_delete_button = self._get_element_handles(self.sent_messages_delete_button)
-        for i in range(len(sent_elements_delete_button)):
-            delete_button = sent_elements_delete_button[i]
-
-            self._click(delete_button)
-            self.click_on_delete_page_delete_button(expected_url=expected_url)
-
-    def delete_all_sent_messages_via_delete_selected_button(self, excerpt='', expected_url=None):
+    def delete_all_sent_messages_via_delete_selected_button(self, excerpt='',
+                                                            expected_locator=None):
         """Delete all the sent messages via the delete selected button.
 
         Args:
             excerpt (str): The excerpt of the message.
-            expected_url (str): The expected URL after the deletion.
+            expected_locator (str): The expected locator after the deletion.
         """
+        self.wait_for_dom_to_load()
         if excerpt != '':
             sent_messages_count = self.sent_messages_by_excerpt_element_handles(excerpt)
         else:
@@ -208,37 +172,4 @@ class SentMessagePage(BasePage):
             counter += 1
 
         self.click_on_delete_selected_button()
-        self.click_on_delete_page_delete_button(expected_url=expected_url)
-
-    def get_recipient_based_on_excerpt(self, excerpt: str) -> str:
-        """
-            Get text of recipient based on excerpt.
-            Args:
-                excerpt (str): The message excerpt.
-            Returns:
-                (str): Message recipient.
-        """
-        return self._get_text_of_element(self.recipient_based_on_excerpt(excerpt))
-
-    def get_deleted_user_recipient_based_on_excerpt(self, excerpt: str) -> str:
-        """
-            Get text of deleted user recipient based on excerpt.
-            Args:
-                excerpt (str): The message excerpt.
-            Returns:
-                (str): Message recipient.
-        """
-        return self._get_text_of_element(self.deleted_user_recipient_based_on_excerpt(excerpt))
-
-    """Actions against the read sent message page."""
-    def get_text_of_all_sent_groups(self) -> list[str]:
-        """Get the text of all the sent groups."""
-        return self._get_text_of_elements(self.to_groups_list_items)
-
-    def get_text_of_all_recipients(self) -> list[str]:
-        """Get the text of all the recipients."""
-        return self._get_text_of_elements(self.to_user_list_items)
-
-    def get_deleted_user(self) -> str:
-        """Get the text of the deleted user recipient inside the read sent message page"""
-        return self._get_text_of_element(self.to_deleted_user_list_item)
+        self.click_on_delete_page_delete_button(expected_locator=expected_locator)

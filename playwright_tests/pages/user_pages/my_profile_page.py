@@ -53,7 +53,7 @@ class MyProfilePage(BasePage):
             "li[class='avatar-group--details-item'] span[class='email'] a")
         self.sign_out_button = page.locator("article#profile").get_by_role("link").filter(
             has_text="Sign Out")
-        self.display_name_header = page.locator("h2[class='sumo-callout-heading user']")
+        self.display_name_header = page.locator("//h2[@class='sumo-callout-heading user']")
         self.display_name_by_username = lambda username: page.get_by_role(
             "heading", name=username, exact=True)
         self.username_info = page.locator("span[class='username']")
@@ -76,14 +76,6 @@ class MyProfilePage(BasePage):
             "section[class='groups']").get_by_role("link", name=group_name, exact=True)
 
     """Actions against the My Profile page locators."""
-    def get_my_profile_display_name_header_text(self) -> str:
-        """Get the display name header text."""
-        return self._get_text_of_element(self.display_name_header)
-
-    def get_my_profile_display_name_username_text(self) -> str:
-        """Get the display name username text."""
-        return self._get_text_of_element(self.username_info)
-
     def get_my_profile_location_text(self) -> str:
         """Get the location text."""
         return self._get_text_of_element(self.location_info)
@@ -112,69 +104,13 @@ class MyProfilePage(BasePage):
         """Get the contributed from text."""
         return self._get_text_of_element(self.contributed_from_info)
 
-    def get_my_profile_bio_text_paragraphs(self) -> list[str]:
-        """Get the bio text."""
-        return self._get_text_of_elements(self.bio_info)
-
-    def get_my_profile_page_header(self) -> str:
-        """Get the profile page header."""
-        return self._get_text_of_element(self.page_header)
-
-    def get_my_profile_email_information(self) -> str:
-        """Get the email information."""
-        return self._get_text_of_element(self.email_address)
-
-    def get_text_of_selected_navbar_option(self) -> str:
-        """Get the text of the selected navbar option."""
-        return self._get_text_of_element(self.user_navbar_selected_element)
-
-    def get_navbar_menu_options(self) -> list[ElementHandle]:
-        """Get the navbar menu options."""
-        return self._get_element_handles(self.user_navbar_options)
-
-    def get_text_of_all_navbar_menu_options(self) -> list[str]:
-        """Get the text of all navbar menu options."""
-        return self._get_text_of_elements(self.user_navbar_options)
-
     def get_text_of_publicly_displayed_username(self) -> str:
         """Get the text of the publicly displayed username."""
         return self._get_text_of_element(self.displayed_email_address)
 
-    def get_text_of_profile_subheading_location(self) -> str:
-        """Get the text of the profile subheading location."""
-        return self._get_text_of_element(self.page_subheading)
-
     def get_my_profile_questions_text(self) -> str:
         """Get the profile questions text."""
         return self._get_text_of_element(self.questions_link)
-
-    def is_question_displayed(self) -> bool:
-        """Check if the question link is displayed."""
-        return self._is_element_visible(self.questions_link)
-
-    def get_my_profile_solutions_text(self) -> str:
-        """Get the profile solutions text."""
-        return self._get_text_of_element(self.provided_solutions_text)
-
-    def is_solutions_displayed(self) -> bool:
-        """Check if the solutions are displayed."""
-        return self._is_element_visible(self.provided_solutions_text)
-
-    def get_my_profile_documents_text(self) -> str:
-        """Get the profile documents text."""
-        return self._get_text_of_element(self.provided_documents_link)
-
-    def get_my_profile_answers_text(self) -> str:
-        """Get the profile answers text."""
-        return self._get_text_of_element(self.answers_link)
-
-    def get_my_profile_groups_heading_text(self) -> str:
-        """Get the profile groups heading text."""
-        return self._get_text_of_element(self.groups_heading)
-
-    def get_my_profile_groups_items_text(self) -> set[str]:
-        """Get the profile groups items text."""
-        return set(self._get_text_of_elements(self.groups_list_items))
 
     def click_on_edit_user_profile_button(self):
         """Click on the edit user profile button."""
@@ -183,10 +119,6 @@ class MyProfilePage(BasePage):
     def click_my_profile_answers_link(self):
         """Click on the profile answers link."""
         self._click(self.answers_link)
-
-    def is_my_profile_answers_link_visible(self) -> bool:
-        """Verifying if the profile answers link option is visible."""
-        return self._is_element_visible(self.answers_link)
 
     def click_on_my_profile_questions_link(self):
         """Click on the profile questions link."""
@@ -236,9 +168,6 @@ class MyProfilePage(BasePage):
         """
         self._click(self.private_message_button, expected_url=expected_url)
 
-    def is_website_information_displayed(self) -> bool:
-        """Check if the website information is displayed."""
-        return self._is_element_visible(self.website_info)
 
     def click_on_a_particular_profile_group(self, group_name: str):
         """Click on a particular profile group.

@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 import requests
 from playwright_tests.core.utilities import Utilities
@@ -24,25 +24,25 @@ def test_contribute_page_text(page: Page):
         sumo_pages.top_navbar.click_on_contribute_top_navbar_option()
 
     with check, allure.step("Verifying that the correct page hero header text is displayed"):
-        assert sumo_pages.contribute_page._get_page_hero_main_header_text(
-        ) == ContributePageMessages.HERO_MAIN_PAGE_TITLE
+        expect(sumo_pages.contribute_page.page_hero_main_header).to_have_text(
+            ContributePageMessages.HERO_MAIN_PAGE_TITLE)
 
     with check, allure.step("Verifying that the correct page hero need help subtext is displayed"):
-        assert sumo_pages.contribute_page._get_page_hero_main_subtext(
-        ) == ContributePageMessages.HERO_HELP_MILLION_OF_USERS_TEXT
+        expect(sumo_pages.contribute_page.page_hero_main_header_subtext).to_have_text(
+            ContributePageMessages.HERO_HELP_MILLION_OF_USERS_TEXT)
 
     with check, allure.step("Verifying that the correct need help header text is displayed"):
-        assert sumo_pages.contribute_page._get_page_hero_need_help_header_text(
-        ) == ContributePageMessages.HERO_NEED_YOUR_HELP_TITLE
+        expect(sumo_pages.contribute_page.page_hero_need_help_header).to_have_text(
+            ContributePageMessages.HERO_NEED_YOUR_HELP_TITLE)
 
     with check, allure.step("Verifying that the correct need help subtext is displayed"):
-        assert sumo_pages.contribute_page._get_page_hero_need_help_subtext(
-        ) == ContributePageMessages.HERO_NEED_YOUR_HELP_PARAGRAPH
+        expect(sumo_pages.contribute_page.page_hero_need_help_subtext).to_have_text(
+            ContributePageMessages.HERO_NEED_YOUR_HELP_PARAGRAPH)
 
     with check, allure.step("Verifying that the correct get way to contribute_messages header is "
                             "displayed"):
-        assert sumo_pages.contribute_page._get_way_to_contribute_header_text(
-        ) == ContributePageMessages.PICK_A_WAY_TO_CONTRIBUTE_HEADER
+        expect(sumo_pages.contribute_page.way_to_contribute_header).to_have_text(
+            ContributePageMessages.PICK_A_WAY_TO_CONTRIBUTE_HEADER)
 
     card_titles = [
         ContributePageMessages.ANSWER_QUESTIONS_CARD_TITLE,
@@ -52,15 +52,16 @@ def test_contribute_page_text(page: Page):
 
     with check, allure.step("Verifying that the correct list of ways to contribute_messages card"
                             " titles is displayed"):
-        assert card_titles == sumo_pages.contribute_page._get_way_to_contribute_cards()
+        expect(sumo_pages.contribute_page.way_to_contribute_card_titles).to_contain_text(
+            card_titles)
 
     with check, allure.step("Verifying that the correct about us header text is displayed"):
-        assert sumo_pages.contribute_page._get_about_us_header_text(
-        ) == ContributePageMessages.ABOUT_US_HEADER
+        expect(sumo_pages.contribute_page.about_us_header).to_have_text(
+            ContributePageMessages.ABOUT_US_HEADER)
 
     with check, allure.step("Verifying that the correct about us subtext is displayed"):
-        assert sumo_pages.contribute_page._get_about_us_subtext(
-        ) == ContributePageMessages.ABOUT_US_CONTENT
+        expect(sumo_pages.contribute_page.about_us_subtext).to_have_text(
+            ContributePageMessages.ABOUT_US_CONTENT)
 
 
 # C2165413
@@ -80,7 +81,6 @@ def test_contribute_page_images_are_not_broken(page: Page):
 # C1949333
 @pytest.mark.contributePagesTests
 def test_contribute_page_breadcrumbs(page: Page):
-    utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     with allure.step("Clicking on the Contribute top-navbar option"):
         sumo_pages.top_navbar.click_on_contribute_top_navbar_option()
@@ -91,11 +91,11 @@ def test_contribute_page_breadcrumbs(page: Page):
     ]
 
     with allure.step("Verifying that the correct breadcrumbs are displayed"):
-        assert sumo_pages.contribute_page._get_breadcrumbs_text() == breadcrumbs
+        expect(sumo_pages.contribute_page.breadcrumbs).to_contain_text(breadcrumbs)
 
     with allure.step("Verifying that the home breadcrumb redirects to the homepage"):
         sumo_pages.contribute_page._click_on_home_breadcrumb()
-        assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+        expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
 
 # C1949335,C1949336,C1949337,C1949338,C1949339,C1949355
@@ -117,5 +117,5 @@ def test_way_to_contribute_redirects_to_correct_page(page: Page):
         sumo_pages.contribute_page._click_on_way_to_contribute_card(card)
         with allure.step("Verifying that the 'way to contribute' cards are redirecting to the "
                          "correct SUMO page"):
-            assert expected_url == utilities.get_page_url()
+            expect(page).to_have_url(expected_url)
         utilities.navigate_back()

@@ -7,20 +7,21 @@ from playwright_tests.pages.messaging_system_pages.sent_messages import SentMess
 
 class MessagingSystemFlows:
     def __init__(self, page: Page):
+        self.page = page
         self.new_message_page = NewMessagePage(page)
         self.sent_message_page = SentMessagePage(page)
         self.inbox_page = InboxPage(page)
 
     # Send message form with data flow.
     def complete_send_message_form_with_data(self, recipient_username='', message_body='',
-                                             submit_message=True, expected_url=None):
+                                             submit_message=True, expected_locator=None):
         """Complete the send message form with data.
 
         Args:
             recipient_username (str): The username of the recipient.
             message_body (str): The body of the message.
             submit_message (bool): Submit the message.
-            expected_url (str): The expected URL after the click event.
+            expected_locator (str): The expected locator after the click event.
         """
         if recipient_username:
             recipients = recipient_username if isinstance(recipient_username, list) else [
@@ -34,10 +35,10 @@ class MessagingSystemFlows:
 
         if submit_message:
             self.new_message_page.click_on_send_button(
-                expected_url=expected_url)
+                expected_locator=expected_locator)
 
     def delete_message_flow(self, username='', excerpt='', delete_message=True,
-                            from_sent_list=False, from_inbox_list=False, expected_url=None):
+                            from_sent_list=False, from_inbox_list=False, expected_locator=None):
         """Delete a message flow.
 
         Args:
@@ -46,19 +47,14 @@ class MessagingSystemFlows:
             delete_message (bool): Delete the message.
             from_sent_list (bool): Delete the message from the sent list.
             from_inbox_list (bool): Delete the message from the inbox list
-            expected_url (str): The expected URL after the click event.
+            expected_locator (str): The expected locator after the click event.
         """
         if from_sent_list:
-            if username or excerpt:
-                self.sent_message_page.click_on_sent_message_delete_button_by_user(
-                    username) if username else \
-                    self.sent_message_page.click_on_sent_message_delete_button_by_excerpt(excerpt)
+            self.sent_message_page.click_on_sent_message_delete_button_by_excerpt(excerpt)
 
         if from_inbox_list and (username or excerpt):
-            if username:
-                self.inbox_page.click_on_message_delete_button_by_username(username)
-            else:
-                self.inbox_page.click_on_message_delete_button_by_excerpt(excerpt)
+            self.inbox_page.click_on_message_delete_button_by_excerpt(excerpt)
 
         if delete_message:
-            self.sent_message_page.click_on_delete_page_delete_button(expected_url=expected_url)
+            self.sent_message_page.click_on_delete_page_delete_button(
+                expected_locator=expected_locator)

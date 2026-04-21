@@ -24,6 +24,7 @@ class CommunityHubPage(BasePage):
         """
         self._fill(self.find_contributor_searchbar, search_string)
         self._press_a_key(self.find_contributor_searchbar, "Enter")
+        self.wait_for_dom_to_load()
 
     def clear_search(self):
         """Clear the searchbar."""

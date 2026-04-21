@@ -1,6 +1,8 @@
+import re
+
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 
 from playwright_tests.core.utilities import Utilities
@@ -39,8 +41,8 @@ def test_contributor_discussions_forums_description(page: Page, create_user_fact
                             "available forum"):
         for forum in (sumo_pages.contributor_discussions_page.
                       get_contributor_discussions_forums_titles()):
-            assert (ConDiscussionsMessages.FORUM_DESCRIPTIONS[forum] == sumo_pages.
-                    contributor_discussions_page.get_forum_description(forum))
+            expect(sumo_pages.contributor_discussions_page.forum_description(forum)
+                   ).to_contain_text([ConDiscussionsMessages.FORUM_DESCRIPTIONS[forum]])
 
 
 # C890970
@@ -63,8 +65,8 @@ def test_contributor_discussions_side_nav_redirect(page: Page, create_user_facto
                                 "the correct forum page is opened"):
             (sumo_pages.contributor_discussions_page.
              click_on_contributor_discussions_side_navbar_item(option))
-            assert (sumo_pages.forum_discussions_page.
-                    get_forum_discussions_side_nav_selected_option().lower() == option.lower())
+            expect(sumo_pages.forum_discussions_page.forum_side_nav_selected_option).to_have_text(
+                option, ignore_case=True)
 
             if option == "Forum moderator discussions":
                 option = "Forum Moderators"
@@ -75,8 +77,8 @@ def test_contributor_discussions_side_nav_redirect(page: Page, create_user_facto
             elif option == "Lost thread discussions":
                 option = "Lost Threads"
 
-            assert (sumo_pages.forum_discussions_page.
-                    get_forum_discussions_page_title().lower() == option.lower())
+            expect(sumo_pages.forum_discussions_page.forum_page_title).to_have_text(
+                option,ignore_case=True)
 
 
 # C3002113
@@ -99,8 +101,8 @@ def test_contributor_discussions_forums_title_redirect(page: Page, create_user_f
                       get_contributor_discussions_forums_titles()):
             sumo_pages.contributor_discussions_page.click_on_an_available_contributor_forum(forum)
 
-            assert (sumo_pages.forum_discussions_page.
-                    get_forum_discussions_page_title().lower() == forum.lower())
+            expect(sumo_pages.forum_discussions_page.forum_page_title).to_have_text(
+                forum, ignore_case=True)
 
             if forum == "Forum Moderators":
                 forum = "forum moderator discussions"
@@ -109,8 +111,8 @@ def test_contributor_discussions_forums_title_redirect(page: Page, create_user_f
             elif forum == "Lost Threads":
                 forum = "Lost thread discussions"
 
-            assert (sumo_pages.forum_discussions_page.
-                    get_forum_discussions_side_nav_selected_option().lower() == forum.lower())
+            expect(sumo_pages.forum_discussions_page.forum_side_nav_selected_option).to_have_text(
+                forum, ignore_case=True)
 
             utilities.navigate_back()
 
@@ -132,10 +134,11 @@ def test_forum_moderators_availability(page: Page, user, create_user_factory):
 
     if user == 'Simple User' or user is None:
         with check, allure.step("Verifying that the 'Forum Moderators' forum is not available"):
-            assert (ForumModerators.PAGE_TITLE not in sumo_pages.contributor_discussions_page.
-                    get_contributor_discussions_forums_titles())
-            assert ("Forum moderator discussions" not in sumo_pages.contributor_discussions_page.
-                    get_contributor_discussions_side_navbar_items())
+            expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_names
+                   ).not_to_contain_text([ForumModerators.PAGE_TITLE])
+            expect(sumo_pages.contributor_discussions_page.
+                   contributor_discussions_side_navbar_items).not_to_contain_text(
+                ["Forum moderator discussions"])
 
         with check, allure.step("Navigating to the 'Forum Moderators' forum directly and "
                                 "verifying that a 404 is returned"):
@@ -145,10 +148,11 @@ def test_forum_moderators_availability(page: Page, user, create_user_factory):
             assert response.status == 404
     else:
         with check, allure.step("Verifying that the 'Forum Moderators' forum is available"):
-            assert (ForumModerators.PAGE_TITLE in sumo_pages.contributor_discussions_page.
-                    get_contributor_discussions_forums_titles())
-            assert ("Forum moderator discussions" in sumo_pages.contributor_discussions_page.
-                    get_contributor_discussions_side_navbar_items())
+            expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_names
+                   ).to_contain_text([ForumModerators.PAGE_TITLE])
+            expect(sumo_pages.contributor_discussions_page.
+                   contributor_discussions_side_navbar_items).to_contain_text(
+                ["Forum moderator discussions"])
 
         with check, allure.step("Navigating to the 'Forum Moderators' forum directly and "
                                 "verifying that a 404 is not returned"):
@@ -198,19 +202,19 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         thread_count += 1
 
-        assert (thread_count == sumo_pages.contributor_discussions_page.
-                get_forum_thread_count(target_topic))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_thread_count(
+            target_topic)).to_contain_text(str(thread_count))
 
     with check, allure.step("Verifying that the last post time reflects the newly created "
                             "thread"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
-            "\u202f", " ") == (sumo_pages.contributor_discussions_page.
-                               get_forum_last_post_date(target_topic))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_last_post_date
+               (target_topic)).to_have_text(
+            "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace("\u202f", " "))
 
     with check, allure.step("Verifying that the correct username is displayed inside the last post "
                             "section"):
-        assert (test_user["username"] == sumo_pages.contributor_discussions_page.
-                get_forum_last_post_by(OffTopicForumMessages.PAGE_TITLE))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_last_post_by(
+            OffTopicForumMessages.PAGE_TITLE)).to_have_text(test_user["username"])
 
     with allure.step("Deleting the newly posted thread"):
         utilities.navigate_to_link(thread_link)
@@ -221,18 +225,19 @@ def test_threads_number_and_last_post_details(page: Page, create_user_factory):
     with check, allure.step("Navigating back to the contributor discussions page and verifying "
                             "that the thread count has decremented successfully"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
-        assert thread_count == (sumo_pages.contributor_discussions_page.
-                                get_forum_thread_count(target_topic))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_thread_count(
+            target_topic)).to_have_text(str(thread_count))
 
     with check, allure.step("Verifying that the previous post time is no longer displayed inside "
                             "the last post section"):
-        assert "Today at " + post_time.strftime("%#I:%M %p") != (
-            sumo_pages.contributor_discussions_page.get_forum_last_post_date(target_topic))
+        expect(sumo_pages.contributor_discussions_page.
+               contributor_discussions_forum_last_post_date(target_topic)).not_to_have_text(
+            "Today at " + post_time.strftime("%#I:%M %p"))
 
     with check, allure.step("Verifying that username is no longer displayed inside the last post "
                             "section"):
-        assert (test_user["username"] != sumo_pages.contributor_discussions_page.
-                get_forum_last_post_by(OffTopicForumMessages.PAGE_TITLE))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_last_post_by(
+            OffTopicForumMessages.PAGE_TITLE)).not_to_have_text(test_user["username"])
 
 
 # C2254016
@@ -279,19 +284,19 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
                             "inside the contributor threads"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         original_forum_count += 1
-        assert (original_forum_count == sumo_pages.contributor_discussions_page.
-                get_forum_thread_count(original_forum))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_thread_count(
+            original_forum)).to_have_text(str(original_forum_count))
 
     with check, allure.step("Verifying that the last post time reflects the newly created "
                             "thread"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
-            "\u202f", " ") == (sumo_pages.contributor_discussions_page.
-                               get_forum_last_post_date(original_forum))
+        expect(sumo_pages.contributor_discussions_page.
+               contributor_discussions_forum_last_post_date(original_forum)).to_have_text(
+            "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace("\u202f", " "))
 
     with check, allure.step("Verifying that the correct username is displayed inside the last post "
                             "section"):
-        assert (test_user["username"] == sumo_pages.contributor_discussions_page.
-                get_forum_last_post_by(original_forum))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_last_post_by(
+            original_forum)).to_have_text(test_user["username"])
 
     with allure.step("Moving the thread to the 'Support forum'"):
         utilities.navigate_to_link(thread_link)
@@ -301,33 +306,33 @@ def test_number_of_threads_and_last_post_details_updates_when_moving_a_thread(pa
                      "the original topic and incremented inside the target topic"):
         utilities.navigate_to_link(ConDiscussionsMessages.PAGE_URL)
         original_forum_count -= 1
-        assert (original_forum_count == sumo_pages.contributor_discussions_page.
-                get_forum_thread_count(original_forum))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_thread_count(
+            original_forum)).to_have_text(str(original_forum_count))
 
         target_forum_count += 1
-        assert (target_forum_count == sumo_pages.contributor_discussions_page.
-                get_forum_thread_count(target_forum))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_thread_count(
+            target_forum)).to_have_text(str(target_forum_count))
 
     with check, allure.step("Verifying that the last post time reflects the newly moved thread"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
-            "\u202f", " ") == (sumo_pages.contributor_discussions_page.
-                               get_forum_last_post_date(target_forum))
+        expect(sumo_pages.contributor_discussions_page.
+               contributor_discussions_forum_last_post_date(target_forum)).to_have_text(
+            "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace("\u202f", " "))
 
     with check, allure.step("Verifying that the correct username is displayed inside the last "
                             "post"):
-        assert (test_user["username"] == sumo_pages.contributor_discussions_page.
-                get_forum_last_post_by(target_forum))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_last_post_by(
+            target_forum)).to_have_text(test_user["username"])
 
     with check, allure.step("Verifying that the last post time is no longer displayed inside "
                             "the original forum"):
-        assert "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace(
-            "\u202f", " ") != (sumo_pages.contributor_discussions_page.
-                               get_forum_last_post_date(original_forum))
+        expect(sumo_pages.contributor_discussions_page.
+               contributor_discussions_forum_last_post_date(original_forum)).not_to_have_text(
+            "Today at " + post_time.strftime("%#I:%M %p").lstrip("0").replace("\u202f", " "))
 
     with check, allure.step("Verifying that the username is no longer displayed inside the "
                             "original forum section"):
-        assert (test_user["username"] != sumo_pages.contributor_discussions_page.
-                get_forum_last_post_by(original_forum))
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_forum_last_post_by(
+            original_forum)).not_to_have_text(test_user["username"])
 
 
 # C890958
@@ -341,13 +346,13 @@ def test_contributor_discussions_breadcrumb_redirect(page: Page):
 
     with check, allure.step("Verifying that the 'Contributor Discussions' breadcrumb is as the "
                             "current one"):
-        assert (sumo_pages.contributor_discussions_page.
-                get_contributor_discussions_breadcrumbs()[1] == ConDiscussionsMessages.PAGE_TITLE)
+        expect(sumo_pages.contributor_discussions_page.contributor_discussions_page_breadcrumbs.
+               last).to_have_text(ConDiscussionsMessages.PAGE_TITLE)
 
     with check, allure.step("Clicking on the 'Home' breadcrumb and verifying that the user is "
                             "redirected to the homepage successfully"):
         sumo_pages.contributor_discussions_page.click_on_first_breadcrumb()
-        assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+        expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
 
 # C890959,  C2254024
@@ -381,7 +386,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
             SupportForumDiscussionsMessages.PAGE_TITLE
         )
-        assert sumo_pages.forum_thread_page.is_thread_post_visible(post_id)
+        expect(sumo_pages.forum_thread_page.thread_post(post_id)).to_be_visible()
 
     with check, allure.step("Navigating back to the Contributor Discussions page and clicking on "
                             "the last post by link and verifying that the user is redirected to "
@@ -390,7 +395,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
             SupportForumDiscussionsMessages.PAGE_TITLE
         )
-        assert test_user["username"] in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{test_user['username']}*"))
 
     with allure.step("Signing in with a different user and leaving a reply to the posted thread"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -411,7 +416,7 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         sumo_pages.contributor_discussions_page.click_on_last_post_date(
             SupportForumDiscussionsMessages.PAGE_TITLE
         )
-        assert sumo_pages.forum_thread_page.is_thread_post_visible(reply_id)
+        expect(sumo_pages.forum_thread_page.thread_post(reply_id)).to_be_visible()
 
     utilities.navigate_back()
 
@@ -420,4 +425,4 @@ def test_contributor_discussions_last_post_redirects(page: Page, create_user_fac
         sumo_pages.contributor_discussions_page.click_on_last_post_by(
             SupportForumDiscussionsMessages.PAGE_TITLE
         )
-        assert test_user_two["username"] in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{test_user_two['username']}*"))

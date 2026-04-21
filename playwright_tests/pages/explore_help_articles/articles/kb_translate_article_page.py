@@ -40,12 +40,6 @@ class TranslateArticlePage(BasePage):
     def click_on_locale_from_list(self, locale: str):
         self._click(self.locale_from_list(locale))
 
-    def get_text_of_article_unready_for_translation_banner(self) -> str:
-        return self._get_text_of_element(self.translating_an_unready_article_banner)
-
-    def get_translate_page_title(self) -> str:
-        return self._get_text_of_element(self.article_translation_page_title)
-
     def fill_translation_title_field(self, text: str):
         self._fill(self.translation_title_field, text)
 
@@ -60,9 +54,6 @@ class TranslateArticlePage(BasePage):
 
     def fill_translated_article_summary(self, text: str):
         self._fill(self.translation_summary_field, text)
-
-    def get_text_of_english_version(self) -> str:
-        return self._get_text_of_element(self.translation_english_readonly_field)
 
     def fill_body_translation_field(self, text: str):
         self._click(self.change_body_view)

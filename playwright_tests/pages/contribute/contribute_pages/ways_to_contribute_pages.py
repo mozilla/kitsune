@@ -32,9 +32,6 @@ class WaysToContributePages(BasePage):
                                                                "ul/a")
 
     """Actions against the breadcrumbs locators."""
-    def get_text_of_all_breadcrumbs(self) -> list[str]:
-        return self._get_text_of_elements(self.all_breadcrumbs)
-
     def get_interactable_breadcrumbs(self) -> list[ElementHandle]:
         return self._get_element_handles(self.interactable_breadcrumbs)
 
@@ -42,41 +39,11 @@ class WaysToContributePages(BasePage):
         element.click()
 
     """Actions against the page content locators."""
-    def get_hero_main_header_text(self) -> str:
-        return self._get_text_of_element(self.hero_main_header)
-
-    def get_hero_second_header(self) -> str:
-        return self._get_text_of_element(self.hero_second_header)
-
-    def get_hero_text(self) -> str:
-        return self._get_text_of_element(self.hero_text)
-
     def get_all_page_image_links(self) -> list[ElementHandle]:
         return self._get_element_handles(self.all_page_images)
 
-    """Actions against the How to contribute messages section locators."""
-    def get_how_to_contribute_header_text(self) -> str:
-        return self._get_text_of_element(self.how_to_contribute_header)
-
-    def get_how_to_contribute_link_options(self) -> list[str]:
-        return self._get_text_of_elements(self.all_how_to_contribute_option_links)
-
-    def get_how_to_contribute_option_four(self) -> str:
-        return self._get_text_of_element(self.start_answering_how_to_contribute_option_text)
-
-    def get_first_fact_text(self) -> str:
-        return self._get_text_of_element(self.first_fact_text)
-
-    def get_second_fact_text(self) -> str:
-        return self._get_text_of_element(self.second_fact_text)
 
     """Actions against the Other ways to contribute messages section locators."""
-    def get_other_ways_to_contribute_header(self) -> str:
-        return self._get_text_of_element(self.other_ways_to_contribute_header)
-
-    def get_other_ways_to_contribute_cards(self) -> list[str]:
-        return self._get_text_of_elements(self.other_ways_to_contribute_card_titles)
-
     def get_other_ways_to_contribute_card_list(self) -> list[ElementHandle]:
         return self._get_element_handles(self.other_ways_to_contribute_card_list)
 

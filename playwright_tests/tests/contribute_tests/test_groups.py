@@ -1,7 +1,7 @@
 import os
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.user_groups_messages import UserGroupMessages
@@ -18,20 +18,20 @@ def test_edit_groups_details_visibility(page: Page, create_user_factory):
     with check, allure.step("Navigating to the general groups page and verifying that the 'edit "
                             "groups details' button is not visible while signed out"):
         utilities.navigate_to_link(utilities.general_test_data['groups'])
-        assert not sumo_pages.user_groups.is_add_group_profile_button_visible()
+        expect(sumo_pages.user_groups.add_group_profile_button).to_be_hidden()
 
     with check, allure.step("Signing in with a non-admin account and verifying that the 'edit "
                             "groups details' button is not visible"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(utilities.general_test_data['groups'])
-        assert not sumo_pages.user_groups.is_add_group_profile_button_visible()
+        expect(sumo_pages.user_groups.add_group_profile_button).to_be_hidden()
 
     with check, allure.step("Signing in with a staff user account and verifying that the "
                             "'add group profile' button is visible"):
         utilities.start_existing_session(
             session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
         utilities.navigate_to_link(utilities.general_test_data['groups'])
-        assert sumo_pages.user_groups.is_add_group_profile_button_visible()
+        expect(sumo_pages.user_groups.add_group_profile_button).to_be_visible()
 
 
 # C2083482, C2083483, C2715808, C2715807, C2799838
@@ -55,43 +55,43 @@ def test_group_edit_buttons_visibility(page: Page, create_user_factory):
                             "not available for signed out users"):
         utilities.delete_cookies()
 
-        assert not sumo_pages.user_groups.is_change_avatar_button_visible()
-        assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_manage_group_section_visible()
+        expect(sumo_pages.user_groups.change_avatar_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_in_admin_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_group_profile_button).to_be_hidden()
+        expect(sumo_pages.user_groups.manage_group_section).to_be_hidden()
 
     with check, allure.step("Signing in with a non-admin and a non group member and verifying "
                             "that the edit buttons are not available"):
         utilities.start_existing_session(cookies=test_user)
-        assert not sumo_pages.user_groups.is_change_avatar_button_visible()
-        assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_manage_group_section_visible()
+        expect(sumo_pages.user_groups.change_avatar_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_in_admin_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_group_profile_button).to_be_hidden()
+        expect(sumo_pages.user_groups.manage_group_section).to_be_hidden()
 
     with check, allure.step("Signing in with a group member and verifying that the edit buttons "
                             "are not available"):
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.user_groups.is_change_avatar_button_visible()
-        assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
-        assert not sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert not sumo_pages.user_groups.is_manage_group_section_visible()
+        expect(sumo_pages.user_groups.change_avatar_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_in_admin_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_group_profile_button).to_be_hidden()
+        expect(sumo_pages.user_groups.manage_group_section).to_be_hidden()
 
     with check, allure.step("Signing in with the group leader and verifying that only the 'edit "
                             "in admin' and 'Manage Group' sections are visible"):
         utilities.start_existing_session(cookies=test_user_four)
-        assert sumo_pages.user_groups.is_change_avatar_button_visible()
-        assert not sumo_pages.user_groups.is_edit_in_admin_button_visible()
-        assert sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert sumo_pages.user_groups.is_manage_group_section_visible()
+        expect(sumo_pages.user_groups.change_avatar_button).to_be_visible()
+        expect(sumo_pages.user_groups.edit_in_admin_button).to_be_hidden()
+        expect(sumo_pages.user_groups.edit_group_profile_button).to_be_visible()
+        expect(sumo_pages.user_groups.manage_group_section).to_be_visible()
 
     with check, allure.step("Signing in with an admin account and verifying that all edit options "
                             "are available"):
         utilities.start_existing_session(
             session_file_name=utilities.username_extraction_from_email(utilities.staff_user))
-        assert sumo_pages.user_groups.is_change_avatar_button_visible()
-        assert sumo_pages.user_groups.is_edit_in_admin_button_visible()
-        assert sumo_pages.user_groups.is_edit_group_profile_button_visible()
-        assert sumo_pages.user_groups.is_manage_group_section_visible()
+        expect(sumo_pages.user_groups.change_avatar_button).to_be_visible()
+        expect(sumo_pages.user_groups.edit_in_admin_button).to_be_visible()
+        expect(sumo_pages.user_groups.edit_group_profile_button).to_be_visible()
+        expect(sumo_pages.user_groups.manage_group_section).to_be_visible()
 
 
 # C2783730, C2715807
@@ -153,8 +153,8 @@ def test_change_group_avatar(page: Page, create_user_factory):
         assert not utilities.are_images_different(displayed_image, first_uploaded_image)
 
     with check, allure.step("Verifying that the correct page header is displayed"):
-        assert (sumo_pages.user_groups.get_upload_avatar_page_header() == UserGroupMessages.
-                get_change_uploaded_avatar_page_header(targeted_group))
+        expect(sumo_pages.user_groups.upload_avatar_page_header).to_have_text(
+            UserGroupMessages.get_change_uploaded_avatar_page_header(targeted_group))
 
     with check, allure.step("Adding a new image, clicking on the 'Cancel' button and verifying "
                             "that the new image was not added to the group"):
@@ -177,11 +177,10 @@ def test_change_group_avatar(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Delete' avatar button and verifying the page"
                             "content"):
         sumo_pages.user_groups.click_on_delete_uploaded_avatar_button()
-        assert (sumo_pages.user_groups.get_delete_avatar_page_header() == UserGroupMessages.
-                get_delete_uploaded_avatar_page_header(targeted_group))
-
-        assert (sumo_pages.user_groups.get_delete_avatar_page_info() == UserGroupMessages.
-                DELETE_AVATAR_PAGE_INFO)
+        expect(sumo_pages.user_groups.delete_uploaded_avatar_page_header).to_have_text(
+            UserGroupMessages.get_delete_uploaded_avatar_page_header(targeted_group))
+        expect(sumo_pages.user_groups.delete_uploaded_avatar_page_info).to_have_text(
+            UserGroupMessages.DELETE_AVATAR_PAGE_INFO)
 
         utilities.screenshot_the_locator(
             sumo_pages.user_groups.delete_uploaded_avatar_image_preview, displayed_image)
@@ -224,18 +223,20 @@ def test_add_new_group_leader(page: Page, create_user_factory):
 
     with allure.step("Verifying that the user was added in both group leaders and group members "
                      "list"):
-        assert test_user["username"] in sumo_pages.user_groups.get_all_leaders_name()
-        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
+        expect(sumo_pages.user_groups.group_leader_list).to_contain_text([test_user["username"]])
+        expect(sumo_pages.user_groups.group_members_list).to_contain_text([test_user["username"]])
 
     with allure.step("Verifying that the correct banner is displayed"):
-        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_added_success_message(test_user["username"], to_leaders=True))
+        expect(sumo_pages.user_groups.user_notification).to_have_text(
+            UserGroupMessages.get_user_added_success_message(test_user["username"],
+                                                             to_leaders=True)
+        )
 
     with allure.step("Clicking on the added user"):
         sumo_pages.user_groups.click_on_a_listed_group_leader(test_user["username"])
 
     with allure.step("Verifying that the group is listed inside the users profile group list"):
-        assert test_group in sumo_pages.my_profile_page.get_my_profile_groups_items_text()
+        expect(sumo_pages.my_profile_page.groups_list_items).to_contain_text([test_group])
 
     with allure.step("Clicking on the group link from the profile page"):
         sumo_pages.my_profile_page.click_on_a_particular_profile_group(test_group)
@@ -244,24 +245,27 @@ def test_add_new_group_leader(page: Page, create_user_factory):
                             "verifying that the correct page header is displayed"):
         sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user["username"],
                                                                         from_leaders=True)
-        assert (sumo_pages.user_groups.get_remove_leader_page_header() == UserGroupMessages.
-                get_delete_user_header(test_user["username"], test_group, delete_leader=True))
+        expect(sumo_pages.user_groups.remove_leader_page_header).to_have_text(
+            UserGroupMessages.get_delete_user_header(test_user["username"], test_group,
+                                                     delete_leader=True))
 
     with check, allure.step("Clicking on the 'Cancel' button and verifying that the user was not "
                             "removed from the leaders and members list"):
         sumo_pages.user_groups.click_on_remove_member_cancel_button()
-        assert test_user["username"] in sumo_pages.user_groups.get_all_leaders_name()
-        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
+        expect(sumo_pages.user_groups.group_leader_list).to_contain_text([test_user["username"]])
+        expect(sumo_pages.user_groups.group_members_list).to_contain_text([test_user["username"]])
 
     with check, allure.step("Deleting the user and verifying that the user was removed from the "
                             "leaders list but not from the members list"):
         sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"], is_leader=True)
-        assert test_user["username"] not in sumo_pages.user_groups.get_all_leaders_name()
-        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
+        expect(sumo_pages.user_groups.group_leader_list).not_to_contain_text(
+            [test_user["username"]])
+        expect(sumo_pages.user_groups.group_members_list).to_contain_text([test_user["username"]])
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_removed_success_message(test_user["username"], from_leaders=True))
+        expect(sumo_pages.user_groups.user_notification).to_contain_text(
+            UserGroupMessages.get_user_removed_success_message(test_user["username"],
+                                                               from_leaders=True))
 
     with allure.step("Deleting the user from the members list"):
         sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"])
@@ -293,14 +297,14 @@ def test_add_group_members(page: Page, user_type, create_user_factory):
         sumo_pages.user_group_flow.add_a_user_to_group(test_user["username"])
 
     with allure.step("Verifying that the correct banner is displayed"):
-        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_added_success_message(test_user["username"]))
+        expect(sumo_pages.user_groups.user_notification).to_have_text(
+            UserGroupMessages.get_user_added_success_message(test_user["username"]))
 
     with allure.step("Clicking on the added user"):
         sumo_pages.user_groups.click_on_a_listed_group_member(test_user["username"])
 
     with allure.step("Verifying that the group is listed inside the users profile group list"):
-        assert test_group in sumo_pages.my_profile_page.get_my_profile_groups_items_text()
+        expect(sumo_pages.my_profile_page.groups_list_items).to_contain_text([test_group])
 
     with allure.step("Clicking on the group link from the profile page"):
         sumo_pages.my_profile_page.click_on_a_particular_profile_group(test_group)
@@ -308,21 +312,22 @@ def test_add_group_members(page: Page, user_type, create_user_factory):
     with check, allure.step("Clicking on the 'Delete' button for the newly added user and "
                             "verifying that the correct page header is displayed"):
         sumo_pages.user_groups.click_on_remove_a_user_from_group_button(test_user["username"])
-        assert (sumo_pages.user_groups.get_remove_user_page_header() == UserGroupMessages.
-                get_delete_user_header(test_user["username"], test_group))
+        expect(sumo_pages.user_groups.remove_user_page_header).to_have_text(
+            UserGroupMessages.get_delete_user_header(test_user["username"], test_group))
 
     with check, allure.step("Clicking on the 'Cancel' button and verifying that the user was not "
                             "removed"):
         sumo_pages.user_groups.click_on_remove_member_cancel_button()
-        assert test_user["username"] in sumo_pages.user_groups.get_all_members_name()
+        expect(sumo_pages.user_groups.group_members_list).to_contain_text([test_user["username"]])
 
     with check, allure.step("Deleting the user and verifying that the user was removed"):
         sumo_pages.user_group_flow.remove_a_user_from_group(test_user["username"])
-        assert test_user["username"] not in sumo_pages.user_groups.get_all_members_name()
+        expect(sumo_pages.user_groups.group_members_list).not_to_contain_text(
+            [test_user["username"]])
 
     with check, allure.step("Verifying that the correct banner is displayed"):
-        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-                get_user_removed_success_message(test_user["username"]))
+        expect(sumo_pages.user_groups.user_notification).to_have_text(
+            UserGroupMessages.get_user_removed_success_message(test_user["username"]))
 
 
 # C2784450
@@ -350,26 +355,27 @@ def test_edit_group_profile(page: Page, user_type, create_user_factory):
     with check, allure.step("Clicking on the 'Edit' button and verifying that the correct page "
                             "header is displayed"):
         sumo_pages.user_groups.click_on_edit_group_profile_button()
-        assert (sumo_pages.user_groups.get_edit_group_profile_page_header() == UserGroupMessages.
-                get_edit_profile_information_page_header(test_group))
+        expect(sumo_pages.user_groups.edit_group_profile_page_header).to_have_text(
+            UserGroupMessages.get_edit_profile_information_page_header(test_group))
 
     with check, allure.step("Verifying that the correct information was pre-filled inside the "
                             "textarea field"):
-        assert (sumo_pages.user_groups.
-                get_edit_group_profile_textarea_content() == group_profile_info)
+        expect(sumo_pages.user_groups.edit_group_profile_textarea).to_have_text(group_profile_info)
 
     with allure.step("Changing the group profile information and verifying that the new info is "
                      "displayed"):
         sumo_pages.user_groups.type_into_edit_group_profile_textarea(group_profile_info + " v2")
         sumo_pages.user_groups.click_on_edit_group_profile_save_button()
-        assert (sumo_pages.user_groups.get_group_update_notification() == UserGroupMessages.
-               GROUP_INFORMATION_UPDATE_NOTIFICATION)
-        assert (sumo_pages.user_groups.get_profile_information() == group_profile_info + " v2")
+        expect(sumo_pages.user_groups.user_notification).to_have_text(
+            UserGroupMessages.GROUP_INFORMATION_UPDATE_NOTIFICATION)
+        expect(sumo_pages.user_groups.group_profile_information).to_have_text(
+            group_profile_info + " v2")
 
     with allure.step("Signing out and verifying that the new group profile information is "
                      "displayed for signed out users"):
         utilities.delete_cookies()
-        assert (sumo_pages.user_groups.get_profile_information() == group_profile_info + " v2")
+        expect(sumo_pages.user_groups.group_profile_information).to_have_text(
+            group_profile_info + " v2")
 
     with allure.step("Signing back in and reverting the profile information change"):
         if user_type == "Group Leader":

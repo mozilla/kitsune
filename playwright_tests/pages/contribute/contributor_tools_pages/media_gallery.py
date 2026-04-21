@@ -64,15 +64,6 @@ class MediaGallery(BasePage):
         """Click on the 'Upload' button inside the Media Gallery page."""
         self._click(self.upload_a_new_media_file_button)
 
-    def is_image_media_file_displayed_in_gallery(self, media_file_name: str) -> bool:
-        """
-        Checks if a media file is displayed inside the Media Gallery page.
-        Args:
-            media_file_name (str): The name of the media file.
-        """
-        return self._is_element_visible(self.media_file(media_file_name))
-
-
     def click_on_a_media_file_from_gallery(self, media_file_name: str):
         """
         Click on a media file displayed inside the Media Gallery page.
@@ -125,51 +116,13 @@ class MediaGallery(BasePage):
         """
         self._click(self.cancel_image_upload_during_upload_progress_button)
 
-    def is_cancel_button_during_upload_progress_displayed(self) -> bool:
-        """
-        Checks if the 'Cancel' button which is displayed during the image upload progress inside
-        the 'Upload' modal is displayed or not. (Note that this button is displayed briefly until
-        the image preview was successfully rendered)
-        """
-        return self._is_element_visible(self.cancel_image_upload_during_upload_progress_button)
-
-    def is_upload_image_preview_rendered(self) -> bool:
-        """
-        Checks if the newly uploaded image preview is successfully rendered inside the 'Upload'
-        modal.
-        """
-        return self._is_element_visible(self.upload_modal_image_preview)
-
     def wait_for_image_preview(self):
         self._wait_for_locator(self.upload_modal_image_preview)
 
     """Actions against the media preview page."""
-    def get_image_heading(self) -> str:
-        """Get the previewed image heading."""
-        return self._get_text_of_element(self.image_heading)
-
-    def get_image_creator_text(self) -> str:
-        """Get the name of the image creator displayed inside the image preview page."""
-        return self._get_text_of_element(self.image_creator)
-
     def click_on_image_creator_link(self):
         """Click on the image creator link inside the image preview page."""
         self._click(self.image_creator)
-
-    def get_image_description(self) -> str:
-        """Get the image description displayed inside the image preview page."""
-        return self._get_text_of_element(self.image_description)
-
-    def get_articles_section_subtext(self) -> str:
-        """Get the text displayed inside the 'Articles' section from the image preview page."""
-        return self._get_text_of_element(self.articles_subtext)
-
-    def get_image_in_documents_list_items_text(self) -> list[str]:
-        """
-        Get a list of all documents listed inside the 'Articles' section from the image preview
-        page.
-        """
-        return self._get_text_of_elements(self.image_in_documents_list)
 
     def click_on_a_linked_in_document(self, document_name: str):
         """

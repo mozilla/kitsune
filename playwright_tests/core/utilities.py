@@ -1,6 +1,4 @@
-import functools
 import os
-import warnings
 from urllib.error import HTTPError
 import requests
 import time
@@ -251,17 +249,83 @@ class Utilities:
         """
         return self.page.url
 
-    def navigate_back(self):
+    def navigate_back(self, retries: int = 3) -> Response | None:
         """
-        This helper function navigates back to the previous page. (browser back button)
-        """
-        self.page.go_back()
+        Navigates back using the browser back button. If go_back() didn't change the URL,
+        retries up to `retries` times. If the resulting response is a 502, reloads the
+        destination page up to `retries - 1` times until a non-502 response is received.
 
-    def navigate_forward(self):
+        Args:
+            retries (int): How many attempts to make in total before giving up.
+        Returns:
+            The Response of the final navigation, or None if Playwright did not capture one.
         """
-        This helper function navigate forward. (browser forward button)
+        response = None
+        for attempt in range(retries):
+            url_before = self.page.url
+            try:
+                response = self.page.go_back(wait_until="domcontentloaded")
+            except PlaywrightError as e:
+                if "net::ERR_ABORTED" in str(e) or "frame was detached" in str(e):
+                    print(f"Ignored benign go_back error: {e}")
+                    return None
+                raise
+            if self.page.url == url_before and attempt < retries - 1:
+                print("navigate_back did not change URL. Retrying...")
+                self.page.wait_for_timeout(500)
+                continue
+            break
+
+        for attempt in range(retries - 1):
+            if response is None or response.status != 502:
+                return response
+            print(f"502 after go_back, reload attempt "
+                  f"{attempt + 1}/{retries - 1} in 5s...")
+            self.page.wait_for_timeout(5000)
+            try:
+                response = self.page.reload(wait_until="domcontentloaded")
+            except PlaywrightError:
+                response = None
+        return response
+
+    def navigate_forward(self, retries: int = 3) -> Response | None:
         """
-        self.page.go_forward()
+        Navigates forward using the browser forward button. If go_forward() didn't change the
+        URL, retries up to `retries` times. If the resulting response is a 502, reloads the
+        destination page up to `retries - 1` times until a non-502 response is received.
+
+        Args:
+            retries (int): How many attempts to make in total before giving up.
+        Returns:
+            The Response of the final navigation, or None if Playwright did not capture one.
+        """
+        response = None
+        for attempt in range(retries):
+            url_before = self.page.url
+            try:
+                response = self.page.go_forward(wait_until="domcontentloaded")
+            except PlaywrightError as e:
+                if "net::ERR_ABORTED" in str(e) or "frame was detached" in str(e):
+                    print(f"Ignored benign go_forward error: {e}")
+                    return None
+                raise
+            if self.page.url == url_before and attempt < retries - 1:
+                print("navigate_forward did not change URL. Retrying...")
+                self.page.wait_for_timeout(500)
+                continue
+            break
+
+        for attempt in range(retries - 1):
+            if response is None or response.status != 502:
+                return response
+            print(f"502 after go_forward, reload attempt "
+                  f"{attempt + 1}/{retries - 1} in 5s...")
+            self.page.wait_for_timeout(5000)
+            try:
+                response = self.page.reload(wait_until="domcontentloaded")
+            except PlaywrightError:
+                response = None
+        return response
 
     def navigate_to_homepage(self):
         """
@@ -269,28 +333,61 @@ class Utilities:
         """
         self.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
 
-    def navigate_to_link(self, link: str) -> Response:
+    def navigate_to_link(self, link: str, retries: int = 3) -> Response | None:
         """
-        This helper function navigates to a given link and awaits for the dom load to finish.
-        If a response error is encountered we are performing a page refresh.
+        Navigates to a given link and blocks until DOMContentLoaded. If the navigation response
+        is a 502, waits 5s and retries up to `retries` times. Returns the final response (or
+        None when the navigation didn't produce one, e.g. ERR_ABORTED on redirects).
 
         Args:
-            link (str): The link to navigate to
-        Returns:
-            Response.
+            link (str): The link to navigate to.
+            retries (int): How many attempts to make in total before giving up.
         """
-        try:
-            response = self.page.goto(link, wait_until="domcontentloaded")
-            if response is not None and response.status is not None:
-                if response.status >= 500:
-                    self.refresh_page()
-            return response
-        except PlaywrightError as e:
-            if "net::ERR_ABORTED" in str(e) or "frame was detached" in str(e):
-                print(f"Ignored benign navigation error to {link}: {e}")
-            else:
+        response = None
+        for attempt in range(retries):
+            try:
+                response = self.page.goto(link, wait_until="domcontentloaded")
+            except PlaywrightError as e:
+                if "net::ERR_ABORTED" in str(e) or "frame was detached" in str(e):
+                    print(f"Ignored benign navigation error to {link}: {e}")
+                    return None
                 raise
+            if response is None or response.status != 502:
+                return response
+            if attempt < retries - 1:
+                print(f"502 on goto({link}), attempt "
+                      f"{attempt + 1}/{retries}. Retrying in 5s...")
+                self.page.wait_for_timeout(5000)
+        return response
 
+
+    def click_and_wait_for_navigation(self, click_fn, retries: int = 3) -> Response | None:
+        """
+        Executes a click that triggers a full-page navigation and waits for that navigation.
+        If the resulting page is a 502, reloads the destination URL up to `retries - 1` times
+        until a non-502 response is received. The click is performed only once: re-clicking
+        would target a button on the source page, which no longer exists after navigation.
+
+        Args:
+            click_fn: Zero-arg callable that performs the click.
+            retries (int): Maximum total navigations (1 click + up to retries-1 reloads).
+        Returns:
+            The Response of the final navigation, or None if Playwright did not capture one.
+        """
+        with self.page.expect_navigation(wait_until="domcontentloaded") as nav_info:
+            click_fn()
+        response = nav_info.value
+        for attempt in range(retries - 1):
+            if response is None or response.status != 502:
+                return response
+            print(f"502 after click, reload attempt "
+                  f"{attempt + 1}/{retries - 1} in 5s...")
+            self.page.wait_for_timeout(5000)
+            try:
+                response = self.page.reload(wait_until="domcontentloaded")
+            except PlaywrightError:
+                response = None
+        return response
 
     def upload_file(self, element: Locator, path_to_file: str):
         """This helper function uploads the test-image.png file to a given file element chooser.
@@ -450,22 +547,32 @@ class Utilities:
                 self.start_existing_session(cookies=cookies, tried_once=True)
 
 
-    def refresh_page(self):
+    def refresh_page(self, retries: int = 3) -> Response | None:
         """
-        This helper function performs a page reload.
+        Reloads the current page and blocks until DOMContentLoaded. If the reload response is a
+        502, waits 5s and retries up to `retries` times. Returns the final response (or None
+        when the reload produced none, e.g. ERR_ABORTED on redirects).
         """
-        try:
-            self.page.reload()
-            # Scrolling to the top of the page.
-            self.page.keyboard.press("Home")
-            self.wait_for_dom_to_load()
-        except PlaywrightError as e:
-            msg = str(e)
-            if "net::ERR_ABORTED" in msg or "frame was detached" in msg:
-                print(f"Ignored benign reload error: {msg}")
-                self.wait_for_dom_to_load()
-            else:
+        response = None
+        for attempt in range(retries):
+            try:
+                response = self.page.reload(wait_until="domcontentloaded")
+            except PlaywrightError as e:
+                msg = str(e)
+                if "net::ERR_ABORTED" in msg or "frame was detached" in msg:
+                    print(f"Ignored benign reload error: {msg}")
+                    self.wait_for_dom_to_load()
+                    return None
                 raise
+            if response is None or response.status != 502:
+                # Scrolling to the top of the page.
+                self.page.keyboard.press("Home")
+                return response
+            if attempt < retries - 1:
+                print(f"502 on reload, attempt "
+                      f"{attempt + 1}/{retries}. Retrying in 5s...")
+                self.page.wait_for_timeout(5000)
+        return response
 
     def get_user_agent(self) -> str:
         """
@@ -795,7 +902,7 @@ class Utilities:
     def expect_locator_visibility(self, locator: Locator) -> bool:
         for attempt in range(3):
             try:
-                expect(locator).to_be_visible(timeout=4000)
+                expect(locator).to_be_visible(timeout=6000)
                 return True
             except AssertionError:
                 print("Expected locator not present. Reloading the page.")
@@ -815,19 +922,3 @@ class Utilities:
         return " ".join(text.split())  # collapse whitespace
 
 
-def retry_on_502(func):
-    """Decorator that retries the wrapped function if a 502 error is encountered."""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        for attempt in range(3):
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                result = func(*args, **kwargs)
-
-                if (any(issubclass(warning.category, UserWarning) and str(
-                    warning.message) == "502 encountered" for warning in w)):
-                    print("502 error encountered while executing the function. Retrying...")
-                    if attempt < 2:
-                        continue
-                return result
-    return wrapper

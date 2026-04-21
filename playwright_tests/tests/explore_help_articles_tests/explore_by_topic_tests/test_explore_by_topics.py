@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_widget import (
@@ -28,8 +28,8 @@ def test_explore_by_topic_product_filter(page: Page):
             sumo_pages.explore_by_topic_page.click_on_a_topic_filter(topic)
         with check, allure.step("Verifying that the correct page header is displayed for the"
                                 f"{topic} topic"):
-            assert topic == (sumo_pages.explore_by_topic_page
-                             .get_explore_by_topic_page_header().strip())
+            expect(sumo_pages.explore_by_topic_page.explore_by_topic_page_header).to_have_text(
+                topic)
         for product in sumo_pages.explore_by_topic_page.get_all_filter_by_product_options():
             utilities.wait_for_dom_to_load()
             product = product.strip()
@@ -69,25 +69,22 @@ def test_explore_by_topic_aaq_widget_text(page: Page, create_user_factory):
             with check, allure.step("Verifying the correct AAQ widget text is displayed for "
                                     f"{product}"):
                 if product == "All Products":
-                    assert (sumo_pages.common_web_elements
-                            .get_aaq_widget_text() == AAQWidgetMessages
-                            .NEUTRAL_AAQ_SUBHEADING_TEXT)
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.NEUTRAL_AAQ_SUBHEADING_TEXT)
                 elif product in utilities.general_test_data['subscription_redirects']:
                     with check, allure.step("Verifying that the AAQ widget is not displayed"):
-                        assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
                 elif product in utilities.general_test_data['freemium_products']:
-                    assert (sumo_pages.common_web_elements
-                            .get_aaq_widget_text() == AAQWidgetMessages
-                            .FREEMIUM_AAQ_SUBHEADING_TEXT)
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT)
                 elif product in utilities.general_test_data['premium_products']:
-                    assert (sumo_pages.common_web_elements
-                            .get_aaq_widget_text() == AAQWidgetMessages
-                            .PREMIUM_AAQ_SUBHEADING_TEXT)
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT)
                 elif (product not in utilities.general_test_data['premium_products'] and
                       product not in utilities.general_test_data['freemium_products']):
                     with allure.step("Verifying that the AAQ widget is not displayed for the "
                                      "product which has both AAQ and Zendesk configs disabled"):
-                        assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
 
 
 # C2663960
@@ -116,22 +113,21 @@ def test_explore_by_topic_aaq_widget_redirect(page: Page, create_user_factory):
                 with allure.step("Clicking on the AAQ button"):
                     sumo_pages.common_web_elements.click_on_aaq_button()
                 with check, allure.step("Verifying that the contact support page URL is correct"):
-                    assert ContactSupportMessages.PAGE_URL == utilities.get_page_url()
+                    expect(page).to_have_url(ContactSupportMessages.PAGE_URL)
             elif product in utilities.general_test_data['subscription_redirects']:
                 with check, allure.step("Verifying that the AAQ widget is not displayed"):
-                    assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+                    expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
             elif (product not in utilities.general_test_data['premium_products'] and
                   product not in utilities.general_test_data['freemium_products']):
                 with check, allure.step("Verifying that the AAQ widget is not displayed for the "
                                         "product which has both AAQ and Zendesk configs disabled"):
-                    assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+                    expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
             else:
                 with allure.step("Clicking on the AAQ button"):
                     sumo_pages.common_web_elements.click_on_aaq_button()
                 with check, allure.step("Verifying that the correct AAQ form URL is displayed"):
-                    assert (utilities.
-                            aaq_question_test_data['products_aaq_url'][product] == utilities.
-                            get_page_url())
+                    expect(page).to_have_url(
+                        utilities.aaq_question_test_data['products_aaq_url'][product])
 
             utilities.navigate_to_link(current_url)
 

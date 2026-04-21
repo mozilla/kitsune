@@ -81,10 +81,6 @@ class GroupsPage(BasePage):
             f"@title='Remove user from group']")
 
     """Actions against the all groups listing page locators."""
-    def is_add_group_profile_button_visible(self) -> bool:
-        """Check if the add group profile button is visible"""
-        return self._is_element_visible(self.add_group_profile_button)
-
     def click_on_a_particular_group(self, group_name):
         """Click on a particular group
 
@@ -94,26 +90,6 @@ class GroupsPage(BasePage):
         self._click(self.group_by_name(group_name))
 
     """Actions against a specific group page locators."""
-    def get_all_leaders_name(self) -> list[str]:
-        """Get the names of all the leaders in the group"""
-        return self._get_text_of_elements(self.group_leader_list)
-
-    def get_all_members_name(self) -> list[str]:
-        """Get the names of all the members in the group"""
-        return self._get_text_of_elements(self.group_members_list)
-
-    def is_change_avatar_button_visible(self) -> bool:
-        """Check if the change avatar button is visible"""
-        return self._is_element_visible(self.change_avatar_button)
-
-    def is_edit_in_admin_button_visible(self) -> bool:
-        """Check if the edit in admin button is visible"""
-        return self._is_element_visible(self.edit_in_admin_button)
-
-    def is_edit_group_profile_button_visible(self) -> bool:
-        """Check if the edit group profile button is visible"""
-        return self._is_element_visible(self.edit_group_profile_button)
-
     def click_on_edit_group_profile_button(self):
         """Click on the edit group profile button"""
         self._click(self.edit_group_profile_button)
@@ -121,10 +97,6 @@ class GroupsPage(BasePage):
     def get_profile_information(self) -> str:
         """Get the profile information"""
         return self._get_text_of_element(self.group_profile_information)
-
-    def is_manage_group_section_visible(self) -> bool:
-        """Check if the manage group section is visible"""
-        return self._is_element_visible(self.manage_group_section)
 
     def click_on_add_users_button(self):
         """Click on the 'Add Users' button from the 'Manage Group' section."""
@@ -153,14 +125,6 @@ class GroupsPage(BasePage):
         self._click(self.pm_a_group_user(username))
 
     """Actions against the 'Edit group profile page'"""
-    def get_edit_group_profile_page_header(self) -> str:
-        """Get the text of the edit group profile page header"""
-        return self._get_text_of_element(self.edit_group_profile_page_header)
-
-    def get_edit_group_profile_textarea_content(self) -> str:
-        """Get the content of the edit group profile textarea"""
-        return self._get_element_input_value(self.edit_group_profile_textarea)
-
     def type_into_edit_group_profile_textarea(self, text: str):
         """Type into the edit group profile textarea
 
@@ -175,10 +139,6 @@ class GroupsPage(BasePage):
         self._click(self.save_group_profile_edit_button)
 
     """Actions against the add group member locators."""
-    def get_group_update_notification(self) -> str:
-        """Get the text of the user added successfully message"""
-        return self._get_text_of_element(self.user_notification)
-
     def click_on_change_uploaded_avatar_button(self):
         """Click on the change uploaded avatar button"""
         self._click(self.change_avatar_button, expected_locator=self.upload_avatar_page_header)
@@ -192,10 +152,6 @@ class GroupsPage(BasePage):
         self._click(self.change_avatar_button, expected_locator=self.upload_avatar_page_header)
 
     """Actions against the change avatar page locators."""
-    def get_upload_avatar_page_header(self) -> str:
-        """Get the text of the upload avatar page header"""
-        return self._get_text_of_element(self.upload_avatar_page_header)
-
     def click_on_upload_avatar_button(self, expected_url=None):
         """Click on the upload avatar button"""
         self._click(self.upload_avatar_button, expected_url=expected_url)
@@ -208,18 +164,6 @@ class GroupsPage(BasePage):
     def click_on_cancel_delete_avatar_button(self):
         """Click on the cancel delete avatar button"""
         self._click(self.delete_uploaded_avatar_cancel_button)
-
-    def get_delete_avatar_page_header(self) -> str:
-        """Get the text of the delete avatar page header"""
-        return self._get_text_of_element(self.delete_uploaded_avatar_page_header)
-
-    def is_image_preview_visible(self) -> bool:
-        """Check if the image preview is visible"""
-        return self._is_element_visible(self.delete_uploaded_avatar_image_preview)
-
-    def get_delete_avatar_page_info(self) -> str:
-        """Get the text of the delete avatar page info"""
-        return self._get_text_of_element(self.delete_uploaded_avatar_page_info)
 
     def click_on_delete_avatar_button(self):
         """Click on the delete avatar button"""
@@ -269,13 +213,6 @@ class GroupsPage(BasePage):
         self._click(self.listed_group_leader(username))
 
     """Actions against the 'Remove group members/leaders' page."""
-    def get_remove_leader_page_header(self) -> str:
-        return self._get_text_of_element(self.remove_leader_page_header)
-
-    def get_remove_user_page_header(self) -> str:
-        """Get the text of the remove user page header"""
-        return self._get_text_of_element(self.remove_user_page_header)
-
     def click_on_remove_leader_button(self):
         self._click(self.remove_leader_button)
 

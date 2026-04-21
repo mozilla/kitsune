@@ -37,27 +37,6 @@ class KBDashboard(BasePage):
     def click_on_article_title(self, article_name: str):
         self._click(self.article_title(article_name))
 
-    def get_a_particular_article_status(self, article_name: str) -> str:
-        return self._get_text_of_element(self.article_status(article_name))
-
-    def get_needs_update_status(self, article_name: str) -> str:
-        return self._get_text_of_element(self.needs_update_status(article_name))
-
-    def is_needs_change_empty(self, article_name: str) -> bool:
-        return self._is_element_empty(self.needs_update_status(article_name))
-
-    def get_ready_for_l10n_status(self, article_name: str) -> str:
-        return self._get_text_of_element(self.ready_for_l10n_status(article_name))
-
-    def get_stale_status(self, article_name: str) -> str:
-        return self._get_text_of_element(self.stale_status(article_name))
-
-    def is_stale_status_empty(self, article_name: str) -> bool:
-        return self._is_element_empty(self.stale_status(article_name))
-
-    def get_existing_expiry_date(self, article_name: str) -> str:
-        return self._get_text_of_element(self.expiry_date(article_name))
-
     def click_on_show_translations_option(self, article_name: str):
         self._click(self.show_translations_option(article_name))
 

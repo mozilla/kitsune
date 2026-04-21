@@ -59,14 +59,6 @@ class MyProfileEdit(BasePage):
             "input[not(contains(@id, 'id_username'))]"
         )
 
-    def get_access_denied_header_text(self) -> str:
-        """Return the text of the access denied header"""
-        return self._get_text_of_element(self.access_denied_main_header)
-
-    def get_access_denied_subheading_text(self) -> str:
-        """Return the text of the access denied subheading message"""
-        return self._get_text_of_element(self.access_denied_subheading_message)
-
     def get_value_of_all_input_fields(self) -> list[str]:
         """Return the value of all input fields"""
         elements = self._get_element_handles(self.all_input_edit_profile_input_fields)
@@ -101,38 +93,6 @@ class MyProfileEdit(BasePage):
     def get_username_input_field_value(self) -> str:
         """Return the value of the username input field"""
         return self._get_element_input_value(self.username_input_field)
-
-    def get_username_error_message_text(self) -> str:
-        """Return the text of the username error message"""
-        return self._get_text_of_element(self.username_error_message)
-
-    def get_display_name_input_field_value(self) -> str:
-        """Return the value of the display name input field"""
-        return self._get_element_input_value(self.display_name_input_field)
-
-    def get_website_input_field_value(self) -> str:
-        """Return the value of the website input field"""
-        return self._get_element_input_value(self.website_input_field)
-
-    def get_twitter_input_field_value(self) -> str:
-        """Return the value of the twitter input field"""
-        return self._get_element_input_value(self.twitter_username_field)
-
-    def get_community_portal_field_value(self) -> str:
-        """Return the value of the community portal input field"""
-        return self._get_element_input_value(self.community_portal_username_field)
-
-    def get_people_directory_field_value(self) -> str:
-        """Return the value of the people directory input field"""
-        return self._get_element_input_value(self.people_directory_username_field)
-
-    def get_matrix_username_field_value(self) -> str:
-        """Return the value of the matrix nickname input field"""
-        return self._get_element_input_value(self.matrix_nickname_field)
-
-    def get_city_field_value(self) -> str:
-        """Return the value of the city input field"""
-        return self._get_element_input_value(self.city_field)
 
     def send_text_to_username_field(self, text: str):
         """Send text to the username input field"""
@@ -287,10 +247,6 @@ class MyProfileEdit(BasePage):
         """Click the close account button in the close account modal"""
         self._click(self.close_account_delete_button, expected_url=re.compile(r"close_account$"),
                     retries=2)
-
-    def is_delete_your_account_button_disabled(self) -> bool:
-        """Returning whether the 'Delete Your Account' button is disabled or not."""
-        return self._is_element_disabled(self.close_account_delete_button)
 
     def click_on_close_modal_button(self):
         """Clicking on the 'X' button from the close account modal"""

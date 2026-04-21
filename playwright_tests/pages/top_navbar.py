@@ -114,32 +114,36 @@ class TopNavbar(BasePage):
         """Click on the sumo nav logo"""
         self._click(self.sumo_nav_logo)
 
+    def _hover_until_visible(self, hover_locator: Locator, expected_locator: Locator):
+        """Wait for the page to finish loading, then hover to open the dropdown."""
+        self.wait_for_dom_to_load()
+        self._hover_over_element(hover_locator)
+        self._wait_for_locator(expected_locator)
+
     def get_text_of_option_and_click(self, option: Locator, hover_menu, is_first: bool) -> str:
         """Get the text of a navbar dropdown option and click it, hovering if needed.
 
         Args:
             option: The locator of the option to click.
             hover_menu: A callable that hovers over the parent menu to reveal the dropdown.
-            is_first: Whether this is the first option (skips initial hover).
+            is_first: Whether this is the first option (skips initial hover if already visible).
 
         Returns:
             The normalized text of the option.
         """
-        if not is_first:
+        if not is_first or not self._is_element_visible(option):
             hover_menu()
         option_text = re.sub(r'\s+', ' ', self._get_text_of_element(option)).strip()
-        if self._is_element_visible(option):
-            self._click(option)
-        else:
-            hover_menu()
-            self._click(option)
+        self._click(option)
         return option_text
 
     """Actions against the 'Explore Help Articles' top-navbar section."""
     def hover_over_explore_by_product_top_navbar_option(self):
         """Hover over the 'Explore by product' top-navbar option"""
-        self._hover_over_element(self.explore_help_articles_top_navbar_option)
-        self._wait_for_locator(self.explore_by_product_top_navbar_header)
+        self._hover_until_visible(
+            self.explore_help_articles_top_navbar_option,
+            self.explore_by_product_top_navbar_header,
+        )
 
     def get_all_explore_by_product_options_locators(self) -> list[Locator]:
         """Get all 'Explore by product' top-navbar options locators"""
@@ -159,8 +163,10 @@ class TopNavbar(BasePage):
     """Actions against the 'Community Forums' top-navbar section."""
     def hover_over_community_forums_top_navbar_option(self):
         """Hover over the 'Community Forums' top-navbar option"""
-        self._hover_over_element(self.community_forums_top_navbar_option)
-        self._wait_for_locator(self.browse_by_product_top_navbar_header)
+        self._hover_until_visible(
+            self.community_forums_top_navbar_option,
+            self.browse_by_product_top_navbar_header,
+        )
 
     def get_all_browse_by_product_options_locators(self) -> list[Locator]:
         """Get all 'Browse by product' top-navbar options locators"""
@@ -185,8 +191,10 @@ class TopNavbar(BasePage):
     """Actions against the 'Ask a Question' top-navbar section."""
     def hover_over_ask_a_question_top_navbar(self):
         """Hover over the 'Ask a Question' top-navbar option"""
-        self._hover_over_element(self.ask_a_question_top_navbar)
-        self._wait_for_locator(self.get_help_with_heading)
+        self._hover_until_visible(
+            self.ask_a_question_top_navbar,
+            self.get_help_with_heading,
+        )
 
     def get_all_ask_a_question_locators(self) -> list[Locator]:
         """Get all 'Ask a Question' top-navbar options locators"""
@@ -201,8 +209,10 @@ class TopNavbar(BasePage):
     """Actions against the 'Contribute' top-navbar section."""
     def hover_over_contribute_top_navbar(self):
         """Hover over the 'Contribute' top-navbar option"""
-        self._hover_over_element(self.contribute_option)
-        self._wait_for_locator(self.contributor_discussions_top_navbar_header)
+        self._hover_until_visible(
+            self.contribute_option,
+            self.contributor_discussions_top_navbar_header,
+        )
 
     def get_all_contributor_discussions_locators(self) -> list[Locator]:
         """Get all 'Contributor discussions' top-navbar options locators"""
@@ -315,11 +325,3 @@ class TopNavbar(BasePage):
         """Get the text of the logged in username"""
         return self._get_text_of_element(self.signed_in_username)
 
-    def get_unread_message_notification_counter_value(self) -> int:
-        """Get the unread message notification counter value"""
-        return int(self._get_text_of_element(self.unread_message_count))
-
-    """General actions against the top-navbar section."""
-    def get_available_menu_titles(self) -> list[str]:
-        """Get the available menu titles"""
-        return self._get_text_of_elements(self.menu_titles)

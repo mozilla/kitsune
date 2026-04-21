@@ -34,17 +34,15 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page, create_user_
         expect(page).to_have_url(utilities.general_test_data['dashboard_links']['kb_overview'])
 
     with check, allure.step("Verifying that the correct live status is displayed"):
-        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
-            article_details['article_title']
-        ).strip() == KBDashboardPageMessages.get_kb_not_live_status(
-            revision_note=article_details['article_review_description']
-        )
+        expect(sumo_pages.kb_dashboard_page.article_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.get_kb_not_live_status(
+            revision_note=article_details['article_review_description']))
 
     with allure.step("Signing out and verifying that the article is not displayed since it "
                      "is not live yet"):
         utilities.delete_cookies()
         expect(sumo_pages.kb_dashboard_page.article_title(
-                article_details['article_title'])).to_be_hidden()
+            article_details['article_title'])).to_be_hidden()
 
     with allure.step("Navigating to the homepage and performing the sign in step since the "
                      "kb overview takes quite a bit to refresh/load"):
@@ -54,9 +52,8 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page, create_user_
     with allure.step("Navigating to the kb overview verifying that the article is not "
                      "displayed since it is not live yet"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(
-            sumo_pages.kb_dashboard_page.article_title(
-                article_details['article_title'])).to_be_hidden()
+        expect(sumo_pages.kb_dashboard_page.article_title(
+            article_details['article_title'])).to_be_hidden()
 
     with allure.step("Signing in with a Knowledge Base Reviewer account"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
@@ -76,14 +73,13 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page, create_user_
     with check, allure.step("Navigating back to the kb overview page and verifying that the "
                             "correct live status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
-            article_details['article_title']).strip() == KBDashboardPageMessages.KB_LIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.article_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.KB_LIVE_STATUS)
 
     with allure.step("Signing out and verifying that the article is visible"):
         utilities.delete_cookies()
-        expect(
-            sumo_pages.kb_dashboard_page.article_title(
-                article_details['article_title'])).to_be_visible()
+        expect(sumo_pages.kb_dashboard_page.article_title(
+            article_details['article_title'])).to_be_visible()
 
     with allure.step("Signing in with a non-admin user"):
         sumo_pages.top_navbar.click_on_sumo_nav_logo()
@@ -93,9 +89,8 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page, create_user_
                      "visible"):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(
-            sumo_pages.kb_dashboard_page.article_title(
-                article_details['article_title'])).to_be_visible()
+        expect(sumo_pages.kb_dashboard_page.article_title(
+            article_details['article_title'])).to_be_visible()
 
 
 # C2266376
@@ -103,7 +98,6 @@ def test_unreviewed_articles_visibility_in_kb_dashboard(page: Page, create_user_
 def test_kb_dashboard_articles_status(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-
     test_user = create_user_factory(groups=["Knowledge Base Reviewers"])
 
     with allure.step("Signing in with a Knowledge Base Reviewer account"):
@@ -120,11 +114,10 @@ def test_kb_dashboard_articles_status(page: Page, create_user_factory):
                             "correct status is displayed"):
         utilities.navigate_to_link(
             utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
-            article_details['article_title']
-        ).strip() == KBDashboardPageMessages.get_kb_not_live_status(
-            revision_note=second_revision['changes_description']
-        )
+
+        expect(sumo_pages.kb_dashboard_page.article_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.get_kb_not_live_status(
+            revision_note=second_revision['changes_description']))
 
     with allure.step("Navigating back to the article history and deleting the revision"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
@@ -136,8 +129,8 @@ def test_kb_dashboard_articles_status(page: Page, create_user_factory):
     with check, allure.step("Navigating back to the kb dashboard and verifying that the live "
                             "status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
-            article_details['article_title']).strip() == KBDashboardPageMessages.KB_LIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.article_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.KB_LIVE_STATUS)
 
 
 # C2496647
@@ -163,10 +156,9 @@ def test_kb_dashboard_revision_deferred_status(page: Page, create_user_factory):
     with check, allure.step("Navigating to the kb overview page and verifying that the "
                             "correct kb status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
-            article_details['article_title']
-        ) == KBDashboardPageMessages.get_kb_not_live_status(
-            second_revision['changes_description'])
+        expect(sumo_pages.kb_dashboard_page.article_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.get_kb_not_live_status(
+            second_revision['changes_description']))
 
     with allure.step("Navigating back to the article history page and deferring the revision"):
         utilities.navigate_to_link(article_show_history_url)
@@ -179,8 +171,8 @@ def test_kb_dashboard_revision_deferred_status(page: Page, create_user_factory):
     with check, allure.step("Navigating back to the kb overview page and verifying that the "
                             "correct status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_a_particular_article_status(
-            article_details['article_title']) == KBDashboardPageMessages.KB_LIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.article_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.KB_LIVE_STATUS)
 
 
 # C2496646
@@ -206,10 +198,8 @@ def test_kb_dashboard_needs_update_when_reviewing_a_revision(page: Page, create_
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct article status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_needs_update_status(
-            article_details['article_title']
-        ).strip() == utilities.kb_revision_test_data['needs_change_message']
-
+        expect(sumo_pages.kb_dashboard_page.needs_update_status(article_details['article_title'])
+               ).to_have_text(utilities.kb_revision_test_data['needs_change_message'])
 
 # C2266377, C2243456, C2496646
 @pytest.mark.kbDashboard
@@ -235,9 +225,8 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page, create_user_factory
     with check, allure.step("Navigating to the kb dashboard and verifying that the correct "
                             "needs change status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_needs_update_status(
-            article_details['article_title']
-        ).strip() == utilities.kb_revision_test_data['needs_change_message']
+        expect(sumo_pages.kb_dashboard_page.needs_update_status(article_details['article_title'])
+               ).to_have_text(utilities.kb_revision_test_data['needs_change_message'])
 
     with allure.step("Navigating back to the article's 'Edit Article Metadata' page and "
                      "removing the comment from the needs change textarea"):
@@ -247,9 +236,8 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page, create_user_factory
     with allure.step("Navigating to the complete dashboard list and verifying that the "
                      "correct needs change status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_needs_update_status(
-            article_details['article_title']
-        ).strip() == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.needs_update_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
     with allure.step("Navigating back to the article's 'Edit Article Metadata' page and "
                      "removing the needs change updates"):
@@ -259,7 +247,8 @@ def test_kb_dashboard_needs_update_edit_metadata(page: Page, create_user_factory
     with check, allure.step("Navigating to the kb overview page and verifying that the "
                             "correct needs change status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.is_needs_change_empty(article_details['article_title'])
+        expect(sumo_pages.kb_dashboard_page.needs_update_status(article_details['article_title'])
+               ).to_be_empty()
 
 
 # C2266378, C2489548
@@ -286,8 +275,8 @@ def test_ready_for_l10n_kb_dashboard_revision_approval(page: Page, create_user_f
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
 
 # C2266378
@@ -309,8 +298,8 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page, create_use
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Navigating back to the article page and marking the revision as ready "
                      "for l10n"):
@@ -324,8 +313,8 @@ def test_ready_for_l10n_kb_dashboard_revision_l10n_status(page: Page, create_use
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
 
 # C2875533
@@ -348,8 +337,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct kb dashboard l10n status is displayed "
                             "(No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with check, allure.step("Approving the KB article without marking it as ready for l10n and "
                             "verifying that the correct l10N status is displayed inside the KB "
@@ -358,8 +347,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
         sumo_pages.submit_kb_article_flow.approve_kb_revision(
             revision_id=article_details["first_revision_id"])
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new revision and approve it as minor significance"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -369,8 +358,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10N status is inside the KB dashboard "
                             "(No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new revision and approving it as normal significance and ready "
                      "for localization"):
@@ -382,8 +371,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10n status is inside the kb dashboard "
                             "(Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
     with allure.step("Creating a new revision and approving it as normal significance and not "
                      "ready for localization"):
@@ -395,8 +384,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new minor revision and approving it"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -407,8 +396,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new major revision and not marking it as ready for localization"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -419,8 +408,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new minor revision and approving it"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -431,8 +420,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new major revision and marking it as ready for localization"):
         utilities.navigate_to_link(article_details["article_url"])
@@ -443,8 +432,8 @@ def test_ready_for_l10n_kb_dashboard_status_update(page: Page, create_user_facto
     with check, allure.step("Verifying that the correct l10n status is displayed inside the kb "
                             "dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
 
 # C2875537
@@ -473,8 +462,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
     with check, allure.step("Verifying that the correct ready for localization status is "
                             "displayed inside the KB dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Marking the newly submitted revision as ready for localization via the"
                      " /history page"):
@@ -487,8 +476,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             "inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
     with allure.step("Creating a new minor revision"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
@@ -499,8 +488,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
     with allure.step("Creating a new major significance revision"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
@@ -511,8 +500,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Marking the newly submitted revision as ready for localization via the"
                      " /history page"):
@@ -525,8 +514,8 @@ def test_ready_for_l10n_status_update_via_history_page(page: Page, create_user_f
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
 
 # C2875536
@@ -553,8 +542,8 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page,
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (No)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
     with allure.step("Creating a new revision of normal significance and approving it by marking"
                      "it as ready for localization"):
@@ -566,8 +555,8 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page,
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
     with allure.step("Creating a new revision and deferring it instead of approving"):
         utilities.navigate_to_link(article_details["article_show_history_url"])
@@ -577,8 +566,8 @@ def test_deferring_revision_does_not_impact_l10n_kb_dashboard_status(page: Page,
     with check, allure.step("Verifying that the correct ready for localization status is displayed"
                             " inside the KB dashboard (Yes)"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
 
 
 # C2266378
@@ -600,8 +589,8 @@ def test_article_translation_not_allowed_kb_dashboard(page: Page, create_user_fa
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct l10n status is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_ready_for_l10n_status(
-            article_details['article_title']) == KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS
+        expect(sumo_pages.kb_dashboard_page.ready_for_l10n_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_NEGATIVE_STATUS)
 
 
 # C2266379, C2266380
@@ -626,14 +615,11 @@ def test_article_stale_kb_dashboard(page: Page, create_user_factory):
     with check, allure.step("Navigating to the kb dashboard overview page and verifying that "
                             "the correct stale status and date is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.get_stale_status(
-            article_details['article_title']
-        ) == KBDashboardPageMessages.GENERAL_POSITIVE_STATUS
-        assert sumo_pages.kb_dashboard_page.get_existing_expiry_date(
-            article_details['article_title']
-        ) == utilities.convert_string_to_datetime(
-            utilities.kb_article_test_data['old_expiry_date']
-        )
+        expect(sumo_pages.kb_dashboard_page.stale_status(article_details['article_title'])
+               ).to_have_text(KBDashboardPageMessages.GENERAL_POSITIVE_STATUS)
+        expect(sumo_pages.kb_dashboard_page.expiry_date(article_details['article_title'])
+               ).to_have_text(utilities.convert_string_to_datetime(
+            utilities.kb_article_test_data['old_expiry_date']))
 
     with allure.step("Navigating back to the article and creating a new revision with a "
                      "non-stale expiry date"):
@@ -645,10 +631,11 @@ def test_article_stale_kb_dashboard(page: Page, create_user_factory):
     with check, allure.step("Navigating to the kb dashboard and verifying that the correct "
                             "stale status and date is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        assert sumo_pages.kb_dashboard_page.is_stale_status_empty(article_details['article_title'])
-        assert sumo_pages.kb_dashboard_page.get_existing_expiry_date(
-            article_details['article_title']
-        ) == utilities.convert_string_to_datetime(utilities.kb_article_test_data['expiry_date'])
+        expect(sumo_pages.kb_dashboard_page.stale_status(article_details['article_title'])
+               ).to_be_empty()
+        expect(sumo_pages.kb_dashboard_page.expiry_date(article_details['article_title'])
+               ).to_have_text(utilities.convert_string_to_datetime(
+            utilities.kb_article_test_data['expiry_date']))
 
 
 @pytest.mark.kbDashboard
@@ -667,9 +654,8 @@ def test_article_title_update(page: Page, create_user_factory):
     with allure.step("Navigating to the kb dashboard overview page and verifying that the "
                      "correct title is displayed"):
         utilities.navigate_to_link(utilities.general_test_data['dashboard_links']['kb_overview'])
-        expect(
-            sumo_pages.kb_dashboard_page.article_title(
-                article_details['article_title'])).to_be_visible()
+        expect(sumo_pages.kb_dashboard_page.article_title(
+            article_details['article_title'])).to_be_visible()
 
     with allure.step("Navigating to the article's 'Edit Metadata page' page and changing the "
                      "title"):

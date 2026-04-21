@@ -36,5 +36,5 @@ def test_new_account_creation(page: Page, restmail_test_account_creation):
         expect(sumo_pages.top_navbar.signed_in_username).to_have_text(
             utilities.username_extraction_from_email(username)
         )
-        assert (sumo_pages.homepage.get_user_notification() == HomepageMessages.
-                NEW_USER_REGISTRATION_MESSAGE)
+        expect(sumo_pages.homepage.user_notification).to_contain_text(
+            HomepageMessages.NEW_USER_REGISTRATION_MESSAGE)

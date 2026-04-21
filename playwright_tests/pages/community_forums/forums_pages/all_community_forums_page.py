@@ -19,15 +19,6 @@ class SupportForumsPage(BasePage):
         self.all_products_support_forum_button = page.get_by_role("link").filter(
             has_text="All Products Community Forums")
 
-    """Actions against the page heading locators."""
-    def get_page_heading_text(self) -> str:
-        """Get the text of the page title."""
-        return self._get_text_of_element(self.page_main_heading)
-
-    def get_page_intro_text(self) -> str:
-        """Get the text of the page subtitle."""
-        return self._get_text_of_element(self.page_intro)
-
     """Actions against the product cards section."""
     def click_on_a_particular_product_card(self, card_name: str):
         """
@@ -40,14 +31,6 @@ class SupportForumsPage(BasePage):
     def get_product_card_titles_list(self) -> list[str]:
         """Get all product community forum card titles."""
         return self._get_text_of_elements(self.product_card_titles)
-
-    def get_card_description_text(self, card_title: str) -> str:
-        """
-        Get the product community forum card description from a certain card.
-        Args:
-            card_title (str): The product community forum card title.
-        """
-        return self._get_text_of_element(self.card_description(card_title))
 
     def click_on_all_products_support_forum_button(self):
         """Click on the 'All Products Community Forums' button."""

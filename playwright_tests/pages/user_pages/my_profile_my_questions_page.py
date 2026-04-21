@@ -15,14 +15,6 @@ class MyProfileMyQuestionsPage(BasePage):
             f"//a[@class='question-entry--title-link' and text()='{name}']")
 
     """Actions against the My Questions profile page locators."""
-    def get_text_of_no_question_message(self) -> str:
-        """Returns the text of the no question message."""
-        return self._get_text_of_element(self.questions_no_question_message)
-
-    def get_number_of_questions(self) -> int:
-        """Returns the number of questions listed on the page."""
-        return len(self._get_element_handles(self.questions_list))
-
     def click_on_a_question_by_index(self, index_of_question: int):
         """Clicks on a question by its index."""
         self._click(self.questions_titles.nth(index_of_question))
@@ -30,12 +22,3 @@ class MyProfileMyQuestionsPage(BasePage):
     def click_on_a_question_by_name(self, question_title: str):
         """Clicks on a question by its title."""
         self._click(self.question_by_name(question_title))
-
-    def get_text_of_listed_question_by_index(self, index: int) -> str:
-        """Returns the text of the first listed question."""
-        return self._get_text_of_element(self.questions_titles.nth(index))
-
-
-    def get_all_my_posted_questions(self) -> list[str]:
-        """Returns a list of all the posted questions."""
-        return self._get_text_of_elements(self.questions_titles)

@@ -57,52 +57,12 @@ class KBArticleReviewRevisionPage(BasePage):
         self.major_significance = page.locator("input#id_significance_2")
 
     """Actions against the general review revision page locators."""
-    def get_revision_header(self) -> str:
-        return self._get_text_of_element(self.revision_header)
-
-    def get_reviewing_revision_text(self) -> str:
-        return self._get_text_of_element(self.reviewing_revision_text)
-
     def click_on_back_to_history_option(self):
         self._click(self.back_to_history_link)
 
-    # For single revision on the same kb article
-    def get_no_current_revision_header(self) -> str:
-        return self._get_text_of_element(self.no_current_rev_header)
-
     # For multiple revisions on the same kb article
-    def get_unreviewed_revision_text(self) -> str:
-        return self._get_text_of_element(self.unreviewed_revision_header)
-
-    def get_unreviewed_revision_section_text(self) -> str:
-        return self._get_text_of_element(self.unreviewed_revision_section)
-
     def click_on_review_revision_option(self):
         self._click(self.review_revision_link)
-
-    def is_keywords_header_visible(self) -> bool:
-        return self._is_element_visible(self.keywords_header)
-
-    def get_keywords_content(self) -> str:
-        return self._get_text_of_element(self.keywords_content)
-
-    def is_search_results_summary_visible(self) -> bool:
-        return self._is_element_visible(self.search_results_summary_header)
-
-    def get_search_results_summary_content(self) -> str:
-        return self._get_text_of_element(self.search_results_summary_content)
-
-    def is_revision_source_visible(self) -> bool:
-        return self._is_element_visible(self.revision_source_header)
-
-    def revision_source_content(self) -> str:
-        return self._get_text_of_element(self.revision_source_content_locator)
-
-    def is_revision_rendered_html_header_visible(self) -> bool:
-        return self._is_element_visible(self.revision_rendered_html_header)
-
-    def get_revision_rendered_html_content(self) -> str:
-        return self._get_text_of_element(self.revision_rendered_html_content)
 
     def click_on_defer_revision_button(self):
         self._click(self.defer_revision_button)
@@ -117,9 +77,6 @@ class KBArticleReviewRevisionPage(BasePage):
         self._click(self.approve_revision_button)
 
     """Actions against the review revision modal locators."""
-    def get_accept_revision_modal_header(self) -> str:
-        return self._get_text_of_element(self.accept_revision_modal_header)
-
     def click_accept_revision_accept_button(self):
         self._click(self.modal_accept_button)
 

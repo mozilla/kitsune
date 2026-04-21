@@ -95,14 +95,6 @@ class ForumThreadPage(BasePage):
 
 
     """Actions against the page breadcrumbs locators."""
-    def get_breadcrumb_options(self) -> list[str]:
-        """
-            Get the breadcrumb options.
-            Returns:
-                list[str]: A list of breadcrumb options.
-        """
-        return self._get_text_of_elements(self.breadcrumb_options)
-
     def click_on_a_breadcrumb_link(self, breadcrumb_name: str):
         """
             Click on a specific breadcrumb link.
@@ -120,70 +112,11 @@ class ForumThreadPage(BasePage):
         return self._get_text_of_elements(self.breadcrumb_links)
 
     """Actions against the general thread page locators."""
-    def get_thread_meta_information(self) -> list[str]:
-        return self._get_text_of_elements(self.thread_meta)
-
-    def is_thread_post_visible(self, post_id: str) -> bool:
-        """
-            Check if a specific thread post is visible.
-            Args:
-                post_id (str): The ID of the post.
-            Returns:
-                bool: True if the post is visible, False otherwise.
-        """
-        return self._is_element_visible(self.thread_post(post_id))
-
-    def is_thread_post_by_name_visible(self, post_name: str) -> bool:
-        """
-            Check if a specific thread post by name is visible.
-            Args:
-                post_name (str): The name of the post.
-            Returns:
-                bool: True if the post is visible, False otherwise.
-        """
-        return self._is_element_visible(self.thread_post_by_content(post_name))
-
-    def get_modified_by_text(self, post_id: str) -> str:
-        """
-            Get the modified by text for a specific post.
-            Args:
-                post_id (str): The ID of the post.
-            Returns:
-                str: The modified by text.
-        """
-        return self._get_text_of_element(self.modified_by(post_id))
-
-    def is_modified_by_section_displayed(self, post_id: str) -> bool:
-        """
-            Return whether the modified by section is displayed or not.
-            Args:
-                post_id (str): The ID of the post.
-            Returns:
-                bool: If the locator is displayed or not
-        """
-        return self._is_element_visible(self.modified_by(post_id))
-
-    def is_edit_thread_title_option_visible(self) -> bool:
-        """
-            Check if the edit thread title option is visible.
-            Returns:
-                bool: True if the option is visible, False otherwise.
-        """
-        return self._is_element_visible(self.edit_thread_title_option)
-
     def click_on_edit_thread_title_option(self):
         """
             Click on the edit thread title option.
         """
         self._click(self.edit_thread_title_option)
-
-    def is_lock_this_thread_option_visible(self) -> bool:
-        """
-            Check if the lock this thread option is visible.
-            Returns:
-                bool: True if the option is visible, False otherwise.
-        """
-        return self._is_element_visible(self.lock_this_thread_option)
 
     def click_lock_this_thread_option(self):
         """
@@ -191,27 +124,11 @@ class ForumThreadPage(BasePage):
         """
         self._click(self.lock_this_thread_option)
 
-    def is_sticky_this_thread_option_visible(self) -> bool:
-        """
-            Check if the sticky this thread option is visible.
-            Returns:
-                bool: True if the option is visible, False otherwise.
-        """
-        return self._is_element_visible(self.sticky_this_thread_option)
-
     def click_sticky_this_thread_option(self):
         """
             Click on the sticky this thread option.
         """
         self._click(self.sticky_this_thread_option)
-
-    def is_unsticky_this_thread_option_visible(self) -> bool:
-        """
-            Check if the unsticky this thread option is visible.
-            Returns:
-                bool: True if the option is visible, False otherwise.
-        """
-        return self._is_element_visible(self.unsticky_this_thread_option)
 
     def click_unsticky_this_thread_option(self):
         """
@@ -219,49 +136,11 @@ class ForumThreadPage(BasePage):
         """
         self._click(self.unsticky_this_thread_option)
 
-    def is_thread_locked_message_displayed(self) -> bool:
-        """
-            Check if the thread locked message is displayed.
-            Returns:
-                bool: True if the message is displayed, False otherwise.
-        """
-        return self._is_element_visible(self.thread_locked_text)
-
-    def get_thread_locked_message(self) -> str:
-        """
-            Get the thread locked message.
-            Returns:
-                str: The thread locked message.
-        """
-        return self._get_text_of_element(self.thread_locked_text)
-
-    def is_unlock_this_thread_option_visible(self) -> bool:
-        """
-            Check if the unlock this thread option is visible.
-            Returns:
-                bool: True if the option is visible, False otherwise.
-        """
-        return self._is_element_visible(self.unlock_this_thread_option)
-
     def click_unlock_this_thread_option(self):
         """
             Click on the unlock this thread option.
         """
         self._click(self.unlock_this_thread_option)
-
-    def get_forum_thread_title(self) -> str:
-        """
-            Get the title of the forum thread.
-        """
-        return self._get_text_of_element(self.thread_title)
-
-    def is_delete_thread_option_visible(self) -> bool:
-        """
-            Check if the delete thread option is visible.
-            Returns:
-                bool: True if the option is visible, False otherwise.
-        """
-        return self._is_element_visible(self.delete_this_thread_option)
 
     def click_on_delete_thread_option(self):
         """
@@ -313,22 +192,6 @@ class ForumThreadPage(BasePage):
         """
         self._click(self.post_reply_button)
 
-    def is_reply_textarea_visible(self) -> bool:
-        """
-            Check if the reply textarea is visible.
-            Returns:
-                bool: True if the textarea is visible, False otherwise.
-        """
-        return self._is_element_visible(self.post_reply_textarea)
-
-    def get_contributor_discussions_side_navbar_header(self) -> str:
-        """
-        Get the header text of the Contributor Discussions side navbar.
-        Returns:
-            str: The header text of the side navbar.
-        """
-        return self._get_text_of_element(self.contributor_discussions_side_navbar_header)
-
     def get_contributor_discussions_side_navbar_items(self) -> list[str]:
         """
         Get the text of all items in the Contributor Discussions side navbar.
@@ -364,29 +227,6 @@ class ForumThreadPage(BasePage):
         self.click_on_3_dotted_menu(post_id)
         self._click(self.post_edit_this_post(post_id))
 
-    def is_edit_this_post_option_displayed(self, post_id: str):
-        """
-        Check if the "Edit this post" option is displayed in the 3-dotted menu of a specific post.
-        Args:
-            post_id (str): The ID of the post.
-        Returns:
-            bool: True if the option is displayed, False otherwise.
-        """
-        self.click_on_3_dotted_menu(post_id)
-        return self._is_element_visible(self.post_edit_this_post(post_id))
-
-    def is_delete_this_post_option_displayed(self, post_id: str):
-        """
-        Check if the "Delete this post" option is displayed in the 3-dotted menu of a specific
-        post.
-        Args:
-            post_id (str): The ID of the post.
-        Returns:
-            bool: True if the option is displayed, False otherwise.
-        """
-        self.click_on_3_dotted_menu(post_id)
-        return self._is_element_visible(self.delete_this_post(post_id))
-
     def click_on_quote_option(self, post_id: str):
         """
         Click on the "Quote" option for a specific post.
@@ -414,15 +254,6 @@ class ForumThreadPage(BasePage):
         self.click_on_3_dotted_menu(post_id)
         self._click(self.private_message(post_id))
 
-    def is_quote_option_displayed(self, post_id: str) -> bool:
-        """
-        Check if the "Quote" option is displayed in the 3-dotted menu of a specific post.
-        Returns:
-            bool: True if the option is displayed, False otherwise.
-        """
-        self.click_on_3_dotted_menu(post_id)
-        return self._is_element_visible(self.quote_this_post(post_id))
-
     def click_on_report_abuse_option(self, post_id: str):
         """
         Click on the "Report Abuse" option for a specific post.
@@ -445,59 +276,8 @@ class ForumThreadPage(BasePage):
 
         return re.search(r'post-(\d+)', self.utilities.get_page_url()).group(1)
 
-    def is_report_abuse_option_displayed(self, post_id: str) -> bool:
-        """
-        Check if the "Report Abuse" option is displayed in the 3-dotted menu of a specific post.
-        Args:
-            post_id (str): The ID of the post.
-        Returns:
-            bool: True if the option is displayed, False otherwise.
-        """
-        self.click_on_3_dotted_menu(post_id)
-        return self._is_element_visible(self.report_this_post(post_id))
-
-    def get_thread_post_mention_text(self, post_id: str) -> str:
-        """
-            Get the thread post mention text for a specific post.
-            Args:
-                post_id (str): The ID of the post.
-            Returns:
-                str: The thread post mention text.
-        """
-        return self._get_text_of_element(self.quoted_thread_post_mention(post_id))
-
     def click_on_post_mention_link(self, post_id: str):
         """
             Click on the post mention link.
         """
         self._click(self.quoted_thread_post_mention_link(post_id))
-
-    def get_thread_post_quote_text(self, post_id: str) -> str:
-        """
-            Get the thread post quote text for a specific post.
-            Args:
-                post_id (str): The ID of the post.
-            Returns:
-                str: The thread post quote text.
-        """
-        return self._get_text_of_element(self.quoted_thread_post_quote(post_id))
-
-    def get_post_author(self, post_id: str) -> str:
-        """
-         Get the author of a kb thread post.
-         Args:
-             post_id (str): The ID of the post.
-            Returns:
-                str: The author of the post.
-        """
-        return self._get_text_of_element(self.post_author(post_id))
-
-    def get_post_content(self, post_id: str) -> str:
-        """
-        Get the content of the thread post.
-        Args:
-            post_id (str): The ID of the post.
-        Returns:
-            str: The content of the post.
-        """
-        return self._get_text_of_element(self.post_content(post_id)).strip()

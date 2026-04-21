@@ -24,14 +24,7 @@ class ProductsPage(BasePage):
     def click_on_first_breadcrumb(self):
         self._click(self.first_breadcrumb)
 
-    """Actions against the general page content locators."""
-    def get_page_header(self) -> str:
-        return self._get_text_of_element(self.page_header)
-
     """Actions against the product cards locators."""
-    def get_subheading_of_card(self, card_title: str) -> str:
-        return self._get_text_of_element(self.card_subheading(card_title))
-
     def click_on_a_particular_product_support_card(self, card_title):
         self._click(self.card(card_title))
 

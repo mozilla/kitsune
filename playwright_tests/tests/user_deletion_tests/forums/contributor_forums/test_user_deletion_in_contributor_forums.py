@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.contribute_messages.con_discussions.off_topic import \
@@ -129,8 +129,9 @@ def test_deleting_the_user_which_locked_the_thread(page: Page, create_user_facto
                             "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
-        assert "Locked" in sumo_pages.forum_thread_page.get_thread_meta_information()
-        assert sumo_pages.forum_thread_page.get_post_author(thread) == test_user["username"]
+        expect(sumo_pages.forum_thread_page.thread_meta).to_contain_text(["Locked"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
 
     with allure.step("Unlocking the thread using a forum moderator account"):
         utilities.start_existing_session(cookies=test_user_three)
@@ -140,9 +141,9 @@ def test_deleting_the_user_which_locked_the_thread(page: Page, create_user_facto
                             "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
-        assert "Locked" not in sumo_pages.forum_thread_page.get_thread_meta_information()
-        assert sumo_pages.forum_thread_page.get_post_author(thread) == test_user["username"]
-
+        expect(sumo_pages.forum_thread_page.thread_meta).not_to_contain_text(["Locked"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
 
 # C2955157
 @pytest.mark.userDeletion
@@ -168,8 +169,9 @@ def test_deleting_the_user_which_stickied_the_thread(page: Page, create_user_fac
                             "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
-        assert "Sticky" in sumo_pages.forum_thread_page.get_thread_meta_information()
-        assert sumo_pages.forum_thread_page.get_post_author(thread) == test_user["username"]
+        expect(sumo_pages.forum_thread_page.thread_meta).to_contain_text(["Sticky"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
 
     with allure.step("Unsticking the thread using a different forum moderator"):
         utilities.start_existing_session(cookies=test_user_three)
@@ -179,8 +181,9 @@ def test_deleting_the_user_which_stickied_the_thread(page: Page, create_user_fac
                             "was not affected by this deletion"):
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
-        assert "Sticky" not in sumo_pages.forum_thread_page.get_thread_meta_information()
-        assert sumo_pages.forum_thread_page.get_post_author(thread) == test_user["username"]
+        expect(sumo_pages.forum_thread_page.thread_meta).not_to_contain_text(["Sticky"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
 
 
 # C2952067
@@ -217,11 +220,12 @@ def test_edited_threads_are_assigned_successfully_to_system_account(page: Page,
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
-        assert sumo_pages.forum_thread_page.get_post_content(thread_reply_id) == new_thread_body
-        assert (sumo_pages.forum_thread_page.get_post_author(thread_reply_id) == utilities.
-                general_test_data["system_account_name"])
-        assert (test_user["username"] in sumo_pages.forum_thread_page.
-                get_modified_by_text(thread_reply_id))
+        expect(sumo_pages.forum_thread_page.post_content(thread_reply_id)).to_have_text(
+            new_thread_body)
+        expect(sumo_pages.forum_thread_page.post_author(thread_reply_id)).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.forum_thread_page.modified_by(thread_reply_id)).to_contain_text(
+            [test_user["username"]])
 
 
 # C2952066
@@ -257,9 +261,9 @@ def test_deleting_the_user_which_edited_a_thread(page: Page, create_user_factory
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
-        assert sumo_pages.forum_thread_page.get_forum_thread_title() == new_thread_title
-        assert sumo_pages.forum_thread_page.get_post_content(thread_id) == new_thread_body
-        assert not sumo_pages.forum_thread_page.is_modified_by_section_displayed(thread_id)
+        expect(sumo_pages.forum_thread_page.thread_title).to_have_text(new_thread_title)
+        expect(sumo_pages.forum_thread_page.post_content(thread_id)).to_have_text(new_thread_body)
+        expect(sumo_pages.forum_thread_page.modified_by(thread_id)).to_be_hidden()
 
 
 # C2939461
@@ -291,10 +295,10 @@ def test_threads_are_assigned_to_system_account_if_contains_additional_posts(pag
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
-        assert (sumo_pages.forum_thread_page.get_post_author(thread) == utilities.
-                general_test_data["system_account_name"])
-        assert (sumo_pages.forum_thread_page.
-                get_post_author(thread_reply_id) == test_user_two["username"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.forum_thread_page.post_author(thread_reply_id)).to_have_text(
+            test_user_two["username"])
 
         with allure.step("Deleting the thread"):
             utilities.start_existing_session(session_file_name=staff_user)
@@ -330,14 +334,14 @@ def test_thread_replies_are_assigned_to_system_account(page: Page, create_user_f
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
-        assert (sumo_pages.forum_thread_page.
-                get_post_author(thread) == test_user["username"])
-        assert (sumo_pages.forum_thread_page.get_post_author(thread_reply_id) == utilities.
-                general_test_data["system_account_name"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
+        expect(sumo_pages.forum_thread_page.post_author(thread_reply_id)).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert (sumo_pages.forum_discussions_page.get_last_post_by_text(thread_title) == utilities.
-                general_test_data["system_account_name"])
+        expect(sumo_pages.forum_discussions_page.last_post_by(thread_title)).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
         with allure.step("Deleting the thread"):
             utilities.start_existing_session(session_file_name=staff_user)
@@ -374,12 +378,12 @@ def test_quoted_first_post_is_moved_to_system_account(page: Page, create_user_fa
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
-        assert (sumo_pages.forum_thread_page.
-                get_post_author(thread) == test_user["username"])
-        assert (sumo_pages.forum_thread_page.get_post_author(thread_reply_id) == utilities.
-                general_test_data["system_account_name"])
-        assert (test_user["username"] in sumo_pages.forum_thread_page.
-                get_thread_post_mention_text(thread_reply_id))
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
+        expect(sumo_pages.forum_thread_page.post_author(thread_reply_id)).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.forum_thread_page.quoted_thread_post_mention(thread_reply_id)
+               ).to_contain_text([test_user["username"]])
 
         with allure.step("Deleting the thread"):
             utilities.start_existing_session(session_file_name=staff_user)
@@ -423,17 +427,17 @@ def test_quoted_replies_are_moved_to_system_account(page: Page, create_user_fact
         sumo_pages.edit_profile_flow.close_account()
         utilities.navigate_to_link(thread_url)
 
-        assert (sumo_pages.forum_thread_page.
-                get_post_author(thread) == test_user["username"])
-        assert (sumo_pages.forum_thread_page.get_post_author(second_thread_reply) == utilities.
-                general_test_data["system_account_name"])
-        assert (sumo_pages.forum_thread_page.
-                get_post_author(third_thread_reply) == test_user["username"])
+        expect(sumo_pages.forum_thread_page.post_author(thread)).to_have_text(
+            test_user["username"])
+        expect(sumo_pages.forum_thread_page.post_author(second_thread_reply)).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.forum_thread_page.post_author(third_thread_reply)).to_have_text(
+            test_user["username"])
 
         # Currently we are showing the username of the deleted user. This might change in the
         # future.
-        assert (test_user_two["username"] in sumo_pages.forum_thread_page.
-                get_thread_post_mention_text(third_thread_reply))
+        expect(sumo_pages.forum_thread_page.quoted_thread_post_mention(third_thread_reply)
+               ).to_contain_text([test_user_two["username"]])
 
         with allure.step("Deleting the thread"):
             utilities.start_existing_session(session_file_name=staff_user)

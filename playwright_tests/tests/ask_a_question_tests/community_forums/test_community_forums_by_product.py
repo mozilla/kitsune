@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.community_forums_messages import \
@@ -23,8 +23,7 @@ def test_product_community_cards_are_redirecting_to_the_correct_forum(page: Page
                             "user is redirected to the correct community forum"):
         for card in sumo_pages.all_community_forums_page.get_product_card_titles_list():
             sumo_pages.all_community_forums_page.click_on_a_particular_product_card(card)
-            assert (sumo_pages.product_support_forum.
-                    get_text_of_product_community_forum_header() == card)
+            expect(sumo_pages.product_support_forum.community_forum_header).to_have_text(card)
 
             with allure.step("Navigating back to the all products community forum page"):
                 utilities.navigate_back()
@@ -33,8 +32,8 @@ def test_product_community_cards_are_redirecting_to_the_correct_forum(page: Page
         sumo_pages.all_community_forums_page.click_on_all_products_support_forum_button()
 
     with check, allure.step("Verifying that the user is redirected to the correct forum page"):
-        assert (sumo_pages.product_support_forum.
-                get_text_of_product_community_forum_header() == "All Products Community Forum")
+        expect(sumo_pages.product_support_forum.community_forum_header).to_have_text(
+            "All Products Community Forum")
 
 
 # C2663508
@@ -52,20 +51,18 @@ def test_ask_the_community_button_redirect(page: Page):
         for card in sumo_pages.all_community_forums_page.get_product_card_titles_list():
             sumo_pages.all_community_forums_page.click_on_a_particular_product_card(card)
             sumo_pages.product_support_forum.click_on_the_ask_the_community_button()
-            assert (sumo_pages.product_solutions_page.get_product_solutions_heading() == card.
-                    replace("Community Forum", "Solutions"))
+            expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                card.replace("Community Forum", "Solutions"))
             utilities.navigate_to_link(SupportForumsPageMessages.PAGE_URL)
 
     with allure.step("Clicking on the 'All Products Community Forums' button and clicking on "
                      "'Ask the Community'"):
         sumo_pages.all_community_forums_page.click_on_all_products_support_forum_button()
-        with page.expect_navigation() as navigation_info:
-            sumo_pages.product_support_forum.click_on_the_ask_the_community_button()
+        sumo_pages.product_support_forum.click_on_the_ask_the_community_button()
 
     with check, allure.step("Verifying that the 'Ask the Community' button redirects to the "
                             "'Contact Support' page"):
-        assert navigation_info.value.url == ContactSupportMessages.PAGE_URL
-
+        expect(page).to_have_url(ContactSupportMessages.PAGE_URL)
 
 # C3170429
 @pytest.mark.communityForums
@@ -73,7 +70,7 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory()
-    test_user_two = create_user_factory(groups=["Forum Moderators"])
+    test_user_two = create_user_factory(groups=["Forum Moderators", "forum-contributors"])
 
     with allure.step("Submitting an AAQ question to the Firefox product"):
         utilities.start_existing_session(cookies=test_user)
@@ -89,10 +86,11 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
     with check, allure.step("Navigating to the 'Firefox Community Forum' and verifying that the "
                             "question is listed inside the 'Attention needed' tab filter"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (sumo_pages.product_support_forum.
-                get_text_of_selected_tab_filter() == "Attention needed")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.selected_tab_filter).to_have_text(
+            "All")
+        sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Attention needed")
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with check, allure.step("Leaving a reply to the question with the question owner and verifying"
                             " that the question is still listed inside the 'Attention needed' tab "
@@ -101,14 +99,14 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
         sumo_pages.aaq_flow.post_question_reply_flow(repliant_username=test_user["username"],
                                                      reply="Test Reply")
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with check, allure.step("Navigating to the 'Responded' filter and verifying that the question "
                             "is not displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Responded")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with allure.step("Signing in with a different user and leaving a reply to the question"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -119,14 +117,14 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
     with check, allure.step("Navigating back to the 'Attention needed' tab filter and verifying "
                             "that the question is not displayed"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Navigating to the 'Responded' tab filter and verifying that the "
                             "question is displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Responded")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with allure.step("Signing in back with the question owner and leaving a new question reply"):
         utilities.start_existing_session(cookies=test_user)
@@ -137,14 +135,14 @@ def test_question_transitions_from_attention_needed_to_responded(page: Page, cre
     with check, allure.step("Navigating back to the 'Attention needed' tab filter and verifying "
                             "that the question is displayed"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with check, allure.step("Navigating to the 'Responded' tab filter and verifying that the "
                             "question is not displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Responded")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
 
 # C3171297, C3170431
@@ -173,24 +171,24 @@ def test_spam_tab_filter_visibility(page: Page, create_user_factory):
         utilities.navigate_to_link(utilities.general_test_data['product_forums']
                                    ['All Products Forum'])
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("All")
-        assert len(sumo_pages.product_support_forum.is_spam_locator.all()) == 0
+        expect(sumo_pages.product_support_forum.is_spam_locator).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Spam' filter and verifying that the spam-marked"
                             " question is displayed with the correct spam tag"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Spam")
-        assert (sumo_pages.product_support_forum.
-                is_spam_flag_for_question(question_details["question_id"]))
+        expect(sumo_pages.product_support_forum.is_spam_locator_for_question(
+            question_details["question_id"])).to_be_visible()
 
     with check, allure.step("Signing out from SUMO and verifying that spam questions and the Spam"
                             " tab filter is not displayed"):
         utilities.delete_cookies()
-        assert len(sumo_pages.product_support_forum.is_spam_locator.all()) == 0
-        assert not sumo_pages.product_support_forum.is_tab_filter_displayed("Spam")
+        expect(sumo_pages.product_support_forum.is_spam_locator).to_be_hidden()
+        expect(sumo_pages.product_support_forum.tab_filter_by_name("Spam")).to_be_hidden()
 
     with check, allure.step("Signing in with a normal user and verifying that the spam questions"
                             " and the spam tab filter is not displayed"):
         utilities.start_existing_session(cookies=test_user)
-        assert len(sumo_pages.product_support_forum.is_spam_locator.all()) == 0
+        expect(sumo_pages.product_support_forum.is_spam_locator).to_be_hidden()
 
 
 # C3171622
@@ -215,10 +213,10 @@ def test_question_transitions_to_spam_tab_filter(page: Page, create_user_factory
     with check, allure.step("Navigating to the 'Firefox Community Forum' and verifying that the "
                             "question is listed inside the 'Attention needed' tab filter"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (sumo_pages.product_support_forum.
-                get_text_of_selected_tab_filter() == "Attention needed")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.selected_tab_filter).to_have_text("All")
+        sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Attention needed")
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with allure.step("Signing in with a Forum Moderator and marking the question as spam"):
         utilities.navigate_to_link(question_details['question_page_url'])
@@ -230,15 +228,15 @@ def test_question_transitions_to_spam_tab_filter(page: Page, create_user_factory
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
         utilities.refresh_page()
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Signing in with a Forum Moderator account and verifying that the"
                             " question is successfully listed inside the 'Spam' tab filter"):
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Spam")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with allure.step("Navigating to the question and unmarking it from spam"):
         utilities.navigate_to_link(question_details['question_page_url'])
@@ -247,16 +245,18 @@ def test_question_transitions_to_spam_tab_filter(page: Page, create_user_factory
     with check, allure.step("Navigating to the 'Firefox Community Forum' and verifying that the "
                             "question is listed inside the 'Attention needed' filter"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (sumo_pages.product_support_forum.
-                get_text_of_selected_tab_filter() == "Attention needed")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+
+        expect(sumo_pages.product_support_forum.selected_tab_filter).to_have_text(
+            "All")
+        sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Attention needed")
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
 
     with allure.step("Clicking on the 'Spam' filter and verifying that the question is not "
                      "displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Spam")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
 
 # C3171686, C3171694
@@ -300,34 +300,31 @@ def test_spam_marked_question_does_not_transition_from_spam_tab_filter(page: Pag
     with check, allure.step("Verifying that the question is not displayed inside the 'Attention "
                             "needed' filter"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (sumo_pages.product_support_forum.
-                get_text_of_selected_tab_filter() == "Attention needed")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.selected_tab_filter).to_have_text(
+            "Attention needed")
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Clicking on the 'All' filter and verifying that the question is not "
                             "displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("All")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Navigating to the 'Spam' filter and verifying that the question is "
                             "displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Spam")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
         if question_status == "has_solution":
-            assert sumo_pages.product_support_forum.is_question_solved_indicator_displayed(
-                question_details["question_id"]
-            )
+            expect(sumo_pages.product_support_forum.question_solved_indicator(
+                question_details["question_id"])).to_be_visible()
         elif question_status == "is_archived":
-            assert sumo_pages.product_support_forum.is_question_archived_indicator_displayed(
-                question_details["question_id"]
-            )
+            expect(sumo_pages.product_support_forum.question_archived_indicator(
+                question_details["question_id"])).to_be_visible()
         elif question_status == "is_locked":
-            assert sumo_pages.product_support_forum.is_question_locked_indicator_displayed(
-                question_details["question_id"]
-            )
+            expect(sumo_pages.product_support_forum.question_locked_indicator(
+                question_details["question_id"])).to_be_visible()
 
 
 #  C3170429
@@ -367,46 +364,48 @@ def test_questions_transitions_on_status_change(page: Page, create_user_factory,
     with check, allure.step("Navigating back to the Firefox community forum and verifying that the"
                             " question is not displayed inside the 'Attention needed' tab filter"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (sumo_pages.product_support_forum.
-                get_text_of_selected_tab_filter() == "Attention needed")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.selected_tab_filter).to_have_text(
+            "Attention needed")
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Responded' tab filter and verifying that the"
                             " question is not displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Responded")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     if question_status == "is_archived":
         with check, allure.step("Clicking on the 'Done' tab filter and verifying that the "
                                 "question is not displayed"):
             sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Done")
-            assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                    get_ids_of_all_listed_questions())
+            expect(
+                sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+                ).to_be_hidden()
 
         with check, allure.step("Clicking on the 'All' tab filter and verifying that the "
                                 "1. Question is successfully displayed."
                                 "2. Has the correct status icon displayed."):
             sumo_pages.product_support_forum.click_on_a_certain_tab_filter("All")
-            assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                    get_ids_of_all_listed_questions())
-            assert sumo_pages.product_support_forum.is_question_archived_indicator_displayed(
-                question_details["question_id"])
+            expect(
+                sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+                ).to_be_visible()
+            expect(sumo_pages.product_support_forum.question_archived_indicator(
+                question_details["question_id"])).to_be_visible()
     else:
         with check, allure.step("Clicking on the 'Done' tab filter and verifying that:"
                                 " 1. The question is successfully displayed."
                                 " 2. Has the correct status icon displayed."):
             sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Done")
-            assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                    get_ids_of_all_listed_questions())
-
+            expect(
+                sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+            ).to_be_visible()
             if question_status == "has_solution":
-                assert sumo_pages.product_support_forum.is_question_solved_indicator_displayed(
-                    question_details["question_id"])
+                expect(sumo_pages.product_support_forum.question_solved_indicator(
+                    question_details["question_id"])).to_be_visible()
             elif question_status == "is_locked":
-                assert sumo_pages.product_support_forum.is_question_locked_indicator_displayed(
-                    question_details["question_id"])
+                expect(sumo_pages.product_support_forum.question_locked_indicator(
+                    question_details["question_id"])).to_be_visible()
 
     with allure.step("Navigating back to the question and undoing the question status change."):
         utilities.navigate_to_link(question_details['question_page_url'])
@@ -424,26 +423,26 @@ def test_questions_transitions_on_status_change(page: Page, create_user_factory,
                             " the question is not displayed inside the 'Attention needed' tab "
                             "filter"):
         utilities.navigate_to_link(utilities.general_test_data["product_forums"]["Firefox"])
-        assert (sumo_pages.product_support_forum.
-                get_text_of_selected_tab_filter() == "Attention needed")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.selected_tab_filter).to_have_text(
+            "Attention needed")
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Responded' tab filter and verifying that the "
                             "1. Question is successfully displayed. "
                             "2. The correct question status icon is displayed."):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Responded")
-        assert (question_details["question_id"] in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
-        assert not sumo_pages.product_support_forum.is_question_solved_indicator_displayed(
-            question_details["question_id"])
-        assert not sumo_pages.product_support_forum.is_question_archived_indicator_displayed(
-            question_details["question_id"])
-        assert not sumo_pages.product_support_forum.is_question_locked_indicator_displayed(
-            question_details["question_id"])
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_visible()
+        expect(sumo_pages.product_support_forum.question_solved_indicator(
+            question_details["question_id"])).to_be_hidden()
+        expect(sumo_pages.product_support_forum.question_archived_indicator(
+            question_details["question_id"])).to_be_hidden()
+        expect(sumo_pages.product_support_forum.question_locked_indicator(
+            question_details["question_id"])).to_be_hidden()
 
     with check, allure.step("Clicking on the 'Done' tab filter and verifying that the question "
                             "is not displayed"):
         sumo_pages.product_support_forum.click_on_a_certain_tab_filter("Done")
-        assert (question_details["question_id"] not in sumo_pages.product_support_forum.
-                get_ids_of_all_listed_questions())
+        expect(sumo_pages.product_support_forum.question_in_forum(question_details["question_id"])
+               ).to_be_hidden()

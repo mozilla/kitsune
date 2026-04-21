@@ -1,6 +1,6 @@
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pytest_check import check
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.sumo_pages import SumoPages
@@ -129,10 +129,9 @@ def test_user_deletion_on_archived_locked_with_replies_question(page: Page, ques
                             " question ownership is assigned to the system account"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(question_details["question_page_url"])
-        assert (sumo_pages.question_page.get_question_author_name() == utilities.
-                general_test_data["system_account_name"])
-        assert (sumo_pages.question_page
-                .get_display_name_of_question_reply_author(reply_id) == staff)
+        expect(sumo_pages.question_page.question_author).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.question_page.reply_author_display_name(reply_id)).to_have_text(staff)
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -252,10 +251,9 @@ def test_user_deletion_on_question_with_replies_from_other_user(page: Page, ques
                             "question ownership is assigned to the system account"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(question_details["question_page_url"])
-        assert (sumo_pages.question_page.get_question_author_name() == utilities.
-                general_test_data["system_account_name"])
-        assert (sumo_pages.question_page
-                .get_display_name_of_question_reply_author(reply_id) == staff)
+        expect(sumo_pages.question_page.question_author).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.question_page.reply_author_display_name(reply_id)).to_have_text(staff)
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -297,11 +295,10 @@ def test_user_deletion_on_question_with_replies_from_same_user(page: Page, quest
                             " question and reply ownership is assigned to the system account"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(question_details["question_page_url"])
-        assert (sumo_pages.question_page.get_question_author_name() == utilities.
-                general_test_data["system_account_name"])
-        assert (sumo_pages.question_page
-                .get_display_name_of_question_reply_author(reply_id) == utilities.
-                general_test_data["system_account_name"])
+        expect(sumo_pages.question_page.question_author).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.question_page.reply_author_display_name(reply_id)).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -349,10 +346,9 @@ def test_user_deletion_on_question_with_solution(page: Page, question_type, crea
                             " question is assigned to the system account"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(question_details["question_page_url"])
-        assert (sumo_pages.question_page.get_question_author_name() == utilities.
-                general_test_data["system_account_name"])
-        assert (sumo_pages.question_page
-                .get_display_name_of_question_reply_author(reply_id) == staff)
+        expect(sumo_pages.question_page.question_author).to_have_text(
+            utilities.general_test_data["system_account_name"])
+        expect(sumo_pages.question_page.reply_author_display_name(reply_id)).to_have_text(staff)
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
@@ -446,10 +442,9 @@ def test_user_deletion_on_question_reply_for_archived_questions(page: Page, answ
                             " question reply was assigned to the system account"):
         utilities.start_existing_session(session_file_name=staff)
         utilities.navigate_to_link(question_details["question_page_url"])
-        assert sumo_pages.question_page.get_question_author_name() == staff
-        assert (sumo_pages.question_page
-                .get_display_name_of_question_reply_author(reply_id) == utilities.
-                general_test_data["system_account_name"])
+        expect(sumo_pages.question_page.question_author).to_have_text(staff)
+        expect(sumo_pages.question_page.reply_author_display_name(reply_id)).to_have_text(
+            utilities.general_test_data["system_account_name"])
 
     with allure.step("Deleting the question"):
         sumo_pages.aaq_flow.deleting_question_flow()
