@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.db.models.signals import m2m_changed, pre_save
+from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
 from kitsune.products.models import ProductSupportConfig, Topic, TopicSlugHistory
@@ -18,6 +18,16 @@ def clear_enterprise_banner_cache(sender, instance, action, pk_set, **kwargs):
         cache.delete_many([f"enterprise_hybrid_banner:{pk}" for pk in user_pks])
     elif pk_set is not None:
         cache.delete_many([f"enterprise_hybrid_banner:{pk}" for pk in pk_set])
+
+
+@receiver(post_save, sender=ProductSupportConfig)
+@receiver(pre_delete, sender=ProductSupportConfig)
+def clear_enterprise_banner_cache_on_config_change(sender, instance, **kwargs):
+    group_pks = list(instance.hybrid_support_groups.values_list("pk", flat=True))
+    if not group_pks:
+        return
+    user_pks = User.objects.filter(groups__in=group_pks).values_list("pk", flat=True).distinct()
+    cache.delete_many([f"enterprise_hybrid_banner:{pk}" for pk in user_pks])
 
 
 @receiver(pre_save, sender=Topic)

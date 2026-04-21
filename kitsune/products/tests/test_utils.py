@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
@@ -622,3 +623,49 @@ class IsEnterpriseUserTests(TestCase):
             is_active=False,
         )
         self.assertFalse(is_enterprise_user(self.user_in_group))
+
+
+class EnterpriseBannerCacheInvalidationTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.product = ProductFactory(slug="firefox-enterprise")
+        self.group = GroupFactory()
+        self.user = UserFactory(groups=[self.group])
+        self.config = ProductSupportConfigFactory(
+            product=self.product,
+            is_active=True,
+            default_support_type=ProductSupportConfig.SUPPORT_TYPE_ZENDESK,
+            group_default_support_type=None,
+            zendesk_config=ZendeskConfigFactory(),
+        )
+        self.config.hybrid_support_groups.add(self.group)
+        self.cache_key = f"enterprise_hybrid_banner:{self.user.pk}"
+
+    def test_routing_change_invalidates_cache(self):
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertIs(cache.get(self.cache_key), True)
+
+        self.config.default_support_type = ProductSupportConfig.SUPPORT_TYPE_FORUM
+        self.config.save()
+
+        self.assertIsNone(cache.get(self.cache_key))
+        self.assertFalse(is_enterprise_user(self.user))
+
+    def test_is_active_toggle_invalidates_cache(self):
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertIs(cache.get(self.cache_key), True)
+
+        self.config.is_active = False
+        self.config.save()
+
+        self.assertIsNone(cache.get(self.cache_key))
+        self.assertFalse(is_enterprise_user(self.user))
+
+    def test_config_delete_invalidates_cache(self):
+        self.assertTrue(is_enterprise_user(self.user))
+        self.assertIs(cache.get(self.cache_key), True)
+
+        self.config.delete()
+
+        self.assertIsNone(cache.get(self.cache_key))
+        self.assertFalse(is_enterprise_user(self.user))
