@@ -293,25 +293,46 @@ class Question(AAQBase):
             for tag in product_config.associated_tags.all():
                 tags.append(tag)
 
-        version = self.metadata.get("ff_version", "")
+        ff_version = self.metadata.get("ff_version", "").strip()
+        tb_version = self.metadata.get("tb_version", "").strip()
+        if ff_version or tb_version:
+            if ff_version:
+                product_name = "Firefox"
+                major_releases = product_details.firefox_history_major_releases
+                stability_releases = product_details.firefox_history_stability_releases
+                development_releases = product_details.firefox_history_development_releases
+                raw_version = ff_version
+            else:
+                product_name = "Thunderbird"
+                major_releases = product_details.thunderbird_history_major_releases
+                stability_releases = product_details.thunderbird_history_stability_releases
+                development_releases = product_details.thunderbird_history_development_releases
+                raw_version = tb_version
 
-        # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
-        version = re.split("[a-b]", version)[0]
+            # Parse "X", "X.Y", or "X.Y.Z" followed by an optional pre-release
+            # suffix ("aN" for aurora/nightly, "bN" for beta). A suffix drives
+            # the "beta" tag iff this version had a beta cycle in
+            # development_releases — product_details tracks betas but not
+            # aurora/nightly, so an aurora input is accepted when the matching
+            # beta exists. A bare version is tagged only if it's a known
+            # major/stability release.
+            match = re.match(r"(\d+(?:\.\d+){0,2})([ab]\d*)?", raw_version)
+            if match:
+                version, suffix = match.group(1), match.group(2)
+                if "." not in version:
+                    version += ".0"
+                tenths = _tenths_version(version)
 
-        dev_releases = product_details.firefox_history_development_releases
-
-        if (
-            version in dev_releases
-            or version in product_details.firefox_history_stability_releases
-            or version in product_details.firefox_history_major_releases
-        ):
-            tags.append("Firefox {}".format(version))
-            tenths = _tenths_version(version)
-            if tenths:
-                tags.append("Firefox {}".format(tenths))
-        elif _has_beta(version, dev_releases):
-            tags.append("Firefox {}".format(version))
-            tags.append("beta")
+                if suffix:
+                    if any(key.startswith(f"{version}b") for key in development_releases):
+                        tags.append(f"{product_name} {version}")
+                        if tenths and tenths != version:
+                            tags.append(f"{product_name} {tenths}")
+                        tags.append("beta")
+                elif version in major_releases or version in stability_releases:
+                    tags.append(f"{product_name} {version}")
+                    if tenths and tenths != version:
+                        tags.append(f"{product_name} {tenths}")
 
         # Add a tag for the OS but only if it already exists as a non-segmentation tag.
         if os := self.metadata.get("os"):
@@ -1154,20 +1175,6 @@ def _tenths_version(full_version):
     if match:
         return match.group(1)
     return ""
-
-
-def _has_beta(version, dev_releases):
-    """Returns True if the version has a beta release.
-
-    For example, if:
-        dev_releases={...u'4.0rc2': u'2011-03-18',
-                      u'5.0b1': u'2011-05-20',
-                      u'5.0b2': u'2011-05-20',
-                      u'5.0b3': u'2011-06-01'}
-    and you pass '5.0', it return True since there are 5.0 betas in the
-    dev_releases dict. If you pass '6.0', it returns False.
-    """
-    return version in [re.search(r"(\d+\.)+\d+", s).group(0) for s in list(dev_releases.keys())]
 
 
 def _content_parsed(obj, locale):

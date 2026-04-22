@@ -20,7 +20,6 @@ from kitsune.questions.models import (
     QuestionMetaData,
     QuestionVisits,
     VoteMetadata,
-    _has_beta,
     _tenths_version,
 )
 from kitsune.questions.tasks import auto_archive_old_questions, update_answer_pages
@@ -254,7 +253,7 @@ class TestQuestionMetadata(TestCase):
         q.add_metadata(ff_version="18.0a2")
         q.save()
         q.auto_tag()
-        tags_eq(q, ["Firefox 18.0"])
+        tags_eq(q, ["Firefox 18.0", "beta"])
 
     def test_auto_tagging_restraint(self):
         """Auto-tagging shouldn't tag unknown Firefox versions or OSes."""
@@ -264,20 +263,95 @@ class TestQuestionMetadata(TestCase):
         q.auto_tag()
         tags_eq(q, [])
 
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_tb_version_stable(self, mock_pd):
+        """tb_version picks the Thunderbird release dicts and tags accordingly."""
+        mock_pd.thunderbird_history_major_releases = {"128.0": "2024-07-11"}
+        mock_pd.thunderbird_history_stability_releases = {"128.0.1": "2024-07-23"}
+        mock_pd.thunderbird_history_development_releases = {}
+        q = self.question
+        q.add_metadata(tb_version="128.0.1")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ["Thunderbird 128.0.1", "Thunderbird 128.0"])
+
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_tb_version_beta(self, mock_pd):
+        """tb_version with a beta suffix gets the 'beta' tag."""
+        mock_pd.thunderbird_history_major_releases = {}
+        mock_pd.thunderbird_history_stability_releases = {}
+        mock_pd.thunderbird_history_development_releases = {"129.0b2": "2024-08-12"}
+        q = self.question
+        q.add_metadata(tb_version="129.0b2")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ["Thunderbird 129.0", "beta"])
+
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_strips_whitespace_and_trailing_noise(self, mock_pd):
+        """Leading/trailing space and trailing text after the version are ignored."""
+        mock_pd.firefox_history_major_releases = {}
+        mock_pd.firefox_history_stability_releases = {"120.0.1": "2023-11-28"}
+        mock_pd.firefox_history_development_releases = {}
+        q = self.question
+        q.add_metadata(ff_version="  120.0.1 (64-bit)  ")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ["Firefox 120.0.1", "Firefox 120.0"])
+
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_integer_version(self, mock_pd):
+        """Bare integer input is normalized to X.0 and doesn't emit duplicate tags."""
+        mock_pd.firefox_history_major_releases = {"120.0": "2023-11-21"}
+        mock_pd.firefox_history_stability_releases = {}
+        mock_pd.firefox_history_development_releases = {}
+        q = self.question
+        q.add_metadata(ff_version="120")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ["Firefox 120.0"])
+
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_post_release_beta(self, mock_pd):
+        """Beta input for a version that has already shipped still gets the 'beta' tag."""
+        mock_pd.firefox_history_major_releases = {"120.0": "2023-11-21"}
+        mock_pd.firefox_history_stability_releases = {}
+        mock_pd.firefox_history_development_releases = {"120.0b3": "2023-11-07"}
+        q = self.question
+        q.add_metadata(ff_version="120.0b3")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ["Firefox 120.0", "beta"])
+
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_aurora_matches_beta_cycle(self, mock_pd):
+        """Aurora input is accepted when the matching beta exists in dev releases."""
+        mock_pd.firefox_history_major_releases = {}
+        mock_pd.firefox_history_stability_releases = {}
+        mock_pd.firefox_history_development_releases = {"120.0b1": "2023-11-01"}
+        q = self.question
+        q.add_metadata(ff_version="120.0a2")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, ["Firefox 120.0", "beta"])
+
+    @mock.patch("kitsune.questions.models.product_details")
+    def test_auto_tagging_unknown_prerelease(self, mock_pd):
+        """A pre-release with no corresponding beta in the data gets no tag."""
+        mock_pd.firefox_history_major_releases = {}
+        mock_pd.firefox_history_stability_releases = {}
+        mock_pd.firefox_history_development_releases = {"120.0b1": "2023-11-01"}
+        q = self.question
+        q.add_metadata(ff_version="999.0b99")
+        q.save()
+        q.auto_tag()
+        tags_eq(q, [])
+
     def test_tenths_version(self):
         """Test the filter that turns 1.2.3 into 1.2."""
         self.assertEqual(_tenths_version("1.2.3beta3"), "1.2")
         self.assertEqual(_tenths_version("1.2rc"), "1.2")
         self.assertEqual(_tenths_version("1.w"), "")
-
-    def test_has_beta(self):
-        """Test the _has_beta helper."""
-        assert _has_beta("5.0", {"5.0b3": "2011-06-01"})
-        assert not _has_beta("6.0", {"5.0b3": "2011-06-01"})
-        assert not _has_beta("5.5", {"5.0b3": "2011-06-01"})
-        assert _has_beta("5.7", {"5.7b1": "2011-06-01"})
-        assert _has_beta("11.0", {"11.0b7": "2011-06-01"})
-        assert not _has_beta("10.0", {"11.0b7": "2011-06-01"})
 
     def test_kb_visits_prior(self):
         visits = ["/en-US/kb/stuff", "/en-US/kb/nonsense"]
