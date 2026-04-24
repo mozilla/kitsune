@@ -96,7 +96,8 @@
 
 .sumo-banner-warning {
   background: var(--color-warning);
-  color: var(--color-heading);
+  // Yellow always needs dark text — do not inherit --color-heading which flips to light in dark mode.
+  color: var(--color-dark-gray-10);
 }
 
 .sumo-banner-no-close {

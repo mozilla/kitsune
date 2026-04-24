@@ -12,6 +12,10 @@
 
       &:after {
         background: url("data:image/svg+xml,%3Csvg width='24px' height='24px' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='none' stroke-width='1' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline stroke='%2320133A' stroke-width='2' points='5 9 12 16 19 9'%3E%3C/polyline%3E%3C/g%3E%3C/svg%3E") center center no-repeat;
+
+        @media (prefers-color-scheme: dark) {
+          filter: invert(1);
+        }
       }
 
       &:hover {
@@ -26,6 +30,15 @@
 
   a {
     @include c.text-body-lg;
+  }
+}
+
+[data-theme="dark"] {
+  .is-details.mzp-c-menu-list.featured-dropdown,
+  .is-details.mzp-c-menu-list.subheading-dropdown {
+    .mzp-c-menu-list-title button:after {
+      filter: invert(1);
+    }
   }
 }
 
@@ -77,7 +90,7 @@
     transition: none;
 
     &:hover:not(:disabled) {
-      background: var(--color-marketing-gray-02);
+      background: var(--color-shade-bg);
       color: inherit;
     }
   }

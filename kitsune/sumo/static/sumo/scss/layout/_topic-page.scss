@@ -119,6 +119,15 @@
   }
 }
 
+// Search result type icons (reader-mode.svg, blog.svg, get-involved.svg) are dark-colored
+// <img> tags — invert them in dark mode so they're visible on dark backgrounds.
+@media (prefers-color-scheme: dark) {
+  .topic-article--icon { filter: invert(1); }
+}
+
+[data-theme="dark"] .topic-article--icon { filter: invert(1); }
+[data-theme="light"] .topic-article--icon { filter: none; }
+
 // pull search up inline with breadcrumbs on large
 @media #{p.$mq-md} {
   .breadcrumbs + .sumo-l-two-col {

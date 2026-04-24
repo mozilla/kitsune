@@ -12,6 +12,18 @@
 
 .mzp-c-modal-close .mzp-c-modal-button-close {
   background: transparent url("protocol/img/icons/close.svg") center center no-repeat;
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1);
+  }
+}
+
+[data-theme="dark"] .mzp-c-modal-close .mzp-c-modal-button-close {
+  filter: invert(1);
+}
+
+[data-theme="light"] .mzp-c-modal-close .mzp-c-modal-button-close {
+  filter: none;
 }
 
 

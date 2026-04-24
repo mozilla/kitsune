@@ -12,7 +12,8 @@
 }
 
 .kbox-container {
-  background: #fff;
+  background: var(--card-bg);
+  color: var(--color-text);
   display: none;
   font-size: 14px;
   position: absolute;
@@ -30,6 +31,7 @@
 
 .kbox-close {
   font-size: 22px !important;
+  color: var(--color-heading);
   @include p.bidi(((margin, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),));
 
   &:link,

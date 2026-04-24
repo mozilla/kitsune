@@ -73,6 +73,12 @@ button {
     }
   }
 
+  @media (prefers-color-scheme: dark) {
+    &.markup-toolbar-button {
+      filter: invert(1);
+    }
+  }
+
   &.btn-h2 {
     background-position: -34px 6px;
   }
@@ -108,6 +114,10 @@ button {
   &.btn-quote {
     background-position: -381px 6px;
   }
+}
+
+[data-theme="dark"] button.markup-toolbar-button {
+  filter: invert(1);
 }
 
 /* Modals */

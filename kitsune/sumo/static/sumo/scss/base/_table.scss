@@ -172,3 +172,39 @@ td.status,
 td.ready-for-l10n.yes {
   background: var(--color-green-03);
 }
+
+@media (prefers-color-scheme: dark) {
+  td.needs-update.yes,
+  td.stale.yes {
+    background: rgba(255, 213, 0, 0.15);
+  }
+
+  td.status,
+  td.ready-for-l10n.yes {
+    background: rgba(63, 180, 111, 0.15);
+  }
+}
+
+[data-theme="dark"] {
+  td.needs-update.yes,
+  td.stale.yes {
+    background: rgba(255, 213, 0, 0.15);
+  }
+
+  td.status,
+  td.ready-for-l10n.yes {
+    background: rgba(63, 180, 111, 0.15);
+  }
+}
+
+[data-theme="light"] {
+  td.needs-update.yes,
+  td.stale.yes {
+    background: var(--color-yellow-03);
+  }
+
+  td.status,
+  td.ready-for-l10n.yes {
+    background: var(--color-green-03);
+  }
+}

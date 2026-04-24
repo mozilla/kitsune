@@ -9,7 +9,8 @@
         margin-bottom: p.$spacing-lg;
         border-radius: p.$border-radius-md;
         overflow: hidden;
-        background-color: p.$color-light-gray-20;
+        background-color: var(--card-bg);
+        border: 1px solid var(--color-border);
     }
 
     .wait {
@@ -50,22 +51,22 @@
 
 .flagged-content {
     padding: p.$spacing-md p.$spacing-lg;
-    background-color: p.$color-light-gray-10;
+    background-color: var(--color-shade-bg);
     border-radius: 5px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--elevation-shadow-01);
     margin-bottom: p.$spacing-md;
 
     &__heading,
     &__subheading {
         font-weight: bold;
         font-size: 1.25rem;
-        color: p.$color-dark-gray-80;
+        color: var(--color-heading);
     }
 
     &__title,
     &__text {
         font-size: 1.1rem;
-        color: p.$color-dark-gray-80;
+        color: var(--color-text);
     }
 
     .compact-info {
@@ -78,11 +79,11 @@
 
         .current-topic {
             display: inline-block;
-            color: p.$color-dark-gray-80;
+            color: var(--color-text);
             transition: color 0.3s ease-in-out;
 
             &.updated {
-                color: p.$color-green-80;
+                color: var(--color-success);
 
                 &::after {
                     content: ' ✔';

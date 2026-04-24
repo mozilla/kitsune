@@ -804,3 +804,119 @@
     color: rgb(255, 255, 255);
   }
 }
+
+// Thread type icons (lockbox.svg, pin.svg) are dark-colored SVGs —
+// invert them in dark mode so they're visible on dark backgrounds.
+@media (prefers-color-scheme: dark) {
+  td.type img {
+    filter: invert(1);
+  }
+}
+
+[data-theme="dark"] td.type img {
+  filter: invert(1);
+}
+
+// "Marked as spam" badge: --color-warning (#FFEA80) is a light yellow with no dark override.
+// In dark mode use a deeper amber background with dark text for legibility.
+@media (prefers-color-scheme: dark) {
+  .is-spam {
+    background-color: #b35c00;
+    color: #fff;
+  }
+}
+
+[data-theme="dark"] .is-spam {
+  background-color: #b35c00;
+  color: #fff;
+}
+
+[data-theme="light"] .is-spam {
+  background-color: var(--color-warning);
+  color: var(--color-heading);
+}
+
+// Tag sidebar dark mode fixes:
+// - search input uses var(--color-white) background (no dark override)
+// - tag count badge uses var(--color-light-gray-03) (#F0F0F4, light gray)
+// - hover background rgba(0,0,0,0.07) is near-invisible on dark backgrounds
+@mixin sidebar-tags-dark {
+  .sidebar-tags {
+    &--search {
+      background: var(--field-bg);
+      border-color: var(--color-border);
+    }
+
+    &--list a:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    &--count {
+      background: var(--color-shade-bg);
+      color: var(--color-text-light);
+    }
+  }
+
+  .sidebar-tag-chip {
+    background: var(--color-shade-bg);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @include sidebar-tags-dark;
+}
+
+[data-theme="dark"] {
+  @include sidebar-tags-dark;
+}
+
+[data-theme="light"] {
+  .sidebar-tags {
+    &--search { background: var(--color-white); }
+    &--list a:hover { background: rgba(0, 0, 0, 0.07); }
+    &--count { background: var(--color-light-gray-03); }
+  }
+
+  .sidebar-tag-chip { background: var(--color-link-active-bg); }
+}
+
+// Tag pills in .tag-list and .tag-notification use --color-light-gray-03/04
+// which are hardcoded light grays with no dark mode override.
+@mixin tag-list-dark {
+  .tag-list {
+    li {
+      background-color: var(--color-shade-bg);
+
+      &:hover {
+        background: var(--color-link-active-bg);
+      }
+    }
+
+    &.no-hover li:hover {
+      background-color: var(--color-shade-bg);
+    }
+  }
+
+  .tag-notification--clear {
+    border-color: var(--color-border);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @include tag-list-dark;
+}
+
+[data-theme="dark"] {
+  @include tag-list-dark;
+}
+
+[data-theme="light"] {
+  .tag-list li {
+    background-color: var(--color-light-gray-03);
+
+    &:hover { background: var(--color-light-gray-04); }
+  }
+
+  .tag-list.no-hover li:hover { background-color: var(--color-light-gray-03); }
+  .tag-notification--clear { border-color: var(--color-light-gray-04); }
+}

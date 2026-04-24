@@ -258,6 +258,16 @@ input[type=submit]:focus {
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  .is-details .icon-button button {
+    filter: invert(1);
+  }
+}
+
+[data-theme="dark"] .is-details .icon-button button {
+  filter: invert(1);
+}
+
 
 .sumo-close-button {
   appearance: none;

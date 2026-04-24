@@ -234,6 +234,44 @@
     background-image: url('protocol/img/icons/search.svg');
   }
 
+  // Nav section icons use currentColor — set the colour via CSS.
+  .mzp-c-menu-item-icon {
+    color: var(--color-text);
+  }
+
+  // Theme toggle wrapper + button
+  &--theme-toggle {
+    display: flex;
+    align-items: center;
+    @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0), ));
+  }
+
+  &--theme-toggle-button {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: p.$spacing-xl;
+    height: p.$spacing-xl;
+    border: none;
+    border-radius: p.$spacing-xs;
+    background-color: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0;
+
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: var(--color-link-active-bg);
+      outline: none;
+    }
+
+    &:focus-visible {
+      box-shadow: var(--focus-shadow);
+    }
+  }
+
   .simple-search-form {
     display: none;
   }
@@ -362,7 +400,7 @@
   margin: 0;
   padding: 0;
   width: 100%;
-  background: #fff;
+  background: var(--page-bg);
 
   a {
     position: absolute;
@@ -371,7 +409,7 @@
     margin: 0;
     padding: 12px 10px;
     padding: 0;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--page-bg);
     font-weight: bold;
     text-align: center;
 
@@ -434,3 +472,35 @@ html {
   @include p.bidi(((margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),));
   vertical-align: middle;
 }
+
+// Theme toggle icon visibility.
+// CSS-driven so icons are correct even before Alpine.js loads.
+// Default: light mode — show moon (click to go dark), hide sun.
+.theme-icon--sun { display: none; }
+.theme-icon--moon { display: inline-flex; }
+
+// OS dark mode (no data-theme attribute set yet)
+@media (prefers-color-scheme: dark) {
+  .theme-icon--sun  { display: inline-flex; }
+  .theme-icon--moon { display: none; }
+}
+
+// Manual override: dark
+[data-theme="dark"] {
+  .theme-icon--sun  { display: inline-flex; }
+  .theme-icon--moon { display: none; }
+}
+
+// Manual override: light (overrides OS dark preference)
+[data-theme="light"] {
+  .theme-icon--sun  { display: none; }
+  .theme-icon--moon { display: inline-flex; }
+}
+
+// Mozilla Support logo: fill="black" SVG loaded as <img>, needs inversion in dark mode
+@media (prefers-color-scheme: dark) {
+  .sumo-nav--logo img { filter: invert(1); }
+}
+
+[data-theme="dark"] .sumo-nav--logo img { filter: invert(1); }
+[data-theme="light"] .sumo-nav--logo img { filter: none; }

@@ -28,3 +28,7 @@
 @forward 'jqueryui';
 @forward 'rickshaw';
 @forward 'rickshaw.sumo';
+
+// Dark mode bridge: overrides Protocol compile-time SCSS colors and remaps
+// Protocol CSS custom properties. Must be last so it wins the cascade.
+@forward 'protocol-dark-bridge';
