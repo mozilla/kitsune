@@ -564,18 +564,45 @@ def edit_document(request, document_slug, revision_id=None):
         return init_check
     user, doc, rev = init_check
 
-    rev_form = RevisionForm(instance=rev, initial={"based_on": rev.id, "comment": ""})
+    rev_initial = {"based_on": rev.id, "comment": ""}
+    rev_form = RevisionForm(instance=rev, initial=rev_initial)
+
+    # Check if the user has draft revision saved for the document (with the default locale)
+    content_manager = ManualContentManager()
+    draft = content_manager.get_draft(user, doc, settings.WIKI_DEFAULT_LANGUAGE)
 
     # POST
     if request.method == "POST":
-        rev_form = RevisionForm(request.POST)
-        rev_form.instance.document = doc  # for rev_form.clean()
-        if rev_form.is_valid():
-            _document_lock_clear(doc.id, user.username)
-            _save_rev_and_notify(rev_form, user, doc, base_rev=rev)
-            if "notify-future-changes" in request.POST:
-                EditDocumentEvent.notify(request.user, doc)
-            return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document_slug]))
+        # Use POST for restoring and deleting drafts to avoid CSRF
+        restore_draft = "restore" in request.POST and bool(draft)
+        discard_draft = "discard" in request.POST and bool(draft)
+        # Make sure that one of the two is True but not both
+        if discard_draft ^ restore_draft:
+            if discard_draft and content_manager.discard_draft(draft.id, user):
+                return HttpResponseRedirect(
+                    urlparams(reverse("wiki.edit_document", args=[document_slug]))
+                )
+            elif restore_draft:
+                draft_data = content_manager.restore_draft(draft.id, user)
+
+                rev_initial.update(
+                    {
+                        "content": draft_data.get("content", ""),
+                        "summary": draft_data.get("summary", ""),
+                        "keywords": draft_data.get("keywords", ""),
+                        "based_on": draft_data.get("based_on"),
+                    }
+                )
+                rev_form = RevisionForm(instance=rev, initial=rev_initial)
+        else:
+            rev_form = RevisionForm(request.POST)
+            rev_form.instance.document = doc  # for rev_form.clean()
+            if rev_form.is_valid():
+                _document_lock_clear(doc.id, user.username)
+                _save_rev_and_notify(rev_form, user, doc, base_rev=rev)
+                if "notify-future-changes" in request.POST:
+                    EditDocumentEvent.notify(request.user, doc)
+                return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document_slug]))
 
     show_revision_warning = _show_revision_warning(doc, rev)
     locked, locked_by = _document_lock(doc.id, user.username)
@@ -589,6 +616,7 @@ def edit_document(request, document_slug, revision_id=None):
             "show_revision_warning": show_revision_warning,
             "locked": locked,
             "locked_by": locked_by,
+            "draft_revision": draft,
         },
     )
 
@@ -665,7 +693,7 @@ def edit_document_metadata(request, document_slug, revision_id=None):
 def draft_revision(request):
     """Create a Draft Revision.
 
-    User can have only one draft revision for a translated document. Store the draft with
+    User can have only one draft revision for a document. Store the draft with
     parent document, user and locale. Get the parent document from the based on revision"""
     draft_form = DraftRevisionForm(request.POST)
     if draft_form.is_valid():
