@@ -1238,7 +1238,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         QuestionFactory(product=p, is_locked=True)
 
         url = reverse("questions.list", args=["all"])
-        url = urlparams(url, filter="no-replies")
+        url = urlparams(url, filter="recently-unanswered")
         response = self.client.get(url)
         doc = pq(response.content)
         self.assertEqual(2, len(doc(".question-entry")))
