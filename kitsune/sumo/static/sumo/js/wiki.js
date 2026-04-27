@@ -108,9 +108,12 @@ function init() {
     initCodeMirrorEditor();
   }
 
+  if (body.matches('.edit, .translate')) {  // Translate page
+    initDraft();
+  }
+
   if (body.classList.contains('translate')) {  // Translate page
     initToggleDiff();
-    initTranslationDraft();
   }
 
   initEditingTools();
@@ -699,7 +702,7 @@ function initToggleDiff() {
   }
 }
 
-export function initTranslationDraft() {
+export function initDraft() {
   var draftMessage = document.getElementById('draft-message');
 
   // The submit button bar is rendered twice (top + the #preview-bottom bar
@@ -721,7 +724,8 @@ export function initTranslationDraft() {
       {},
       serializeById('both_form'),
       serializeById('doc_form'),
-      serializeById('rev_form')
+      serializeById('rev_form'),
+      serializeById('edit_form')
     );
 
     if (draftMessage) {

@@ -3,7 +3,7 @@ import sinon from "sinon";
 
 import {
   initTitleAndSlugCheck,
-  initTranslationDraft,
+  initDraft,
   initRevisionList,
   initReadyForL10n,
   initArticlePreview,
@@ -95,7 +95,7 @@ describe("wiki: initTitleAndSlugCheck (verifyUnique)", () => {
   });
 });
 
-describe("wiki: initTranslationDraft", () => {
+describe("wiki: initDraft", () => {
   afterEach(() => {
     sinon.restore();
     document.body.innerHTML = "";
@@ -109,7 +109,7 @@ describe("wiki: initTranslationDraft", () => {
       <button class="btn-draft" data-draft-url="/draft"></button>
       <div id="draft-message"></div>`;
     const fetchStub = sinon.stub(window, "fetch").resolves(jsonResponse({}));
-    initTranslationDraft();
+    initDraft();
 
     document.querySelector(".btn-draft").click();
     await tick();
@@ -139,7 +139,7 @@ describe("wiki: initTranslationDraft", () => {
       </div>
       <div id="draft-message"></div>`;
     const fetchStub = sinon.stub(window, "fetch").returns(new Promise(function () {}));
-    initTranslationDraft();
+    initDraft();
 
     // Click the SECOND (bottom) draft button.
     document.querySelectorAll(".btn-draft")[1].click();
