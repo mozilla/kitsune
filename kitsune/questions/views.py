@@ -80,6 +80,7 @@ from kitsune.tidings.events import ActivationRequestFailed
 from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
+from kitsune.users.utils import user_is_contributor
 from kitsune.wiki.facets import topics_for
 from kitsune.wiki.utils import build_topics_data, get_featured_articles, get_kb_visited
 
@@ -173,9 +174,8 @@ def question_list(request, product_slug=None, topic_slug=None):
     filter_ = request.GET.get("filter")
     owner = request.GET.get("owner", request.session.get("questions_owner", "all"))
     show = request.GET.get("show")
-    # Show defaults to NEEDS ATTENTION
     if show not in FILTER_GROUPS:
-        show = "needs-attention"
+        show = "needs-attention" if user_is_contributor(request.user) else "all"
 
     tagged = request.GET.get("tagged")
     tags = None
