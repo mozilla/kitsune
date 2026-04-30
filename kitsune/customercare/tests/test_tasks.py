@@ -1,7 +1,5 @@
 from unittest.mock import patch
 
-from django.utils import timezone
-
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
     process_failed_zendesk_tickets,
@@ -242,88 +240,167 @@ class ProcessZendeskUpdateTests(TestCase):
             zendesk_ticket_id="12345",
         )
 
-    def test_updates_status(self):
-        before_update = timezone.now()
+    def _payload(self, event_type, event, *, ticket_id="12345", updated_at):
+        return {
+            "type": event_type,
+            "detail": {"id": ticket_id, "updated_at": updated_at},
+            "event": event,
+        }
+
+    def test_status_changed(self):
         process_zendesk_update(
-            {
-                "ticket_id": "12345",
-                "status": "solved",
-                "updated_at": "2026-03-24T10:30:00Z",
-            }
+            self._payload(
+                "zen:event-type:ticket.status_changed",
+                {"current": "solved", "previous": "open"},
+                updated_at="2026-03-24T10:30:00Z",
+            )
         )
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.comments, [])
-        self.assertEqual(self.ticket.internal_zd_tags, [])
         self.assertEqual(self.ticket.zd_status, "solved")
         self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-24 10:30:00+00:00")
-        self.assertTrue(self.ticket.last_synced_at > before_update)
 
-    def test_appends_comment(self):
-        comment = {"body": "hey paul", "author": "ringo"}
-        before_update = timezone.now()
+    def test_subject_changed(self):
         process_zendesk_update(
-            {
-                "ticket_id": "12345",
-                "latest_comment": comment,
-                "updated_at": "2026-03-25T10:30:00Z",
-            }
+            self._payload(
+                "zen:event-type:ticket.subject_changed",
+                {"current": "New subject", "previous": "Help"},
+                updated_at="2026-03-24T10:30:00Z",
+            )
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.subject, "New subject")
+
+    def test_description_changed(self):
+        process_zendesk_update(
+            self._payload(
+                "zen:event-type:ticket.description_changed",
+                {"current": "Updated description", "previous": "Need help"},
+                updated_at="2026-03-24T10:30:00Z",
+            )
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.description, "Updated description")
+
+    def test_comment_added(self):
+        comment = {
+            "id": 999,
+            "body": "hey paul",
+            "is_public": True,
+            "author": {"id": 1, "is_staff": False, "name": "ringo"},
+        }
+        process_zendesk_update(
+            self._payload(
+                "zen:event-type:ticket.comment_added",
+                {"comment": comment},
+                updated_at="2026-03-25T10:30:00Z",
+            )
         )
         self.ticket.refresh_from_db()
         self.assertEqual(len(self.ticket.comments), 1)
-        self.assertEqual(self.ticket.comments[0]["body"], "hey paul")
-        self.assertEqual(self.ticket.comments[0]["author"], "ringo")
-        self.assertEqual(self.ticket.comments[0]["created_at"], "2026-03-25T10:30:00Z")
+        stored = self.ticket.comments[0]
+        self.assertEqual(stored["body"], "hey paul")
+        self.assertEqual(stored["author"]["name"], "ringo")
+        self.assertEqual(stored["created_at"], "2026-03-25T10:30:00Z")
+        self.assertTrue(stored["public"])
+        self.assertNotIn("is_public", stored)
         self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-25 10:30:00+00:00")
-        self.assertTrue(self.ticket.last_synced_at > before_update)
+
+    def test_comment_added_defaults_public_false_when_missing(self):
+        """A comment without is_public should be stored with public=False."""
+        comment = {"id": 1, "body": "hi", "author": {"name": "ringo"}}
+        process_zendesk_update(
+            self._payload(
+                "zen:event-type:ticket.comment_added",
+                {"comment": comment},
+                updated_at="2026-03-25T10:30:00Z",
+            )
+        )
+        self.ticket.refresh_from_db()
+        self.assertFalse(self.ticket.comments[0]["public"])
 
     def test_appends_multiple_comments(self):
-        """Successive webhook calls append to the comments list."""
-        comment1 = {"body": "First reply", "author": "ringo"}
-        comment2 = {"body": "Second reply", "author": "paul"}
+        """Successive comment_added events append to the comments list."""
+        comment1 = {"id": 1, "body": "First reply", "author": {"name": "ringo"}}
+        comment2 = {"id": 2, "body": "Second reply", "author": {"name": "paul"}}
         process_zendesk_update(
-            {
-                "ticket_id": "12345",
-                "latest_comment": comment1,
-                "updated_at": "2026-03-26T10:30:00Z",
-            }
+            self._payload(
+                "zen:event-type:ticket.comment_added",
+                {"comment": comment1},
+                updated_at="2026-03-26T10:30:00Z",
+            )
         )
-        before_last_update = timezone.now()
         process_zendesk_update(
-            {
-                "ticket_id": "12345",
-                "latest_comment": comment2,
-                "updated_at": "2026-03-26T10:35:00Z",
-            }
+            self._payload(
+                "zen:event-type:ticket.comment_added",
+                {"comment": comment2},
+                updated_at="2026-03-26T10:35:00Z",
+            )
         )
         self.ticket.refresh_from_db()
         self.assertEqual(len(self.ticket.comments), 2)
         self.assertEqual(self.ticket.comments[0]["body"], "First reply")
-        self.assertEqual(self.ticket.comments[0]["author"], "ringo")
         self.assertEqual(self.ticket.comments[0]["created_at"], "2026-03-26T10:30:00Z")
         self.assertEqual(self.ticket.comments[1]["body"], "Second reply")
-        self.assertEqual(self.ticket.comments[1]["author"], "paul")
         self.assertEqual(self.ticket.comments[1]["created_at"], "2026-03-26T10:35:00Z")
         self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-26 10:35:00+00:00")
-        self.assertTrue(self.ticket.last_synced_at > before_last_update)
 
-    def test_updates_tags(self):
-        before_update = timezone.now()
+    def test_unhandled_event_type_is_noop(self):
+        """Event types we don't handle should be ignored without raising."""
         process_zendesk_update(
-            {
-                "ticket_id": "12345",
-                "tags": ["tag1", "tag2"],
-                "updated_at": "2026-03-27T10:30:00Z",
-            }
+            self._payload(
+                "zen:event-type:ticket.priority_changed",
+                {"current": "high", "previous": "normal"},
+                updated_at="2026-03-24T10:30:00Z",
+            )
         )
         self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.internal_zd_tags, ["tag1", "tag2"])
-        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-27 10:30:00+00:00")
-        self.assertTrue(self.ticket.last_synced_at > before_update)
+        self.assertIsNone(self.ticket.zd_updated_at)
 
     def test_no_matching_ticket_is_noop(self):
         """Webhook for a ticket not in our DB should not raise."""
-        process_zendesk_update({"ticket_id": "99999", "status": "open"})
+        process_zendesk_update(
+            self._payload(
+                "zen:event-type:ticket.status_changed",
+                {"current": "open"},
+                ticket_id="99999",
+                updated_at="2026-03-24T10:30:00Z",
+            )
+        )
 
-    def test_missing_ticket_id_is_noop(self):
-        """Webhook payload without ticket_id should not raise."""
-        process_zendesk_update({"status": "open"})
+    def test_missing_ticket_id_raises(self):
+        """Payload without detail.id should raise ValueError so Sentry captures it."""
+        with self.assertRaises(ValueError):
+            process_zendesk_update(
+                {
+                    "type": "zen:event-type:ticket.status_changed",
+                    "detail": {},
+                    "event": {"current": "open"},
+                }
+            )
+
+    def test_missing_updated_at_raises(self):
+        """Payload without detail.updated_at should raise ValueError."""
+        with self.assertRaises(ValueError):
+            process_zendesk_update(
+                {
+                    "type": "zen:event-type:ticket.status_changed",
+                    "detail": {"id": "12345"},
+                    "event": {"current": "open"},
+                }
+            )
+        self.ticket.refresh_from_db()
+        self.assertIsNone(self.ticket.zd_status)
+        self.assertIsNone(self.ticket.zd_updated_at)
+
+    def test_missing_event_raises(self):
+        """Payload without an event field should raise ValueError."""
+        with self.assertRaises(ValueError):
+            process_zendesk_update(
+                {
+                    "type": "zen:event-type:ticket.status_changed",
+                    "detail": {"id": "12345", "updated_at": "2026-03-24T10:30:00Z"},
+                }
+            )
+        self.ticket.refresh_from_db()
+        self.assertIsNone(self.ticket.zd_updated_at)

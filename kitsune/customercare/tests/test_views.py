@@ -84,6 +84,11 @@ class ZendeskWebhookViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_malformed_signature_returns_403(self):
+        """Non-base64 signature header should produce 403, not 500."""
+        response = self._post({"ticket_id": "123"}, signature="this is malformed")
+        self.assertEqual(response.status_code, 403)
+
     def test_invalid_json_returns_400(self):
         body = b"not json"
         signature = _sign_payload(body)

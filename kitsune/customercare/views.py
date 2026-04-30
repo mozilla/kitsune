@@ -84,7 +84,10 @@ class ZendeskWebhookView(View):
         secret = settings.ZENDESK_WEBHOOK_SIGNING_SECRET.encode("utf-8")
         message = timestamp.encode("utf-8") + request.body
         computed = hmac.new(secret, message, hashlib.sha256).digest()
-        expected = base64.b64decode(signature_header)
+        try:
+            expected = base64.b64decode(signature_header)
+        except ValueError:
+            raise SuspiciousOperation("Malformed Zendesk webhook signature.")
 
         if not hmac.compare_digest(computed, expected):
             raise SuspiciousOperation("Invalid Zendesk webhook signature.")
