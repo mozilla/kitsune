@@ -1,13 +1,15 @@
+import json
 import logging
 from datetime import timedelta
 
 from celery import shared_task
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 
+# from django.db import transaction
+from django.utils import timezone
+
+# from django.utils.dateparse import parse_datetime
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import process_zendesk_classification_result
 from kitsune.customercare.zendesk import ZendeskClient
@@ -146,6 +148,10 @@ def process_zendesk_update(payload: dict) -> None:
       - ticket.subject_changed
       - ticket.description_changed
     """
+    log.info("---- Zendesk Payload ----")
+    log.info(json.dumps(payload, indent=2, default=str))
+    log.info("-------------------------")
+
     event_type = payload.get("type")
     if event_type not in HANDLED_EVENT_TYPES:
         return
@@ -156,42 +162,42 @@ def process_zendesk_update(payload: dict) -> None:
         log.warning("Zendesk webhook payload missing detail.id.")
         return
 
-    event = payload.get("event") or {}
+    # event = payload.get("event") or {}
 
-    with transaction.atomic():
-        try:
-            ticket = SupportTicket.objects.select_for_update().get(
-                zendesk_ticket_id=str(ticket_id)
-            )
-        except SupportTicket.DoesNotExist:
-            return
+    # with transaction.atomic():
+    #     try:
+    #         ticket = SupportTicket.objects.select_for_update().get(
+    #             zendesk_ticket_id=str(ticket_id)
+    #         )
+    #     except SupportTicket.DoesNotExist:
+    #         return
 
-        update_fields = []
+    #     update_fields = []
 
-        if field := SIMPLE_FIELD_EVENT_MAP.get(event_type):
-            current_value = getattr(ticket, field)
-            previous = event.get("previous")
-            if current_value != previous:
-                log.warning(
-                    f"Skipping {event_type} for ticket {ticket_id}: "
-                    f"current {field}={current_value!r} does not match "
-                    f"event previous={previous!r}"
-                )
-                return
-            setattr(ticket, field, event.get("current"))
-            update_fields.append(field)
-        elif event_type == COMMENT_ADDED_EVENT:
-            comment = event.get("comment")
-            if not isinstance(comment, dict):
-                raise ValueError("Unexpected comment structure from Zendesk")
-            ticket.comments.append({**comment, "created_at": payload.get("time")})
-            update_fields.append("comments")
+    #     if field := SIMPLE_FIELD_EVENT_MAP.get(event_type):
+    #         current_value = getattr(ticket, field)
+    #         previous = event.get("previous")
+    #         if current_value != previous:
+    #             log.warning(
+    #                 f"Skipping {event_type} for ticket {ticket_id}: "
+    #                 f"current {field}={current_value!r} does not match "
+    #                 f"event previous={previous!r}"
+    #             )
+    #             return
+    #         setattr(ticket, field, event.get("current"))
+    #         update_fields.append(field)
+    #     elif event_type == COMMENT_ADDED_EVENT:
+    #         comment = event.get("comment")
+    #         if not isinstance(comment, dict):
+    #             raise ValueError("Unexpected comment structure from Zendesk")
+    #         ticket.comments.append({**comment, "created_at": payload.get("time")})
+    #         update_fields.append("comments")
 
-        if "updated_at" in detail:
-            ticket.zd_updated_at = parse_datetime(detail["updated_at"])
-            update_fields.append("zd_updated_at")
+    #     if "updated_at" in detail:
+    #         ticket.zd_updated_at = parse_datetime(detail["updated_at"])
+    #         update_fields.append("zd_updated_at")
 
-        if update_fields:
-            update_fields.append("last_synced_at")
-            ticket.last_synced_at = timezone.now()
-            ticket.save(update_fields=update_fields)
+    #     if update_fields:
+    #         update_fields.append("last_synced_at")
+    #         ticket.last_synced_at = timezone.now()
+    #         ticket.save(update_fields=update_fields)
