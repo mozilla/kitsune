@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 
-from celery import shared_task
+from celery import group, shared_task
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
@@ -9,7 +9,10 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.utils import process_zendesk_classification_result
+from kitsune.customercare.utils import (
+    process_zendesk_classification_result,
+    sync_ticket_from_zendesk,
+)
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.support.classifiers import classify_zendesk_submission
@@ -189,3 +192,50 @@ def process_zendesk_update(payload: dict) -> None:
             ticket.zd_updated_at = parse_datetime(updated_at)
             update_fields.append("zd_updated_at")
             ticket.save(update_fields=update_fields)
+
+
+@shared_task_with_retry
+def sync_support_ticket(ticket_id: int) -> None:
+    """Refresh a single SupportTicket from Zendesk.
+
+    Thin wrapper around `sync_ticket_from_zendesk`. Per-ticket task so a single
+    failing ticket doesn't stall the rest of the batch and gets isolated retries.
+    """
+    try:
+        ticket = (
+            SupportTicket.objects.filter(zendesk_ticket_id__isnull=False)
+            .exclude(zendesk_ticket_id="")
+            .get(id=ticket_id)
+        )
+    except SupportTicket.DoesNotExist:
+        return
+
+    sync_ticket_from_zendesk(ticket)
+
+
+@shared_task
+@skip_if_read_only_mode
+def sync_active_support_tickets() -> None:
+    """Dispatch sync sub-tasks for all locally-active Zendesk tickets.
+
+    Backup reconciliation path; the Zendesk webhook is the primary mechanism.
+    Zenpy handles Zendesk API rate limiting, so sub-tasks run as fast as the
+    worker pool allows.
+    """
+    active_statuses = [
+        SupportTicket.ZD_STATUS_OPEN,
+        SupportTicket.ZD_STATUS_PENDING,
+        SupportTicket.ZD_STATUS_WAITING,
+    ]
+    ticket_ids = (
+        SupportTicket.objects.filter(
+            zd_status__in=active_statuses,
+            zendesk_ticket_id__isnull=False,
+        )
+        .exclude(zendesk_ticket_id="")
+        .values_list("id", flat=True)
+    )
+
+    result = group(sync_support_ticket.s(ticket_id) for ticket_id in ticket_ids).delay()
+
+    log.info(f"Dispatched Zendesk sync for {len(result)} active tickets.")
