@@ -82,6 +82,33 @@ class QuestionDocumentSignalsTests(ElasticTestCase):
 
         self.assertEqual(self.get_doc().question_tag_ids, [])
 
+    def test_answer_creator_ids_populated_on_answer_save(self):
+        new_answer = AnswerFactory(question=self.question)
+
+        creator_ids = self.get_doc().question_answer_creator_ids
+        self.assertIn(str(self.answer.creator_id), creator_ids)
+        self.assertIn(str(new_answer.creator_id), creator_ids)
+
+    def test_answer_creator_ids_updated_on_answer_delete(self):
+        deleted_creator_id = self.answer.creator_id
+        self.answer.delete()
+
+        self.assertNotIn(str(deleted_creator_id), self.get_doc().question_answer_creator_ids)
+
+    def test_answer_creator_ids_excludes_spam(self):
+        spam_answer = AnswerFactory(question=self.question, is_spam=True)
+
+        self.assertNotIn(
+            str(spam_answer.creator_id),
+            self.get_doc().question_answer_creator_ids,
+        )
+
+    def test_answer_creator_ids_dedup(self):
+        AnswerFactory(question=self.question, creator=self.answer.creator)
+
+        creator_ids = self.get_doc().question_answer_creator_ids
+        self.assertEqual(creator_ids.count(str(self.answer.creator_id)), 1)
+
     @patch("kitsune.search.signals.questions.index_object.delay")
     def test_kb_tag(self, mock_index_object):
         # the tag m2m relation is shared across all models which use it

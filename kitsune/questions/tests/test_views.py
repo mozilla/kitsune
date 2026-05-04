@@ -530,11 +530,57 @@ class TestQuestionTags(ElasticTestCase):
         self._refresh_es()
 
         url = reverse("questions.tags")
-        response = self.client.get(
-            url, {"product_slug": "firefox", "show": "all", "q": "startup"}
-        )
+        response = self.client.get(url, {"product_slug": "firefox", "show": "all", "q": "startup"})
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Firefox Startup", response.content)
+
+    def test_owner_mine_filters_tag_counts_to_user_contributions(self):
+        """owner=mine narrows tag counts to questions the user created or answered."""
+        user = UserFactory()
+        other = UserFactory()
+        tag_authored = TagFactory(name="authored", slug="authored")
+        tag_answered = TagFactory(name="answered", slug="answered")
+        tag_unrelated = TagFactory(name="unrelated", slug="unrelated")
+
+        QuestionFactory(creator=user, product=self.product, tags=[tag_authored])
+        q_answered = QuestionFactory(creator=other, product=self.product, tags=[tag_answered])
+        AnswerFactory(question=q_answered, creator=user)
+        QuestionFactory(creator=other, product=self.product, tags=[tag_unrelated])
+        self._refresh_es()
+
+        # Anonymous: owner=mine is ignored, all three tags appear.
+        anon_tags = self._get_tags(product_slug="firefox", show="all", owner="mine")
+        self.assertIn("authored", anon_tags)
+        self.assertIn("answered", anon_tags)
+        self.assertIn("unrelated", anon_tags)
+
+        # Authenticated: only the user's contributions are counted.
+        self.client.force_login(user)
+        tags = self._get_tags(product_slug="firefox", show="all", owner="mine")
+        self.assertEqual(tags.get("authored"), 1)
+        self.assertEqual(tags.get("answered"), 1)
+        self.assertNotIn("unrelated", tags)
+
+    def test_owner_mine_with_no_contributions_returns_empty(self):
+        """A user with no contributions sees no tags when owner=mine."""
+        user = UserFactory()
+        QuestionFactory(product=self.product, tags=[self.tag])
+        self._refresh_es()
+
+        self.client.force_login(user)
+        tags = self._get_tags(product_slug="firefox", show="all", owner="mine")
+        self.assertEqual(tags, {})
+
+    def test_owner_mine_does_not_double_count(self):
+        """A question the user both created and answered counts once."""
+        user = UserFactory()
+        q = QuestionFactory(creator=user, product=self.product, tags=[self.tag])
+        AnswerFactory(question=q, creator=user)
+        self._refresh_es()
+
+        self.client.force_login(user)
+        tags = self._get_tags(product_slug="firefox", show="all", owner="mine")
+        self.assertEqual(tags.get("crash"), 1)
 
 
 class TestQuestionList(TestCase):

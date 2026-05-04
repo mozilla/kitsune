@@ -149,6 +149,7 @@ class QuestionDocument(SumoDocument):
     question_tags = field.Nested(doc_class=QuestionTagInnerDoc)
     question_has_answers = field.Boolean()
     question_last_answer_is_by_creator = field.Boolean()
+    question_answer_creator_ids = field.Keyword(multi=True)
     question_num_votes = field.Integer()
 
     # store answer content to optimise searching for AAQ threads as a unit
@@ -209,6 +210,14 @@ class QuestionDocument(SumoDocument):
                 else instance.answers.filter(is_spam=False)
             )
         ]
+
+    def prepare_question_answer_creator_ids(self, instance):
+        answers = (
+            instance.es_question_answers_not_spam
+            if hasattr(instance, "es_question_answers_not_spam")
+            else instance.answers.filter(is_spam=False)
+        )
+        return list({str(a.creator_id) for a in answers})
 
     def get_field_value(self, field, *args):
         if field.startswith("question_"):
