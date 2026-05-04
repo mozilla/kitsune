@@ -58,7 +58,7 @@ def geoip_suggestion(request):
         with translation.override(locale):
             # This is using our JS-style string formatting.
             response[locale] = {
-                "suggestion": _("Would you like to view this page in " "%(language)s instead?"),
+                "suggestion": _("Would you like to view this page in %(language)s instead?"),
                 "confirm": _("Yes"),
                 "cancel": _("No"),
             }
@@ -119,10 +119,20 @@ def manifest(request):
         "name": "Mozilla Support",
         "icons": [
             {
+                "src": webpack_static("sumo/img/favicon-32x32.png"),
+                "sizes": "32x32",
+                "type": "image/png",
+            },
+            {
+                "src": webpack_static("sumo/img/android-chrome-192x192.png"),
+                "sizes": "192x192",
+                "type": "image/png",
+            },
+            {
                 "src": webpack_static("sumo/img/android-chrome-512x512.png"),
                 "sizes": "512x512",
                 "type": "image/png",
-            }
+            },
         ],
         "theme_color": "#ffffff",
         "background_color": "#ffffff",
@@ -151,7 +161,7 @@ def test_memcached(host, port):
 def serve_cors(*args, **kwargs):
     """A wrapper around django.views.static.serve that adds CORS headers."""
     if not settings.DEBUG:
-        raise RuntimeError("Don't use kitsune.sumo.views.serve_cors " "in production.")
+        raise RuntimeError("Don't use kitsune.sumo.views.serve_cors in production.")
     from django.views.static import serve
 
     return serve(*args, **kwargs)
