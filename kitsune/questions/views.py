@@ -358,7 +358,7 @@ def question_list(request, product_slug=None, topic_slug=None):
 
     try:
         questions_page = simple_paginate(request, question_qs, per_page=config.QUESTIONS_PER_PAGE)
-    except PageNotAnInteger, EmptyPage:
+    except (PageNotAnInteger, EmptyPage):
         # If we aren't on page 1, redirect there.
         # TODO: Is 404 more appropriate?
         if request.GET.get("page", "1") != "1":
@@ -809,7 +809,7 @@ def edit_details(request, question_id):
         # Ensure that questions are enabled for this product and locale.
         if not (locale and product.questions_enabled(locale)):
             raise ValueError
-    except Product.DoesNotExist, Topic.DoesNotExist, ValueError:
+    except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
