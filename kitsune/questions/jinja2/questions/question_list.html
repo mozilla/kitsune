@@ -132,7 +132,14 @@
   <div class="topic-notification">
     {{ _('Showing questions for topic:') }}
     <ul class="tag-list">
-      <li><span class="tag">{{ pgettext('DB: products.Topic.title', _active_topic.title) }}</span></li>
+      <li><a class="tag"
+             href="{{ _clear_topic_url }}"
+             hx-get="{{ _clear_topic_url }}"
+             hx-target="#questions-list"
+             hx-select="#questions-list"
+             hx-select-oob="{{ filter_oob }}"
+             hx-swap="outerHTML"
+             hx-push-url="true">{{ pgettext('DB: products.Topic.title', _active_topic.title) }}</a></li>
     </ul>
     <a class="topic-notification--clear"
        href="{{ _clear_topic_url }}"
