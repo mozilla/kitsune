@@ -701,7 +701,7 @@
   justify-content: space-between;
   gap: p.$spacing-md;
   padding-top: p.$spacing-md;
-  margin-top: p.$spacing-lg;
+  margin-top: p.$spacing-md;
   border-top: 1px solid var(--color-light-gray-04);
 }
 
@@ -761,13 +761,16 @@
 }
 
 .answer {
-  padding: p.$spacing-2xl 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: p.$spacing-xl 0;
 
   @media #{p.$mq-md} {
     .main-content {
       padding-left: 55px;
     }
+  }
+
+  .user-meta {
+    margin-bottom: p.$spacing-md;
   }
 }
 
@@ -783,10 +786,10 @@
 }
 
 .question-reply-form {
-  padding-top: 20px;
+  padding-top: p.$spacing-md;
 
   @media #{p.$mq-md} {
-    padding-top: 40px;
+    padding-top: p.$spacing-xl;
   }
 }
 
@@ -809,9 +812,9 @@
 
 .thread-post--body .solution {
   position: relative;
-  margin-top: 60px;
-  padding-top: 36px;
-  padding-bottom: 36px;
+  margin-top: p.$spacing-xl;
+  padding-top: p.$spacing-lg;
+  padding-bottom: p.$spacing-lg;
 
   .is-solution {
     top: -12px;

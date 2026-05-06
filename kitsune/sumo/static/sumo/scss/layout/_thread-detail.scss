@@ -7,9 +7,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: p.$spacing-xs p.$spacing-sm;
-  padding-bottom: p.$spacing-lg;
-  border-bottom: 1px solid var(--color-light-gray-04);
-  margin-bottom: p.$spacing-xl;
+  margin-bottom: p.$spacing-md;
 }
 
 .thread-detail--title {
@@ -30,8 +28,7 @@
 
 // Single post component (question body / ticket description / comments)
 .thread-post {
-  padding: p.$spacing-xl 0;
-  border-bottom: 1px solid var(--color-light-gray-04);
+  padding: p.$spacing-md 0;
 
   &:first-child {
     padding-top: 0;
@@ -120,7 +117,7 @@
   gap: p.$spacing-sm;
   padding: p.$spacing-sm p.$spacing-md;
   border-radius: p.$border-radius-sm;
-  margin-bottom: p.$spacing-xl;
+  margin-bottom: p.$spacing-lg;
   @include c.text-body-sm;
 
   &--info {
@@ -137,8 +134,8 @@
 // Replies section heading row
 .thread-replies > h2,
 .thread-replies > h3 {
-  padding-top: p.$spacing-xl;
-  margin-bottom: p.$spacing-lg;
+  padding-top: p.$spacing-sm;
+  margin-bottom: p.$spacing-md;
 }
 
 // Loading state for async comment fetch
