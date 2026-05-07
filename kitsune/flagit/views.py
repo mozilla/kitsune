@@ -29,7 +29,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import paginate, strip_nul_bytes
 from kitsune.tags.models import SumoTag
 
 
@@ -132,6 +132,8 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
 def flagged_queue(request):
     """Display the flagged queue with optimized queries."""
     reason = request.GET.get("reason")
+    if reason and reason not in dict(FlaggedObject.REASONS):
+        reason = None
     content_type_id = request.GET.get("content_type")
 
     content_types = None
@@ -228,8 +230,8 @@ def get_hierarchical_topics(product, cache_timeout=3600):
 @require_http_methods(["GET", "POST"])
 def moderate_content(request):
     """Display flagged content that needs moderation."""
-    product_slug = request.GET.get("product")
-    assignee = request.GET.get("assignee")
+    product_slug = strip_nul_bytes(request.GET.get("product"))
+    assignee = strip_nul_bytes(request.GET.get("assignee"))
 
     if (
         assignee

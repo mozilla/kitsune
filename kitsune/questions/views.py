@@ -63,6 +63,7 @@ from kitsune.questions.utils import (
 )
 from kitsune.search.documents import QuestionDocument
 from kitsune.sumo.decorators import ratelimit
+from kitsune.sumo.i18n import normalize_language
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
@@ -73,6 +74,7 @@ from kitsune.sumo.utils import (
     paginate,
     set_aaq_context,
     simple_paginate,
+    strip_nul_bytes,
 )
 from kitsune.tags.models import SumoTag, SumoTaggedItem
 from kitsune.tags.utils import add_existing_tag
@@ -177,9 +179,9 @@ def question_list(request, product_slug=None, topic_slug=None):
     if show not in FILTER_GROUPS:
         show = "needs-attention" if user_is_contributor(request.user) else "all"
 
-    tagged = request.GET.get("tagged")
+    tagged = strip_nul_bytes(request.GET.get("tagged", ""))
     tags = None
-    topic_slug = request.GET.get("topic", "") or topic_slug
+    topic_slug = strip_nul_bytes(request.GET.get("topic", "")) or topic_slug
 
     order = request.GET.get("order", "updated")
     if order not in ORDER_BY:
@@ -852,7 +854,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
 
     # Check if the user is using a mobile device,
     # render step 2 if they are
-    product_slug = product_slug or request.GET.get("product")
+    product_slug = product_slug or strip_nul_bytes(request.GET.get("product"))
     if product_slug is None:
         change_product = False
         if request.GET.get("q") == "change_product":
@@ -967,7 +969,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
             )
 
         if (
-            (from_locale := request.GET.get("from_locale"))
+            (from_locale := normalize_language(request.GET.get("from_locale")))
             and from_locale != request.LANGUAGE_CODE
             and product.questions_enabled(locale=from_locale)
         ):
@@ -1273,7 +1275,7 @@ def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
 
     if not (
-        ((request.method == "GET") and (watch_secret := request.GET.get("watch", None)))
+        ((request.method == "GET") and (watch_secret := strip_nul_bytes(request.GET.get("watch", None))))
         or (
             (request.method == "POST")
             and (request.user.is_authenticated and request.user.is_active)
@@ -1365,11 +1367,11 @@ def question_vote(request, question_id):
         vote.save()
 
         if "referrer" in request.GET:
-            referrer = request.GET.get("referrer")
+            referrer = strip_nul_bytes(request.GET.get("referrer"))
             vote.add_metadata("referrer", referrer)
 
             if referrer == "search" and "query" in request.GET:
-                vote.add_metadata("query", request.GET.get("query"))
+                vote.add_metadata("query", strip_nul_bytes(request.GET.get("query")))
 
         ua = request.META.get("HTTP_USER_AGENT")
         if ua:
@@ -1431,11 +1433,11 @@ def answer_vote(request, question_id, answer_id):
         vote.save()
 
         if "referrer" in request.GET:
-            referrer = request.GET.get("referrer")
+            referrer = strip_nul_bytes(request.GET.get("referrer"))
             vote.add_metadata("referrer", referrer)
 
             if referrer == "search" and "query" in request.GET:
-                vote.add_metadata("query", request.GET.get("query"))
+                vote.add_metadata("query", strip_nul_bytes(request.GET.get("query")))
 
         ua = request.META.get("HTTP_USER_AGENT")
         if ua:
@@ -1859,7 +1861,7 @@ def metrics(request, locale_code=None):
     """The Support Forum metrics dashboard."""
     template = "questions/metrics.html"
 
-    product = request.GET.get("product")
+    product = strip_nul_bytes(request.GET.get("product"))
     if product:
         product = get_object_or_404(Product, slug=product)
 
