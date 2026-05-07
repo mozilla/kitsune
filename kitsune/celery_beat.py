@@ -93,7 +93,7 @@ PERIODIC_TASKS_ALL = {
     # SUMO Periodic Tasks
     # Every 5 minutes.
     "watchdog": {
-        "task": "kitsune.sumo.tasks.watchdog",
+        "task": "kitsune.watchdog.tasks.watchdog",
         "schedule": crontab(minute="*/5"),
     },
     # Every 10 minutes.
