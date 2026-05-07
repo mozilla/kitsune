@@ -397,3 +397,76 @@ class ZendeskClientTests(TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0].body, "First comment")
         self.assertEqual(result[1].body, "Second comment")
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_public(self, mock_zenpy):
+        """Test that add_ticket_comment adds a public comment."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        self.user.profile.zendesk_id = "789"
+
+        client = ZendeskClient()
+        client.add_ticket_comment(self.user, 123, "Hello there", public=True)
+
+        ticket_arg = mock_client.tickets.update.call_args[0][0]
+        self.assertEqual(ticket_arg.id, 123)
+        self.assertEqual(ticket_arg.comment.body, "Hello there")
+        self.assertTrue(ticket_arg.comment.public)
+        self.assertEqual(ticket_arg.comment.author_id, 789)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_private(self, mock_zenpy):
+        """Test that add_ticket_comment adds a private comment."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        self.user.profile.zendesk_id = "789"
+
+        client = ZendeskClient()
+        client.add_ticket_comment(self.user, 123, "Internal note", public=False)
+
+        ticket_arg = mock_client.tickets.update.call_args[0][0]
+        self.assertEqual(ticket_arg.comment.body, "Internal note")
+        self.assertFalse(ticket_arg.comment.public)
+        self.assertEqual(ticket_arg.comment.author_id, 789)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_creates_zendesk_user_if_missing(self, mock_zenpy):
+        """Test that add_ticket_comment creates a Zendesk user when zendesk_id is missing."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        mock_client.users.create_or_update.return_value = Mock(id=999)
+        self.user.profile.zendesk_id = ""
+
+        client = ZendeskClient()
+        client.add_ticket_comment(self.user, 123, "Comment")
+
+        ticket_arg = mock_client.tickets.update.call_args[0][0]
+        self.assertEqual(ticket_arg.comment.author_id, 999)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_with_anonymous_user(self, mock_zenpy):
+        """Test that add_ticket_comment raises ValueError for anonymous users."""
+        from django.contrib.auth.models import AnonymousUser
+
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+
+        client = ZendeskClient()
+
+        with self.assertRaises(ValueError):
+            client.add_ticket_comment(AnonymousUser(), 123, "Anon comment")
+
+        mock_client.tickets.update.assert_not_called()
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_update_ticket_status(self, mock_zenpy):
+        """Test that update_ticket_status updates the status on a ticket."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+
+        client = ZendeskClient()
+        client.update_ticket_status(123, "solved")
+
+        ticket_arg = mock_client.tickets.update.call_args[0][0]
+        self.assertEqual(ticket_arg.id, 123)
+        self.assertEqual(ticket_arg.status, "solved")

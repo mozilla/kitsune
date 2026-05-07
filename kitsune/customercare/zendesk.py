@@ -1,5 +1,6 @@
 from django.conf import settings
 from zenpy import Zenpy
+from zenpy.lib.api_objects import Comment as ZendeskComment
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
@@ -189,3 +190,31 @@ class ZendeskClient:
     def get_ticket_comments(self, ticket_id):
         """Fetch all comments for a ticket from Zendesk."""
         return list(self.client.tickets.comments(ticket=ticket_id))
+
+    def add_ticket_comment(self, user, ticket_id, comment_body, public=True):
+        """Add a comment to a ticket in Zendesk.
+
+        The comment will be attributed to the user's corresponding Zendesk user,
+        which will be created if the user doesn't already have one. The user must
+        be authenticated.
+        """
+        if not (user and user.is_authenticated):
+            raise ValueError("Anonymous users are not allowed to comment.")
+
+        if user.profile.zendesk_id:
+            author_id = user.profile.zendesk_id
+        else:
+            author_id = self.create_user(user).id
+
+        ticket = Ticket(id=ticket_id)
+        ticket.comment = ZendeskComment(
+            author_id=int(author_id),
+            body=comment_body,
+            public=public,
+        )
+        return self.client.tickets.update(ticket)
+
+    def update_ticket_status(self, ticket_id, status):
+        """Update a ticket's status in Zendesk."""
+        ticket = Ticket(id=ticket_id, status=status)
+        return self.client.tickets.update(ticket)
