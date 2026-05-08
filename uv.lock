@@ -731,16 +731,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "5.2.13"
+version = "5.2.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/c5/c69e338eb2959f641045802e5ea87ca4bf5ac90c5fd08953ca10742fad51/django-5.2.13.tar.gz", hash = "sha256:a31589db5188d074c63f0945c3888fad104627dfcc236fb2b97f71f89da33bc4", size = 10890368, upload-time = "2026-04-07T14:02:15.072Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/65/95/95f7faa0950867afaa0bef2460c6263afd6a2c78cc9434046ed28160b015/django-5.2.14.tar.gz", hash = "sha256:58a63ba841662e5c686b57ba1fec52ddd68c0b93bd96ac3029d55728f00bf8a2", size = 10895118, upload-time = "2026-05-05T13:57:31.104Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/b1/51ab36b2eefcf8cdb9338c7188668a157e29e30306bfc98a379704c9e10d/django-5.2.13-py3-none-any.whl", hash = "sha256:5788fce61da23788a8ce6f02583765ab060d396720924789f97fa42119d37f7a", size = 8310982, upload-time = "2026-04-07T14:02:08.883Z" },
+    { url = "https://files.pythonhosted.org/packages/14/44/f172870cf87aa25afef48fb72adba89ee8b77fcab6f3b23d240b923f1528/django-5.2.14-py3-none-any.whl", hash = "sha256:6f712143bd3064310d1f50fac859c3e9a274bdcfc9595339853be7779297fc76", size = 8311320, upload-time = "2026-05-05T13:57:25.795Z" },
 ]
 
 [[package]]
@@ -877,19 +877,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6f/4c/d1f6923a0ad7f16c403a54c09e94acb76ac6c3765e02523fb09b2b03e1a8/django-guardian-2.4.0.tar.gz", hash = "sha256:c58a68ae76922d33e6bdc0e69af1892097838de56e93e78a8361090bcd9f89a0", size = 159008, upload-time = "2021-05-23T22:11:26.23Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a2/25/869df12e544b51f583254aadbba6c1a95e11d2d08edeb9e58dd715112db5/django_guardian-2.4.0-py3-none-any.whl", hash = "sha256:440ca61358427e575323648b25f8384739e54c38b3d655c81d75e0cd0d61b697", size = 106107, upload-time = "2021-05-23T22:11:22.75Z" },
-]
-
-[[package]]
-name = "django-jinja"
-version = "2.11.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "jinja2" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/24/11/0807b5cbc60fc3b56385e25acc499a50ba33ff3cab702011c5832898d602/django-jinja-2.11.0.tar.gz", hash = "sha256:47c06d3271e6b2f27d3596278af517bfe2e19c1eb36ae1c0b1cc302d7f0259af", size = 17766, upload-time = "2023-09-03T21:20:45.385Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/ae/63083bf0614a80857e264b9d3ae16af2e2eff7372da6e249abec7919cb0b/django_jinja-2.11.0-py3-none-any.whl", hash = "sha256:cc4c72246a6e346aa0574e0c56c3e534c1a20ef47b8476f05d7287781f69a0a9", size = 23748, upload-time = "2023-09-03T21:20:43.482Z" },
 ]
 
 [[package]]
@@ -2060,7 +2047,6 @@ dependencies = [
     { name = "django-extensions" },
     { name = "django-filter" },
     { name = "django-guardian" },
-    { name = "django-jinja" },
     { name = "django-jsonfield-backport" },
     { name = "django-jsonfield-compat" },
     { name = "django-mozilla-product-details" },
@@ -2168,6 +2154,7 @@ requires-dist = [
     { name = "dennis", specifier = ">=1.1.0,<2" },
     { name = "dj-database-url", specifier = ">=1.3.0,<4" },
     { name = "django", specifier = ">=5.2,<6" },
+    { name = "django", specifier = ">=5.2.14,<6" },
     { name = "django-activity-stream", specifier = ">=1.4.2,<2" },
     { name = "django-allow-cidr", specifier = ">=0.6.0,<0.9" },
     { name = "django-cache-url", specifier = ">=3.4.5,<4" },
@@ -2178,7 +2165,6 @@ requires-dist = [
     { name = "django-extensions", specifier = ">=3.2.3,<4" },
     { name = "django-filter", specifier = "~=25.1" },
     { name = "django-guardian", specifier = ">=2.4.0,<3" },
-    { name = "django-jinja", specifier = ">=2.11.0,<3" },
     { name = "django-jsonfield-backport", specifier = ">=1.0.5,<2" },
     { name = "django-jsonfield-compat", specifier = ">=0.4.4,<0.5" },
     { name = "django-mozilla-product-details", specifier = ">=1.0.3,<2" },
