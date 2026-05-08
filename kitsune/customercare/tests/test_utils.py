@@ -334,9 +334,7 @@ class ProcessZendeskClassificationResultTests(TestCase):
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
     @patch("kitsune.customercare.utils.Profile")
-    def test_segmentation_tags_preserved_after_classification(
-        self, mock_profile, mock_send
-    ):
+    def test_segmentation_tags_preserved_after_classification(self, mock_profile, mock_send):
         """Segmentation tags from dropdowns must survive NOT_SPAM classification (issue 2865)."""
         self.submission.zendesk_tags = [
             "loginless_ticket",
@@ -360,17 +358,24 @@ class SyncTicketFromZendeskTests(TestCase):
     def setUp(self):
         self.ticket = SupportTicketFactory(zendesk_ticket_id="123")
 
+    def _make_mock_comment(self, *, id, body, public=True):
+        mock_comment = MagicMock()
+        mock_comment.id = id
+        mock_comment.body = body
+        mock_comment.created_at = "2025-01-01T00:00:00Z"
+        mock_comment.public = public
+        mock_comment.author.name = "Agent"
+        mock_comment.author.id = 99
+        return mock_comment
+
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_updates_comments(self, mock_client_cls):
         mock_client = mock_client_cls.return_value
-        mock_comment = MagicMock()
-        mock_comment.id = 1
-        mock_comment.body = "Hello"
-        mock_comment.created_at = "2025-01-01T00:00:00Z"
-        mock_comment.public = True
-        mock_comment.author.name = "Agent"
-        mock_comment.author.id = 99
-        mock_client.get_ticket_comments.return_value = [mock_comment]
+        # Zendesk returns the original ticket description as comments[0],
+        # followed by any agent replies.
+        description_comment = self._make_mock_comment(id=1, body="Original question")
+        reply_comment = self._make_mock_comment(id=2, body="Hello")
+        mock_client.get_ticket_comments.return_value = [description_comment, reply_comment]
         mock_zd_ticket = MagicMock()
         mock_zd_ticket.status = "open"
         mock_zd_ticket.updated_at = timezone.now()
@@ -379,27 +384,28 @@ class SyncTicketFromZendeskTests(TestCase):
         sync_ticket_from_zendesk(self.ticket)
 
         self.ticket.refresh_from_db()
-        self.assertEqual(len(self.ticket.comments), 1)
-        self.assertEqual(self.ticket.comments[0]["body"], "Hello")
-        self.assertEqual(self.ticket.comments[0]["author"]["name"], "Agent")
+        self.assertEqual(len(self.ticket.comments), 2)
+        self.assertEqual(self.ticket.comments[0]["body"], "Original question")
+        self.assertEqual(self.ticket.comments[1]["body"], "Hello")
+        self.assertEqual(self.ticket.comments[1]["author"]["name"], "Agent")
         self.assertEqual(self.ticket.zd_status, "open")
         self.assertIsNotNone(self.ticket.last_synced_at)
+        # public_comments excludes the description-comment and any private notes.
+        self.assertEqual(len(self.ticket.public_comments), 1)
+        self.assertEqual(self.ticket.public_comments[0]["body"], "Hello")
 
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_filters_private_comments(self, mock_client_cls):
-        """Private comments are stored but marked; template already filters them."""
+        """Private comments are stored but excluded from public_comments."""
         mock_client = mock_client_cls.return_value
-        mock_comment = MagicMock()
-        mock_comment.public = False
-        mock_comment.id = 2
-        mock_comment.body = "Internal note"
-        mock_comment.created_at = "2025-01-01T00:00:00Z"
-        mock_comment.author.name = "Agent"
-        mock_comment.author.id = 99
-        mock_client.get_ticket_comments.return_value = [mock_comment]
+        description_comment = self._make_mock_comment(id=1, body="Original question")
+        private_reply = self._make_mock_comment(id=2, body="Internal note", public=False)
+        mock_client.get_ticket_comments.return_value = [description_comment, private_reply]
         mock_client.get_ticket.return_value = MagicMock(status="open", updated_at=timezone.now())
 
         sync_ticket_from_zendesk(self.ticket)
 
         self.ticket.refresh_from_db()
-        self.assertFalse(self.ticket.comments[0]["public"])
+        self.assertEqual(len(self.ticket.comments), 2)
+        self.assertFalse(self.ticket.comments[1]["public"])
+        self.assertEqual(self.ticket.public_comments, [])
