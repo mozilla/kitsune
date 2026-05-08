@@ -2,6 +2,7 @@ from functools import cached_property
 
 from playwright.sync_api import Page
 
+from playwright_tests.flows.admin_flows.announcement_banners.banner_flows import BannerFlows
 from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFlow
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
 from playwright_tests.flows.contributor_threads_flows.contributor_threads_flows import (
@@ -30,6 +31,8 @@ from playwright_tests.flows.messaging_system_flows.messaging_system_flow import 
 )
 from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFlow
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
+from playwright_tests.pages.admin_pages.announcement_banners.announcement_banner_page import \
+    AnnouncementBannerAdminPage
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.ask_a_question.contact_support_pages.contact_support_page import (
     ContactSupportPage,
@@ -148,6 +151,16 @@ from playwright_tests.pages.user_pages.my_profile_user_navbar import UserNavbar
 class SumoPages:
     def __init__(self, page: Page):
         self._page = page
+
+    # Admin Pages
+    @cached_property
+    def admin_banner_page(self):
+        return AnnouncementBannerAdminPage(self._page)
+
+    # Admin Flows.
+    @cached_property
+    def admin_banner_flows(self):
+        return BannerFlows(self._page)
 
     # Auth Page.
     @cached_property
