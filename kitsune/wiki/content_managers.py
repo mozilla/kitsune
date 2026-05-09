@@ -40,8 +40,8 @@ class WikiContentManager:
 
         Args:
             user: The user creating the draft
-            parent_doc: The parent document being translated
-            target_locale: The target locale for translation
+            parent_doc: The parent document for the revision
+            target_locale: The target locale for the revision
             draft_data: Dictionary containing draft content (title, slug, content, summary, keywords, based_on)
         Returns:
             DraftRevision: The created or updated draft revision
@@ -57,7 +57,7 @@ class WikiContentManager:
         Args:
             user: The user
             parent_doc: The parent document
-            target_locale: The target local
+            target_locale: The target locale
         Returns:
             DraftRevision or None: The existing draft if found
         """
@@ -281,7 +281,7 @@ class WikiContentManager:
 
 
 class ManualContentManager(WikiContentManager):
-    """Content manager for manual translation workflow."""
+    """Content manager for manual edit/translation workflow."""
 
     pass
 

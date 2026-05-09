@@ -23,6 +23,19 @@
         {{ _('This document is restricted.') }}
       </div>
     {% endif %}
+    {% if draft_revision %}
+      <li class="mzp-c-notification-bar mzp-t-info info">
+        <button class="mzp-c-notification-bar-button" type="button"></button>
+        <div>
+        <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
+        <form action="{{ url('wiki.edit_document', document.slug) }}" method="post">
+          {% csrf_token %}
+          <input class="btn" name="restore" value={{ _('Restore') }} type="submit">
+          <input class="btn" name="discard" value={{ _('Discard') }} type="submit">
+        </form>
+        </div>
+      </li>
+    {% endif %}
     {{ edit_messages(document, show_revision_warning) }}
     {{ document_lock_warning() }}
   </div>
@@ -42,7 +55,7 @@
           <a href="{{ url }}">Support Document Guide</a>.{% endtrans %}
       </p>
       {{ errorlist(revision_form) }}
-      <form action="" method="post">
+      <form id="edit_form" action="" method="post">
         {% csrf_token %}
           {% for field in revision_form.visible_fields() %}
             <div class="field {% if field.name == 'content' %}has-large-textarea{% endif %}">
@@ -63,15 +76,18 @@
         <input type="hidden" name="form" value="rev" />
         <input type="hidden" name="slug" value="{{ document.slug }}" />
         <input type="hidden" name="locale" value="{{ document.locale }}" />
-        {{ submit_revision(revision_form, include_diff=True) }}
-        <div id="preview"></div>
-        <div id="preview-diff">
-          <div class="from">{{ revision_form.content.value() }}</div>
-          <div class="to"></div>
-          <div class="output"></div>
-        </div>
-        <div class="submit" id="preview-bottom">
-          {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
+        <div class="buttons-and-preview">
+          {{ submit_revision(revision_form, include_diff=True, allow_draft=True) }}
+          <div id="preview"></div>
+          <div id="preview-diff">
+            <div class="from">{{ revision_form.content.value() }}</div>
+            <div class="to"></div>
+            <div class="output"></div>
+          </div>
+          <div class="submit" id="preview-bottom">
+            {{ submit_revision(revision_form, buttons_only=True, include_diff=True, allow_draft=True) }}
+          </div>
+          <div id="draft-message" class="alert" hidden>
         </div>
       </form>
     </article>
