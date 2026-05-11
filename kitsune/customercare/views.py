@@ -9,19 +9,34 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import SuspiciousOperation
-from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.db import transaction
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse,
+)
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
 from django.views.decorators.http import require_POST
 from zenpy.lib.exception import APIException
 
-from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tasks import process_zendesk_update
+from kitsune.customercare.forms import SupportTicketReplyForm
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
+from kitsune.customercare.tasks import post_outbox_reply, process_zendesk_update
 from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.products.models import Topic
 
 log = logging.getLogger("k.customercare")
+
+
+ACTIVE_ZD_STATUSES = {
+    SupportTicket.ZD_STATUS_OPEN,
+    SupportTicket.ZD_STATUS_PENDING,
+    SupportTicket.ZD_STATUS_WAITING,
+}
 
 
 def _ticket_needs_sync(ticket):
@@ -33,6 +48,28 @@ def _ticket_needs_sync(ticket):
     return ticket.last_synced_at < timezone.now() - threshold
 
 
+def _user_can_reply(user, ticket):
+    return (
+        user.is_authenticated
+        and user.id == ticket.user_id
+        and ticket.zd_status in ACTIVE_ZD_STATUSES
+    )
+
+
+def _replies_context(ticket, viewer, reply_form=None, sync_error=False):
+    outbox_entries = list(SupportTicketReplyOutbox.objects.unconfirmed_for(ticket))
+    has_pending_outbox = any(
+        o.status == SupportTicketReplyOutbox.STATUS_PENDING for o in outbox_entries
+    )
+    return {
+        "ticket": ticket,
+        "sync_error": sync_error,
+        "reply_form": reply_form or SupportTicketReplyForm(),
+        "can_reply": _user_can_reply(viewer, ticket),
+        "outbox_entries": outbox_entries,
+        "has_pending_outbox": has_pending_outbox,
+    }
+
 
 @login_required
 def ticket_detail(request, username, ticket_id):
@@ -41,10 +78,49 @@ def ticket_detail(request, username, ticket_id):
         id=ticket_id,
         user__username=username,
     )
-    if not (ticket.user_id == request.user.id or request.user.has_perm("customercare.change_supportticket")):
+    is_owner = ticket.user_id == request.user.id
+    if not (is_owner or request.user.has_perm("customercare.change_supportticket")):
         raise Http404
 
-    if request.headers.get("HX-Request"):
+    is_htmx = bool(request.headers.get("HX-Request"))
+
+    if request.method == "POST":
+        if not is_owner:
+            return HttpResponseForbidden()
+        if ticket.zd_status not in ACTIVE_ZD_STATUSES:
+            return HttpResponseBadRequest()
+
+        form = SupportTicketReplyForm(request.POST)
+        if not form.is_valid():
+            context = _replies_context(ticket, request.user, reply_form=form)
+            if is_htmx:
+                return render(request, "customercare/includes/ticket_replies.html", context)
+            return render(
+                request,
+                "customercare/ticket_detail.html",
+                {"needs_sync": False, **context},
+            )
+
+        outbox = SupportTicketReplyOutbox.objects.create(
+            ticket=ticket,
+            author=request.user,
+            body=form.cleaned_data["body"],
+        )
+        post_outbox_reply.delay(outbox.id)
+
+        if is_htmx:
+            return render(
+                request,
+                "customercare/includes/ticket_replies.html",
+                _replies_context(ticket, request.user),
+            )
+        return redirect(
+            "customercare.ticket_detail",
+            username=ticket.user.username,
+            ticket_id=ticket.id,
+        )
+
+    if is_htmx:
         sync_error = False
         if _ticket_needs_sync(ticket):
             try:
@@ -52,13 +128,63 @@ def ticket_detail(request, username, ticket_id):
             except (APIException, requests.exceptions.RequestException):
                 log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
                 sync_error = True
-        return render(request, "customercare/includes/ticket_replies.html",
-                      {"ticket": ticket, "sync_error": sync_error})
+        return render(
+            request,
+            "customercare/includes/ticket_replies.html",
+            _replies_context(ticket, request.user, sync_error=sync_error),
+        )
 
-    return render(request, "customercare/ticket_detail.html", {
-        "ticket": ticket,
-        "needs_sync": _ticket_needs_sync(ticket),
-    })
+    return render(
+        request,
+        "customercare/ticket_detail.html",
+        {"needs_sync": _ticket_needs_sync(ticket), **_replies_context(ticket, request.user)},
+    )
+
+
+@login_required
+@require_POST
+def retry_outbox_reply(request, ticket_id, outbox_id):
+    # Relies on ATOMIC_REQUESTS=True for the ambient transaction.
+    # SELECT FOR UPDATE locks the row before the status check so two concurrent
+    # retries can't both flip `failed` -> `pending` and double-dispatch the post
+    # task; the second request blocks on the SELECT, then sees `pending` and aborts.
+    # `of=("self",)` locks only the outbox row — needed because select_related
+    # pulls in SupportTicket.user via LEFT JOIN (nullable FK), which PostgreSQL
+    # refuses to lock with a plain FOR UPDATE.
+    outbox = get_object_or_404(
+        SupportTicketReplyOutbox.objects.select_for_update(of=("self",)).select_related(
+            "ticket", "ticket__user"
+        ),
+        id=outbox_id,
+        ticket_id=ticket_id,
+    )
+    if outbox.ticket.user_id != request.user.id or outbox.author_id != request.user.id:
+        raise Http404
+    if outbox.status != SupportTicketReplyOutbox.STATUS_FAILED:
+        return HttpResponseBadRequest()
+    if outbox.ticket.zd_status not in ACTIVE_ZD_STATUSES:
+        return HttpResponseBadRequest()
+
+    outbox.status = SupportTicketReplyOutbox.STATUS_PENDING
+    outbox.error_reason = ""
+    outbox.attempt_count = 0
+    outbox.save(update_fields=["status", "error_reason", "attempt_count", "updated_at"])
+
+    # Dispatch only after the row write commits — if the transaction rolls back,
+    # no task is queued.
+    transaction.on_commit(lambda: post_outbox_reply.delay(outbox.id))
+
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "customercare/includes/ticket_replies.html",
+            _replies_context(outbox.ticket, request.user),
+        )
+    return redirect(
+        "customercare.ticket_detail",
+        username=outbox.ticket.user.username,
+        ticket_id=outbox.ticket.id,
+    )
 
 
 @require_POST

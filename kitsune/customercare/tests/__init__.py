@@ -1,6 +1,6 @@
 import factory
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
 from kitsune.products.tests import ProductFactory
 from kitsune.users.tests import UserFactory
 
@@ -16,3 +16,12 @@ class SupportTicketFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     email = factory.LazyAttribute(lambda obj: obj.user.email if obj.user else "test@example.com")
     submission_status = SupportTicket.STATUS_SENT
+
+
+class SupportTicketReplyOutboxFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SupportTicketReplyOutbox
+
+    ticket = factory.SubFactory(SupportTicketFactory)
+    author = factory.SelfAttribute("ticket.user")
+    body = factory.Faker("paragraph")

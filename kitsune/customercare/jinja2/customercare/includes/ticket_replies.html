@@ -1,20 +1,32 @@
 {% from "sumo/includes/thread_post.html" import post_body %}
 
+{# Exponential-backoff polling while any outbox row is pending. The "Sending…"
+   indicator is tied to the same condition: once we stop polling, the timestamp
+   takes its place rather than leaving a misleading perpetual "Sending…". #}
+{% set poll_count = (request.GET.get('poll') or 0) | int %}
+{% set poll_delays = [2, 3, 5, 8, 12, 20, 30, 40] %}
+{% set still_polling = has_pending_outbox and poll_count < (poll_delays | length) %}
+
+<div id="thread-replies">
+<div id="thread-replies-list">
 {% if sync_error %}
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('We could not fetch the latest replies. Please try again later.') }}
   </div>
 {% endif %}
 
-{% if ticket.public_comments %}
+{% set sorted_comments = ticket.public_comments | sort(attribute='id') %}
+{% set total_replies = (sorted_comments | length) + (outbox_entries | length) %}
+
+{% if total_replies %}
   <h2 class="sumo-card-heading">
-    {% trans count=ticket.public_comments | length %}
+    {% trans count=total_replies %}
       {{ count }} Reply
     {% pluralize %}
       {{ count }} Replies
     {% endtrans %}
   </h2>
-  {% for comment in ticket.public_comments %}
+  {% for comment in sorted_comments %}
     {% set _author = comment.get("author", {}) %}
     {% set _created_str = comment.get("created_at", "") %}
     {% set _created_dt = _created_str | parse_datetime %}
@@ -41,6 +53,90 @@
       {{ post_body(comment.get("body", "") | e | replace('\n', '<br>') | safe) }}
     </div>
   {% endfor %}
+  {% for entry in outbox_entries %}
+    <div class="thread-post thread-post--outbox" id="outbox-{{ entry.id }}">
+      <div class="thread-post--header">
+        <div class="thread-post--avatar">
+          <div class="question-entry--icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="thread-post--author">
+          <span class="thread-post--author-name">{{ entry.author.profile.display_name if entry.author else _("Unknown") }}</span>
+          {% if entry.status == 'pending' and still_polling %}
+            <span class="thread-post--sending">{{ _("Sending…") }}</span>
+          {% else %}
+            <time class="thread-post--time" datetime="{{ entry.created_at.isoformat() }}">
+              {{ datetimeformat(entry.created_at, use_timesince=True) }}
+            </time>
+          {% endif %}
+        </div>
+      </div>
+      {{ post_body(entry.body | e | replace('\n', '<br>') | safe) }}
+      {% if entry.status == 'failed' %}
+        <div class="thread-detail--notice thread-detail--notice--error">
+          <div class="thread-detail--notice-text">
+            <strong>{{ _("Failed to send.") }}</strong>
+            {% if entry.error_reason %}
+              <span>{{ entry.error_reason }}</span>
+            {% endif %}
+          </div>
+          <form method="post"
+                action="{{ url('customercare.retry_outbox_reply', ticket_id=ticket.id, outbox_id=entry.id) }}"
+                hx-post="{{ url('customercare.retry_outbox_reply', ticket_id=ticket.id, outbox_id=entry.id) }}"
+                hx-target="#thread-replies-list"
+                hx-swap="outerHTML"
+                hx-select="#thread-replies-list">
+            {% csrf_token %}
+            <button type="submit" class="sumo-button secondary-button button-sm">{{ _("Retry") }}</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
 {% else %}
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
+
+{# Cumulative poll delays: 2, 5, 10, 18, 30, 50, 80, 120s. #}
+{% if still_polling %}
+  <div hx-get="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}?poll={{ poll_count + 1 }}"
+       hx-trigger="load delay:{{ poll_delays[poll_count] }}s"
+       hx-target="#thread-replies-list"
+       hx-swap="outerHTML"
+       hx-select="#thread-replies-list"></div>
+{% endif %}
+</div>
+
+{% if can_reply %}
+  <section class="question-reply-form" id="ticket-reply">
+    <h3 class="sumo-card-heading">{{ _('Post a Reply') }}</h3>
+    <form method="post"
+          action="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+          hx-post="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+          hx-target="#thread-replies"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+      <div class="main-content">
+        <div class="field has-large-textarea{% if reply_form.body.errors %} invalid{% endif %}">
+          <div>{{ reply_form.body }}</div>
+          {{ reply_form.body.errors }}
+        </div>
+      </div>
+      <div class="answer-tools sumo-button-wrap align-end reverse-on-desktop">
+        <button type="submit" class="sumo-button primary-button button-lg">
+          {{ _('Post Reply') }}
+        </button>
+      </div>
+    </form>
+  </section>
+{% elif ticket.user_id == request.user.id %}
+  <div class="thread-detail--notice">
+    {{ _("This ticket is closed. You cannot reply to it.") }}
+  </div>
+{% endif %}
+</div>

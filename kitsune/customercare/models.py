@@ -116,3 +116,65 @@ class SupportTicket(ModelBase):
             return _lazy("processing")
         # STATUS_SENT — delegate to ZD status if available
         return self.zd_status or _lazy("submitted")
+
+
+class SupportTicketReplyOutboxManager(models.Manager):
+    def unconfirmed_for(self, ticket):
+        """Outbox rows for `ticket` that should be rendered alongside ticket.comments.
+
+        Drops rows whose zendesk_comment_id is already present in the mirror — the
+        canonical mirrored comment takes the render slot. Otherwise returns pending,
+        posted, and failed rows ordered by created_at.
+        """
+        mirrored_ids = {c.get("id") for c in (ticket.comments or []) if c.get("id")}
+        qs = self.filter(ticket=ticket).select_related("author", "author__profile")
+        if mirrored_ids:
+            qs = qs.exclude(zendesk_comment_id__in=mirrored_ids)
+        return qs.order_by("created_at")
+
+
+class SupportTicketReplyOutbox(ModelBase):
+    """User-authored replies queued for delivery to Zendesk.
+
+    Source of truth for SUMO-side replies until the row's zendesk_comment_id appears
+    in SupportTicket.comments (at which point `unconfirmed_for` filters it out at
+    render time, and write-site cleanup deletes the row). NEVER write directly to
+    SupportTicket.comments — the periodic sync clobbers it.
+    """
+
+    STATUS_PENDING = "pending"
+    STATUS_POSTED = "posted"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, _lazy("Sending")),
+        (STATUS_POSTED, _lazy("Posted")),
+        (STATUS_FAILED, _lazy("Failed")),
+    )
+
+    BODY_MAX_LENGTH = 32_000
+
+    ticket = models.ForeignKey(
+        SupportTicket, on_delete=models.CASCADE, related_name="reply_outbox"
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="ticket_reply_outbox",
+    )
+    body = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    zendesk_comment_id = models.BigIntegerField(null=True, blank=True)
+    posted_at = models.DateTimeField(null=True, blank=True)
+    attempt_count = models.PositiveSmallIntegerField(default=0)
+    error_reason = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = SupportTicketReplyOutboxManager()
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"SupportTicketReplyOutbox(ticket={self.ticket_id}, status={self.status})"

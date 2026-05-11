@@ -1,14 +1,17 @@
 import logging
 from datetime import timedelta
 
+import requests
 from celery import shared_task
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from zenpy.lib.api_objects import Comment
+from zenpy.lib.exception import APIException
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
 from kitsune.customercare.utils import process_zendesk_classification_result
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
@@ -184,8 +187,114 @@ def process_zendesk_update(payload: dict) -> None:
             comment["public"] = comment.pop("is_public", False)
             ticket.comments.append(comment)
             update_fields.append("comments")
+            # The mirror now carries this comment id — drop the matching outbox row
+            # so it doesn't double-render alongside the mirrored copy.
+            if comment_id := comment.get("id"):
+                SupportTicketReplyOutbox.objects.filter(
+                    ticket=ticket,
+                    status=SupportTicketReplyOutbox.STATUS_POSTED,
+                    zendesk_comment_id=comment_id,
+                ).delete()
 
         if update_fields:
             ticket.zd_updated_at = parse_datetime(updated_at)
             update_fields.append("zd_updated_at")
             ticket.save(update_fields=update_fields)
+
+
+PERMANENT_HTTP_CODES = {400, 401, 403, 404, 422}
+MAX_OUTBOX_ATTEMPTS = 3
+
+
+def _is_permanent(exc):
+    """Classify a Zendesk-side exception as terminal vs worth retrying."""
+    if isinstance(exc, ValueError):
+        return True
+    if isinstance(exc, APIException):
+        code = getattr(getattr(exc, "response", None), "status_code", None)
+        return code in PERMANENT_HTTP_CODES
+    # requests transport errors (ConnectionError, Timeout, ...) → transient
+    return False
+
+
+def _extract_new_comment_id(audit):
+    """Pull the new Zendesk comment id out of a TicketAudit's events list.
+
+    `audit.events` is a list of typed objects; the one we created is a Comment
+    instance with `.id`. We created exactly one — return its id or None.
+    """
+    return next(
+        (
+            ev.id
+            for ev in (getattr(audit, "events", None) or [])
+            if isinstance(ev, Comment) and getattr(ev, "id", None)
+        ),
+        None,
+    )
+
+
+@shared_task_with_retry
+def post_outbox_reply(outbox_id: int) -> None:
+    """Post a queued user reply to Zendesk.
+
+    Idempotent: re-loads the row and short-circuits on terminal states.
+
+    NOTE: there is a small window between Zendesk accepting the comment and our
+    success UPDATE landing. If we crash inside it, the comment is on Zendesk's
+    side but our row stays `pending`; a Celery retry would double-post. Accepted
+    iteration-1 risk.
+    """
+    try:
+        outbox = SupportTicketReplyOutbox.objects.select_related("ticket", "author").get(
+            id=outbox_id
+        )
+    except SupportTicketReplyOutbox.DoesNotExist:
+        return
+
+    if outbox.status in (
+        SupportTicketReplyOutbox.STATUS_POSTED,
+        SupportTicketReplyOutbox.STATUS_FAILED,
+    ):
+        return
+
+    if not (outbox.author and outbox.author.is_authenticated):
+        outbox.status = SupportTicketReplyOutbox.STATUS_FAILED
+        outbox.error_reason = "Author missing or anonymous."
+        outbox.save(update_fields=["status", "error_reason", "updated_at"])
+        return
+
+    if not outbox.ticket.zendesk_ticket_id:
+        outbox.status = SupportTicketReplyOutbox.STATUS_FAILED
+        outbox.error_reason = "Ticket has no Zendesk id."
+        outbox.save(update_fields=["status", "error_reason", "updated_at"])
+        return
+
+    try:
+        audit = ZendeskClient().add_ticket_comment(
+            user=outbox.author,
+            ticket_id=outbox.ticket.zendesk_ticket_id,
+            comment_body=outbox.body,
+            public=True,
+        )
+    except (APIException, requests.exceptions.RequestException, ValueError) as exc:
+        outbox.attempt_count = (outbox.attempt_count or 0) + 1
+        if _is_permanent(exc) or outbox.attempt_count >= MAX_OUTBOX_ATTEMPTS:
+            outbox.status = SupportTicketReplyOutbox.STATUS_FAILED
+            outbox.error_reason = str(exc)[:500]
+            outbox.save(update_fields=["status", "error_reason", "attempt_count", "updated_at"])
+            return
+        outbox.save(update_fields=["attempt_count", "updated_at"])
+        raise  # transient → Celery autoretries
+
+    new_comment_id = _extract_new_comment_id(audit)
+    if new_comment_id is None:
+        outbox.status = SupportTicketReplyOutbox.STATUS_FAILED
+        outbox.error_reason = "Zendesk returned no comment id."
+        outbox.attempt_count = (outbox.attempt_count or 0) + 1
+        outbox.save(update_fields=["status", "error_reason", "attempt_count", "updated_at"])
+        return
+
+    outbox.zendesk_comment_id = new_comment_id
+    outbox.posted_at = timezone.now()
+    outbox.status = SupportTicketReplyOutbox.STATUS_POSTED
+    outbox.save(update_fields=["status", "zendesk_comment_id", "posted_at", "updated_at"])

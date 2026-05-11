@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, Mock, patch
 from django.utils import timezone
 from zenpy.lib.exception import APIException
 
-from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
+from kitsune.customercare.tests import SupportTicketFactory, SupportTicketReplyOutboxFactory
 from kitsune.customercare.utils import (
     _topic_to_tag,
     generate_classification_tags,
@@ -334,9 +334,7 @@ class ProcessZendeskClassificationResultTests(TestCase):
 
     @patch("kitsune.customercare.utils.send_support_ticket_to_zendesk")
     @patch("kitsune.customercare.utils.Profile")
-    def test_segmentation_tags_preserved_after_classification(
-        self, mock_profile, mock_send
-    ):
+    def test_segmentation_tags_preserved_after_classification(self, mock_profile, mock_send):
         """Segmentation tags from dropdowns must survive NOT_SPAM classification (issue 2865)."""
         self.submission.zendesk_tags = [
             "loginless_ticket",
@@ -403,3 +401,57 @@ class SyncTicketFromZendeskTests(TestCase):
 
         self.ticket.refresh_from_db()
         self.assertFalse(self.ticket.comments[0]["public"])
+
+    def _stub_zd(self, mock_client_cls, comment_ids):
+        mock_client = mock_client_cls.return_value
+        comments = []
+        for cid in comment_ids:
+            m = MagicMock()
+            m.id = cid
+            m.body = f"body {cid}"
+            m.created_at = "2025-01-01T00:00:00Z"
+            m.public = True
+            m.author.name = "Agent"
+            m.author.id = 99
+            comments.append(m)
+        mock_client.get_ticket_comments.return_value = comments
+        mock_client.get_ticket.return_value = MagicMock(status="open", updated_at=timezone.now())
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_deletes_posted_outbox_rows_with_mirrored_ids(self, mock_client_cls):
+        self._stub_zd(mock_client_cls, [42])
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_POSTED,
+            zendesk_comment_id=42,
+        )
+        sync_ticket_from_zendesk(self.ticket)
+        self.assertFalse(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_keeps_posted_outbox_rows_not_in_mirror(self, mock_client_cls):
+        self._stub_zd(mock_client_cls, [42])
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_POSTED,
+            zendesk_comment_id=99,
+        )
+        sync_ticket_from_zendesk(self.ticket)
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_keeps_pending_and_failed_regardless_of_mirror_id(self, mock_client_cls):
+        self._stub_zd(mock_client_cls, [42])
+        pending = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_PENDING,
+            zendesk_comment_id=42,
+        )
+        failed = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_FAILED,
+            zendesk_comment_id=42,
+        )
+        sync_ticket_from_zendesk(self.ticket)
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=pending.id).exists())
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=failed.id).exists())

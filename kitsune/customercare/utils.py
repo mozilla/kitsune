@@ -2,12 +2,13 @@ import re
 from typing import Any, cast
 
 import waffle
+from django.db import transaction
 from django.utils import timezone
 from zenpy.lib.exception import APIException
 
 from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_LEGACY_MAPPING
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.llm.spam.classifier import ModerationAction
@@ -22,20 +23,34 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
     zd_ticket = client.get_ticket(ticket.zendesk_ticket_id)
     zd_comments = client.get_ticket_comments(ticket.zendesk_ticket_id)
 
+    comments = []
+    mirrored_ids = set()
+    for c in zd_comments:
+        comments.append(
+            {
+                "id": c.id,
+                "body": c.body,
+                "created_at": c.created_at,
+                "public": c.public,
+                "author": {"name": c.author.name, "id": c.author.id},
+            }
+        )
+        mirrored_ids.add(c.id)
+
     ticket.zd_status = zd_ticket.status
     ticket.zd_updated_at = zd_ticket.updated_at
-    ticket.comments = [
-        {
-            "id": c.id,
-            "body": c.body,
-            "created_at": c.created_at,
-            "public": c.public,
-            "author": {"name": c.author.name, "id": c.author.id},
-        }
-        for c in zd_comments
-    ]
+    ticket.comments = comments
     ticket.last_synced_at = timezone.now()
-    ticket.save(update_fields=["zd_status", "zd_updated_at", "comments", "last_synced_at"])
+
+    with transaction.atomic():
+        ticket.save(update_fields=["zd_status", "zd_updated_at", "comments", "last_synced_at"])
+        # The mirror was overwritten — drop posted outbox rows whose id now lives
+        # in ticket.comments so they don't double-render alongside the mirrored copy.
+        SupportTicketReplyOutbox.objects.filter(
+            ticket=ticket,
+            status=SupportTicketReplyOutbox.STATUS_POSTED,
+            zendesk_comment_id__in=mirrored_ids,
+        ).delete()
 
 
 def _topic_to_tag(text: str) -> str:

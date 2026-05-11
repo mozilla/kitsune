@@ -1,11 +1,18 @@
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
-from kitsune.customercare.models import SupportTicket
+import requests
+from zenpy.lib.api_objects import Comment
+from zenpy.lib.exception import APIException
+
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
 from kitsune.customercare.tasks import (
+    post_outbox_reply,
     process_failed_zendesk_tickets,
     process_zendesk_update,
     zendesk_submission_classifier,
 )
+from kitsune.customercare.tests import SupportTicketFactory, SupportTicketReplyOutboxFactory
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
@@ -404,3 +411,203 @@ class ProcessZendeskUpdateTests(TestCase):
             )
         self.ticket.refresh_from_db()
         self.assertIsNone(self.ticket.zd_updated_at)
+
+
+def _build_audit(comment_id):
+    """Build a fake TicketAudit whose events list contains one new Comment."""
+    return SimpleNamespace(events=[Comment(id=comment_id, body="x", public=True)])
+
+
+def _api_exc(status_code):
+    """Build an APIException carrying a response with the given status code."""
+    response = MagicMock(status_code=status_code)
+    return APIException("zendesk", response=response)
+
+
+class PostOutboxReplyTests(TestCase):
+    """Tests for the post_outbox_reply task."""
+
+    def setUp(self):
+        self.ticket = SupportTicketFactory(
+            zendesk_ticket_id="987",
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+        self.outbox = SupportTicketReplyOutboxFactory(ticket=self.ticket, body="hello support")
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_happy_path_marks_posted_and_stamps_id(self, MockClient):
+        MockClient.return_value.add_ticket_comment.return_value = _build_audit(12345)
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_POSTED)
+        self.assertEqual(self.outbox.zendesk_comment_id, 12345)
+        self.assertIsNotNone(self.outbox.posted_at)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_short_circuits_when_already_posted(self, MockClient):
+        self.outbox.status = SupportTicketReplyOutbox.STATUS_POSTED
+        self.outbox.zendesk_comment_id = 7
+        self.outbox.save()
+        post_outbox_reply(self.outbox.id)
+        MockClient.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_short_circuits_when_already_failed(self, MockClient):
+        self.outbox.status = SupportTicketReplyOutbox.STATUS_FAILED
+        self.outbox.save()
+        post_outbox_reply(self.outbox.id)
+        MockClient.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_missing_outbox_id_returns_silently(self, MockClient):
+        post_outbox_reply(99999)
+        MockClient.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_author_none_marks_failed(self, MockClient):
+        self.outbox.author = None
+        self.outbox.save()
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_FAILED)
+        self.assertIn("Author missing", self.outbox.error_reason)
+        MockClient.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_no_zendesk_ticket_id_marks_failed(self, MockClient):
+        self.ticket.zendesk_ticket_id = ""
+        self.ticket.save()
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_FAILED)
+        self.assertIn("no Zendesk id", self.outbox.error_reason)
+        MockClient.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_empty_audit_events_marks_failed(self, MockClient):
+        MockClient.return_value.add_ticket_comment.return_value = SimpleNamespace(events=[])
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_FAILED)
+        self.assertIn("no comment id", self.outbox.error_reason)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_transient_api_exception_reraises_and_increments(self, MockClient):
+        MockClient.return_value.add_ticket_comment.side_effect = _api_exc(503)
+        with self.assertRaises(APIException):
+            post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_PENDING)
+        self.assertEqual(self.outbox.attempt_count, 1)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_transient_network_error_reraises_and_increments(self, MockClient):
+        MockClient.return_value.add_ticket_comment.side_effect = (
+            requests.exceptions.ConnectionError("boom")
+        )
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_PENDING)
+        self.assertEqual(self.outbox.attempt_count, 1)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_permanent_api_exception_marks_failed_no_reraise(self, MockClient):
+        MockClient.return_value.add_ticket_comment.side_effect = _api_exc(404)
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_FAILED)
+        self.assertEqual(self.outbox.attempt_count, 1)
+        self.assertIn("zendesk", self.outbox.error_reason)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_value_error_marks_failed(self, MockClient):
+        MockClient.return_value.add_ticket_comment.side_effect = ValueError("anon")
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_FAILED)
+        self.assertIn("anon", self.outbox.error_reason)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_max_attempts_reached_marks_failed_on_transient(self, MockClient):
+        self.outbox.attempt_count = 2
+        self.outbox.save()
+        MockClient.return_value.add_ticket_comment.side_effect = _api_exc(503)
+        # Third attempt should mark failed and swallow.
+        post_outbox_reply(self.outbox.id)
+        self.outbox.refresh_from_db()
+        self.assertEqual(self.outbox.status, SupportTicketReplyOutbox.STATUS_FAILED)
+        self.assertEqual(self.outbox.attempt_count, 3)
+
+
+class CommentAddedCleanupTests(TestCase):
+    """When process_zendesk_update appends a comment, matching `posted` outbox rows get deleted."""
+
+    def setUp(self):
+        self.ticket = SupportTicketFactory(zendesk_ticket_id="555")
+
+    def _payload(self, comment_id, is_public=True):
+        return {
+            "type": "zen:event-type:ticket.comment_added",
+            "detail": {"id": "555", "updated_at": "2026-05-01T00:00:00Z"},
+            "event": {
+                "comment": {
+                    "id": comment_id,
+                    "body": "from zendesk",
+                    "is_public": is_public,
+                    "author": {"id": 1, "name": "agent"},
+                }
+            },
+        }
+
+    def test_deletes_matching_posted_row(self):
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_POSTED,
+            zendesk_comment_id=777,
+        )
+        process_zendesk_update(self._payload(777))
+        self.assertFalse(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())
+
+    def test_no_op_when_no_matching_row(self):
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_POSTED,
+            zendesk_comment_id=111,
+        )
+        process_zendesk_update(self._payload(999))
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())
+
+    def test_does_not_delete_pending_row_with_matching_id(self):
+        """Pathological: a pending row with a matching id (shouldn't normally happen) is kept."""
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_PENDING,
+            zendesk_comment_id=777,
+        )
+        process_zendesk_update(self._payload(777))
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())
+
+    def test_does_not_delete_failed_row_with_matching_id(self):
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_FAILED,
+            zendesk_comment_id=777,
+        )
+        process_zendesk_update(self._payload(777))
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())
+
+    def test_non_comment_event_does_not_touch_outbox(self):
+        row = SupportTicketReplyOutboxFactory(
+            ticket=self.ticket,
+            status=SupportTicketReplyOutbox.STATUS_POSTED,
+            zendesk_comment_id=777,
+        )
+        process_zendesk_update(
+            {
+                "type": "zen:event-type:ticket.status_changed",
+                "detail": {"id": "555", "updated_at": "2026-05-01T00:00:00Z"},
+                "event": {"current": "solved"},
+            }
+        )
+        self.assertTrue(SupportTicketReplyOutbox.objects.filter(id=row.id).exists())

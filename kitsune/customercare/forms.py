@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _lazy
 
-from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.models import SupportTicket, SupportTicketReplyOutbox
 from kitsune.products import PRODUCT_SLUG_ALIASES
 from kitsune.products.models import ProductSupportConfig, ZendeskTopic, ZendeskTopicConfiguration
 
@@ -248,3 +248,26 @@ class ZendeskForm(forms.Form):
         zendesk_submission_classifier.delay(submission.id)
 
         return submission
+
+
+class SupportTicketReplyForm(forms.Form):
+    """Form for a ticket owner to author a reply that will be posted to Zendesk."""
+
+    body = forms.CharField(
+        label=_lazy("Reply"),
+        widget=forms.Textarea(
+            attrs={"rows": 6, "maxlength": SupportTicketReplyOutbox.BODY_MAX_LENGTH}
+        ),
+        max_length=SupportTicketReplyOutbox.BODY_MAX_LENGTH,
+        strip=True,
+        error_messages={
+            "required": _lazy("Please enter a reply."),
+            "max_length": _lazy("Replies are limited to %(limit_value)d characters."),
+        },
+    )
+
+    def clean_body(self):
+        body = self.cleaned_data.get("body", "").strip()
+        if not body:
+            raise forms.ValidationError(_lazy("Please enter a reply."))
+        return body

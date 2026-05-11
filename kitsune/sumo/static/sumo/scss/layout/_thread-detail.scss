@@ -113,7 +113,7 @@
   width: 100%;
 }
 
-// Alert notice inside thread — locked, archived, spam
+// Alert notice inside thread — locked, archived, spam, failed reply
 .thread-detail--notice {
   display: flex;
   align-items: center;
@@ -132,6 +132,26 @@
     background: rgba(c.color('yellow', '04'), 0.2);
     color: c.color('orange', '08');
   }
+
+  &--error {
+    background: rgba(c.color('red', '06'), 0.08);
+    color: c.color('red', '08');
+    justify-content: space-between;
+    margin-top: p.$spacing-lg;
+  }
+}
+
+// Stacked title + detail block inside a notice (used by --error)
+.thread-detail--notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: p.$spacing-xs;
+}
+
+// "Sending…" indicator shown in place of the timestamp on a pending outbox row
+.thread-post--sending {
+  font-style: italic;
+  color: var(--color-text-light);
 }
 
 // Replies section heading row
