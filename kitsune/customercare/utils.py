@@ -3,7 +3,12 @@ from typing import Any, cast
 
 import waffle
 from django.utils import timezone
-from zenpy.lib.exception import APIException
+from zenpy.lib.exception import (
+    APIException,
+    RecordNotFoundException,
+    SearchResponseLimitExceeded,
+    TooManyValuesException,
+)
 
 from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_LEGACY_MAPPING
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
@@ -15,13 +20,37 @@ from kitsune.products.models import ProductSupportConfig, Topic
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
 
+# HTTP statuses where retrying the same Zendesk request won't help.
+PERMANENT_ERROR_HTTP_CODES = {400, 401, 403, 404, 410, 422, 501, 505}
+
+# Zenpy APIException subclasses that always indicate a permanent failure, even
+# when raised without a response attached (e.g. client-side validation in
+# zenpy.lib.request raises TooManyValuesException with no response).
+PERMANENT_ZENPY_EXCEPTIONS = (
+    RecordNotFoundException,
+    TooManyValuesException,
+    SearchResponseLimitExceeded,
+)
+
+
+def is_permanent_zendesk_error(exc) -> bool:
+    """True if retrying the same Zendesk request won't help.
+
+    Accepts a zenpy APIException or a requests RequestException. Network-level
+    RequestException (ConnectionError, Timeout) has `response = None` and is
+    therefore transient; HTTP-level errors carry a response with a status code.
+    Specific zenpy subclasses are treated as permanent even without a response.
+    """
+    return isinstance(exc, PERMANENT_ZENPY_EXCEPTIONS) or (
+        getattr(exc.response, "status_code", None) in PERMANENT_ERROR_HTTP_CODES
+    )
+
 
 def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
     """Fetch fresh ticket status and comments from Zendesk and save to DB."""
     client = ZendeskClient()
     zd_ticket = client.get_ticket(ticket.zendesk_ticket_id)
     zd_comments = client.get_ticket_comments(ticket.zendesk_ticket_id)
-
     ticket.zd_status = zd_ticket.status
     ticket.zd_updated_at = zd_ticket.updated_at
     ticket.comments = [
