@@ -1,6 +1,10 @@
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
@@ -122,3 +126,65 @@ class SupportTicket(ModelBase):
             return _lazy("processing")
         # STATUS_SENT — delegate to ZD status if available
         return self.zd_status or _lazy("submitted")
+
+    def pending_change(self, kind, *, for_update=False):
+        """Return the pending change of the given kind, or None if none exists.
+
+        Pass "for_update=True" or a dict of "select_for_update" kwargs (like
+        {"nowait": True}) to acquire a row lock for the lookup.
+        """
+        qs = self.pending_changes
+        if for_update:
+            kwargs = for_update if isinstance(for_update, dict) else {}
+            qs = qs.select_for_update(**kwargs)
+        try:
+            return qs.get(kind=kind)
+        except SupportTicketPendingChange.DoesNotExist:
+            return None
+
+
+class SupportTicketPendingChange(models.Model):
+    STATUS_SENDING = "sending"
+    STATUS_FAILED = "failed"
+
+    STATUS_CHOICES = (
+        (STATUS_SENDING, _lazy("Sending")),
+        (STATUS_FAILED, _lazy("Failed")),
+    )
+
+    KIND_COMMENT = "comment"
+    KIND_ZD_STATUS = "zd_status"
+
+    KIND_CHOICES = (
+        (KIND_COMMENT, _lazy("comment")),
+        (KIND_ZD_STATUS, _lazy("zd_status")),
+    )
+
+    ticket = models.ForeignKey(
+        SupportTicket, on_delete=models.CASCADE, related_name="pending_changes"
+    )
+    kind = models.CharField(max_length=30, choices=KIND_CHOICES)
+    payload = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_SENDING)
+    created = models.DateTimeField(auto_now_add=True)
+    last_attempted_at = models.DateTimeField(default=None, null=True)
+
+    class Meta:
+        ordering = ["-created"]
+        constraints = [
+            models.UniqueConstraint(fields=["ticket", "kind"], name="unique_kind_per_ticket")
+        ]
+
+    @property
+    def effective_status(self):
+        """Coerce a stale "sending" status to "failed"."""
+        if (
+            (self.status == self.STATUS_SENDING)
+            and (last_attempt := self.last_attempted_at or self.created)
+            and (
+                last_attempt
+                <= timezone.now() - timedelta(seconds=settings.ZENDESK_REPLY_POLL_SECONDS)
+            )
+        ):
+            return self.STATUS_FAILED
+        return self.status
