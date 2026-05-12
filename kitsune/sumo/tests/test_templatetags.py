@@ -23,6 +23,7 @@ from kitsune.sumo.templatetags.jinja_helpers import (
     timesince,
     url,
     urlparams,
+    wiki_to_safe_html,
     yesno,
 )
 from kitsune.sumo.tests import TestCase
@@ -130,9 +131,9 @@ class TestDateTimeFormat(TestCase):
         date_today = datetime.today()
         date_localize = date_today.replace(tzinfo=self.timezone)
         value_returned = str(datetimeformat(self.context, date_today))
-        value_expected = "Today at {}".format(format_time(
-            date_localize, format="short", locale=self.locale, tzinfo=self.timezone
-        ))
+        value_expected = "Today at {}".format(
+            format_time(date_localize, format="short", locale=self.locale, tzinfo=self.timezone)
+        )
         self.assertEqual(pq(value_returned)("time").text(), value_expected)
 
     def test_locale(self):
@@ -258,3 +259,16 @@ class TestClassSelected(TestCase):
         value_returned = class_selected(0, 1)
         value_expected = ""
         self.assertEqual(value_returned, value_expected)
+
+
+class TestWikiToSafeHtml(TestCase):
+    """Test wiki_to_safe_html"""
+
+    def test_none_returns_empty_string(self):
+        self.assertEqual("", wiki_to_safe_html(None))
+
+    def test_empty_string_returns_empty_string(self):
+        self.assertEqual("", wiki_to_safe_html(""))
+
+    def test_renders_markup(self):
+        self.assertIn("hello", wiki_to_safe_html("hello"))
