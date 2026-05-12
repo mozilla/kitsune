@@ -113,7 +113,7 @@
   width: 100%;
 }
 
-// Alert notice inside thread — locked, archived, spam
+// Alert notice inside thread — locked, archived, spam, failed reply
 .thread-detail--notice {
   display: flex;
   align-items: center;
@@ -132,6 +132,18 @@
     background: rgba(c.color('yellow', '04'), 0.2);
     color: c.color('orange', '08');
   }
+
+  &--error {
+    background: rgba(c.color('red', '06'), 0.08);
+    color: c.color('red', '08');
+    margin-top: p.$spacing-lg;
+  }
+}
+
+.thread-detail--notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: p.$spacing-xs;
 }
 
 // Replies section heading row
@@ -160,6 +172,22 @@
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
   flex-shrink: 0;
+}
+
+// Idle/busy label swap on the reply submit button. HTMX adds `htmx-request`
+// to the form (the requesting element) for the duration of the request.
+.reply-submit__busy {
+  display: none;
+  align-items: center;
+  gap: p.$spacing-xs;
+}
+
+.htmx-request .reply-submit__idle {
+  display: none;
+}
+
+.htmx-request .reply-submit__busy {
+  display: inline-flex;
 }
 
 @keyframes spin {

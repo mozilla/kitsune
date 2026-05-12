@@ -12,13 +12,21 @@ LOGINLESS_TAG = "loginless_ticket"
 class ZendeskClient:
     """Client to connect to Zendesk API."""
 
-    def __init__(self, **kwargs):
-        """Initialize Zendesk API client."""
+    def __init__(self, timeout=None, **kwargs):
+        """Initialize Zendesk API client.
+
+        `timeout` is a per-HTTP-request timeout in seconds, applied by zenpy to every
+        underlying requests call for the client's lifetime. If unset, zenpy's
+        DEFAULT_TIMEOUT (60s) applies — fine for background tasks, too long for
+        user-facing requests, so callers in the request path should pass a shorter value.
+        """
         creds = {
             "email": settings.ZENDESK_USER_EMAIL,
             "token": settings.ZENDESK_API_TOKEN,
             "subdomain": settings.ZENDESK_SUBDOMAIN,
         }
+        if timeout is not None:
+            creds["timeout"] = timeout
         self.client = Zenpy(**creds)
 
     def _user_to_zendesk_user(self, user, email):

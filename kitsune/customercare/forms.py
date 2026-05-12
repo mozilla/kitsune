@@ -248,3 +248,21 @@ class ZendeskForm(forms.Form):
         zendesk_submission_classifier.delay(submission.id)
 
         return submission
+
+
+class SupportTicketReplyForm(forms.Form):
+    """Form for a ticket owner to author a reply that will be posted to Zendesk."""
+
+    # Matches Zendesk's documented per-comment limit:
+    # https://support.zendesk.com/hc/en-us/articles/4408820879258
+    BODY_MAX_LENGTH = 65_535
+
+    body = forms.CharField(
+        label=_lazy("Reply"),
+        widget=forms.Textarea(attrs={"maxlength": BODY_MAX_LENGTH}),
+        max_length=BODY_MAX_LENGTH,
+        error_messages={
+            "required": _lazy("Please enter a reply."),
+            "max_length": _lazy("Replies are limited to %(limit_value)d characters."),
+        },
+    )

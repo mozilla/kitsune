@@ -180,10 +180,16 @@ def process_zendesk_update(payload: dict) -> None:
             comment = event.get("comment")
             if not isinstance(comment, dict):
                 raise ValueError("Unexpected comment structure from Zendesk")
-            comment["created_at"] = updated_at
-            comment["public"] = comment.pop("is_public", False)
-            ticket.comments.append(comment)
-            update_fields.append("comments")
+            # The user's sync reply path may have already mirrored this comment
+            # (or the same webhook may be retried). Skip if the "id" is already
+            # present.
+            if (comment_id := comment.get("id")) and not any(
+                c.get("id") == comment_id for c in ticket.comments
+            ):
+                comment["created_at"] = updated_at
+                comment["public"] = comment.pop("is_public", False)
+                ticket.comments.append(comment)
+                update_fields.append("comments")
 
         if update_fields:
             ticket.zd_updated_at = parse_datetime(updated_at)

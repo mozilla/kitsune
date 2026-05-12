@@ -345,6 +345,21 @@ class ProcessZendeskUpdateTests(TestCase):
         self.assertEqual(self.ticket.comments[1]["created_at"], "2026-03-26T10:35:00Z")
         self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-26 10:35:00+00:00")
 
+    def test_comment_added_skips_when_id_already_in_mirror(self):
+        """If the user's sync reply path already mirrored the comment, skip the append."""
+        self.ticket.comments = [{"id": 999, "body": "already here", "public": True, "author": {}}]
+        self.ticket.save()
+        process_zendesk_update(
+            self._payload(
+                "zen:event-type:ticket.comment_added",
+                {"comment": {"id": 999, "body": "hey paul", "is_public": True}},
+                updated_at="2026-03-25T10:30:00Z",
+            )
+        )
+        self.ticket.refresh_from_db()
+        self.assertEqual(1, len(self.ticket.comments))
+        self.assertEqual("already here", self.ticket.comments[0]["body"])
+
     def test_unhandled_event_type_is_noop(self):
         """Event types we don't handle should be ignored without raising."""
         process_zendesk_update(

@@ -1,20 +1,22 @@
 {% from "sumo/includes/thread_post.html" import post_body %}
 
+<div id="thread-replies">
 {% if sync_error %}
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('We could not fetch the latest replies. Please try again later.') }}
   </div>
 {% endif %}
 
-{% if ticket.public_comments %}
+{% set sorted_comments = ticket.public_comments | sort(attribute='id') %}
+{% if sorted_comments %}
   <h2 class="sumo-card-heading">
-    {% trans count=ticket.public_comments | length %}
+    {% trans count=sorted_comments | length %}
       {{ count }} Reply
     {% pluralize %}
       {{ count }} Replies
     {% endtrans %}
   </h2>
-  {% for comment in ticket.public_comments %}
+  {% for comment in sorted_comments %}
     {% set _author = comment.get("author", {}) %}
     {% set _created_str = comment.get("created_at", "") %}
     {% set _created_dt = _created_str | parse_datetime %}
@@ -44,3 +46,44 @@
 {% else %}
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
+
+{% if can_reply %}
+  <section class="question-reply-form" id="ticket-reply">
+    <h3 class="sumo-card-heading">{{ _('Post a Reply') }}</h3>
+    {% if post_error %}
+      <div class="thread-detail--notice thread-detail--notice--error">
+        <div class="thread-detail--notice-text">
+          <strong>{{ post_error }}</strong>
+        </div>
+      </div>
+    {% endif %}
+    <form method="post"
+          action="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+          hx-post="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+          hx-target="#thread-replies"
+          hx-swap="outerHTML"
+          hx-disabled-elt="find button[type=submit]">
+      {% csrf_token %}
+      <div class="main-content">
+        <div class="field has-large-textarea{% if reply_form.body.errors %} invalid{% endif %}">
+          <div>{{ reply_form.body }}</div>
+          {{ reply_form.body.errors }}
+        </div>
+      </div>
+      <div class="answer-tools sumo-button-wrap align-end reverse-on-desktop">
+        <button type="submit" class="sumo-button primary-button button-lg reply-submit">
+          <span class="reply-submit__idle">{{ _('Post Reply') }}</span>
+          <span class="reply-submit__busy">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            {{ _('Posting…') }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </section>
+{% elif ticket.user_id == request.user.id and ticket.zd_status in (ticket.ZD_STATUS_SOLVED, ticket.ZD_STATUS_CLOSED) %}
+  <div class="thread-detail--notice">
+    {{ _("This ticket is closed. You cannot reply to it.") }}
+  </div>
+{% endif %}
+</div>
