@@ -74,7 +74,7 @@ dependencies = [
     "google-analytics-data>=0.21.0,<1",
     "pyparsing==3.3.2",
     "django-silk>=5.1.0,<6",
-    "requests>=2.32.4,<3",
+    "requests>=2.34.0,<3",
     "fuzzywuzzy>=0.18.0,<0.19",
     "django-ses==4.7.2",
     "django-post-office==3.10.1",
