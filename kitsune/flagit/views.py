@@ -102,8 +102,8 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     if reason == FlaggedObject.REASON_CONTENT_MODERATION:
         moderation_flag_query.update(status=FlaggedObject.FLAG_PENDING)
         default_kwargs["status"] = FlaggedObject.FLAG_DUPLICATE
-    else:
-        moderation_flag_query.delete()
+    elif request.user.has_perm("flagit.can_moderate"):
+        moderation_flag_query.update(status=FlaggedObject.FLAG_DUPLICATE)
 
     # Check that this user hasn't already flagged the object
     _flagged, created = FlaggedObject.objects.get_or_create(
