@@ -12,9 +12,10 @@
 
   Block reference:
     thread_notice        — locked/archived/spam alert bar (above article)
-    thread_product_logo  — product <img> (inside header, before title)
+    thread_product_logo  — product <img> (inside header, first in the hero row)
+    thread_status_hero   — status pill cluster inline with the logo, before the title
     thread_title         — the h1 text (itemprop="headline")
-    thread_meta          — flex row of channel badge / status / stats / links
+    thread_meta          — engagement chip row + split context row (under the title)
     thread_post_header   — the {% call post_header(...) %} invocation
     thread_post_body     — parsed HTML / plain text of the original post
     thread_tools         — below-post interactive tools (me-too vote button, etc.)
@@ -29,7 +30,10 @@
   {% block thread_notice %}{% endblock %}
 
   <header class="thread-detail--header">
-    {% block thread_product_logo %}{% endblock %}
+    <div class="thread-detail--hero">
+      {% block thread_product_logo %}{% endblock %}
+      {% block thread_status_hero %}{% endblock %}
+    </div>
     <h1 class="thread-detail--title" itemprop="headline">
       {% block thread_title %}{% endblock %}
     </h1>

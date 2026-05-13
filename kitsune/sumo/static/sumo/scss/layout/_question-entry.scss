@@ -105,10 +105,11 @@
     flex-shrink: 0;
   }
 
-  &:hover {
-    color: var(--color-link);
-    text-decoration: underline;
-  }
+}
+
+a.question-entry--meta-item:hover {
+  color: var(--color-link);
+  text-decoration: underline;
 }
 
 .question-entry--reply-count,

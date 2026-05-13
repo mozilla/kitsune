@@ -8,6 +8,7 @@
 {% from "questions/includes/aaq_macros.html" import progress_bar, aaq_widget %}
 {% from "karma/includes/karma_macros.html" import titles with context %}
 {% from "sumo/includes/thread_post.html" import post_header, thread_meta_rows %}
+{% from "sumo/includes/question_entry.html" import state_badges %}
 
 {% if not scripts %}
   {% set scripts = ('questions', 'topics') %}
@@ -95,6 +96,11 @@
   {% if logo %}
     <img class="page-heading--logo" src="{{ logo }}" alt="{{ product_title }} logo" />
   {% endif %}
+{% endblock %}
+
+{# ── Hero status pill cluster ────────────────────────────────────────────── #}
+{% block thread_status_hero %}
+  <div class="thread-detail--pill-cluster">{{ state_badges(question) }}</div>
 {% endblock %}
 
 {# ── Title ───────────────────────────────────────────────────────────────── #}

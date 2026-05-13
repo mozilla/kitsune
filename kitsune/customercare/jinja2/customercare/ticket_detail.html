@@ -1,5 +1,6 @@
 {% extends "sumo/thread_detail.html" %}
 {% from "sumo/includes/thread_post.html" import thread_meta_rows %}
+{% from "sumo/includes/question_entry.html" import state_badges %}
 
 {% set title = ticket.subject %}
 {% set canonical_url = canonicalize(viewname="customercare.ticket_detail", username=ticket.user.username, ticket_id=ticket.id) %}
@@ -13,6 +14,11 @@
       {{ _('Our support team has replied and is waiting for your response. Please check your email to reply.') }}
     </div>
   {% endif %}
+{% endblock %}
+
+{# ── Hero status pill cluster ────────────────────────────────────────────── #}
+{% block thread_status_hero %}
+  <div class="thread-detail--pill-cluster">{{ state_badges(ticket) }}</div>
 {% endblock %}
 
 {% block thread_meta %}{{ thread_meta_rows(ticket) }}{% endblock %}
