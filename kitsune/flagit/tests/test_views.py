@@ -208,3 +208,77 @@ class SpamFlagReconciliationTestCase(TestCaseBase):
         self.assertFalse(answer.is_spam)
         self.assertIsNone(answer.marked_as_spam)
         self.assertIsNone(answer.marked_as_spam_by)
+
+
+class ModerationFlagSupersedeTestCase(TestCaseBase):
+    """Only principals with flagit.can_moderate may supersede a pending
+    CONTENT_MODERATION flag by submitting a different-reason flag on the
+    same object. See SUMO-009."""
+
+    def setUp(self):
+        super().setUp()
+        self.flagger = UserFactory()
+        self.bot = UserFactory()
+        self.question = QuestionFactory()
+        self.moderation_flag = FlaggedObject.objects.create(
+            content_object=self.question,
+            reason=FlaggedObject.REASON_CONTENT_MODERATION,
+            status=FlaggedObject.FLAG_PENDING,
+            creator=self.bot,
+            notes="LLM topic classification fixture",
+        )
+
+    def tearDown(self):
+        super().tearDown()
+        self.client.logout()
+
+    def _post_flag(self, reason):
+        return post(
+            self.client,
+            "flagit.flag",
+            {
+                "content_type": ContentType.objects.get_for_model(Question).id,
+                "object_id": self.question.id,
+                "reason": reason,
+            },
+        )
+
+    def test_regular_user_spam_flag_does_not_touch_moderation_flag(self):
+        """A non-moderator submitting a spam flag must leave an existing
+        pending CONTENT_MODERATION flag unchanged."""
+        self.client.login(username=self.flagger.username, password="testpass")
+
+        self._post_flag(FlaggedObject.REASON_SPAM)
+
+        self.moderation_flag.refresh_from_db()
+        self.assertEqual(self.moderation_flag.status, FlaggedObject.FLAG_PENDING)
+        self.assertEqual(self.moderation_flag.reason, FlaggedObject.REASON_CONTENT_MODERATION)
+
+    def test_moderator_spam_flag_supersedes_moderation_flag_as_duplicate(self):
+        """A moderator submitting a spam flag soft-deletes the pending
+        CONTENT_MODERATION flag by marking it FLAG_DUPLICATE rather than
+        destroying the row."""
+        moderator = UserFactory()
+        add_permission(moderator, FlaggedObject, "can_moderate")
+        self.client.login(username=moderator.username, password="testpass")
+
+        self._post_flag(FlaggedObject.REASON_SPAM)
+
+        self.moderation_flag.refresh_from_db()
+        self.assertEqual(self.moderation_flag.status, FlaggedObject.FLAG_DUPLICATE)
+        self.assertEqual(self.moderation_flag.reason, FlaggedObject.REASON_CONTENT_MODERATION)
+        self.assertEqual(self.moderation_flag.notes, "LLM topic classification fixture")
+
+    def test_user_moderation_flag_marks_new_flag_duplicate(self):
+        """Regression guard: when the new flag's reason is CONTENT_MODERATION,
+        the existing pending moderation flag stays pending and the new flag
+        is recorded as FLAG_DUPLICATE."""
+        self.client.login(username=self.flagger.username, password="testpass")
+
+        self._post_flag(FlaggedObject.REASON_CONTENT_MODERATION)
+
+        self.moderation_flag.refresh_from_db()
+        self.assertEqual(self.moderation_flag.status, FlaggedObject.FLAG_PENDING)
+        new_flag = FlaggedObject.objects.get(creator=self.flagger)
+        self.assertEqual(new_flag.status, FlaggedObject.FLAG_DUPLICATE)
+        self.assertEqual(new_flag.reason, FlaggedObject.REASON_CONTENT_MODERATION)
