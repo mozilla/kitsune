@@ -3,7 +3,7 @@ name = "kitsune"
 version = "0.1.0"
 description = "Mozilla Support Platform"
 authors = [{ name = "Your Name", email = "you@example.com" }]
-requires-python = ">=3.11, <3.15"
+requires-python = ">=3.14, <3.15"
 license = "BSD-3-Clause"
 dependencies = [
     "Django>=5.2,<6",
