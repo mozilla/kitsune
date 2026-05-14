@@ -187,7 +187,7 @@ class AnswersTemplateTestCase(TestCase):
         # Check that there are no votes and vote form renders
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        assert "0" in doc(".question-entry--vote-count").text()
+        assert "0" in doc(".thread-detail--engagement-chip--votes").text()
         self.assertEqual(me_too_count, len(doc("div.me-too form")))
 
         # Vote
@@ -199,7 +199,7 @@ class AnswersTemplateTestCase(TestCase):
         # Check that there is 1 vote and vote form doesn't render
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        assert "1" in doc(".question-entry--vote-count").text()
+        assert "1" in doc(".thread-detail--engagement-chip--votes").text()
         self.assertEqual(0, len(doc("div.me-too form")))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -210,7 +210,7 @@ class AnswersTemplateTestCase(TestCase):
         post(self.client, "questions.vote", args=[self.question.id])
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        assert "1" in doc(".question-entry--vote-count").text()
+        assert "1" in doc(".thread-detail--engagement-chip--votes").text()
 
     def test_question_authenticated_vote(self):
         """Authenticated user vote."""

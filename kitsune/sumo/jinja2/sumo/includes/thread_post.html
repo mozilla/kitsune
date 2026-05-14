@@ -1,36 +1,60 @@
 {#
-  Shared macros for rendering thread detail pages (question and ticket detail views).
+  Shared macros for thread detail pages (question and ticket detail).
 
   thread_meta_rows(obj):
-    Renders the meta strip rows (question-entry--extras / question-entry--meta).
-    Reuses shared chips from sumo/includes/question_entry.html.
-    Branches on obj.channel == "direct_support" for ticket-specific content.
+    Engagement chip row + split context row. Status pills live in the
+    thread_status_hero block in the detail templates.
 
   post_header(author_name, author_url, avatar_url, created):
-    Renders the avatar + author name + timestamp row.
-    Accepts an optional caller block for action links (flag, quote, etc.).
+    Avatar + author + timestamp. Accepts a caller block for action links.
 
   post_body(content):
-    Renders the post body HTML inside .thread-post--body.
+    Post body inside .thread-post--body.
 #}
 
-{% from "sumo/includes/question_entry.html" import
-   state_badges, reply_count, vote_count_total, view_count %}
-
 {% macro thread_meta_rows(obj) %}
-  {# Row 1: state — status badge(s) and counts #}
-  <div class="question-entry--extras">
-    {{ state_badges(obj) }}
-    {% if obj.channel != "direct_support" %}
-      {{ reply_count(obj) }}
-      {{ vote_count_total(obj) }}
-      {{ view_count(obj) }}
-    {% endif %}
-  </div>
+  {% if obj.channel != "direct_support" %}
+    <div class="thread-detail--engagement">
+      {% if obj.num_answers %}
+        <span class="thread-detail--engagement-chip thread-detail--engagement-chip--replies">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <strong>{{ obj.num_answers }}</strong>
+          {% trans count=obj.num_answers %}reply{% pluralize %}replies{% endtrans %}
+        </span>
+      {% endif %}
+      <span class="thread-detail--engagement-chip thread-detail--engagement-chip--votes">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <strong>{{ obj.num_votes }}</strong>
+        {% trans count=obj.num_votes %}has this problem{% pluralize %}have this problem{% endtrans %}
+      </span>
+      {% if obj.num_visits %}
+        <span class="thread-detail--engagement-chip thread-detail--engagement-chip--views">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <strong>{{ obj.num_visits }}</strong>
+          {% trans count=obj.num_visits %}view{% pluralize %}views{% endtrans %}
+        </span>
+      {% endif %}
+    </div>
+  {% endif %}
 
-  {# Row 2: object data — product, topic, submitted, last reply/update #}
-  <div class="question-entry--meta">
-    <div class="question-entry--meta-primary">
+  <div class="thread-detail--context">
+    <div class="thread-detail--context-left">
       {% if obj.product %}
         {% if obj.channel == "direct_support" %}
           <span class="question-entry--meta-item">{{ obj.product.title }}</span>
@@ -77,14 +101,6 @@
           {% else %}{{ _('asked {when}')|f(when=obj.created|timesince) }}{% endif %}
         </time>
       </span>
-      {% if obj.channel == "direct_support" and obj.zd_updated_at and obj.zd_updated_at != obj.created %}
-        <span class="question-entry--meta-item">
-          {{ _('Updated') }}
-          <time datetime="{{ obj.zd_updated_at.isoformat() }}">
-            {{ datetimeformat(obj.zd_updated_at, use_timesince=True) }}
-          </time>
-        </span>
-      {% endif %}
     </div>
     {% if obj.channel != "direct_support" and obj.last_answer %}
       <span class="question-entry--last-reply"
@@ -100,13 +116,19 @@
           <time itemprop="dateModified" datetime="{{ obj.last_answer.created.isoformat() }}">{{ obj.last_answer.created|timesince }}</time>
         </a>
       </span>
+    {% elif obj.channel == "direct_support" and obj.zd_updated_at and obj.zd_updated_at != obj.created %}
+      <span class="question-entry--meta-item">
+        {{ _('Updated') }}
+        <time datetime="{{ obj.zd_updated_at.isoformat() }}">
+          {{ datetimeformat(obj.zd_updated_at, use_timesince=True) }}
+        </time>
+      </span>
     {% endif %}
   </div>
 
   {% if obj.channel == "direct_support" and (obj.os or obj.update_channel or obj.country) %}
-    {# Row 3: ticket system details — OS, update channel, country #}
-    <div class="question-entry--meta">
-      <div class="question-entry--meta-primary">
+    <div class="thread-detail--context">
+      <div class="thread-detail--context-left">
         {% if obj.os %}<span class="question-entry--meta-item">{{ obj.os }}</span>{% endif %}
         {% if obj.update_channel %}<span class="question-entry--meta-item">{{ obj.update_channel }}</span>{% endif %}
         {% if obj.country %}<span class="question-entry--meta-item">{{ obj.country }}</span>{% endif %}

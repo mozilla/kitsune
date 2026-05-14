@@ -105,12 +105,77 @@
   color: var(--color-text-light);
 }
 
-// Reuse listing row components inside the meta strip.
-// question-entry--meta / question-entry--extras use grid-column: 2 in the listing;
-// inside the detail strip they need to span their flex container.
-.thread-detail--meta > .question-entry--meta,
-.thread-detail--meta > .question-entry--extras {
+.thread-detail--hero {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p.$spacing-xs p.$spacing-sm;
+}
+
+.thread-detail--pill-cluster {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p.$spacing-xs p.$spacing-sm;
+
+  .status-label:first-child,
+  .my-questions--channel-badge:first-child {
+    padding: p.$spacing-xs p.$spacing-md;
+    @include c.text-body-md;
+  }
+}
+
+.thread-detail--engagement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: p.$spacing-sm p.$spacing-lg;
+  margin-top: p.$spacing-md;
   width: 100%;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
+}
+
+.thread-detail--engagement-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: p.$spacing-xs;
+
+  strong {
+    color: var(--color-heading);
+    font-weight: 700;
+  }
+
+  svg {
+    width: p.$spacing-md;
+    height: p.$spacing-md;
+    flex-shrink: 0;
+    color: var(--color-text-light);
+  }
+}
+
+.thread-detail--context {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: p.$spacing-xs p.$spacing-md;
+  margin-top: p.$spacing-md;
+  width: 100%;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
+}
+
+@media not all and (min-width: 768px) {
+  .thread-detail--context {
+    grid-template-columns: 1fr;
+  }
+}
+
+.thread-detail--context-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: p.$spacing-xs p.$spacing-sm;
 }
 
 // Alert notice inside thread — locked, archived, spam
