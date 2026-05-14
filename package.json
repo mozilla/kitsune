@@ -46,7 +46,7 @@
     "jquery": "^3.6.3",
     "jquery-ui": "1.14.1",
     "nunjucks": "^3.2.4",
-    "svelte": "^5.0.0",
+    "svelte": "^5.55.7",
     "tom-select": "^2.5.2",
     "underscore": "^1.13.8"
   },
