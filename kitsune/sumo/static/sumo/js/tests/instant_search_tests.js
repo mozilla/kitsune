@@ -1,11 +1,11 @@
-import {default as chai, expect} from 'chai';
+import {expect, use} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
 import "sumo/js/instant_search";
 import CachedXHR from "sumo/js/cached_xhr";
 
-chai.use(chaiLint);
+use(chaiLint);
 
 describe('instant search', () => {
   describe('', () => {

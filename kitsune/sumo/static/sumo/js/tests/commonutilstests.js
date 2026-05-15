@@ -1,4 +1,4 @@
-import {default as chai, expect} from 'chai';
+import {expect, use} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
@@ -12,8 +12,8 @@ import {
   safeInterpolate,
 } from "sumo/js/main";
 
-chai.use(chaiLint);
-chai.use(sinonChai);
+use(chaiLint);
+use(sinonChai);
 
 describe('k', () => {
   describe('getQueryParamsAsDict', () => {
