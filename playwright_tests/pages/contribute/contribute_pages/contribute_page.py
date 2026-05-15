@@ -33,42 +33,12 @@ class ContributePage(BasePage):
         self.all_page_images = page.locator("div#svelte img")
 
     """Actions against the breadcrumbs locators."""
-    def _get_breadcrumbs_text(self) -> list[str]:
-        return super()._get_text_of_elements(self.breadcrumbs)
-
     def _click_on_home_breadcrumb(self):
         super()._click(self.breadcrumb_homepage)
-
-    """Actions against the page hero locators."""
-    def _get_page_hero_main_header_text(self) -> str:
-        return super()._get_text_of_element(self.page_hero_main_header)
-
-    def _get_page_hero_main_subtext(self) -> str:
-        return super()._get_text_of_element(self.page_hero_main_header_subtext)
-
-    def _get_page_hero_need_help_header_text(self) -> str:
-        return super()._get_text_of_element(self.page_hero_need_help_header)
-
-    def _get_page_hero_need_help_subtext(self) -> str:
-        return super()._get_text_of_element(self.page_hero_need_help_subtext)
 
     """"Actions against the page images locators."""
     def _get_all_page_links(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.all_page_images)
-
-    """Actions against the ways to contribute messages section locators."""
-    def _get_way_to_contribute_header_text(self) -> str:
-        return super()._get_text_of_element(self.way_to_contribute_header)
-
-    def _get_way_to_contribute_cards(self) -> list[str]:
-        return super()._get_text_of_elements(self.way_to_contribute_card_titles)
-
-    """Actions against the about us section locators."""
-    def _get_about_us_header_text(self) -> str:
-        return super()._get_text_of_element(self.about_us_header)
-
-    def _get_about_us_subtext(self) -> str:
-        return super()._get_text_of_element(self.about_us_subtext)
 
     """Actions against the contribute cards locators."""
     def _get_list_of_contribute_cards(self) -> list[ElementHandle]:

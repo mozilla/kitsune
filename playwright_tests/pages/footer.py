@@ -1,4 +1,4 @@
-from playwright.sync_api import ElementHandle, Page
+from playwright.sync_api import ElementHandle, Error as PlaywrightError, Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright_tests.core.basepage import BasePage
 
@@ -31,9 +31,16 @@ class FooterSection(BasePage):
                 self.page.wait_for_url("**/" + locale + "/**", timeout=4000)
                 return
             except PlaywrightTimeoutError:
-                self.page.reload()
+                try:
+                    self.page.wait_for_load_state("domcontentloaded", timeout=3000)
+                except PlaywrightTimeoutError:
+                    pass
                 if locale in self.page.url:
                     return
+                try:
+                    self.page.reload()
+                except PlaywrightError:
+                    pass
             attempts += 1
-            raise PlaywrightTimeoutError(
-                f"Failed to switch to locale '{locale}' after {max_retries} attempts.")
+        raise PlaywrightTimeoutError(
+            f"Failed to switch to locale '{locale}' after {max_retries} attempts.")

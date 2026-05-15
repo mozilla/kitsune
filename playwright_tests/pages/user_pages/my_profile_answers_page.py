@@ -15,26 +15,7 @@ class MyProfileAnswersPage(BasePage):
             f"//article[@id='profile']//a[contains(@href, '{id}')]/following-sibling::blockquote")
 
     """Actions against the profile answers page locators."""
-    def get_page_header(self) -> str:
-        """Get the header of the My Profile Answers page."""
-        return self._get_text_of_element(self.my_answers_page_header)
-
-    def get_text_of_question_subjects(self) -> list[str]:
-        """Get the text of the question subjects."""
-        return self._get_text_of_elements(self.my_answers_question_subject_links)
-
     def click_on_specific_answer(self, answer_id: str):
         """Click on a specific answer"""
         self._click(self.answer_by_id(answer_id))
 
-    def get_my_answer_text(self, answer_id: str) -> str:
-        """Get the text of a specific answer."""
-        return self._get_text_of_element(self.answer_text(answer_id))
-
-    def get_my_answer_question_title(self, answer_id: str) -> str:
-        """Get the title of the question that the answer belongs to.
-
-        Args:
-        answer_id: str: The id of the answer.
-        """
-        return self._get_text_of_element(self.answer_by_id(answer_id))

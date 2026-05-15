@@ -38,19 +38,16 @@ def test_anti_spam_banner(page: Page, user_type, create_user_factory):
     else:
         utilities.delete_cookies()
 
+    with check, allure.step("Verifying that the scam banner is displayed"):
+        expect(sumo_pages.common_web_elements.scam_banner_text).to_have_text(
+            CommonElementsMessages.AVOID_SCAM_BANNER_TEXT)
+
     with check, allure.step("Navigating to each available product support forum and verifying that"
                             " the scam banner is displayed"):
         for product, url in utilities.general_test_data["product_forums"].items():
             utilities.navigate_to_link(url)
-            assert sumo_pages.common_web_elements.get_scam_banner_text() == (
+            expect(sumo_pages.common_web_elements.scam_banner_text).to_have_text(
                 CommonElementsMessages.AVOID_SCAM_BANNER_TEXT)
-
-    with allure.step("Navigating to the posted question"):
-        utilities.navigate_to_link(question_info_one["question_page_url"])
-
-    with check, allure.step("Verifying that the scam banner is displayed"):
-        assert sumo_pages.common_web_elements.get_scam_banner_text() == (
-            CommonElementsMessages.AVOID_SCAM_BANNER_TEXT)
 
 
 # C946275
@@ -87,20 +84,20 @@ def test_spam_content_is_auto_flagged(page: Page, create_user_factory):
             )
 
         with check, allure.step("Verifying that the spam banner is successfully displayed"):
-            assert (QuestionPageMessages.SPAM_FLAGGED_REPLY == sumo_pages.question_page.
-                    get_text_of_spam_marked_banner())
+            expect(sumo_pages.question_page.reply_flagged_as_spam_banner).to_have_text(
+                QuestionPageMessages.SPAM_FLAGGED_REPLY)
 
         with check, allure.step(f"Verifying that the comment is marked as spam"):
-            assert not sumo_pages.question_page.is_reply_with_content_displayed(content)
+            expect(sumo_pages.question_page.reply_by_content(content)).to_be_hidden()
 
         with check, allure.step("Signing out and verifying that the reply is not displayed"):
             utilities.delete_cookies()
-            assert not sumo_pages.question_page.is_reply_with_content_displayed(content)
+            expect(sumo_pages.question_page.reply_by_content(content)).to_be_hidden()
 
         with check, allure.step("Signing in with an admin account and verifying that the Marked as "
                                 "spam reply is visible"):
             utilities.start_existing_session(cookies=test_user)
-            assert sumo_pages.question_page.is_reply_with_content_displayed(content)
+            expect(sumo_pages.question_page.reply_by_content(content)).to_be_visible()
 
 
 # C946276
@@ -138,11 +135,11 @@ def test_valid_prefs_and_internal_links_are_not_flagged_as_spam(page: Page, crea
             expect(sumo_pages.question_page.reply_flagged_as_spam_banner).to_be_hidden()
 
         with check, allure.step(f"Verifying that the valid pref value comment is displayed"):
-            assert sumo_pages.question_page.is_reply_displayed(reply_id)
+            expect(sumo_pages.question_page.reply(reply_id)).to_be_visible()
 
         with check, allure.step("Signing out and verifying that the reply is displayed"):
             utilities.delete_cookies()
-            assert sumo_pages.question_page.is_reply_displayed(reply_id)
+            expect(sumo_pages.question_page.reply(reply_id))
 
 
 # C1296001, C3395616
@@ -178,7 +175,7 @@ def test_question_owner_is_exempted_for_spam_auto_flag(page: Page, create_user_f
             expect(sumo_pages.question_page.reply_flagged_as_spam_banner).to_be_hidden()
 
         with check, allure.step(f"Verifying that the comment is displayed"):
-            assert sumo_pages.question_page.is_reply_displayed(reply_id)
+            expect(sumo_pages.question_page.reply(reply_id))
 
 
 # C3395573, C3395578
@@ -222,4 +219,4 @@ def test_trusted_contributors_are_exempted_from_spam_check(page: Page, create_us
             expect(sumo_pages.question_page.reply_flagged_as_spam_banner).to_be_hidden()
 
         with check, allure.step(f"Verifying that the comment is displayed"):
-            assert sumo_pages.question_page.is_reply_displayed(reply_id)
+            expect(sumo_pages.question_page.reply(reply_id)).to_be_visible()

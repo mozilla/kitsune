@@ -1,3 +1,4 @@
+import re
 from urllib.parse import urlsplit
 
 import allure
@@ -37,7 +38,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Post Thread' button without filling the title and "
                             "body and verifying that we are still on the same page"):
         sumo_pages.new_thread_page.click_on_post_thread_button()
-        assert utilities.get_page_url() == new_thread_page_url
+        expect(page).to_have_url(new_thread_page_url)
 
     with check, allure.step("Adding text inside the title input field only, clicking on the "
                             "'Post Thread' button and verifying that we are still on the same "
@@ -54,7 +55,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
         sumo_pages.new_thread_page.fill_content_textarea_field(
             utilities.discussion_thread_data['thread_body'])
         sumo_pages.new_thread_page.click_on_post_thread_button()
-        assert utilities.get_page_url() == new_thread_page_url
+        expect(page).to_have_url(new_thread_page_url)
 
     with allure.step("Deleting the text inside the body textarea"):
         sumo_pages.new_thread_page.clear_content_textarea_field()
@@ -65,7 +66,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
         sumo_pages.new_thread_page.fill_title_input_field("test")
         sumo_pages.new_thread_page.fill_content_textarea_field("test")
         sumo_pages.new_thread_page.click_on_post_thread_button()
-        assert utilities.get_page_url() == new_thread_page_url
+        expect(page).to_have_url(new_thread_page_url)
 
     sumo_pages.new_thread_page.clear_title_input_field()
     sumo_pages.new_thread_page.clear_content_textarea_field()
@@ -76,8 +77,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
         sumo_pages.new_thread_page.fill_title_input_field(valid_thread_title)
         sumo_pages.new_thread_page.fill_content_textarea_field("test")
         sumo_pages.new_thread_page.click_on_post_thread_button()
-
-        assert utilities.get_page_url() == new_thread_page_url
+        expect(page).to_have_url(new_thread_page_url)
 
     sumo_pages.new_thread_page.clear_content_textarea_field()
 
@@ -88,7 +88,7 @@ def test_new_thread_field_validations(page: Page, create_user_factory):
         sumo_pages.new_thread_page.fill_content_textarea_field("testt")
         sumo_pages.new_thread_page.click_on_post_thread_button()
 
-        assert valid_thread_title == sumo_pages.forum_thread_page.get_forum_thread_title()
+        expect(sumo_pages.forum_thread_page.thread_title).to_have_text(valid_thread_title)
 
 
 # C954249
@@ -113,10 +113,10 @@ def test_new_thread_creation_cancel_button(page: Page, create_user_factory):
         )
 
     with check, allure.step("Verifying that we are redirected to the Off topic forum page"):
-        assert utilities.get_page_url() == OffTopicForumMessages.PAGE_URL
+        expect(page).to_have_url(OffTopicForumMessages.PAGE_URL)
 
     with check, allure.step("Verifying that the thread title is not visible in the forum page"):
-        assert not sumo_pages.forum_discussions_page.is_thread_displayed(thread_title)
+        expect(sumo_pages.forum_discussions_page.thread_title(thread_title)).to_be_hidden()
 
 
 # C890980
@@ -145,7 +145,7 @@ def test_thread_title_edit(page: Page, create_user_factory):
     with check, allure.step("Signing in with a different user and verifying that the 'Edit "
                             "Thread Title' option is not visible"):
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.forum_thread_page.is_edit_thread_title_option_visible()
+        expect(sumo_pages.forum_thread_page.edit_thread_title_option).to_be_hidden()
 
     with check, allure.step("Navigating to the /edit page directly and verifying that a 403 is "
                             "returned"):
@@ -157,12 +157,12 @@ def test_thread_title_edit(page: Page, create_user_factory):
     with check, allure.step("Deleting the user session and verifying that the 'Edit Thread Title' "
                             "option is not visible"):
         utilities.delete_cookies()
-        assert not sumo_pages.forum_thread_page.is_edit_thread_title_option_visible()
+        expect(sumo_pages.forum_thread_page.edit_thread_title_option).to_be_hidden()
 
     with check, allure.step("Navigating to the /edit page directly and verifying that the user is "
                             "redirected to the auth page"):
         utilities.navigate_to_link(thread_url + "/edit")
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
     utilities.navigate_to_link(thread_url)
     new_thread_title = (utilities.discussion_thread_data['thread_title'] + utilities.
@@ -173,32 +173,32 @@ def test_thread_title_edit(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the new thread title is visible inside the thread "
                             "page"):
-        assert sumo_pages.forum_thread_page.get_forum_thread_title() == new_thread_title
+        expect(sumo_pages.forum_thread_page.thread_title).to_have_text(new_thread_title)
 
     with check, allure.step("Verifying that the new thread title is visible inside the forum "
                             "page for signed out users"):
         utilities.delete_cookies()
-        assert sumo_pages.forum_thread_page.get_forum_thread_title() == new_thread_title
+        expect(sumo_pages.forum_thread_page.thread_title).to_have_text(new_thread_title)
 
     with check, allure.step("Navigating to the forum thread listing page and verifying that the "
                             "newly updated thread title is displayed"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert sumo_pages.forum_discussions_page.is_thread_displayed(new_thread_title)
+        expect(sumo_pages.forum_discussions_page.thread_title(new_thread_title)).to_be_visible()
 
     with check, allure.step("Navigating back to the thread and editing the thread title using an "
                             "admin account and verifying that the changes are applied"):
         utilities.start_existing_session(cookies=test_user_three)
         utilities.navigate_to_link(thread_url)
         sumo_pages.contributor_thread_flow.edit_thread_title(thread_title)
-        assert sumo_pages.forum_thread_page.get_forum_thread_title() == thread_title
+        expect(sumo_pages.forum_thread_page.thread_title).to_have_text(thread_title)
 
     with check, allure.step("Signing out and verifying that the thread title is displayed "
                             "correctly in the thread page and the forum page"):
         utilities.delete_cookies()
-        assert sumo_pages.forum_thread_page.get_forum_thread_title() == thread_title
+        expect(sumo_pages.forum_thread_page.thread_title).to_have_text(thread_title)
 
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert sumo_pages.forum_discussions_page.is_thread_displayed(thread_title)
+        expect(sumo_pages.forum_discussions_page.thread_title(thread_title)).to_be_visible()
 
 
 # C890981
@@ -226,7 +226,7 @@ def test_thread_deletion(page: Page, create_user_factory):
     thread_url = urlsplit(utilities.get_page_url())._replace(query="").geturl()
 
     with check, allure.step("Verifying that the delete thread option is not displayed"):
-        assert not sumo_pages.forum_thread_page.is_delete_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.delete_this_thread_option).to_be_hidden()
 
     with check, allure.step("Navigating to the /delete page and verifying that 403 is returned"):
         with page.expect_navigation() as navigation_info:
@@ -239,7 +239,7 @@ def test_thread_deletion(page: Page, create_user_factory):
     with check, allure.step("Signing in with a different user and verifying that the delete "
                             "thread option is not visible"):
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.forum_thread_page.is_delete_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.delete_this_thread_option).to_be_hidden()
 
     with check, allure.step("Navigating to the /delete page and verifying that 403 is returned"):
         with page.expect_navigation() as navigation_info:
@@ -256,7 +256,7 @@ def test_thread_deletion(page: Page, create_user_factory):
     with check, allure.step("Navigating to the forum page and verifying that the thread is no "
                             "longer displayed"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert not sumo_pages.forum_discussions_page.is_thread_displayed(thread_title)
+        expect(sumo_pages.forum_discussions_page.thread_title(thread_title)).to_be_hidden()
 
 
 # C890982
@@ -282,17 +282,17 @@ def test_thread_locking(page: Page, create_user_factory):
     thread_url = utilities.get_page_url()
 
     with check, allure.step("Verifying that the 'Lock this thread' option is not displayed"):
-        assert not sumo_pages.forum_thread_page.is_lock_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.lock_this_thread_option).to_be_hidden()
 
     with check, allure.step("Signing in with a different user and verifying that the "
                             "'Lock this thread' option is not displayed"):
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.forum_thread_page.is_lock_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.lock_this_thread_option).to_be_hidden()
 
     with check, allure.step("Verifying that the 'Lock this thread' option is not displayed for "
                             "signed out users"):
         utilities.delete_cookies()
-        assert not sumo_pages.forum_thread_page.is_lock_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.lock_this_thread_option).to_be_hidden()
 
     with allure.step("Signing in with a user that has the necessary permissions to lock a thread"):
         utilities.start_existing_session(cookies=test_user_three)
@@ -300,27 +300,27 @@ def test_thread_locking(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the 'Lock this thread' option is no longer available "
                             "and the 'Unlock this thread' option is displayed"):
-        assert not sumo_pages.forum_thread_page.is_lock_this_thread_option_visible()
-        assert sumo_pages.forum_thread_page.is_unlock_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.lock_this_thread_option).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.unlock_this_thread_option).to_be_visible()
 
     with check, allure.step("Verifying that the reply textarea is not displayed"):
-        assert not sumo_pages.forum_thread_page.is_reply_textarea_visible()
+        expect(sumo_pages.forum_thread_page.post_reply_textarea).to_be_hidden()
 
     with check, allure.step("Verifying that the 'Locked' information is displayed inside the "
                             "thread meta"):
-        assert "Locked" in sumo_pages.forum_thread_page.get_thread_meta_information()
+        expect(sumo_pages.forum_thread_page.thread_meta).to_contain_text(["Locked"])
 
     with check, allure.step("Navigating to the forum page and verifying that the lock image is "
                             "displayed inside the threads table"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert (sumo_pages.forum_discussions_page.
-                is_thread_type_image_displayed(thread_title, "Locked"))
+        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Locked")
+               ).to_be_visible()
 
     with check, allure.step("Navigating back to the thread, signing in with the op and verifying "
                             "that the 'Unlock this thread' option is not displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.start_existing_session(cookies=test_user)
-        assert not sumo_pages.forum_thread_page.is_unlock_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.unlock_this_thread_option).to_be_hidden()
 
     with allure.step("Signing in with a user that has the permissions of unlocking the thread"):
         utilities.start_existing_session(cookies=test_user_three)
@@ -332,24 +332,24 @@ def test_thread_locking(page: Page, create_user_factory):
                             "3. Reply textarea is displayed "
                             "4. 'Locked' information is not displayed inside the thread meta "
                             "5. Locked message is not displayed near the reply textarea"):
-        assert not sumo_pages.forum_thread_page.is_unlock_this_thread_option_visible()
-        assert sumo_pages.forum_thread_page.is_lock_this_thread_option_visible()
-        assert sumo_pages.forum_thread_page.is_reply_textarea_visible()
-        assert not sumo_pages.forum_thread_page.is_thread_locked_message_displayed()
-        assert "Locked" not in sumo_pages.forum_thread_page.get_thread_meta_information()
+        expect(sumo_pages.forum_thread_page.unlock_this_thread_option).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.lock_this_thread_option).to_be_visible()
+        expect(sumo_pages.forum_thread_page.post_reply_textarea).to_be_visible()
+        expect(sumo_pages.forum_thread_page.thread_locked_text).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.thread_meta).not_to_contain_text(["Locked"])
 
     with check, allure.step("Verifying that the lock image is not displayed inside the threads "
                             "table"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert not (sumo_pages.forum_discussions_page.
-                    is_thread_type_image_displayed(thread_title, "Locked"))
+        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Locked")
+               ).to_be_hidden()
 
     with check, allure.step("Verifying that a reply can be posted after unlocking the thread"):
         utilities.navigate_to_link(thread_url)
         reply_id = sumo_pages.contributor_thread_flow.post_thread_reply(
             reply_body=utilities.discussion_thread_data['thread_reply_body']
         )
-        assert sumo_pages.forum_thread_page.is_thread_post_visible(reply_id)
+        expect(sumo_pages.forum_thread_page.thread_post(reply_id)).to_be_visible()
 
 
 # C890983
@@ -374,17 +374,17 @@ def test_sticky_this_thread(page: Page, create_user_factory):
     thread_link = utilities.get_page_url()
 
     with check, allure.step("Verifying that the 'Sticky this thread' option is not displayed"):
-        assert not sumo_pages.forum_thread_page.is_sticky_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_hidden()
 
     with check, allure.step("Signing in with a different user and verifying that the "
                             "'Sticky this thread' option is not displayed"):
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.forum_thread_page.is_sticky_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_hidden()
 
     with check, allure.step("Signing out and verifying that the 'Sticky this thread' option is "
                             "not displayed"):
         utilities.delete_cookies()
-        assert not sumo_pages.forum_thread_page.is_sticky_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_hidden()
 
     with allure.step("Signing in with an account that has the permissions to sticky the thread"):
         utilities.start_existing_session(cookies=test_user_three)
@@ -392,36 +392,36 @@ def test_sticky_this_thread(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the 'Sticky this thread' option is no longer "
                             "available and the 'Unsticky this thread' option is displayed"):
-        assert not sumo_pages.forum_thread_page.is_sticky_this_thread_option_visible()
-        assert sumo_pages.forum_thread_page.is_unsticky_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.unsticky_this_thread_option).to_be_visible()
 
     with check, allure.step("Verifying that the 'Sticky' information is displayed inside the "
                             "thread meta"):
-        assert "Sticky" in sumo_pages.forum_thread_page.get_thread_meta_information()
+        expect(sumo_pages.forum_thread_page.thread_meta).to_contain_text(["Sticky"])
 
     with check, allure.step("Verifying that the sticky image is displayed inside the threads "
                             "table"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert (sumo_pages.forum_discussions_page.
-                is_thread_type_image_displayed(thread_title, "Sticky"))
+        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Sticky")
+               ).to_be_visible()
 
     with check, allure.step("Signing out and verifying that the sticky image is displayed inside "
                             "the threads table"):
         utilities.delete_cookies()
-        assert (sumo_pages.forum_discussions_page.
-                is_thread_type_image_displayed(thread_title, "Sticky"))
+        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Sticky")
+               ).to_be_visible()
 
     with check, allure.step("Navigating to the thread and verifying that the Sticky text is "
                             "displayed inside the thread meta and the unsticky this thread option "
                             "is not displayed"):
         utilities.navigate_to_link(thread_link)
-        assert "Sticky" in sumo_pages.forum_thread_page.get_thread_meta_information()
-        assert not sumo_pages.forum_thread_page.is_unsticky_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.thread_meta).to_contain_text(["Sticky"])
+        expect(sumo_pages.forum_thread_page.unsticky_this_thread_option).to_be_hidden()
 
     with check, allure.step("Signing in with the op and verifying that the "
                             "'Unsticky this thread' option is not displayed"):
         utilities.start_existing_session(cookies=test_user)
-        assert not sumo_pages.forum_thread_page.is_unsticky_this_thread_option_visible()
+        expect(sumo_pages.forum_thread_page.unsticky_this_thread_option).to_be_hidden()
 
     with check, allure.step("Signing in with the user account that has the permissions of"
                             " unsticking the thread and verifying that the:"
@@ -430,16 +430,16 @@ def test_sticky_this_thread(page: Page, create_user_factory):
                             "3. Sticky information is not displayed inside the thread meta "):
         utilities.start_existing_session(cookies=test_user_three)
         sumo_pages.forum_thread_page.click_unsticky_this_thread_option()
-        assert not sumo_pages.forum_thread_page.is_unsticky_this_thread_option_visible()
-        assert sumo_pages.forum_thread_page.is_sticky_this_thread_option_visible()
-        assert not (sumo_pages.forum_discussions_page.
-                    is_thread_type_image_displayed(thread_title, "Sticky"))
+        expect(sumo_pages.forum_thread_page.unsticky_this_thread_option).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.sticky_this_thread_option).to_be_visible()
+        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Sticky")
+               ).to_be_hidden()
 
     with check, allure.step("Verifying that the sticky image is not displayed inside the threads "
                             "table"):
         utilities.navigate_to_link(OffTopicForumMessages.PAGE_URL)
-        assert not (sumo_pages.forum_discussions_page.
-                    is_thread_type_image_displayed(thread_title, "Sticky"))
+        expect(sumo_pages.forum_discussions_page.thread_type(thread_title, "Sticky")
+               ).to_be_hidden()
 
 
 # C890978
@@ -460,20 +460,19 @@ def test_thread_breadcrumbs(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the thread title is displayed inside the list of "
                             "breadcrumbs"):
-        assert thread_title in sumo_pages.forum_thread_page.get_breadcrumb_options()
+        expect(sumo_pages.forum_thread_page.breadcrumb_options).to_contain_text([thread_title])
 
     with check, allure.step("Clicking on all breadcrumb links and verifying that they redirect to "
                             "the correct page"):
         for breadcrumb in sumo_pages.forum_thread_page.get_all_breadcrumb_link_names():
             sumo_pages.forum_thread_page.click_on_a_breadcrumb_link(breadcrumb)
             if breadcrumb == "Home":
-                assert utilities.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US
+                expect(page).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
             elif breadcrumb == OffTopicForumMessages.PAGE_TITLE:
-                assert (breadcrumb == sumo_pages.forum_discussions_page.
-                        get_forum_discussions_page_title())
+                expect(sumo_pages.forum_discussions_page.forum_page_title).to_have_text(breadcrumb)
             else:
-                assert (breadcrumb == sumo_pages.contributor_discussions_page.
-                        get_contributor_discussions_page_title())
+                expect(sumo_pages.contributor_discussions_page.contributor_discussions_page_title
+                       ).to_have_text(breadcrumb)
 
             utilities.navigate_back()
 
@@ -501,16 +500,16 @@ def test_forum_post_side_navbar_redirects(page: Page, create_user_factory):
     for option in navbar_items:
         with check, allure.step(f"Verifying navigation for side navbar option: {option}"):
             sumo_pages.forum_thread_page.click_on_contributor_discussions_side_navbar_item(option)
-            assert (sumo_pages.forum_discussions_page.
-                    get_forum_discussions_side_nav_selected_option().lower() == option.lower())
+            expect(sumo_pages.forum_discussions_page.forum_side_nav_selected_option).to_have_text(
+                option, ignore_case=True)
             expected_title = {
                 "Forum moderator discussions": "Forum Moderators",
                 "Article discussions": "English Knowledge Base Discussions",
                 "Off topic discussions": "Off Topic",
                 "Lost thread discussions": "Lost Threads"
             }.get(option, option)
-            assert (sumo_pages.forum_discussions_page.get_forum_discussions_page_title().
-                    lower() == expected_title.lower())
+            expect(sumo_pages.forum_discussions_page.forum_page_title).to_contain_text(
+                [expected_title], ignore_case=True)
             utilities.navigate_back()
 
 
@@ -545,14 +544,14 @@ def test_forum_moderators_availability_inside_the_forum_post_page(page: Page, us
             utilities.start_existing_session(cookies=account)
         with check, allure.step("Verifying that the 'Forum Moderators' forum is not available "
                                 "inside the navbar"):
-            assert ("Forum moderator discussions" not in sumo_pages.forum_thread_page.
-                    get_contributor_discussions_side_navbar_items())
+            expect(sumo_pages.forum_thread_page.contributor_discussions_side_navbar_items
+                   ).not_to_contain_text(["Forum moderator discussions"])
     else:
         utilities.start_existing_session(cookies=test_user_two)
         with check, allure.step("Verifying that the 'Forum Moderators' forum is available inside "
                                 "the navbar"):
-            assert ("Forum moderator discussions" in sumo_pages.forum_thread_page.
-                    get_contributor_discussions_side_navbar_items())
+            expect(sumo_pages.forum_thread_page.contributor_discussions_side_navbar_items
+                   ).to_contain_text(["Forum moderator discussions"])
 
 
 # C3016247
@@ -580,11 +579,12 @@ def test_edit_own_forum_post(page: Page, user_type, create_user_factory):
         sumo_pages.contributor_thread_flow.edit_thread_post(thread_id, "Edited thread body")
 
     with check, allure.step("Verifying that the edited post is displayed"):
-        assert sumo_pages.forum_thread_page.is_thread_post_by_name_visible("Edited thread body")
+        expect(sumo_pages.forum_thread_page.thread_post_by_content("Edited thread body")
+               ).to_be_visible()
 
     with check, allure.step("Verifying that the 'Modified by' information is displayed"):
-        assert (f"Modified by {account['username']}" in sumo_pages.forum_thread_page.
-                get_modified_by_text(thread_id))
+        expect(sumo_pages.forum_thread_page.modified_by(thread_id)).to_contain_text(
+            f"Modified by {account['username']}")
 
 
 # C3016248
@@ -616,7 +616,8 @@ def test_edit_forum_posts(page: Page, create_user_factory):
                             "not displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.forum_thread_page.is_edit_this_post_option_displayed(thread_id)
+        sumo_pages.forum_thread_page.click_on_3_dotted_menu(thread_id)
+        expect(sumo_pages.forum_thread_page.post_edit_this_post(thread_id)).to_be_hidden()
 
     with check, allure.step("Navigating to the edit page directly and verifying that a 403 is "
                             "returned"):
@@ -629,18 +630,20 @@ def test_edit_forum_posts(page: Page, create_user_factory):
                             " is not displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.delete_cookies()
-        assert not sumo_pages.forum_thread_page.is_edit_this_post_option_displayed(thread_id)
+        sumo_pages.forum_thread_page.click_on_3_dotted_menu(thread_id)
+        expect(sumo_pages.forum_thread_page.post_edit_this_post(thread_id)).to_be_hidden()
 
     with check, allure.step("Navigate to the edit page directly and verifying that the user is "
                             "redirected to the auth page"):
         utilities.navigate_to_link(edit_url)
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
     with check, allure.step("Signing in with a user that has the necessary permissions to edit a"
                             " thread and verifying that the 'Edit this post' option is displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.start_existing_session(cookies=test_user_three)
-        assert sumo_pages.forum_thread_page.is_edit_this_post_option_displayed(thread_id)
+        sumo_pages.forum_thread_page.click_on_3_dotted_menu(thread_id)
+        expect(sumo_pages.forum_thread_page.post_edit_this_post(thread_id)).to_be_visible()
 
 
 # C3020040
@@ -671,7 +674,7 @@ def test_delete_this_post(page: Page, create_user_factory):
                             "longer displayed"):
         sumo_pages.forum_thread_page.click_on_delete_this_post_option(thread_id)
         sumo_pages.delete_thread_post_page.click_on_delete_button()
-        assert not sumo_pages.forum_thread_page.is_thread_post_visible(thread_id)
+        expect(sumo_pages.forum_thread_page.thread_post(thread_id)).to_be_hidden()
 
     with allure.step("Signing in with a different user and posting a new thread post"):
         utilities.start_existing_session(cookies=test_user_two)
@@ -689,7 +692,8 @@ def test_delete_this_post(page: Page, create_user_factory):
                             " delete this post option is not displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.start_existing_session(cookies=test_user_two)
-        assert not sumo_pages.forum_thread_page.is_delete_this_post_option_displayed(thread_id)
+        sumo_pages.forum_thread_page.click_on_3_dotted_menu(thread_id)
+        expect(sumo_pages.forum_thread_page.delete_this_post(thread_id)).to_be_hidden()
 
     with check, allure.step("Navigating to the delete page directly and verifying that a 403 is "
                             "returned"):
@@ -702,12 +706,13 @@ def test_delete_this_post(page: Page, create_user_factory):
                             "is not displayed"):
         utilities.navigate_to_link(thread_url)
         utilities.delete_cookies()
-        assert not sumo_pages.forum_thread_page.is_delete_this_post_option_displayed(thread_id)
+        sumo_pages.forum_thread_page.click_on_3_dotted_menu(thread_id)
+        expect(sumo_pages.forum_thread_page.delete_this_post(thread_id)).to_be_hidden()
 
     with check, allure.step("Navigate to the delete page directly and verifying that the user is "
                             "redirected to the auth page"):
         utilities.navigate_to_link(delete_post_url)
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))
 
 
 # C3020041
@@ -740,13 +745,13 @@ def test_delete_this_post_option_availability(page: Page, create_user_factory):
         sumo_pages.contributor_thread_flow.delete_thread_post(first_thread_id)
 
     with check, allure.step("Verifying that the first thread post is no longer displayed"):
-        assert not sumo_pages.forum_thread_page.is_thread_post_visible(first_thread_id)
-        assert sumo_pages.forum_thread_page.is_thread_post_visible(second_thread_id)
+        expect(sumo_pages.forum_thread_page.thread_post(first_thread_id)).to_be_hidden()
+        expect(sumo_pages.forum_thread_page.thread_post(second_thread_id)).to_be_visible()
 
     with check, allure.step("Deleting the second thread and verifying that the thread is no "
                             "longer displayed"):
         sumo_pages.contributor_thread_flow.delete_thread_post(second_thread_id)
-        assert not sumo_pages.forum_discussions_page.is_thread_displayed(thread_title)
+        expect(sumo_pages.forum_discussions_page.thread_title(thread_title)).to_be_hidden()
 
 
 # C3020042
@@ -773,20 +778,21 @@ def test_quote_this_post(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the correct information is displayed inside the "
                             "reply section"):
-        assert (sumo_pages.forum_thread_page.
-                get_thread_post_mention_text(second_quote) == f"{test_user['username']} said")
-        assert (sumo_pages.forum_thread_page.
-                get_thread_post_quote_text(second_quote).strip() == thread_body.strip())
+        expect(sumo_pages.forum_thread_page.quoted_thread_post_mention(second_quote)).to_have_text(
+            f"{test_user['username']} said")
+        expect(sumo_pages.forum_thread_page.quoted_thread_post_quote(second_quote)).to_have_text(
+            thread_body)
 
     with check, allure.step("Clicking on the 'said' link and verifying that the user is redirected"
                             " to the correct section of the page"):
         sumo_pages.forum_thread_page.click_on_post_mention_link(second_quote)
-        assert f"#post-{thread_id}" in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*#post-{thread_id}*"))
 
     with check, allure.step("Signing out from SUMO and verifying that the 'Quote' option is not "
                             "displayed"):
         utilities.delete_cookies()
-        assert not sumo_pages.forum_thread_page.is_quote_option_displayed(thread_id)
+        sumo_pages.forum_thread_page.click_on_3_dotted_menu(thread_id)
+        expect(sumo_pages.forum_thread_page.quote_this_post(thread_id)).to_be_hidden()
 
 
 # C3020047
@@ -810,13 +816,13 @@ def test_link_to_this_post_option(page: Page, create_user_factory):
                             "post' option and verifying that the correct URL is displayed"):
         utilities.start_existing_session(cookies=test_user_two)
         sumo_pages.forum_thread_page.click_on_link_to_this_post_option(thread_id)
-        assert f"#post-{thread_id}" in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*#post-{thread_id}*"))
 
     with check, allure.step("Signing out from SUMO and clicking on the 'Link to this post' option "
                             "and verifying that the correct URL is displayed"):
         utilities.delete_cookies()
         sumo_pages.forum_thread_page.click_on_link_to_this_post_option(thread_id)
-        assert f"#post-{thread_id}" in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*#post-{thread_id}*"))
 
 
 # C3020048
@@ -843,9 +849,7 @@ def test_private_message_option(page: Page, create_user_factory):
         utilities.start_existing_session(cookies=test_user_two)
 
         sumo_pages.forum_thread_page.click_on_private_message_option(thread_id)
-        sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
-            message_body=message, expected_url=SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL
-        )
+        sumo_pages.messaging_system_flow.complete_send_message_form_with_data(message_body=message)
 
     with check, allure.step("Verifying that the sent message is displayed inside the sent "
                             "messages page"):
@@ -863,4 +867,4 @@ def test_private_message_option(page: Page, create_user_factory):
         utilities.navigate_to_link(thread_url)
         utilities.delete_cookies()
         sumo_pages.forum_thread_page.click_on_private_message_option(thread_id)
-        assert FxAPageMessages.AUTH_PAGE_URL in utilities.get_page_url()
+        expect(page).to_have_url(re.compile(f".*{FxAPageMessages.AUTH_PAGE_URL}*"))

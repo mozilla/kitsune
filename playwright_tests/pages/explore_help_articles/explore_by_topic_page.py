@@ -32,11 +32,6 @@ class ExploreByTopicPage(BasePage):
         self.topic_filter = lambda option: page.locator(
             "ul.sidebar-nav--list li").get_by_role("link", name=option, exact=True)
 
-    """Actions against the page header section."""
-    def get_explore_by_topic_page_header(self) -> str:
-        """Get the text of the page header."""
-        return self._get_text_of_element(self.explore_by_topic_page_header)
-
     """Actions against the listed KB articles."""
     def get_metadata_of_all_listed_articles(self) -> list[list[str]]:
         """Get the metadata of all listed articles."""
@@ -48,10 +43,6 @@ class ExploreByTopicPage(BasePage):
         return elements
 
     """Actions against the page side-navbar section."""
-    def get_selected_topic_side_navbar_option(self) -> str:
-        """Get the text of the selected topic in the side-navbar."""
-        return self._get_text_of_element(self.all_topics_selected_option)
-
     def get_all_topics_side_navbar_options(self) -> list[str]:
         """Get the text of all topics in the side-navbar."""
         return self._get_text_of_elements(self.all_topics_side_navbar_options)
@@ -63,11 +54,6 @@ class ExploreByTopicPage(BasePage):
             option (str): The topic filter to click on.
         """
         self._click(self.topic_filter(option), expected_locator=self.explore_by_topic_page_header)
-
-    def get_current_product_filter_dropdown_option(self) -> str:
-        """Get the text of the selected option in the product filter dropdown."""
-        option = self._get_text_of_element(self.filter_by_product_dropdown_selected_option)
-        return re.sub(r'\s+', ' ', option).strip()
 
     def get_all_filter_by_product_options(self) -> list[str]:
         """Get the text of all options in the product filter dropdown."""

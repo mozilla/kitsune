@@ -83,28 +83,9 @@ class CommonWebElements(BasePage):
         """Click on the 'Still Need Help?' button."""
         self._click(self.aaq_button)
 
-    def get_aaq_widget_text(self) -> str:
-        """Get the 'Still Need Help?' subheading text."""
-        return self._get_text_of_element(self.still_need_help_subheading)
-
-    def get_aaq_widget_button_name(self) -> str:
-        return self._get_text_of_element(self.aaq_button)
-
     """Actions against the learn more section locators."""
     def click_on_volunteer_learn_more_link(self):
         self._click(self.volunteer_learn_more_link)
-
-    def get_volunteer_learn_more_card_text(self) -> str:
-        """
-            Get the Volunteer learn more card details.
-        """
-        return self._get_text_of_element(self.volunteer_learn_more_card_text)
-
-    def get_volunteer_learn_more_card_header(self) -> str:
-        """
-            Get the Volunteer learn more card header.
-        """
-        return self._get_text_of_element(self.volunteer_learn_more_card_heading)
 
     """Actions against the Frequent Topics Section locators."""
     def is_frequent_topics_section_displayed(self) -> bool:
@@ -114,10 +95,6 @@ class CommonWebElements(BasePage):
     def get_frequent_topic_card_titles(self) -> list[str]:
         """Get the text of all the frequent topic cards."""
         return self._get_text_of_elements(self.frequent_topic_card_headers)
-
-    def is_frequent_topic_card_displayed(self, card_title: str) -> bool:
-        """Check if a particular frequent topic card is displayed."""
-        return self._is_element_visible(self.frequent_topic_card_header(card_title))
 
     def click_on_frequent_topic_card_title(self, topic_card_title: str):
         """Click on a particular frequent topic card."""
@@ -138,14 +115,6 @@ class CommonWebElements(BasePage):
     def click_frequent_topic_card_view_all_articles_link(self, card_title: str):
         """Click on the view all articles link in a frequent topic card."""
         self._click(self.frequent_topic_view_all_articles(card_title))
-
-    def get_frequent_topics_title_text(self) -> str:
-        """Get the frequent topics section title text."""
-        return self._get_text_of_element(self.frequent_topics_section_title)
-
-    def get_frequent_topics_subtitle_text(self) -> str:
-        """Get the frequent topics section subtitle text."""
-        return self._get_text_of_element(self.frequent_topics_section_subtitle)
 
     def verify_topic_card_redirect(self, utilities, sumo_pages, card: str,
                                    verification_type: Literal["heading", "article", "counter"]
@@ -177,10 +146,6 @@ class CommonWebElements(BasePage):
     def click_on_pagination_item(self, pagination_item: str):
         """Clicking on the pagination item"""
         self._click(self.pagination_item(pagination_item))
-
-    def get_selected_pagination_item(self) -> str:
-        """Returning the selected pagination item"""
-        return self._get_text_of_element(self.selected_pagination_item)
 
     def click_on_previous_pagination_item(self):
         """Clicking on the previous pagination item."""

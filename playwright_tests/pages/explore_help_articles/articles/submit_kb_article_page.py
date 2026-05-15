@@ -66,12 +66,6 @@ class SubmitKBArticlePage(BasePage):
     def get_all_kb_errors(self) -> list[str]:
         return self._get_text_of_elements(self.all_kb_errors)
 
-    def get_kb_title_error_text(self) -> str:
-        return self._get_text_of_element(self.kb_title_error)
-
-    def get_kb_slug_error_text(self) -> str:
-        return self._get_text_of_element(self.kb_slug_error)
-
     """Actions against the new KB form locators."""
     def add_and_select_restrict_visibility_group(self, group_name: str):
         self._fill(self.kb_article_restrict_visibility_field, group_name)
@@ -129,9 +123,6 @@ class SubmitKBArticlePage(BasePage):
 
     def click_on_changes_submit_button(self):
         self._click(self.kb_submit_changes_button)
-
-    def get_text_of_label_for_relevant_to_checkbox(self, option_to_click) -> str:
-        return self._get_text_of_element(self.relevant_to_product_checkbox(option_to_click))
 
     def click_on_a_particular_product(self, product_name: str):
         self._click(self.relevant_product(product_name))

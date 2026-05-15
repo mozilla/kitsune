@@ -8,5 +8,5 @@ class HomepageMessages:
     )
     EXPECTED_FEATURED_ARTICLES_COUNT = 4
     NEW_USER_REGISTRATION_MESSAGE = (
-        "Welcome! You are now signed in using your Mozilla account. Edit your profile.\n"
+        "Welcome! You are now signed in using your Mozilla account. Edit your profile."
         "Already have a different Mozilla Support Account? Read more.")

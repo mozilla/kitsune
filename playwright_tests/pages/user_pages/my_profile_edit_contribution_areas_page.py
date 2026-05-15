@@ -27,24 +27,6 @@ class MyProfileEditContributionAreasPage(BasePage):
             "ul[class='user-messages'] li button")
 
     """Actions against the my profile contribution areas page locators."""
-    def edit_con_areas_pref_banner_txt(self) -> str:
-        """Get the display pref banner text"""
-        return self._get_text_of_element(
-            self.edit_contribution_areas_preferences_saved_banner_text)
-
-    def get_edit_contribution_areas_page_header(self) -> str:
-        """Get the header text of the edit contribution areas page header"""
-        return self._get_text_of_element(self.edit_contribution_areas_page_header)
-
-    def get_contrib_areas_checkbox_labels(self) -> set[str]:
-        """Get the label text of the contribution areas checkboxes"""
-        return {
-            item.lower()
-            .replace(" ", "-")
-            .replace("--", "-")[1:]
-            for item in self._get_text_of_elements(self.edit_contribution_areas_checkbox_labels)
-        }
-
     def click_on_update_contribution_areas_button(self):
         """Click on the update contribution areas button"""
         self._click(self.edit_contribution_areas_update_button)

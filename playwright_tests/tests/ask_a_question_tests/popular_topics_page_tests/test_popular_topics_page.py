@@ -35,10 +35,10 @@ def test_popular_topics_navbar(page: Page):
                         utilities.wait_for_url_to_be(option_url)
 
                 with check, allure.step("Verifying that the correct option is displayed"):
-                    assert sumo_pages.product_topics_page.get_page_title() == option
+                    expect(sumo_pages.product_topics_page.page_title).to_have_text(option)
 
                 with check, allure.step("Verifying that the correct nav option is selected"):
-                    assert sumo_pages.product_topics_page.get_selected_navbar_option() == option
+                    expect(sumo_pages.product_topics_page.selected_nav_link).to_have_text(option)
 
 
 #  T5696796
@@ -83,16 +83,14 @@ def test_aaq_redirect(page: Page, restmail_test_account_creation):
                 if redirect_target:
                     with check, allure.step("Verifying that the aaq widget is not displayed for "
                                             f"{product_topic}"):
-                        assert sumo_pages.common_web_elements.aaq_widget.is_hidden()
+                        expect(sumo_pages.common_web_elements.aaq_widget).to_be_hidden()
                         continue
                 if product_topic in utilities.general_test_data['freemium_products']:
-                    assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                    ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
-                        f"Incorrect AAQ widget text displayed for the {product_topic} product")
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
                 else:
-                    assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                    ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT, (
-                        f"Incorrect AAQ widget text displayed for the {product_topic} product")
+                    expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                        AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
 
             with allure.step("Clicking on the AAQ button"):
                 sumo_pages.common_web_elements.click_on_aaq_button()

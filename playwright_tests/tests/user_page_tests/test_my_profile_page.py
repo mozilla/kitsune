@@ -46,12 +46,12 @@ def test_my_profile_page_can_be_accessed_via_top_navbar(page: Page, create_user_
         expect(page).to_have_url(MyProfileMessages.get_my_profile_stage_url(test_user["username"]))
 
     with check, allure.step("Verifying that the page header is the expected one"):
-        assert (sumo_pages.my_profile_page.get_my_profile_page_header() == MyProfileMessages.
-                STAGE_MY_PROFILE_PAGE_HEADER)
+        expect(sumo_pages.my_profile_page.page_header).to_have_text(
+            MyProfileMessages.STAGE_MY_PROFILE_PAGE_HEADER)
 
     with allure.step("Verifying that the 'My profile' navbar option is selected"):
-        assert sumo_pages.my_profile_page.get_text_of_selected_navbar_option(
-        ) == UserProfileNavbarMessages.NAVBAR_OPTIONS[0]
+        expect(sumo_pages.my_profile_page.user_navbar_selected_element).to_have_text(
+            UserProfileNavbarMessages.NAVBAR_OPTIONS[0])
 
 
 #  C891411, C891410
@@ -109,7 +109,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page, create_
         utilities.start_existing_session(cookies=second_user)
         sumo_pages.top_navbar.click_on_view_profile_option()
 
-        assert sumo_pages.my_profile_page.get_my_profile_solutions_text() == "1 solution"
+        expect(sumo_pages.my_profile_page.provided_solutions_text).to_have_text("1 solution")
 
     with allure.step("Signing in with the OP and undoing the solution"):
         utilities.start_existing_session(cookies=test_user)
@@ -120,7 +120,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page, create_
                      "that the solution counter is not displayed"):
         utilities.start_existing_session(cookies=second_user)
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert not sumo_pages.my_profile_page.is_solutions_displayed()
+        expect(sumo_pages.my_profile_page.provided_solutions_text).to_be_hidden()
 
 
 # C1318760, C2245214
@@ -150,9 +150,8 @@ def test_number_of_answers_and_questions_for_contributor_thread_contributions(pa
     with allure.step("Navigating to the profile page and verifying that the answer and questions "
                      "counter has not incremented"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert not sumo_pages.my_profile_page.is_question_displayed()
-        assert not sumo_pages.my_profile_page.is_my_profile_answers_link_visible()
-
+        expect(sumo_pages.my_profile_page.questions_link).to_be_hidden()
+        expect(sumo_pages.my_profile_page.answers_link).to_be_hidden()
 
 # C890832,  C2094281, C891410, C2245210, C2245211, C2245212, C2245209
 @pytest.mark.userProfile
@@ -176,14 +175,14 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page, crea
     with check, allure.step("Accessing the 'My profile' page and verifying that the number of"
                             " answers has incremented successfully"):
         sumo_pages.question_page.click_on_the_reply_author(answer_id)
-        assert sumo_pages.my_profile_page.get_my_profile_answers_text() == "1 answer"
+        expect(sumo_pages.my_profile_page.answers_link).to_have_text("1 answer")
 
     with check, allure.step("Clicking on the my profile answers and verifying that the posted"
                             " answer is successfully displayed inside the list"):
         sumo_pages.my_profile_page.click_my_profile_answers_link()
-        assert reply_text == sumo_pages.my_answers_page.get_my_answer_text(answer_id=answer_id)
-        assert (question_info["aaq_subject"] == sumo_pages.my_answers_page.
-                get_my_answer_question_title(answer_id))
+        expect(sumo_pages.my_answers_page.answer_text(answer_id)).to_have_text(reply_text)
+        expect(sumo_pages.my_answers_page.answer_by_id(answer_id)).to_have_text(
+            question_info["aaq_subject"])
 
     with allure.step("Updating the question title and question reply"):
         sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
@@ -199,13 +198,11 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page, crea
     with check, allure.step("Navigating back to the answers page from the profile section and"
                             " verifying that the updates are reflected"):
         sumo_pages.question_page.click_on_the_reply_author(answer_id)
-        assert sumo_pages.my_profile_page.get_my_profile_answers_text() == "1 answer"
+        expect(sumo_pages.my_profile_page.answers_link).to_have_text("1 answer")
 
         sumo_pages.my_profile_page.click_my_profile_answers_link()
-        assert (updated_reply_text == sumo_pages.my_answers_page.get_my_answer_text(
-            answer_id=answer_id))
-        assert (updated_title_text == sumo_pages.my_answers_page.get_my_answer_question_title(
-            answer_id))
+        expect(sumo_pages.my_answers_page.answer_text(answer_id)).to_have_text(updated_reply_text)
+        expect(sumo_pages.my_answers_page.answer_by_id(answer_id)).to_have_text(updated_title_text)
 
     with allure.step("Navigating back to the posted question and posting a reply to it"):
         sumo_pages.my_answers_page.click_on_specific_answer(answer_id)
@@ -217,12 +214,11 @@ def test_number_of_my_profile_answers_is_successfully_displayed(page: Page, crea
     with check, allure.step("Navigating back to the answers page from the profile section and"
                             " verifying that the updates are reflected"):
         sumo_pages.question_page.click_on_the_reply_author(second_answer_id)
-        assert sumo_pages.my_profile_page.get_my_profile_answers_text() == "2 answers"
+        expect(sumo_pages.my_profile_page.answers_link).to_have_text("2 answers")
         sumo_pages.my_profile_page.click_my_profile_answers_link()
-        assert (reply_text == sumo_pages.my_answers_page.get_my_answer_text(
-            answer_id=second_answer_id))
-        assert (updated_title_text == sumo_pages.my_answers_page.get_my_answer_question_title(
-            second_answer_id))
+        expect(sumo_pages.my_answers_page.answer_text(second_answer_id)).to_have_text(reply_text)
+        expect(sumo_pages.my_answers_page.answer_by_id(second_answer_id)).to_have_text(
+            updated_title_text)
 
 
 #  C2094285, C2094284, C891309, C891410, C2245213
@@ -241,13 +237,13 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page, create_
     with check, allure.step("Accessing the profile page and verifying that the number of posted"
                             " documents has incremented"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert sumo_pages.my_profile_page.get_my_profile_documents_text() == "1 document"
+        expect(sumo_pages.my_profile_page.provided_documents_link).to_have_text("1 document")
 
     with check, allure.step("Clicking on my posted documents link and verifying that the posted"
                             " document is listed"):
         sumo_pages.my_profile_page.click_on_my_profile_document_link()
-        assert (article_details['article_title'] in sumo_pages.my_documents_page.
-                get_text_of_document_links())
+        expect(sumo_pages.my_documents_page.documents_link_list).to_have_text(
+            article_details['article_title'])
 
     with allure.step("Navigating to the article and changing the title"):
         new_article_title = "Updated ".join(random.choice(string.ascii_lowercase + string.digits
@@ -259,12 +255,12 @@ def test_number_of_posted_articles_is_successfully_displayed(page: Page, create_
     with check, allure.step("Accessing the profile page and verifying that the number of posted"
                             " documents is the same"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert sumo_pages.my_profile_page.get_my_profile_documents_text() == "1 document"
+        expect(sumo_pages.my_profile_page.provided_documents_link).to_have_text("1 document")
 
     with allure.step("Clicking on my posted documents link and verifying that the new document"
                      " title is listed"):
         sumo_pages.my_profile_page.click_on_my_profile_document_link()
-        assert new_article_title in sumo_pages.my_documents_page.get_text_of_document_links()
+        expect(sumo_pages.my_documents_page.documents_link_list).to_have_text(new_article_title)
 
 
 # C1491023
@@ -280,36 +276,33 @@ def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: 
 
     with check, allure.step("Verifying that the username contains the supported characters and"
                             " doesn't contain the unsupported ones in top navbar"):
-        assert sumo_pages.top_navbar.get_text_of_logged_in_username() == test_user["username"]
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(test_user["username"])
 
     with check, allure.step("Verifying that the username contains the supported characters in My"
                             " Profile page"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert (sumo_pages.my_profile_page.
-                get_my_profile_display_name_header_text() == test_user["username"])
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(test_user["username"])
 
     with check, allure.step("Verifying that the username contains the supported characters in Edit"
                             " my Profile page"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
-        assert (sumo_pages.edit_my_profile_page.
-                get_username_input_field_value() == test_user["username"])
+        expect(sumo_pages.edit_my_profile_page.username_input_field).to_have_value(
+            test_user["username"])
 
     with check, allure.step("Adding an unsupported character inside the username field and"
                             " verifying that the error message is displayed"):
         sumo_pages.edit_my_profile_page.send_text_to_username_field(test_user["username"] + "*")
         sumo_pages.edit_my_profile_page.click_update_my_profile_button()
-        assert (sumo_pages.edit_my_profile_page.
-                get_username_error_message_text() == EditMyProfilePageMessages.
-                USERNAME_INPUT_ERROR_MESSAGE)
+        expect(sumo_pages.edit_my_profile_page.username_error_message).to_have_text(
+            EditMyProfilePageMessages.USERNAME_INPUT_ERROR_MESSAGE)
 
     with check, allure.step("Verifying that the username contains the supported characters in My"
                             " Profile page"):
         sumo_pages.top_navbar.click_on_view_profile_option()
-        assert (sumo_pages.my_profile_page.
-                get_my_profile_display_name_header_text() == test_user["username"])
+        expect(sumo_pages.my_profile_page.display_name_header).to_have_text(test_user["username"])
 
     with allure.step("Verifying that the username contains the supported characters in Edit my "
                      "Profile page"):
         sumo_pages.top_navbar.click_on_edit_profile_option()
-        assert (sumo_pages.edit_my_profile_page.
-                get_username_input_field_value() == test_user["username"])
+        expect(sumo_pages.edit_my_profile_page.username_input_field).to_have_value(
+            test_user["username"])

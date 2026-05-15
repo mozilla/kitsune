@@ -2,7 +2,7 @@ import allure
 import pytest
 from pytest_check import check
 from playwright.sync_api import expect, Page
-from playwright_tests.core.utilities import Utilities, retry_on_502
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_form_page_messages import (
     AAQFormMessages)
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
@@ -124,8 +124,9 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, user_type,
 
             with check, allure.step("Verifying that the 'Learn More' button contains the "
                                     "correct link"):
-                assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
-                ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
+                expect(sumo_pages.product_solutions_page.support_scam_banner_learn_more_button
+                       ).to_have_attribute(
+                    "href", QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK)
 
             if user_type != '':
                 with allure.step("Clicking on the Ask Now button"):
@@ -136,8 +137,9 @@ def test_scam_banner_for_freemium_products_is_displayed(page: Page, user_type,
 
                 with check, allure.step("Verifying that the 'Learn More' button contains the "
                                         "correct link"):
-                    assert sumo_pages.product_solutions_page.get_scam_alert_banner_link(
-                    ) == QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
+                    expect(sumo_pages.product_solutions_page.support_scam_banner_learn_more_button
+                           ).to_have_attribute(
+                        "href", QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK)
 
 
 # T5696596
@@ -164,10 +166,10 @@ def test_corresponding_aaq_product_name_and_image_are_displayed(page: Page, crea
 
             with check, allure.step("Verifying that the correct product header is displayed"):
                 if redirect_target:
-                    assert (sumo_pages.product_solutions_page.
-                            get_product_solutions_heading() == redirect_target +" Solutions")
+                    expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                        redirect_target + " Solutions")
                 else:
-                    assert sumo_pages.aaq_form_page.get_aaq_form_page_heading() == product
+                    expect(sumo_pages.aaq_form_page.aaq_page_product_heading).to_have_text(product)
 
 
 # T5696594, T5696595
@@ -191,11 +193,11 @@ def test_progress_milestone_redirect(page: Page, create_user_factory):
             with check, allure.step("Verifying that the correct in progress milestone is "
                                     "displayed"):
                 if redirect_target:
-                    assert sumo_pages.aaq_form_page.get_in_progress_item_label(
-                    ) == AAQFormMessages.COMPLETED_MILESTONE_TWO
+                    expect(sumo_pages.aaq_form_page.in_progress_item_label).to_have_text(
+                        AAQFormMessages.COMPLETED_MILESTONE_TWO)
                 else:
-                    assert sumo_pages.aaq_form_page.get_in_progress_item_label(
-                    ) == AAQFormMessages.IN_PROGRESS_MILESTONE
+                    expect(sumo_pages.aaq_form_page.in_progress_item_label).to_have_text(
+                        AAQFormMessages.IN_PROGRESS_MILESTONE)
 
             with check, allure.step(f"Clicking on the {AAQFormMessages.COMPLETED_MILESTONE_TWO} "
                                     f"milestone and verifying that we are on the correct product "
@@ -331,8 +333,8 @@ def test_share_firefox_data_functionality(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the 'try these manual steps' contains the "
                             "correct link"):
-        assert sumo_pages.aaq_form_page.get_try_these_manual_steps_link(
-        ) == QuestionPageMessages.TRY_THESE_MANUAL_STEPS_LINK
+        expect(sumo_pages.aaq_form_page.try_these_manual_steps_link).to_have_attribute(
+            "href", QuestionPageMessages.TRY_THESE_MANUAL_STEPS_LINK)
 
     with allure.step("Adding data inside AAQ form fields without submitting the form"):
         sumo_pages.aaq_flow.add__valid_data_to_all_aaq_fields_without_submitting(
@@ -346,11 +348,9 @@ def test_share_firefox_data_functionality(page: Page, create_user_factory):
         sumo_pages.aaq_form_page.add_text_to_troubleshooting_information_textarea(
             utilities.aaq_question_test_data["troubleshooting_information"]
         )
-        with utilities.page.expect_navigation():
-            retry_on_502(
-                sumo_pages.aaq_form_page.click_aaq_form_submit_button(
-                expected_locator=sumo_pages.question_page.questions_header)
-            )
+        utilities.click_and_wait_for_navigation(
+            lambda: sumo_pages.aaq_form_page.click_aaq_form_submit_button(
+                expected_locator=sumo_pages.question_page.questions_header))
 
     with allure.step("Verifying that the troubleshooting information is displayed"):
         sumo_pages.question_page.click_on_question_details_button()
@@ -395,8 +395,8 @@ def test_additional_system_details_user_agent_information(page: Page, create_use
 
             with check, allure.step("Verifying that the correct user-agent information is "
                                     "displayed"):
-                assert "User Agent: " + utilities.get_user_agent(
-                ) == sumo_pages.question_page.get_user_agent_information()
+                expect(sumo_pages.question_page.user_agent_information).to_have_text(
+                    "User Agent: " + utilities.get_user_agent())
 
 
 @pytest.mark.aaqPage
@@ -438,18 +438,15 @@ def test_system_details_information(page: Page, create_user_factory):
                     )
 
                 with allure.step("Submitting the AAQ question"):
-                    with utilities.page.expect_navigation():
-                        retry_on_502(
-                            sumo_pages.aaq_form_page.click_aaq_form_submit_button(
-                            expected_locator=sumo_pages.question_page.questions_header
-                            )
-                        )
+                    utilities.click_and_wait_for_navigation(
+                        lambda: sumo_pages.aaq_form_page.click_aaq_form_submit_button(
+                            expected_locator=sumo_pages.question_page.questions_header))
 
                 with check, allure.step("Verifying that the correct provided troubleshooting "
                                         "information is displayed"):
                     sumo_pages.question_page.click_on_question_details_button()
-                    assert sumo_pages.question_page.get_system_details_information(
-                    ) == troubleshooting_info
+                    expect(sumo_pages.question_page.system_details_options).to_have_text(
+                        troubleshooting_info)
 
 
 # T5696704
@@ -478,16 +475,15 @@ def test_premium_products_aaq(page: Page):
                 form_url=premium_form_link
             )
             if utilities.get_page_url() == premium_form_link:
-                with utilities.page.expect_navigation():
-                    retry_on_502(
-                        sumo_pages.aaq_form_page.click_aaq_form_submit_button(with_force=True,
-                        expected_locator=sumo_pages.question_page.questions_header)
-                    )
+                utilities.click_and_wait_for_navigation(
+                    lambda: sumo_pages.aaq_form_page.click_aaq_form_submit_button(
+                        with_force=True,
+                        expected_locator=sumo_pages.question_page.questions_header))
 
             with check, allure.step("Verifying that the correct success message is displayed"):
-                assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
-                ) == aaq_form_messages.get_premium_ticket_submission_success_message(
-                    utilities.staff_user)
+                expect(sumo_pages.aaq_form_page.premium_ticket_message).to_have_text(
+                    aaq_form_messages.get_premium_ticket_submission_success_message(
+                        utilities.staff_user))
 
 
 # C2635907
@@ -513,11 +509,10 @@ def test_loginless_mozilla_account_aaq(page: Page):
             if i <= 3:
                 with check, allure.step("Verifying that the correct success message is "
                                         "displayed"):
-                    assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
-                    ) == aaq_form_messages.get_premium_ticket_submission_success_message(
-                        utilities.staff_user
-                    )
+                    expect(sumo_pages.aaq_form_page.premium_ticket_message).to_have_text(
+                        aaq_form_messages.get_premium_ticket_submission_success_message(
+                            utilities.staff_user))
             else:
                 with check, allure.step("Verifying that submission error message is displayed"):
-                    assert sumo_pages.aaq_form_page.get_premium_card_submission_message(
-                    ) == aaq_form_messages.LOGINLESS_RATELIMIT_REACHED_MESSAGE
+                    expect(sumo_pages.aaq_form_page.premium_ticket_message).to_have_text(
+                        aaq_form_messages.LOGINLESS_RATELIMIT_REACHED_MESSAGE)

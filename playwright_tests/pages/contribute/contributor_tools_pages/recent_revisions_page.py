@@ -57,7 +57,6 @@ class RecentRevisions(BasePage):
         self.revision_diff_section = page.locator("div[class='revision-diff']")
 
     """Actions against the right-side menu locators."""
-
     def click_on_kb_dashboard_option(self):
         self._click(self.kb_dashboard_option)
 
@@ -67,14 +66,10 @@ class RecentRevisions(BasePage):
     def click_on_kb_team_option(self):
         self._click(self.kb_team_option)
 
-    def get_text_of_selected_menu_option(self) -> str:
-        return self._get_text_of_element(self.selected_right_side_option)
-
     def click_on_aggregated_metrics_option(self):
         self._click(self.aggregated_metrics)
 
     """Actions against the recent revisions table locators."""
-
     def get_all_revision_dates(self) -> list[str]:
         return self._get_text_of_elements(self.all_dates)
 
@@ -124,6 +119,3 @@ class RecentRevisions(BasePage):
 
     def click_on_revision_date_for_article(self, article_title: str, username: str):
         self._click(self.revision_date(article_title, username))
-
-    def get_revision_comment(self, article_title: str, username: str) -> str:
-        return self._get_text_of_element(self.revision_comment(article_title, username))

@@ -128,17 +128,8 @@ class KBArticleDiscussionPage(BasePage):
 
     """Actions against the thread content locators."""
     # Actions related to thread content
-    def get_thread_title_text(self) -> str:
-        return self._get_text_of_element(self.thread_body_content_title)
-
-    def get_lock_this_article_thread_option_text(self) -> str:
-        return self._get_text_of_element(self.lock_this_thread)
-
     def click_on_lock_this_article_thread_option(self):
         self._click(self.lock_this_thread)
-
-    def get_text_of_sticky_this_thread_option(self) -> str:
-        return self._get_text_of_element(self.sticky_this_thread)
 
     def click_on_sticky_this_thread_option(self):
         self._click(self.sticky_this_thread)
@@ -146,27 +137,12 @@ class KBArticleDiscussionPage(BasePage):
     def fill_the_thread_post_a_reply_textarea(self, text: str):
         self._fill(self.thread_post_a_reply_textarea_field, text)
 
-    def get_thread_page_counter_replies_text(self) -> str:
-        return self._get_text_of_element(self.thread_page_replies_counter)
-
-    def get_thread_page_replied_by_text(self) -> str:
-        return self._get_text_of_element(self.thread_page_last_reply_by_text)
-
     """Actions against the article discussions page content locators."""
-    def get_article_discussions_thread_counter(self, thread_id: str) -> str:
-        return self._get_text_of_element(self.discussions_thread_counter(thread_id))
-
-    def get_all_article_threads_titles(self) -> list[str]:
-        return self._get_text_of_elements(self.all_article_threads_titles)
-
     def get_all_article_threads_authors(self) -> list[str]:
         return self._get_text_of_elements(self.all_article_threads_authors)
 
     def get_all_article_threads_replies(self) -> list[str]:
         return self._get_text_of_elements(self.all_article_thread_replies)
-
-    def get_text_of_locked_article_thread_text(self) -> str:
-        return self._get_text_of_element(self.article_thread_locked_message)
 
     """Actions against the thread replies section."""
     def click_on_dotted_menu_for_a_certain_reply(self, thread_id: str):

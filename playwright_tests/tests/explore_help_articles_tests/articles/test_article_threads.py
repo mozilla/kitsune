@@ -136,15 +136,14 @@ def test_thread_replies_counter_increment(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Post a new thread button', posting a new kb article "
                             "discussion thread and verifying that the thread counter is not 0"):
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_thread_page_counter_replies_text())) == 0
+        expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
+            "0 Replies")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has incremented successfully"):
         utilities.navigate_to_link(thread_info["article_discussion_url"])
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_article_discussions_thread_counter(
-                thread_info['thread_id']))) == 0
+        expect(sumo_pages.kb_article_discussion_page.discussions_thread_counter(
+            thread_info['thread_id'])).to_have_text("0")
 
     with allure.step("Navigating back to the thread and posting a new reply with the same "
                      "user"):
@@ -154,15 +153,14 @@ def test_thread_replies_counter_increment(page: Page, create_user_factory):
             utilities.kb_new_thread_test_data['thread_reply_body'])
 
     with check, allure.step("Verifying that the thread counter is 1"):
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_thread_page_counter_replies_text())) == 1
+        expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
+            "1 Replies")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has incremented successfully"):
         utilities.navigate_to_link(thread_info["article_discussion_url"])
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_article_discussions_thread_counter(
-                thread_info['thread_id']))) == 1
+        expect(sumo_pages.kb_article_discussion_page.discussions_thread_counter(
+            thread_info['thread_id'])).to_have_text("1")
 
 
 # C2260840, C2260809
@@ -195,15 +193,14 @@ def test_thread_replies_counter_decrement(page: Page, create_user_factory):
         sumo_pages.kb_article_thread_flow.post_reply_to_thread(
             utilities.kb_new_thread_test_data['thread_reply_body']
         )
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_thread_page_counter_replies_text()) == 2)
+        expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
+            "2 Replies")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has incremented successfully"):
         utilities.navigate_to_link(thread_info['article_discussion_url'])
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_article_discussions_thread_counter(
-                thread_info['thread_id'])) == 2)
+        expect(sumo_pages.kb_article_discussion_page.discussions_thread_counter(
+            thread_info['thread_id'])).to_have_text("2")
 
     with allure.step("Clicking on the 3 dotted menu for a posted thread reply"):
         sumo_pages.kb_article_discussion_page.click_on_a_particular_thread(
@@ -212,15 +209,14 @@ def test_thread_replies_counter_decrement(page: Page, create_user_factory):
     with check, allure.step("Clicking on the 'Delete this post' option and verifying that the "
                             "reply counter for the posted thread has decremented successfully"):
         sumo_pages.kb_article_thread_flow.delete_reply_to_thread(thread_reply_info['reply_id'])
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_thread_page_counter_replies_text()) == 1)
+        expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
+            "1 Replies")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has decremented successfully"):
         utilities.navigate_to_link(thread_info['article_discussion_url'])
-        assert (utilities.number_extraction_from_string(
-            sumo_pages.kb_article_discussion_page.get_article_discussions_thread_counter(
-                thread_info['thread_id'])) == 1)
+        expect(sumo_pages.kb_article_discussion_page.discussions_thread_counter(
+            thread_info['thread_id'])).to_have_text("1")
 
 
 @pytest.mark.articleThreads
@@ -261,14 +257,15 @@ def test_article_thread_author_filter(page: Page, user_type, create_user_factory
     with check, allure.step("Clicking on the 'Author' filter and verifying that the authors are "
                             "in reverse alphabetical order"):
         sumo_pages.kb_article_discussion_page.click_on_article_thread_author_replies_filter()
-        assert sumo_pages.kb_article_discussion_page.get_all_article_threads_authors() != sorted(
-            sumo_pages.kb_article_discussion_page.get_all_article_threads_authors())
+        expect(sumo_pages.kb_article_discussion_page.all_article_threads_authors
+               ).not_to_contain_text(sorted(sumo_pages.kb_article_discussion_page.
+                                            get_all_article_threads_authors()))
 
     with check, allure.step("Clicking on the 'Author' filter again and verifying that the authors "
                             "are in alphabetical order"):
         sumo_pages.kb_article_discussion_page.click_on_article_thread_author_replies_filter()
-        assert sumo_pages.kb_article_discussion_page.get_all_article_threads_authors() == sorted(
-            sumo_pages.kb_article_discussion_page.get_all_article_threads_authors())
+        expect(sumo_pages.kb_article_discussion_page.all_article_threads_authors).to_contain_text(
+            sorted(sumo_pages.kb_article_discussion_page.get_all_article_threads_authors()))
 
 
 @pytest.mark.articleThreads
@@ -413,8 +410,8 @@ def test_article_lock_thread_functionality(page: Page, user_type, create_user_fa
         with check, allure.step("Signing in with a non-admin account and verifying that the "
                                "correct thread locked message is displayed"):
             utilities.start_existing_session(cookies=test_user_two)
-            assert (sumo_pages.kb_article_discussion_page.get_text_of_locked_article_thread_text(
-            ) == KBArticlePageMessages.KB_ARTICLE_LOCKED_THREAD_MESSAGE)
+            expect(sumo_pages.kb_article_discussion_page.article_thread_locked_message
+                   ).to_have_text(KBArticlePageMessages.KB_ARTICLE_LOCKED_THREAD_MESSAGE)
 
     elif user_type == '':
         with allure.step("Deleting user session"):
@@ -444,8 +441,8 @@ def test_article_lock_thread_functionality(page: Page, user_type, create_user_fa
         with check, allure.step("Signing in with a non-admin account and verifying that the "
                                "correct thread locked message is displayed"):
             utilities.start_existing_session(cookies=test_user_two)
-            assert (sumo_pages.kb_article_discussion_page.get_text_of_locked_article_thread_text(
-            ) == KBArticlePageMessages.KB_ARTICLE_LOCKED_THREAD_MESSAGE)
+            expect(sumo_pages.kb_article_discussion_page.article_thread_locked_message
+                   ).to_have_text(KBArticlePageMessages.KB_ARTICLE_LOCKED_THREAD_MESSAGE)
     elif user_type == '':
         with allure.step("Deleting user session"):
             utilities.delete_cookies()
@@ -495,14 +492,14 @@ def test_article_unlock_thread_functionality(page: Page, user_type, create_user_
                             "correct 'Lock this thread' option text is displayed"):
         sumo_pages.kb_article_discussion_page.click_on_a_particular_thread(
             thread_info_one['thread_id'])
-        assert (sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_option_text(
-        ) == KBArticlePageMessages.KB_ARTICLE_LOCK_THIS_THREAD_OPTION)
+        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_LOCK_THIS_THREAD_OPTION)
 
     with check, allure.step("Clicking on 'Lock this thread' option and verifying that the correct"
                             " 'Unlock this thread' text is displayed"):
         sumo_pages.kb_article_discussion_page.click_on_lock_this_article_thread_option()
-        assert (sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_option_text(
-        ) == KBArticlePageMessages.KB_ARTICLE_UNLOCK_THIS_THREAD_OPTION)
+        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_UNLOCK_THIS_THREAD_OPTION)
 
     if user_type == 'Simple User':
         with allure.step(f"Signing in with {test_user_two['username']} user account and verifying"
@@ -553,14 +550,14 @@ def test_article_unlock_thread_functionality(page: Page, user_type, create_user_
 
     with check, allure.step("Verifying that the correct 'Lock this thread' option text is "
                             "displayed"):
-        assert (sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_option_text(
-        ) == KBArticlePageMessages.KB_ARTICLE_LOCK_THIS_THREAD_OPTION)
+        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_LOCK_THIS_THREAD_OPTION)
 
     with check, allure.step("Clicking on 'Lock this thread' option and verifying that the correct"
                             " 'Unlock this thread' text is displayed"):
         sumo_pages.kb_article_discussion_page.click_on_lock_this_article_thread_option()
-        assert (sumo_pages.kb_article_discussion_page.get_lock_this_article_thread_option_text(
-        ) == KBArticlePageMessages.KB_ARTICLE_UNLOCK_THIS_THREAD_OPTION)
+        expect(sumo_pages.kb_article_discussion_page.lock_this_thread).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_UNLOCK_THIS_THREAD_OPTION)
 
     if user_type == 'Simple User':
         with allure.step(f"Signing in with {test_user_two['username']} user account and verifying"
@@ -644,8 +641,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
         sumo_pages.kb_article_discussion_page.click_on_sticky_this_thread_option()
 
     with check, allure.step("Verifying that the text changed to 'Unsticky this thread'"):
-        assert (sumo_pages.kb_article_discussion_page.get_text_of_sticky_this_thread_option(
-        ) == KBArticlePageMessages.KB_ARTICLE_UNSTICKY_OPTION)
+        expect(sumo_pages.kb_article_discussion_page.sticky_this_thread).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_UNSTICKY_OPTION)
 
     if user_type == 'Simple User':
         with allure.step(f"Signing in with {test_user_two['username']} user account and "
@@ -664,9 +661,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
     with check, allure.step("Navigating back to the discussions page and verifying that the sticky "
                             "thread is displayed in top of the list"):
         utilities.navigate_to_link(thread_info_one['article_discussion_url'])
-        assert (
-            sumo_pages.kb_article_discussion_page.
-            get_all_article_threads_titles()[0] == thread_info_one['thread_title'])
+        expect(sumo_pages.kb_article_discussion_page.all_article_threads_titles.first
+               ).to_have_text(thread_info_one['thread_title'])
 
     if user_type != 'Forum Moderator':
         with allure.step(f"Signing in with {test_user['username']} user account"):
@@ -677,8 +673,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
         sumo_pages.kb_article_discussion_page.click_on_a_particular_thread(
             thread_info_one['thread_id'])
         sumo_pages.kb_article_discussion_page.click_on_sticky_this_thread_option()
-        assert (sumo_pages.kb_article_discussion_page.get_text_of_sticky_this_thread_option(
-        ) == KBArticlePageMessages.KB_ARTICLE_STICKY_THIS_THREAD_OPTION)
+        expect(sumo_pages.kb_article_discussion_page.sticky_this_thread).to_have_text(
+            KBArticlePageMessages.KB_ARTICLE_STICKY_THIS_THREAD_OPTION)
 
     if user_type == 'Simple User':
         with allure.step(f"Signing in with {test_user_two['username']} user account"):
@@ -693,8 +689,8 @@ def test_article_thread_sticky(page: Page, user_type, create_user_factory):
     with check, allure.step("Navigating back to the discussions page and verifying that the sticky"
                             " article is not displayed in top of the list"):
         utilities.navigate_to_link(thread_info_one['article_discussion_url'])
-        assert sumo_pages.kb_article_discussion_page.get_all_article_threads_titles(
-        )[0] == thread_info_two['thread_title']
+        expect(sumo_pages.kb_article_discussion_page.all_article_threads_titles.first
+               ).to_have_text(thread_info_two['thread_title'])
 
 
 #  C2260808, C2260823
@@ -731,8 +727,8 @@ def test_article_thread_content_edit(page: Page, thread_author, create_user_fact
         )
 
     with check, allure.step("Verifying that the thread title was not changed"):
-        assert sumo_pages.kb_article_discussion_page.get_thread_title_text(
-        ) == thread_info_two['thread_title']
+        expect(sumo_pages.kb_article_discussion_page.thread_body_content_title).to_have_text(
+            thread_info_two['thread_title'])
 
     with allure.step("Adding data inside the edit this thread title field and clicking on "
                      "the update button"):
@@ -741,8 +737,8 @@ def test_article_thread_content_edit(page: Page, thread_author, create_user_fact
         )
 
     with check, allure.step("Verifying that the thread title was changed"):
-        assert sumo_pages.kb_article_discussion_page.get_thread_title_text(
-        ) == utilities.kb_new_thread_test_data['updated_thread_title']
+        expect(sumo_pages.kb_article_discussion_page.thread_body_content_title).to_have_text(
+            utilities.kb_new_thread_test_data['updated_thread_title'])
 
     with allure.step("Deleting user session and verifying that the edit this thread option "
                      "is not displayed"):
@@ -773,12 +769,12 @@ def test_article_thread_content_edit(page: Page, thread_author, create_user_fact
 
     if thread_author == 'self':
         with check, allure.step("Verifying that the thread title was not changed"):
-            assert sumo_pages.kb_article_discussion_page.get_thread_title_text(
-            ) == thread_info_one['thread_title']
+            expect(sumo_pages.kb_article_discussion_page.thread_body_content_title).to_have_text(
+                thread_info_one['thread_title'])
     else:
         with check, allure.step("Verifying that the thread title was not changed"):
-            assert sumo_pages.kb_article_discussion_page.get_thread_title_text(
-            ) == utilities.kb_new_thread_test_data['updated_thread_title']
+            expect(sumo_pages.kb_article_discussion_page.thread_body_content_title).to_have_text(
+                utilities.kb_new_thread_test_data['updated_thread_title'])
 
     with allure.step("Adding data inside the edit this thread title field and clicking on "
                      "the update button"):
@@ -787,14 +783,13 @@ def test_article_thread_content_edit(page: Page, thread_author, create_user_fact
         )
 
     with check, allure.step("Verifying that the thread title was changed"):
-        assert sumo_pages.kb_article_discussion_page.get_thread_title_text(
-        ) == utilities.kb_new_thread_test_data['second_thread_updated_title']
+        expect(sumo_pages.kb_article_discussion_page.thread_body_content_title).to_have_text(
+            utilities.kb_new_thread_test_data['second_thread_updated_title'])
 
     with allure.step("Navigating back to the discussions page"):
         utilities.navigate_to_link(thread_info_one["article_discussion_url"])
 
     with check, allure.step("Verifying that the updated thread title is displayed inside the "
                             "threads list"):
-        assert (utilities.kb_new_thread_test_data
-                ['second_thread_updated_title'] in sumo_pages.kb_article_discussion_page
-                .get_all_article_threads_titles())
+        expect(sumo_pages.kb_article_discussion_page.all_article_threads_titles).to_contain_text(
+            [utilities.kb_new_thread_test_data['second_thread_updated_title']])

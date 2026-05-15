@@ -1,5 +1,5 @@
 from playwright.sync_api import Page
-from playwright_tests.core.utilities import Utilities, retry_on_502
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.explore_help_articles.kb_article_revision_page_messages import (
     KBArticleRevision,
 )
@@ -18,6 +18,7 @@ from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_pag
 class EditArticleMetaFlow:
 
     def __init__(self, page: Page):
+        self.page = page
         self.utilities = Utilities(page)
         self.kb_article_edit_metadata_page = KBArticleEditMetadata(page)
         self.submit_kb_article_page = SubmitKBArticlePage(page)
@@ -25,7 +26,6 @@ class EditArticleMetaFlow:
         self.edit_kb_article_page = EditKBArticlePage(page)
 
 
-    @retry_on_502
     def edit_article_metadata(self, title=None, slug=None, category=None, product=None,
                               topics=None, obsolete=False, discussions=True, needs_change=False,
                               needs_change_comment=False, restricted_to_groups: list[str] = None,
@@ -94,7 +94,6 @@ class EditArticleMetaFlow:
         self.kb_article_edit_metadata_page.click_on_save_changes_button()
         self.utilities.wait_for_page_to_load()
 
-    @retry_on_502
     def remove_a_restricted_visibility_group(self, groups:[str, list[str]]):
         if KBArticleRevision.KB_EDIT_METADATA not in self.utilities.get_page_url():
             self.kb_article_page.click_on_edit_article_metadata()

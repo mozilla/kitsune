@@ -68,41 +68,17 @@ class KBArticlePage(BasePage):
     def click_on_a_particular_breadcrumb(self, breadcrumb_name: str):
         self._click(self.article_breadcrumb(breadcrumb_name))
 
-    def get_text_of_all_article_breadcrumbs(self) -> list[str]:
-        return self._get_text_of_elements(self.kb_article_breadcrumbs_list)
-
-    def get_text_of_kb_article_helpfulness_count_metadata(self) -> str:
-        return self._get_text_of_element(self.kb_article_helpfulness_count)
-
     def get_text_of_article_title(self) -> str:
         return self._get_text_of_element(self.kb_article_heading)
 
-    def get_restricted_visibility_banner_text(self) -> str:
-        return self._get_text_of_element(self.kb_article_restricted_banner)
-
-    def is_restricted_visibility_banner_text_displayed(self) -> bool:
-        return self._is_element_visible(self.kb_article_restricted_banner)
-
-    def get_list_of_kb_article_contributors(self) -> list[str]:
-        return self._get_text_of_elements(self.kb_article_contributors)
-
     def click_on_a_particular_article_contributor(self, username: str):
         self._click(self.kb_article_contributor(username))
-
-    def get_text_of_kb_article_content_approved(self) -> str:
-        return self._get_text_of_element(self.kb_article_content_approved_content)
-
-    def get_text_of_kb_article_content(self) -> str:
-        return self._get_text_of_element(self.kb_article_content)
 
     def click_on_what_links_here_option(self):
         self._click(self.editing_tools_what_links_here)
 
     def get_what_links_here_locator(self):
         return self.editing_tools_what_links_here
-
-    def is_article_content_image_displayed(self, image_title: str):
-        return self._is_element_visible(self.kb_article_content_image(image_title))
 
     """Actions against the kb article editing tools section locators."""
     def click_on_show_history_option(self):
@@ -142,9 +118,6 @@ class KBArticlePage(BasePage):
         return self._get_current_page_url()
 
     """Actions against the helpfulness widget locators."""
-    def is_helpfulness_widget_displayed(self) -> bool:
-        return self._is_element_visible(self.helpfulness_widget)
-
     def wait_for_helpfulness_widget_to_be_hidden(self, timeout=7000):
         self._wait_for_locator_to_be_hidden(self.helpfulness_widget, timeout=timeout)
 
@@ -165,12 +138,6 @@ class KBArticlePage(BasePage):
 
     def click_on_helpfulness_submit_button(self):
         self._click(self.helpfulness_widget_submit_button)
-
-    def get_survey_message_text(self) -> str:
-        return self._get_text_of_element(self.survey_message)
-
-    def is_related_articles_section_displayed(self) -> bool:
-        return self._is_element_visible(self.related_articles_section)
 
     def get_list_of_related_articles(self) -> list[str]:
         return [article.strip() for article in self._get_text_of_elements(

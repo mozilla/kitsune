@@ -45,12 +45,6 @@ class KBArticleEditMetadata(BasePage):
             f"//section[@id='relevant-products']//label[normalize-space(text())='{product_name}']")
 
     """Actions against the edit article metadata page locators."""
-    def get_error_message(self) -> str:
-        return self._get_text_of_element(self.edit_article_metadata_error)
-
-    def get_edit_article_metadata_page_header(self) -> str:
-        return self._get_element_text_content(self.edit_article_metadata_page_header)
-
     def delete_a_chosen_restricted_visibility_group(self, chosen_group: str):
         self._click(self.delete_group(chosen_group))
 
@@ -65,15 +59,9 @@ class KBArticleEditMetadata(BasePage):
             for group in groups:
                 self._click(self.delete_a_group(group))
 
-    def get_text_of_title_input_field(self) -> str:
-        return self._get_element_input_value(self.title_input_field)
-
     def add_text_to_title_field(self, text: str):
         self._clear_field(self.title_input_field)
         self._fill(self.title_input_field, text)
-
-    def get_slug_input_field(self) -> str:
-        return self._get_element_input_value(self.slug_input_field)
 
     def add_text_to_slug_field(self, text: str):
         self._clear_field(self.slug_input_field)
@@ -117,16 +105,6 @@ class KBArticleEditMetadata(BasePage):
         if submit:
             self._wait_for_locator(self.related_documents_search_result(document_name), 5000)
             self._click(self.related_documents_search_result(document_name))
-
-    def is_no_related_documents_displayed(self) -> bool:
-        return self._is_element_visible(self.no_results_found_related_documents_message)
-
-    def get_related_documents_search_options(self) -> list[str]:
-        return self._get_text_of_elements(self.related_documents_search_results)
-
-    def get_related_documents(self) -> list[str]:
-        return [text.replace("\n×", "").strip() for text in self._get_text_of_elements(
-            self.added_related_documents)]
 
     def remove_related_document(self, document_name: str):
         self._click(self.remove_related_documents_button(document_name))

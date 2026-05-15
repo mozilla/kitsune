@@ -1,5 +1,5 @@
 from playwright.sync_api import Page
-from playwright_tests.core.utilities import Utilities, retry_on_502
+from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.ask_a_question.posted_question_pages.questions_page import QuestionPage
 from playwright_tests.pages.auth_page import AuthPage
@@ -15,7 +15,6 @@ class AAQFlow:
         self.top_navbar = TopNavbar(page)
         self.auth_page = AuthPage(page)
 
-    @retry_on_502
     def submit_an_aaq_question(self, subject: str, body: str, topic_name='', attach_image=False,
                                is_premium=False, email="", is_loginless=False,
                                expected_locator=None, form_url=None):
@@ -77,6 +76,9 @@ class AAQFlow:
             body_text
         )
 
+        if self.aaq_form_page.is_thunderbird_version_field_visible():
+            self.aaq_form_page.add_text_to_thunderbird_version_field("150")
+
         if attach_image:
             # Uploading an image to the aaq question form.
             self.aaq_form_page.add_image_browse_button.set_input_files(
@@ -122,13 +124,11 @@ class AAQFlow:
             self.utilities.aaq_question_test_data["valid_firefox_question"]["image_path"]
         )
 
-    @retry_on_502
     def deleting_question_flow(self):
         """Flow for deleting a question."""
         self.question_page.click_delete_this_question_question_tools_option()
         self.question_page.click_delete_this_question_button()
 
-    @retry_on_502
     def editing_question_flow(self, subject='', body='', troubleshoot='', submit_edit=True):
         """
         Flow for updating a particular AAQ question.
@@ -138,7 +138,8 @@ class AAQFlow:
             troubleshoot: The new content of the Troubleshoot Information info/section.
             submit_edit: If the edits should be submitted or not.
         """
-        self.question_page.click_on_edit_this_question_question_tools_option()
+        if self.question_page.edit_this_question_option.is_visible():
+            self.question_page.click_on_edit_this_question_question_tools_option()
 
         if subject:
             self.aaq_form_page.clear_subject_input_field()
@@ -154,7 +155,6 @@ class AAQFlow:
         if submit_edit:
             self.aaq_form_page.click_aaq_edit_submit_button()
 
-    @retry_on_502
     def editing_reply_flow(self, answer_id: str, reply_body: str, submit_reply=True):
         """
         Flow for updating a particular AAQ question reply.
@@ -173,7 +173,6 @@ class AAQFlow:
         self.aaq_form_page.click_on_update_answer_button() if submit_reply else (
             self.aaq_form_page.click_aaq_form_cancel_button())
 
-    @retry_on_502
     def delete_question_reply(self, answer_id: str, delete_reply: bool):
         """
         Flow of deleting a question reply.
@@ -187,9 +186,9 @@ class AAQFlow:
         self.question_page.click_delete_this_question_button() if delete_reply else (
             self.question_page.click_on_cancel_delete_button())
 
-    @retry_on_502
     def post_question_reply_flow(self, repliant_username: str, reply='', submit_reply=True,
-                                 quoted_reply=False, reply_for_id='', fetch_id=True) -> str:
+                                 quoted_reply=False, quoted_question=False, reply_for_id='',
+                                 fetch_id=True) -> str:
         """
         Flow for posting a question reply.
         Args:
@@ -205,7 +204,10 @@ class AAQFlow:
             self.question_page.click_on_reply_more_options_button(reply_for_id)
             self.question_page.click_on_quote_for_a_certain_reply(reply_for_id)
 
-        if reply and quoted_reply:
+        if quoted_question:
+            self.question_page.click_on_question_quote_option()
+
+        if reply and quoted_reply or quoted_question:
             self.question_page.type_inside_the_post_a_reply_textarea(reply)
         elif reply and not quoted_reply:
             self.question_page.add_text_to_post_a_reply_textarea(reply)
@@ -213,15 +215,18 @@ class AAQFlow:
         if submit_reply:
             return self.question_page.click_on_post_reply_button(repliant_username, fetch_id)
 
-    def report_question_abuse(self, answer_id: str, text=''):
+    def report_question_abuse(self, answer_id="", text=''):
         """
         Flow for reporting question as abusive.
         Args:
-            answer_id (str): The ID of the question.
+            answer_id (str): The ID of the question reply.
             text: Text to be added inside the report.
         """
-        self.question_page.click_on_reply_more_options_button(answer_id)
-        self.question_page.click_on_report_abuse_for_a_certain_reply(answer_id)
+
+        if answer_id:
+            self.question_page.click_on_report_abuse_for_a_certain_reply(answer_id)
+        else:
+            self.question_page.click_on_question_report_abuse_option()
 
         if text:
             self.question_page.add_text_to_report_abuse_textarea(text)

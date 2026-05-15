@@ -43,13 +43,15 @@ def test_product_support_page_join_community_section(page: Page, create_user_fac
 
                 with check, allure.step("Verifying that the correct 'Join Our Community' "
                                         "section header is displayed"):
-                    assert (sumo_pages.common_web_elements.get_volunteer_learn_more_card_header()
-                            ) == ProductSupportPageMessages.JOIN_OUR_COMMUNITY_SECTION_HEADER
+                    expect(sumo_pages.common_web_elements.volunteer_learn_more_card_heading
+                           ).to_have_text(
+                        ProductSupportPageMessages.JOIN_OUR_COMMUNITY_SECTION_HEADER)
 
                 with check, allure.step("Verifying that the correct 'Join Our Community "
                                         "section content is displayed'"):
-                    assert (sumo_pages.common_web_elements.get_volunteer_learn_more_card_text()
-                            ) == ProductSupportPageMessages.JOIN_OUR_COMMUNITY_SECTION_CONTENT
+                    expect(sumo_pages.common_web_elements.volunteer_learn_more_card_text
+                           ).to_have_text(
+                        ProductSupportPageMessages.JOIN_OUR_COMMUNITY_SECTION_CONTENT)
 
                 with allure.step("Clicking on the 'Learn more' option from the 'Join Our "
                                  "Community' section"):
@@ -94,24 +96,25 @@ def test_product_support_page_info(page: Page, create_user_factory):
 
                 with check, allure.step("Verifying that the correct page header is displayed"):
                     if card == "Guides":
-                        assert (sumo_pages.product_support_page.get_product_support_title_text()
-                                ) == "Contributors" + (ProductSupportPageMessages.
-                                                       PRODUCT_SUPPORT_PAGE_TITLE)
+                        expect(sumo_pages.product_support_page.product_title).to_have_text(
+                            "Contributors" + (ProductSupportPageMessages.
+                                              PRODUCT_SUPPORT_PAGE_TITLE)
+                        )
                     else:
-                        assert (sumo_pages.product_support_page.get_product_support_title_text()
-                                ) == card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE
+                        expect(sumo_pages.product_support_page.product_title).to_have_text(
+                            card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE)
 
                 if sumo_pages.common_web_elements.is_frequent_topics_section_displayed():
                     with check, allure.step("Verifying the correct topics header is displayed"):
-                        assert (sumo_pages.common_web_elements.get_frequent_topics_title_text()
-                                ) == (ProductSupportPageMessages
-                                      .PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_TITLE)
+                        expect(sumo_pages.common_web_elements.frequent_topics_section_title
+                               ).to_have_text(
+                            ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_TITLE)
 
                     with check, allure.step("Verifying that the correct topics subheader is "
                                             "displayed"):
-                        assert sumo_pages.common_web_elements.get_frequent_topics_subtitle_text(
-                        ) == (ProductSupportPageMessages.
-                              PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_SUBTITLE)
+                        expect(sumo_pages.common_web_elements.frequent_topics_section_subtitle
+                               ).to_have_text(ProductSupportPageMessages.
+                                              PRODUCT_SUPPORT_PAGE_FREQUENT_TOPICS_SUBTITLE)
                 else:
                     print(f"{card} has no frequent topics displayed!!!")
             with allure.step("Navigating back"):
@@ -153,8 +156,6 @@ def test_product_support_frequent_topics_redirects(page: Page):
 @pytest.mark.smokeTest
 def test_product_support_page_featured_articles_redirect(page: Page, is_chromium,
                                                          create_user_factory):
-    if is_chromium:
-        pytest.skip("Skipping this test for chromium browser")
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["forum-contributors"])
@@ -178,20 +179,19 @@ def test_product_support_page_featured_articles_redirect(page: Page, is_chromium
 
                 with check, allure.step("Verifying that the correct page header is displayed"):
                     if card != "Guides":
-                        assert (sumo_pages.product_support_page.get_product_support_title_text()
-                                ) == card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE
+                        expect(sumo_pages.product_support_page.product_title).to_have_text(
+                            card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE)
                     else:
-                        assert (sumo_pages.product_support_page.get_product_support_title_text()
-                                ) == "Contributors" + (ProductSupportPageMessages.
-                                                       PRODUCT_SUPPORT_PAGE_TITLE)
-
+                        expect(sumo_pages.product_support_page.product_title).to_have_text(
+                            "Contributors" + (ProductSupportPageMessages.
+                                              PRODUCT_SUPPORT_PAGE_TITLE))
                 if sumo_pages.product_support_page.is_featured_articles_section_displayed():
                     with check, allure.step("Verifying the correct featured articles header "
                                             "is displayed"):
-                        assert (sumo_pages.product_support_page
-                                .get_featured_articles_header_text()
-                                ) == (ProductSupportPageMessages
-                                      .PRODUCT_SUPPORT_PAGE_FREQUENT_ARTICLES_TITLE)
+                        expect(sumo_pages.product_support_page.featured_article_section_title
+                               ).to_have_text(
+                            ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_FREQUENT_ARTICLES_TITLE
+                        )
                     with check, allure.step("Verifying that the featured article cards redirect "
                                             "successfully"):
                         assert _verify_featured_article_card_redirect(
@@ -225,48 +225,42 @@ def test_still_need_help_button_redirect(page: Page, create_user_factory):
                     sumo_pages.products_page.click_on_a_particular_product_support_card(card)
 
                     with check, allure.step("Verifying that the correct page header is displayed"):
-                        assert (sumo_pages.product_support_page.get_product_support_title_text()
-                                == card + ProductSupportPageMessages.
-                                PRODUCT_SUPPORT_PAGE_TITLE)
+                        expect(sumo_pages.product_support_page.product_title).to_have_text(
+                            card + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE)
 
                     with check, allure.step("Verifying that the correct still need help title is "
                                             "displayed"):
-                        assert (sumo_pages.product_support_page.get_still_need_help_widget_title()
-                                ) == ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE, (
-                            f"Incorrect widget title displayed for the {card} product")
+                        expect(sumo_pages.product_support_page.still_need_help_widget_title
+                               ).to_have_text(
+                            ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_TITLE)
                     if card in utilities.general_test_data['premium_products']:
                         with check, allure.step("Verifying that the correct still need help "
                                                 "content is displayed"):
-                            assert (sumo_pages.product_support_page
-                                    .get_still_need_help_widget_content()
-                                    ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_CONTENT_PREMIUM), (
-                                f"Incorrect widget content displayed for the {card} product")
+                            expect(sumo_pages.product_support_page.still_need_help_widget_details
+                                   ).to_have_text(
+                                ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_CONTENT_PREMIUM)
 
                         with check, allure.step("Verifying that the correct still need help "
                                                 "button text is displayed"):
-                            assert (sumo_pages.product_support_page
-                                    .get_still_need_help_widget_button_text()
-                                    ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_PREMIUM), (
-                                f"Incorrect widget button displayed for the {card} product")
+                            expect(sumo_pages.product_support_page.
+                                   ask_the_community_still_need_help_widget).to_have_text(
+                                ProductSupportPageMessages.
+                                STILL_NEED_HELP_WIDGET_BUTTON_TEXT_PREMIUM)
                         with allure.step("Clicking on the still need help widget button"):
                             sumo_pages.product_support_page.click_still_need_help_widget_button()
                     else:
                         with check, allure.step("Verifying that the correct still need help "
                                                 "content is displayed"):
-                            assert (sumo_pages.product_support_page
-                                    .get_still_need_help_widget_content()
-                                    ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_CONTENT_FREEMIUM), (
-                                f"Incorrect widget content displayed for the {card} product")
+                            expect(sumo_pages.product_support_page.still_need_help_widget_details
+                                   ).to_have_text(
+                                ProductSupportPageMessages.STILL_NEED_HELP_WIDGET_CONTENT_FREEMIUM)
 
                         with check, allure.step("Verifying that the correct still need help "
                                                 "button text is displayed"):
-                            assert (sumo_pages.product_support_page
-                                    .get_still_need_help_widget_button_text()
-                                    ) == (ProductSupportPageMessages
-                                          .STILL_NEED_HELP_WIDGET_BUTTON_TEXT_FREEMIUM)
+                            expect(sumo_pages.product_support_page.
+                                   ask_the_community_still_need_help_widget).to_have_text(
+                                ProductSupportPageMessages.
+                                STILL_NEED_HELP_WIDGET_BUTTON_TEXT_FREEMIUM)
 
                         with allure.step("Clicking on the still need help widget button"):
                             sumo_pages.product_support_page.click_still_need_help_widget_button()
@@ -278,8 +272,8 @@ def test_still_need_help_button_redirect(page: Page, create_user_factory):
                         )
 
                     with check, allure.step("Verifying that we are on the correct milestone"):
-                        assert sumo_pages.product_solutions_page.get_current_milestone_text(
-                        ) == ProductSolutionsMessages.CURRENT_MILESTONE_TEXT
+                        expect(sumo_pages.product_solutions_page.current_progress_item_label
+                               ).to_have_text(ProductSolutionsMessages.CURRENT_MILESTONE_TEXT)
                 else:
                     with allure.step("Signing in with an contributor account"):
                         utilities.start_existing_session(cookies=test_user)
@@ -288,14 +282,13 @@ def test_still_need_help_button_redirect(page: Page, create_user_factory):
                         sumo_pages.top_navbar.click_on_guides_option()
 
                     with check, allure.step("Verifying that the correct page header is displayed"):
-                        assert (sumo_pages.product_support_page.get_product_support_title_text()
-                                == "Contributors" + ProductSupportPageMessages.
-                                PRODUCT_SUPPORT_PAGE_TITLE)
+                        expect(sumo_pages.product_support_page.product_title).to_have_text(
+                            "Contributors" + ProductSupportPageMessages.PRODUCT_SUPPORT_PAGE_TITLE)
 
                     with check, allure.step("Verifying that the still need help CTA is not "
                                             "displayed"):
-                        assert not (sumo_pages.product_support_page
-                                    .is_still_need_help_widget_displayed())
+                        expect(sumo_pages.product_support_page.still_need_help_widget
+                               ).to_be_hidden()
 
                 with allure.step("Navigating to products page via top-navbar"):
                     sumo_pages.top_navbar.click_on_explore_our_help_articles_view_all_option()

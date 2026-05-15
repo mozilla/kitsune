@@ -14,6 +14,7 @@ from playwright_tests.pages.user_pages.my_profile_user_navbar import UserNavbar
 
 class EditProfileDataFlow:
     def __init__(self, page: Page):
+        self.page = page
         self.utilities = Utilities(page)
         self.edit_profile_page = MyProfileEdit(page)
         self.top_navbar = TopNavbar(page)

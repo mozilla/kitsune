@@ -39,14 +39,6 @@ class ProductSupportPage(BasePage):
         """Click on the home breadcrumb link on the product support page."""
         self._click(self.home_breadcrumb)
 
-    def get_product_support_title_text(self) -> str:
-        """Get the product title text on the product support page."""
-        return self._get_text_of_element(self.product_title)
-
-    def get_featured_articles_header_text(self) -> str:
-        """Get the featured articles section title text."""
-        return self._get_text_of_element(self.featured_article_section_title)
-
     def is_featured_articles_section_displayed(self) -> bool:
         """Check if the featured articles section is displayed on the page."""
         return self._is_element_visible(self.featured_article_section_title)
@@ -66,22 +58,6 @@ class ProductSupportPage(BasePage):
             card_title (str): The title of the card to click on.
         """
         self._click(self.featured_article_card(card_title))
-
-    def is_still_need_help_widget_displayed(self) -> bool:
-        """Check if the still need help widget is displayed on the page."""
-        return self._is_element_visible(self.still_need_help_widget)
-
-    def get_still_need_help_widget_title(self) -> str:
-        """Get the still need help widget title text."""
-        return self._get_text_of_element(self.still_need_help_widget_title)
-
-    def get_still_need_help_widget_content(self) -> str:
-        """Get the still need help widget content text."""
-        return self._get_text_of_element(self.still_need_help_widget_details)
-
-    def get_still_need_help_widget_button_text(self) -> str:
-        """Get the text of the still need help widget button."""
-        return self._get_text_of_element(self.ask_the_community_still_need_help_widget)
 
     def click_still_need_help_widget_button(self):
         """Click on the still need help widget button."""

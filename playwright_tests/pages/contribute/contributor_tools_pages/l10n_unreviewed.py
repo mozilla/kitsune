@@ -18,6 +18,3 @@ class UnreviewedLocalizationPage(BasePage):
     """Actions against the unreviewed localization page locators."""
     def click_on_a_listed_article(self, title: str):
         self._click(self.listed_article(title))
-
-    def get_modified_by_text(self, title: str) -> str:
-        return self._get_text_of_element(self.modified_by_text(title))

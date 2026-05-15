@@ -35,11 +35,12 @@ def test_featured_articles_redirect(page: Page, is_chromium):
                 sumo_pages.contact_support_page.click_on_a_particular_card(card)
 
                 if redirect_target:
-                    assert sumo_pages.product_solutions_page.get_product_solutions_heading(
-                    ) == redirect_target + ProductSolutionsMessages.PAGE_HEADER
+                    expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                        redirect_target + ProductSolutionsMessages.PAGE_HEADER)
                 else:
-                    assert sumo_pages.product_solutions_page.get_product_solutions_heading(
-                    ) == card + ProductSolutionsMessages.PAGE_HEADER
+                    expect(sumo_pages.product_solutions_page.product_title_heading).to_have_text(
+                        card + ProductSolutionsMessages.PAGE_HEADER
+                    )
 
             if sumo_pages.product_solutions_page.is_featured_article_section_displayed():
                 for featured_article_card in (sumo_pages.product_solutions_page
@@ -111,12 +112,12 @@ def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
             sumo_pages.contact_support_page.click_on_a_particular_card(freemium_product)
         with check, allure.step("Verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
-            assert sumo_pages.common_web_elements.get_aaq_widget_text(
-            ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+            expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-            assert sumo_pages.common_web_elements.get_aaq_widget_button_name(
-            ) == AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
+            expect(sumo_pages.common_web_elements.aaq_button).to_have_text(
+                AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT)
 
         with allure.step("Clicking on the AAQ button and verifying that the auth page is "
                          "displayed"):
@@ -156,15 +157,15 @@ def test_contact_support_widget_redirect(page: Page, restmail_test_account_creat
         with check, allure.step("Verifying that the correct 'Still need help' subtext is "
                                 "displayed"):
             if redirect_target:
-                assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                ) == AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+                expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                    AAQWidgetMessages.FREEMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
             else:
-                assert sumo_pages.common_web_elements.get_aaq_widget_text(
-                ) == AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT
+                expect(sumo_pages.common_web_elements.still_need_help_subheading).to_have_text(
+                    AAQWidgetMessages.PREMIUM_AAQ_SUBHEADING_TEXT_SIGNED_OUT)
 
         with check, allure.step("Verifying that the correct AAQ button text is displayed"):
-            assert sumo_pages.common_web_elements.get_aaq_widget_button_name(
-            ) == AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT
+            expect(sumo_pages.common_web_elements.aaq_button).to_have_text(
+                AAQWidgetMessages.FREEMIUM_AND_PREMIUM_PRODUCTS_AAQ_WIDGET_BUTTON_TEXT)
 
         with allure.step("Clicking on the AAQ button, verifying that the auth page is "
                          "displayed and signing in to SUMO"):

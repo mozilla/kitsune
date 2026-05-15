@@ -49,9 +49,6 @@ class ProductSolutionsPage(BasePage):
     def click_on_the_completed_milestone(self):
         self._click(self.complete_progress_item)
 
-    def get_current_milestone_text(self) -> str:
-        return self._get_text_of_element(self.current_progress_item_label)
-
     """Actions against the featured article section locators."""
     def click_on_a_featured_article_card(self, card_name: str):
         self._click(self.featured_article_card(card_name))
@@ -65,24 +62,3 @@ class ProductSolutionsPage(BasePage):
     """Actions against the popular topic section locators."""
     def click_on_a_popular_topic_card(self, card_name: str):
         self._click(self.popular_topic_card(card_name))
-
-    def get_popular_topics(self) -> list[str]:
-        return self._get_text_of_elements(self.popular_topics_cards)
-
-    def is_popular_topics_section_displayed(self) -> bool:
-        return self._is_element_visible(self.popular_topics_section_title)
-
-    """Actions against the product solutions section locators."""
-    def get_product_solutions_heading(self) -> str:
-        return self._get_text_of_element(self.product_title_heading)
-
-    def is_product_solutions_page_header_displayed(self) -> ElementHandle:
-        return self._get_element_handle(self.product_title_heading)
-
-    """Actions against the scam banner locators."""
-    def get_scam_alert_banner_link(self) -> str:
-        # Instead of clicking on the 'Learn More' button we are going to perform the assertion
-        # by checking that the element has the correct href value. Navigating to prod can yield
-        # a 429 error which we want to avoid.
-        return self._get_element_attribute_value(self.support_scam_banner_learn_more_button,
-                                                 "href")

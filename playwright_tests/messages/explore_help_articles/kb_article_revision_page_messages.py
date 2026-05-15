@@ -16,15 +16,15 @@ class KBArticleRevision:
                                         revision_id: str,
                                         username: str,
                                         revision_comment: str) -> str:
-        return (f"Reviewing Revision {revision_id} by {username}. Back to HistoryRevision Comment:"
-                f" {revision_comment}")
+        return (f"Reviewing Revision {revision_id} by {username}. Back to History Revision "
+                f"Comment: {revision_comment}")
 
     def get_unreviewed_revision_details(self,
                                         revision_id: str,
                                         username: str,
                                         revision_comment: str) -> str:
-        return (f"Revision {revision_id} by {username}. Revision Comment: {revision_comment}Review"
-                f" Revision {revision_id}")
+        return (f"Revision {revision_id} by {username}. Revision Comment: {revision_comment} "
+                f"Review Revision {revision_id}")
 
     def get_article_warning_message(self, username: str):
         return (f"Warning: This page is also being edited by {username}! If you know what you are "

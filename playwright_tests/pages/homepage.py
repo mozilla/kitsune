@@ -24,17 +24,6 @@ class Homepage(BasePage):
         self.featured_articles_card_titles = page.locator("div.card--article").get_by_role("link")
 
     """Actions against the general page locators."""
-    def get_user_notification(self) -> str:
-        """Returns the displayed user notification."""
-        return self._get_text_of_element(self.user_notification)
-
-    def get_user_notification_link_text(self) -> list[str]:
-        """Returns the link text of the user notification links."""
-        text = []
-        for element in self.user_notification_links:
-            text.append(self._get_text_of_element(element))
-        return text
-
     def click_on_a_certain_notification_link(self, link_text: str):
         """Clicks on a link displayed inside the user notification by the link text."""
         self._click(self.user_notification_link_by_link_text(link_text))
@@ -53,12 +42,9 @@ class Homepage(BasePage):
         self._click(self.product_card(card_title))
 
     """Actions against the featured articles cards."""
-    def get_number_of_featured_articles(self) -> int:
-        """Get the number of featured articles"""
-        return self._get_elements_count(self.featured_articles_list)
-
     def get_featured_articles_titles(self) -> list[str]:
         """Get the titles of featured articles"""
+        self._wait_for_locator(self.featured_articles_card_titles.first)
         return self._get_text_of_elements(self.featured_articles_card_titles)
 
     def click_on_a_featured_card(self, element_number: int):

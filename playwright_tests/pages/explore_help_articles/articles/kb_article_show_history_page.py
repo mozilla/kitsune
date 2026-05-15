@@ -77,20 +77,8 @@ class KBArticleShowHistoryPage(BasePage):
             "div[class='submit'] a")
 
     """Actions against the Show History page locators."""
-    def get_show_history_page_banner(self) -> str:
-        return self._get_text_of_element(self.show_history_page_banner)
-
-    def get_show_history_page_title(self) -> str:
-        return self._get_text_of_element(self.show_history_page_header)
-
-    def get_show_history_category_text(self) -> str:
-        return self._get_text_of_element(self.show_history_category_link)
-
     def click_on_show_history_category(self):
         self._click(self.show_history_category_link)
-
-    def get_show_history_revision_for_locale_text(self) -> str:
-        return self._get_text_of_element(self.show_history_revision_history_for)
 
     def click_on_a_particular_revision_editor(self, revision_id: str, username: str):
         self._click(self.revision_editor(revision_id, username))
@@ -132,14 +120,8 @@ class KBArticleShowHistoryPage(BasePage):
     def click_on_a_revision_date(self, revision_id):
         self._click(self.revision_date(revision_id))
 
-    def is_revision_displayed(self, revision_id) -> bool:
-        return self._is_element_visible(self.revision(revision_id))
-
     def get_revision_time(self, revision_id) -> str:
         return self._get_text_of_element(self.revision_time(revision_id))
-
-    def get_revision_status(self, revision_id) -> str:
-        return self._get_text_of_element(self.revision_status(revision_id))
 
     def is_revision_current(self, revision_id: str) -> bool:
         """
@@ -151,20 +133,11 @@ class KBArticleShowHistoryPage(BasePage):
 
     # For unreviewed revisions but user session permits review.
     """# For unreviewed revisions but user session permits review."""
-    def get_status_of_reviewable_revision(self, revision_id):
-        return self._get_text_of_element(self.reviewable_revision(revision_id))
-
     def click_on_review_revision(self, revision_id):
         self._click(self.reviewable_revision(revision_id))
 
     def click_on_delete_revision_button(self, revision_id):
         return self._click(self.delete_revision(revision_id))
-
-    def get_unable_to_delete_revision_header(self) -> str:
-        return self._get_text_of_element(self.unable_to_delete_revision_page_header)
-
-    def get_unable_to_delete_revision_subheader(self) -> str:
-        return self._get_text_of_element(self.unable_to_delete_revision_page_subheader)
 
     def click_go_back_to_document_history_option(self):
         self._click(self.unable_to_delete_revision_page_go_back_to_document_history)
@@ -189,21 +162,8 @@ class KBArticleShowHistoryPage(BasePage):
     def click_on_delete_button_for_a_particular_contributor(self, username: str):
         self._click(self.delete_contributor(username))
 
-    def get_list_of_all_contributors(self) -> list[str]:
-        return self._get_text_of_elements(self.all_contributors_usernames)
-
-    def get_delete_contributor_confirmation_page_header(self) -> str:
-        return self._get_text_of_element(self.delete_contributor_confirmation_page_header)
-
     def click_on_delete_contributor_confirmation_page_cancel_button(self):
         self._click(self.delete_contributor_confirmation_page_cancel_button)
 
     def click_on_delete_contributor_confirmation_page_confirm_button(self):
         self._click(self.delete_contributor_confirmation_page_submit_button)
-
-    def get_revision_significance(self, revision_id: str) -> str:
-        return self._get_text_of_element(self.revision_significance(revision_id)).strip()
-
-    def get_revision_creator(self, revision_id: str) -> str:
-        """Get the revision creator based on the revision id."""
-        return self._get_text_of_element(self.revision_creator(revision_id))

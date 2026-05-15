@@ -1,7 +1,7 @@
 import random
 
 from playwright.sync_api import ElementHandle, Locator, Page
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, Error as PlaywrightError
 
 
 class BasePage:
@@ -9,152 +9,111 @@ class BasePage:
     def __init__(self, page: Page):
         self.page = page
 
-    def _get_element_locator(self, xpath: str, with_wait=True) -> Locator:
-        """
-        This helper function returns the element locator from a given xpath.
-        """
-        if with_wait:
-            self.wait_for_dom_to_load()
+    def _get_element_locator(self, xpath: str) -> Locator:
+        """Returns the element locator for a given selector."""
         return self.page.locator(xpath)
 
     def _get_current_page_url(self) -> str:
-        """
-        This helper function returns the current page URL.
-        """
+        """Returns the current page URL."""
         return self.page.url
 
     def _get_element_handles(self, locator: Locator) -> list[ElementHandle]:
-        """
-        This helper function returns a list of element handles from a given locator.
-        """
-        self.wait_for_dom_to_load()
+        """Returns a list of element handles from a given locator."""
         return locator.element_handles()
 
     def _get_element_handle(self, locator: Locator) -> ElementHandle:
-        """
-        This helper function returns a single element handle from a given locator.
-        """
-        self.wait_for_dom_to_load()
+        """Returns a single element handle from a given locator."""
         return locator.element_handle()
 
     def _get_text_of_elements(self, locator: Locator) -> list[str]:
-        """
-        This helper function returns a list containing the inner texts of a given locator.
-        """
-        self.wait_for_dom_to_load()
+        """Returns a list of inner texts for a given locator."""
         return locator.all_inner_texts()
 
     def _get_text_of_element(self, locator: Locator) -> str:
-        """
-        This helper function returns the inner text of a given locator.
-        """
-        self.wait_for_dom_to_load()
+        """Returns the inner text of a given locator."""
         return locator.inner_text()
 
     def _is_element_empty(self, locator: Locator) -> bool:
-        """
-        This helper function returns checks if the given locator has an inner text.
-        """
-        self.wait_for_dom_to_load()
+        """Returns True if the locator has no inner text."""
         return not locator.inner_text()
 
     def _get_elements_count(self, locator: Locator) -> int:
-        """
-        This helper function returns the web element count from a given locator.
-        """
-        self.wait_for_dom_to_load()
+        """Returns the element count for a given locator."""
         return locator.count()
 
-    def _get_element_attribute_value(self, element: str | Locator | list[Locator] | ElementHandle, attribute: str) -> str | list[str]:
-        """
-        This helper function returns the given attribute of a given locator or web element.
-        """
+    def _get_element_attribute_value(
+        self, element: str | Locator | list[Locator] | ElementHandle, attribute: str
+    ) -> str | list[str]:
+        """Returns the attribute value(s) of a given locator or element."""
         if isinstance(element, str):
             return self._get_element_locator(element).get_attribute(attribute)
         elif isinstance(element, list):
-            self.wait_for_dom_to_load()
-            values = []
-            for element in element:
-                values.append(element.get_attribute(attribute))
-            return values
+            return [el.get_attribute(attribute) for el in element]
         else:
-            self.wait_for_dom_to_load()
             return element.get_attribute(attribute)
 
     def _wait_for_given_timeout(self, timeout: float):
-        """
-        This helper function pauses the execution for a given timeout.
-        """
+        """Pauses execution for a given timeout in milliseconds."""
         self.page.wait_for_timeout(timeout)
 
     def _get_element_input_value(self, locator: Locator) -> str:
-        """
-        This helper function returns the input value of a given element locator.
-        """
+        """Returns the input value of a given locator."""
         return locator.input_value()
 
     def _get_element_text_content(self, locator: Locator) -> str:
-        """
-        This helper function returns the text content of a given locator via the page instance.
-        """
+        """Returns the text content of a given locator."""
         return locator.text_content()
 
     def _get_text_content_of_all_locators(self, locator: Locator) -> list[str]:
-        """
-        This helper function returns a list of text content for the given locator.
-        """
+        """Returns a list of text content for the given locator."""
         return locator.all_text_contents()
 
-    def _checkbox_interaction(self, element: [str, ElementHandle], check: bool, retries=3,
-                              delay=2000):
-        """
-        This helper function interacts with a checkbox element.
+    def _checkbox_interaction(self, element: str | Locator, check: bool, retries=3, delay=500):
+        """Checks or unchecks a checkbox element with retry logic.
 
         Args:
-        element (Union[str, ElementHandle]): The element locator to interact with.
-        check (bool): Whether to check or uncheck the checkbox.
+            element: The element locator or selector string.
+            check: Whether to check (True) or uncheck (False) the checkbox.
         """
-        self.wait_for_networkidle()
         for attempt in range(retries):
             try:
-                locator = self._get_element_locator(element) if isinstance(
-                    element,str) else element
+                locator = self._get_element_locator(element) if isinstance(element, str) else element
                 if check:
                     locator.check()
                 else:
                     locator.uncheck()
                 break
-            except (PlaywrightTimeoutError, Exception) as e:
+            except PlaywrightTimeoutError as e:
                 print(f"Checkbox interaction failed. Retrying... {e}")
                 if attempt < retries - 1:
                     self.page.wait_for_timeout(delay)
                 else:
-                    raise Exception("Max retries exceeded. Could not interact with the checkbox")
+                    raise
 
     def _is_element_disabled(self, locator: Locator) -> bool:
-        """Return whether the locator is disabled or not"""
+        """Returns whether the locator is disabled."""
         return locator.is_disabled()
 
     def _click(self, element: str | Locator | ElementHandle, expected_locator=None,
                expected_locator_to_be_hidden=None, expected_url=None, with_force=False, retries=3,
-               delay=2000):
-        """
-        This helper function clicks on a given element locator.
+               delay=500):
+        """Clicks on a given element locator with retry logic.
 
         Args:
-        element (Union[str, Locator, ElementHandle]): The element locator to click on.
-        expected_locator (str): The expected locator to be visible after the click event.
-        expected_locator_to_be_hidden (str): The locator which is expected to be hidden after the
-        click event.
-        expected_url (str): The expected URL to wait for after the click.
-        with_force (bool): Whether to force the click.
+            element: The element locator, selector string, or element handle to click.
+            expected_locator: Locator expected to be visible after the click.
+            expected_locator_to_be_hidden: Locator expected to be hidden after the click.
+            expected_url: URL expected after the click.
+            with_force: Whether to force the click.
         """
-        self.wait_for_networkidle()
         for attempt in range(retries):
             try:
-                element_locator = self._get_element_locator(element) if isinstance(
-                    element, str) else element
+                element_locator = (
+                    self._get_element_locator(element) if isinstance(element, str) else element
+                )
                 element_locator.click(force=with_force)
+                self.wait_for_dom_to_load()
+                self._recover_if_on_error_page()
                 if expected_locator:
                     self._wait_for_locator(expected_locator, timeout=3000)
                 if expected_locator_to_be_hidden:
@@ -172,115 +131,89 @@ class BasePage:
                 if attempt < retries - 1:
                     self.page.wait_for_timeout(delay)
 
+    def _recover_if_on_error_page(self, retries: int = 3) -> None:
+        """If the last main-frame navigation response was a 502, reload the page until it
+        isn't. The `_last_main_nav_status` attribute is maintained by the response listener
+        registered in `tests/conftest.py::navigate_to_homepage`.
+        """
+        for attempt in range(retries):
+            status = getattr(self.page, "_last_main_nav_status", None)
+            if status is None or status != 502:
+                return
+            print(f"On 502 page, reload attempt "
+                  f"{attempt + 1}/{retries} in 5s...")
+            self.page.wait_for_timeout(5000)
+            try:
+                self.page.reload(wait_until="domcontentloaded")
+            except PlaywrightError as e:
+                print(f"Reload during 502 recovery failed: {e}")
+
     def _click_on_an_element_by_index(self, locator: Locator, index: int):
-        """
-        This helper function clicks on a given element locator based on a given index.
-        """
-        self.wait_for_networkidle()
-        locator.nth(index).click()
+        """Clicks on an element at a given index within a locator."""
+        self._click(locator.nth(index))
 
     def _click_on_first_item(self, locator: Locator):
-        """
-        This helper function clicks on the first item from a given web element locator list.
-        """
-        self.wait_for_networkidle()
-        locator.first.click()
+        """Clicks the first element matched by a locator."""
+        self._click(locator.first)
 
     def _fill(self, locator: Locator, text: str, with_force=False):
-        """
-        This helper function fills a given text inside a given element locator.
-        """
+        """Fills a text input with the given text."""
         locator.fill(text, force=with_force)
 
     def _type(self, locator: Locator, text: str, delay: int):
-        """
-        This helper function types a given string inside a given element locator with a given delay
-        """
-        self.wait_for_dom_to_load()
+        """Types text into a locator with a per-keystroke delay."""
         locator.type(text=text, delay=delay)
 
     def _press_a_key(self, locator: Locator, key: str):
-        """
-        This helper function types a given key inside a given element locator.
-        """
-        self.wait_for_dom_to_load()
+        """Presses a key on a given locator."""
         locator.press(key)
 
     def _clear_field(self, locator: Locator):
-        """
-        This helper function clears the given element locator input field.
-        """
+        """Clears the input field of a given locator."""
         locator.clear()
 
     def _select_option_by_label(self, locator: Locator, label_name: str, expected_locator=None):
-        """
-        This helper function selects an element from a given select box based on label.
-        """
-        self.wait_for_dom_to_load()
+        """Selects a select-box option by its visible label."""
         locator.select_option(label=label_name)
         if expected_locator:
             self._wait_for_locator(expected_locator)
 
     def _select_option_by_value(self, locator: Locator, value: str):
-        """
-        This helper function selects a element from a given select box based on value.
-        """
-        self.wait_for_dom_to_load()
+        """Selects a select-box option by its value attribute."""
         locator.select_option(value=value)
 
     def _select_random_option_by_value(self, dropdown_locator: Locator, locator_options: Locator):
-        """
-        This helper function selects a random option from a given web element locator.
-        """
-        self.wait_for_dom_to_load()
+        """Selects a random non-empty option from a select box."""
         elements = []
-        for element in locator_options.all():
-            locator_value = self._get_element_attribute_value(element, 'value')
-            if locator_value == '':
-                continue
-            else:
-                elements.append(locator_value)
+        for option in locator_options.all():
+            value = option.get_attribute('value')
+            if value:
+                elements.append(value)
         self._select_option_by_value(dropdown_locator, random.choice(elements))
 
     def _accept_dialog(self):
-        """
-        This helper function accepts the displayed dialog.
-        """
+        """Registers a handler to automatically accept the next dialog."""
         self.page.on("dialog", lambda dialog: dialog.accept())
 
     def _hover_over_element(self, locator: Locator):
-        """
-        This helper function performs a mouse-over action over a given element locator.
-        """
-        self.wait_for_dom_to_load()
+        """Hovers the mouse over a given locator."""
         locator.hover()
 
     def _is_element_visible(self, locator: Locator) -> bool:
-        """
-        This helper function finds the locator of the given locator and checks if it is visible.
-        """
-        self.wait_for_dom_to_load()
-        if locator.count() > 0:
-            return locator.is_visible()
-        else:
-            return False
+        """Returns whether the element matched by the locator is visible."""
+        return locator.is_visible()
 
     def _is_checkbox_checked(self, locator: Locator) -> bool:
-        """
-        This helper function checks if a given element locator is checked.
-        """
-        self.wait_for_dom_to_load()
+        """Returns whether the checkbox matched by the locator is checked."""
         return locator.is_checked()
 
     def _wait_for_locator(self, locator: Locator, timeout=3500, raise_exception=False):
-        """
-        This helper function waits for a given element locator to be visible based on a given
-        timeout.
+        """Waits for a locator to become visible.
 
         Args:
-            locator (Locator): The locator.
-            timeout (int): Timeout.
-            raise_exception (bool): Whether to raise the exception or not.
+            locator: The locator to wait for.
+            timeout: Timeout in milliseconds.
+            raise_exception: Re-raise the timeout error if True.
         """
         try:
             locator.wait_for(state="visible", timeout=timeout)
@@ -291,14 +224,12 @@ class BasePage:
 
     def _wait_for_locator_to_be_hidden(self, locator: Locator, timeout=3500,
                                        raise_exception=False):
-        """
-        This helper function waits for a given element locator to be hidden based on a given
-        timeout.
+        """Waits for a locator to become hidden.
 
         Args:
-            locator (Locator): The locator.
-            timeout (int): Timeout.
-            raise_exception (bool): Whether to raise the exception or not.
+            locator: The locator to wait for.
+            timeout: Timeout in milliseconds.
+            raise_exception: Re-raise the timeout error if True.
         """
         try:
             locator.wait_for(state="hidden", timeout=timeout)
@@ -308,38 +239,25 @@ class BasePage:
                 raise
 
     def _move_mouse_to_location(self, x: int, y: int):
-        """
-        This helper function moves the mouse to a given location.
-
-        Args:
-        x (int): The x-coordinate.
-        y (int): The y-coordinate.
-        """
+        """Moves the mouse to absolute page coordinates."""
         self.page.mouse.move(x, y)
 
     def eval_on_selector_for_last_child_text(self, element: str) -> str:
-        """
-        This helper function evaluates a JavaScript expression on the given element and returns
-        the text content of the last child element.
-        """
+        """Returns the text content of the last child of a matched element."""
         return self.page.eval_on_selector(
             element,
             "el => el.lastChild?.textContent?.trim()"
         )
 
     def wait_for_dom_to_load(self):
-        """
-        This helper function awaits for the DOMContentLoaded event to be fired.
-        """
+        """Waits for the DOMContentLoaded event. Use after full-page navigations."""
         try:
             self.page.wait_for_load_state("domcontentloaded")
         except PlaywrightTimeoutError:
             print("DOMContentLoaded event was not fired. Continuing...")
 
     def wait_for_networkidle(self):
-        """
-        This helper function waits until there are no network connections for at least 500ms.
-        """
+        """Waits for network idle. Use explicitly after full-page navigations only."""
         try:
             self.page.wait_for_load_state("networkidle")
         except PlaywrightTimeoutError:

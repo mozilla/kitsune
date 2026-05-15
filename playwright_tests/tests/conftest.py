@@ -1,6 +1,5 @@
 import random
 import string
-import warnings
 import requests
 import allure
 import pytest
@@ -9,7 +8,7 @@ from requests import JSONDecodeError
 from slugify import slugify
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright._impl._errors import TargetClosedError, TimeoutError
+from playwright._impl._errors import TargetClosedError
 
 from playwright_tests.pages.sumo_pages import SumoPages
 
@@ -17,35 +16,28 @@ from playwright_tests.pages.sumo_pages import SumoPages
 @pytest.fixture(autouse=True)
 def navigate_to_homepage(page: Page):
     """
-    This fixture is used in all functions.
-    1. Sets the default navigation timeout to 30 seconds.
-    2. Blocks all requests to pontoon in the current page context.
-    3. Handles 502 errors by reloading the page after 5 seconds.
-    4. It navigates to the SuMo homepage and returns the page object for further usage.
+    Sets the default navigation timeout, blocks Pontoon requests, and navigates to the SuMo
+    homepage. 502 responses on the initial navigation are retried by `navigate_to_link`. A
+    passive response listener records the status of the last main-frame navigation response on
+    `page._last_main_nav_status`, so `BasePage._recover_if_on_error_page` can reload the page
+    when a click navigates to a 502.
     """
     utilities = Utilities(page)
     page.set_default_navigation_timeout(30000)
     page.route("**/pontoon.mozilla.org/**", utilities.block_request)
 
-    def handle_502_error(response):
-        """
-        This function is used to handle 502 errors. It reloads the page after 5 seconds if a
-        502 error is encountered.
-        """
-        for attempt in range(5):
-            if response.status == 502:
-                warnings.warn("502 encountered")
-                page = response.request.frame.page
-                print("502 error encountered. Reloading the page after 5 seconds.")
-                page.wait_for_timeout(5000)
-                try:
-                    utilities.refresh_page()
-                    return
-                except TimeoutError:
-                    print("TimeoutError encountered after reload.")
+    page._last_main_nav_status = None
 
-    page.context.on("response", handle_502_error)
-    page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
+    def _track_main_nav_status(response):
+        try:
+            if (response.request.is_navigation_request()
+                    and response.frame == page.main_frame):
+                page._last_main_nav_status = response.status
+        except Exception as e:
+            print(f"Nav-status listener ignored error: {e}")
+
+    page.on("response", _track_main_nav_status)
+    utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
     return page
 
 @pytest.hookimpl(hookwrapper=True)
@@ -172,7 +164,12 @@ def restmail_test_account_creation(page: Page, request):
         try:
             sumo_pages.auth_flow_page.delete_test_account_flow(username, password)
         except TargetClosedError as e:
-            cleanup_context = browser.new_context()
+            cleanup_context = browser.new_context(
+                extra_http_headers={
+                f"{Utilities.fxa_browser_challenge_header}":
+                    f"{Utilities.fxa_browser_challenge_value}"
+                }
+            )
             cleanup_page = cleanup_context.new_page()
             try:
                 cleanup_sumo_pages = SumoPages(cleanup_page)
