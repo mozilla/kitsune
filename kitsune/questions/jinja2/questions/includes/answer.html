@@ -87,6 +87,7 @@
 
   <div class="main-content">
     {% if answer.id and question.solution == answer %}
+      {% set solver = question.solver %}
       <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>
         {{_('Chosen Solution')}}
         <svg class="is-solution--icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
