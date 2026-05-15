@@ -39,7 +39,7 @@
     "@babel/runtime": "^7.28.6",
     "@mozmeao/dnt-helper": "^1.0.0",
     "@urql/svelte": "^4.0.0",
-    "codemirror": "^5.65.21",
+    "codemirror": "^6.0.2",
     "d3": "^3.5.17",
     "graphql": "^16.13.1",
     "htmx.org": "^1.9.12",
