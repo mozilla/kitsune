@@ -101,7 +101,11 @@ class SupportTicket(ModelBase):
 
     @property
     def public_comments(self):
-        return [c for c in self.comments if c.get("public", False)]
+        # Zendesk always stores the ticket's description as the first comment, but
+        # if the ticket hasn't yet been synchronized with Zendesk, the first comment
+        # would be a webhook-appended reply.
+        first_reply_index = 0 if self.last_synced_at is None else 1
+        return [c for c in self.comments[first_reply_index:] if c.get("public", False)]
 
     @property
     def user_status(self):
