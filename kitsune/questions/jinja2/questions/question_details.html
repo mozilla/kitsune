@@ -161,47 +161,10 @@
               datetime=datetimeformat(question.updated, format='longdatetime')) }}
       </em></p>
     {% endif %}
-    {% if question.solution %}
-      {% set solver = question.solver %}
-      <div class="solution card elevation-00">
-        <h4 class="is-solution"
-            {% if solver %}title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>
-          {{ _('Chosen solution') }}
-          <svg class="is-solution--icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none"
-                  fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </h4>
-        <div class="reply">
-          {{ question.solution.content_parsed|safe }}
-        </div>
-        <div class="solution--footer">
-          <span class="solution--vote-count">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                 aria-hidden="true">
-              <path d="M10 15v4a3 3 0 0 0 3 3l4-12V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/>
-              <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
-            </svg>
-            <strong>{{ question.solution.num_helpful_votes }}</strong>
-            {{ _('helpful') }}
-          </span>
-          <a class="solution--read-more sumo-button secondary-button button-sm"
-             href="{{ question.solution.get_absolute_url() }}">
-            {{ _('Read this answer in context') }}
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                 aria-hidden="true">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-    {% endif %}
   </div>
 {% endblock %}
 
-{# ── Tools: me-too voting (below post, above replies) ────────────────────── #}
+{# ── Me-too action + chosen solution as a tree child of the question ────── #}
 {% block thread_tools %}
   {% if question.editable %}
     <div class="question-tools sumo-button-wrap align-end">
@@ -215,6 +178,15 @@
           </form>
         </div>
       {% endif %}
+    </div>
+  {% endif %}
+  {% if pinned_solution %}
+    <div class="solution-tree">
+      {% set answer = pinned_solution %}
+      {% set is_pinned_copy = True %}
+      {% include "questions/includes/answer.html" %}
+      {% set is_pinned_copy = False %}
+      {% set answer = None %}
     </div>
   {% endif %}
 {% endblock %}

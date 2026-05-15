@@ -8,6 +8,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
+from django.http import HttpResponse
+from django.test import RequestFactory
 from django.utils import timezone
 from pyquery import PyQuery as pq
 
@@ -16,7 +18,7 @@ from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, 
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetadata
 from kitsune.questions.tests import AAQConfigFactory, AnswerFactory, QuestionFactory, tags_eq
-from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
+from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG, question_details
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase, attrs_eq, emailmessage_raise_smtp, get, post
 from kitsune.sumo.urlresolvers import reverse
@@ -95,7 +97,7 @@ class AnswersTemplateTestCase(TestCase):
         """Test accepting a solution and undoing."""
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        self.assertEqual(0, len(doc("div.solution")))
+        self.assertEqual(0, len(doc("div.answer--solution")))
 
         ans = self.question.answers.all()[0]
         # Sign in as asker, solve and verify
@@ -103,7 +105,7 @@ class AnswersTemplateTestCase(TestCase):
         response = post(self.client, "questions.solve", args=[self.question.id, ans.id])
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(1, len(doc("div.solution")))
+        self.assertEqual(1, len(doc("div.answer--solution")))
         div = doc("h3.is-solution")[0].getparent().getparent()
         self.assertEqual("answer-{}".format(ans.id), div.attrib["id"])
         q = Question.objects.get(pk=self.question.id)
@@ -819,6 +821,187 @@ class AnswersTemplateTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         self.assertEqual(0, len(doc("meta[name=robots]")))
+
+
+class PinnedSolutionTestCase(TestCase):
+    """Tests for the pinned_solution context variable in question_details.
+
+    Uses mock.patch on render() to capture the context dict directly, since
+    Django's test client does not expose view context for Jinja2-backed views.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.user = UserFactory()
+
+    def _get_pinned_solution(self, question):
+        """Call the question_details view directly and return pinned_solution from context."""
+        request = RequestFactory().get(
+            reverse("questions.details", args=[question.id])
+        )
+        request.user = self.user
+        request.LANGUAGE_CODE = "en-US"
+        request.session = {}
+
+        captured = {}
+
+        def fake_render(req, template, context, **kwargs):
+            captured["pinned_solution"] = context.get("pinned_solution")
+            return HttpResponse("")
+
+        with mock.patch("kitsune.questions.views.render", fake_render):
+            question_details(request, question.id)
+
+        return captured.get("pinned_solution")
+
+    def test_no_solution(self):
+        """Question with no chosen solution → pinned_solution is None."""
+        q = QuestionFactory()
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=3))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=2))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=1))
+        self.assertIsNone(self._get_pinned_solution(q))
+
+    def test_solution_at_position_1(self):
+        """Solution is the oldest answer (position #1) → pinned_solution is None."""
+        q = QuestionFactory()
+        solution = AnswerFactory(question=q, created=timezone.now() - timedelta(days=3))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=2))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=1))
+        q.solution = solution
+        q.save()
+        self.assertIsNone(self._get_pinned_solution(q))
+
+    def test_solution_at_position_2(self):
+        """Solution is at chronological position #2 → pinned_solution is None."""
+        q = QuestionFactory()
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=3))
+        solution = AnswerFactory(question=q, created=timezone.now() - timedelta(days=2))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=1))
+        q.solution = solution
+        q.save()
+        self.assertIsNone(self._get_pinned_solution(q))
+
+    def test_solution_at_position_3(self):
+        """Solution is at chronological position #3 → pinned_solution equals the solution."""
+        q = QuestionFactory()
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=3))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=2))
+        solution = AnswerFactory(question=q, created=timezone.now() - timedelta(days=1))
+        q.solution = solution
+        q.save()
+        self.assertEqual(self._get_pinned_solution(q), solution)
+
+    def test_spam_answers_excluded_from_position_count(self):
+        """Spam answers before the solution are excluded from the pin position count.
+
+        1 non-spam older answer + 1 spam older answer + solution = older_count of 1,
+        so the solution should NOT be pinned even though total older answers == 2.
+        """
+        q = QuestionFactory()
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=3))
+        AnswerFactory(question=q, created=timezone.now() - timedelta(days=2), is_spam=True)
+        solution = AnswerFactory(question=q, created=timezone.now() - timedelta(days=1))
+        q.solution = solution
+        q.save()
+        self.assertIsNone(self._get_pinned_solution(q))
+
+
+class PinnedSolutionRenderTestCase(TestCase):
+    """Tests verifying the pinned-copy HTML rendered by question_details."""
+
+    def setUp(self):
+        super().setUp()
+        self.user = UserFactory()
+        self.client.login(username=self.user.username, password="testpass")
+
+    def _build_question_with_answers(self, solution_position):
+        """Return (question, solution) with 3 answers; solution at the given 1-based position."""
+        q = QuestionFactory()
+        answers = [
+            AnswerFactory(question=q, created=timezone.now() - timedelta(days=3 - i))
+            for i in range(3)
+        ]
+        solution = answers[solution_position - 1]
+        q.solution = solution
+        q.save()
+        return q, solution
+
+    def test_pin_renders_when_solution_at_position_3(self):
+        """Solution at position #3 → pinned copy at top plus chronological copy; no duplicate id."""
+        q, solution = self._build_question_with_answers(solution_position=3)
+        response = get(self.client, "questions.details", args=[q.id])
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+
+        # Two copies of the solution's "Chosen Solution" badge.
+        self.assertEqual(2, len(doc("h3.is-solution")))
+
+        # Exactly one "Pinned to top" hint.
+        self.assertEqual(1, len(doc(".answer-pinned-hint")))
+
+        # The chronological copy keeps its id; the pinned copy must not duplicate it.
+        self.assertEqual(1, len(doc(f'#answer-{solution.id}')))
+
+        # The pinned copy must appear before the chronological copy in the document.
+        hint_pos = response.content.index(b"answer-pinned-hint")
+        chron_id_pos = response.content.index(f'id="answer-{solution.id}"'.encode())
+        self.assertLess(hint_pos, chron_id_pos, "Pinned copy must appear before chronological copy")
+
+    def test_no_pin_when_solution_at_position_1(self):
+        """Solution at position #1 → no pinned copy, id present on the single chronological copy."""
+        q, solution = self._build_question_with_answers(solution_position=1)
+        response = get(self.client, "questions.details", args=[q.id])
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+
+        # Only one "Chosen Solution" badge.
+        self.assertEqual(1, len(doc("h3.is-solution")))
+
+        # No "Pinned to top" hint.
+        self.assertEqual(0, len(doc(".answer-pinned-hint")))
+
+        # The single copy keeps its id.
+        self.assertEqual(1, len(doc(f'#answer-{solution.id}')))
+
+    def test_pinned_copy_has_aria_label(self):
+        """Pinned copy has aria-label; chronological copy does not."""
+        q, solution = self._build_question_with_answers(solution_position=3)
+        response = get(self.client, "questions.details", args=[q.id])
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+
+        pinned_wrapper = doc(f".answer:not(#answer-{solution.id})")
+        self.assertEqual(
+            "Pinned chosen solution",
+            pinned_wrapper.attr("aria-label"),
+        )
+
+        chron_wrapper = doc(f"#answer-{solution.id}")
+        self.assertIsNone(chron_wrapper.attr("aria-label"))
+
+    def test_pin_renders_on_page_2(self):
+        """Pinned copy appears on every page, not just page 1.
+
+        Creates enough answers to push the solution onto page 2, then checks
+        that the pinned hint is still rendered when navigating to ?page=2.
+        """
+        q = QuestionFactory()
+        # Create 21 answers so the solution lands on page 2 (page size is 20).
+        answers = [
+            AnswerFactory(question=q, created=timezone.now() - timedelta(days=25 - i))
+            for i in range(21)
+        ]
+        # The third oldest answer is the solution (position #3), satisfying the T2 pin rule.
+        solution = answers[2]
+        q.solution = solution
+        q.save()
+
+        url = reverse("questions.details", args=[q.id]) + "?page=2"
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+        self.assertEqual(1, len(doc(".answer-pinned-hint")))
 
 
 class TaggingViewTestsAsTagger(TestCase):

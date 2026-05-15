@@ -4,7 +4,7 @@
 {% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
 {% from "users/includes/macros.html" import user_labels %}
 
-<div class="answer {% if answer.is_spam %}marked-as-spam{% endif %}" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
+<div class="answer{% if answer.is_spam %} marked-as-spam{% endif %}{% if answer.id and question.solution == answer %} answer--solution{% endif %}"{% if answer.id and not is_pinned_copy %} id="answer-{{ answer.id }}"{% endif %}{% if is_pinned_copy %} aria-label="{{ _('Pinned chosen solution') }}"{% endif %}>
   <section class="avatar-row">
     <div class="avatar-details user-meta">
       <div class="avatar">
@@ -33,6 +33,12 @@
         {% endif %}
       </div>
     </div>
+    {% if is_pinned_copy %}
+      <a class="answer-pinned-hint" href="{{ answer.get_absolute_url() }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+        {{ _('Read this answer in context') }}
+      </a>
+    {% endif %}
     {% if answer.id %}
       {% set display_flag_option=answer.allows_flag(user, question) %}
       {% set display_quote_option=question.allows_new_answer(user) %}

@@ -31,7 +31,6 @@
 // Single post component (question body / ticket description / comments)
 .thread-post {
   padding: p.$spacing-xl 0;
-  border-bottom: 1px solid var(--color-light-gray-04);
 
   &:first-child {
     padding-top: 0;
@@ -110,6 +109,11 @@
   align-items: center;
   flex-wrap: wrap;
   gap: p.$spacing-xs p.$spacing-sm;
+  width: 100%;
+
+  .page-heading--logo {
+    margin: 0;
+  }
 }
 
 .thread-detail--pill-cluster {
@@ -118,8 +122,8 @@
   flex-wrap: wrap;
   gap: p.$spacing-xs p.$spacing-sm;
 
-  .status-label:first-child,
-  .my-questions--channel-badge:first-child {
+  .status-label,
+  .my-questions--channel-badge {
     padding: p.$spacing-xs p.$spacing-md;
     @include c.text-body-md;
   }
