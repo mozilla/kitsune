@@ -788,6 +788,16 @@ def question_details(
         }
     )
 
+    pinned_solution = None
+    if question.solution_id:
+        older_count = question.answers.filter(
+            created__lt=question.solution.created, is_spam=False
+        ).count()
+        # T2 rule: pin only when the solution sits at chronological position #3 or later.
+        if older_count >= 2:
+            pinned_solution = question.solution
+    extra_kwargs["pinned_solution"] = pinned_solution
+
     # Add noindex to questions without a solution.
     if not question.solution_id:
         extra_kwargs.update(robots_noindex=True)

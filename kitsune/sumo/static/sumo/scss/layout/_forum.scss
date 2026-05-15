@@ -733,7 +733,7 @@
   line-height: 1;
   border: 1px solid var(--color-light-gray-04);
   border-radius: 2em;
-  background: transparent;
+  background: var(--color-inverse);
   cursor: pointer;
   color: var(--color-text-light);
   transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
@@ -747,7 +747,7 @@
   &:hover:not([disabled]) {
     color: var(--color-link);
     border-color: var(--color-link);
-    background-color: rgba(var(--color-link-rgb, 0, 96, 223), 0.06);
+    background-color: rgba(var(--color-link-rgb, 0, 96, 223), 0.12);
   }
 
   &[disabled] {
@@ -766,13 +766,48 @@
 }
 
 .answer {
-  padding: p.$spacing-2xl 0;
-  border-bottom: 1px solid var(--color-border);
+  background: var(--color-shade-bg);
+  border-radius: p.$border-radius-md;
+  padding: p.$spacing-lg;
+  margin-bottom: p.$spacing-md;
 
   @media #{p.$mq-md} {
     .main-content {
       padding-left: 55px;
     }
+  }
+}
+
+.answer--solution {
+  background: color-mix(in srgb, var(--color-success) 5%, var(--color-shade-bg));
+  border-left: 3px solid var(--color-success);
+}
+
+.solution-tree {
+  margin-left: p.$spacing-lg;
+}
+
+.answer-pinned-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: p.$spacing-xs;
+  @include c.text-body-xs;
+  font-weight: 600;
+  color: var(--color-green-08);
+  margin-left: auto;
+  align-self: flex-start;
+  margin-top: 7px;
+  text-decoration: none;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    text-decoration: underline;
+    color: var(--color-green-09);
   }
 }
 
