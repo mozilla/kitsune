@@ -581,12 +581,15 @@ wheels = [
 
 [[package]]
 name = "django-activity-stream"
-version = "1.4.2"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/06/af/d4de926a0a0d86e6e386b4ee975f607927fd76d7fff1c1e993fa1d3d95d5/django-activity-stream-1.4.2.tar.gz", hash = "sha256:83b0923554b755cae3e72c2c0bf8fa7b1ddb70b7cb13d15b0f4d319a29b81543", size = 35547, upload-time = "2022-12-19T05:32:56.637Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/38/6e3effa1633930183f027d5b89392fef159a6aa45fe9b50b6fdb46bc0ba2/django-activity-stream-2.0.0.tar.gz", hash = "sha256:33a467ba9b9a9969cbed76b2fd65e94a19928e48f0ec2b2e5bb1855177036ed2", size = 41331, upload-time = "2023-10-04T07:51:22.947Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/a5/24dee73df5206e71020ab5e530b8687fb2073a7c95542d145f6bbaabd86d/django_activity_stream-2.0.0-py3-none-any.whl", hash = "sha256:e7b86e637e419d068d9a5b4f3bacfec5ae231f412c2bda0ad686a1e47d4424ef", size = 50731, upload-time = "2023-10-04T07:51:20.479Z" },
+]
 
 [[package]]
 name = "django-allow-cidr"
@@ -1923,7 +1926,7 @@ requires-dist = [
     { name = "dennis", specifier = ">=1.1.0,<2" },
     { name = "dj-database-url", specifier = ">=1.3.0,<4" },
     { name = "django", specifier = ">=5.2,<6" },
-    { name = "django-activity-stream", specifier = ">=1.4.2,<2" },
+    { name = "django-activity-stream", specifier = ">=2.0.0,<3" },
     { name = "django-allow-cidr", specifier = ">=0.6.0,<0.9" },
     { name = "django-cache-url", specifier = ">=3.4.5,<4" },
     { name = "django-celery-beat", specifier = ">=2.8.1,<3" },
