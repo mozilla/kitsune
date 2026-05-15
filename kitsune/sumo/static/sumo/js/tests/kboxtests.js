@@ -1,9 +1,9 @@
-import {default as chai, expect} from 'chai';
+import {expect, use} from 'chai';
 import chaiLint from 'chai-lint';
 
 import KBox from "sumo/js/kbox.js";
 
-chai.use(chaiLint);
+use(chaiLint);
 
 describe('kbox', () => {
   describe('declarative', () => {

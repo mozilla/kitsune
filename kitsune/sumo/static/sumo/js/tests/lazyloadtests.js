@@ -1,7 +1,7 @@
-import {default as chai, expect} from 'chai';
+import {expect, use} from 'chai';
 import chaiLint from 'chai-lint';
 
-chai.use(chaiLint);
+use(chaiLint);
 
 describe('lazyload', () => {
   it('should load original image', () => {

@@ -1,11 +1,11 @@
-import {default as chai, expect} from 'chai';
+import {expect, use} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
 import { TroubleshootingDetector } from 'sumo/js/browserdetect';
 import ShowFor from "sumo/js/showfor";
 
-chai.use(chaiLint);
+use(chaiLint);
 
 /*
 * Returns an object with the same prototype and properties as a ShowFor
