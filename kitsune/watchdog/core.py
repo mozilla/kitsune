@@ -1,14 +1,15 @@
 import copy
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import NamedTuple
 
-from celery.schedules import crontab
+from celery.schedules import BaseSchedule
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.timesince import timesince
-from redis import ConnectionError as RedisConnectionError
 
 from kitsune.watchdog.models import TaskHealth
 
@@ -45,34 +46,30 @@ def nth_run_after(schedule, anchor, n):
     return run
 
 
-def get_overdue_tasks():
-    """Return a list of OverdueTask for tasks past their deadline.
+def watched_task_names():
+    """Return the set of beat-schedule task names the watchdog actively monitors."""
+    return {
+        name
+        for name, cfg in settings.CELERY_BEAT_SCHEDULE.items()
+        if name not in settings.WATCHDOG_EXCLUDED_TASKS
+        and isinstance(cfg["schedule"], BaseSchedule)
+    }
 
-    Anchor for the deadline is last_completed_at when set; otherwise
-    created_at (the moment the watchdog first observed the task). The
-    deadline is the (WATCHDOG_ALLOWED_MISSED_RUNS + 1)-th scheduled run
-    strictly after the anchor — i.e., we alert once that many runs have
-    elapsed without a successful completion. For newly-observed tasks
-    (no completions yet) this same logic gives a per-task grace period
-    proportional to the schedule's interval.
+
+def audit_tasks():
+    """Return overdue tasks, creating a TaskHealth row for any watched task
+    that doesn't yet have one.
+
+    A task is overdue once (WATCHDOG_ALLOWED_MISSED_RUNS + 1) scheduled runs
+    have passed since its anchor without a successful completion. The anchor
+    is the task's last_completed_at if it's ever succeeded, or its created_at
+    if it hasn't — so newly-observed tasks get an implicit per-task grace
+    period proportional to their schedule's interval.
     """
-    if not settings.CELERY_BEAT_SCHEDULE:
+    watched_names = watched_task_names()
+    if not watched_names:
         return []
 
-    excluded = set(settings.WATCHDOG_EXCLUDED_TASKS)
-    watched = [
-        (name, config["schedule"])
-        for name, config in settings.CELERY_BEAT_SCHEDULE.items()
-        if name not in excluded and isinstance(config["schedule"], crontab)
-    ]
-    if not watched:
-        return []
-
-    # Ensure a TaskHealth row exists for every watched task with a single
-    # bulk insert (ignore_conflicts skips already-existing rows), then fetch
-    # them all in one query. Race-safe against the task_success signal
-    # handler concurrently inserting rows for the same names.
-    watched_names = [name for name, _ in watched]
     TaskHealth.objects.bulk_create(
         [TaskHealth(name=name) for name in watched_names],
         ignore_conflicts=True,
@@ -83,7 +80,10 @@ def get_overdue_tasks():
     n = settings.WATCHDOG_ALLOWED_MISSED_RUNS + 1
     overdue = []
 
-    for name, schedule in watched:
+    for name, cfg in settings.CELERY_BEAT_SCHEDULE.items():
+        if name not in watched_names:
+            continue
+        schedule = cfg["schedule"]
         health = healths[name]
         anchor = health.last_completed_at or health.created_at
         deadline = nth_run_after(schedule, anchor, n)
@@ -96,37 +96,40 @@ def get_overdue_tasks():
 
 
 def prune_stale_health_records():
-    """Delete TaskHealth rows whose name is no longer in CELERY_BEAT_SCHEDULE.
+    """Delete TaskHealth rows for tasks the watchdog no longer monitors.
 
-    Guarded against an empty schedule to avoid wiping the table during a
+    Guarded against an empty watched set to avoid wiping the table during a
     misconfigured settings load.
     """
-    beat_schedule = settings.CELERY_BEAT_SCHEDULE
-    if not beat_schedule:
+    watched_names = watched_task_names()
+    if not watched_names:
         return 0
 
-    deleted, _ = TaskHealth.objects.exclude(name__in=beat_schedule.keys()).delete()
+    deleted, _ = TaskHealth.objects.exclude(name__in=watched_names).delete()
     if deleted:
         log.info(f"Watchdog pruned {deleted} stale TaskHealth row(s).")
     return deleted
 
 
-def try_alert(task_name, redis_conn):
-    """Atomically check and claim an alert slot for this task.
+def claim_alerts(task_names):
+    """Atomically claim alert slots for all given tasks not currently throttled.
 
-    Returns True if we should send an alert (no recent alert exists),
-    False if an alert was already sent within the cooldown period.
+    Returns the set of task names that won the claim.
     """
-    if not redis_conn:
-        return True
-
-    key = f"watchdog:alerted:{task_name}"
-
-    try:
-        return redis_conn.set(key, "1", nx=True, ex=settings.WATCHDOG_ALERT_COOLDOWN_SECONDS)
-    except RedisConnectionError:
-        log.exception("Redis unavailable for alert suppression")
-        return True
+    if not task_names:
+        return set()
+    now = timezone.now()
+    cutoff = now - timedelta(hours=settings.WATCHDOG_ALERT_THROTTLE)
+    with transaction.atomic():
+        claimed = set(
+            TaskHealth.objects.select_for_update()
+            .filter(name__in=task_names)
+            .filter(Q(last_alerted_at__isnull=True) | Q(last_alerted_at__lt=cutoff))
+            .values_list("name", flat=True)
+        )
+        if claimed:
+            TaskHealth.objects.filter(name__in=claimed).update(last_alerted_at=now)
+    return claimed
 
 
 def send_email_alert(overdue_tasks):

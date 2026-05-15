@@ -1,25 +1,24 @@
 from datetime import UTC, datetime, timedelta
 from unittest import mock
 
-from celery.schedules import crontab
+from celery.schedules import crontab, schedule
 from django.test.utils import override_settings
 from django.utils import timezone
-from redis import ConnectionError as RedisConnectionError
 
 from kitsune.sumo.tests import TestCase
 from kitsune.watchdog.core import (
     OverdueTask,
-    get_overdue_tasks,
+    audit_tasks,
+    claim_alerts,
     prune_stale_health_records,
     send_email_alert,
-    try_alert,
 )
 from kitsune.watchdog.models import TaskHealth
 from kitsune.watchdog.tests import WATCHDOG_SETTINGS, make_health
 
 
 @override_settings(**WATCHDOG_SETTINGS)
-class TestGetOverdueTasks(TestCase):
+class TestAuditTasks(TestCase):
     @override_settings(
         CELERY_BEAT_SCHEDULE={
             "my_task": {"task": "some.task", "schedule": crontab(minute="0")},  # hourly
@@ -28,7 +27,7 @@ class TestGetOverdueTasks(TestCase):
     def test_detects_overdue_task(self):
         make_health("my_task", last_completed_at=timezone.now() - timedelta(hours=12))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "my_task")
@@ -41,7 +40,7 @@ class TestGetOverdueTasks(TestCase):
     def test_skips_recent_task(self):
         make_health("my_task", last_completed_at=timezone.now() - timedelta(minutes=30))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 0)
 
@@ -54,7 +53,7 @@ class TestGetOverdueTasks(TestCase):
         """First watchdog run for a task creates the TaskHealth row with no completion."""
         self.assertFalse(TaskHealth.objects.filter(name="my_task").exists())
 
-        get_overdue_tasks()
+        audit_tasks()
 
         self.assertTrue(TaskHealth.objects.filter(name="my_task").exists())
 
@@ -68,7 +67,7 @@ class TestGetOverdueTasks(TestCase):
         # created 30 minutes ago; allowed_missed=1 -> grace = 2h. 30 min < 2h, so safe.
         make_health("my_task", created_at=timezone.now() - timedelta(minutes=30))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 0)
 
@@ -82,7 +81,7 @@ class TestGetOverdueTasks(TestCase):
         # created 3 hours ago; grace = 2h. 3h > 2h, so overdue.
         make_health("my_task", created_at=timezone.now() - timedelta(hours=3))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "my_task")
@@ -95,7 +94,7 @@ class TestGetOverdueTasks(TestCase):
         WATCHDOG_EXCLUDED_TASKS=["excluded_task"],
     )
     def test_skips_excluded_tasks(self):
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 0)
         self.assertFalse(TaskHealth.objects.filter(name="excluded_task").exists())
@@ -109,14 +108,14 @@ class TestGetOverdueTasks(TestCase):
         }
     )
     def test_skips_itself(self):
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 0)
         self.assertFalse(TaskHealth.objects.filter(name="watchdog").exists())
 
     @override_settings(CELERY_BEAT_SCHEDULE={})
     def test_empty_schedule_returns_empty(self):
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 0)
 
     @override_settings(
@@ -124,15 +123,31 @@ class TestGetOverdueTasks(TestCase):
             "my_task": {"task": "some.task", "schedule": timedelta(seconds=30)},
         }
     )
-    def test_skips_non_crontab_schedule(self):
-        overdue = get_overdue_tasks()
+    def test_skips_invalid_schedule_value(self):
+        """A raw timedelta (not a BaseSchedule subclass) is rejected — copying
+        and setting nowfun on it would AttributeError."""
+        overdue = audit_tasks()
 
         self.assertEqual(len(overdue), 0)
         self.assertFalse(TaskHealth.objects.filter(name="my_task").exists())
 
+    @override_settings(
+        CELERY_BEAT_SCHEDULE={
+            "my_task": {"task": "some.task", "schedule": schedule(timedelta(minutes=10))},
+        }
+    )
+    def test_accepts_non_crontab_schedule(self):
+        """A non-crontab BaseSchedule (e.g., fixed-interval schedule) is accepted."""
+        make_health("my_task", last_completed_at=timezone.now() - timedelta(hours=1))
+
+        overdue = audit_tasks()
+
+        self.assertEqual(len(overdue), 1)
+        self.assertEqual(overdue[0].name, "my_task")
+
 
 @override_settings(**WATCHDOG_SETTINGS)
-class TestGetOverdueTasksDeadlineCalculation(TestCase):
+class TestAuditTasksDeadlineCalculation(TestCase):
     """Tests that exercise real crontab schedules to verify deadline math.
 
     With allowed_missed_runs=1:
@@ -162,7 +177,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     def test_hourly_task_not_overdue_within_grace(self):
         """Hourly task completed 90 min ago: 2nd run is now (00:00). now > now is False."""
         make_health("hourly_task", last_completed_at=self.NOW - timedelta(minutes=90))
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -173,7 +188,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
         """Hourly task completed 3h ago: 2nd run was 1h ago, so overdue."""
         make_health("hourly_task", last_completed_at=self.NOW - timedelta(hours=3))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "hourly_task")
 
@@ -184,7 +199,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     )
     def test_10min_task_not_overdue_at_15min(self):
         make_health("frequent_task", last_completed_at=self.NOW - timedelta(minutes=15))
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -194,7 +209,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     def test_10min_task_overdue_at_25min(self):
         make_health("frequent_task", last_completed_at=self.NOW - timedelta(minutes=25))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "frequent_task")
 
@@ -205,7 +220,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     )
     def test_daily_task_not_overdue_at_30h(self):
         make_health("daily_task", last_completed_at=self.NOW - timedelta(hours=30))
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -215,7 +230,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     def test_daily_task_overdue_at_50h(self):
         make_health("daily_task", last_completed_at=self.NOW - timedelta(hours=50))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "daily_task")
 
@@ -229,7 +244,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     )
     def test_6h_task_not_overdue_at_10h(self):
         make_health("six_hourly_task", last_completed_at=self.NOW - timedelta(hours=10))
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -242,7 +257,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     def test_6h_task_overdue_at_14h(self):
         make_health("six_hourly_task", last_completed_at=self.NOW - timedelta(hours=14))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "six_hourly_task")
 
@@ -256,7 +271,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     )
     def test_weekly_task_not_overdue_at_10d(self):
         make_health("weekly_task", last_completed_at=self.NOW - timedelta(days=10))
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -269,7 +284,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     def test_weekly_task_overdue_at_15d(self):
         make_health("weekly_task", last_completed_at=self.NOW - timedelta(days=15))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "weekly_task")
 
@@ -291,7 +306,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
         Deadline May 3 22:00 > NOW (May 1 00:00) → not overdue."""
         anchor = datetime(2026, 4, 28, 23, 0, tzinfo=UTC)
         make_health("triweekly_task", last_completed_at=anchor)
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -307,7 +322,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
         Demonstrates the long Thu→Sun gap doesn't cause spurious alerts."""
         anchor = datetime(2026, 4, 30, 23, 0, tzinfo=UTC)
         make_health("triweekly_task", last_completed_at=anchor)
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -323,7 +338,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
         Confirms the long gap is recognized correctly when 2 runs have passed."""
         anchor = datetime(2026, 4, 23, 23, 0, tzinfo=UTC)
         make_health("triweekly_task", last_completed_at=anchor)
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "triweekly_task")
 
@@ -337,7 +352,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     )
     def test_monthly_task_not_overdue_at_40d(self):
         make_health("monthly_task", last_completed_at=self.NOW - timedelta(days=40))
-        self.assertEqual(len(get_overdue_tasks()), 0)
+        self.assertEqual(len(audit_tasks()), 0)
 
     @override_settings(
         CELERY_BEAT_SCHEDULE={
@@ -350,7 +365,7 @@ class TestGetOverdueTasksDeadlineCalculation(TestCase):
     def test_monthly_task_overdue_at_65d(self):
         make_health("monthly_task", last_completed_at=self.NOW - timedelta(days=65))
 
-        overdue = get_overdue_tasks()
+        overdue = audit_tasks()
         self.assertEqual(len(overdue), 1)
         self.assertEqual(overdue[0].name, "monthly_task")
 
@@ -395,30 +410,76 @@ class TestPruneStaleHealthRecords(TestCase):
         self.assertEqual(deleted, 0)
         self.assertTrue(TaskHealth.objects.filter(name="some_task").exists())
 
+    @override_settings(
+        CELERY_BEAT_SCHEDULE={
+            "current_task": {"task": "some.task", "schedule": crontab(minute="0")},
+            "excluded_task": {"task": "other.task", "schedule": crontab(minute="0")},
+        },
+        WATCHDOG_EXCLUDED_TASKS=["excluded_task"],
+    )
+    def test_removes_excluded_task_rows(self):
+        """Rows for tasks added to WATCHDOG_EXCLUDED_TASKS are pruned, matching
+        the unified watched_task_names predicate used by audit_tasks and signals."""
+        make_health("current_task")
+        make_health("excluded_task")
+
+        deleted = prune_stale_health_records()
+
+        self.assertEqual(deleted, 1)
+        self.assertTrue(TaskHealth.objects.filter(name="current_task").exists())
+        self.assertFalse(TaskHealth.objects.filter(name="excluded_task").exists())
+
 
 @override_settings(**WATCHDOG_SETTINGS)
-class TestTryAlert(TestCase):
+class TestClaimAlerts(TestCase):
     def test_claims_when_no_prior_alert(self):
-        mock_redis = mock.Mock()
-        mock_redis.set.return_value = True
+        """A task whose last_alerted_at is None can be claimed."""
+        make_health("task_a")
 
-        self.assertTrue(try_alert("my_task", mock_redis))
-        mock_redis.set.assert_called_once_with("watchdog:alerted:my_task", "1", nx=True, ex=86400)
+        claimed = claim_alerts(["task_a"])
 
-    def test_does_not_claim_within_cooldown(self):
-        mock_redis = mock.Mock()
-        mock_redis.set.return_value = False
+        self.assertEqual(claimed, {"task_a"})
+        health = TaskHealth.objects.get(name="task_a")
+        self.assertIsNotNone(health.last_alerted_at)
 
-        self.assertFalse(try_alert("my_task", mock_redis))
+    def test_does_not_claim_within_throttle(self):
+        """A task alerted within the throttle window cannot be re-claimed."""
+        recent = timezone.now() - timedelta(hours=1)  # well within 24h throttle
+        make_health("task_a")
+        TaskHealth.objects.filter(name="task_a").update(last_alerted_at=recent)
 
-    def test_returns_true_when_redis_conn_is_none(self):
-        self.assertTrue(try_alert("my_task", None))
+        claimed = claim_alerts(["task_a"])
 
-    def test_returns_true_on_redis_connection_error(self):
-        mock_redis = mock.Mock()
-        mock_redis.set.side_effect = RedisConnectionError("connection refused")
+        self.assertEqual(claimed, set())
+        # Existing last_alerted_at is not overwritten when the claim fails.
+        self.assertEqual(TaskHealth.objects.get(name="task_a").last_alerted_at, recent)
 
-        self.assertTrue(try_alert("my_task", mock_redis))
+    def test_claims_when_last_alert_outside_throttle(self):
+        """A task alerted long enough ago can be re-claimed."""
+        old = timezone.now() - timedelta(hours=48)  # outside the 24h throttle
+        make_health("task_a")
+        TaskHealth.objects.filter(name="task_a").update(last_alerted_at=old)
+
+        claimed = claim_alerts(["task_a"])
+
+        self.assertEqual(claimed, {"task_a"})
+        self.assertGreater(TaskHealth.objects.get(name="task_a").last_alerted_at, old)
+
+    def test_claims_subset_when_some_throttled(self):
+        """In a batch, returns only the names actually claimed."""
+        now = timezone.now()
+        make_health("fresh_task")  # never alerted
+        make_health("recently_alerted_task")
+        TaskHealth.objects.filter(name="recently_alerted_task").update(
+            last_alerted_at=now - timedelta(hours=1)
+        )
+
+        claimed = claim_alerts(["fresh_task", "recently_alerted_task"])
+
+        self.assertEqual(claimed, {"fresh_task"})
+
+    def test_empty_input_returns_empty_set(self):
+        self.assertEqual(claim_alerts([]), set())
 
 
 @override_settings(**WATCHDOG_SETTINGS)

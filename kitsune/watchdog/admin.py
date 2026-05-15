@@ -4,10 +4,10 @@ from kitsune.watchdog.models import TaskHealth
 
 
 class TaskHealthAdmin(admin.ModelAdmin):
-    list_display = ("name", "last_completed_at", "created_at")
+    list_display = ("name", "last_completed_at", "last_alerted_at", "created_at")
     search_fields = ("name",)
     ordering = ("last_completed_at",)
-    readonly_fields = ("name", "created_at", "last_completed_at")
+    readonly_fields = ("name", "created_at", "last_completed_at", "last_alerted_at")
 
     def has_add_permission(self, request):
         return False

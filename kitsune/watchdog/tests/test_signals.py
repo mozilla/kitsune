@@ -89,3 +89,21 @@ class TestRecordTaskCompletion(TestCase):
 
         self.assertTrue(TaskHealth.objects.filter(name="display_name").exists())
         self.assertFalse(TaskHealth.objects.filter(name="myapp.tasks.dotted_path").exists())
+
+    @override_settings(
+        CELERY_BEAT_SCHEDULE={
+            "invalid_task": {
+                "task": "myapp.tasks.invalid",
+                "schedule": timedelta(seconds=30),
+            },
+        },
+        CELERY_BEAT_NAME_BY_TASK={"myapp.tasks.invalid": "invalid_task"},
+    )
+    def test_skips_non_baseschedule_task(self):
+        """A task whose schedule isn't a BaseSchedule subclass is not watched,
+        so the signal handler doesn't create a row for it."""
+        sender = mock.Mock()
+        sender.name = "myapp.tasks.invalid"
+        record_task_completion(sender=sender)
+
+        self.assertFalse(TaskHealth.objects.filter(name="invalid_task").exists())

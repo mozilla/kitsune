@@ -3,7 +3,7 @@ from kitsune.watchdog.models import TaskHealth
 WATCHDOG_SETTINGS = {
     "WATCHDOG_EMAIL_RECIPIENTS": ["test@example.com"],
     "WATCHDOG_ALLOWED_MISSED_RUNS": 1,
-    "WATCHDOG_ALERT_COOLDOWN_SECONDS": 86400,
+    "WATCHDOG_ALERT_THROTTLE": 24,
     "WATCHDOG_EXCLUDED_TASKS": ["watchdog"],
 }
 
