@@ -4,6 +4,8 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
     process_failed_zendesk_tickets,
     process_zendesk_update,
+    sync_active_support_tickets,
+    sync_support_ticket,
     zendesk_submission_classifier,
 )
 from kitsune.llm.spam.classifier import ModerationAction
@@ -404,3 +406,100 @@ class ProcessZendeskUpdateTests(TestCase):
             )
         self.ticket.refresh_from_db()
         self.assertIsNone(self.ticket.zd_updated_at)
+
+
+class SyncSupportTicketTests(TestCase):
+    """Tests for the sync_support_ticket per-ticket task."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox", title="Firefox")
+
+    def _make_ticket(self, **overrides):
+        defaults = {
+            "subject": "Help",
+            "description": "Need help",
+            "category": "general",
+            "email": "user@example.com",
+            "product": self.product,
+            "zendesk_ticket_id": "12345",
+            "zd_status": SupportTicket.ZD_STATUS_OPEN,
+        }
+        defaults.update(overrides)
+        return SupportTicket.objects.create(**defaults)
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_calls_helper_with_loaded_ticket(self, mock_helper):
+        ticket = self._make_ticket()
+
+        sync_support_ticket(ticket.id)
+
+        mock_helper.assert_called_once()
+        called_ticket = mock_helper.call_args[0][0]
+        self.assertEqual(called_ticket.id, ticket.id)
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_missing_ticket_returns_silently(self, mock_helper):
+        sync_support_ticket(999999)
+
+        mock_helper.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_null_or_blank_zendesk_ticket_id_skips_helper(self, mock_helper):
+        null_ticket = self._make_ticket(zendesk_ticket_id=None)
+        blank_ticket = self._make_ticket(zendesk_ticket_id="")
+
+        sync_support_ticket(null_ticket.id)
+        sync_support_ticket(blank_ticket.id)
+
+        mock_helper.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_helper_exception_propagates(self, mock_helper):
+        mock_helper.side_effect = RuntimeError("Zendesk down")
+        ticket = self._make_ticket()
+
+        with self.assertRaises(RuntimeError):
+            sync_support_ticket(ticket.id)
+
+
+class SyncActiveSupportTicketsTests(TestCase):
+    """Tests for the sync_active_support_tickets orchestrator task."""
+
+    def setUp(self):
+        self.product = ProductFactory(slug="firefox", title="Firefox")
+
+    def _make_ticket(self, zd_status, zendesk_ticket_id="12345"):
+        return SupportTicket.objects.create(
+            product=self.product,
+            zendesk_ticket_id=zendesk_ticket_id,
+            zd_status=zd_status,
+        )
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_dispatches_only_active_tickets_with_zendesk_ids(self, mock_sync):
+        active_open = self._make_ticket(SupportTicket.ZD_STATUS_OPEN)
+        active_pending = self._make_ticket(SupportTicket.ZD_STATUS_PENDING)
+        active_waiting = self._make_ticket(SupportTicket.ZD_STATUS_WAITING)
+        # Inactive statuses — should not be dispatched.
+        self._make_ticket(SupportTicket.ZD_STATUS_SOLVED)
+        self._make_ticket(SupportTicket.ZD_STATUS_CLOSED)
+        # Active status but no Zendesk id — should not be dispatched.
+        self._make_ticket(SupportTicket.ZD_STATUS_OPEN, zendesk_ticket_id="")
+
+        sync_active_support_tickets()
+
+        self.assertEqual(mock_sync.call_count, 3)
+        dispatched_ids = {call.args[0].id for call in mock_sync.call_args_list}
+        self.assertEqual(
+            dispatched_ids,
+            {active_open.id, active_pending.id, active_waiting.id},
+        )
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_no_active_tickets_dispatches_nothing(self, mock_sync):
+        self._make_ticket(SupportTicket.ZD_STATUS_SOLVED)
+        self._make_ticket(SupportTicket.ZD_STATUS_CLOSED)
+
+        sync_active_support_tickets()
+
+        mock_sync.assert_not_called()

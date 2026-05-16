@@ -64,6 +64,11 @@ PERIODIC_TASKS_ALL = {
         "task": "kitsune.customercare.tasks.process_failed_zendesk_tickets",
         "schedule": crontab(minute="0"),
     },
+    # Every hour at 15 minutes past. Backup reconciliation; webhook is primary.
+    "sync_active_support_tickets": {
+        "task": "kitsune.customercare.tasks.sync_active_support_tickets",
+        "schedule": crontab(minute="15"),
+    },
     # Questions Periodic Tasks
     # Daily at 04:00.
     "auto_archive_old_questions": {
