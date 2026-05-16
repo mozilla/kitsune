@@ -705,6 +705,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "kitsune.journal",
     "kitsune.tidings",
     "kitsune.llm",
+    "kitsune.watchdog",
     "rest_framework",
     "statici18n",
     "watchman",
@@ -1417,6 +1418,18 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 if READ_ONLY:
     CELERY_BEAT_SCHEDULE = {}
 else:
-    CELERY_BEAT_SCHEDULE = PERIODIC_TASKS_ALL
+    CELERY_BEAT_SCHEDULE = dict(PERIODIC_TASKS_ALL)
     if not STAGE:
         CELERY_BEAT_SCHEDULE |= PERIODIC_TASKS_PRODUCTION_ONLY
+
+# Reverse map for the watchdog's task_success signal handler, which receives
+# the dotted-path Celery task name and needs the schedule's display name.
+CELERY_BEAT_NAME_BY_TASK = {cfg["task"]: name for name, cfg in CELERY_BEAT_SCHEDULE.items()}
+
+# Celery Beat Watchdog
+WATCHDOG_EMAIL_RECIPIENTS = config("WATCHDOG_EMAIL_RECIPIENTS", default="", cast=Csv())
+WATCHDOG_ALLOWED_MISSED_RUNS = config("WATCHDOG_ALLOWED_MISSED_RUNS", default=1, cast=int)
+WATCHDOG_ALERT_THROTTLE = config(
+    "WATCHDOG_ALERT_THROTTLE", default=24, cast=int
+)  # hours between repeat alerts for the same task
+WATCHDOG_EXCLUDED_TASKS = config("WATCHDOG_EXCLUDED_TASKS", default="watchdog", cast=Csv())
