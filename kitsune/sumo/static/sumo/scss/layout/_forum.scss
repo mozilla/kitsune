@@ -771,6 +771,22 @@
   padding: p.$spacing-lg;
   margin-bottom: p.$spacing-md;
 
+  // Allow the avatar/username block to shrink so the 3-dot menu always stays
+  // inside the card. Long usernames + user labels are truncated with an ellipsis
+  // instead of pushing the menu past the card edge.
+  .avatar-details,
+  .user {
+    min-width: 0;
+  }
+
+  .asked-by,
+  .asked-on {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   @media #{p.$mq-md} {
     .main-content {
       padding-left: 55px;
