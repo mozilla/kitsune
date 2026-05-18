@@ -785,6 +785,10 @@
 
 .solution-tree {
   margin-left: p.$spacing-lg;
+
+  @media not all and (min-width: 768px) {
+    margin-left: 0;
+  }
 }
 
 .answer-pinned-hint {
@@ -803,6 +807,15 @@
     width: 12px;
     height: 12px;
     flex-shrink: 0;
+  }
+
+  @media not all and (min-width: 768px) {
+    .answer-pinned-hint--text { display: none; }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   &:hover {
