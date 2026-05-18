@@ -29,8 +29,6 @@ urlpatterns = [
         views.metrics,
         name="questions.locale_metrics",
     ),
-    # Mozilla location service proxy url
-    path("mozilla/location/", views.aaq_location_proxy, name="questions.location_proxy"),
     # AAQ
     re_path(r"^new$", views.aaq, name="questions.aaq_step1"),
     re_path(r"^new/(?P<product_slug>[\w\-]+)$", views.aaq_step2, name="questions.aaq_step2"),

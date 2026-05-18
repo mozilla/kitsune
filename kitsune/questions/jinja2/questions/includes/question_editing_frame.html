@@ -11,7 +11,7 @@ behaviors like editing them can be provided by overriding blocks.
 {% from "questions/includes/aaq_macros.html" import helpful_tip, progress_bar %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
-{% set scripts = ('questions', 'questions.geo',) %}
+{% set scripts = ('questions',) %}
 {% set is_enterprise = current_product and current_product.slug == 'firefox-enterprise' %}
 
 {% set hide_aaq_link = True %}

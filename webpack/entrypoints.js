@@ -51,9 +51,6 @@ const entrypoints = {
   "questions.metrics": [
     "sumo/js/questions.metrics-dashboard.js",
   ],
-  "questions.geo": [
-    "sumo/js/location.js",
-  ],
   topics: [
     "sumo/js/topics.js",
   ],

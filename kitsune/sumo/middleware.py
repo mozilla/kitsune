@@ -371,6 +371,25 @@ class ClientHintsMiddleware:
         return response
 
 
+class GeoIPCookieMiddleware(MiddlewareMixin):
+    """
+    Sets a geoip cookie from the Fastly-injected header so JS can read the
+    country name without baking it into cached HTML responses.
+    """
+
+    def process_response(self, request, response):
+        country_name = request.META.get("HTTP_X_CLIENT_GEO_COUNTRY_NAME")
+        if country_name:
+            response.set_cookie(
+                "geoip_country_name",
+                country_name,
+                path="/",
+                samesite="Lax",
+                secure=not settings.DEBUG,
+            )
+        return response
+
+
 class InAAQMiddleware(MiddlewareMixin):
     """
     Middleware that clears AAQ data from the session under certain conditions.
