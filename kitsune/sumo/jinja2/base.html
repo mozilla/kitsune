@@ -67,6 +67,9 @@
   {% if canonical_url %}
     <link rel="canonical" href="{{ canonical_url|safe }}" />
   {% endif %}
+
+  <meta name="geo-country-code" content="{{ GEO_COUNTRY_CODE }}" />
+  <meta name="geo-country-name" content="{{ GEO_COUNTRY_NAME }}" />
 </head>
 
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"

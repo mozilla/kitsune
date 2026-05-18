@@ -30,3 +30,10 @@ def current_year(request):
 def static_url_webpack(request):
     """Adds the static url without a trailing slash, for use by webpack."""
     return {"STATIC_URL_WEBPACK": settings.STATIC_URL.removesuffix("/")}
+
+
+def geoip(request):
+    return {
+        "GEO_COUNTRY_CODE": request.META.get("HTTP_X_CLIENT_GEO_COUNTRY_CODE", ""),
+        "GEO_COUNTRY_NAME": request.META.get("HTTP_X_CLIENT_GEO_COUNTRY_NAME", ""),
+    }
