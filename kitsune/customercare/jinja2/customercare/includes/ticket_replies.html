@@ -1,20 +1,33 @@
 {% from "sumo/includes/thread_post.html" import post_body %}
 
+{% set comments = ticket.public_comments | sort(attribute='id') %}
+{% set pending = ticket.effective_pending('comment') %}
+{% set is_sending = pending and pending.status == 'sending' %}
+{% set is_failed = pending and pending.status == 'failed' %}
+{% set total_count = (comments | length) + (1 if is_sending else 0) %}
+
+<div id="thread-replies"
+     {% if is_sending %}
+     hx-get="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+     hx-trigger="load delay:1s, every 2s"
+     hx-swap="outerHTML"
+     {% endif %}>
+
 {% if sync_error %}
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('We could not fetch the latest replies. Please try again later.') }}
   </div>
 {% endif %}
 
-{% if ticket.public_comments %}
+{% if total_count %}
   <h2 class="sumo-card-heading">
-    {% trans count=ticket.public_comments | length %}
+    {% trans count=total_count %}
       {{ count }} Reply
     {% pluralize %}
       {{ count }} Replies
     {% endtrans %}
   </h2>
-  {% for comment in ticket.public_comments %}
+  {% for comment in comments %}
     {% set _author = comment.get("author", {}) %}
     {% set _created_str = comment.get("created_at", "") %}
     {% set _created_dt = _created_str | parse_datetime %}
@@ -41,6 +54,77 @@
       {{ post_body(comment.get("body", "") | e | replace('\n', '<br>') | safe) }}
     </div>
   {% endfor %}
+  {% if is_sending %}
+    {% set _created_str = pending.get("created_at", "") %}
+    {% set _created_dt = _created_str | parse_datetime %}
+    <div class="thread-post thread-post--sending" id="pending-reply">
+      <div class="thread-post--header">
+        <div class="thread-post--avatar">
+          <div class="question-entry--icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="thread-post--author">
+          <span class="thread-post--author-name">{{ ticket.user.profile.display_name }}</span>
+          {% if _created_dt %}
+            <time class="thread-post--time" datetime="{{ _created_str }}">
+              {{ datetimeformat(_created_dt, use_timesince=True) }}
+            </time>
+          {% endif %}
+        </div>
+      </div>
+      {{ post_body(pending.get("body", "") | e | replace('\n', '<br>') | safe) }}
+      <div class="thread-post--state">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>{{ _('Sending…') }}</span>
+      </div>
+    </div>
+  {% endif %}
 {% else %}
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
+
+<section class="question-reply-form" id="ticket-reply">
+  <h3 class="sumo-card-heading">{{ _('Post a Reply') }}</h3>
+  {% if is_failed %}
+    <div class="thread-detail--notice thread-detail--notice--error">
+      <div class="thread-detail--notice-text">
+        {% if pending.allow_retries %}
+          <strong>{{ _("Your reply failed to send. Please try posting it again.") }}</strong>
+        {% else %}
+          <strong>{{ _("Your reply could not be sent due to a system error. Our team has been notified.") }}</strong>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  <form method="post"
+        action="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+        hx-post="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
+        hx-target="#thread-replies"
+        hx-swap="outerHTML"
+        hx-disabled-elt="find button[type=submit]">
+    {% csrf_token %}
+    <fieldset {% if is_sending %}disabled{% endif %}>
+      <div class="main-content">
+        <div class="field has-large-textarea{% if reply_form.body.errors %} invalid{% endif %}">
+          <div>{{ reply_form.body }}</div>
+          {{ reply_form.body.errors }}
+        </div>
+      </div>
+      <div class="answer-tools sumo-button-wrap align-end reverse-on-desktop">
+        <button type="submit" class="sumo-button primary-button button-lg reply-submit">
+          <span class="reply-submit__idle">{{ _('Post Reply') }}</span>
+          <span class="reply-submit__busy">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            {{ _('Posting…') }}
+          </span>
+        </button>
+      </div>
+    </fieldset>
+  </form>
+</section>
+</div>

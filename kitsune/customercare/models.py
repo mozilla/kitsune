@@ -1,6 +1,11 @@
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
@@ -69,6 +74,7 @@ class SupportTicket(ModelBase):
     zd_updated_at = models.DateTimeField(null=True, blank=True)
     last_synced_at = models.DateTimeField(null=True, blank=True)
     comments = models.JSONField(default=list, blank=True)
+    pending_changes = models.JSONField(default=dict, blank=True)
     internal_zd_tags = models.JSONField(default=list, blank=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -106,6 +112,24 @@ class SupportTicket(ModelBase):
         # would be a webhook-appended reply.
         first_reply_index = 0 if self.last_synced_at is None else 1
         return [c for c in self.comments[first_reply_index:] if c.get("public", False)]
+
+    def effective_pending(self, kind):
+        """Return the pending sub-dict for `kind` with stale "sending" coerced to "failed".
+
+        Returns None if no pending of that kind exists. If the task is still
+        "sending" past ZENDESK_REPLY_POLL_SECONDS, returns a copy with status
+        flipped to "failed" so the UI can re-enable the corresponding form.
+        """
+        sub = self.pending_changes.get(kind)
+        if not sub or sub.get("status") != "sending":
+            return sub
+        last = sub.get("last_attempted_at")
+        if not last:
+            return sub
+        threshold = timezone.now() - timedelta(seconds=settings.ZENDESK_REPLY_POLL_SECONDS)
+        if parse_datetime(last) > threshold:
+            return sub
+        return {**sub, "status": "failed", "allow_retries": True}
 
     @property
     def user_status(self):
