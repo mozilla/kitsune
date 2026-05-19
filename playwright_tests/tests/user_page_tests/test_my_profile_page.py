@@ -114,7 +114,7 @@ def test_provided_solutions_number_is_successfully_displayed(page: Page, create_
     with allure.step("Signing in with the OP and undoing the solution"):
         utilities.start_existing_session(cookies=test_user)
         utilities.navigate_to_link(question_info["question_page_url"])
-        sumo_pages.question_page.click_on_undo_button()
+        sumo_pages.question_page.click_on_undo_solution_button_from_reply()
 
     with allure.step("Signing in back with the user that has provided the solution and verifying "
                      "that the solution counter is not displayed"):

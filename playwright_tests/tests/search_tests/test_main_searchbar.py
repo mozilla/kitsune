@@ -1205,7 +1205,7 @@ def test_aaq_question_has_solution_field_search(page:Page, create_user_factory):
         sumo_pages.search_page.fill_into_searchbar("field:question_has_solution:false")
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
-        expect(sumo_pages.question_page.problem_solved_reply_section).to_be_hidden()
+        expect(sumo_pages.question_page.question_details_pill).not_to_contain_text(["Solved"])
 
     with allure.step("Searching for question_has_solution:true inside the searchbox and verifying"
                      " that the returned questions have a solution"):
@@ -1213,7 +1213,7 @@ def test_aaq_question_has_solution_field_search(page:Page, create_user_factory):
         sumo_pages.search_page.fill_into_searchbar("field:question_has_solution:true")
         results = sumo_pages.search_page.get_all_search_results_handles()
         random.choice(results).click()
-        expect(sumo_pages.question_page.problem_solved_reply_section).to_be_visible()
+        expect(sumo_pages.question_page.question_details_pill).to_contain_text(["Solved"])
 
 
 # C2874874

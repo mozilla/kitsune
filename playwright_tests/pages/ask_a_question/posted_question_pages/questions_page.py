@@ -30,17 +30,22 @@ class QuestionPage(BasePage):
             "li[class='mzp-c-notification-bar mzp-t-success'] p")
 
         """Locators belonging to the problem solved section."""
-        self.problem_solved_reply_text = page.locator("div[class='reply'] p")
+        self.problem_solved_reply_text = page.locator("//div[@class='solution-tree']"
+                                                      "//div[@class='content']//p")
         self.problem_solved_reply_section = page.locator("div[class='solution card elevation-00']")
-        self.problem_solved_reply_section_header = page.locator("h4[class='is-solution']")
-        self.problem_solved_reply_reply_link = page.locator("div[class='solution--footer'] a")
-        self.undo_solves_problem = page.locator("//button[text()='Undo solution']")
+        self.problem_solved_reply_section_header = page.locator("//div[@class='solution-tree']"
+                                                                "//h3[@class='is-solution']")
+        self.problem_solved_reply_reply_link = page.locator("a[class='answer-pinned-hint']")
+        self.undo_solves_problem = page.locator("//div[@class='solution-tree']//"
+                                                "button[text()='Undo solution']")
         self.reply_solves_the_problem = lambda target_reply_id: page.locator(
             f"//div[@id='{target_reply_id}']//form[@class='solution']")
         self.reply_solution_header = lambda reply_id: page.locator(
             f"div#{reply_id} h3[class='is-solution']")
 
         """General question locators."""
+        self.question_details_pill = page.locator("//div[@class='thread-detail--pill-cluster']"
+                                                  "/span")
         self.question_author = page.locator("//a[@class='thread-post--author-name']")
         self.questions_header = page.locator("//h1[@class='thread-detail--title']")
         self.question_body = page.locator("div[class='thread-post--body'] div[class='content'] p")
@@ -142,8 +147,7 @@ class QuestionPage(BasePage):
             f"text(), '{repliant_username}')])[last()]")
         self.answer_by_username = lambda repliant_username: page.locator(
             f"(//span[@class='display-name' and contains(text(), '{repliant_username}')]"
-            f"/ancestor::div[@class='answer '])[last()]"
-        )
+            f"/ancestor::div[@class='answer'])").last
         self.reply = lambda reply_id: page.locator(f"div#{reply_id}")
         self.reply_by_content = lambda reply_content: page.locator(
             "div[class='content'] p").get_by_text(reply_content, exact=True)
@@ -162,6 +166,8 @@ class QuestionPage(BasePage):
         self.unhelpful_count = lambda reply_id: page.locator(
             f"div#{reply_id} button[name='not-helpful'] strong[class='answer-vote--count']")
         self.response_time = lambda reply_id: page.locator(f"div#{reply_id} time time")
+        self.undo_response_from_reply = page.locator("//div[@class='answer-footer--actions']"
+                                                     "/form[@class='unsolve']")
 
         """Locators belonging to the Common Responses section."""
         self.common_responses_option = page.locator("a[title='Common responses']")
@@ -185,7 +191,8 @@ class QuestionPage(BasePage):
         """Locators belonging to the 'I have this problem too' section.'"""
         self.i_have_this_problem_too_button = page.locator("div[class='me-too'] button")
         self.i_have_this_problem_too_counter = page.locator(
-            "span[class='status-label status-label--neutral question-entry--vote-count']")
+            "span[class='thread-detail--engagement-chip thread-detail--engagement-chip--votes'] "
+            "strong")
         self.i_have_this_problem_too_no_thanks_button = page.locator(
             "//section[@id='vote-thanks']//a[text()='No Thanks']")
 
@@ -366,6 +373,9 @@ class QuestionPage(BasePage):
                     expected_locator=self.repliant_username(repliant_username))
         if fetch_id:
             return self._get_element_attribute_value(self.answer_by_username(repliant_username), "id")
+
+    def click_on_undo_solution_button_from_reply(self):
+        self._click(self.undo_response_from_reply)
 
     """Actions against the question tools section locators."""
     def click_on_thread_locked_link(self):

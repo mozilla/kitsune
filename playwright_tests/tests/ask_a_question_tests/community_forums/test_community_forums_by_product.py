@@ -411,7 +411,7 @@ def test_questions_transitions_on_status_change(page: Page, create_user_factory,
         utilities.navigate_to_link(question_details['question_page_url'])
         if question_status == "has_solution":
             with allure.step("Unmarking the question reply from being the solution."):
-                sumo_pages.question_page.click_on_undo_button()
+                sumo_pages.question_page.click_on_undo_solution_button_from_reply()
         elif question_status == "is_archived":
             with allure.step("Unmarking the question from being archived."):
                 sumo_pages.question_page.click_on_archive_this_question_option()

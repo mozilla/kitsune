@@ -342,15 +342,17 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
         utilities.start_existing_session(cookies=test_user_two)
 
     if status == "locked":
-        with check, allure.step("Verifying that correct locked thread banner text is "
-                                "displayed"):
+        with check, allure.step("Verifying that correct locked thread banner text and the locked "
+                                " status is successfully displayed"):
             expect(sumo_pages.question_page.lock_this_thread_banner).to_have_text(
                 QuestionPageMessages.LOCKED_THREAD_BANNER)
+            expect(sumo_pages.question_page.question_details_pill).to_contain_text(["Locked"])
     elif status == "archived":
-        with check, allure.step("Verifying that correct archived thread banner text is "
-                                "displayed"):
+        with check, allure.step("Verifying that correct archived thread banner text  and the "
+                                "archived status is successfully displayed"):
             expect(sumo_pages.question_page.lock_this_thread_banner).to_have_text(
                 QuestionPageMessages.ARCHIVED_THREAD_BANNER)
+            expect(sumo_pages.question_page.question_details_pill).to_contain_text(["Archived"])
 
     with allure.step("Clicking on the locked thread link and verifying that we are "
                      "redirected to the correct page"):
@@ -417,6 +419,11 @@ def test_lock_and_archive_this_question(page: Page, status, create_user_factory)
                      "locked' banner is not displayed"):
         utilities.start_existing_session(cookies=test_user)
         expect(sumo_pages.question_page.lock_this_thread_banner).to_be_hidden()
+
+    with allure.step("Verifying that both the archived and locked question status is not"
+                     " displayed"):
+        expect(sumo_pages.question_page.question_details_pill).not_to_contain_text(["Locked"])
+        expect(sumo_pages.question_page.question_details_pill).not_to_contain_text(["Archived"])
 
     with allure.step("Submitting a reply to the question and verifying that the posted reply "
                      "is visible"):
@@ -1092,11 +1099,14 @@ def test_solves_this_problem(page: Page, create_user_factory):
                      "question"):
         posted_question = post_firefox_product_question_flow(page, test_user)
 
-    with allure.step("Posting a reply to the question"):
-        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
-            repliant_username=test_user["username"],
-            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
+    with allure.step("Posting three question replies"):
+        # Posting three question replies since the 'Solution tree' is not
+        # displayed if the first or second question reply was marked as the solution.
+        for question in range(3):
+            reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=test_user["username"],
+                reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+            )
 
     with allure.step("Deleting user session and verifying that the 'Solved the problem' "
                      "button is not displayed"):
