@@ -637,7 +637,9 @@
 
 .author-name {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  row-gap: p.$spacing-xs;
 
   .user-title {
     line-height: 1;
