@@ -45,7 +45,7 @@ dependencies = [
     "django-storages[google]>=1.14.2,<2",
     "django-taggit>=6.1.0,<7",
     "django-user-agents>=0.4.0,<0.5",
-    "django-watchman==1.3.0",
+    "django-watchman==1.5.0",
     "premailer>=3.10.0,<4",
     "pyquery>=2.0.0,<3",
     "parameterized>=0.8.1,<0.9",
