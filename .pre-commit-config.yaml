@@ -5,6 +5,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+      - id: check-ast
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: debug-statements
