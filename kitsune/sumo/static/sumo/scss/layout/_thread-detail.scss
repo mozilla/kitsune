@@ -129,6 +129,22 @@
   }
 }
 
+.thread-detail--status-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p.$spacing-xs p.$spacing-sm;
+  margin: 0;
+}
+
+.thread-detail--status-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: p.$spacing-xs;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
+}
+
 .thread-detail--engagement {
   display: flex;
   flex-wrap: wrap;
@@ -182,7 +198,7 @@
   gap: p.$spacing-xs p.$spacing-sm;
 }
 
-// Alert notice inside thread — locked, archived, spam
+// Alert notice inside thread — locked, archived, spam, failed reply
 .thread-detail--notice {
   display: flex;
   align-items: center;
@@ -201,6 +217,18 @@
     background: rgba(c.color('yellow', '04'), 0.2);
     color: c.color('orange', '08');
   }
+
+  &--error {
+    background: rgba(c.color('red', '06'), 0.08);
+    color: c.color('red', '08');
+    margin-top: p.$spacing-lg;
+  }
+}
+
+.thread-detail--notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: p.$spacing-xs;
 }
 
 // Replies section heading row
@@ -208,6 +236,24 @@
 .thread-replies > h3 {
   padding-top: p.$spacing-xl;
   margin-bottom: p.$spacing-lg;
+}
+
+// In-flight reply (SupportTicket.pending_comment with status="sending") shown
+// as a phantom comment at the bottom of the thread while the Celery task posts
+// to Zendesk.
+.thread-post--sending {
+  .thread-post--body {
+    opacity: 0.6;
+  }
+}
+
+.thread-post--state {
+  display: flex;
+  align-items: center;
+  gap: p.$spacing-sm;
+  margin-top: p.$spacing-md;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
 }
 
 // Loading state for async comment fetch
@@ -229,6 +275,22 @@
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
   flex-shrink: 0;
+}
+
+// Idle/busy label swap on the reply submit button. HTMX adds `htmx-request`
+// to the form (the requesting element) for the duration of the request.
+.reply-submit__busy {
+  display: none;
+  align-items: center;
+  gap: p.$spacing-xs;
+}
+
+.htmx-request .reply-submit__idle {
+  display: none;
+}
+
+.htmx-request .reply-submit__busy {
+  display: inline-flex;
 }
 
 @keyframes spin {

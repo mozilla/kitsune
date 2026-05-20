@@ -1,6 +1,11 @@
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
@@ -69,6 +74,7 @@ class SupportTicket(ModelBase):
     zd_updated_at = models.DateTimeField(null=True, blank=True)
     last_synced_at = models.DateTimeField(null=True, blank=True)
     comments = models.JSONField(default=list, blank=True)
+    pending_changes = models.JSONField(default=dict, blank=True)
     internal_zd_tags = models.JSONField(default=list, blank=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -106,6 +112,45 @@ class SupportTicket(ModelBase):
         # would be a webhook-appended reply.
         first_reply_index = 0 if self.last_synced_at is None else 1
         return [c for c in self.comments[first_reply_index:] if c.get("public", False)]
+
+    def effective_pending(self, kind):
+        """Return the pending sub-dict for `kind` with stale "sending" coerced to "failed".
+
+        Returns None if no pending of that kind exists. If the task is still
+        "sending" past ZENDESK_REPLY_POLL_SECONDS, returns a copy with status
+        flipped to "failed" so the UI can re-enable the corresponding form.
+        """
+        sub = self.pending_changes.get(kind)
+        if not sub or sub.get("status") != "sending":
+            return sub
+        # Fall back to created_at so a worker that never picked the task up
+        # (broker outage, crash) eventually coerces to "failed" — without this
+        # fallback the UI would spin forever.
+        timestamp = sub.get("last_attempted_at") or sub.get("created_at")
+        if not timestamp:
+            return sub
+        threshold = timezone.now() - timedelta(seconds=settings.ZENDESK_REPLY_POLL_SECONDS)
+        if parse_datetime(timestamp) > threshold:
+            return sub
+        return {**sub, "status": "failed", "allow_retries": True}
+
+    def permitted_zd_status_targets(self):
+        """Status-change targets the owner can request given the current state.
+
+        Returns a set of allowed `zd_status` target values. Empty set when no
+        action is available (closed tickets, in-flight pending, terminal local
+        states).
+        """
+        if self.submission_status != self.STATUS_SENT:
+            return set()
+        pending = self.effective_pending("zd_status")
+        if pending and pending.get("status") == "sending":
+            return set()
+        if self.zd_status in (self.ZD_STATUS_OPEN, self.ZD_STATUS_PENDING, self.ZD_STATUS_WAITING):
+            return {self.ZD_STATUS_SOLVED}
+        if self.zd_status == self.ZD_STATUS_SOLVED:
+            return {self.ZD_STATUS_OPEN}
+        return set()
 
     @property
     def user_status(self):

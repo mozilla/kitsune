@@ -15,7 +15,16 @@ api_patterns = [
 detail_patterns = [
     re_path(r"^$", views.profile, name="users.profile"),
     re_path(r"^questions$", views.questions_contributed, name="users.questions"),
-    re_path(r"^questions/(?P<ticket_id>\d+)$", customercare_views.ticket_detail, name="customercare.ticket_detail"),
+    re_path(
+        r"^questions/(?P<ticket_id>\d+)$",
+        customercare_views.ticket_detail,
+        name="customercare.ticket_detail",
+    ),
+    re_path(
+        r"^questions/(?P<ticket_id>\d+)/status$",
+        customercare_views.ticket_status,
+        name="customercare.ticket_status",
+    ),
     re_path(r"^answers$", views.answers_contributed, name="users.answers"),
     re_path(r"^documents$", views.documents_contributed, name="users.documents"),
     re_path(r"^edit$", views.edit_profile, name="users.edit_profile"),
@@ -30,7 +39,7 @@ if settings.DEV or settings.TEST:
     if settings.ENABLE_TESTING_ENDPOINTS:
         api_patterns += [
             re_path(r"^create", api.create_test_user, name="users.api.create_test_user"),
-            re_path(r"^trigger-delete", api.trigger_delete, name="users.api.trigger_delete")
+            re_path(r"^trigger-delete", api.trigger_delete, name="users.api.trigger_delete"),
         ]
 
 users_patterns = [

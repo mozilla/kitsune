@@ -20,6 +20,23 @@
   }
 }
 
+// Closed / solved support tickets — muted so active items stand out.
+.question-entry--inactive {
+  .question-entry--title-link,
+  .question-entry--meta-asked-by,
+  .question-entry--last-reply-name {
+    color: var(--color-text-light);
+  }
+
+  .question-entry--icon {
+    opacity: 0.6;
+  }
+
+  .question-entry--excerpt {
+    opacity: 0.75;
+  }
+}
+
 .question-entry--link {
   grid-column: 1 / -1;
   display: grid;

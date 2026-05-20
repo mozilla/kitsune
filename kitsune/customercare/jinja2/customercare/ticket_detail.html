@@ -1,6 +1,5 @@
 {% extends "sumo/thread_detail.html" %}
 {% from "sumo/includes/thread_post.html" import thread_meta_rows %}
-{% from "sumo/includes/question_entry.html" import state_badges %}
 
 {% set title = ticket.subject %}
 {% set canonical_url = canonicalize(viewname="customercare.ticket_detail", username=ticket.user.username, ticket_id=ticket.id) %}
@@ -16,9 +15,9 @@
   {% endif %}
 {% endblock %}
 
-{# ── Hero status pill cluster ────────────────────────────────────────────── #}
+{# ── Hero status pill cluster + owner actions ───────────────────────────── #}
 {% block thread_status_hero %}
-  <div class="thread-detail--pill-cluster">{{ state_badges(ticket) }}</div>
+  {% include "customercare/includes/ticket_status.html" %}
 {% endblock %}
 
 {% block thread_meta %}{{ thread_meta_rows(ticket) }}{% endblock %}

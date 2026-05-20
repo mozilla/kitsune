@@ -21,7 +21,6 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
     client = ZendeskClient()
     zd_ticket = client.get_ticket(ticket.zendesk_ticket_id)
     zd_comments = client.get_ticket_comments(ticket.zendesk_ticket_id)
-
     ticket.zd_status = zd_ticket.status
     ticket.zd_updated_at = zd_ticket.updated_at
     ticket.comments = [

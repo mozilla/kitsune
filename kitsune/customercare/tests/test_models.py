@@ -1,6 +1,7 @@
 from django.utils import timezone
 
 from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 
@@ -148,3 +149,118 @@ class PublicCommentsTests(TestCase):
         )
         bodies = [c["body"] for c in ticket.public_comments]
         self.assertEqual(bodies, ["Webhook reply"])
+
+
+class PermittedZdStatusTargetsTests(TestCase):
+    """Tests for SupportTicket.permitted_zd_status_targets() — the owner-facing
+    state machine that decides which status-change actions are available.
+    """
+
+    def _ticket(self, zd_status, **extra):
+        return SupportTicketFactory(zd_status=zd_status, **extra)
+
+    def test_open_allows_solve(self):
+        ticket = self._ticket(SupportTicket.ZD_STATUS_OPEN)
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+    def test_pending_allows_solve(self):
+        ticket = self._ticket(SupportTicket.ZD_STATUS_PENDING)
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+    def test_waiting_allows_solve(self):
+        ticket = self._ticket(SupportTicket.ZD_STATUS_WAITING)
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+    def test_solved_allows_reopen_only(self):
+        ticket = self._ticket(SupportTicket.ZD_STATUS_SOLVED)
+        self.assertEqual({SupportTicket.ZD_STATUS_OPEN}, ticket.permitted_zd_status_targets())
+
+    def test_closed_allows_nothing(self):
+        ticket = self._ticket(SupportTicket.ZD_STATUS_CLOSED)
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_null_zd_status_allows_nothing(self):
+        ticket = self._ticket(None)
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_non_sent_submission_allows_nothing(self):
+        """Tickets that haven't reached Zendesk yet shouldn't expose status actions."""
+        ticket = self._ticket(
+            SupportTicket.ZD_STATUS_OPEN,
+            submission_status=SupportTicket.STATUS_PENDING,
+        )
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_pending_status_change_blocks_actions(self):
+        ticket = self._ticket(SupportTicket.ZD_STATUS_OPEN)
+        ticket.pending_changes["zd_status"] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "sending",
+            "created_at": timezone.now().isoformat(),
+            "last_attempted_at": timezone.now().isoformat(),
+        }
+        ticket.save(update_fields=["pending_changes"])
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_failed_status_change_does_not_block_actions(self):
+        """Failed pending entries shouldn't lock the user out of trying again."""
+        ticket = self._ticket(SupportTicket.ZD_STATUS_OPEN)
+        ticket.pending_changes["zd_status"] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "failed",
+            "allow_retries": True,
+            "created_at": timezone.now().isoformat(),
+            "last_attempted_at": timezone.now().isoformat(),
+        }
+        ticket.save(update_fields=["pending_changes"])
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+
+class EffectivePendingStaleCoercionTests(TestCase):
+    """Tests for the `created_at` fallback in `effective_pending(kind)`.
+
+    Covers the case where a task never recorded an attempt (worker crashed,
+    broker outage) — without the fallback, the UI would spin forever instead
+    of recovering into a retryable failed state.
+    """
+
+    def _ticket_with_pending(self, kind, created_at, last_attempted_at=None):
+        ticket = SupportTicketFactory(zd_status=SupportTicket.ZD_STATUS_OPEN)
+        ticket.pending_changes[kind] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "sending",
+            "created_at": created_at,
+            "last_attempted_at": last_attempted_at,
+        }
+        ticket.save(update_fields=["pending_changes"])
+        return ticket
+
+    def test_recent_created_at_no_attempt_returns_sending(self):
+        ticket = self._ticket_with_pending("zd_status", created_at=timezone.now().isoformat())
+        pending = ticket.effective_pending("zd_status")
+        self.assertEqual("sending", pending["status"])
+
+    def test_stale_created_at_no_attempt_coerces_to_failed(self):
+        from datetime import timedelta as _td
+
+        stale = (timezone.now() - _td(seconds=120)).isoformat()
+        ticket = self._ticket_with_pending("zd_status", created_at=stale)
+        pending = ticket.effective_pending("zd_status")
+        self.assertEqual("failed", pending["status"])
+        self.assertTrue(pending["allow_retries"])
+
+    def test_recent_attempt_overrides_stale_created_at(self):
+        from datetime import timedelta as _td
+
+        stale = (timezone.now() - _td(seconds=300)).isoformat()
+        ticket = self._ticket_with_pending(
+            "zd_status",
+            created_at=stale,
+            last_attempted_at=timezone.now().isoformat(),
+        )
+        pending = ticket.effective_pending("zd_status")
+        self.assertEqual("sending", pending["status"])
+
+    def test_no_kind_returns_none(self):
+        ticket = SupportTicketFactory()
+        self.assertIsNone(ticket.effective_pending("zd_status"))
