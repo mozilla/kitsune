@@ -129,6 +129,22 @@
   }
 }
 
+.thread-detail--status-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p.$spacing-xs p.$spacing-sm;
+  margin: 0;
+}
+
+.thread-detail--status-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: p.$spacing-xs;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
+}
+
 .thread-detail--engagement {
   display: flex;
   flex-wrap: wrap;

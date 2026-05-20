@@ -19,7 +19,11 @@ from zenpy.lib.exception import APIException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tasks import post_reply_to_zendesk, process_zendesk_update
+from kitsune.customercare.tasks import (
+    post_reply_to_zendesk,
+    post_status_change_to_zendesk,
+    process_zendesk_update,
+)
 from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.products.models import Topic
 
@@ -186,6 +190,47 @@ def update_topic(request, ticket_id):
     ticket.save(update_fields=["zendesk_tags"])
 
     return JsonResponse({"updated_topic": str(new_topic)})
+
+
+@login_required
+def ticket_status(request, username, ticket_id):
+    """POST accepts a status-change request from the ticket owner and enqueues
+    the Zendesk update. GET re-renders the status partial (used by HTMX polling
+    while a change is in flight). Both methods return the `ticket_status.html`
+    partial for HTMX clients and redirect to the ticket detail page otherwise.
+    """
+    ticket = get_object_or_404(SupportTicket, id=ticket_id, user__username=username)
+
+    if request.user.id != ticket.user_id:
+        raise Http404
+
+    if request.method == "POST":
+        target_status = request.POST.get("target_status")
+        enqueue_task = False
+        with transaction.atomic():
+            ticket = SupportTicket.objects.select_for_update().get(id=ticket.id)
+            if target_status in ticket.permitted_zd_status_targets():
+                ticket.pending_changes["zd_status"] = {
+                    "target_status": target_status,
+                    "status": "sending",
+                    "created_at": timezone.now().isoformat(),
+                    "last_attempted_at": None,
+                }
+                ticket.save(update_fields=["pending_changes"])
+                enqueue_task = True
+            # If the target is invalid or no longer permitted, fall through and
+            # re-render the current state — the UI will reflect what's actually
+            # available now.
+
+        # Enqueue after the transaction commits — otherwise the worker can pick
+        # up the task and read the row before the pending entry is visible,
+        # leading to a no-op task and a stuck "sending" state.
+        if enqueue_task:
+            post_status_change_to_zendesk.delay(ticket_id=ticket.id)
+
+    if request.headers.get("HX-Request"):
+        return render(request, "customercare/includes/ticket_status.html", {"ticket": ticket})
+    return redirect("customercare.ticket_detail", username=username, ticket_id=ticket.id)
 
 
 class ZendeskWebhookView(View):

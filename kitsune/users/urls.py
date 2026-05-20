@@ -20,6 +20,11 @@ detail_patterns = [
         customercare_views.ticket_detail,
         name="customercare.ticket_detail",
     ),
+    re_path(
+        r"^questions/(?P<ticket_id>\d+)/status$",
+        customercare_views.ticket_status,
+        name="customercare.ticket_status",
+    ),
     re_path(r"^answers$", views.answers_contributed, name="users.answers"),
     re_path(r"^documents$", views.documents_contributed, name="users.documents"),
     re_path(r"^edit$", views.edit_profile, name="users.edit_profile"),

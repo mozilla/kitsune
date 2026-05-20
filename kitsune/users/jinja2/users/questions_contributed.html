@@ -62,7 +62,8 @@
       <ul class="question-entry-list">
         {% set _user_is_contributor = is_contributor(request.user) %}
         {% for question in questions %}
-          <li class="question-entry">
+          {% set _is_inactive_ticket = question.channel == "direct_support" and question.zd_status in ("solved", "closed") %}
+          <li class="question-entry{% if _is_inactive_ticket %} question-entry--inactive{% endif %}">
             {{ question_entry(question, profile_username=profile.user.username, request=request, user_is_contributor=_user_is_contributor) }}
           </li>
         {% endfor %}

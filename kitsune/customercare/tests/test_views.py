@@ -554,3 +554,247 @@ class TicketRepliesTemplateTests(TestCase):
         self.assertContains(response, "Your reply failed to send")
         self.assertNotContains(response, 'id="pending-reply"')
         self.assertNotContains(response, "every 2s")
+
+
+class TicketStatusViewTests(TestCase):
+    """POST/GET to customercare.ticket_status for owner-initiated status changes."""
+
+    def setUp(self):
+        self.owner = UserFactory()
+        self.other = UserFactory()
+        self.ticket = SupportTicketFactory(
+            user=self.owner,
+            zendesk_ticket_id="987",
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+
+    def _url(self):
+        return reverse("customercare.ticket_status", args=[self.owner.username, self.ticket.id])
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_owner_post_solved_creates_pending_and_enqueues(self, mock_task):
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+
+        self.assertEqual(302, response.status_code)
+        self.ticket.refresh_from_db()
+        pending = self.ticket.pending_changes["zd_status"]
+        self.assertEqual(SupportTicket.ZD_STATUS_SOLVED, pending["target_status"])
+        self.assertEqual("sending", pending["status"])
+        self.assertIsNone(pending["last_attempted_at"])
+        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_owner_post_reopen_from_solved(self, mock_task):
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_SOLVED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_OPEN})
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(
+            SupportTicket.ZD_STATUS_OPEN,
+            self.ticket.pending_changes["zd_status"]["target_status"],
+        )
+        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_owner_post_htmx_returns_partial(self, mock_task):
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            self._url(),
+            data={"target_status": SupportTicket.ZD_STATUS_SOLVED},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="thread-status"')
+        self.assertContains(response, "Updating status")
+        mock_task.delay.assert_called_once()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_invalid_target_does_not_create_pending(self, mock_task):
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": "definitely-not-valid"})
+
+        self.ticket.refresh_from_db()
+        self.assertNotIn("zd_status", self.ticket.pending_changes)
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_disallowed_target_for_current_status_does_not_create_pending(self, mock_task):
+        """Requesting reopen on an open ticket → no-op (permitted set is {solved})."""
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_OPEN})
+
+        self.ticket.refresh_from_db()
+        self.assertNotIn("zd_status", self.ticket.pending_changes)
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_closed_ticket_rejects_all_targets(self, mock_task):
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_OPEN})
+
+        self.ticket.refresh_from_db()
+        self.assertNotIn("zd_status", self.ticket.pending_changes)
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_post_during_sending_does_not_replace_pending(self, mock_task):
+        self.ticket.pending_changes["zd_status"] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "sending",
+            "created_at": timezone.now().isoformat(),
+            "last_attempted_at": timezone.now().isoformat(),
+        }
+        self.ticket.save(update_fields=["pending_changes"])
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_OPEN})
+
+        self.ticket.refresh_from_db()
+        # Original pending intact.
+        self.assertEqual(
+            SupportTicket.ZD_STATUS_SOLVED,
+            self.ticket.pending_changes["zd_status"]["target_status"],
+        )
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_non_owner_post_404(self, mock_task):
+        self.client.force_login(self.other)
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+        self.assertEqual(404, response.status_code)
+        mock_task.delay.assert_not_called()
+        self.ticket.refresh_from_db()
+        self.assertNotIn("zd_status", self.ticket.pending_changes)
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_staff_with_view_perm_cannot_post(self, mock_task):
+        staff = UserFactory()
+        perm = Permission.objects.get(codename="change_supportticket")
+        staff.user_permissions.add(perm)
+        self.client.force_login(staff)
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+        self.assertEqual(404, response.status_code)
+        mock_task.delay.assert_not_called()
+
+    def test_anonymous_post_redirects_to_login(self):
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+        self.assertEqual(302, response.status_code)
+        self.assertIn("/users/login", response["Location"])
+
+    def test_owner_htmx_get_returns_partial(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url(), HTTP_HX_REQUEST="true")
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="thread-status"')
+        self.assertContains(response, "Mark as solved")
+
+    def test_owner_non_htmx_get_redirects_to_detail(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertEqual(302, response.status_code)
+        self.assertIn(f"questions/{self.ticket.id}", response["Location"])
+
+    def test_non_owner_get_404(self):
+        self.client.force_login(self.other)
+        response = self.client.get(self._url(), HTTP_HX_REQUEST="true")
+        self.assertEqual(404, response.status_code)
+
+
+class TicketStatusTemplateTests(TestCase):
+    """Render checks for the ticket_status partial inside the ticket detail page."""
+
+    def setUp(self):
+        self.owner = UserFactory()
+        self.ticket = SupportTicketFactory(
+            user=self.owner,
+            zendesk_ticket_id="987",
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+        self.ticket.last_synced_at = timezone.now()
+        self.ticket.save()
+
+    def _url(self):
+        return reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+
+    def test_solve_button_visible_when_open(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertContains(response, "Mark as solved")
+        self.assertNotContains(response, "Reopen")
+
+    def test_reopen_button_visible_when_solved(self):
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_SOLVED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertContains(response, "Reopen")
+        self.assertNotContains(response, "Mark as solved")
+
+    def test_no_actions_when_closed(self):
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertNotContains(response, "Mark as solved")
+        self.assertNotContains(response, "Reopen")
+
+    def test_sending_state_shows_busy_indicator_and_polls(self):
+        self.ticket.pending_changes["zd_status"] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "sending",
+            "created_at": timezone.now().isoformat(),
+            "last_attempted_at": timezone.now().isoformat(),
+        }
+        self.ticket.save(update_fields=["pending_changes"])
+
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertContains(response, "Updating status")
+        self.assertContains(response, 'hx-trigger="load delay:1s, every 2s"')
+        self.assertNotContains(response, "Mark as solved")
+
+    def test_failed_retryable_shows_error_and_buttons(self):
+        self.ticket.pending_changes["zd_status"] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "failed",
+            "allow_retries": True,
+            "created_at": timezone.now().isoformat(),
+            "last_attempted_at": timezone.now().isoformat(),
+        }
+        self.ticket.save(update_fields=["pending_changes"])
+
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertContains(response, "Please try again")
+        self.assertContains(response, "Mark as solved")
+
+    def test_failed_permanent_shows_team_notified(self):
+        self.ticket.pending_changes["zd_status"] = {
+            "target_status": SupportTicket.ZD_STATUS_SOLVED,
+            "status": "failed",
+            "allow_retries": False,
+            "created_at": timezone.now().isoformat(),
+            "last_attempted_at": timezone.now().isoformat(),
+        }
+        self.ticket.save(update_fields=["pending_changes"])
+
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertContains(response, "team has been notified")
