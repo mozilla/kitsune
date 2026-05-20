@@ -9,7 +9,7 @@ class QuestionPageMessages:
     LOCKED_AND_ARCHIVED_BANNER = ("This thread was closed and archived. Please ask a new question"
                                   " if you need help.")
     CHOSEN_SOLUTION_BANNER = "Thank you for choosing a solution!"
-    CHOSEN_SOLUTION_CARD = "Chosen solution"
+    CHOSEN_SOLUTION_CARD = "Chosen Solution"
     CHOSEN_SOLUTION_REPLY_CARD = "Chosen Solution"
     UNDOING_A_SOLUTION = "The solution was undone successfully."
     FEED_FILE_NAME = "feed"
