@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 "beta_version_key": "LATEST_FIREFOX_RELEASED_DEVEL_VERSION",
                 "alpha_version_key": "FIREFOX_NIGHTLY",
                 "history_data": product_details.firefox_history_major_releases,
-                "esr_keys": [],
+                "esr_keys": ["FIREFOX_ESR"],
                 "esr_only": False,
             },
             "firefox-enterprise": {
@@ -116,6 +116,7 @@ class Command(BaseCommand):
 
     def _sync_product(self, product: Product, config: dict, dry_run: bool, verbosity: int):
         """Sync all versions for a product."""
+        # For more info about supported versions, see https://support.mozilla.org/kb/firefox-version-support-policy
         latest_version = config["version_data"].get(config["version_key"])
         if not latest_version:
             return
