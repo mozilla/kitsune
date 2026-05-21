@@ -15,7 +15,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--product",
             type=str,
-            help="Sync only this product (slug). Options: firefox, firefox-enterprise, mobile, ios, thunderbird",
+            help="Sync only this product (slug). Options: firefox, mobile, ios, thunderbird",
         )
         parser.add_argument(
             "--dry-run",
@@ -66,18 +66,9 @@ class Command(BaseCommand):
                 "beta_version_key": "LATEST_FIREFOX_RELEASED_DEVEL_VERSION",
                 "alpha_version_key": "FIREFOX_NIGHTLY",
                 "history_data": product_details.firefox_history_major_releases,
-                "esr_keys": [],
-                "esr_only": False,
-            },
-            "firefox-enterprise": {
-                "name": "Firefox for Enterprise",
-                "slug_prefix": "fx",
-                "version_data": product_details.firefox_versions,
-                "version_key": "LATEST_FIREFOX_VERSION",
-                "history_data": product_details.firefox_history_major_releases,
-                "esr_keys": ["FIREFOX_ESR", "FIREFOX_ESR115"],
+                "esr_keys": ["FIREFOX_ESR"],
                 "esr_major_versions": [52, 60, 68, 78, 91, 102, 115, 128, 140],
-                "esr_only": True,
+                "esr_only": False,
             },
             "mobile": {
                 "name": "Firefox for Android",
