@@ -82,9 +82,15 @@ def test_correct_messages_is_displayed_if_user_has_no_posted_questions(page: Pag
         utilities.start_existing_session(cookies=test_user)
 
     with check, allure.step("Accessing the 'My questions' page and verifying that the correct"
-                            " message is displayed"):
+                            " message inside all tab filters"):
         sumo_pages.top_navbar.click_on_view_profile_option()
         sumo_pages.user_navbar.click_on_my_questions_option()
+        expect(sumo_pages.my_questions_page.questions_no_question_message).to_have_text(
+            MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE)
+        sumo_pages.my_questions_page.click_on_forum_tab_filter()
+        expect(sumo_pages.my_questions_page.questions_no_question_message).to_have_text(
+            MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE)
+        sumo_pages.my_questions_page.click_on_direct_support_tab_filter()
         expect(sumo_pages.my_questions_page.questions_no_question_message).to_have_text(
             MyQuestionsPageMessages.NO_POSTED_QUESTIONS_MESSAGE)
 
@@ -151,3 +157,237 @@ def test_question_page_reflects_posted_questions_and_redirects_to_question(page:
         utilities.navigate_back()
         sumo_pages.my_questions_page.click_on_a_question_by_index(1)
         expect(page).to_have_url(first_question["question_page_url"])
+
+
+# C3911832
+@pytest.mark.userQuestions
+def test_aaq_questions_are_placed_under_the_correct_channel(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Submitting a question against the AAQ forum"):
+        question_info = _submit_firefox_question(utilities, sumo_pages)
+
+    with allure.step("Navigating to the My Questions page and verifying that the question is "
+                     "visible under the 'All' filter tab."):
+        sumo_pages.top_navbar.click_on_my_questions_profile_option()
+
+    with allure.step("Verifying that the question is successfully displayed inside the 'All' "
+                     "tab filter"):
+        expect(sumo_pages.my_questions_page.questions_list).to_contain_text(
+            [question_info["aaq_subject"]])
+
+    with allure.step("Verifying that the question is displayed inside the 'Forum' tab filter"):
+        sumo_pages.my_questions_page.click_on_forum_tab_filter()
+        expect(sumo_pages.my_questions_page.questions_list).to_contain_text(
+            [question_info["aaq_subject"]])
+
+    with allure.step("Verifying that the question is displayed inside the 'Direct Support' tab "
+                     "filter"):
+        sumo_pages.my_questions_page.click_on_direct_support_tab_filter()
+        expect(sumo_pages.my_questions_page.questions_list).not_to_contain_text(
+            [question_info["aaq_subject"]])
+
+
+# C3911833, C4039420
+@pytest.mark.userQuestions
+def test_correct_meta_info_is_displayed_inside_the_my_questions_page(page: Page,
+                                                                     create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Submitting a question against the AAQ forum"):
+        question_info = _submit_firefox_question(utilities, sumo_pages)
+
+    with allure.step("Navigating to the My Questions page and verifying that the correct product "
+                     "and topic is displayed inside the metadata information"):
+        sumo_pages.top_navbar.click_on_my_questions_profile_option()
+        expect(sumo_pages.my_questions_page.question_meta(question_info["aaq_subject"])
+               ).to_contain_text(["Firefox"])
+        expect(sumo_pages.my_questions_page.question_meta(question_info["aaq_subject"])
+               ).to_contain_text(["App crash"])
+
+    with allure.step("Moving the question under a different product & topic"):
+        sumo_pages.my_questions_page.click_on_a_question_by_name(question_info["aaq_subject"])
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.aaq_flow.change_question_details(product="Thunderbird", topic="Settings")
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Navigating to the My Questions page and verifying that the product and "
+                     "topic updates successfully displayed inside the metadata information"):
+        sumo_pages.top_navbar.click_on_my_questions_profile_option()
+        expect(sumo_pages.my_questions_page.question_meta(question_info["aaq_subject"])
+               ).to_contain_text(["Thunderbird"])
+        expect(sumo_pages.my_questions_page.question_meta(question_info["aaq_subject"])
+               ).to_contain_text(["Settings"])
+
+
+# C3911835
+@pytest.mark.userQuestions
+def test_correct_question_status_is_displayed(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Submitting a question against the AAQ forum"):
+        question_info = _submit_firefox_question(utilities, sumo_pages)
+
+    with allure.step("Navigating to the My Questions page and verifying that the correct question "
+                     "status is displayed"):
+        sumo_pages.top_navbar.click_on_my_questions_profile_option()
+        my_questions_page = utilities.get_page_url()
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Open"])
+
+    with allure.step("Signing in with a staff account and archiving the question"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.my_questions_page.click_on_a_question_by_name(question_info["aaq_subject"])
+        question_page = utilities.get_page_url()
+        sumo_pages.question_page.click_on_archive_this_question_option()
+
+    with allure.step("Navigating back to the my questions page and verifying that the correct"
+                     "question status is displayed"):
+        utilities.navigate_to_link(my_questions_page)
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Archived"])
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).not_to_contain_text(["Open"])
+
+    with allure.step("Navigating back and locking the question"):
+        utilities.navigate_to_link(question_page)
+        sumo_pages.question_page.click_on_lock_this_question_option()
+
+    with allure.step("Navigating back to the my questions page and verifying that the question "
+                     "status updates to contain both the 'Archived' and 'Locked' labels"):
+        utilities.navigate_to_link(my_questions_page)
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Locked", "Archived"])
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).not_to_contain_text(["Open"])
+
+    with allure.step("Navigating back to the question, un-archiving, unlocking and leaving "
+                     "a solution"):
+        utilities.navigate_to_link(question_page)
+        sumo_pages.question_page.click_on_lock_this_question_option()
+        sumo_pages.question_page.click_on_archive_this_question_option()
+        reply_id = sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=staff_user,
+            reply=utilities.aaq_question_test_data['valid_firefox_question']['question_reply']
+        )
+        sumo_pages.question_page.click_on_solves_the_problem_button(reply_id)
+
+    with allure.step("Navigating back to the my questions page and verifying that the question "
+                     "status updates to contain the 'Solved' status"):
+        utilities.navigate_to_link(my_questions_page)
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Solved"])
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).not_to_contain_text(["Locked", "Archived"])
+
+    with allure.step("Navigating back to the question and marking it as both 'Locked' and "
+                     "'Archived'"):
+        utilities.navigate_to_link(question_page)
+        sumo_pages.question_page.click_on_lock_this_question_option()
+        sumo_pages.question_page.click_on_archive_this_question_option()
+
+    with allure.step("Navigating back to the my questions page and verifying that the question "
+                     "status updates to contain the 'Solved', 'Locked' and 'Archived' status"):
+        utilities.navigate_to_link(my_questions_page)
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Solved", "Locked", "Archived"])
+
+    with allure.step("Navigating back to the question and undoing the solution and unmarking the "
+                     "question as being archived and locked"):
+        utilities.navigate_to_link(question_page)
+        sumo_pages.question_page.click_on_lock_this_question_option()
+        sumo_pages.question_page.click_on_archive_this_question_option()
+        sumo_pages.question_page.click_on_undo_solution_button_from_reply()
+
+    with allure.step("Navigating back to the my questions page and verifying that the question "
+                     "status updates to contain only the 'Open' status"):
+        utilities.navigate_to_link(my_questions_page)
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Open"])
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).not_to_contain_text(["Solved", "Locked", "Archived"])
+
+
+#  C3911837, C4039430
+@pytest.mark.userQuestions
+def test_spam_marked_questions_visibility(page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory()
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Submitting a question against the AAQ forum"):
+        question_info = _submit_firefox_question(utilities, sumo_pages)
+
+    with allure.step("Signing in with a forum moderator and marking the question as spam"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.question_page.click_on_mark_as_spam_option()
+
+    with allure.step(f"Signing in with {test_user['username']} user account and navigating to "
+                     f"the My Questions page"):
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.top_navbar.click_on_my_questions_profile_option()
+
+    with allure.step("Verifying that the spam filter is not displayed"):
+        expect(sumo_pages.my_questions_page.questions_page_spam_filter).to_be_hidden()
+
+    with allure.step("Verifying that the spam marked question is not displayed"):
+        expect(sumo_pages.my_questions_page.questions_titles).not_to_contain_text(
+            [question_info["aaq_subject"]])
+
+    with allure.step(f"Signing in with a different non forum moderator account"):
+        utilities.start_existing_session(cookies=test_user_two)
+
+    with allure.step("Verifying that the spam filter is not displayed"):
+        expect(sumo_pages.my_questions_page.questions_page_spam_filter).to_be_hidden()
+
+    with allure.step("Verifying that the spam marked question is not displayed"):
+        expect(sumo_pages.my_questions_page.questions_titles).not_to_contain_text(
+            [question_info["aaq_subject"]])
+
+    with allure.step(f"Signing out from SUMO"):
+        utilities.delete_cookies()
+
+    with allure.step("Verifying that the spam filter is not displayed"):
+        expect(sumo_pages.my_questions_page.questions_page_spam_filter).to_be_hidden()
+
+    with allure.step("Verifying that the spam marked question is not displayed"):
+        expect(sumo_pages.my_questions_page.questions_titles).not_to_contain_text(
+            [question_info["aaq_subject"]])
+
+    with allure.step("Signing in with a forum moderator"):
+        utilities.start_existing_session(session_file_name=staff_user)
+
+    with allure.step("Verifying that the spam filter is displayed"):
+        expect(sumo_pages.my_questions_page.questions_page_spam_filter).to_be_visible()
+
+    with allure.step("Verifying that the spam marked question is displayed inside both the 'All'"
+                     "and 'Spam' tab filters and that it contains the correct Spam status"):
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Spam"])
+        sumo_pages.my_questions_page.click_on_spam_tab_filter()
+        expect(sumo_pages.my_questions_page.question_extras(question_info["aaq_subject"])
+               ).to_contain_text(["Spam"])

@@ -242,3 +242,35 @@ class AAQFlow:
         """
         self.question_page.click_on_reply_more_options_button(reply_id)
         self.question_page.click_on_mark_as_spam_for_a_certain_reply(reply_id)
+
+    def change_question_details(self, product: str = None, topic: str = None, locale: str = None,
+                                save_changes: bool = True):
+        """
+        Flow for changing the product, topic and/or locale of a posted question via the
+        "Edit Details" option.
+        Args:
+            product (str): The new product to be selected.
+            topic (str): The new topic to be selected.
+            locale (str): The new locale to be selected.
+            save_changes (bool): If the changes should be saved or cancelled.
+        """
+        self.question_page.click_on_question_details_button()
+        self.question_page.click_on_edit_details_option()
+
+        if product:
+            self.question_page.edit_details_select_product(product)
+
+        if topic:
+            self.utilities.wait_for_given_timeout(2000)
+            self.question_page.edit_details_select_topic(topic)
+
+        if locale:
+            self.question_page.edit_details_select_locale(locale)
+
+        self.question_page.click_on_save_edit_details_changes_button() if save_changes else (
+            self.question_page.click_on_save_edit_details_cancel_button())
+
+
+
+
+
