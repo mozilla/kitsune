@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import ElementHandle, Page
 from playwright_tests.core.basepage import BasePage
 
@@ -68,6 +70,12 @@ class QuestionPage(BasePage):
                                                    "[text()='Topic:']/following-sibling::span")
         self.more_system_details_modal = page.locator("div[class='mzp-c-modal']")
         self.more_system_details_option = page.locator("a#show-more-details")
+        self.edit_details_option = page.locator("//a[@id='details-edit']")
+        self.edit_details_product_dropdown = page.locator("//select[@id='details-product']")
+        self.edit_details_topic_dropdown = page.locator("//select[@id='details-topic']")
+        self.edit_details_locale_dropdown = page.locator("//div[@id='question-locale']/select")
+        self.edit_details_save_changes_button = page.locator("//button[@id='details-submit']")
+        self.edit_details_cancel_button = page.locator("//button[@id='details-cancel']")
         self.close_additional_system_details_button = page.locator(
             "div[class='mzp-c-modal-close'] button")
         self.user_agent_information = page.locator("div[class='about-support'] li")
@@ -327,6 +335,24 @@ class QuestionPage(BasePage):
 
     def click_on_more_system_details_option(self):
         self._click(self.more_system_details_option)
+
+    def click_on_edit_details_option(self):
+        self._click(self.edit_details_option)
+
+    def edit_details_select_product(self, product_name: str):
+        self._select_option_by_label(self.edit_details_product_dropdown, product_name)
+
+    def edit_details_select_topic(self, topic_name: str):
+        self._select_option_by_label(self.edit_details_topic_dropdown, topic_name)
+
+    def edit_details_select_locale(self, locale_name: str):
+        self._select_option_by_label(self.edit_details_locale_dropdown, locale_name)
+
+    def click_on_save_edit_details_changes_button(self):
+        self._click(self.edit_details_save_changes_button)
+
+    def click_on_save_edit_details_cancel_button(self):
+        self._click(self.edit_details_cancel_button)
 
     def click_on_the_additional_system_panel_close(self):
         self._click(self.close_additional_system_details_button)
