@@ -103,15 +103,18 @@
     {% elif obj.zd_status == obj.ZD_STATUS_CLOSED %}
       {% set _status_class = "neutral" %}
       {% set _status_tip = _("Your ticket has been closed") %}
+    {% elif obj.zd_status == obj.ZD_STATUS_NEW %}
+      {% set _status_class = "open" %}
+      {% set _status_tip = _("Your ticket has been received and is awaiting review") %}
     {% elif obj.zd_status == obj.ZD_STATUS_OPEN %}
       {% set _status_class = "open" %}
       {% set _status_tip = _("Your ticket is open and being reviewed by our team") %}
     {% elif obj.zd_status == obj.ZD_STATUS_PENDING %}
       {% set _status_class = "pending" %}
       {% set _status_tip = _("Our team has responded and is awaiting your reply") %}
-    {% elif obj.zd_status == obj.ZD_STATUS_WAITING %}
+    {% elif obj.zd_status == obj.ZD_STATUS_HOLD %}
       {% set _status_class = "pending" %}
-      {% set _status_tip = _("Your ticket is waiting for a response from our team") %}
+      {% set _status_tip = _("Our team is investigating with a third party") %}
     {% else %}
       {% set _status_class = "neutral" %}
       {% set _status_tip = _("Your ticket has been submitted and is being processed") %}

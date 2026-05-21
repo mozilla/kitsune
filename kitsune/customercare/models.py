@@ -26,18 +26,20 @@ class SupportTicket(ModelBase):
     )
 
     # Zendesk ticket lifecycle statuses.
-    # "pending" means the ticket is awaiting a response from the agent.
-    # "waiting" means the ticket is awaiting a response from the customer.
+    # "pending" means the ticket is awaiting a response from the customer.
+    # "hold" means the ticket is awaiting a response from a third party.
+    ZD_STATUS_NEW = "new"
     ZD_STATUS_OPEN = "open"
     ZD_STATUS_PENDING = "pending"
-    ZD_STATUS_WAITING = "waiting"
+    ZD_STATUS_HOLD = "hold"
     ZD_STATUS_SOLVED = "solved"
     ZD_STATUS_CLOSED = "closed"
 
     ZD_STATUS_CHOICES = (
+        (ZD_STATUS_NEW, _lazy("New")),
         (ZD_STATUS_OPEN, _lazy("Open")),
         (ZD_STATUS_PENDING, _lazy("Pending")),
-        (ZD_STATUS_WAITING, _lazy("Waiting")),
+        (ZD_STATUS_HOLD, _lazy("Hold")),
         (ZD_STATUS_SOLVED, _lazy("Solved")),
         (ZD_STATUS_CLOSED, _lazy("Closed")),
     )

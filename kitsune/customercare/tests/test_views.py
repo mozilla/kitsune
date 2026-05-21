@@ -49,9 +49,11 @@ class ZendeskWebhookViewTests(TestCase):
             **headers,
         )
 
-    def test_valid_request_returns_200(self):
+    @patch("kitsune.customercare.views.process_zendesk_update")
+    def test_valid_request_returns_200(self, mock_task):
         response = self._post({"ticket_id": "123", "status": "open"})
         self.assertEqual(response.status_code, 200)
+        mock_task.delay.assert_called_once()
 
     def test_missing_api_key_returns_403(self):
         response = self._post({"ticket_id": "123"}, api_key=None)
