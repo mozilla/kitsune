@@ -75,7 +75,7 @@ npm run stylelint          # Lint SCSS files
 
 ### Key Technologies
 
-- **Backend:** Django 4.2+, Python 3.11
+- **Backend:** Django 5.2+, Python 3.14
 - **Package Management:** uv (replaced poetry in July 2025)
 - **Database:** PostgreSQL
 - **Search:** Elasticsearch 9.0+
