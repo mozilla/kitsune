@@ -228,6 +228,10 @@ class ZendeskForm(forms.Form):
         if settings.STAGE:
             zendesk_tags.append("stage")
 
+        # circular import
+        from kitsune.customercare.tasks import zendesk_submission_classifier
+        from kitsune.customercare.utils import resolve_org_group
+
         submission = SupportTicket.objects.create(
             subject=self.cleaned_data["subject"],
             description=self.cleaned_data["description"],
@@ -239,11 +243,10 @@ class ZendeskForm(forms.Form):
             policy_distribution=self.cleaned_data.get("policy_distribution", ""),
             product=product,
             user=user if (user and user.is_authenticated) else None,
+            org_group=resolve_org_group(user, product),
             zendesk_tags=zendesk_tags,
             submission_status=SupportTicket.STATUS_PENDING,
         )
-
-        from kitsune.customercare.tasks import zendesk_submission_classifier
 
         zendesk_submission_classifier.delay(submission.id)
 

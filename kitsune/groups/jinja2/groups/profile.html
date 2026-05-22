@@ -130,6 +130,19 @@
       {% endif %}
     </header>
 
+    {% if profile.is_org_root() and profile.can_view_tickets(request.user) %}
+      <nav class="tabs">
+        <ul class="tabs--list">
+          <li class="tabs--item">
+            <a class="selected" href="{{ url('groups.profile', profile.slug) }}"><span>{{ _('Group') }}</span></a>
+          </li>
+          <li class="tabs--item">
+            <a href="{{ url('groups.tickets', profile.slug) }}"><span>{{ _('Tickets') }}</span></a>
+          </li>
+        </ul>
+      </nav>
+    {% endif %}
+
     {% if profile.information_html %}
     <div class="group-section" id="group-information">
       <div class="section-heading">

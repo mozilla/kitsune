@@ -5,6 +5,10 @@ from treebeard.mp_tree import MP_NodeManager
 
 
 class GroupProfileManager(MP_NodeManager):
+    def org_roots(self):
+        """All GroupProfiles marked as org roots via ProductSupportConfig.hybrid_support_groups."""
+        return self.filter(group__hybrid_support_configs__isnull=False).distinct()
+
     def visible(self, user: User | None = None):
         """
         Returns a queryset of all group profiles visible to the given user.

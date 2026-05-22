@@ -8,8 +8,15 @@ from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 from pyquery import PyQuery as pq
 
+from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -401,3 +408,88 @@ class DeactivatedMemberVisibilityTests(TestCase):
         )
         self.assertEqual(self._group_count(doc, "Leaders"), 2)
         self.assertEqual(self._group_count(doc, "Members"), 4)
+
+
+class GroupTicketsViewTests(TestCase):
+    """Tests for the groups.tickets view."""
+
+    def setUp(self):
+        self.SupportTicket = SupportTicket
+        product = ProductFactory()
+        config = ProductSupportConfigFactory(
+            product=product, zendesk_config=ZendeskConfigFactory(name="zd")
+        )
+
+        root_group = Group.objects.create(name="firefox-enterprise")
+        self.root = GroupProfile.add_root(
+            group=root_group,
+            slug="firefox-enterprise",
+            visibility=GroupProfile.Visibility.PRIVATE,
+        )
+        self.c1_group = Group.objects.create(name="company1")
+        self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
+        config.hybrid_support_groups.add(self.c1_group)
+
+        self.c2_group = Group.objects.create(name="company2")
+        self.c2 = self.root.add_child(group=self.c2_group, slug="company2")
+
+        self.member = UserFactory(username="member")
+        self.member.groups.add(self.c1_group)
+        self.outsider = UserFactory(username="outsider")
+        self.outsider.groups.add(self.c2_group)
+
+        self.open_ticket = SupportTicketFactory(
+            user=self.member,
+            product=product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+        self.solved_ticket = SupportTicketFactory(
+            user=self.member,
+            product=product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_SOLVED,
+        )
+
+    def test_non_org_group_returns_404(self):
+        """A group that isn't an org root returns 404 (only its members can even see it)."""
+        self.client.force_login(self.outsider)
+        response = self.client.get(reverse("groups.tickets", args=[self.c2.slug]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_outsider_cannot_reach_private_group(self):
+        """Private + isolated group is invisible to non-members; 404 from visibility gate."""
+        self.client.force_login(self.outsider)
+        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_member_sees_active_tickets_by_default(self):
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.open_ticket.subject)
+        self.assertNotContains(response, self.solved_ticket.subject)
+
+    def test_status_filter_all(self):
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]) + "?status=all")
+        self.assertContains(response, self.open_ticket.subject)
+        self.assertContains(response, self.solved_ticket.subject)
+
+    def test_status_filter_solved(self):
+        self.client.force_login(self.member)
+        response = self.client.get(
+            reverse("groups.tickets", args=[self.c1.slug]) + "?status=solved"
+        )
+        self.assertContains(response, self.solved_ticket.subject)
+        self.assertNotContains(response, self.open_ticket.subject)
+
+    def test_htmx_request_returns_fragment(self):
+        self.client.force_login(self.member)
+        response = self.client.get(
+            reverse("groups.tickets", args=[self.c1.slug]),
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"<html", response.content)
+        self.assertIn(b'id="tickets-content"', response.content)

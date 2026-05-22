@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, Mock, patch
 
+from django.contrib.auth.models import Group
 from django.utils import timezone
 from zenpy.lib.exception import APIException
 
@@ -9,9 +10,12 @@ from kitsune.customercare.utils import (
     _topic_to_tag,
     generate_classification_tags,
     process_zendesk_classification_result,
+    resolve_org_group,
+    resolve_user_org_group,
     send_support_ticket_to_zendesk,
     sync_ticket_from_zendesk,
 )
+from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
 from kitsune.products.tests import (
     ProductFactory,
@@ -19,7 +23,9 @@ from kitsune.products.tests import (
     TopicFactory,
     ZendeskConfigFactory,
 )
+from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
 
 
 class TopicToTagTests(TestCase):
@@ -468,3 +474,78 @@ class SyncTicketFromZendeskTests(TestCase):
 
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.description, "An updated description from Zendesk")
+
+
+class ResolveOrgGroupTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory()
+        zd = ZendeskConfigFactory(name="zd")
+        self.config = ProductSupportConfigFactory(product=self.product, zendesk_config=zd)
+
+        root_group = Group.objects.create(name="firefox-enterprise")
+        self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
+
+        self.c1_group = Group.objects.create(name="company1")
+        self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
+        self.config.hybrid_support_groups.add(self.c1_group)
+
+        it_group = Group.objects.create(name="company1.IT")
+        self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")
+
+        self.it_user = UserFactory()
+        self.it_user.groups.add(it_group)
+        self.stranger = UserFactory()
+
+    def test_descendant_member_resolves_to_org_root(self):
+        self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1)
+
+    def test_nested_hybrid_groups_resolves_to_deepest(self):
+        """When multiple ancestors are hybrid_support_groups, pick the nearest (deepest)."""
+        self.config.hybrid_support_groups.add(self.c1_it.group)
+        self.assertEqual(resolve_org_group(self.it_user, self.product), self.c1_it)
+
+    def test_non_member_resolves_to_none(self):
+        self.assertIsNone(resolve_org_group(self.stranger, self.product))
+
+    def test_no_zendesk_config_returns_none(self):
+        product2 = ProductFactory()
+        ProductSupportConfigFactory(
+            product=product2, zendesk_config=None, forum_config=AAQConfigFactory()
+        )
+        self.assertIsNone(resolve_org_group(self.it_user, product2))
+
+    def test_no_hybrid_support_groups_returns_none(self):
+        product2 = ProductFactory()
+        zd2 = ZendeskConfigFactory(name="zd2")
+        ProductSupportConfigFactory(product=product2, zendesk_config=zd2)
+        self.assertIsNone(resolve_org_group(self.it_user, product2))
+
+    def test_no_config_returns_none(self):
+        product2 = ProductFactory()
+        self.assertIsNone(resolve_org_group(self.it_user, product2))
+
+
+class ResolveUserOrgGroupTests(TestCase):
+    def setUp(self):
+        self.product = ProductFactory()
+        zd = ZendeskConfigFactory(name="zd")
+        config = ProductSupportConfigFactory(product=self.product, zendesk_config=zd)
+
+        root_group = Group.objects.create(name="firefox-enterprise")
+        self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
+        c1_group = Group.objects.create(name="company1")
+        self.c1 = self.root.add_child(group=c1_group, slug="company1")
+        config.hybrid_support_groups.add(c1_group)
+
+        it_group = Group.objects.create(name="company1.IT")
+        self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")
+
+        self.it_user = UserFactory()
+        self.it_user.groups.add(it_group)
+        self.stranger = UserFactory()
+
+    def test_member_resolves_to_org_root(self):
+        self.assertEqual(resolve_user_org_group(self.it_user), self.c1)
+
+    def test_non_member_returns_none(self):
+        self.assertIsNone(resolve_user_org_group(self.stranger))

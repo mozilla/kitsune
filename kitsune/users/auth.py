@@ -25,7 +25,7 @@ def is_mozilla_domain_email(email: str) -> bool:
     if not email:
         return False
 
-    domain = email.split("@")[-1].lower()
+    domain = email.rsplit("@", maxsplit=1)[-1].lower()
     return domain in [d.lower() for d in settings.MOZILLA_DOMAINS]
 
 

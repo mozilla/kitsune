@@ -1,6 +1,9 @@
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
+from kitsune.groups.models import GroupProfile
+from kitsune.products.admin import ProductSupportConfigForm
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import (
     ProductFactory,
@@ -133,3 +136,75 @@ class ProductSupportConfigCleanTests(TestCase):
                 forum_config=None,
                 zendesk_config=None,
             )
+
+
+class HybridSupportGroupsValidationTests(TestCase):
+    def setUp(self):
+        self.Group = Group
+        self.GroupProfile = GroupProfile
+        self.Form = ProductSupportConfigForm
+
+        zd = ZendeskConfigFactory(name="zd")
+        self.config = ProductSupportConfigFactory(product=ProductFactory(), zendesk_config=zd)
+
+        self.root_group = Group.objects.create(name="firefox-enterprise")
+        self.root = GroupProfile.add_root(group=self.root_group, slug="firefox-enterprise")
+        self.c1_group = Group.objects.create(name="company1")
+        self.c1 = self.root.add_child(group=self.c1_group, slug="company1")
+        self.c2_group = Group.objects.create(name="company2")
+        self.c2 = self.root.add_child(group=self.c2_group, slug="company2")
+        self.it_group = Group.objects.create(name="company1.IT")
+        self.c1_it = self.c1.add_child(group=self.it_group, slug="company1-it")
+
+    def _build_form(self, *groups):
+        return self.Form(
+            data={
+                "product": str(self.config.product_id),
+                "is_active": "on",
+                "zendesk_config": str(self.config.zendesk_config_id),
+                "default_support_type": self.config.default_support_type,
+                "hybrid_support_groups": [str(g.pk) for g in groups],
+            },
+            instance=self.config,
+        )
+
+    def test_root_group_is_rejected(self):
+        form = self._build_form(self.root_group)
+        self.assertFalse(form.is_valid())
+        self.assertIn("hybrid_support_groups", form.errors)
+
+    def test_ancestor_in_another_config_is_rejected(self):
+        other_zd = ZendeskConfigFactory(name="other-zd")
+        other_config = ProductSupportConfigFactory(
+            product=ProductFactory(), zendesk_config=other_zd
+        )
+        other_config.hybrid_support_groups.add(self.c1_group)
+
+        form = self._build_form(self.it_group)
+        self.assertFalse(form.is_valid())
+        self.assertIn("hybrid_support_groups", form.errors)
+
+    def test_descendant_in_another_config_is_rejected(self):
+        other_zd = ZendeskConfigFactory(name="other-zd")
+        other_config = ProductSupportConfigFactory(
+            product=ProductFactory(), zendesk_config=other_zd
+        )
+        other_config.hybrid_support_groups.add(self.it_group)
+
+        form = self._build_form(self.c1_group)
+        self.assertFalse(form.is_valid())
+        self.assertIn("hybrid_support_groups", form.errors)
+
+    def test_two_groups_in_same_chain_in_one_submission_rejected(self):
+        form = self._build_form(self.c1_group, self.it_group)
+        self.assertFalse(form.is_valid())
+        self.assertIn("hybrid_support_groups", form.errors)
+
+    def test_independent_groups_accepted(self):
+        form = self._build_form(self.c1_group, self.c2_group)
+        self.assertTrue(form.is_valid(), msg=str(form.errors))
+
+    def test_group_without_groupprofile_skipped(self):
+        flat_group = self.Group.objects.create(name="flat-group")
+        form = self._build_form(flat_group)
+        self.assertTrue(form.is_valid(), msg=str(form.errors))

@@ -4,6 +4,11 @@
 {% set canonical_url = canonicalize(viewname="users.questions", username=profile.user.username) %}
 {% set active = "user-questions" %}
 
+{% block side_top %}
+  {% include "users/_company_tickets_widget.html" %}
+  {{ super() }}
+{% endblock %}
+
 {% block content %}
   <article id="profile">
     <h2 class="sumo-page-subheading">

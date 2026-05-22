@@ -5,7 +5,7 @@ import json
 from datetime import timedelta
 from unittest.mock import patch
 
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 from django.db import IntegrityError
 from django.test import override_settings
 from django.urls import reverse
@@ -14,6 +14,8 @@ from zenpy.lib.exception import APIException
 
 from kitsune.customercare.models import SupportTicket, SupportTicketPendingChange
 from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.groups.models import GroupProfile
+from kitsune.products.tests import ProductSupportConfigFactory, ZendeskConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -149,6 +151,37 @@ class TicketDetailViewTests(TestCase):
         )
         self.assertEqual(302, response.status_code)
         self.assertIn("/users/login", response["Location"])
+
+    def test_staff_can_view_any_ticket(self):
+        staff = UserFactory(is_staff=True)
+        self.client.force_login(staff)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_subtree_member_can_view_org_ticket(self):
+        """A teammate in the same org subtree can view tickets they didn't submit."""
+        config = ProductSupportConfigFactory(
+            product=self.ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
+        )
+        c1_group = Group.objects.create(name="company1")
+        root_group = Group.objects.create(name="enterprise")
+        root = GroupProfile.add_root(group=root_group, slug="enterprise")
+        c1 = root.add_child(group=c1_group, slug="company1")
+        config.hybrid_support_groups.add(c1_group)
+
+        self.owner.groups.add(c1_group)
+        self.ticket.org_group = c1
+        self.ticket.save(update_fields=["org_group"])
+
+        teammate = UserFactory()
+        teammate.groups.add(c1_group)
+        self.client.force_login(teammate)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+        self.assertEqual(200, response.status_code)
 
     def test_get_absolute_url(self):
         expected = reverse(

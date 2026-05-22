@@ -317,7 +317,15 @@ class ProductSupportConfig(ModelBase):
         Group,
         blank=True,
         related_name="hybrid_support_configs",
-        help_text="Groups that can choose between forums and Zendesk when both are enabled",
+        help_text=(
+            "Groups that can choose between forums and Zendesk when both are enabled. "
+            "Note: when Zendesk is enabled, each group listed here also becomes an "
+            "'organization root' — Zendesk tickets submitted by any of its members "
+            "(or members of its subgroups) are visible to everyone in that subtree. "
+            "Group must not be a tree root, and cannot overlap (as ancestor or "
+            "descendant) with any group already listed in another product's "
+            "hybrid_support_groups."
+        ),
     )
     group_default_support_type = models.CharField(
         max_length=20,

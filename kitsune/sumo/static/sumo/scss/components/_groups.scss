@@ -166,7 +166,8 @@ body:has(#group-profile) {
   }
 }
 
-#group-profile {
+#group-profile,
+#group-tickets {
   max-width: 100%;
 
   .group-header {
@@ -178,6 +179,12 @@ body:has(#group-profile) {
     border-bottom: 2px solid var(--color-marketing-gray-03);
     flex-wrap: wrap;
     gap: p.$spacing-md;
+
+    &:has(+ .tabs) {
+      margin-bottom: p.$spacing-md;
+      padding-bottom: p.$spacing-md;
+      border-bottom: 0;
+    }
 
     &--primary {
       flex: 1;
@@ -873,4 +880,228 @@ body:has(#group-profile) {
       text-align: center;
     }
   }
+}
+
+// ── Group tickets page ───────────────────────────────────────────────────
+body:has(#group-tickets) {
+  @media #{p.$mq-lg} {
+    .sumo-l-two-col--main {
+      width: 100%;
+    }
+  }
+}
+
+.group-tickets {
+  margin-top: p.$spacing-xl;
+
+  &--filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: p.$spacing-md;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: p.$spacing-xl;
+  }
+
+  &--chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: p.$spacing-sm;
+  }
+
+  &--chip {
+    display: inline-block;
+    padding: 8px p.$spacing-md;
+    border-radius: 9999px;
+    border: 1px solid var(--color-marketing-gray-03);
+    background: white;
+    color: var(--color-marketing-gray-08);
+    text-decoration: none;
+    @include c.text-body-md;
+    line-height: 1.2;
+
+    &:hover {
+      border-color: var(--color-link);
+      color: var(--color-link);
+    }
+
+    &.is-active {
+      background: var(--color-link);
+      border-color: var(--color-link);
+      color: white;
+
+      &:hover {
+        color: white;
+        background: var(--color-link-hover);
+        border-color: var(--color-link-hover);
+      }
+    }
+  }
+
+  &--member-filter select {
+    width: auto;
+    min-width: 200px;
+  }
+
+  &--submitter {
+    color: var(--color-text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-link);
+      text-decoration: underline;
+    }
+  }
+
+  &--empty {
+    padding: p.$spacing-xl p.$spacing-md;
+    text-align: center;
+    color: var(--color-text-light);
+    background: var(--color-link-active-bg);
+    border-radius: p.$border-radius-sm;
+    @include c.text-body-md;
+  }
+
+  &--table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      text-align: left;
+      padding: p.$spacing-lg p.$spacing-md;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+
+    th {
+      padding-top: p.$spacing-md;
+      padding-bottom: p.$spacing-md;
+      @include c.text-body-xs;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-light);
+      font-weight: 600;
+    }
+
+    td {
+      @include c.text-body-md;
+    }
+
+    td a {
+      color: var(--color-link);
+      font-weight: 700;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // ZD status pill — bespoke (more states than .status-label--*).
+  &--status {
+    display: inline-block;
+    padding: 6px p.$spacing-md;
+    border-radius: 12px;
+    @include c.text-body-md;
+    font-weight: 600;
+    line-height: 1.25;
+    background: var(--color-marketing-gray-02);
+    color: var(--color-marketing-gray-08);
+
+    &-open    { background: #dbeafe; color: #1e40af; }
+    &-pending { background: #fde68a; color: #854d0e; }
+    &-waiting { background: #fef3c7; color: #92400e; }
+    &-solved  { background: #d1fae5; color: #065f46; }
+    &-closed  { background: var(--color-marketing-gray-02); color: var(--color-marketing-gray-08); }
+  }
+
+  &--paginator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: p.$spacing-lg;
+    margin-top: p.$spacing-xl;
+    @include c.text-body-md;
+
+    a {
+      color: var(--color-link);
+      text-decoration: none;
+      font-weight: 600;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    &-page {
+      color: var(--color-text-light);
+    }
+  }
+}
+
+// ── Personal profile sidebar widget ──────────────────────────────────────
+.company-tickets-widget {
+  position: relative;
+  margin-bottom: p.$spacing-lg;
+  padding: p.$spacing-lg;
+  background: var(--color-link-active-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--color-link);
+  }
+
+  &--title {
+    margin: 0 0 p.$spacing-xs 0;
+    @include c.text-body-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-marketing-gray-06);
+    font-weight: 600;
+  }
+
+  &--name {
+    margin: 0 0 p.$spacing-lg 0;
+    font-weight: 800;
+    font-size: 1.375rem;
+    letter-spacing: -0.01em;
+    color: var(--color-marketing-gray-09);
+    line-height: 1.1;
+  }
+
+  &--counts {
+    margin: 0 0 p.$spacing-lg 0;
+
+    div {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+    }
+
+    dt {
+      margin: 0;
+      color: var(--color-marketing-gray-07);
+      font-size: 0.875rem;
+    }
+
+    dd {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.5rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--color-marketing-gray-09);
+      line-height: 1;
+    }
+  }
+
 }

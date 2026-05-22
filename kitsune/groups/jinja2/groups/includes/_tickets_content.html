@@ -1,0 +1,106 @@
+{% set base_url = url('groups.tickets', profile.slug) %}
+
+<div id="tickets-content" class="group-tickets" aria-live="polite">
+  <div class="group-tickets--filter-bar">
+    <div class="group-tickets--chips" role="tablist">
+      {% for key, label in [("active", _("Active")), ("all", _("All")), ("solved", _("Solved"))] %}
+        {% set chip_url = base_url|urlparams(status=key, member=member_filter or None) %}
+        <a
+          role="tab"
+          aria-selected="{{ "true" if status == key else "false" }}"
+          class="group-tickets--chip{% if status == key %} is-active{% endif %}"
+          href="{{ chip_url }}"
+          hx-get="{{ chip_url }}"
+          hx-target="#tickets-content"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >{{ label }} ({{ counts[key] }})</a>
+      {% endfor %}
+    </div>
+
+    <div class="group-tickets--member-filter">
+      <label class="sr-only" for="ticket-member-filter">{{ _('Filter by member') }}</label>
+      <select
+        id="ticket-member-filter"
+        name="member"
+        hx-get="{{ base_url }}"
+        hx-vals='{"status": "{{ status }}"}'
+        hx-target="#tickets-content"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+        hx-trigger="change"
+      >
+        <option value="">{{ _('All members') }}</option>
+        {% for m in members %}
+          <option value="{{ m.username }}" {% if member_filter == m.username %}selected{% endif %}>
+            {{ display_name(m) }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {% if not tickets %}
+    <p class="group-tickets--empty">
+      {{ _('No tickets in {company} match the current filter.')|f(company=profile.group.name) }}
+    </p>
+  {% else %}
+    <table class="group-tickets--table">
+      <thead>
+        <tr>
+          <th scope="col">{{ _('Subject') }}</th>
+          <th scope="col">{{ _('Submitter') }}</th>
+          <th scope="col">{{ _('Status') }}</th>
+          <th scope="col">{{ _('Last update') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+          <tr>
+            <td>
+              <a href="{{ t.get_absolute_url() }}">{{ t.subject }}</a>
+            </td>
+            <td>
+              <a class="group-tickets--submitter" href="{{ profile_url(t.user) }}">{{ display_name(t.user) }}</a>
+            </td>
+            <td>
+              <span class="group-tickets--status group-tickets--status-{{ t.zd_status or 'unknown' }}">
+                {{ t.get_zd_status_display() or _('Submitted') }}
+              </span>
+            </td>
+            <td>{{ (t.zd_updated_at or t.created)|timesince }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if tickets.has_other_pages() %}
+      {% set page_url = base_url|urlparams(status=status, member=member_filter or None) %}
+      <nav class="group-tickets--paginator" aria-label="{{ _('Pagination') }}">
+        {% if tickets.has_previous() %}
+          {% set prev_url = page_url|urlparams(page=tickets.previous_page_number()) %}
+          <a
+            href="{{ prev_url }}"
+            hx-get="{{ prev_url }}"
+            hx-target="#tickets-content"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+          >← {{ _('Previous') }}</a>
+        {% endif %}
+        <span class="group-tickets--paginator-page">
+          {{ _('Page {n} of {total}')|f(n=tickets.number, total=tickets.paginator.num_pages) }}
+        </span>
+        {% if tickets.has_next() %}
+          {% set next_url = page_url|urlparams(page=tickets.next_page_number()) %}
+          <a
+            href="{{ next_url }}"
+            hx-get="{{ next_url }}"
+            hx-target="#tickets-content"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+          >{{ _('Next') }} →</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% endif %}
+</div>
