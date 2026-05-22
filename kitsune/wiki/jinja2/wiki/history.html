@@ -28,14 +28,7 @@
         <dd></dd>
       </dl>
 
-      <div id="helpful-graph" data-url="{{ url('wiki.get_helpful_votes_async', document.slug) }}">
-        <div class="inline-controls"></div>
-        <div class="graph-container">
-          <div class="slider"></div>
-          <div class="graph"></div>
-          <div class="timelines"></div>
-        </div>
-      </div>
+      <div id="helpful-graph" data-url="{{ url('wiki.get_helpful_votes_async', document.slug) }}"></div>
 
       {% include 'wiki/includes/revision_list.html' %}
 

@@ -29,7 +29,8 @@ const entrypoints = {
     "community/js/select.js",
   ],
   "community.metrics": [
-    "kpi/js/kpi.browserify.js",
+    "sumo/js/charts/kpi.js",
+    "sumo/js/charts/retention.js",
   ],
   document: [
     "sumo/js/document.js",
@@ -49,7 +50,7 @@ const entrypoints = {
     "sumo/js/upload.js",
   ],
   "questions.metrics": [
-    "sumo/js/questions.metrics-dashboard.js",
+    "sumo/js/charts/questionsMetrics.js",
   ],
   "questions.geo": [
     "sumo/js/location.js",
@@ -75,7 +76,7 @@ const entrypoints = {
     "sumo/js/wiki_search.js",
   ],
   "wiki.history": [
-    "sumo/js/historycharts.js",
+    "sumo/js/charts/wikiHistory.js",
   ],
   "wiki.diff": [
     "sumo/js/diff.js",
@@ -85,6 +86,7 @@ const entrypoints = {
   ],
   "wiki.dashboard": [
     "sumo/js/wiki.dashboard.js",
+    "sumo/js/charts/wikiMetrics.js",
   ],
   users: [
     "sumo/js/users.js",
@@ -100,7 +102,8 @@ const entrypoints = {
     "sumo/js/editable.js",
   ],
   "kpi.dashboard": [
-    "kpi/js/kpi.browserify.js",
+    "sumo/js/charts/kpi.js",
+    "sumo/js/charts/retention.js",
   ],
   "gtm-snippet": [
     "sumo/js/gtm-snippet.js",

@@ -46,15 +46,7 @@
   {% if product %}
     {% set api_url = api_url|urlparams(product=product.slug) %}
   {% endif %}
-  <section id="questions-metrics" data-url="{{ api_url }}" class="sumo-page-section">
-    <div class="rickshaw">
-      <div class="inline-controls"></div>
-      <div class="graph-container">
-        <div class="slider"></div>
-        <div class="graph"></div>
-      </div>
-    </div>
-  </section>
+  <section id="questions-metrics" data-url="{{ api_url }}" class="sumo-page-section"></section>
 {% endblock %}
 
 {% block side %}

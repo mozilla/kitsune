@@ -18,36 +18,15 @@
       {% if current_locale != settings.WIKI_DEFAULT_LANGUAGE %}
         <section class="sumo-page-section" id="localization-metrics" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product=product_slug) }}">
           <h2 class="sumo-page-subheading">{{ _('Localization Percentage') }}</h2>
-          <div class="rickshaw">
-            <div class="inline-controls"></div>
-            <div class="graph-container">
-              <div class="slider"></div>
-              <div class="graph"></div>
-            </div>
-          </div>
         </section>
       {% endif %}
 
       <section class="sumo-page-section" id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product=product_slug) }}">
         <h2 class="sumo-page-subheading">{{ _('Active Contributors') }}</h2>
-        <div class="rickshaw">
-          <div class="inline-controls"></div>
-          <div class="graph-container">
-            <div class="slider"></div>
-            <div class="graph"></div>
-          </div>
-        </div>
       </section>
 
-      <section  class="sumo-page-section" id="kpi-vote" data-url="{{ url('api.kpi.kb-votes')|urlparams(locale=current_locale, product=product_slug) }}">
+      <section class="sumo-page-section" id="kpi-vote" data-url="{{ url('api.kpi.kb-votes')|urlparams(locale=current_locale, product=product_slug) }}">
         <h2 class="sumo-page-subheading">{{ _('Helpful Votes') }}</h2>
-        <div class="rickshaw">
-          <div class="inline-controls"></div>
-          <div class="graph-container">
-            <div class="slider"></div>
-            <div class="graph"></div>
-          </div>
-        </div>
       </section>
 </article>
 {% endblock %}
