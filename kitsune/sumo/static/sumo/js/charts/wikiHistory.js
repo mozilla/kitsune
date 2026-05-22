@@ -1,51 +1,34 @@
 import { renderLineChart } from "sumo/js/charts";
-import { fromUnixTime } from "date-fns";
+import { parseISO } from "date-fns";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const showGraph = document.getElementById("show-graph");
-  if (!showGraph) return;
+  const helpfulGraph = document.getElementById("helpful-graph");
+  if (!helpfulGraph) return;
 
-  showGraph.addEventListener("click", function handler() {
-    showGraph.textContent = gettext("Loading...");
-    // Remove click handler immediately so double-clicks don't re-trigger
-    showGraph.removeEventListener("click", handler);
+  fetch(helpfulGraph.dataset.url)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.datums.length === 0) {
+        helpfulGraph.textContent = gettext("No votes data");
+        return;
+      }
 
-    const helpfulGraph = document.getElementById("helpful-graph");
+      helpfulGraph.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.style.position = "relative";
+      wrap.style.height = "300px";
+      wrap.style.width = "100%";
+      const canvas = document.createElement("canvas");
+      wrap.appendChild(canvas);
+      helpfulGraph.appendChild(wrap);
 
-    fetch(helpfulGraph.dataset.url)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.datums.length === 0) {
-          showGraph.textContent = gettext("No votes data");
-          return;
-        }
-
-        helpfulGraph.innerHTML = "";
-        const wrap = document.createElement("div");
-        wrap.style.position = "relative";
-        wrap.style.height = "300px";
-        wrap.style.width = "100%";
-        const canvas = document.createElement("canvas");
-        wrap.appendChild(canvas);
-        helpfulGraph.appendChild(wrap);
-
-        const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 0));
-        schedule(() => {
-          renderLineChart(canvas, buildConfig(downsample(data.datums, 500)));
-          showGraph.style.display = "none";
-        });
-      })
-      .catch(() => {
-        showGraph.textContent = gettext("Error loading graph");
-      });
-  });
+      const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 0));
+      schedule(() => renderLineChart(canvas, buildConfig(data.datums)));
+    })
+    .catch(() => {
+      helpfulGraph.textContent = gettext("Error loading graph");
+    });
 });
-
-function downsample(datums, target) {
-  if (datums.length <= target) return datums;
-  const step = Math.ceil(datums.length / target);
-  return datums.filter((_, i) => i % step === 0);
-}
 
 function buildConfig(datums) {
   return {
@@ -58,7 +41,7 @@ function buildConfig(datums) {
           backgroundColor: "#21de2b",
           yAxisID: "y",
           pointRadius: 0,
-          data: datums.map((d) => ({ x: fromUnixTime(d.date), y: d.yes })),
+          data: datums.map((d) => ({ x: parseISO(d.date), y: d.yes })),
         },
         {
           label: gettext("No"),
@@ -66,16 +49,16 @@ function buildConfig(datums) {
           backgroundColor: "#de2b21",
           yAxisID: "y",
           pointRadius: 0,
-          data: datums.map((d) => ({ x: fromUnixTime(d.date), y: d.no })),
+          data: datums.map((d) => ({ x: parseISO(d.date), y: d.no })),
         },
         {
-          label: gettext("Percent"),
+          label: gettext("% Helpful"),
           borderColor: "#2b21de",
           backgroundColor: "#2b21de",
           yAxisID: "y1",
           pointRadius: 0,
           data: datums.map((d) => ({
-            x: fromUnixTime(d.date),
+            x: parseISO(d.date),
             // Avoid division by zero for days with no votes
             y: d.yes + d.no > 0 ? (100 * d.yes) / (d.yes + d.no) : null,
           })),
@@ -115,7 +98,7 @@ function buildConfig(datums) {
           grid: { drawOnChartArea: false },
           title: {
             display: true,
-            text: gettext("Percent"),
+            text: gettext("% Helpful"),
           },
         },
       },

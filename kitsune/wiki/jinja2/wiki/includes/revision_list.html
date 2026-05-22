@@ -2,12 +2,11 @@
   {% if revisions %}
     <form action="{{ url('wiki.compare_revisions', document.slug)  }}" method="get">
       <input type="hidden" name="locale" value="{{ document.locale }}">
-      <div class="sumo-button-wrap reverse-on-desktop align-full">
-        <p><a id="show-graph">{{ _('Show Helpfulness Votes Chart') }}</a></p>
-        {% if revisions.count() > 1 %}
-            <button type="submit" class="sumo-button compare-revisions-button-down">{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}</button>
-        {% endif %}
-      </div>
+      {% if revisions.count() > 1 %}
+        <div class="sumo-button-wrap reverse-on-desktop align-full">
+          <button type="submit" class="sumo-button compare-revisions-button-down">{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}</button>
+        </div>
+      {% endif %}
       {% set reached_current = False %}
       {% set reached_ready_for_l10n = False %}
       {% for rev in revisions %}

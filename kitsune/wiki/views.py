@@ -1,7 +1,6 @@
 import json
 import logging
-import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from datetime import time as datetime_time
 from functools import wraps
 
@@ -22,6 +21,7 @@ from django.utils.cache import patch_vary_headers
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation.trans_real import parse_accept_lang_header
+from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -1429,21 +1429,30 @@ def handle_vote(request, document_slug):
     return HttpResponseRedirect(revision.document.get_absolute_url())
 
 
+HELPFUL_VOTES_WINDOW_DAYS = 730
+
+
 @require_GET
+@cache_page(60 * 5)
 def get_helpful_votes_async(request, document_slug):
     document = get_visible_document_or_404(
         request.user, locale=request.LANGUAGE_CODE, slug=document_slug
     )
+
+    default_start = (timezone.now() - timedelta(days=HELPFUL_VOTES_WINDOW_DAYS)).date()
+    try:
+        start = datetime.fromisoformat(request.GET.get("start", "")).date()
+    except ValueError:
+        start = default_start
 
     datums = []
     flag_data = []
     rev_data = []
     revisions = set()
     created_list = []
-    timestamps_with_data = set()
 
     results = (
-        HelpfulVote.objects.filter(revision__document=document)
+        HelpfulVote.objects.filter(revision__document=document, created__gte=start)
         .values(date_created=TruncDate("created"))
         .annotate(
             revisions=ArrayAgg("revision_id"),
@@ -1456,54 +1465,32 @@ def get_helpful_votes_async(request, document_slug):
     for res in results:
         revisions.update(res["revisions"])
         created_list.append(res["date_created"])
-        timestamp = (time.mktime(res["date_created"].timetuple()) // 86400) * 86400
-
         datums.append(
             {
                 "yes": res["count_helpful"],
                 "no": res["count_unhelpful"],
-                "date": timestamp,
+                "date": res["date_created"].isoformat(),
             }
         )
-        timestamps_with_data.add(timestamp)
 
     if not created_list:
         send = {"datums": [], "annotations": []}
         return HttpResponse(json.dumps(send), content_type="application/json")
 
-    # The "created_list" is a list of date objects, while "min_created" and
-    # "max_created" are datetime objects that span the period from the beginning
-    # of the first day to the end of the last day that the document was voted on.
     min_created = datetime.combine(min(created_list), datetime_time.min)
     max_created = datetime.combine(max(created_list), datetime_time.max)
 
-    # Zero fill the data.
-    end = time.mktime(timezone.now().timetuple())
-    while timestamp <= end:
-        if timestamp not in timestamps_with_data:
-            datums.append(
-                {
-                    "yes": 0,
-                    "no": 0,
-                    "date": timestamp,
-                }
-            )
-            timestamps_with_data.add(timestamp)
-        timestamp += 24 * 60 * 60
-
     for flag in ImportantDate.objects.filter(date__gte=min_created, date__lte=max_created):
-        flag_data.append({"x": int(time.mktime(flag.date.timetuple())), "text": _(flag.text)})
+        flag_data.append({"x": flag.date.isoformat(), "text": _(flag.text)})
 
     for rev in Revision.objects.filter(
         pk__in=revisions, created__range=(min_created, max_created)
     ):
         rdate = rev.reviewed or rev.created
         rev_data.append(
-            {"x": int(time.mktime(rdate.timetuple())), "text": str(_("Revision %s")) % rev.created}
+            {"x": rdate.date().isoformat(), "text": str(_("Revision %s")) % rev.created}
         )
 
-    # Rickshaw wants data like
-    # [{'name': 'series1', 'data': [{'x': 1362774285, 'y': 100}, ...]},]
     send = {"datums": datums, "annotations": []}
 
     if flag_data:
