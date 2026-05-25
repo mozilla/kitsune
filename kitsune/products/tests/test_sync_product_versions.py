@@ -104,41 +104,18 @@ class SyncProductVersionsTests(TestCase):
         self.assertEqual(v145.max_version, 146.0)
         self.assertFalse(v145.default)
 
-        # ESR versions should NOT be created under Firefox product
-        esr_versions = Version.objects.filter(product=self.firefox, slug__endswith="-esr")
-        self.assertEqual(esr_versions.count(), 0)
-
-    @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
-    def test_sync_firefox_enterprise_versions(self, mock_product_details):
-        """Test syncing Firefox for Enterprise versions (ESR only)."""
-        mock_product_details.configure_mock(**self._mock_product_details().__dict__)
-
-        out = StringIO()
-        call_command("sync_product_versions", "--product=firefox-enterprise", stdout=out)
-
-        # Check that ESR versions were created under Firefox for Enterprise
-        # Should have current ESR versions from esr_keys
-        esr140 = Version.objects.get(product=self.firefox_enterprise, slug="fx140-esr")
+        # ESR versions should be created under Firefox product
+        esr140 = Version.objects.get(product=self.firefox, slug="fx140-esr")
         self.assertEqual(esr140.name, "Version 140 ESR")
         self.assertTrue(esr140.visible)
 
-        esr115 = Version.objects.get(product=self.firefox_enterprise, slug="fx115-esr")
+        esr115 = Version.objects.get(product=self.firefox, slug="fx115-esr")
         self.assertEqual(esr115.name, "Version 115 ESR")
         self.assertTrue(esr115.visible)
 
-        # Should also have historical ESR versions from esr_major_versions
-        esr_versions = Version.objects.filter(
-            product=self.firefox_enterprise, slug__endswith="-esr"
-        )
-        # Should have at least the ones in esr_major_versions list
-        # [52, 60, 68, 78, 91, 102, 115, 128, 140]
+        # Historical ESR versions from esr_major_versions should all exist
+        esr_versions = Version.objects.filter(product=self.firefox, slug__endswith="-esr")
         self.assertGreaterEqual(esr_versions.count(), 9)
-
-        # Regular versions should NOT be created for Firefox for Enterprise (ESR only)
-        regular_versions = Version.objects.filter(product=self.firefox_enterprise).exclude(
-            slug__endswith="-esr"
-        )
-        self.assertEqual(regular_versions.count(), 0)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_sync_mobile_versions(self, mock_product_details):
@@ -324,9 +301,9 @@ class SyncProductVersionsTests(TestCase):
         out = StringIO()
         call_command("sync_product_versions", stdout=out)
 
-        # All products should have versions
+        # Configured products should have versions; firefox-enterprise is no longer synced
         self.assertGreater(Version.objects.filter(product=self.firefox).count(), 0)
-        self.assertGreater(Version.objects.filter(product=self.firefox_enterprise).count(), 0)
+        self.assertEqual(Version.objects.filter(product=self.firefox_enterprise).count(), 0)
         self.assertGreater(Version.objects.filter(product=self.mobile).count(), 0)
         self.assertGreater(Version.objects.filter(product=self.ios).count(), 0)
         self.assertGreater(Version.objects.filter(product=self.thunderbird).count(), 0)
