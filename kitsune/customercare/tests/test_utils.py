@@ -379,6 +379,8 @@ class SyncTicketFromZendeskTests(TestCase):
         mock_zd_ticket = MagicMock()
         mock_zd_ticket.status = "open"
         mock_zd_ticket.updated_at = timezone.now()
+        mock_zd_ticket.subject = self.ticket.subject
+        mock_zd_ticket.description = self.ticket.description
         mock_client.get_ticket.return_value = mock_zd_ticket
 
         sync_ticket_from_zendesk(self.ticket)
@@ -401,7 +403,12 @@ class SyncTicketFromZendeskTests(TestCase):
         description_comment = self._make_mock_comment(id=1, body="Original question")
         private_reply = self._make_mock_comment(id=2, body="Internal note", public=False)
         mock_client.get_ticket_comments.return_value = [description_comment, private_reply]
-        mock_client.get_ticket.return_value = MagicMock(status="open", updated_at=timezone.now())
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description=self.ticket.description,
+        )
 
         sync_ticket_from_zendesk(self.ticket)
 
@@ -409,3 +416,35 @@ class SyncTicketFromZendeskTests(TestCase):
         self.assertEqual(len(self.ticket.comments), 2)
         self.assertFalse(self.ticket.comments[1]["public"])
         self.assertEqual(self.ticket.public_comments, [])
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_updates_subject(self, mock_client_cls):
+        mock_client = mock_client_cls.return_value
+        mock_client.get_ticket_comments.return_value = []
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject="A renamed ticket",
+            description=self.ticket.description,
+        )
+
+        sync_ticket_from_zendesk(self.ticket)
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.subject, "A renamed ticket")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_updates_description(self, mock_client_cls):
+        mock_client = mock_client_cls.return_value
+        mock_client.get_ticket_comments.return_value = []
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description="An updated description from Zendesk",
+        )
+
+        sync_ticket_from_zendesk(self.ticket)
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.description, "An updated description from Zendesk")

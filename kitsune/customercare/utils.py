@@ -16,14 +16,20 @@ from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
 
 
-def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
-    """Fetch fresh ticket status and comments from Zendesk and save to DB."""
+def fetch_zendesk_ticket_data(zendesk_ticket_id: str):
+    """Fetch ticket and comments from Zendesk."""
     client = ZendeskClient()
-    zd_ticket = client.get_ticket(ticket.zendesk_ticket_id)
-    zd_comments = client.get_ticket_comments(ticket.zendesk_ticket_id)
+    zd_ticket = client.get_ticket(zendesk_ticket_id)
+    zd_comments = client.get_ticket_comments(zendesk_ticket_id)
+    return zd_ticket, zd_comments
 
-    ticket.zd_status = zd_ticket.status
+
+def apply_zendesk_ticket_data(ticket: SupportTicket, zd_ticket, zd_comments) -> None:
+    """Apply fetched Zendesk data to a SupportTicket and save."""
+    ticket.zd_status = zd_ticket.status.lower()
     ticket.zd_updated_at = zd_ticket.updated_at
+    ticket.subject = zd_ticket.subject
+    ticket.description = zd_ticket.description
     ticket.comments = [
         {
             "id": c.id,
@@ -35,7 +41,22 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
         for c in zd_comments
     ]
     ticket.last_synced_at = timezone.now()
-    ticket.save(update_fields=["zd_status", "zd_updated_at", "comments", "last_synced_at"])
+    ticket.save(
+        update_fields=[
+            "zd_status",
+            "zd_updated_at",
+            "subject",
+            "description",
+            "comments",
+            "last_synced_at",
+        ]
+    )
+
+
+def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
+    """Fetch fresh ticket status and comments from Zendesk and save to DB."""
+    zd_ticket, zd_comments = fetch_zendesk_ticket_data(ticket.zendesk_ticket_id)
+    apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
 
 
 def _topic_to_tag(text: str) -> str:

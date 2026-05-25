@@ -242,133 +242,65 @@ class ProcessZendeskUpdateTests(TestCase):
             zendesk_ticket_id="12345",
         )
 
-    def _payload(self, event_type, event, *, ticket_id="12345", updated_at):
+    def _payload(self, event_type, *, ticket_id="12345"):
         return {
             "type": event_type,
-            "detail": {"id": ticket_id, "updated_at": updated_at},
-            "event": event,
+            "detail": {"id": ticket_id},
         }
 
-    def test_status_changed(self):
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.status_changed",
-                {"current": "solved", "previous": "open"},
-                updated_at="2026-03-24T10:30:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.comments, [])
-        self.assertEqual(self.ticket.zd_status, "solved")
-        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-24 10:30:00+00:00")
+    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
+    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
+    def test_status_changed_triggers_resync(self, mock_fetch, mock_apply):
+        process_zendesk_update(self._payload("zen:event-type:ticket.status_changed"))
 
-    def test_subject_changed(self):
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.subject_changed",
-                {"current": "New subject", "previous": "Help"},
-                updated_at="2026-03-24T10:30:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.subject, "New subject")
+        mock_fetch.assert_called_once_with("12345")
+        mock_apply.assert_called_once()
+        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
 
-    def test_description_changed(self):
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.description_changed",
-                {"current": "Updated description", "previous": "Need help"},
-                updated_at="2026-03-24T10:30:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertEqual(self.ticket.description, "Updated description")
+    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
+    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
+    def test_subject_changed_triggers_resync(self, mock_fetch, mock_apply):
+        process_zendesk_update(self._payload("zen:event-type:ticket.subject_changed"))
 
-    def test_comment_added(self):
-        comment = {
-            "id": 999,
-            "body": "hey paul",
-            "is_public": True,
-            "author": {"id": 1, "is_staff": False, "name": "ringo"},
-        }
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.comment_added",
-                {"comment": comment},
-                updated_at="2026-03-25T10:30:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertEqual(len(self.ticket.comments), 1)
-        stored = self.ticket.comments[0]
-        self.assertEqual(stored["body"], "hey paul")
-        self.assertEqual(stored["author"]["name"], "ringo")
-        self.assertEqual(stored["created_at"], "2026-03-25T10:30:00Z")
-        self.assertTrue(stored["public"])
-        self.assertNotIn("is_public", stored)
-        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-25 10:30:00+00:00")
+        mock_fetch.assert_called_once_with("12345")
+        mock_apply.assert_called_once()
+        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
 
-    def test_comment_added_defaults_public_false_when_missing(self):
-        """A comment without is_public should be stored with public=False."""
-        comment = {"id": 1, "body": "hi", "author": {"name": "ringo"}}
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.comment_added",
-                {"comment": comment},
-                updated_at="2026-03-25T10:30:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertFalse(self.ticket.comments[0]["public"])
+    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
+    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
+    def test_description_changed_triggers_resync(self, mock_fetch, mock_apply):
+        process_zendesk_update(self._payload("zen:event-type:ticket.description_changed"))
 
-    def test_appends_multiple_comments(self):
-        """Successive comment_added events append to the comments list."""
-        comment1 = {"id": 1, "body": "First reply", "author": {"name": "ringo"}}
-        comment2 = {"id": 2, "body": "Second reply", "author": {"name": "paul"}}
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.comment_added",
-                {"comment": comment1},
-                updated_at="2026-03-26T10:30:00Z",
-            )
-        )
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.comment_added",
-                {"comment": comment2},
-                updated_at="2026-03-26T10:35:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertEqual(len(self.ticket.comments), 2)
-        self.assertEqual(self.ticket.comments[0]["body"], "First reply")
-        self.assertEqual(self.ticket.comments[0]["created_at"], "2026-03-26T10:30:00Z")
-        self.assertEqual(self.ticket.comments[1]["body"], "Second reply")
-        self.assertEqual(self.ticket.comments[1]["created_at"], "2026-03-26T10:35:00Z")
-        self.assertEqual(str(self.ticket.zd_updated_at), "2026-03-26 10:35:00+00:00")
+        mock_fetch.assert_called_once_with("12345")
+        mock_apply.assert_called_once()
+        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
 
-    def test_unhandled_event_type_is_noop(self):
-        """Event types we don't handle should be ignored without raising."""
-        process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.priority_changed",
-                {"current": "high", "previous": "normal"},
-                updated_at="2026-03-24T10:30:00Z",
-            )
-        )
-        self.ticket.refresh_from_db()
-        self.assertIsNone(self.ticket.zd_updated_at)
+    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
+    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
+    def test_comment_added_triggers_resync(self, mock_fetch, mock_apply):
+        process_zendesk_update(self._payload("zen:event-type:ticket.comment_added"))
 
-    def test_no_matching_ticket_is_noop(self):
-        """Webhook for a ticket not in our DB should not raise."""
+        mock_fetch.assert_called_once_with("12345")
+        mock_apply.assert_called_once()
+        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
+
+    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
+    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data")
+    def test_unhandled_event_type_is_noop(self, mock_fetch, mock_apply):
+        process_zendesk_update(self._payload("zen:event-type:ticket.priority_changed"))
+
+        mock_fetch.assert_not_called()
+        mock_apply.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
+    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data")
+    def test_no_matching_ticket_is_noop(self, mock_fetch, mock_apply):
         process_zendesk_update(
-            self._payload(
-                "zen:event-type:ticket.status_changed",
-                {"current": "open"},
-                ticket_id="99999",
-                updated_at="2026-03-24T10:30:00Z",
-            )
+            self._payload("zen:event-type:ticket.status_changed", ticket_id="99999")
         )
+
+        mock_fetch.assert_not_called()
+        mock_apply.assert_not_called()
 
     def test_missing_ticket_id_raises(self):
         """Payload without detail.id should raise ValueError so Sentry captures it."""
@@ -377,35 +309,8 @@ class ProcessZendeskUpdateTests(TestCase):
                 {
                     "type": "zen:event-type:ticket.status_changed",
                     "detail": {},
-                    "event": {"current": "open"},
                 }
             )
-
-    def test_missing_updated_at_raises(self):
-        """Payload without detail.updated_at should raise ValueError."""
-        with self.assertRaises(ValueError):
-            process_zendesk_update(
-                {
-                    "type": "zen:event-type:ticket.status_changed",
-                    "detail": {"id": "12345"},
-                    "event": {"current": "open"},
-                }
-            )
-        self.ticket.refresh_from_db()
-        self.assertIsNone(self.ticket.zd_status)
-        self.assertIsNone(self.ticket.zd_updated_at)
-
-    def test_missing_event_raises(self):
-        """Payload without an event field should raise ValueError."""
-        with self.assertRaises(ValueError):
-            process_zendesk_update(
-                {
-                    "type": "zen:event-type:ticket.status_changed",
-                    "detail": {"id": "12345", "updated_at": "2026-03-24T10:30:00Z"},
-                }
-            )
-        self.ticket.refresh_from_db()
-        self.assertIsNone(self.ticket.zd_updated_at)
 
 
 class SyncSupportTicketTests(TestCase):
@@ -477,9 +382,10 @@ class SyncActiveSupportTicketsTests(TestCase):
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
     def test_dispatches_only_active_tickets_with_zendesk_ids(self, mock_sync):
+        active_new = self._make_ticket(SupportTicket.ZD_STATUS_NEW)
         active_open = self._make_ticket(SupportTicket.ZD_STATUS_OPEN)
         active_pending = self._make_ticket(SupportTicket.ZD_STATUS_PENDING)
-        active_waiting = self._make_ticket(SupportTicket.ZD_STATUS_WAITING)
+        active_hold = self._make_ticket(SupportTicket.ZD_STATUS_HOLD)
         # Inactive statuses — should not be dispatched.
         self._make_ticket(SupportTicket.ZD_STATUS_SOLVED)
         self._make_ticket(SupportTicket.ZD_STATUS_CLOSED)
@@ -488,11 +394,11 @@ class SyncActiveSupportTicketsTests(TestCase):
 
         sync_active_support_tickets()
 
-        self.assertEqual(mock_sync.call_count, 3)
+        self.assertEqual(mock_sync.call_count, 4)
         dispatched_ids = {call.args[0].id for call in mock_sync.call_args_list}
         self.assertEqual(
             dispatched_ids,
-            {active_open.id, active_pending.id, active_waiting.id},
+            {active_new.id, active_open.id, active_pending.id, active_hold.id},
         )
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
