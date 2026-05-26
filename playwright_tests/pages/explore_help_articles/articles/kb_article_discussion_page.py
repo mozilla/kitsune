@@ -60,6 +60,10 @@ class KBArticleDiscussionPage(BasePage):
 
         """Locators belonging to the article discussions content section."""
         self.all_article_threads_titles = page.locator("td[class='title'] a")
+        self.article_thread_author_by_id = lambda thread_id: page.locator(
+            f"//li[@id='{thread_id}']//span[@class='display-name']")
+        self.article_thread_reply = lambda thread_id: page.locator(
+            f"//li[@id='{thread_id}']")
         self.all_article_threads_authors = page.locator("td[class='author'] a")
         self.all_article_thread_replies = page.locator("td[class='replies']")
         self.discussions_thread_counter = lambda thread_id: page.locator(

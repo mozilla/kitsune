@@ -26,13 +26,15 @@ class MyProfilePage(BasePage):
             has_text="Spam or other unrelated content")
         self.inappropriate_language_or_dialog_option = page.locator("label").filter(
             has_text="Inappropriate language/dialog")
+        self.abusive_content = page.locator("label").filter(
+            has_text="Abusive content")
         self.other_please_specify_option = page.locator("label").filter(
             has_text="Other (please specify)")
         self.have_more_to_say_textarea = page.locator("textarea[name='other']")
         self.report_abuse_close_panel_button = page.locator(
             "div[class='mzp-c-modal-close'] button")
         self.report_abuse_submit_button = page.locator(
-            "section#report-abuse- button[type='submit']")
+            "//section[@data-modal-id='report-abuse-']//button[@type='submit']")
         self.reported_user_confirmation_message = page.locator("span[class='message']")
 
         """Locators belonging to the contributions section."""
@@ -156,9 +158,43 @@ class MyProfilePage(BasePage):
         """Click on the report abuse option."""
         self._click(self.report_abuse_profile_option)
 
+    def click_deactivate_this_user_and_mark_all_content_as_spam(self):
+        # The .deactivate form's submit handler calls window.confirm(...) — the
+        # dialog handler must be attached before the click, and it must call
+        # .accept() itself (otherwise confirm() blocks and the click hangs).
+        self.page.once("dialog", lambda dialog: dialog.accept())
+        self._click(self.deactivate_this_user_and_mark_all_content_as_spam)
+
+    def click_on_spam_content_option(self):
+        """Select the 'Spam or other unrelated content' report reason radio button."""
+        self._click(self.spam_or_other_unrelated_content_option)
+
+    def click_on_inappropriate_language_option(self):
+        """Select the 'Inappropriate language/dialog' report reason radio button."""
+        self._click(self.inappropriate_language_or_dialog_option)
+
+    def click_on_abusive_content_option(self):
+        """Select the 'Abusive content' report reason radio button."""
+        self._click(self.abusive_content)
+
+    def click_on_other_content_option(self):
+        """Select the 'Other (please specify)' report reason radio button."""
+        self._click(self.other_please_specify_option)
+
+    def fill_have_more_to_say_textarea(self, text: str):
+        """"Fills the 'Have more to say?' textarea
+        Args:
+            text(): Text to be filled inside the textarea field
+        """
+        self._fill(self.have_more_to_say_textarea, text)
+
     def click_on_report_abuse_close_button(self):
         """Click on the report abuse close button."""
         self._click(self.report_abuse_close_panel_button)
+
+    def click_on_report_submit_button(self):
+        """Click on the report submit button"""
+        self._click(self.report_abuse_submit_button)
 
     def click_on_private_message_button(self, expected_url=None):
         """Click on the private message button.

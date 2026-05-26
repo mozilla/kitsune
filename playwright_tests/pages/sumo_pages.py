@@ -31,6 +31,7 @@ from playwright_tests.flows.messaging_system_flows.messaging_system_flow import 
 )
 from playwright_tests.flows.user_groups_flows.user_group_flow import UserGroupFlow
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
+from playwright_tests.flows.user_profile_flows.user_profile_flow import UserProfileFlow
 from playwright_tests.pages.admin_pages.announcement_banners.announcement_banner_page import \
     AnnouncementBannerAdminPage
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
@@ -429,6 +430,11 @@ class SumoPages:
     @cached_property
     def messaging_system_flow(self):
         return MessagingSystemFlows(self._page)
+
+    # User profile flow
+    @cached_property
+    def user_profile_flow(self):
+        return UserProfileFlow(self._page)
 
     # Edit profile flow
     @cached_property

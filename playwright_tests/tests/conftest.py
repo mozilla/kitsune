@@ -146,38 +146,62 @@ def create_user_factory(page: Page, request):
 
 @pytest.fixture()
 def restmail_test_account_creation(page: Page, request):
+    """Factory for creating a restmail test account.
+
+    Call with no args to get auto-generated credentials, or pass ``username``
+    and/or ``password`` to override either one. Returns
+    ``(username, password, cleanup)``. ``cleanup`` deletes the FxA account
+    immediately and is also registered as a finalizer, so a test that doesn't
+    need early teardown can ignore it. Calling ``cleanup()`` more than once is
+    a no-op. The factory may be invoked multiple times in one test — each
+    account is independently cleaned up.
+    """
     sumo_pages = SumoPages(page)
-    """Creates and deletes a restmail test account on teardown."""
-    username = 'Test'.join(random.choice(
-        string.ascii_lowercase + string.digits) for _ in range(3)) + "@restmail.net"
-    password = 'Test'.join(random.choice(
-        string.ascii_lowercase + string.digits) for _ in range(3))
-
-    user, user_password = sumo_pages.auth_flow_page.sign_in_flow(
-        username=username, account_password=password, via_top_navbar=True, is_restmail=True,
-        new_account=True
-    )
-
     browser = page.context.browser
 
-    def _cleanup():
-        try:
-            sumo_pages.auth_flow_page.delete_test_account_flow(username, password)
-        except TargetClosedError as e:
+    def _create(username: str = None, password: str = None):
+        if username is None:
+            username = 'Test'.join(random.choice(
+                string.ascii_lowercase + string.digits) for _ in range(3)) + "@restmail.net"
+        if password is None:
+            password = 'Test'.join(random.choice(
+                string.ascii_lowercase + string.digits) for _ in range(3))
+
+        user, user_password = sumo_pages.auth_flow_page.sign_in_flow(
+            username=username, account_password=password, via_top_navbar=True,
+            is_restmail=True, new_account=True
+        )
+
+        already_cleaned = False
+
+        def cleanup():
+            # Always delete in a fresh, cookieless context so the FxA
+            # email/password form is shown — reusing the test's page hits the
+            # "already-signed-in" path and pays the full locator timeout
+            # before falling back.
+            nonlocal already_cleaned
+            if already_cleaned:
+                return
+            already_cleaned = True
+
             cleanup_context = browser.new_context(
                 extra_http_headers={
-                f"{Utilities.fxa_browser_challenge_header}":
-                    f"{Utilities.fxa_browser_challenge_value}"
+                    f"{Utilities.fxa_browser_challenge_header}":
+                        f"{Utilities.fxa_browser_challenge_value}"
                 }
             )
             cleanup_page = cleanup_context.new_page()
             try:
                 cleanup_sumo_pages = SumoPages(cleanup_page)
-                cleanup_sumo_pages.auth_flow_page.delete_test_account_flow(username, password)
-            except Exception as e:
+                cleanup_sumo_pages.auth_flow_page.delete_test_account_flow(
+                    user, user_password
+                )
+            except (TargetClosedError, Exception) as e:
                 print(f"Restmail test account cleanup failed: {e}")
             finally:
                 cleanup_context.close()
 
-    request.addfinalizer(_cleanup)
-    return user, user_password
+        request.addfinalizer(cleanup)
+        return user, user_password, cleanup
+
+    return _create

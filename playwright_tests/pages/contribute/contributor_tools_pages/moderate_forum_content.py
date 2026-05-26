@@ -40,6 +40,17 @@ class ModerateForumContent(BasePage):
         self.paginator_section = page.locator("//ol[@class='pagination cf']")
         self.last_paginator_option = page.locator("//ol[@class='pagination cf']/li/a").last
 
+        """Locators belonging to the flagged profile tickets"""
+        self.profile_flagged_ticket = lambda username: page.locator(
+            f"//h2[@class='sumo-page-subheading' and text()='{username}']")
+        self.profile_flagged_reason = lambda username: page.locator(
+            f"//h2[@class='sumo-page-subheading' and text()='{username}']/../../../hgroup/h2"
+            f"[@class='sumo-card-heading']")
+        self.profile_flagged_additional_notes = lambda username: page.locator(
+            f"//h2[@class='sumo-page-subheading' and text()='{username}']/../../../hgroup/"
+            f"p[@class='notes']")
+
+
     def click_created_by_link(self, question_info: str):
         self._click(self.created_by_link_text(question_info))
 
