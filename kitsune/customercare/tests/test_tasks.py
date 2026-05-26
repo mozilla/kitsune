@@ -7,6 +7,7 @@ from zenpy.lib.exception import APIException
 from kitsune.customercare.models import SupportTicket, SupportTicketPendingChange
 from kitsune.customercare.tasks import (
     post_reply_to_zendesk,
+    post_status_change_to_zendesk,
     process_failed_zendesk_tickets,
     process_zendesk_update,
     sync_active_support_tickets,
@@ -649,3 +650,165 @@ class PostReplyToZendeskTests(TestCase):
 
         mock_client_cls.assert_not_called()
         self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))
+
+
+class PostStatusChangeToZendeskTests(TestCase):
+    """Tests for post_status_change_to_zendesk task: single-try; the user
+    controls retries via the status-change form.
+    """
+
+    def setUp(self):
+        self.user = UserFactory()
+        self.user.profile.zendesk_id = "555"
+        self.user.profile.save()
+        self.ticket = SupportTicketFactory(
+            user=self.user,
+            zendesk_ticket_id="987",
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+        self.pending = SupportTicketPendingChangeFactory(
+            ticket=self.ticket,
+            kind=SupportTicketPendingChange.KIND_ZD_STATUS,
+            payload=SupportTicket.ZD_STATUS_SOLVED,
+        )
+
+    def _apply(self):
+        return post_status_change_to_zendesk.apply(
+            kwargs={"ticket_id": self.ticket.id}, throw=False
+        )
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_happy_path_updates_zendesk_mirrors_locally_and_clears_pending(self, mock_client_cls):
+        updated_at = timezone.now()
+        audit_response = MagicMock()
+        audit_response.ticket.status = SupportTicket.ZD_STATUS_SOLVED
+        audit_response.ticket.updated_at = str(updated_at)
+        mock_client_cls.return_value.update_ticket_status.return_value = audit_response
+
+        self._apply()
+
+        mock_client_cls.return_value.update_ticket_status.assert_called_once_with(
+            self.ticket.zendesk_ticket_id, SupportTicket.ZD_STATUS_SOLVED
+        )
+
+        self.ticket.refresh_from_db()
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+        self.assertEqual(SupportTicket.ZD_STATUS_SOLVED, self.ticket.zd_status)
+        self.assertEqual(updated_at, self.ticket.zd_updated_at)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_api_error_marks_failed_and_reraises(self, mock_client_cls):
+        response_mock = MagicMock(status_code=422)
+        mock_client_cls.return_value.update_ticket_status.side_effect = APIException(
+            "zendesk", response=response_mock
+        )
+
+        result = self._apply()
+
+        self.assertEqual("FAILURE", result.state)
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertEqual(SupportTicketPendingChange.STATUS_FAILED, pending.status)
+        self.assertIsNotNone(pending.last_attempted_at)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_network_error_marks_failed_and_reraises(self, mock_client_cls):
+        mock_client_cls.return_value.update_ticket_status.side_effect = (
+            requests.exceptions.ConnectionError("dns fail")
+        )
+
+        result = self._apply()
+
+        self.assertEqual("FAILURE", result.state)
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertEqual(SupportTicketPendingChange.STATUS_FAILED, pending.status)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_unknown_exception_marks_failed_and_reraises(self, mock_client_cls):
+        mock_client_cls.return_value.update_ticket_status.side_effect = ValueError("oops")
+
+        result = self._apply()
+
+        self.assertEqual("FAILURE", result.state)
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertEqual(SupportTicketPendingChange.STATUS_FAILED, pending.status)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_local_mirror_failure_after_zendesk_post_clears_pending_without_marking_failed(
+        self, mock_client_cls
+    ):
+        """Zendesk accepted the status change → user has succeeded. A failure
+        mirroring the change locally afterwards must not flip the pending to
+        FAILED (that would let the user re-issue an already-applied change).
+        Pending is still cleared via the finally block; the next periodic sync
+        reconciles the local mirror.
+        """
+        audit_response = MagicMock()
+        audit_response.ticket.status = SupportTicket.ZD_STATUS_SOLVED
+        audit_response.ticket.updated_at = str(timezone.now())
+        mock_client_cls.return_value.update_ticket_status.return_value = audit_response
+
+        # Force the local mirror update to fail mid-task.
+        with patch.object(SupportTicket, "save", side_effect=ValueError("db hiccup")):
+            result = self._apply()
+
+        self.assertEqual("FAILURE", result.state)
+        mock_client_cls.return_value.update_ticket_status.assert_called_once()
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_orphan_ticket_clears_pending(self, mock_client_cls):
+        # User FK is SET_NULL on user delete → ticket.user becomes None.
+        # No user to display a failure to, so we just clear the pending.
+        self.user.delete()
+
+        self._apply()
+
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+        mock_client_cls.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_missing_ticket_is_noop(self, mock_client_cls):
+        ghost_ticket_id = self.ticket.id
+        self.ticket.delete()
+
+        post_status_change_to_zendesk.apply(kwargs={"ticket_id": ghost_ticket_id})
+
+        mock_client_cls.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_empty_pending_is_noop(self, mock_client_cls):
+        self.pending.delete()
+
+        self._apply()
+
+        mock_client_cls.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_failed_pending_is_noop(self, mock_client_cls):
+        """If pending is in 'failed' state, the task does not act on it
+        (the user controls retry via the form, which flips it back to sending).
+        """
+        self.pending.status = SupportTicketPendingChange.STATUS_FAILED
+        self.pending.save(update_fields=["status"])
+
+        self._apply()
+
+        mock_client_cls.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_ignores_other_kind_pending(self, mock_client_cls):
+        """A pending COMMENT change on the same ticket does not trigger the
+        status task. The two kinds coexist independently.
+        """
+        self.pending.delete()
+        SupportTicketPendingChangeFactory(
+            ticket=self.ticket,
+            kind=SupportTicketPendingChange.KIND_COMMENT,
+            payload="hello",
+        )
+
+        self._apply()
+
+        mock_client_cls.assert_not_called()

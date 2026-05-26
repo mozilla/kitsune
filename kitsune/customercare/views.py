@@ -19,7 +19,11 @@ from zenpy.lib.exception import APIException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket, SupportTicketPendingChange
-from kitsune.customercare.tasks import post_reply_to_zendesk, process_zendesk_update
+from kitsune.customercare.tasks import (
+    post_reply_to_zendesk,
+    post_status_change_to_zendesk,
+    process_zendesk_update,
+)
 from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.products.models import Topic
 
@@ -125,6 +129,54 @@ def ticket_detail(request, username, ticket_id):
         "customercare/ticket_detail.html",
         {**context, "needs_sync": needs_sync},
     )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def ticket_status(request, username, ticket_id):
+    ticket = get_object_or_404(SupportTicket, id=ticket_id, user__username=username)
+
+    if request.user.id != ticket.user_id:
+        raise Http404
+
+    if request.method == "POST":
+        target_status = request.POST.get("target_status")
+        should_post_status = False
+        with transaction.atomic():
+            pending = ticket.pending_change(
+                SupportTicketPendingChange.KIND_ZD_STATUS, for_update=True
+            )
+            already_sending = pending and (
+                pending.effective_status == SupportTicketPendingChange.STATUS_SENDING
+            )
+            if (not already_sending) and (target_status in ticket.permitted_zd_status_targets()):
+                should_post_status = True
+                if pending:
+                    pending.payload = target_status
+                    pending.status = SupportTicketPendingChange.STATUS_SENDING
+                    pending.last_attempted_at = timezone.now()
+                    pending.save(update_fields=["payload", "status", "last_attempted_at"])
+                else:
+                    try:
+                        with transaction.atomic():
+                            SupportTicketPendingChange.objects.create(
+                                ticket=ticket,
+                                kind=SupportTicketPendingChange.KIND_ZD_STATUS,
+                                payload=target_status,
+                            )
+                    except IntegrityError:
+                        should_post_status = False
+
+        if should_post_status:
+            post_status_change_to_zendesk.delay(ticket_id=ticket.id)
+
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "customercare/includes/ticket_status.html",
+            {"ticket": ticket},
+        )
+    return redirect("customercare.ticket_detail", username=username, ticket_id=ticket.id)
 
 
 @require_POST

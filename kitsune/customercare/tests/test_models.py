@@ -260,3 +260,70 @@ class AccessibleToTests(TestCase):
         self.assertIn(self.carol_ticket.id, accessible)
         # personal ticket from non-org user is NOT moderated by mallory
         self.assertNotIn(self.dave_ticket.id, accessible)
+
+
+class PermittedZDStatusTargetsTests(TestCase):
+    """SupportTicket.permitted_zd_status_targets — the gate the view uses to
+    decide which status-change buttons the owner sees and accepts.
+    """
+
+    def setUp(self):
+        self.product = ProductFactory()
+
+    def _ticket(self, *, submission_status=SupportTicket.STATUS_SENT, zd_status=None):
+        return SupportTicket.objects.create(
+            subject="t",
+            description="d",
+            category="c",
+            email="x@example.com",
+            product=self.product,
+            submission_status=submission_status,
+            zd_status=zd_status,
+        )
+
+    def test_new_ticket_has_no_transitions(self):
+        # Zendesk rejects direct NEW → SOLVED; require an agent touch first.
+        ticket = self._ticket(zd_status=SupportTicket.ZD_STATUS_NEW)
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_open_ticket_can_be_marked_solved(self):
+        ticket = self._ticket(zd_status=SupportTicket.ZD_STATUS_OPEN)
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+    def test_pending_ticket_can_be_marked_solved(self):
+        ticket = self._ticket(zd_status=SupportTicket.ZD_STATUS_PENDING)
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+    def test_hold_ticket_can_be_marked_solved(self):
+        ticket = self._ticket(zd_status=SupportTicket.ZD_STATUS_HOLD)
+        self.assertEqual({SupportTicket.ZD_STATUS_SOLVED}, ticket.permitted_zd_status_targets())
+
+    def test_solved_ticket_can_be_reopened(self):
+        ticket = self._ticket(zd_status=SupportTicket.ZD_STATUS_SOLVED)
+        self.assertEqual({SupportTicket.ZD_STATUS_OPEN}, ticket.permitted_zd_status_targets())
+
+    def test_closed_ticket_has_no_transitions(self):
+        ticket = self._ticket(zd_status=SupportTicket.ZD_STATUS_CLOSED)
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_no_zd_status_has_no_transitions(self):
+        ticket = self._ticket(zd_status=None)
+        self.assertEqual(set(), ticket.permitted_zd_status_targets())
+
+    def test_non_sent_submission_has_no_transitions(self):
+        """The submission_status gate takes precedence over zd_status: a ticket
+        still in classification or under review cannot be transitioned by the
+        owner, regardless of its zd_status.
+        """
+        for submission_status in (
+            SupportTicket.STATUS_PENDING,
+            SupportTicket.STATUS_FLAGGED,
+            SupportTicket.STATUS_REJECTED,
+            SupportTicket.STATUS_PROCESSING_FAILED,
+        ):
+            with self.subTest(submission_status=submission_status):
+                ticket = self._ticket(
+                    submission_status=submission_status,
+                    zd_status=SupportTicket.ZD_STATUS_OPEN,
+                )
+                self.assertEqual(set(), ticket.permitted_zd_status_targets())

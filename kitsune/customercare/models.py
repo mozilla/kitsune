@@ -178,6 +178,20 @@ class SupportTicket(ModelBase):
         except SupportTicketPendingChange.DoesNotExist:
             return None
 
+    def permitted_zd_status_targets(self):
+        """Status-change targets the owner can request given the current state."""
+        if self.submission_status != self.STATUS_SENT:
+            return set()
+        if self.zd_status in (
+            self.ZD_STATUS_OPEN,
+            self.ZD_STATUS_PENDING,
+            self.ZD_STATUS_HOLD,
+        ):
+            return {self.ZD_STATUS_SOLVED}
+        if self.zd_status == self.ZD_STATUS_SOLVED:
+            return {self.ZD_STATUS_OPEN}
+        return set()
+
 
 class SupportTicketPendingChange(models.Model):
     STATUS_SENDING = "sending"

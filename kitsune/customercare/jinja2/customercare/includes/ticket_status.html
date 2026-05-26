@@ -1,0 +1,61 @@
+{% from "sumo/includes/question_entry.html" import state_badges %}
+
+{% set pending = ticket.pending_change('zd_status') %}
+{% set is_sending = pending and pending.effective_status == 'sending' %}
+{% set is_failed = pending and pending.effective_status == 'failed' %}
+{% set permitted = ticket.permitted_zd_status_targets() %}
+
+{% set _status_url = url('customercare.ticket_status', username=ticket.user.username, ticket_id=ticket.id) %}
+
+{% if permitted or is_sending %}
+  <div id="thread-status" class="thread-detail--status"
+       {% if is_sending %}
+       hx-get="{{ _status_url }}"
+       hx-trigger="load delay:1s, every 2s"
+       hx-swap="outerHTML"
+       {% endif %}>
+
+    {% if is_sending %}
+      <span class="thread-detail--status-busy">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        {{ _('Updating status…') }}
+      </span>
+    {% elif permitted %}
+      <form method="post"
+            action="{{ _status_url }}"
+            hx-post="{{ _status_url }}"
+            hx-target="#thread-status"
+            hx-swap="outerHTML"
+            hx-disabled-elt="find button[type=submit]"
+            class="thread-detail--status-actions">
+        {% csrf_token %}
+        {% if ticket.ZD_STATUS_SOLVED in permitted %}
+          <button type="submit" name="target_status" value="{{ ticket.ZD_STATUS_SOLVED }}"
+                  class="sumo-button secondary-button button-sm">
+            {{ _('Mark as solved') }}
+          </button>
+        {% endif %}
+        {% if ticket.ZD_STATUS_OPEN in permitted %}
+          <button type="submit" name="target_status" value="{{ ticket.ZD_STATUS_OPEN }}"
+                  class="sumo-button secondary-button button-sm">
+            {{ _('Reopen') }}
+          </button>
+        {% endif %}
+      </form>
+    {% endif %}
+
+    {% if is_failed %}
+      <div class="thread-detail--notice thread-detail--notice--error" role="alert">
+        <div class="thread-detail--notice-text">
+          <strong>{{ _("Your status change failed. Please try again later.") }}</strong>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if request.headers.get('HX-Request') %}
+  <div id="thread-status-pills" class="thread-detail--pill-cluster" hx-swap-oob="true">
+    {{ state_badges(ticket) }}
+  </div>
+{% endif %}

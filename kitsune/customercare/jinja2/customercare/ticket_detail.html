@@ -17,9 +17,8 @@
   {% endif %}
 {% endblock %}
 
-{# ── Hero status pill cluster ────────────────────────────────────────────── #}
 {% block thread_status_hero %}
-  <div class="thread-detail--pill-cluster">{{ state_badges(ticket) }}</div>
+  <div id="thread-status-pills" class="thread-detail--pill-cluster">{{ state_badges(ticket) }}</div>
 {% endblock %}
 
 {% block thread_meta %}{{ thread_meta_rows(ticket) }}{% endblock %}

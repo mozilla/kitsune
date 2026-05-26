@@ -575,3 +575,224 @@ class TicketRepliesTemplateTests(TestCase):
         self.assertNotContains(response, "question-reply-form")
         self.assertNotContains(response, "Post Reply")
         self.assertContains(response, "can no longer receive replies")
+
+
+class TicketStatusViewTests(TestCase):
+    """POST/GET to ticket_status: creates/retries the pending zd_status
+    change and dispatches the worker task. Access-control mirrors ticket_detail.
+    """
+
+    def setUp(self):
+        self.owner = UserFactory()
+        self.other = UserFactory()
+        self.ticket = SupportTicketFactory(
+            user=self.owner,
+            zendesk_ticket_id="987",
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+
+    def _url(self):
+        return reverse("customercare.ticket_status", args=[self.owner.username, self.ticket.id])
+
+    def _detail_url(self):
+        return reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_owner_post_creates_pending_and_enqueues_task(self, mock_task):
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+
+        self.assertEqual(302, response.status_code)
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertIsNotNone(pending)
+        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
+        self.assertEqual(SupportTicket.ZD_STATUS_SOLVED, pending.payload)
+        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_retry_after_failure_reattempts_existing_pending(self, mock_task):
+        """Failed pending + same/valid target → flip in place, bump timestamp."""
+        prior_last_attempt = timezone.now() - timedelta(seconds=120)
+        prior = SupportTicketPendingChange.objects.create(
+            ticket=self.ticket,
+            kind=SupportTicketPendingChange.KIND_ZD_STATUS,
+            payload=SupportTicket.ZD_STATUS_SOLVED,
+            status=SupportTicketPendingChange.STATUS_FAILED,
+            last_attempted_at=prior_last_attempt,
+        )
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED})
+
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertEqual(prior.id, pending.id)
+        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
+        self.assertEqual(SupportTicket.ZD_STATUS_SOLVED, pending.payload)
+        self.assertGreater(pending.last_attempted_at, prior_last_attempt)
+        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_post_during_sending_does_not_replace_pending(self, mock_task):
+        """While the task is in flight, a new POST should not overwrite the pending."""
+        existing = SupportTicketPendingChange.objects.create(
+            ticket=self.ticket,
+            kind=SupportTicketPendingChange.KIND_ZD_STATUS,
+            payload=SupportTicket.ZD_STATUS_SOLVED,
+            status=SupportTicketPendingChange.STATUS_SENDING,
+            last_attempted_at=timezone.now(),
+        )
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED})
+
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertEqual(existing.id, pending.id)
+        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_invalid_target_status_is_noop(self, mock_task):
+        """Target status not in permitted set → no pending, no task."""
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_CLOSED}
+        )
+
+        self.assertEqual(302, response.status_code)
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_missing_target_status_is_noop(self, mock_task):
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={})
+
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_target_blocked_by_zd_status(self, mock_task):
+        """Closed tickets cannot be reopened by the owner."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_OPEN})
+
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_target_blocked_by_submission_status(self, mock_task):
+        """Tickets that have not been sent to Zendesk cannot be transitioned."""
+        self.ticket.submission_status = SupportTicket.STATUS_PENDING
+        self.ticket.save(update_fields=["submission_status"])
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED})
+
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+        mock_task.delay.assert_not_called()
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_solved_ticket_can_be_reopened(self, mock_task):
+        """Owner-driven reopen flow: SOLVED → OPEN is the only permitted transition."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_SOLVED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        self.client.post(self._url(), data={"target_status": SupportTicket.ZD_STATUS_OPEN})
+
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertIsNotNone(pending)
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, pending.payload)
+        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
+        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_create_race_integrity_error_is_silent_noop(self, mock_task):
+        """Race between two first-time POSTs: the loser hits the (ticket, kind)
+        unique constraint on create. The view should swallow the IntegrityError,
+        skip the task enqueue, and render normally (no 500)."""
+        self.client.force_login(self.owner)
+        with patch.object(
+            SupportTicketPendingChange.objects,
+            "create",
+            side_effect=IntegrityError("duplicate key"),
+        ):
+            response = self.client.post(
+                self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+            )
+
+        self.assertEqual(302, response.status_code)
+        mock_task.delay.assert_not_called()
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_htmx_post_returns_partial(self, mock_task):
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            self._url(),
+            data={"target_status": SupportTicket.ZD_STATUS_SOLVED},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="thread-status"')
+        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+
+    def test_htmx_get_returns_partial(self):
+        """HTMX poll during sending refreshes the cluster without doing anything else."""
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url(), HTTP_HX_REQUEST="true")
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="thread-status"')
+
+    def test_non_htmx_get_redirects_to_detail(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertEqual(302, response.status_code)
+        self.assertIn(self._detail_url(), response["Location"])
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_non_owner_post_404(self, mock_task):
+        self.client.force_login(self.other)
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+        self.assertEqual(404, response.status_code)
+        mock_task.delay.assert_not_called()
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS))
+
+    def test_non_owner_get_404(self):
+        self.client.force_login(self.other)
+        response = self.client.get(self._url())
+        self.assertEqual(404, response.status_code)
+
+    def test_anonymous_post_redirects_to_login(self):
+        response = self.client.post(
+            self._url(), data={"target_status": SupportTicket.ZD_STATUS_SOLVED}
+        )
+        self.assertEqual(302, response.status_code)
+        self.assertIn("/users/login", response["Location"])
+
+    @patch("kitsune.customercare.views.post_status_change_to_zendesk")
+    def test_get_method_does_not_dispatch_task(self, mock_task):
+        """Defense-in-depth: only POST creates pending and dispatches."""
+        SupportTicketPendingChange.objects.create(
+            ticket=self.ticket,
+            kind=SupportTicketPendingChange.KIND_ZD_STATUS,
+            payload=SupportTicket.ZD_STATUS_SOLVED,
+            status=SupportTicketPendingChange.STATUS_FAILED,
+            last_attempted_at=timezone.now() - timedelta(seconds=120),
+        )
+
+        self.client.force_login(self.owner)
+        self.client.get(self._url(), HTTP_HX_REQUEST="true")
+
+        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_ZD_STATUS)
+        self.assertEqual(SupportTicketPendingChange.STATUS_FAILED, pending.status)
+        mock_task.delay.assert_not_called()

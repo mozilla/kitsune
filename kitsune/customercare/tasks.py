@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 from datetime import timedelta
 
 from celery import group, shared_task
@@ -138,20 +139,15 @@ def process_failed_zendesk_tickets() -> None:
         log.info(f"Processed {processed_count} failed Zendesk tickets")
 
 
-@shared_task
-def post_reply_to_zendesk(ticket_id: int) -> None:
-    """Post the ticket's pending comment to Zendesk and clear it on success.
+@contextmanager
+def _attempt_pending_change(ticket_id: int, kind: str):
+    """Claim the SENDING pending change of the given kind, stamp its
+    last_attempted_at, and yield it so the caller can post the change to
+    Zendesk. The yielded value is None when there is nothing to send — the
+    caller is expected to early-return.
 
-    Single try, no auto-retry. The user retries via the reply form, which is
-    gated on STATUS_FAILED — while this task runs (STATUS_SENDING) the form
-    refuses replacement, so the pending row is stable for the task's lifetime.
-
-    Failure modes:
-      - Before Zendesk confirms the comment: flip the pending to FAILED so the
-        form re-enables retry.
-      - After Zendesk confirms: the user has already succeeded. Don't flip.
-        Try to mirror locally (next periodic sync reconciles if this fails),
-        then always clear the pending so the user isn't stuck in "sending".
+    If anything inside the with-body raises, the SENDING row is flipped to
+    FAILED and the exception is re-raised.
     """
     try:
         with transaction.atomic():
@@ -159,7 +155,7 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                 pending = (
                     SupportTicketPendingChange.objects.filter(
                         ticket_id=ticket_id,
-                        kind=SupportTicketPendingChange.KIND_COMMENT,
+                        kind=kind,
                         status=SupportTicketPendingChange.STATUS_SENDING,
                     )
                     .select_related("ticket", "ticket__user")
@@ -167,24 +163,39 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                     .get()
                 )
             except SupportTicketPendingChange.DoesNotExist:
-                return
+                pending = None
 
-            if not (user := pending.ticket.user):
-                # Orphan ticket — no user to display the failure to. Clear the
-                # pending so we don't leave dead state behind.
+            if pending and not pending.ticket.user:
                 pending.delete()
-                return
+                pending = None
 
-            if pending.ticket.zd_status == SupportTicket.ZD_STATUS_CLOSED:
+            if pending and (pending.ticket.zd_status == SupportTicket.ZD_STATUS_CLOSED):
                 # Ticket closed between view acceptance and task execution.
-                # Zendesk rejects comments on closed tickets and the form is
-                # hidden, so the user can't retry — drop the pending.
                 pending.delete()
-                return
+                pending = None
 
-            # Record the attempt time so the stale-flip can fire if we get stuck.
-            pending.last_attempted_at = timezone.now()
-            pending.save(update_fields=["last_attempted_at"])
+            if pending:
+                pending.last_attempted_at = timezone.now()
+                pending.save(update_fields=["last_attempted_at"])
+
+        yield pending
+    except Exception:
+        log.exception(f"Failed Zendesk {kind} for ticket id {ticket_id}")
+        SupportTicketPendingChange.objects.filter(
+            ticket_id=ticket_id,
+            kind=kind,
+            status=SupportTicketPendingChange.STATUS_SENDING,
+        ).update(status=SupportTicketPendingChange.STATUS_FAILED)
+        raise
+
+
+@shared_task
+def post_reply_to_zendesk(ticket_id: int) -> None:
+    """Post the ticket's pending comment to Zendesk and clear it on success."""
+    with _attempt_pending_change(ticket_id, SupportTicketPendingChange.KIND_COMMENT) as pending:
+        if pending is None:
+            return
+        user = pending.ticket.user
 
         # Zendesk automatically triggers a reopen only when the comment author
         # is the same as the API user, which is never true in our case, so we
@@ -195,6 +206,7 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
             in {SupportTicket.ZD_STATUS_PENDING, SupportTicket.ZD_STATUS_SOLVED}
             else None
         )
+
         ticket_audit = ZendeskClient().add_ticket_comment(
             user=user,
             ticket_id=int(pending.ticket.zendesk_ticket_id),
@@ -202,18 +214,7 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
             public=True,
             status=new_status,
         )
-    except Exception:
-        log.exception(f"Failed to post reply for ticket id {ticket_id}")
-        SupportTicketPendingChange.objects.filter(
-            ticket_id=ticket_id,
-            kind=SupportTicketPendingChange.KIND_COMMENT,
-            status=SupportTicketPendingChange.STATUS_SENDING,
-        ).update(status=SupportTicketPendingChange.STATUS_FAILED)
-        raise
 
-    # Get the newly-added comment from the audit's events, append it to the ticket's
-    # comments for now, and clear the pending comment. The webhook will take care of
-    # fully syncing the support ticket with Zendesk later.
     try:
         new_comment = next(
             (
@@ -255,6 +256,32 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                 update_fields.append("comments")
 
             ticket.save(update_fields=update_fields)
+    finally:
+        pending.delete()
+
+
+@shared_task
+def post_status_change_to_zendesk(ticket_id: int) -> None:
+    """Post the ticket's pending zd_status change to Zendesk and clear it on success.
+
+    See `_attempt_pending_change` for the acquisition + failure-tracking contract.
+    """
+    with _attempt_pending_change(ticket_id, SupportTicketPendingChange.KIND_ZD_STATUS) as pending:
+        if pending is None:
+            return
+        ticket_audit = ZendeskClient().update_ticket_status(
+            pending.ticket.zendesk_ticket_id, pending.payload
+        )
+
+    try:
+        with transaction.atomic():
+            try:
+                ticket = SupportTicket.objects.select_for_update().get(id=ticket_id)
+            except SupportTicket.DoesNotExist:
+                return
+            ticket.zd_status = ticket_audit.ticket.status
+            ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
+            ticket.save(update_fields=["zd_status", "zd_updated_at"])
     finally:
         pending.delete()
 
