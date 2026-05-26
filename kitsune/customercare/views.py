@@ -9,15 +9,17 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import SuspiciousOperation
+from django.db import IntegrityError, transaction
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 from zenpy.lib.exception import APIException
 
-from kitsune.customercare.models import SupportTicket
-from kitsune.customercare.tasks import process_zendesk_update
+from kitsune.customercare.forms import SupportTicketReplyForm
+from kitsune.customercare.models import SupportTicket, SupportTicketPendingChange
+from kitsune.customercare.tasks import post_reply_to_zendesk, process_zendesk_update
 from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.products.models import Topic
 
@@ -33,32 +35,97 @@ def _ticket_needs_sync(ticket):
     return ticket.last_synced_at < timezone.now() - threshold
 
 
-
 @login_required
+@require_http_methods(["GET", "POST"])
 def ticket_detail(request, username, ticket_id):
     ticket = get_object_or_404(
         SupportTicket.objects.select_related("product", "topic", "user"),
         id=ticket_id,
         user__username=username,
     )
-    if not (ticket.user_id == request.user.id or request.user.has_perm("customercare.change_supportticket")):
+
+    if request.user.id != ticket.user_id:
         raise Http404
 
-    if request.headers.get("HX-Request"):
-        sync_error = False
-        if _ticket_needs_sync(ticket):
-            try:
-                sync_ticket_from_zendesk(ticket)
-            except (APIException, requests.exceptions.RequestException):
-                log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
-                sync_error = True
-        return render(request, "customercare/includes/ticket_replies.html",
-                      {"ticket": ticket, "sync_error": sync_error})
+    pending = ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
 
-    return render(request, "customercare/ticket_detail.html", {
-        "ticket": ticket,
-        "needs_sync": _ticket_needs_sync(ticket),
-    })
+    initial = (
+        {"body": pending.payload}
+        if pending and pending.effective_status == SupportTicketPendingChange.STATUS_FAILED
+        else None
+    )
+
+    form = SupportTicketReplyForm(request.POST or None, initial=initial)
+
+    is_htmx = bool(request.headers.get("HX-Request"))
+    # Captured before any post-submission form reset: a bound form means the
+    # user is submitting; an unbound HTMX request is a background refresh.
+    is_polling = is_htmx and not form.is_bound
+
+    if form.is_valid():
+        new_body = form.cleaned_data["body"]
+        should_post_reply = False
+        with transaction.atomic():
+            pending = ticket.pending_change(
+                SupportTicketPendingChange.KIND_COMMENT, for_update=True
+            )
+            already_sending = pending and (
+                pending.effective_status == SupportTicketPendingChange.STATUS_SENDING
+            )
+            same_body = pending and (pending.payload == new_body)
+            if (not already_sending) and same_body:
+                # Same body but trying again. Bump "last_attempted_at" so
+                # stale-sending detection anchors on this retry, not the prior
+                # failed attempt.
+                pending.status = SupportTicketPendingChange.STATUS_SENDING
+                pending.last_attempted_at = timezone.now()
+                pending.save(update_fields=["status", "last_attempted_at"])
+                should_post_reply = True
+            elif not already_sending:
+                # No prior pending, or user edited the body — start fresh.
+                if pending:
+                    pending.delete()
+                try:
+                    with transaction.atomic():
+                        pending = SupportTicketPendingChange.objects.create(
+                            ticket=ticket,
+                            kind=SupportTicketPendingChange.KIND_COMMENT,
+                            payload=new_body,
+                        )
+                except IntegrityError:
+                    pending = ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
+                else:
+                    should_post_reply = True
+
+        if should_post_reply:
+            post_reply_to_zendesk.delay(ticket_id=ticket.id)
+            if not is_htmx:
+                return redirect(
+                    "customercare.ticket_detail",
+                    username=ticket.user.username,
+                    ticket_id=ticket.id,
+                )
+
+        form = SupportTicketReplyForm()
+
+    needs_sync = _ticket_needs_sync(ticket)
+
+    sync_error = False
+    if is_polling and needs_sync:
+        try:
+            sync_ticket_from_zendesk(ticket)
+        except APIException, requests.exceptions.RequestException:
+            log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
+            sync_error = True
+
+    context = {"ticket": ticket, "pending": pending, "sync_error": sync_error, "reply_form": form}
+    if is_htmx:
+        return render(request, "customercare/includes/ticket_replies.html", context)
+    return render(
+        request,
+        "customercare/ticket_detail.html",
+        {**context, "needs_sync": needs_sync},
+    )
 
 
 @require_POST
