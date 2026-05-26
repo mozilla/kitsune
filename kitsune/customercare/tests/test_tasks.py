@@ -442,7 +442,13 @@ class PostReplyToZendeskTests(TestCase):
         audit_response.ticket.id = 987
         audit_response.ticket.updated_at = str(updated_at)
         audit_response.audit.events = [
-            {"type": "Comment", "id": 42, "body": "hello", "author_id": 555},
+            {
+                "type": "Comment",
+                "id": 42,
+                "body": "hello",
+                "html_body": "<p>hello</p>",
+                "author_id": 555,
+            },
         ]
         mock_client_cls.return_value.add_ticket_comment.return_value = audit_response
 
@@ -460,7 +466,7 @@ class PostReplyToZendeskTests(TestCase):
         self.assertEqual(1, len(self.ticket.comments))
         comment = self.ticket.comments[0]
         self.assertEqual(42, comment["id"])
-        self.assertEqual("hello", comment["body"])
+        self.assertEqual("<p>hello</p>", comment["body"])
         self.assertTrue(comment["public"])
         self.assertEqual({"name": self.user.profile.display_name, "id": 555}, comment["author"])
         self.assertEqual(updated_at, self.ticket.zd_updated_at)
