@@ -221,7 +221,7 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                 ticket.comments.append(
                     {
                         "id": new_comment_id,
-                        "body": new_comment["body"],
+                        "body": new_comment["html_body"],
                         "created_at": ticket_audit.ticket.updated_at,
                         "public": True,
                         "author": {
