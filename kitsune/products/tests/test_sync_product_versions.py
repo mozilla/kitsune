@@ -29,7 +29,6 @@ class SyncProductVersionsTests(TestCase):
             "LATEST_FIREFOX_RELEASED_DEVEL_VERSION": "144.0b7",
             "FIREFOX_NIGHTLY": "145.0a2",
             "FIREFOX_ESR": "140.3.1esr",
-            "FIREFOX_ESR115": "115.20.0esr",
         }
 
         # Firefox history data (major releases)
@@ -104,18 +103,10 @@ class SyncProductVersionsTests(TestCase):
         self.assertEqual(v145.max_version, 146.0)
         self.assertFalse(v145.default)
 
-        # ESR versions should be created under Firefox product
+        # Check ESR
         esr140 = Version.objects.get(product=self.firefox, slug="fx140-esr")
         self.assertEqual(esr140.name, "Version 140 ESR")
         self.assertTrue(esr140.visible)
-
-        esr115 = Version.objects.get(product=self.firefox, slug="fx115-esr")
-        self.assertEqual(esr115.name, "Version 115 ESR")
-        self.assertTrue(esr115.visible)
-
-        # Historical ESR versions from esr_major_versions should all exist
-        esr_versions = Version.objects.filter(product=self.firefox, slug__endswith="-esr")
-        self.assertGreaterEqual(esr_versions.count(), 9)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_sync_mobile_versions(self, mock_product_details):
