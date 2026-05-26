@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 "beta_version_key": "LATEST_FIREFOX_RELEASED_DEVEL_VERSION",
                 "alpha_version_key": "FIREFOX_NIGHTLY",
                 "history_data": product_details.firefox_history_major_releases,
-                "esr_keys": ["FIREFOX_ESR"],
+                "esr_keys": ["FIREFOX_ESR", "FIREFOX_ESR_NEXT"],
             },
             "mobile": {
                 "name": "Firefox for Android",
@@ -96,7 +96,7 @@ class Command(BaseCommand):
                 "beta_version_key": "LATEST_THUNDERBIRD_DEVEL_VERSION",
                 "alpha_version_key": "LATEST_THUNDERBIRD_NIGHTLY_VERSION",
                 "history_data": product_details.thunderbird_history_major_releases,
-                "esr_keys": ["THUNDERBIRD_ESR"],
+                "esr_keys": ["THUNDERBIRD_ESR", "THUNDERBIRD_ESR_NEXT"],
             },
         }
 
@@ -133,8 +133,8 @@ class Command(BaseCommand):
             self._create_or_update_versions(
                 product, config, available_versions, dry_run, verbosity
             )
-            self._handle_esr_versions(product, config, dry_run, verbosity)
-            self._update_visibility(product, latest_major, dry_run, verbosity)
+            supported_esr_majors = self._handle_esr_versions(product, config, dry_run, verbosity)
+            self._update_visibility(product, latest_major, supported_esr_majors, dry_run, verbosity)
 
     def _get_available_versions(self, history_data: dict, latest_major: int) -> list:
         """Get list of available major version numbers from history."""
@@ -201,7 +201,7 @@ class Command(BaseCommand):
                     if verbosity >= 1:
                         self.stdout.write(f"  Created {slug}")
 
-    def _handle_esr_versions(self, product: Product, config: dict, dry_run: bool, verbosity: int):
+    def _handle_esr_versions(self, product: Product, config: dict, dry_run: bool, verbosity: int) -> set:
         """Create or update ESR versions."""
         esr_keys = config.get("esr_keys", [])
 
@@ -214,9 +214,6 @@ class Command(BaseCommand):
                     esr_major = self._parse_major_version(esr_version_str)
                     if esr_major is not None:
                         esr_majors.add(esr_major)
-
-        if not esr_majors:
-            return
 
         slug_prefix = config["slug_prefix"]
 
@@ -265,19 +262,21 @@ class Command(BaseCommand):
                     if verbosity >= 1:
                         self.stdout.write(f"  Created ESR {slug}")
 
-    def _update_visibility(self, product: Product, latest_major: int, dry_run: bool, verbosity: int):
+        return esr_majors
+
+    def _update_visibility(self, product: Product, latest_major: int, supported_esr_majors: set, dry_run: bool, verbosity: int):
         """Update visibility and default flags for all versions of a product."""
         all_versions = list(Version.objects.filter(product=product).order_by("-max_version"))
         if not all_versions:
             return
 
-        esr_versions = [v for v in all_versions if v.slug.endswith("-esr")]
+        supported_esr_versions = [v for v in all_versions if v.slug.endswith("-esr") and v.min_version in supported_esr_majors]
         regular_versions = [v for v in all_versions if not v.slug.endswith("-esr") and v.min_version <= latest_major]
         prerelease_versions = [v for v in all_versions if not v.slug.endswith("-esr") and v.min_version > latest_major]
         top_10 = regular_versions[:10]
 
         for version in all_versions:
-            should_be_visible = version in top_10 or version in esr_versions or version in prerelease_versions
+            should_be_visible = version in top_10 or version in supported_esr_versions or version in prerelease_versions
             should_be_default = bool(regular_versions) and version == regular_versions[0]
 
             if version.visible != should_be_visible or version.default != should_be_default:

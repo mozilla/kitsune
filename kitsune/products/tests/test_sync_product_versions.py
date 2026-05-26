@@ -29,6 +29,7 @@ class SyncProductVersionsTests(TestCase):
             "LATEST_FIREFOX_RELEASED_DEVEL_VERSION": "144.0b7",
             "FIREFOX_NIGHTLY": "145.0a2",
             "FIREFOX_ESR": "140.3.1esr",
+            "FIREFOX_ESR_NEXT": "153.0.1esr",
         }
 
         # Firefox history data (major releases)
@@ -52,6 +53,7 @@ class SyncProductVersionsTests(TestCase):
             "LATEST_THUNDERBIRD_DEVEL_VERSION": "129.0b2",
             "LATEST_THUNDERBIRD_NIGHTLY_VERSION": "130.0a1",
             "THUNDERBIRD_ESR": "128.5.0esr",
+            "THUNDERBIRD_ESR_NEXT": "140.0.1esr",
         }
 
         # Thunderbird history data
@@ -107,6 +109,10 @@ class SyncProductVersionsTests(TestCase):
         esr140 = Version.objects.get(product=self.firefox, slug="fx140-esr")
         self.assertEqual(esr140.name, "Version 140 ESR")
         self.assertTrue(esr140.visible)
+
+        esr153 = Version.objects.get(product=self.firefox, slug="fx153-esr")
+        self.assertEqual(esr153.name, "Version 153 ESR")
+        self.assertTrue(esr153.visible)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_sync_mobile_versions(self, mock_product_details):
@@ -194,6 +200,10 @@ class SyncProductVersionsTests(TestCase):
         self.assertEqual(esr128.name, "Version 128 ESR")
         self.assertTrue(esr128.visible)
 
+        esr140 = Version.objects.get(product=self.thunderbird, slug="tb140-esr")
+        self.assertEqual(esr140.name, "Version 140 ESR")
+        self.assertTrue(esr140.visible)
+
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_visibility_rules(self, mock_product_details):
         """Test that only top 10 versions + ESR + beta/alpha are visible."""
@@ -217,10 +227,14 @@ class SyncProductVersionsTests(TestCase):
         nightly = Version.objects.get(product=self.firefox, slug="fx145")
         self.assertTrue(nightly.visible)
 
-        # ESR versions should always be visible
+        # Only supported ESR versions should be visible (but we don't create others)
         esr_versions = Version.objects.filter(product=self.firefox, slug__endswith="-esr")
-        for esr in esr_versions:
+        supported_esr_versions = [v for v in esr_versions if v.slug in ["fx140-esr", "fx153-esr"]]
+        unsupported_esr_versions = [v for v in esr_versions if v.slug not in ["fx140-esr", "fx153-esr"]] # empty
+        for esr in supported_esr_versions:
             self.assertTrue(esr.visible)
+        for esr in unsupported_esr_versions:
+            self.assertFalse(esr.visible)
 
     @mock.patch("kitsune.products.management.commands.sync_product_versions.product_details")
     def test_default_version_is_latest(self, mock_product_details):
