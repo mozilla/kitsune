@@ -358,10 +358,11 @@ class SyncTicketFromZendeskTests(TestCase):
     def setUp(self):
         self.ticket = SupportTicketFactory(zendesk_ticket_id="123")
 
-    def _make_mock_comment(self, *, id, body, public=True):
+    def _make_mock_comment(self, *, id, body, html_body=None, public=True):
         mock_comment = MagicMock()
         mock_comment.id = id
         mock_comment.body = body
+        mock_comment.html_body = html_body if html_body is not None else f"<p>{body}</p>"
         mock_comment.created_at = "2025-01-01T00:00:00Z"
         mock_comment.public = public
         mock_comment.author.name = "Agent"
@@ -387,14 +388,33 @@ class SyncTicketFromZendeskTests(TestCase):
 
         self.ticket.refresh_from_db()
         self.assertEqual(len(self.ticket.comments), 2)
-        self.assertEqual(self.ticket.comments[0]["body"], "Original question")
-        self.assertEqual(self.ticket.comments[1]["body"], "Hello")
+        self.assertEqual(self.ticket.comments[0]["body"], "<p>Original question</p>")
+        self.assertEqual(self.ticket.comments[1]["body"], "<p>Hello</p>")
         self.assertEqual(self.ticket.comments[1]["author"]["name"], "Agent")
         self.assertEqual(self.ticket.zd_status, "open")
         self.assertIsNotNone(self.ticket.last_synced_at)
         # public_comments excludes the description-comment and any private notes.
         self.assertEqual(len(self.ticket.public_comments), 1)
-        self.assertEqual(self.ticket.public_comments[0]["body"], "Hello")
+        self.assertEqual(self.ticket.public_comments[0]["body"], "<p>Hello</p>")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_stores_html_body_not_plain_body(self, mock_client_cls):
+        """html_body (rich HTML) is stored, not the plain-text body."""
+        mock_client = mock_client_cls.return_value
+        comment = self._make_mock_comment(id=1, body="plain", html_body="<p><b>rich</b></p>")
+        mock_client.get_ticket_comments.return_value = [comment]
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description=self.ticket.description,
+        )
+
+        sync_ticket_from_zendesk(self.ticket)
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.comments[0]["body"], "<p><b>rich</b></p>")
+        self.assertNotEqual(self.ticket.comments[0]["body"], "plain")
 
     @patch("kitsune.customercare.utils.ZendeskClient")
     def test_filters_private_comments(self, mock_client_cls):

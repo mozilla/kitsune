@@ -1,5 +1,23 @@
-from kitsune.sumo.sanitize import linkify
+import markupsafe
+
+from kitsune.sumo.sanitize import (
+    RESTRICTED_HTML_ATTRIBUTES,
+    RESTRICTED_HTML_TAGS,
+    linkify,
+)
+from kitsune.sumo.templatetags.jinja_helpers import sanitize_external_html
 from kitsune.sumo.tests import TestCase
+
+
+class RestrictedHtmlConstantsTests(TestCase):
+    def test_tags_contains_br_and_pre(self):
+        self.assertIn("br", RESTRICTED_HTML_TAGS)
+        self.assertIn("pre", RESTRICTED_HTML_TAGS)
+
+    def test_rename_preserves_existing_attribute_entries(self):
+        self.assertIn("a", RESTRICTED_HTML_ATTRIBUTES)
+        self.assertIn("abbr", RESTRICTED_HTML_ATTRIBUTES)
+        self.assertIn("acronym", RESTRICTED_HTML_ATTRIBUTES)
 
 
 class LinkifyTests(TestCase):
@@ -63,3 +81,28 @@ class LinkifyTests(TestCase):
         # text content must survive in the output.
         result = linkify("<foo.bar>hello world</foo.bar>")
         self.assertIn("hello world", result)
+
+
+class SanitizeExternalHtmlFilterTests(TestCase):
+    def test_script_tag_is_stripped(self):
+        result = sanitize_external_html("<script>alert(1)</script>")
+        self.assertNotIn("<script>", result)
+
+    def test_bold_tag_is_preserved(self):
+        result = sanitize_external_html("<b>bold</b>")
+        self.assertIn("<b>bold</b>", result)
+
+    def test_anchor_with_href_is_preserved(self):
+        result = sanitize_external_html('<a href="https://example.com">link</a>')
+        self.assertIn('href="https://example.com"', result)
+        self.assertIn("link", result)
+
+    def test_empty_string_returns_empty_string(self):
+        self.assertEqual("", sanitize_external_html(""))
+
+    def test_none_returns_empty_string(self):
+        self.assertEqual("", sanitize_external_html(None))
+
+    def test_return_value_is_markup_for_nonempty_input(self):
+        result = sanitize_external_html("<b>bold</b>")
+        self.assertIsInstance(result, markupsafe.Markup)

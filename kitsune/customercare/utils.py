@@ -33,7 +33,7 @@ def apply_zendesk_ticket_data(ticket: SupportTicket, zd_ticket, zd_comments) -> 
     ticket.comments = [
         {
             "id": c.id,
-            "body": c.body,
+            "body": c.html_body,
             "created_at": c.created_at,
             "public": c.public,
             "author": {"name": c.author.name, "id": c.author.id},
