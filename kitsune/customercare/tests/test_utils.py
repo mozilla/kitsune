@@ -403,7 +403,12 @@ class SyncTicketFromZendeskTests(TestCase):
         mock_client = mock_client_cls.return_value
         comment = self._make_mock_comment(id=1, body="plain", html_body="<p><b>rich</b></p>")
         mock_client.get_ticket_comments.return_value = [comment]
-        mock_client.get_ticket.return_value = MagicMock(status="open", updated_at=timezone.now())
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description=self.ticket.description,
+        )
 
         sync_ticket_from_zendesk(self.ticket)
 
