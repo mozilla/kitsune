@@ -38,7 +38,7 @@
           {% endif %}
         </div>
       </div>
-      {{ post_body(comment.get("body", "") | e | replace('\n', '<br>') | safe) }}
+      {{ post_body(comment.get("body", "") | sanitize_external_html) }}
     </div>
   {% endfor %}
 {% else %}

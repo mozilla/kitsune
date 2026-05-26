@@ -78,22 +78,24 @@ def _decide_unserializable_tags(node):
     return Decide.KEEP
 
 
-ALLOWED_BIO_TAGS = {
+RESTRICTED_HTML_TAGS = {
     "a",
     "abbr",
     "acronym",
     "b",
     "blockquote",
+    "br",
     "code",
     "em",
     "i",
     "li",
     "ol",
+    "pre",
     "strong",
     "ul",
     "p",
 }
-ALLOWED_BIO_ATTRIBUTES = {
+RESTRICTED_HTML_ATTRIBUTES = {
     "a": ["href", "title", "rel"],
     "abbr": ["title"],
     "acronym": ["title"],

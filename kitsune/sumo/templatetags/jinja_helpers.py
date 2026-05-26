@@ -27,7 +27,7 @@ from markupsafe import Markup, escape
 
 from kitsune.sumo import parser, sanitize
 from kitsune.sumo.parser import BASE_ALLOWED_ATTRIBUTES
-from kitsune.sumo.sanitize import ALLOWED_BIO_ATTRIBUTES, ALLOWED_BIO_TAGS, clean
+from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TAGS, clean
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     get_aaq_url,
@@ -154,7 +154,16 @@ def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofoll
         tags=[*wikimarkup.parser.ALLOWED_TAGS, "abbr"],
         attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES | {"abbr": ["title"]},
     )
-    return Markup(clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES))
+    return Markup(clean(html, tags=RESTRICTED_HTML_TAGS, attributes=RESTRICTED_HTML_ATTRIBUTES))
+
+
+@library.filter
+def sanitize_external_html(value):
+    if not value:
+        return ""
+    return Markup(
+        clean(value, tags=RESTRICTED_HTML_TAGS, attributes=RESTRICTED_HTML_ATTRIBUTES, strip=True)
+    )
 
 
 @library.filter
@@ -275,7 +284,7 @@ def datetimeformat(context, value, format="shortdatetime", use_timesince=False):
                     convert_tzinfo = (
                         Profile.objects.get(user=request.user).timezone or default_tzinfo
                     )
-                except (Profile.DoesNotExist, AttributeError):
+                except Profile.DoesNotExist, AttributeError:
                     pass
             request.session["timezone"] = str(convert_tzinfo)
         else:
@@ -457,7 +466,7 @@ def parse_datetime(value):
         return None
     try:
         return datetime.datetime.fromisoformat(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 
@@ -597,6 +606,6 @@ def safe_file_url(file: FieldFile) -> str | None:
 
     try:
         return file.url
-    except (AttributeError, ValueError):
+    except AttributeError, ValueError:
         return None
         return None
