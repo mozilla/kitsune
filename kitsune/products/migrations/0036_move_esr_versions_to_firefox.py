@@ -26,10 +26,13 @@ def move_esr_versions_to_firefox(apps, schema_editor):
         ).values_list("slug", flat=True)
     )
     if clashing:
-        raise RuntimeError(
-            "Cannot move ESR versions to firefox — slug clashes already exist "
-            f"under firefox: {sorted(clashing)}"
+        # firefox copies are canonical (sync_product_versions writes ESR slugs there now),
+        # so drop the stale firefox-enterprise duplicates before moving the rest.
+        print(
+            f"Dropping {len(clashing)} duplicate ESR version(s) from firefox-enterprise: "
+            f"{sorted(clashing)}"
         )
+        esr_versions.filter(slug__in=clashing).delete()
 
     esr_versions.update(product=firefox)
 
