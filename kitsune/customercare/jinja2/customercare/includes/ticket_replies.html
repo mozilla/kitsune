@@ -85,6 +85,11 @@
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
 
+{% if ticket.zd_status == ticket.ZD_STATUS_CLOSED %}
+  <div class="thread-detail--notice thread-detail--notice--info">
+    {{ _('This ticket is closed and can no longer receive replies. Please open a new ticket if you still need help.') }}
+  </div>
+{% else %}
 <section class="question-reply-form" id="ticket-reply">
   <h3 class="sumo-card-heading">{{ _('Post a Reply') }}</h3>
   {% if is_failed %}
@@ -120,4 +125,5 @@
     </fieldset>
   </form>
 </section>
+{% endif %}
 </div>

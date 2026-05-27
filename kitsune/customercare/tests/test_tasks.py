@@ -569,3 +569,15 @@ class PostReplyToZendeskTests(TestCase):
         self._apply()
 
         mock_client_cls.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_closed_ticket_drops_pending_without_posting(self, mock_client_cls):
+        """Race: ticket closed between view acceptance and task run.
+        Zendesk rejects comments on closed tickets, so don't try."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self._apply()
+
+        mock_client_cls.assert_not_called()
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))

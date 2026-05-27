@@ -425,6 +425,19 @@ class TicketReplyPostTests(TestCase):
         pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
         self.assertEqual("hello!", pending.payload)
 
+    @patch("kitsune.customercare.views.post_reply_to_zendesk")
+    def test_post_on_closed_ticket_is_noop(self, mock_task):
+        """Zendesk rejects comments on closed tickets, so the view drops the POST."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+        self.ticket.save(update_fields=["zd_status"])
+
+        self.client.force_login(self.owner)
+        response = self.client.post(self._url(), data={"body": "stale"})
+
+        self.assertEqual(200, response.status_code)
+        mock_task.delay.assert_not_called()
+        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))
+
 
 class TicketRepliesTemplateTests(TestCase):
     def setUp(self):
@@ -520,3 +533,12 @@ class TicketRepliesTemplateTests(TestCase):
         self.assertContains(response, "Your reply failed to send")
         self.assertNotContains(response, 'id="pending-reply"')
         self.assertNotContains(response, "every 2s")
+
+    def test_closed_ticket_hides_reply_form_and_shows_notice(self):
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+        self.ticket.save(update_fields=["zd_status"])
+        self.client.force_login(self.owner)
+        response = self.client.get(self._url())
+        self.assertNotContains(response, "question-reply-form")
+        self.assertNotContains(response, "Post Reply")
+        self.assertContains(response, "can no longer receive replies")

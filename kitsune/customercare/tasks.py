@@ -175,6 +175,13 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                 pending.delete()
                 return
 
+            if pending.ticket.zd_status == SupportTicket.ZD_STATUS_CLOSED:
+                # Ticket closed between view acceptance and task execution.
+                # Zendesk rejects comments on closed tickets and the form is
+                # hidden, so the user can't retry — drop the pending.
+                pending.delete()
+                return
+
             # Record the attempt time so the stale-flip can fire if we get stuck.
             pending.last_attempted_at = timezone.now()
             pending.save(update_fields=["last_attempted_at"])
