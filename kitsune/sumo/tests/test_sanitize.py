@@ -14,6 +14,14 @@ class RestrictedHtmlConstantsTests(TestCase):
         self.assertIn("br", RESTRICTED_HTML_TAGS)
         self.assertIn("pre", RESTRICTED_HTML_TAGS)
 
+    def test_tags_contains_headings(self):
+        for tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
+            self.assertIn(tag, RESTRICTED_HTML_TAGS)
+
+    def test_tags_contains_table_structure(self):
+        for tag in ("table", "thead", "tbody", "tfoot", "tr", "td", "th"):
+            self.assertIn(tag, RESTRICTED_HTML_TAGS)
+
     def test_rename_preserves_existing_attribute_entries(self):
         self.assertIn("a", RESTRICTED_HTML_ATTRIBUTES)
         self.assertIn("abbr", RESTRICTED_HTML_ATTRIBUTES)
@@ -96,6 +104,25 @@ class SanitizeExternalHtmlFilterTests(TestCase):
         result = sanitize_external_html('<a href="https://example.com">link</a>')
         self.assertIn('href="https://example.com"', result)
         self.assertIn("link", result)
+
+    def test_heading_tag_is_preserved(self):
+        result = sanitize_external_html("<h2>Section</h2>")
+        self.assertIn("<h2>Section</h2>", result)
+
+    def test_table_structure_is_preserved(self):
+        result = sanitize_external_html(
+            "<table><thead><tr><th>A</th></tr></thead>"
+            "<tbody><tr><td>1</td></tr></tbody></table>"
+        )
+        for fragment in ("<table>", "<thead>", "<tr>", "<th>A</th>", "<tbody>", "<td>1</td>"):
+            self.assertIn(fragment, result)
+
+    def test_table_cell_span_attributes_are_preserved(self):
+        result = sanitize_external_html(
+            '<table><tr><td colspan="2" rowspan="3">x</td></tr></table>'
+        )
+        self.assertIn('colspan="2"', result)
+        self.assertIn('rowspan="3"', result)
 
     def test_empty_string_returns_empty_string(self):
         self.assertEqual("", sanitize_external_html(""))
