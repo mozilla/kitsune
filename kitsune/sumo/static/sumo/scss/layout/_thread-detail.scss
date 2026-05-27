@@ -88,6 +88,8 @@
   color: var(--color-text);
   word-break: break-word;
 
+  @include c.ulol;
+
   p {
     margin: 0 0 p.$spacing-md;
 
