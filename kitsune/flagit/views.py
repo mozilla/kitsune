@@ -383,15 +383,8 @@ def update(request, flagged_object_id):
     reason = request.GET.get("reason")
     product = request.GET.get("product")
     content_type = request.GET.get("content_type")
-    ct = flagged.content_type
 
     if new_status:
-        # If the object is an Answer let's fire a notification
-        # if the flag is invalid
-        if str(new_status) == str(FlaggedObject.FLAG_REJECTED) and ct.model_class() == Answer:
-            answer = flagged.content_object
-            QuestionReplyEvent(answer).fire(exclude=[answer.creator])
-
         flagged.status = new_status
         flagged.assignee = None
         flagged.assigned_timestamp = None
@@ -410,6 +403,10 @@ def update(request, flagged_object_id):
         ):
             answer = flagged.content_object
             if str(new_status) == str(FlaggedObject.FLAG_REJECTED):
+                # If the answer is marked as spam (and we are unmarking it),
+                # fire a notification.
+                if answer.is_spam:
+                    QuestionReplyEvent(answer).fire(exclude=[answer.creator, request.user])
                 answer.is_spam = False
                 answer.marked_as_spam = None
                 answer.marked_as_spam_by = None
