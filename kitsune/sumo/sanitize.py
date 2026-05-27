@@ -87,11 +87,24 @@ RESTRICTED_HTML_TAGS = {
     "br",
     "code",
     "em",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
     "i",
     "li",
     "ol",
     "pre",
     "strong",
+    "table",
+    "tbody",
+    "td",
+    "tfoot",
+    "th",
+    "thead",
+    "tr",
     "ul",
     "p",
 }
@@ -99,6 +112,8 @@ RESTRICTED_HTML_ATTRIBUTES = {
     "a": ["href", "title", "rel"],
     "abbr": ["title"],
     "acronym": ["title"],
+    "td": ["colspan", "rowspan"],
+    "th": ["colspan", "rowspan", "scope"],
 }
 
 URL_LIKE_ATTRS = frozenset(
