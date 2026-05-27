@@ -201,6 +201,34 @@ class UserProfileTests(TestCase):
         self.assertEqual(1, KBForumThread.objects.filter(creator=other_user).count())
         self.assertEqual(1, KBForumPost.objects.filter(creator=other_user).count())
 
+    def test_discuss_page_renders_after_spam_user_replied(self):
+        """Regression: deactivating a user whose reply was a thread's last_post
+        must not leave Thread.last_post dangling — /discuss would 500 on
+        thread.last_post.get_absolute_url(). See mozilla/sumo#3055."""
+        self.client.login(username=self.user.username, password="testpass")
+        add_permission(self.user, Profile, "deactivate_users")
+
+        thread_starter = UserFactory()
+        spam_user = UserFactory()
+
+        thread = KBForumThreadFactory(creator=thread_starter)
+        thread.new_post(creator=thread_starter, content="starter")
+        thread.new_post(creator=spam_user, content="reply")
+        thread.refresh_from_db()
+        self.assertEqual(spam_user, thread.last_post.creator)
+
+        url = reverse("users.deactivate-spam", locale="en-US")
+        self.assertEqual(302, self.client.post(url, {"user_id": spam_user.id}).status_code)
+
+        thread.refresh_from_db()
+        self.assertIsNotNone(thread.last_post)
+        self.assertEqual(thread_starter, thread.last_post.creator)
+
+        discuss_url = reverse(
+            "wiki.discuss.threads", args=[thread.document.slug], locale="en-US"
+        )
+        self.assertEqual(200, self.client.get(discuss_url).status_code)
+
     def test_deactivate_without_spam_preserves_forum_content(self):
         """Test deactivating a user without mark_spam=True preserves forum content."""
         self.client.login(username=self.user.username, password="testpass")

@@ -195,13 +195,17 @@ def deactivate(request, mark_spam=False):
     if mark_spam:
         mark_content_as_spam(user, request.user)
 
-        # We will delete kbforums posts and threads
-        KBForumThread.objects.filter(creator=user).delete()
-        KBForumPost.objects.filter(creator=user).delete()
+        # Iterate so model delete() overrides run and keep
+        # Thread.last_post / Forum.last_post consistent.
+        for kb_thread in KBForumThread.objects.filter(creator=user):
+            kb_thread.delete()
+        for kb_post in KBForumPost.objects.filter(creator=user):
+            kb_post.delete()
 
-        # We will delete forum posts and threads
-        Thread.objects.filter(creator=user).delete()
-        Post.objects.filter(author=user).delete()
+        for thread in Thread.objects.filter(creator=user):
+            thread.delete()
+        for post in Post.objects.filter(author=user):
+            post.delete()
 
     return HttpResponseRedirect(profile_url(user))
 
