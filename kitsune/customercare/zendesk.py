@@ -191,12 +191,14 @@ class ZendeskClient:
         """Fetch all comments for a ticket from Zendesk."""
         return list(self.client.tickets.comments(ticket=ticket_id))
 
-    def add_ticket_comment(self, user, ticket_id, comment_body, public=True):
+    def add_ticket_comment(self, user, ticket_id, comment_body, public=True, status=None):
         """Add a comment to a ticket in Zendesk.
 
         The comment will be attributed to the user's corresponding Zendesk user,
         which will be created if the user doesn't already have one. The user must
         be authenticated.
+
+        If a status is given, the ticket's status is updated in the same call.
         """
         if not (user and user.is_authenticated):
             raise ValueError("Anonymous users are not allowed to comment.")
@@ -207,6 +209,8 @@ class ZendeskClient:
             author_id = self.create_user(user).id
 
         ticket = Ticket(id=ticket_id)
+        if status:
+            ticket.status = status
         ticket.comment = ZendeskComment(
             author_id=int(author_id),
             body=comment_body,

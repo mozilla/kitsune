@@ -435,22 +435,28 @@ class PostReplyToZendeskTests(TestCase):
     def _apply(self):
         return post_reply_to_zendesk.apply(kwargs={"ticket_id": self.ticket.id}, throw=False)
 
-    @patch("kitsune.customercare.tasks.ZendeskClient")
-    def test_happy_path_posts_to_zendesk_syncs_and_clears_pending(self, mock_client_cls):
-        updated_at = timezone.now()
-        audit_response = MagicMock()
-        audit_response.ticket.id = 987
-        audit_response.ticket.updated_at = str(updated_at)
-        audit_response.audit.events = [
+    def _audit(self, *, status="open", comment_id=42, updated_at=None):
+        audit = MagicMock()
+        audit.ticket.id = 987
+        audit.ticket.status = status
+        audit.ticket.updated_at = str(updated_at or timezone.now())
+        audit.audit.events = [
             {
                 "type": "Comment",
-                "id": 42,
+                "id": comment_id,
                 "body": "hello",
                 "html_body": "<p>hello</p>",
                 "author_id": 555,
             },
         ]
-        mock_client_cls.return_value.add_ticket_comment.return_value = audit_response
+        return audit
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_happy_path_posts_to_zendesk_syncs_and_clears_pending(self, mock_client_cls):
+        updated_at = timezone.now()
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(
+            updated_at=updated_at
+        )
 
         self._apply()
 
@@ -459,6 +465,7 @@ class PostReplyToZendeskTests(TestCase):
             ticket_id=987,
             comment_body="hello",
             public=True,
+            status=None,
         )
 
         self.ticket.refresh_from_db()
@@ -470,6 +477,67 @@ class PostReplyToZendeskTests(TestCase):
         self.assertTrue(comment["public"])
         self.assertEqual({"name": self.user.profile.display_name, "id": 555}, comment["author"])
         self.assertEqual(updated_at, self.ticket.zd_updated_at)
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_reopens_pending_ticket(self, mock_client_cls):
+        """Reply to a pending ticket: send status=open to Zendesk and mirror locally."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_PENDING
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="open")
+
+        self._apply()
+
+        _, kwargs = mock_client_cls.return_value.add_ticket_comment.call_args
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, kwargs["status"])
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_reopens_solved_ticket(self, mock_client_cls):
+        """Reply to a solved ticket: send status=open to Zendesk and mirror locally."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_SOLVED
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="open")
+
+        self._apply()
+
+        _, kwargs = mock_client_cls.return_value.add_ticket_comment.call_args
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, kwargs["status"])
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_does_not_reopen_hold_ticket(self, mock_client_cls):
+        """Hold means the agent is parked on a third-party blocker. End-user reply should not override that."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_HOLD
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="hold")
+
+        self._apply()
+
+        _, kwargs = mock_client_cls.return_value.add_ticket_comment.call_args
+        self.assertIsNone(kwargs["status"])
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_HOLD, self.ticket.zd_status)
+
+    @patch("kitsune.customercare.tasks.ZendeskClient")
+    def test_does_not_reopen_new_ticket(self, mock_client_cls):
+        """New means no agent has engaged yet. End-user reply doesn't change that."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_NEW
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="new")
+
+        self._apply()
+
+        _, kwargs = mock_client_cls.return_value.add_ticket_comment.call_args
+        self.assertIsNone(kwargs["status"])
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_NEW, self.ticket.zd_status)
 
     @patch("kitsune.customercare.tasks.ZendeskClient")
     def test_api_error_marks_failed_and_reraises(self, mock_client_cls):
