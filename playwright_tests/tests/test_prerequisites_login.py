@@ -27,7 +27,7 @@ def test_create_user_sessions_for_test_accounts(page: Page):
 def test_new_account_creation(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
-    username, password = restmail_test_account_creation
+    username, password, _ = restmail_test_account_creation()
 
     with check, allure.step("Verifying that the correct username is displayed inside the"
                             " top-navbar and the correct user message banner is displayed"):

@@ -1,5 +1,7 @@
 import datetime
+import random
 import re
+import string
 
 import allure
 import pytest
@@ -9,6 +11,7 @@ from pytest_check import check
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
+from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.messages.my_profile_pages_messages.edit_my_profile_page_messages import (
     EditMyProfilePageMessages,
 )
@@ -29,7 +32,7 @@ def _submit_firefox_question(utilities: Utilities, sumo_pages: SumoPages) -> dic
     )
 
 
-# C891529
+# C891529, C1491020
 @pytest.mark.editUserProfileTests
 def test_username_field_is_automatically_populated(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -47,7 +50,7 @@ def test_username_field_is_automatically_populated(page: Page, create_user_facto
             sumo_pages.top_navbar.get_text_of_logged_in_username())
 
 
-# C1491017, C1491019
+# C1491017, C1491019, C1491022
 @pytest.mark.editUserProfileTests
 def test_edit_profile_field_validation_with_symbols(page: Page, create_user_factory):
     utilities = Utilities(page)
@@ -557,60 +560,6 @@ def test_edit_user_profile_button_is_not_displayed_for_non_admin_users(page: Pag
         expect(sumo_pages.edit_my_profile_page.edit_my_profile_edit_input_form).to_be_hidden()
 
 
-# T5697928
-@pytest.mark.smokeTest
-@pytest.mark.editUserProfileTests
-def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: Page,
-                                                                          create_user_factory):
-    utilities = Utilities(page)
-    sumo_pages = SumoPages(page)
-    test_user = create_user_factory()
-    test_user_two = create_user_factory()
-
-    with allure.step(f"Signing in with {test_user['username']} user account"):
-        utilities.start_existing_session(cookies=test_user)
-
-    with check, allure.step("Accessing another user profile and verifying that the 'Report Abuse' "
-                            "option is displayed"):
-        utilities.navigate_to_link(
-            MyProfileMessages.get_my_profile_stage_url(test_user_two["username"])
-        )
-        expect(sumo_pages.my_profile_page.report_abuse_profile_option).to_be_visible()
-
-    with check, allure.step("Clicking on the 'Report Abuse' option and verifying that the report "
-                            "abuse panel is displayed"):
-        sumo_pages.my_profile_page.click_on_report_abuse_option()
-        expect(sumo_pages.my_profile_page.report_abuse_panel).to_be_visible()
-
-    with check, allure.step("Closing the report abuse panel and verifying that the report user "
-                            "panel is no longer displayed"):
-        sumo_pages.my_profile_page.click_on_report_abuse_close_button()
-        expect(sumo_pages.my_profile_page.report_abuse_panel).to_be_hidden()
-
-    with allure.step("Signing out and verifying that the 'Report Abuse' option is not "
-                     "displayed on user profiles"):
-        utilities.delete_cookies()
-        expect(sumo_pages.my_profile_page.report_abuse_profile_option).to_be_hidden()
-
-
-# T5697930
-@pytest.mark.editUserProfileTests
-def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(page: Page,
-                                                                             create_user_factory):
-    utilities = Utilities(page)
-    sumo_pages = SumoPages(page)
-    test_user = create_user_factory()
-
-    with allure.step("Accessing a user profile"):
-        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
-            test_user["username"]))
-
-    with allure.step("Clicking on the 'Private Message' button and verifying that the non-signed "
-                     "in user is redirected to the fxa page"):
-        sumo_pages.my_profile_page.click_on_private_message_button()
-        expect(sumo_pages.auth_page.continue_with_firefox_accounts_button).to_be_visible()
-
-
 # C916055, C916054
 @pytest.mark.smokeTest
 @pytest.mark.editUserProfileTests
@@ -651,6 +600,59 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
         expect(sumo_pages.my_profile_page.deactivate_this_user_button).to_be_visible()
         expect(sumo_pages.my_profile_page.deactivate_this_user_and_mark_all_content_as_spam
                ).to_be_visible()
+
+
+# C2778035
+@pytest.mark.editUserProfileTests
+def test_deactivate_this_user_and_mark_all_content_as_spam_kb_threads(page: Page,
+                                                                      create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    staff_user = utilities.username_extraction_from_email(utilities.staff_user)
+
+    with allure.step("Signing in with an admin user and creating a new kb article"):
+        utilities.start_existing_session(session_file_name=staff_user)
+        article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
+            approve_first_revision=True)
+
+    with allure.step("Signing in with a normal test user"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Creating a new kb article discussion thread"):
+        kb_article_discussion_2 = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
+
+    with allure.step("Creating a new kb article discussion thread and leaving a reply to the "
+                     "thread with a different user"):
+        kb_article_discussion_3 = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
+        utilities.start_existing_session(session_file_name=staff_user)
+        sumo_pages.kb_article_thread_flow.post_reply_to_thread("Test thread reply")
+
+    with allure.step("Navigating to the normal user account and deactivating the user via the "
+                     "'deactivate this user and mark all content as spam' option"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
+            test_user["username"]))
+        sumo_pages.my_profile_page.click_deactivate_this_user_and_mark_all_content_as_spam()
+
+    with check, allure.step("Navigating to the kb article discussions page and verifying that:"
+                            "1. The Kb discussion thread created by the deleted user and which "
+                            "contained no replies was deleted."
+                            "2. The kb discussion thread created by the deleted user and which"
+                            " contained a reply was deleted."):
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(kb_article_discussion_2["thread_url"])
+        response = navigation_info.value
+        assert response.status == 404
+
+        with page.expect_navigation() as navigation_info:
+            utilities.navigate_to_link(kb_article_discussion_3["thread_url"])
+        response = navigation_info.value
+        assert response.status == 404
+
+    with allure.step("Deleting the kb article"):
+        utilities.navigate_to_link(article["article_url"])
+        sumo_pages.kb_article_deletion_flow.delete_kb_article()
+
 
 
 # C2189013
@@ -762,3 +764,57 @@ def test_close_account_and_delete_profile_information(page:Page, create_user_fac
         expect(page).to_have_url(re.compile(r".*close_account.*"))
         utilities.navigate_to_homepage()
         expect(sumo_pages.top_navbar.signin_signup_button).to_be_visible()
+
+# C2189014
+@pytest.mark.editUserProfileTests
+def test_preferred_language_can_be_set(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+
+    with allure.step("Signing in to SUMO"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Navigating to the Edit Profile page and changing the preferred language"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
+        sumo_pages.edit_my_profile_page.select_preferred_language_dropdown_option_by_value("ro")
+        sumo_pages.edit_my_profile_page.click_update_my_profile_button()
+
+    with allure.step("Navigating to the SUMO homepage without including the locale inside the "
+                     "request and verifying that the user is automatically redirected to the 'ro' "
+                     "locale."):
+        utilities.navigate_to_link(HomepageMessages.STAGE_HOMEPAGE_URL)
+        expect(page).to_have_url(re.compile(".*/ro.*"))
+
+
+# C1491460
+@pytest.mark.editUserProfileTests
+def test_username_can_be_reused_after_sumo_account_deletion(page: Page,
+                                                            restmail_test_account_creation):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    username = 'Test'.join(random.choice(
+        string.ascii_lowercase + string.digits) for _ in range(3)) + "@restmail.net"
+
+    username, password, _ = restmail_test_account_creation(username=username)
+
+    with allure.step("Verify that we are signed in with the correct user"):
+        utilities.wait_for_url_to_be(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US, 20000)
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(
+            utilities.username_extraction_from_email(username)
+        )
+
+    with allure.step("Deleting the sumo account"):
+        sumo_pages.edit_profile_flow.close_account()
+
+    with allure.step("Signing back to SUMO using the same FxA account and verifying that the "
+                     "username can be reused"):
+        sumo_pages.top_navbar.click_on_sumo_nav_logo()
+        sumo_pages.top_navbar.click_on_signin_signup_button()
+        sumo_pages.auth_flow_page.login_with_existing_session()
+
+        utilities.wait_for_url_to_be(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US, 20000)
+        expect(sumo_pages.top_navbar.signed_in_username).to_have_text(
+            utilities.username_extraction_from_email(username)
+        )
+

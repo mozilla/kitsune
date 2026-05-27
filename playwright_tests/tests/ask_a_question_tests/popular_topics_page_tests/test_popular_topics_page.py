@@ -66,6 +66,7 @@ def test_learn_more_redirect(page: Page):
 def test_aaq_redirect(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    restmail_test_account_creation()
     utilities.delete_cookies()
 
     with (allure.step("Navigating to product topics pages")):

@@ -101,6 +101,7 @@ def test_popular_topics_redirect(page: Page):
 def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    restmail_test_account_creation()
 
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):
@@ -141,6 +142,7 @@ def test_ask_now_widget_redirect(page: Page, restmail_test_account_creation):
 def test_contact_support_widget_redirect(page: Page, restmail_test_account_creation):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
+    restmail_test_account_creation()
 
     with allure.step("Accessing the contact support page via the top navbar Get Help > "
                      "Browse All products"):

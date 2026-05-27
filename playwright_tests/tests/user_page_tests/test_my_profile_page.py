@@ -306,3 +306,94 @@ def test_accounts_with_symbols_are_getting_a_corresponding_valid_username(page: 
         sumo_pages.top_navbar.click_on_edit_profile_option()
         expect(sumo_pages.edit_my_profile_page.username_input_field).to_have_value(
             test_user["username"])
+
+
+# C2094290, C916053
+@pytest.mark.userProfile
+@pytest.mark.parametrize("report_type", ['Spam or other unrelated content',
+                                         'Inappropriate language/dialog', 'Abusive content',
+                                         'Other (please specify)'])
+def test_report_user_functionality(page: Page, create_user_factory, report_type):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory()
+    test_user_three = create_user_factory(groups=["Forum Moderators", "forum-contributors"])
+    report_details = 'This is just a test report'
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with allure.step(f"Navigating to the second user and reporting the user as {report_type}"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
+            test_user_two["username"]))
+        sumo_pages.user_profile_flow.report_user_profile(report_reason=report_type,
+                                                         report_details=report_details)
+
+    with allure.step("Signing in with the forum moderator and navigating to the /flagged page"):
+        utilities.start_existing_session(cookies=test_user_three)
+        sumo_pages.top_navbar.click_on_moderate_forum_content_option()
+
+    with check, allure.step("Verifying that the correct flagg information is displayed"):
+        expect(sumo_pages.moderate_forum_content_page.profile_flagged_ticket(
+            test_user_two["username"])).to_be_visible()
+        expect(sumo_pages.moderate_forum_content_page.profile_flagged_reason(
+            test_user_two["username"])).to_have_text(
+            f"Flagged Users | profile (Reason: {report_type})")
+        expect(sumo_pages.moderate_forum_content_page.profile_flagged_additional_notes(
+            test_user_two["username"])).to_have_text(
+            f"Additional notes: {report_details}")
+
+
+# C2094290
+@pytest.mark.smokeTest
+@pytest.mark.userProfile
+def test_report_user_is_displayed_and_accessible_for_signed_in_users_only(page: Page,
+                                                                          create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+    test_user_two = create_user_factory()
+
+    with allure.step(f"Signing in with {test_user['username']} user account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    with check, allure.step("Accessing another user profile and verifying that the 'Report Abuse' "
+                            "option is displayed"):
+        utilities.navigate_to_link(
+            MyProfileMessages.get_my_profile_stage_url(test_user_two["username"])
+        )
+        expect(sumo_pages.my_profile_page.report_abuse_profile_option).to_be_visible()
+
+    with check, allure.step("Clicking on the 'Report Abuse' option and verifying that the report "
+                            "abuse panel is displayed"):
+        sumo_pages.my_profile_page.click_on_report_abuse_option()
+        expect(sumo_pages.my_profile_page.report_abuse_panel).to_be_visible()
+
+    with check, allure.step("Closing the report abuse panel and verifying that the report user "
+                            "panel is no longer displayed"):
+        sumo_pages.my_profile_page.click_on_report_abuse_close_button()
+        expect(sumo_pages.my_profile_page.report_abuse_panel).to_be_hidden()
+
+    with allure.step("Signing out and verifying that the 'Report Abuse' option is not "
+                     "displayed on user profiles"):
+        utilities.delete_cookies()
+        expect(sumo_pages.my_profile_page.report_abuse_profile_option).to_be_hidden()
+
+
+# C2108841
+@pytest.mark.userProfile
+def test_private_message_button_redirects_signed_out_users_to_fxa_login_flow(page: Page,
+                                                                             create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory()
+
+    with allure.step("Accessing a user profile"):
+        utilities.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(
+            test_user["username"]))
+
+    with allure.step("Clicking on the 'Private Message' button and verifying that the non-signed "
+                     "in user is redirected to the fxa page"):
+        sumo_pages.my_profile_page.click_on_private_message_button()
+        expect(sumo_pages.auth_page.continue_with_firefox_accounts_button).to_be_visible()
