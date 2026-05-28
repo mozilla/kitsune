@@ -186,11 +186,21 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
             pending.last_attempted_at = timezone.now()
             pending.save(update_fields=["last_attempted_at"])
 
+        # Zendesk automatically triggers a reopen only when the comment author
+        # is the same as the API user, which is never true in our case, so we
+        # take care of that here.
+        new_status = (
+            SupportTicket.ZD_STATUS_OPEN
+            if pending.ticket.zd_status
+            in {SupportTicket.ZD_STATUS_PENDING, SupportTicket.ZD_STATUS_SOLVED}
+            else None
+        )
         ticket_audit = ZendeskClient().add_ticket_comment(
             user=user,
             ticket_id=int(pending.ticket.zendesk_ticket_id),
             comment_body=pending.payload,
             public=True,
+            status=new_status,
         )
     except Exception:
         log.exception(f"Failed to post reply for ticket id {ticket_id}")
@@ -223,6 +233,11 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                 ticket = SupportTicket.objects.select_for_update().get(id=ticket_id)
             except SupportTicket.DoesNotExist:
                 return
+
+            ticket.zd_status = ticket_audit.ticket.status
+            ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
+            update_fields = ["zd_status", "zd_updated_at"]
+
             new_comment_id = new_comment["id"]
             if not any(c.get("id") == new_comment_id for c in ticket.comments):
                 ticket.comments.append(
@@ -237,8 +252,9 @@ def post_reply_to_zendesk(ticket_id: int) -> None:
                         },
                     }
                 )
-                ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
-                ticket.save(update_fields=["comments", "zd_updated_at"])
+                update_fields.append("comments")
+
+            ticket.save(update_fields=update_fields)
     finally:
         pending.delete()
 

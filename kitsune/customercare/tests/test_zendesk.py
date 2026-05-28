@@ -430,6 +430,33 @@ class ZendeskClientTests(TestCase):
         self.assertEqual(ticket_arg.comment.author_id, 789)
 
     @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_without_status_does_not_set_ticket_status(self, mock_zenpy):
+        """Test that add_ticket_comment leaves ticket status unset when status=None."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        self.user.profile.zendesk_id = "789"
+
+        client = ZendeskClient()
+        client.add_ticket_comment(self.user, 123, "Hello", status=None)
+
+        ticket_arg = mock_client.tickets.update.call_args[0][0]
+        self.assertIsNone(ticket_arg.status)
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_add_ticket_comment_with_status_sets_ticket_status(self, mock_zenpy):
+        """Test that add_ticket_comment sets ticket status when status is provided."""
+        mock_client = Mock()
+        mock_zenpy.return_value = mock_client
+        self.user.profile.zendesk_id = "789"
+
+        client = ZendeskClient()
+        client.add_ticket_comment(self.user, 123, "Hello", status="open")
+
+        ticket_arg = mock_client.tickets.update.call_args[0][0]
+        self.assertEqual(ticket_arg.status, "open")
+        self.assertEqual(ticket_arg.comment.body, "Hello")
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
     def test_add_ticket_comment_creates_zendesk_user_if_missing(self, mock_zenpy):
         """Test that add_ticket_comment creates a Zendesk user when zendesk_id is missing."""
         mock_client = Mock()
