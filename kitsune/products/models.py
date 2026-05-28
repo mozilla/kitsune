@@ -141,6 +141,11 @@ class Topic(BaseProductTopic):
     in_nav = models.BooleanField(
         default=False, help_text="Whether this topic is shown in navigation menus."
     )
+    legacy_tag = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Legacy Zendesk bucket (accounts/technical/payments). Set on t1 roots.",
+    )
 
     class Meta:
         ordering = ["title", "display_order"]
@@ -477,6 +482,14 @@ class ZendeskTopic(ModelBase):
     form_title = models.CharField(
         max_length=255, help_text="User-facing topic text shown in the dropdown"
     )
+    topic = models.ForeignKey(
+        Topic,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="zendesk_topics",
+        help_text="Linked taxonomy topic. Source of truth for tier_tags and legacy_tag.",
+    )
     legacy_tag = models.CharField(max_length=100, blank=True, help_text="Legacy Zendesk tag")
     tier_tags = models.JSONField(
         default=list,
@@ -484,6 +497,11 @@ class ZendeskTopic(ModelBase):
     )
     automation_tag = models.CharField(
         max_length=100, blank=True, null=True, help_text="Automation tag for Zendesk workflows"
+    )
+    automation_tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of automation tags for Zendesk workflows.",
     )
     segmentation_tag = models.CharField(
         max_length=100, blank=True, null=True, help_text="Segmentation tag for analytics"
@@ -539,6 +557,4 @@ class ZendeskTopicConfiguration(ModelBase):
         ]
 
     def __str__(self):
-        return (
-            f"{self.zendesk_config.name}: {self.zendesk_topic.form_title} (order {self.display_order})"
-        )
+        return f"{self.zendesk_config.name}: {self.zendesk_topic.form_title} (order {self.display_order})"
