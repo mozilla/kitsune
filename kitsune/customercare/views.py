@@ -62,7 +62,7 @@ def ticket_detail(request, username, ticket_id):
     # user is submitting; an unbound HTMX request is a background refresh.
     is_polling = is_htmx and not form.is_bound
 
-    if form.is_valid():
+    if form.is_valid() and (ticket.zd_status != SupportTicket.ZD_STATUS_CLOSED):
         new_body = form.cleaned_data["body"]
         should_post_reply = False
         with transaction.atomic():
