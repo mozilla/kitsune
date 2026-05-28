@@ -168,7 +168,10 @@
           "link_detail": "{{ product.slug + '/' + topic.slug }}"
         }'>
         <span class="mobile-only">{{ _('All') }}</span>
-        <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
+        {# L10n: Deprecated. Label for a tab listing all articles for the selected topic. Displayed on topic pages, such as https://support.mozilla.org/products/firefox/browse #}
+        {% set deprecated_all_desktop = _('All articles and threads') %}
+        {# L10n: Label for a tab listing all articles for the selected topic. Displayed on topic pages, such as https://support.mozilla.org/products/firefox/browse #}
+        <span class="hide-on-mobile">{{ _('All articles') }}</span>
       </a>
     </li>
     {% for subtopic in subtopics %}
