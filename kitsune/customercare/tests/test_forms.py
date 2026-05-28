@@ -35,7 +35,7 @@ class ZendeskFormTests(TestCase):
         self.vpn_zendesk = ZendeskConfigFactory(name="Mozilla VPN Support")
         vpn_topic1 = ZendeskTopicFactory(
             slug="vpn-connection-issues",
-            topic="I can't connect to Mozilla VPN",
+            form_title="I can't connect to Mozilla VPN",
             legacy_tag="technical",
             tier_tags=[
                 "t1-performance-and-connectivity",
@@ -53,7 +53,7 @@ class ZendeskFormTests(TestCase):
         )
         vpn_topic2 = ZendeskTopicFactory(
             slug="vpn-server-selection",
-            topic="I can't choose a VPN location",
+            form_title="I can't choose a VPN location",
             legacy_tag="technical",
             tier_tags=[
                 "t1-performance-and-connectivity",
@@ -69,7 +69,7 @@ class ZendeskFormTests(TestCase):
         )
         vpn_topic3 = ZendeskTopicFactory(
             slug="payments",
-            topic="I need help with a billing or subscription question",
+            form_title="I need help with a billing or subscription question",
             legacy_tag="payments",
             tier_tags=["t1-billing-and-subscriptions"],
             automation_tag="",
@@ -89,7 +89,7 @@ class ZendeskFormTests(TestCase):
         self.relay_zendesk = ZendeskConfigFactory(name="Firefox Relay Support")
         relay_topic1 = ZendeskTopicFactory(
             slug="relay-email-forwarding",
-            topic="I'm not receiving emails to my Relay mask",
+            form_title="I'm not receiving emails to my Relay mask",
             legacy_tag="technical",
             tier_tags=["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
             segmentation_tag="seg-relay-no-fwd-deliver",
@@ -102,7 +102,7 @@ class ZendeskFormTests(TestCase):
         )
         relay_topic2 = ZendeskTopicFactory(
             slug="relay-domain-change",
-            topic="I want to change my Relay email domain",
+            form_title="I want to change my Relay email domain",
             legacy_tag="technical",
             tier_tags=["t1-privacy-and-security", "t2-masking", "t3-email-masking"],
             segmentation_tag="seg-relay-chg-domain",
@@ -121,7 +121,7 @@ class ZendeskFormTests(TestCase):
         self.accounts_zendesk = ZendeskConfigFactory(name="Mozilla Account Support")
         accounts_topic1 = ZendeskTopicFactory(
             slug="fxa-2fa-lockout",
-            topic="My security code isn't working or is lost",
+            form_title="My security code isn't working or is lost",
             legacy_tag="accounts",
             tier_tags=[
                 "t1-passwords-and-sign-in",
@@ -138,7 +138,7 @@ class ZendeskFormTests(TestCase):
         )
         accounts_topic2 = ZendeskTopicFactory(
             slug="fxa-reset-password",
-            topic="I forgot my password",
+            form_title="I forgot my password",
             legacy_tag="accounts",
             tier_tags=["t1-passwords-and-sign-in", "t2-reset-passwords"],
             automation_tag="ssa-emailverify-automation",

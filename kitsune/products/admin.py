@@ -192,10 +192,10 @@ class ZendeskTopicConfigurationInline(admin.TabularInline):
 
 
 class ZendeskTopicAdmin(admin.ModelAdmin):
-    list_display = ("topic", "slug", "config_count")
-    list_display_links = ("topic", "slug")
-    search_fields = ("topic", "slug")
-    prepopulated_fields = {"slug": ("topic",)}
+    list_display = ("form_title", "slug", "config_count")
+    list_display_links = ("form_title", "slug")
+    search_fields = ("form_title", "slug")
+    prepopulated_fields = {"slug": ("form_title",)}
 
     @admin.display(description="# Configs")
     def config_count(self, obj):
@@ -396,7 +396,7 @@ class ProductSupportConfigAdmin(admin.ModelAdmin):
                 else ""
             )
             topic_items.append(
-                f"<li><strong>{topic.slug}</strong>: {topic.topic}{loginless_badge}</li>"
+                f"<li><strong>{topic.slug}</strong>: {topic.form_title}{loginless_badge}</li>"
             )
 
         return format_html(
@@ -410,7 +410,7 @@ class ZendeskTopicConfigurationAdmin(admin.ModelAdmin):
     list_filter = ("zendesk_config", "loginless_only")
     list_editable = ("display_order", "loginless_only")
     autocomplete_fields = ("zendesk_config", "zendesk_topic")
-    search_fields = ("zendesk_config__name", "zendesk_topic__topic", "zendesk_topic__slug")
+    search_fields = ("zendesk_config__name", "zendesk_topic__form_title", "zendesk_topic__slug")
 
 
 admin.site.register(ZendeskTopic, ZendeskTopicAdmin)

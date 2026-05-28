@@ -474,7 +474,7 @@ class ZendeskTopic(ModelBase):
     slug = models.SlugField(
         max_length=100, unique=True, help_text="Globally unique identifier for this topic"
     )
-    topic = models.CharField(
+    form_title = models.CharField(
         max_length=255, help_text="User-facing topic text shown in the dropdown"
     )
     legacy_tag = models.CharField(max_length=100, blank=True, help_text="Legacy Zendesk tag")
@@ -494,7 +494,7 @@ class ZendeskTopic(ModelBase):
         ordering = ["slug"]
 
     def __str__(self):
-        return f"{self.topic} ({self.slug})"
+        return f"{self.form_title} ({self.slug})"
 
     @property
     def tags_dict(self):
@@ -540,5 +540,5 @@ class ZendeskTopicConfiguration(ModelBase):
 
     def __str__(self):
         return (
-            f"{self.zendesk_config.name}: {self.zendesk_topic.topic} (order {self.display_order})"
+            f"{self.zendesk_config.name}: {self.zendesk_topic.form_title} (order {self.display_order})"
         )

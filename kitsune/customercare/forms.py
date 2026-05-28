@@ -146,7 +146,7 @@ class ZendeskForm(forms.Form):
             category_choices = [(None, _lazy("Select a reason for contacting"))]
             for topic_config in topic_configs:
                 topic = topic_config.zendesk_topic
-                category_choices.append((topic.slug, topic.topic))
+                category_choices.append((topic.slug, topic.form_title))
 
             self.fields["category"].choices = category_choices
 
