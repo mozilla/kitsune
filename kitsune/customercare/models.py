@@ -3,12 +3,32 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.groups.models import GroupProfile
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.models import ModelBase
+
+
+class SupportTicketManager(models.Manager):
+    def accessible_to(self, user):
+        if not (user and user.is_authenticated):
+            return self.none()
+        if user.is_staff or user.is_superuser:
+            return self.all()
+
+        user_paths = list(
+            GroupProfile.objects.filter(group__user=user).values_list("path", flat=True)
+        )
+        accessible_orgs = [
+            gp
+            for gp in GroupProfile.objects.org_roots()
+            if any(p.startswith(gp.path) for p in user_paths) or gp.can_moderate_group(user)
+        ]
+        return self.filter(Q(user=user) | Q(org_group__in=accessible_orgs))
 
 
 class SupportTicket(ModelBase):
@@ -63,6 +83,20 @@ class SupportTicket(ModelBase):
     user = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="support_tickets"
     )
+    org_group = models.ForeignKey(
+        "groups.GroupProfile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="support_tickets",
+        db_index=True,
+        help_text=(
+            "Organization that owns this ticket for visibility purposes. Set "
+            "automatically at submission to the nearest ancestor GroupProfile "
+            "whose Group is in this product's hybrid_support_groups. Null means "
+            "a personal ticket — visible only to the submitter."
+        ),
+    )
     zendesk_tags = models.JSONField(default=list, blank=True)
     submission_status = models.CharField(
         max_length=20,
@@ -77,6 +111,8 @@ class SupportTicket(ModelBase):
     comments = models.JSONField(default=list, blank=True)
     internal_zd_tags = models.JSONField(default=list, blank=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    objects = SupportTicketManager()
 
     class Meta:
         ordering = ["-created"]

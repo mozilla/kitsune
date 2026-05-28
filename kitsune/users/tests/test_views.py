@@ -4,6 +4,7 @@ from textwrap import dedent
 from unittest import mock
 
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
@@ -12,9 +13,11 @@ from django.test.utils import override_settings
 from josepy import jwa, jwk, jws
 from pyquery import PyQuery as pq
 
+from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.forums.models import Post, Thread
 from kitsune.forums.tests import PostFactory, ThreadFactory
+from kitsune.groups.models import GroupProfile
 from kitsune.kbforums.models import Post as KBForumPost
 from kitsune.kbforums.models import Thread as KBForumThread
 from kitsune.kbforums.tests import (
@@ -25,6 +28,11 @@ from kitsune.kbforums.tests import (
 )
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
@@ -750,7 +758,9 @@ class QuestionsContributedTests(TestCase):
         self.owner = UserFactory()
         self.other = UserFactory()
         self.ticket = SupportTicketFactory(user=self.owner)
-        self.url = reverse("users.questions", locale="en-US", kwargs={"username": self.owner.username})
+        self.url = reverse(
+            "users.questions", locale="en-US", kwargs={"username": self.owner.username}
+        )
 
     def _get(self, user=None, channel=None):
         if user:
@@ -785,3 +795,58 @@ class QuestionsContributedTests(TestCase):
         response = self._get()
         self.assertEqual(200, response.status_code)
         self.assertNotContains(response, self.ticket.subject)
+
+
+class QuestionsContributedSidebarTests(TestCase):
+    """The 'Your company' sidebar widget on the user's own questions page."""
+
+    def setUp(self):
+        self.SupportTicket = SupportTicket
+
+        product = ProductFactory()
+        config = ProductSupportConfigFactory(
+            product=product, zendesk_config=ZendeskConfigFactory(name="zd")
+        )
+        root_group = Group.objects.create(name="enterprise")
+        root = GroupProfile.add_root(group=root_group, slug="enterprise")
+        c1_group = Group.objects.create(name="company1")
+        self.c1 = root.add_child(group=c1_group, slug="company1")
+        config.hybrid_support_groups.add(c1_group)
+
+        self.member = UserFactory(username="member")
+        self.member.groups.add(c1_group)
+        self.outsider = UserFactory(username="outsider")
+
+        SupportTicketFactory(
+            user=self.member,
+            product=product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+        )
+        SupportTicketFactory(
+            user=self.member,
+            product=product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_SOLVED,
+        )
+
+    def _url_for(self, user):
+        return reverse("users.questions", locale="en-US", kwargs={"username": user.username})
+
+    def test_widget_renders_for_org_member_own_page(self):
+        self.client.force_login(self.member)
+        response = self.client.get(self._url_for(self.member))
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, "company1")
+        self.assertContains(response, "Your company")
+
+    def test_widget_hidden_for_outsider(self):
+        self.client.force_login(self.outsider)
+        response = self.client.get(self._url_for(self.outsider))
+        self.assertNotContains(response, "Your company")
+
+    def test_widget_hidden_when_viewing_other_user(self):
+        """When you view someone else's profile, the widget should not show."""
+        self.client.force_login(self.outsider)
+        response = self.client.get(self._url_for(self.member))
+        self.assertNotContains(response, "Your company")

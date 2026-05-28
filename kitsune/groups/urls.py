@@ -11,6 +11,7 @@ group_patterns = [
     re_path(r"^remove-member/(?P<user_id>\d+)$", views.remove_member, name="groups.remove_member"),
     re_path(r"^add-leader$", views.add_leader, name="groups.add_leader"),
     re_path(r"^remove-leader/(?P<user_id>\d+)$", views.remove_leader, name="groups.remove_leader"),
+    re_path(r"^tickets$", views.tickets, name="groups.tickets"),
 ]
 
 urlpatterns = [

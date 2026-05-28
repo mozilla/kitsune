@@ -5,6 +5,11 @@ from django.contrib.auth.models import AnonymousUser, Group
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupFactory, GroupProfileFactory
+from kitsune.products.tests import (
+    ProductFactory,
+    ProductSupportConfigFactory,
+    ZendeskConfigFactory,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -1261,3 +1266,63 @@ class CanViewInactiveMembersTests(TestCase):
     def test_regular_member_cannot_view_inactive(self):
         """Regular (non-leader) members cannot see deactivated members."""
         self.assertFalse(self.root.can_view_inactive_members(self.regular_member))
+
+
+class OrgRootTests(TestCase):
+    def setUp(self):
+        root_group = Group.objects.create(name="firefox-enterprise")
+        self.root = GroupProfile.add_root(group=root_group, slug="firefox-enterprise")
+        self.root_leader = UserFactory(username="root-leader")
+        self.root.leaders.add(self.root_leader)
+
+        c1_group = Group.objects.create(name="company1")
+        self.c1 = self.root.add_child(group=c1_group, slug="company1")
+        c2_group = Group.objects.create(name="company2")
+        self.c2 = self.root.add_child(group=c2_group, slug="company2")
+
+        it_group = Group.objects.create(name="company1.IT")
+        self.c1_it = self.c1.add_child(group=it_group, slug="company1-it")
+
+        product = ProductFactory()
+        zd = ZendeskConfigFactory(name="zd")
+        config = ProductSupportConfigFactory(product=product, zendesk_config=zd)
+        config.hybrid_support_groups.add(c1_group)
+
+        self.c1_member = UserFactory(username="c1-member")
+        self.c1_member.groups.add(c1_group)
+        self.it_member = UserFactory(username="it-member")
+        self.it_member.groups.add(it_group)
+        self.c2_member = UserFactory(username="c2-member")
+        self.c2_member.groups.add(c2_group)
+        self.stranger = UserFactory(username="stranger")
+
+    def test_is_org_root_only_for_listed_group(self):
+        self.assertTrue(self.c1.is_org_root())
+        self.assertFalse(self.c2.is_org_root())
+        self.assertFalse(self.c1_it.is_org_root())
+        self.assertFalse(self.root.is_org_root())
+
+    def test_can_view_tickets_anonymous_denied(self):
+        self.assertFalse(self.c1.can_view_tickets(AnonymousUser()))
+        self.assertFalse(self.c1.can_view_tickets(None))
+
+    def test_direct_member_can_view(self):
+        self.assertTrue(self.c1.can_view_tickets(self.c1_member))
+
+    def test_descendant_member_can_view(self):
+        """An IT member can view company1's tickets via subtree membership."""
+        self.assertTrue(self.c1.can_view_tickets(self.it_member))
+
+    def test_sibling_company_member_cannot_view(self):
+        self.assertFalse(self.c1.can_view_tickets(self.c2_member))
+
+    def test_stranger_cannot_view(self):
+        self.assertFalse(self.c1.can_view_tickets(self.stranger))
+
+    def test_root_moderator_can_view(self):
+        """Root group leader can view any descendant org's tickets via moderation."""
+        self.assertTrue(self.c1.can_view_tickets(self.root_leader))
+
+    def test_staff_can_view(self):
+        staff_user = UserFactory(is_staff=True)
+        self.assertTrue(self.c1.can_view_tickets(staff_user))

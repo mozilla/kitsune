@@ -10,10 +10,37 @@ from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
+from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import ProductSupportConfig, Topic
+from kitsune.products.models import Product, ProductSupportConfig, Topic
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
+
+
+def _nearest_ancestor_org(user, candidates) -> GroupProfile | None:
+    if not (user and user.is_authenticated):
+        return None
+    user_paths = list(
+        GroupProfile.objects.filter(group__user=user).values_list("path", flat=True)
+    )
+    matches = [cp for cp in candidates if any(p.startswith(cp.path) for p in user_paths)]
+    if not matches:
+        return None
+    return max(matches, key=lambda cp: len(cp.path))
+
+
+def resolve_org_group(submitter, product: Product) -> GroupProfile | None:
+    config = ProductSupportConfig.objects.filter(
+        product=product, is_active=True, zendesk_config__isnull=False
+    ).first()
+    if not (config and config.hybrid_support_groups.exists()):
+        return None
+    candidates = list(GroupProfile.objects.filter(group__in=config.hybrid_support_groups.all()))
+    return _nearest_ancestor_org(submitter, candidates)
+
+
+def resolve_user_org_group(user) -> GroupProfile | None:
+    return _nearest_ancestor_org(user, list(GroupProfile.objects.org_roots()))
 
 
 def fetch_zendesk_ticket_data(zendesk_ticket_id: str):

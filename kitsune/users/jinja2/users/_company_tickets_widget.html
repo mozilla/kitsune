@@ -1,0 +1,19 @@
+{% if org_profile %}
+  <aside class="company-tickets-widget">
+    <h3 class="company-tickets-widget--title">{{ _('Your company') }}</h3>
+    <p class="company-tickets-widget--name">{{ org_profile.group.name }}</p>
+    <dl class="company-tickets-widget--counts">
+      <div>
+        <dt>{{ _('Active') }}</dt>
+        <dd>{{ org_active_count }}</dd>
+      </div>
+      <div>
+        <dt>{{ _('Solved') }}</dt>
+        <dd>{{ org_solved_count }}</dd>
+      </div>
+    </dl>
+    <a class="sumo-button secondary-button button-sm button-full-width" href="{{ url('groups.tickets', org_profile.slug) }}">
+      {{ _('All tickets') }} →
+    </a>
+  </aside>
+{% endif %}

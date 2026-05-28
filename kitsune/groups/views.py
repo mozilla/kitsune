@@ -5,17 +5,33 @@ from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
+from kitsune.customercare.models import SupportTicket
 from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.utils import create_image_thumbnail
+
+TICKET_STATUS_FILTERS = {
+    "active": {
+        "zd_status__in": (
+            SupportTicket.ZD_STATUS_NEW,
+            SupportTicket.ZD_STATUS_OPEN,
+            SupportTicket.ZD_STATUS_PENDING,
+            SupportTicket.ZD_STATUS_HOLD,
+        )
+    },
+    "all": {},
+    "solved": {
+        "zd_status__in": (SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED)
+    },
+}
 
 
 def _remove_group_member(profile, user, request, remove_from_group=True):
@@ -61,16 +77,16 @@ def list(request):
     path_to_id = {g.path: g.id for g in groups}
 
     visible_child_counts = Counter(
-        path_to_id[g.path[:-GroupProfile.steplen]]
+        path_to_id[g.path[: -GroupProfile.steplen]]
         for g in groups
-        if g.depth > 1 and g.path[:-GroupProfile.steplen] in path_to_id
+        if g.depth > 1 and g.path[: -GroupProfile.steplen] in path_to_id
     )
 
     for g in groups:
         count = visible_child_counts.get(g.id, 0)
         g.visible_numchild = count
         g.has_children = count > 0
-        g.parent_id = path_to_id.get(g.path[:-GroupProfile.steplen]) if g.depth > 1 else None
+        g.parent_id = path_to_id.get(g.path[: -GroupProfile.steplen]) if g.depth > 1 else None
 
     return render(request, "groups/list.html", {"groups": groups})
 
@@ -287,3 +303,51 @@ def join_contributors(request):
 def _get_group_profile_or_404(user, slug):
     """Get the GroupProfile visible to the given user and identified by the given slug."""
     return get_object_or_404(GroupProfile.objects.visible(user), slug=slug)
+
+
+@login_required
+def tickets(request, group_slug):
+    """Pool of Zendesk tickets owned by an org-root group's subtree."""
+    profile = _get_group_profile_or_404(request.user, group_slug)
+    if not profile.is_org_root():
+        raise Http404
+    if not profile.can_view_tickets(request.user):
+        raise PermissionDenied
+
+    status = request.GET.get("status", "active")
+    if status not in TICKET_STATUS_FILTERS:
+        status = "active"
+    member = request.GET.get("member") or ""
+
+    base_qs = SupportTicket.objects.filter(
+        org_group=profile, submission_status=SupportTicket.STATUS_SENT
+    ).select_related("user", "product")
+    by_status = {key: base_qs.filter(**flt) for key, flt in TICKET_STATUS_FILTERS.items()}
+    counts = {key: qs.count() for key, qs in by_status.items()}
+
+    qs = by_status[status]
+    if member:
+        qs = qs.filter(user__username=member)
+
+    members = (
+        User.objects.filter(support_tickets__org_group=profile).distinct().order_by("username")
+    )
+    ticket_page = paginate(request, qs.order_by("-zd_updated_at", "-created"), per_page=30)
+
+    template = (
+        "groups/includes/_tickets_content.html"
+        if request.headers.get("HX-Request")
+        else "groups/tickets.html"
+    )
+    return render(
+        request,
+        template,
+        {
+            "profile": profile,
+            "tickets": ticket_page,
+            "counts": counts,
+            "status": status,
+            "member_filter": member,
+            "members": members,
+        },
+    )

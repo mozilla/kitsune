@@ -43,6 +43,7 @@ from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
 from kitsune.community.utils import num_deleted_contributions
 from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.utils import resolve_user_org_group
 from kitsune.forums.models import Post, Thread
 from kitsune.kbadge.models import Award
 from kitsune.kbforums.models import Post as KBForumPost
@@ -240,11 +241,9 @@ def questions_contributed(request, username):
         raise Http404()
 
     if channel != "direct_support":
-        forum_questions = (
-            profile.user.questions
-            .select_related("solution", "product", "topic", "last_answer", "last_answer__creator")
-            .order_by("-created")
-        )
+        forum_questions = profile.user.questions.select_related(
+            "solution", "product", "topic", "last_answer", "last_answer__creator"
+        ).order_by("-created")
         if product_slug:
             forum_questions = forum_questions.filter(product__slug=product_slug)
         if topic_slug:
@@ -282,6 +281,25 @@ def questions_contributed(request, username):
 
     questions = paginate(request, combined)
 
+    org_profile = resolve_user_org_group(request.user) if is_owner else None
+    org_active_count = 0
+    org_solved_count = 0
+    if org_profile:
+        org_qs = SupportTicket.objects.filter(
+            org_group=org_profile, submission_status=SupportTicket.STATUS_SENT
+        )
+        org_active_count = org_qs.filter(
+            zd_status__in=(
+                SupportTicket.ZD_STATUS_NEW,
+                SupportTicket.ZD_STATUS_OPEN,
+                SupportTicket.ZD_STATUS_PENDING,
+                SupportTicket.ZD_STATUS_HOLD,
+            )
+        ).count()
+        org_solved_count = org_qs.filter(
+            zd_status__in=(SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED)
+        ).count()
+
     return render(
         request,
         "users/questions_contributed.html",
@@ -294,6 +312,9 @@ def questions_contributed(request, username):
             "topic_slug": topic_slug,
             "is_moderator": is_moderator,
             "user_has_spam_questions": user_has_spam_questions,
+            "org_profile": org_profile,
+            "org_active_count": org_active_count,
+            "org_solved_count": org_solved_count,
         },
     )
 
@@ -369,7 +390,7 @@ def edit_settings(request):
             # Uses ast.literal_eval to convert 'False' => False etc.
             # TODO: Make more resilient.
             initial[val["name"]] = literal_eval(val["value"])
-        except (SyntaxError, ValueError):
+        except SyntaxError, ValueError:
             # Attempted to convert the string value to a Python value
             # but failed so leave it a string.
             initial[val["name"]] = val["value"]

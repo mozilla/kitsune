@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import SuspiciousOperation
 from django.db import IntegrityError, transaction
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
@@ -39,13 +39,12 @@ def _ticket_needs_sync(ticket):
 @require_http_methods(["GET", "POST"])
 def ticket_detail(request, username, ticket_id):
     ticket = get_object_or_404(
-        SupportTicket.objects.select_related("product", "topic", "user"),
+        SupportTicket.objects.accessible_to(request.user).select_related(
+            "product", "topic", "user", "org_group"
+        ),
         id=ticket_id,
         user__username=username,
     )
-
-    if request.user.id != ticket.user_id:
-        raise Http404
 
     pending = ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
 

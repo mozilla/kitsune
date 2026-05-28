@@ -177,6 +177,19 @@ class GroupProfile(TreeModelBase):
         """Check if user can view this group based on visibility and isolation settings."""
         return self.__class__.objects.visible(user).filter(pk=self.pk).exists()
 
+    def is_org_root(self):
+        return self.group.hybrid_support_configs.exists()
+
+    def can_view_tickets(self, user):
+        if not (user and user.is_authenticated):
+            return False
+        if user.is_staff or user.is_superuser:
+            return True
+        if self.can_moderate_group(user):
+            return True
+        subtree = self.__class__.objects.filter(pk=self.pk) | self.get_descendants()
+        return subtree.filter(group__user=user).exists()
+
     def get_visible_children(self, user):
         """Return child groups visible to this user."""
         children = self.get_children()
