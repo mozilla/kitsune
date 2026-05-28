@@ -11,6 +11,7 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    TopicFactory,
     ZendeskConfigFactory,
     ZendeskTopicConfigurationFactory,
     ZendeskTopicFactory,
@@ -42,7 +43,7 @@ class ZendeskFormTests(TestCase):
                 "t2-connectivity",
                 "t3-connection-failure",
             ],
-            automation_tag="ssa-connection-issues-automation",
+            automation_tags=["ssa-connection-issues-automation"],
             segmentation_tag="",
         )
         ZendeskTopicConfigurationFactory(
@@ -72,7 +73,6 @@ class ZendeskFormTests(TestCase):
             form_title="I need help with a billing or subscription question",
             legacy_tag="payments",
             tier_tags=["t1-billing-and-subscriptions"],
-            automation_tag="",
             segmentation_tag="",
         )
         ZendeskTopicConfigurationFactory(
@@ -128,7 +128,7 @@ class ZendeskFormTests(TestCase):
                 "t2-two-factor-authentication",
                 "t3-two-factor-lockout",
             ],
-            automation_tag="ssa-2fa-automation",
+            automation_tags=["ssa-2fa-automation"],
         )
         ZendeskTopicConfigurationFactory(
             zendesk_config=self.accounts_zendesk,
@@ -141,7 +141,7 @@ class ZendeskFormTests(TestCase):
             form_title="I forgot my password",
             legacy_tag="accounts",
             tier_tags=["t1-passwords-and-sign-in", "t2-reset-passwords"],
-            automation_tag="ssa-emailverify-automation",
+            automation_tags=["ssa-emailverify-automation"],
         )
         ZendeskTopicConfigurationFactory(
             zendesk_config=self.accounts_zendesk,
@@ -279,6 +279,53 @@ class ZendeskFormTests(TestCase):
         submission = form.send(self.user, self.vpn_product)
 
         expected_tags = ["payments", "t1-billing-and-subscriptions"]
+
+        self.assertIsInstance(submission, SupportTicket)
+        self.assertEqual(submission.zendesk_tags, expected_tags)
+        self.assertEqual(submission.submission_status, SupportTicket.STATUS_PENDING)
+        mock_task.assert_called_once_with(submission.id)
+
+    @patch("kitsune.customercare.tasks.zendesk_submission_classifier.delay")
+    def test_send_derives_tags_from_linked_topic(self, mock_task):
+        """When a ZendeskTopic links to a Topic, tags derive from the Topic, not stored fields."""
+        root_topic = TopicFactory(
+            title="Billing and subscriptions",
+            slug="billing-and-subscriptions",
+            parent=None,
+            legacy_tag="payments",
+        )
+        linked_topic = ZendeskTopicFactory(
+            slug="linked-billing",
+            form_title="I need help with a billing or subscription question",
+            topic=root_topic,
+            # Stored fallbacks differ to prove the linked Topic wins.
+            legacy_tag="stale-legacy",
+            tier_tags=["stale-tier"],
+            automation_tags=["ssa-billing-automation"],
+            segmentation_tag="",
+        )
+        ZendeskTopicConfigurationFactory(
+            zendesk_config=self.vpn_zendesk,
+            zendesk_topic=linked_topic,
+            display_order=3,
+            loginless_only=False,
+        )
+
+        form = ZendeskForm(
+            data={
+                "email": "test@example.com",
+                "category": "linked-billing",
+                "subject": "Test subject",
+                "description": "Test description",
+            },
+            product=self.vpn_product,
+            user=self.user,
+        )
+
+        self.assertTrue(form.is_valid())
+        submission = form.send(self.user, self.vpn_product)
+
+        expected_tags = ["payments", "t1-billing-and-subscriptions", "ssa-billing-automation"]
 
         self.assertIsInstance(submission, SupportTicket)
         self.assertEqual(submission.zendesk_tags, expected_tags)

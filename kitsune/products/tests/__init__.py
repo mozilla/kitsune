@@ -96,7 +96,7 @@ class ZendeskTopicFactory(factory.django.DjangoModelFactory):
     form_title = FuzzyUnicode()
     legacy_tag = ""
     tier_tags: list[str] = []
-    automation_tag = ""
+    automation_tags: list[str] = []
     segmentation_tag = ""
 
 

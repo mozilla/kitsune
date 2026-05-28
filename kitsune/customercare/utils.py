@@ -1,18 +1,16 @@
-import re
-from typing import Any, cast
+from typing import Any
 
 import waffle
 from django.utils import timezone
 from zenpy.lib.exception import APIException
 
-from kitsune.customercare import ZENDESK_CATEGORIES, ZENDESK_LEGACY_MAPPING
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.flagit.models import FlaggedObject
 from kitsune.groups.models import GroupProfile
 from kitsune.llm.spam.classifier import ModerationAction
-from kitsune.products.models import Product, ProductSupportConfig, Topic
+from kitsune.products.models import Product, ProductSupportConfig, Topic, ZendeskTopic
 from kitsune.questions.utils import flag_object
 from kitsune.users.models import Profile
 
@@ -86,14 +84,6 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
     apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
 
 
-def _topic_to_tag(text: str) -> str:
-    """Convert topic title to tag format: lowercase, remove punctuation, spaces to dashes."""
-    tag = text.lower()
-    tag = re.sub(r"[,.]", "", tag)
-    tag = re.sub(r"\s+", "-", tag)
-    return tag
-
-
 def generate_classification_tags(submission: SupportTicket, result: dict[str, Any]) -> list[str]:
     """
     Generate Zendesk tags from LLM classification results.
@@ -125,37 +115,22 @@ def generate_classification_tags(submission: SupportTicket, result: dict[str, An
         return ["undefined", "general", *tags]
 
     try:
-        # Build path from topic to root
-        path = [topic]
-        current = topic
-        while current.parent:
-            current = current.parent
-            path.insert(0, current)
+        tags.extend(topic.tier_tags)
 
-        # Convert to tier tags
-        tier_tags = []
-        for i, t in enumerate(path, start=1):
-            tier_tags.append(f"t{i}-{_topic_to_tag(t.title)}")
+        # Automation tags from the ZendeskTopic linked to this Topic for this product.
+        zd_topic = ZendeskTopic.objects.filter(
+            topic=topic,
+            configurations__zendesk_config__support_configs__product=submission.product,
+            configurations__zendesk_config__support_configs__is_active=True,
+        ).first()
+        if zd_topic:
+            tags.extend(zd_topic.automation_tags)
 
-        tags.extend(tier_tags)
-
-        # Find matching automation tags
-        categories = cast(list, ZENDESK_CATEGORIES.get(product_slug, []))
-        for category in categories:
-            category_tiers = category.get("tags", {}).get("tiers", [])
-            if set(tier_tags) == set(category_tiers):
-                automation = category.get("tags", {}).get("automation")
-                if automation:
-                    tags.append(automation)
-                break
-
-        # Find matching legacy tag or fallback to "general" legacy tag.
-        for legacy_tag, topic_tags in ZENDESK_LEGACY_MAPPING.items():
-            if set(tier_tags) & topic_tags:
-                tags.append(legacy_tag)
-                break
-        else:
-            tags.append("general")
+        # Legacy bucket lives on the t1 root Topic; fall back to "general" if unset.
+        root = topic
+        while root.parent_id is not None:
+            root = root.parent
+        tags.append(root.legacy_tag or "general")
 
     except Exception:
         return ["undefined", *tags]

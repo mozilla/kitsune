@@ -22,7 +22,6 @@ EDIT_EMAIL_AUTOMATION_TAGS = ["ssa-edit-account-details", "loggedin-autosolve"]
 
 
 def _find_topic_by_tiers(Topic, tier_tags):
-    """Walk down the Topic tree to find the topic matching the tier_tags path."""
     current = None
     for i, tier in enumerate(tier_tags, start=1):
         prefix = f"t{i}-"
@@ -44,7 +43,7 @@ def forward(apps, schema_editor):
     ZendeskTopicConfiguration = apps.get_model("products", "ZendeskTopicConfiguration")
     ProductSupportConfig = apps.get_model("products", "ProductSupportConfig")
 
-    # 1. Seed Topic.legacy_tag on t1 roots (only if empty — preserve admin edits).
+    # Seed Topic.legacy_tag on t1 roots; only if empty so admin edits are preserved.
     for bucket, t1_tags in LEGACY_MAPPING.items():
         for tier in t1_tags:
             slug = tier[len("t1-") :]
@@ -53,37 +52,8 @@ def forward(apps, schema_editor):
                 root.legacy_tag = bucket
                 root.save(update_fields=["legacy_tag"])
 
-    # 2. Create synthetic Topics for form-only options that have no taxonomy equivalent.
-    synthetic_general, _ = Topic.objects.get_or_create(
-        slug="general",
-        parent=None,
-        defaults={
-            "title": "General",
-            "description": "",
-            "visible": False,
-            "is_archived": False,
-            "display_order": 0,
-            "in_aaq": False,
-            "in_nav": False,
-            "legacy_tag": "general",
-        },
-    )
-    synthetic_not_listed, _ = Topic.objects.get_or_create(
-        slug="not-listed",
-        parent=None,
-        defaults={
-            "title": "Not listed",
-            "description": "",
-            "visible": False,
-            "is_archived": False,
-            "display_order": 0,
-            "in_aaq": False,
-            "in_nav": False,
-            "legacy_tag": "not_listed",
-        },
-    )
-
-    # 3 + 4. Backfill ZendeskTopic.topic FK and automation_tags from existing data.
+    # Form-only entries with tier shapes that don't fit t1-/t2-/t3- (e.g. ['general'],
+    # ['not_listed']) stay unlinked so tags_dict falls back to the stored tier_tags JSONField.
     for zd_topic in ZendeskTopic.objects.all():
         update_fields = []
 
@@ -92,21 +62,15 @@ def forward(apps, schema_editor):
             update_fields.append("automation_tags")
 
         if zd_topic.topic_id is None:
-            if zd_topic.tier_tags == ["general"]:
-                zd_topic.topic = synthetic_general
-            elif zd_topic.tier_tags == ["not_listed"]:
-                zd_topic.topic = synthetic_not_listed
-            else:
-                matched = _find_topic_by_tiers(Topic, zd_topic.tier_tags)
-                if matched:
-                    zd_topic.topic = matched
-            if zd_topic.topic_id is not None:
+            matched = _find_topic_by_tiers(Topic, zd_topic.tier_tags)
+            if matched:
+                zd_topic.topic = matched
                 update_fields.append("topic")
 
         if update_fields:
             zd_topic.save(update_fields=update_fields)
 
-    # 5. Issue #3057: new edit-email ZendeskTopic linked to mozilla-account form.
+    # Issue mozilla/sumo#3057: new "change Mozilla account email" entry.
     edit_email_topic = _find_topic_by_tiers(Topic, EDIT_EMAIL_TIERS)
     edit_email_zd, _ = ZendeskTopic.objects.get_or_create(
         slug="mozilla-account-edit-email",
@@ -120,7 +84,7 @@ def forward(apps, schema_editor):
             "segmentation_tag": "",
         },
     )
-    # Defensive backfill if the row pre-existed with empty fields.
+    # If the row pre-existed (e.g. manual creation), fill in only the empty fields.
     update_fields = []
     if edit_email_zd.topic_id is None and edit_email_topic is not None:
         edit_email_zd.topic = edit_email_topic
@@ -131,7 +95,6 @@ def forward(apps, schema_editor):
     if update_fields:
         edit_email_zd.save(update_fields=update_fields)
 
-    # Link to mozilla-account's ZendeskConfig.
     ma_product = Product.objects.filter(slug="mozilla-account").first()
     if ma_product is None:
         return

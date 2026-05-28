@@ -7,7 +7,6 @@ from zenpy.lib.exception import APIException
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.customercare.utils import (
-    _topic_to_tag,
     generate_classification_tags,
     process_zendesk_classification_result,
     resolve_org_group,
@@ -22,40 +21,12 @@ from kitsune.products.tests import (
     ProductSupportConfigFactory,
     TopicFactory,
     ZendeskConfigFactory,
+    ZendeskTopicConfigurationFactory,
+    ZendeskTopicFactory,
 )
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-
-
-class TopicToTagTests(TestCase):
-    """Tests for _topic_to_tag helper function."""
-
-    def test_lowercase_conversion(self):
-        """Test that titles are converted to lowercase."""
-        self.assertEqual(_topic_to_tag("Settings"), "settings")
-        self.assertEqual(_topic_to_tag("ACCOUNTS"), "accounts")
-
-    def test_spaces_to_dashes(self):
-        """Test that spaces are replaced with dashes."""
-        self.assertEqual(_topic_to_tag("Sign in"), "sign-in")
-        self.assertEqual(_topic_to_tag("Two factor authentication"), "two-factor-authentication")
-
-    def test_remove_commas(self):
-        """Test that commas are removed."""
-        self.assertEqual(
-            _topic_to_tag("Addons, extensions, and themes"), "addons-extensions-and-themes"
-        )
-
-    def test_remove_periods(self):
-        """Test that periods are removed."""
-        self.assertEqual(_topic_to_tag("F.O.O"), "foo")
-
-    def test_complex_example(self):
-        """Test complex title with multiple transformations."""
-        self.assertEqual(
-            _topic_to_tag("Addons, extensions, and themes"), "addons-extensions-and-themes"
-        )
 
 
 class GenerateClassificationTagsTests(TestCase):
@@ -94,7 +65,9 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_single_tier_topic(self):
         """Test generating tags for a tier 1 topic."""
-        topic = TopicFactory(title="Settings", parent=None, is_archived=False)
+        topic = TopicFactory(
+            title="Settings", parent=None, is_archived=False, legacy_tag="technical"
+        )
         topic.products.add(self.product)
 
         submission = Mock(product=self.product)
@@ -106,7 +79,9 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_two_tier_topic(self):
         """Test generating tags for a tier 2 topic."""
-        tier1 = TopicFactory(title="Settings", parent=None, is_archived=False)
+        tier1 = TopicFactory(
+            title="Settings", parent=None, is_archived=False, legacy_tag="technical"
+        )
         tier1.products.add(self.product)
         tier2 = TopicFactory(title="Notifications", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
@@ -120,7 +95,9 @@ class GenerateClassificationTagsTests(TestCase):
 
     def test_three_tier_topic(self):
         """Test generating tags for a tier 3 topic."""
-        tier1 = TopicFactory(title="Settings", parent=None, is_archived=False)
+        tier1 = TopicFactory(
+            title="Settings", parent=None, is_archived=False, legacy_tag="technical"
+        )
         tier1.products.add(self.product)
         tier2 = TopicFactory(
             title="Addons, extensions, and themes", parent=tier1, is_archived=False
@@ -138,48 +115,45 @@ class GenerateClassificationTagsTests(TestCase):
             tags, ["t1-settings", "t2-addons-extensions-and-themes", "t3-extensions", "technical"]
         )
 
-    @patch("kitsune.customercare.utils.ZENDESK_CATEGORIES")
-    def test_automation_tag_included_when_matched(self, mock_categories):
-        """Test that automation tag is included when tier tags match a category."""
-        mock_categories.get.return_value = [
-            {
-                "slug": "accounts-signin",
-                "tags": {
-                    "tiers": ["t1-passwords-and-sign-in", "t2-sign-in"],
-                    "automation": "ssa-sign-in-failure-automation",
-                },
-            }
-        ]
-
-        tier1 = TopicFactory(title="Passwords and sign in", parent=None, is_archived=False)
+    def test_automation_tags_included_when_zendesk_topic_matches(self):
+        """Automation tags are appended when a ZendeskTopic links to the classified Topic."""
+        tier1 = TopicFactory(
+            title="Passwords and sign in", parent=None, is_archived=False, legacy_tag="accounts"
+        )
         tier1.products.add(self.product)
         tier2 = TopicFactory(title="Sign in", parent=tier1, is_archived=False)
         tier2.products.add(self.product)
+
+        zendesk_config = ZendeskConfigFactory()
+        ProductSupportConfigFactory(product=self.product, zendesk_config=zendesk_config)
+        zd_topic = ZendeskTopicFactory(
+            topic=tier2, automation_tags=["ssa-sign-in-failure-automation"]
+        )
+        ZendeskTopicConfigurationFactory(zendesk_config=zendesk_config, zendesk_topic=zd_topic)
 
         submission = Mock(product=self.product)
         result = {"topic_result": {"topic": "Sign in"}}
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertIn("ssa-sign-in-failure-automation", tags)
-        self.assertIn("t1-passwords-and-sign-in", tags)
-        self.assertIn("t2-sign-in", tags)
-        self.assertIn("accounts", tags)
+        self.assertEqual(
+            tags,
+            [
+                "t1-passwords-and-sign-in",
+                "t2-sign-in",
+                "ssa-sign-in-failure-automation",
+                "accounts",
+            ],
+        )
 
-    @patch("kitsune.customercare.utils.ZENDESK_CATEGORIES")
-    def test_no_automation_tag_when_not_matched(self, mock_categories):
-        """Test that no automation tag is included when tier tags don't match."""
-        mock_categories.get.return_value = [
-            {
-                "slug": "different-category",
-                "tags": {
-                    "tiers": ["t1-different"],
-                    "automation": "some-automation",
-                },
-            }
-        ]
-
-        tier1 = TopicFactory(title="Billing and subscriptions", parent=None, is_archived=False)
+    def test_no_automation_tag_when_no_zendesk_topic_match(self):
+        """No automation tag is appended when no ZendeskTopic links to the classified Topic."""
+        tier1 = TopicFactory(
+            title="Billing and subscriptions",
+            parent=None,
+            is_archived=False,
+            legacy_tag="payments",
+        )
         tier1.products.add(self.product)
 
         submission = Mock(product=self.product)
@@ -187,12 +161,13 @@ class GenerateClassificationTagsTests(TestCase):
 
         tags = generate_classification_tags(submission, result)
 
-        self.assertEqual(tags, ["t1-billing-and-subscriptions", "payment"])
-        self.assertNotIn("some-automation", tags)
+        self.assertEqual(tags, ["t1-billing-and-subscriptions", "payments"])
 
     def test_product_reassignment_includes_other_tag(self):
         """Test that product reassignment adds 'other' tag."""
-        tier1 = TopicFactory(title="Settings", parent=None, is_archived=False)
+        tier1 = TopicFactory(
+            title="Settings", parent=None, is_archived=False, legacy_tag="technical"
+        )
         tier1.products.add(self.product)
 
         submission = Mock(product=self.product)
