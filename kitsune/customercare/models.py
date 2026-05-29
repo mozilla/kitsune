@@ -133,6 +133,12 @@ class SupportTicket(ModelBase):
             return None
         return reverse("customercare.ticket_detail", args=[self.user.username, self.id])
 
+    def can_reply(self, user):
+        """Only the ticket owner may reply. Teammates who can view (see
+        SupportTicketManager.accessible_to) must not, and a non-owner reply would
+        also be misattributed to the owner in Zendesk."""
+        return bool(user and user.is_authenticated and self.user_id == user.id)
+
     @property
     def num_answers(self):
         return len(self.public_comments)

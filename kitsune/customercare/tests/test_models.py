@@ -260,3 +260,20 @@ class AccessibleToTests(TestCase):
         self.assertIn(self.carol_ticket.id, accessible)
         # personal ticket from non-org user is NOT moderated by mallory
         self.assertNotIn(self.dave_ticket.id, accessible)
+
+    def test_subtree_teammate_can_view_but_cannot_reply(self):
+        """bob can view alice's ticket via the company1 org, but only alice may reply."""
+        self.assertIn(
+            self.alice_ticket.id,
+            SupportTicket.objects.accessible_to(self.bob).values_list("id", flat=True),
+        )
+        self.assertTrue(self.alice_ticket.can_reply(self.alice))
+        self.assertFalse(self.alice_ticket.can_reply(self.bob))
+
+    def test_root_moderator_cannot_reply(self):
+        """Moderation grants visibility, not the right to reply as the owner."""
+        self.assertFalse(self.alice_ticket.can_reply(self.mallory))
+
+    def test_anonymous_cannot_reply(self):
+        self.assertFalse(self.alice_ticket.can_reply(AnonymousUser()))
+        self.assertFalse(self.alice_ticket.can_reply(None))
