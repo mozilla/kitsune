@@ -15,6 +15,7 @@ class MyProfilePage(BasePage):
             "link").filter(has_text="Edit user profile")
         self.report_abuse_profile_option = page.locator("article#profile").get_by_role(
             "link").filter(has_text="Report Abuse")
+        self.this_user_was_deactivated_message = page.locator("//div[@id='deactivated-msg']")
         self.deactivate_this_user_button = page.locator("input[value='Deactivate this user']")
         self.deactivate_this_user_and_mark_all_content_as_spam = page.locator(
             "input[value='Deactivate this user and mark all content as spam']")
@@ -157,6 +158,13 @@ class MyProfilePage(BasePage):
     def click_on_report_abuse_option(self):
         """Click on the report abuse option."""
         self._click(self.report_abuse_profile_option)
+
+    def click_on_deactivate_this_user_button(self):
+        # The .deactivate form's submit handler calls window.confirm(...) — the
+        # dialog handler must be attached before the click, and it must call
+        # .accept() itself (otherwise confirm() blocks and the click hangs).
+        self.page.once("dialog", lambda dialog: dialog.accept())
+        self._click(self.deactivate_this_user_button)
 
     def click_deactivate_this_user_and_mark_all_content_as_spam(self):
         # The .deactivate form's submit handler calls window.confirm(...) — the

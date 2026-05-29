@@ -119,7 +119,8 @@ class Utilities:
                 print(f"Error clearing Gmail: {e}")
 
     def get_fxa_verification_code(self, max_attempts=5, poll_interval=5,
-                                  restmail_username: str = None, new_account: bool = False) -> str:
+                                  restmail_username: str = None, new_account: bool = False,
+                                  change_password: bool = False) -> str:
         """
         Polls Gmail for the FxA verification code.
         Args:
@@ -128,6 +129,7 @@ class Utilities:
             restmail_username (str): Optional. The restmail username (if we need/want to use
             restmail).
             new_account (bool): If we are creating a new fxa account.
+            change_password (bool): If we are fetching the fxa code for password change.
         Returns:
             str: The verification code
         """
@@ -140,6 +142,9 @@ class Utilities:
                     json_response = response.json()
                     if new_account:
                         fxa_verification_code = json_response[0]['headers']['x-verify-short-code']
+                    elif change_password:
+                        fxa_verification_code = (json_response[0]['headers']
+                        ['x-account-change-verify-code'])
                     else:
                         fxa_verification_code = json_response[0]['headers']['x-signin-verify-code']
                     self.clear_email(restmail_username=restmail_username)
@@ -488,6 +493,30 @@ class Utilities:
             session_file_name (str): The session file name
         """
         self.page.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
+
+    def create_new_context_page(self, **context_kwargs) -> Page:
+        """
+        This helper function opens a fresh, isolated browser context (its own cookie jar and
+        storage) and returns a new page within it. The context includes the FxA browser challenge
+        header and the standard user agent so that authentication flows work as expected.
+
+        The caller is responsible for closing the context (``page.context.close()``) once done.
+
+        Args:
+            **context_kwargs: Extra keyword arguments forwarded to ``browser.new_context()``.
+
+        Returns:
+            Page: A new page belonging to the freshly created, isolated context.
+        """
+        browser = self.page.context.browser
+        context = browser.new_context(
+            user_agent=self.user_agent,
+            extra_http_headers={
+                f"{self.fxa_browser_challenge_header}": f"{self.fxa_browser_challenge_value}"
+            },
+            **context_kwargs,
+        )
+        return context.new_page()
 
     def delete_cookies(self, tried_once=False, retries=3):
         """

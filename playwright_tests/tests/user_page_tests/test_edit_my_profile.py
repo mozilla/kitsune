@@ -602,7 +602,7 @@ def test_deactivate_this_user_buttons_are_displayed_only_for_admin_users(page: P
                ).to_be_visible()
 
 
-# C2778035
+# C2778035, C3081868
 @pytest.mark.editUserProfileTests
 def test_deactivate_this_user_and_mark_all_content_as_spam_kb_threads(page: Page,
                                                                       create_user_factory):
@@ -616,8 +616,14 @@ def test_deactivate_this_user_and_mark_all_content_as_spam_kb_threads(page: Page
         article = sumo_pages.submit_kb_article_flow.submit_simple_kb_article(
             approve_first_revision=True)
 
+    with allure.step("Creating a discussion thread"):
+        kb_article_discussion_1 = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
+
     with allure.step("Signing in with a normal test user"):
         utilities.start_existing_session(cookies=test_user)
+
+    with allure.step("Leaving a reply to the thread posted by a different user"):
+        thread_reply = sumo_pages.kb_article_thread_flow.post_reply_to_thread("Test thread")
 
     with allure.step("Creating a new kb article discussion thread"):
         kb_article_discussion_2 = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
@@ -638,7 +644,8 @@ def test_deactivate_this_user_and_mark_all_content_as_spam_kb_threads(page: Page
                             "1. The Kb discussion thread created by the deleted user and which "
                             "contained no replies was deleted."
                             "2. The kb discussion thread created by the deleted user and which"
-                            " contained a reply was deleted."):
+                            " contained a reply was deleted."
+                            "3. The kb discussion thread reply was successfully deleted."):
         with page.expect_navigation() as navigation_info:
             utilities.navigate_to_link(kb_article_discussion_2["thread_url"])
         response = navigation_info.value
@@ -648,6 +655,10 @@ def test_deactivate_this_user_and_mark_all_content_as_spam_kb_threads(page: Page
             utilities.navigate_to_link(kb_article_discussion_3["thread_url"])
         response = navigation_info.value
         assert response.status == 404
+
+        utilities.navigate_to_link(kb_article_discussion_1["thread_url"])
+        expect(sumo_pages.kb_article_discussion_page.article_thread_reply(thread_reply["reply_id"])
+               ).to_be_hidden()
 
     with allure.step("Deleting the kb article"):
         utilities.navigate_to_link(article["article_url"])

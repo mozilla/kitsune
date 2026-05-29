@@ -157,7 +157,7 @@ def restmail_test_account_creation(page: Page, request):
     account is independently cleaned up.
     """
     sumo_pages = SumoPages(page)
-    browser = page.context.browser
+    utilities = Utilities(page)
 
     def _create(username: str = None, password: str = None):
         if username is None:
@@ -184,13 +184,7 @@ def restmail_test_account_creation(page: Page, request):
                 return
             already_cleaned = True
 
-            cleanup_context = browser.new_context(
-                extra_http_headers={
-                    f"{Utilities.fxa_browser_challenge_header}":
-                        f"{Utilities.fxa_browser_challenge_value}"
-                }
-            )
-            cleanup_page = cleanup_context.new_page()
+            cleanup_page = utilities.create_new_context_page()
             try:
                 cleanup_sumo_pages = SumoPages(cleanup_page)
                 cleanup_sumo_pages.auth_flow_page.delete_test_account_flow(
@@ -199,7 +193,7 @@ def restmail_test_account_creation(page: Page, request):
             except (TargetClosedError, Exception) as e:
                 print(f"Restmail test account cleanup failed: {e}")
             finally:
-                cleanup_context.close()
+                cleanup_page.context.close()
 
         request.addfinalizer(cleanup)
         return user, user_password, cleanup
