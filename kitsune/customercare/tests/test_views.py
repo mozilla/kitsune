@@ -32,6 +32,24 @@ def _sign_payload(body, timestamp="1234567890", secret=WEBHOOK_SIGNING_SECRET):
     return base64.b64encode(digest).decode("utf-8")
 
 
+def _make_viewable_by_teammate(owner, ticket):
+    """Wire up a hybrid org so a teammate in the same company subtree can VIEW
+    `ticket`. Per issue #3069 such a teammate still must not be able to reply."""
+    config = ProductSupportConfigFactory(
+        product=ticket.product, zendesk_config=ZendeskConfigFactory(name="zd")
+    )
+    company_group = Group.objects.create(name="company1")
+    root = GroupProfile.add_root(group=Group.objects.create(name="enterprise"), slug="enterprise")
+    company = root.add_child(group=company_group, slug="company1")
+    config.hybrid_support_groups.add(company_group)
+    owner.groups.add(company_group)
+    ticket.org_group = company
+    ticket.save(update_fields=["org_group"])
+    teammate = UserFactory()
+    teammate.groups.add(company_group)
+    return teammate
+
+
 @override_settings(
     ZENDESK_WEBHOOK_API_KEY=WEBHOOK_API_KEY,
     ZENDESK_WEBHOOK_SIGNING_SECRET=WEBHOOK_SIGNING_SECRET,
@@ -183,6 +201,19 @@ class TicketDetailViewTests(TestCase):
             reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
         )
         self.assertEqual(200, response.status_code)
+
+    def test_non_owner_viewer_sees_note_not_form(self):
+        """A teammate viewing someone else's ticket gets a read-only note, no form."""
+        teammate = _make_viewable_by_teammate(self.owner, self.ticket)
+        self.client.force_login(teammate)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, "question-reply-form")
+        self.assertNotContains(response, "Post Reply")
+        self.assertContains(response, "Only the ticket creator can reply")
 
     def test_get_absolute_url(self):
         expected = reverse(
@@ -410,6 +441,17 @@ class TicketReplySyncTests(TestCase):
         self.client.force_login(other)
         response = self.client.post(self.url, {"body": "trespasser"})
         self.assertEqual(404, response.status_code)
+        mock_client_cls.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_subtree_teammate_cannot_post(self, mock_client_cls):
+        """A teammate who CAN view the ticket (same org subtree) still cannot reply;
+        only the owner can. Regression for issue #3069."""
+        teammate = _make_viewable_by_teammate(self.owner, self.ticket)
+        self.client.force_login(teammate)
+        response = self.client.post(self.url, {"body": "not mine"})
+
+        self.assertEqual(403, response.status_code)
         mock_client_cls.return_value.add_ticket_comment.assert_not_called()
 
     @patch("kitsune.customercare.views.ZendeskClient")

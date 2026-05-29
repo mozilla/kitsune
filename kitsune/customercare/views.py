@@ -8,7 +8,7 @@ from datetime import timedelta
 import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -48,6 +48,10 @@ def ticket_detail(request, username, ticket_id):
         id=ticket_id,
         user__username=username,
     )
+
+    can_reply = ticket.can_reply(request.user)
+    if request.method == "POST" and not can_reply:
+        raise PermissionDenied
 
     placeholder = (
         _("Reply here to reopen this ticket.")
@@ -162,6 +166,7 @@ def ticket_detail(request, username, ticket_id):
         "sync_error": sync_error,
         "reply_error": reply_error,
         "status_changed": status_changed,
+        "can_reply": can_reply,
     }
     if is_htmx:
         return render(request, "customercare/includes/ticket_replies.html", context)
