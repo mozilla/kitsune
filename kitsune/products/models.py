@@ -500,9 +500,6 @@ class ZendeskTopic(ModelBase):
         default=list,
         help_text="List of tier tags (e.g., ['t1-billing-and-subscriptions'])",
     )
-    automation_tag = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Automation tag for Zendesk workflows"
-    )
     automation_tags = models.JSONField(
         default=list,
         blank=True,
