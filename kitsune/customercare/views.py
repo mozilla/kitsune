@@ -167,6 +167,7 @@ def ticket_detail(request, username, ticket_id):
         "reply_form": form,
         "sync_error": sync_error,
         "reply_error": reply_error,
+        "status_error": False,
         "status_changed": status_changed,
         "can_reply": can_reply,
     }
@@ -176,6 +177,72 @@ def ticket_detail(request, username, ticket_id):
         request,
         "customercare/ticket_detail.html",
         {**context, "needs_sync": needs_sync},
+    )
+
+
+@login_required
+@require_POST
+def ticket_mark_solved(request, username, ticket_id):
+    ticket = get_object_or_404(
+        SupportTicket.objects.accessible_to(request.user).select_related(
+            "product", "topic", "user", "org_group"
+        ),
+        id=ticket_id,
+        user__username=username,
+    )
+
+    if not ticket.can_reply(request.user):
+        raise PermissionDenied
+
+    status_error = False
+    status_changed = False
+
+    if ticket.zd_status in SupportTicket.ZD_STATUSES_SOLVABLE:
+        try:
+            ticket_audit = ZendeskClient(
+                timeout=settings.ZENDESK_REPLY_TIMEOUT
+            ).update_ticket_status(
+                int(ticket.zendesk_ticket_id),
+                SupportTicket.ZD_STATUS_SOLVED,
+            )
+        except APIException, requests.exceptions.RequestException:
+            log.exception("Failed to mark Zendesk ticket %s as solved", ticket.zendesk_ticket_id)
+            status_error = True
+        else:
+            with transaction.atomic():
+                ticket = (
+                    SupportTicket.objects.select_related("user")
+                    .select_for_update(of=("self",))
+                    .get(id=ticket_id)
+                )
+                ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
+                ticket.zd_status = ticket_audit.ticket.status.lower()
+                ticket.save(update_fields=["zd_updated_at", "zd_status"])
+                status_changed = True
+
+    placeholder = (
+        _("Reply here to reopen this ticket.")
+        if ticket.zd_status == SupportTicket.ZD_STATUS_SOLVED
+        else None
+    )
+    form = SupportTicketReplyForm(placeholder=placeholder)
+
+    context = {
+        "ticket": ticket,
+        "reply_form": form,
+        "sync_error": False,
+        "reply_error": False,
+        "status_error": status_error,
+        "status_changed": status_changed,
+        "can_reply": True,
+    }
+
+    if request.headers.get("HX-Request"):
+        return render(request, "customercare/includes/ticket_replies.html", context)
+    return redirect(
+        "customercare.ticket_detail",
+        username=ticket.user.username,
+        ticket_id=ticket.id,
     )
 
 

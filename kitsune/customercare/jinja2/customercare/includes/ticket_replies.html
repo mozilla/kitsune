@@ -61,6 +61,41 @@
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
 
+{% if can_reply and (ticket.zd_status in ticket.ZD_STATUSES_SOLVABLE) %}
+<div class="thread-detail--solve-row">
+  {% if status_error %}
+    <div class="thread-detail--notice thread-detail--notice--error thread-detail--solve-row__error">
+      <div class="thread-detail--notice-text">
+        <strong>{{ _("We could not mark this ticket as solved. Please try again later.") }}</strong>
+      </div>
+    </div>
+  {% endif %}
+  <form method="post"
+        action="{{ url('customercare.ticket_mark_solved', username=ticket.user.username, ticket_id=ticket.id) }}"
+        hx-post="{{ url('customercare.ticket_mark_solved', username=ticket.user.username, ticket_id=ticket.id) }}"
+        hx-target="#thread-replies"
+        hx-swap="outerHTML"
+        hx-disabled-elt="find button[type=submit]"
+        class="thread-detail--solve-row__form">
+    {% csrf_token %}
+    <button type="submit" class="sumo-button secondary-button button-sm mark-solved-submit">
+      <span class="mark-solved-submit__idle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        {{ _('Mark as solved') }}
+      </span>
+      <span class="mark-solved-submit__busy">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        {{ _('Marking…') }}
+      </span>
+    </button>
+  </form>
+</div>
+{% endif %}
+
 {% if ticket.zd_status == ticket.ZD_STATUS_CLOSED %}
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('This ticket is closed and can no longer receive replies. Please open a new ticket if you still need help.') }}
