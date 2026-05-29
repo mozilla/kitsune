@@ -1248,10 +1248,7 @@ ZENDESK_WEBHOOK_API_KEY_HEADER_NAME = config(
 )
 ZENDESK_WEBHOOK_API_KEY = config("ZENDESK_WEBHOOK_API_KEY", default="")
 ZENDESK_COMMENTS_SYNC_THRESHOLD = config("ZENDESK_COMMENTS_SYNC_THRESHOLD", default=3600, cast=int)
-# How long after a reply is submitted the UI keeps polling the partial endpoint
-# to detect the sending → posted/failed transition. Single attempt, no auto-retry,
-# so 60s covers the happy path and most Zendesk-side timeouts.
-ZENDESK_REPLY_POLL_SECONDS = config("ZENDESK_REPLY_POLL_SECONDS", default=60, cast=int)
+ZENDESK_REPLY_TIMEOUT = config("ZENDESK_REPLY_TIMEOUT", default=20, cast=int)
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])

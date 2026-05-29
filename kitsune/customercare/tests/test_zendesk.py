@@ -497,3 +497,21 @@ class ZendeskClientTests(TestCase):
         ticket_arg = mock_client.tickets.update.call_args[0][0]
         self.assertEqual(ticket_arg.id, 123)
         self.assertEqual(ticket_arg.status, "solved")
+
+
+class ZendeskClientConstructorTests(TestCase):
+    """Tests for ZendeskClient kwargs forwarding to the Zenpy constructor."""
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_timeout_kwarg_forwarded(self, mock_zenpy):
+        ZendeskClient(timeout=12)
+        kwargs = mock_zenpy.call_args.kwargs
+        self.assertEqual(12, kwargs["timeout"])
+
+    @patch("kitsune.customercare.zendesk.Zenpy")
+    def test_credentials_still_forwarded(self, mock_zenpy):
+        ZendeskClient(timeout=5)
+        kwargs = mock_zenpy.call_args.kwargs
+        self.assertIn("email", kwargs)
+        self.assertIn("token", kwargs)
+        self.assertIn("subdomain", kwargs)

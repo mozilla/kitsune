@@ -1,16 +1,20 @@
 {% from "sumo/includes/thread_post.html" import post_body %}
+{% from "sumo/includes/question_entry.html" import state_badges %}
+
+{# When a reply changes the ticket's status (e.g. reply-triggers-reopen on a
+   PENDING/SOLVED ticket), the hero pill cluster lives outside #thread-replies
+   and would otherwise stay stale until the next navigation. HTMX strips this
+   OOB element from the response and swaps it into the matching id on the page.
+   The gate also prevents a duplicate-id violation on initial page render,
+   where ticket_detail.html {% include %}s this partial inline. #}
+{% if status_changed %}
+<div id="thread-detail--pill-cluster" hx-swap-oob="true" class="thread-detail--pill-cluster">{{ state_badges(ticket) }}</div>
+{% endif %}
 
 {% set comments = ticket.public_comments | sort(attribute='created_at') %}
-{% set is_sending = pending and pending.effective_status == 'sending' %}
-{% set is_failed = pending and pending.effective_status == 'failed' %}
-{% set total_count = (comments | length) + (1 if is_sending else 0) %}
+{% set total_count = comments | length %}
 
-<div id="thread-replies"
-     {% if is_sending %}
-     hx-get="{{ url('customercare.ticket_detail', username=ticket.user.username, ticket_id=ticket.id) }}"
-     hx-trigger="load delay:1s, every 2s"
-     hx-swap="outerHTML"
-     {% endif %}>
+<div id="thread-replies">
 
 {% if sync_error %}
   <div class="thread-detail--notice thread-detail--notice--info">
@@ -53,34 +57,6 @@
       {{ post_body(comment.get("body", "") | sanitize_external_html) }}
     </div>
   {% endfor %}
-  {% if is_sending %}
-    <div class="thread-post thread-post--sending" id="pending-reply">
-      <div class="thread-post--header">
-        <div class="thread-post--avatar">
-          <div class="question-entry--icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-        </div>
-        <div class="thread-post--author">
-          <span class="thread-post--author-name">{{ ticket.user.profile.display_name }}</span>
-          {% if pending.created %}
-            <time class="thread-post--time" datetime="{{ pending.created.isoformat() }}">
-              {{ datetimeformat(pending.created, use_timesince=True) }}
-            </time>
-          {% endif %}
-        </div>
-      </div>
-      {{ post_body(pending.payload | e | replace('\n', '<br>') | safe) }}
-      <div class="thread-post--state">
-        <span class="loading-spinner" aria-hidden="true"></span>
-        <span>{{ _('Sending…') }}</span>
-      </div>
-    </div>
-  {% endif %}
 {% else %}
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
@@ -92,7 +68,7 @@
 {% else %}
 <section class="question-reply-form" id="ticket-reply">
   <h3 class="sumo-card-heading">{{ _('Post a Reply') }}</h3>
-  {% if is_failed %}
+  {% if reply_error %}
     <div class="thread-detail--notice thread-detail--notice--error">
       <div class="thread-detail--notice-text">
         <strong>{{ _("Your reply failed to send. Please try again later.") }}</strong>
@@ -106,7 +82,7 @@
         hx-swap="outerHTML"
         hx-disabled-elt="find button[type=submit]">
     {% csrf_token %}
-    <fieldset {% if is_sending %}disabled{% endif %}>
+    <fieldset>
       <div class="main-content">
         <div class="field has-large-textarea{% if reply_form.body.errors %} invalid{% endif %}">
           <div>{{ reply_form.body }}</div>

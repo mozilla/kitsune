@@ -265,3 +265,8 @@ class SupportTicketReplyForm(forms.Form):
             "max_length": _lazy("Replies are limited to %(limit_value)d characters."),
         },
     )
+
+    def __init__(self, *args, placeholder=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if placeholder:
+            self.fields["body"].widget.attrs["placeholder"] = placeholder
