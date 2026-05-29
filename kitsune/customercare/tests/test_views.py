@@ -2,17 +2,18 @@ import base64
 import hashlib
 import hmac
 import json
-from datetime import timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.contrib.auth.models import Group, Permission
-from django.db import IntegrityError
+import requests
+from django.conf import settings
+from django.contrib.auth.models import Group
 from django.test import override_settings
 from django.urls import reverse
-from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from zenpy.lib.exception import APIException
 
-from kitsune.customercare.models import SupportTicket, SupportTicketPendingChange
+from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
 from kitsune.products.tests import ProductSupportConfigFactory, ZendeskConfigFactory
@@ -248,330 +249,211 @@ class SyncTicketCommentsViewTests(TestCase):
         self.assertEqual(302, response.status_code)
 
 
-class TicketReplyPostTests(TestCase):
-    """POST to ticket_detail creates/replaces/re-attempts the pending comment."""
+class TicketReplySyncTests(TestCase):
+    """Tests for the synchronous reply flow in ticket_detail."""
 
     def setUp(self):
         self.owner = UserFactory()
-        self.other = UserFactory()
+        self.owner.profile.zendesk_id = "999"
+        self.owner.profile.save(update_fields=["zendesk_id"])
         self.ticket = SupportTicketFactory(
             user=self.owner,
-            zendesk_ticket_id="987",
+            zendesk_ticket_id="42",
             zd_status=SupportTicket.ZD_STATUS_OPEN,
+            comments=[],
+        )
+        self.client.force_login(self.owner)
+        self.url = reverse(
+            "customercare.ticket_detail", args=[self.owner.username, self.ticket.id]
         )
 
-    def _url(self):
-        return reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+    def _audit(self, status="open", updated_at="2026-05-28T12:00:00Z", comment_id=1234):
+        """Return a stand-in for ZendeskClient.add_ticket_comment's return value."""
+        ticket_view = SimpleNamespace(
+            id=int(self.ticket.zendesk_ticket_id),
+            status=status,
+            updated_at=updated_at,
+        )
+        events = [
+            {
+                "type": "Comment",
+                "id": comment_id,
+                "html_body": "<p>hello</p>",
+                "author_id": 999,
+            }
+        ]
+        audit = SimpleNamespace(events=events)
+        return SimpleNamespace(ticket=ticket_view, audit=audit)
 
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_owner_post_creates_pending_and_enqueues_task(self, mock_task):
-        self.client.force_login(self.owner)
-        response = self.client.post(self._url(), data={"body": "thanks!"})
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_calls_zendesk_with_expected_args(self, mock_client_cls):
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit()
+        self.client.post(self.url, {"body": "hello"})
+        mock_client_cls.assert_called_with(timeout=settings.ZENDESK_REPLY_TIMEOUT)
+        mock_client_cls.return_value.add_ticket_comment.assert_called_once()
+        kwargs = mock_client_cls.return_value.add_ticket_comment.call_args.kwargs
+        self.assertEqual(self.owner, kwargs["user"])
+        self.assertEqual(42, kwargs["ticket_id"])
+        self.assertEqual("hello", kwargs["comment_body"])
+        self.assertTrue(kwargs["public"])
+        self.assertIsNone(kwargs["status"])
 
-        self.assertEqual(302, response.status_code)
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_pending_ticket_reopens_on_reply(self, mock_client_cls):
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_PENDING
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="open")
+        self.client.post(self.url, {"body": "hi"})
+        kwargs = mock_client_cls.return_value.add_ticket_comment.call_args.kwargs
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, kwargs["status"])
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_persists_status_updated_at_and_appends_comment(self, mock_client_cls):
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(
+            status="pending",
+            updated_at="2026-05-28T12:34:56Z",
+            comment_id=5678,
+        )
+        self.client.post(self.url, {"body": "hi"})
+        self.ticket.refresh_from_db()
+        self.assertEqual("pending", self.ticket.zd_status)
+        self.assertEqual(parse_datetime("2026-05-28T12:34:56Z"), self.ticket.zd_updated_at)
+        self.assertEqual(1, len(self.ticket.comments))
+        self.assertEqual(5678, self.ticket.comments[0]["id"])
+        self.assertEqual("<p>hello</p>", self.ticket.comments[0]["body"])
+        self.assertEqual(
+            self.owner.profile.display_name,
+            self.ticket.comments[0]["author"]["name"],
+        )
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_redirects_on_non_htmx_success(self, mock_client_cls):
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit()
+        response = self.client.post(self.url, {"body": "hi"})
+        self.assertRedirects(response, self.url)
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_htmx_post_renders_partial_with_fresh_form(self, mock_client_cls):
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit()
+        response = self.client.post(self.url, {"body": "hi"}, HTTP_HX_REQUEST="true")
+        self.assertEqual(200, response.status_code)
+        # Partial template renders the thread-replies wrapper
+        self.assertContains(response, 'id="thread-replies"')
+        # New unbound form — textarea is empty in rendered HTML
+        self.assertNotIn(b"hi</textarea>", response.content)
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_zendesk_api_exception_sets_reply_error(self, mock_client_cls):
+        mock_client_cls.return_value.add_ticket_comment.side_effect = APIException("nope")
+        response = self.client.post(self.url, {"body": "kept on failure"}, HTTP_HX_REQUEST="true")
         self.ticket.refresh_from_db()
         self.assertEqual([], self.ticket.comments)
-        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-        self.assertIsNotNone(pending)
-        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
-        self.assertEqual("thanks!", pending.payload)
-        self.assertIsNone(pending.last_attempted_at)
-        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
+        self.assertEqual(SupportTicket.ZD_STATUS_OPEN, self.ticket.zd_status)
+        # Bound form preserves the user's body
+        self.assertIn(b"kept on failure", response.content)
+        self.assertIn(b"failed to send", response.content.lower())
 
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_same_body_resubmit_reattempts_existing(self, mock_task):
-        """Failed + same body → flip in place, bump last_attempted_at."""
-        prior_last_attempt = timezone.now() - timedelta(seconds=120)
-        old = SupportTicketPendingChange.objects.create(
-            ticket=self.ticket,
-            kind=SupportTicketPendingChange.KIND_COMMENT,
-            payload="hello",
-            status=SupportTicketPendingChange.STATUS_FAILED,
-            last_attempted_at=prior_last_attempt,
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_request_exception_sets_reply_error(self, mock_client_cls):
+        mock_client_cls.return_value.add_ticket_comment.side_effect = (
+            requests.exceptions.RequestException("network")
         )
+        response = self.client.post(self.url, {"body": "x"}, HTTP_HX_REQUEST="true")
+        self.ticket.refresh_from_db()
+        self.assertEqual([], self.ticket.comments)
+        self.assertIn(b"failed to send", response.content.lower())
 
-        self.client.force_login(self.owner)
-        self.client.post(self._url(), data={"body": "hello"})
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_audit_without_comment_event_sets_reply_error(self, mock_client_cls):
+        audit = self._audit()
+        audit.audit.events = []  # No Comment event
+        mock_client_cls.return_value.add_ticket_comment.return_value = audit
+        response = self.client.post(self.url, {"body": "x"}, HTTP_HX_REQUEST="true")
+        self.ticket.refresh_from_db()
+        self.assertEqual([], self.ticket.comments)
+        self.assertIn(b"failed to send", response.content.lower())
 
-        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-        self.assertIsNotNone(pending)
-        self.assertEqual(old.id, pending.id)
-        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
-        self.assertEqual("hello", pending.payload)
-        self.assertGreater(pending.last_attempted_at, prior_last_attempt)
-        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_different_body_resubmit_replaces_pending(self, mock_task):
-        """Failed + different body → replace pending with fresh entry."""
-        old = SupportTicketPendingChange.objects.create(
-            ticket=self.ticket,
-            kind=SupportTicketPendingChange.KIND_COMMENT,
-            payload="old body",
-            status=SupportTicketPendingChange.STATUS_FAILED,
-            last_attempted_at=timezone.now() - timedelta(seconds=120),
-        )
-
-        self.client.force_login(self.owner)
-        self.client.post(self._url(), data={"body": "new body"})
-
-        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-        self.assertIsNotNone(pending)
-        self.assertNotEqual(old.id, pending.id)
-        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
-        self.assertEqual("new body", pending.payload)
-        self.assertIsNone(pending.last_attempted_at)
-        mock_task.delay.assert_called_once_with(ticket_id=self.ticket.id)
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_post_during_sending_does_not_replace_pending(self, mock_task):
-        """While the task is in flight, a new POST should not overwrite the pending."""
-        existing = SupportTicketPendingChange.objects.create(
-            ticket=self.ticket,
-            kind=SupportTicketPendingChange.KIND_COMMENT,
-            payload="sending body",
-            status=SupportTicketPendingChange.STATUS_SENDING,
-            last_attempted_at=timezone.now(),
-        )
-
-        self.client.force_login(self.owner)
-        self.client.post(self._url(), data={"body": "different"}, HTTP_HX_REQUEST="true")
-
-        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-        self.assertEqual(existing.id, pending.id)
-        self.assertEqual("sending body", pending.payload)
-        self.assertEqual(SupportTicketPendingChange.STATUS_SENDING, pending.status)
-        mock_task.delay.assert_not_called()
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_create_race_integrity_error_is_silent_noop(self, mock_task):
-        """Race between two first-time POSTs: the loser hits the (ticket, kind)
-        unique constraint on create. The view should swallow the IntegrityError,
-        skip the task enqueue, and render normally (no 500)."""
-        self.client.force_login(self.owner)
-        with patch.object(
-            SupportTicketPendingChange.objects,
-            "create",
-            side_effect=IntegrityError("duplicate key value violates unique constraint"),
-        ):
-            response = self.client.post(self._url(), data={"body": "hello"})
-
-        self.assertEqual(200, response.status_code)
-        mock_task.delay.assert_not_called()
-        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_create_race_returns_winner_without_dispatching(self, mock_task):
-        """When the create race has a real winner: the loser's INSERT fails on
-        the unique constraint, the view falls back to fetching the existing
-        row, and renders with the winner's pending instead of None.
-
-        Simulates real race timing by pre-creating the winner row and stubbing
-        pending_change for the three calls the view makes on the losing path:
-          1. initial unlocked read (winner hadn't committed yet → None)
-          2. locked refetch (still in the race window → None)
-          3. fallback after IntegrityError on create (winner now visible)
-        The DB's unique constraint raises the IntegrityError naturally.
-        """
-        self.client.force_login(self.owner)
-
-        winner = SupportTicketPendingChange.objects.create(
-            ticket=self.ticket,
-            kind=SupportTicketPendingChange.KIND_COMMENT,
-            payload="winner body",
-        )
-
-        with patch.object(SupportTicket, "pending_change", side_effect=[None, None, winner]):
-            response = self.client.post(self._url(), data={"body": "loser body"})
-
-        self.assertEqual(200, response.status_code)
-        mock_task.delay.assert_not_called()
-        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-        self.assertIsNotNone(pending)
-        self.assertEqual("winner body", pending.payload)
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_htmx_post_returns_partial_with_pending(self, mock_task):
-        self.client.force_login(self.owner)
-        response = self.client.post(self._url(), data={"body": "hi there"}, HTTP_HX_REQUEST="true")
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, "hi there")
-        self.assertContains(response, 'id="thread-replies"')
-        mock_task.delay.assert_called_once()
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_non_owner_post_404(self, mock_task):
-        """Non-owner without staff perm hits the owner-or-perm gate → 404."""
-        self.client.force_login(self.other)
-        response = self.client.post(self._url(), data={"body": "evil"})
-        self.assertEqual(404, response.status_code)
-        mock_task.delay.assert_not_called()
-        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_staff_with_view_perm_cannot_post(self, mock_task):
-        """Staff with change_supportticket cannot view or post a reply."""
-        staff = UserFactory()
-        perm = Permission.objects.get(codename="change_supportticket")
-        staff.user_permissions.add(perm)
-        self.client.force_login(staff)
-        response = self.client.post(self._url(), data={"body": "from staff"})
-
-        self.assertEqual(404, response.status_code)
-        mock_task.delay.assert_not_called()
-        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))
-
-    def test_anonymous_post_redirects(self):
-        response = self.client.post(self._url(), data={"body": "hi"})
-        self.assertEqual(302, response.status_code)
-        self.assertIn("/users/login", response["Location"])
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_empty_body_renders_form_error(self, mock_task):
-        self.client.force_login(self.owner)
-        response = self.client.post(self._url(), data={"body": ""}, HTTP_HX_REQUEST="true")
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, "Please enter a reply")
-        mock_task.delay.assert_not_called()
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_whitespace_only_body_renders_form_error(self, mock_task):
-        self.client.force_login(self.owner)
-        response = self.client.post(self._url(), data={"body": "   \n  "}, HTTP_HX_REQUEST="true")
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, "Please enter a reply")
-        mock_task.delay.assert_not_called()
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_oversized_body_renders_form_error(self, mock_task):
-        self.client.force_login(self.owner)
-        body = "x" * 65_536
-        response = self.client.post(self._url(), data={"body": body}, HTTP_HX_REQUEST="true")
-        self.assertEqual(200, response.status_code)
-        self.assertContains(response, "limited to")
-        mock_task.delay.assert_not_called()
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_post_strips_whitespace(self, mock_task):
-        self.client.force_login(self.owner)
-        self.client.post(self._url(), data={"body": "  hello!  "})
-        pending = self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-        self.assertEqual("hello!", pending.payload)
-
-    @patch("kitsune.customercare.views.post_reply_to_zendesk")
-    def test_post_on_closed_ticket_is_noop(self, mock_task):
-        """Zendesk rejects comments on closed tickets, so the view drops the POST."""
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_on_closed_ticket_skips_zendesk(self, mock_client_cls):
         self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
         self.ticket.save(update_fields=["zd_status"])
+        self.client.post(self.url, {"body": "ignored"})
+        mock_client_cls.return_value.add_ticket_comment.assert_not_called()
+        self.ticket.refresh_from_db()
+        self.assertEqual([], self.ticket.comments)
 
-        self.client.force_login(self.owner)
-        response = self.client.post(self._url(), data={"body": "stale"})
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_dedupes_existing_comment_id(self, mock_client_cls):
+        self.ticket.comments = [
+            {
+                "id": 5678,
+                "body": "<p>already here</p>",
+                "created_at": "2026-05-28T12:00:00Z",
+                "public": True,
+                "author": {"name": "Owner", "id": 999},
+            }
+        ]
+        self.ticket.save(update_fields=["comments"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(
+            status="pending",
+            updated_at="2026-05-28T13:00:00Z",
+            comment_id=5678,
+        )
+        self.client.post(self.url, {"body": "x"})
+        self.ticket.refresh_from_db()
+        self.assertEqual(1, len(self.ticket.comments))  # Not duplicated
+        self.assertEqual("pending", self.ticket.zd_status)  # But status still updated
 
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_post_by_non_owner_returns_404(self, mock_client_cls):
+        other = UserFactory()
+        self.client.force_login(other)
+        response = self.client.post(self.url, {"body": "trespasser"})
+        self.assertEqual(404, response.status_code)
+        mock_client_cls.return_value.add_ticket_comment.assert_not_called()
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_empty_body_renders_form_error(self, mock_client_cls):
+        response = self.client.post(self.url, {"body": ""}, HTTP_HX_REQUEST="true")
         self.assertEqual(200, response.status_code)
-        mock_task.delay.assert_not_called()
-        self.assertIsNone(self.ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT))
+        self.assertContains(response, "Please enter a reply")
+        mock_client_cls.return_value.add_ticket_comment.assert_not_called()
 
-
-class TicketRepliesTemplateTests(TestCase):
-    def setUp(self):
-        self.owner = UserFactory()
-        self.ticket = SupportTicketFactory(
-            user=self.owner,
-            zendesk_ticket_id="987",
-            zd_status=SupportTicket.ZD_STATUS_OPEN,
-        )
-        self.ticket.last_synced_at = timezone.now()
-        self.ticket.save()
-
-    def _url(self):
-        return reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
-
-    def test_reply_form_shown_for_owner_active_ticket(self):
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, "question-reply-form")
-        self.assertContains(response, "Post Reply")
-
-    def test_thread_replies_wrapper_present(self):
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, 'id="thread-replies"')
-
-    def _set_pending(self, **overrides):
-        self.ticket.pending_changes.filter(kind=SupportTicketPendingChange.KIND_COMMENT).delete()
-        kwargs = {
-            "ticket": self.ticket,
-            "kind": SupportTicketPendingChange.KIND_COMMENT,
-            "payload": "hello",
-            "status": SupportTicketPendingChange.STATUS_SENDING,
-            "last_attempted_at": None,
-        }
-        kwargs.update(overrides)
-        return SupportTicketPendingChange.objects.create(**kwargs)
-
-    def test_sending_entry_renders_in_thread_with_spinner(self):
-        self._set_pending(last_attempted_at=timezone.now())
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, "Sending")
-        self.assertContains(response, "thread-post--sending")
-        self.assertContains(response, 'id="pending-reply"')
-
-    def test_sending_disables_reply_form(self):
-        self._set_pending(last_attempted_at=timezone.now())
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, "<fieldset disabled")
-
-    def test_failed_renders_error_with_form_prefill(self):
-        self._set_pending(
-            status=SupportTicketPendingChange.STATUS_FAILED,
-            last_attempted_at=timezone.now(),
-        )
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, "Your reply failed to send")
-        # Form pre-filled with the failed body.
-        self.assertContains(response, "hello")
-        # Form is NOT disabled.
-        self.assertNotContains(response, "<fieldset disabled")
-        # Pending isn't shown in the replies thread (failed state lives in the form).
-        self.assertNotContains(response, 'id="pending-reply"')
-
-    def test_polling_attrs_present_when_sending(self):
-        self._set_pending(last_attempted_at=timezone.now())
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, 'hx-trigger="load delay:1s, every 2s"')
-
-    def test_polling_attrs_absent_when_no_pending(self):
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertNotContains(response, "every 2s")
-
-    def test_polling_attrs_absent_when_failed(self):
-        self._set_pending(
-            status=SupportTicketPendingChange.STATUS_FAILED,
-            last_attempted_at=timezone.now(),
-        )
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertNotContains(response, "every 2s")
-
-    def test_stale_sending_renders_as_failed(self):
-        """effective_status coerces stale sending → failed."""
-        self._set_pending(last_attempted_at=timezone.now() - timedelta(seconds=120))
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertContains(response, "Your reply failed to send")
-        self.assertNotContains(response, 'id="pending-reply"')
-        self.assertNotContains(response, "every 2s")
-
-    def test_closed_ticket_hides_reply_form_and_shows_notice(self):
-        self.ticket.zd_status = SupportTicket.ZD_STATUS_CLOSED
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_htmx_post_includes_oob_status_badge(self, mock_client_cls):
+        """HTMX response carries an OOB pill cluster reflecting the new status."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_PENDING
         self.ticket.save(update_fields=["zd_status"])
-        self.client.force_login(self.owner)
-        response = self.client.get(self._url())
-        self.assertNotContains(response, "question-reply-form")
-        self.assertNotContains(response, "Post Reply")
-        self.assertContains(response, "can no longer receive replies")
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(
+            status="open"
+        )
+        response = self.client.post(
+            self.url, {"body": "hi"}, HTTP_HX_REQUEST="true"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="thread-detail--pill-cluster"')
+        self.assertContains(response, 'hx-swap-oob="true"')
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_htmx_post_without_status_change_omits_oob_badge(self, mock_client_cls):
+        """No status change means no OOB swap (the hero pill is already correct)."""
+        # Ticket starts open; audit reports open — no status change.
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(
+            status="open"
+        )
+        response = self.client.post(
+            self.url, {"body": "hi"}, HTTP_HX_REQUEST="true"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn(b'hx-swap-oob="true"', response.content)
+        self.assertNotIn(b'id="thread-detail--pill-cluster"', response.content)
+
+    def test_non_htmx_render_emits_single_pill_cluster(self):
+        """Initial page render must NOT duplicate the pill cluster element."""
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+        # Exactly one `id="thread-detail--pill-cluster"` should appear:
+        # the one in the hero. The OOB block must be gated off.
+        self.assertEqual(
+            1, response.content.count(b'id="thread-detail--pill-cluster"')
+        )

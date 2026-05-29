@@ -224,24 +224,6 @@
   margin-bottom: p.$spacing-lg;
 }
 
-// In-flight reply (SupportTicketPendingChange row, kind="comment", status="sending")
-// shown as a phantom comment at the bottom of the thread while the Celery task
-// posts to Zendesk.
-.thread-post--sending {
-  .thread-post--body {
-    opacity: 0.6;
-  }
-}
-
-.thread-post--state {
-  display: flex;
-  align-items: center;
-  gap: p.$spacing-sm;
-  margin-top: p.$spacing-md;
-  @include c.text-body-sm;
-  color: var(--color-text-light);
-}
-
 // Loading state for async comment fetch
 .thread-detail--loading {
   display: flex;

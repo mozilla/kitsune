@@ -19,7 +19,7 @@ class ZendeskClient:
             "token": settings.ZENDESK_API_TOKEN,
             "subdomain": settings.ZENDESK_SUBDOMAIN,
         }
-        self.client = Zenpy(**creds)
+        self.client = Zenpy(**(creds | kwargs))
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""

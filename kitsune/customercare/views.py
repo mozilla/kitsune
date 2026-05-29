@@ -9,18 +9,21 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import SuspiciousOperation
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.http import require_http_methods, require_POST
 from zenpy.lib.exception import APIException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
-from kitsune.customercare.models import SupportTicket, SupportTicketPendingChange
-from kitsune.customercare.tasks import post_reply_to_zendesk, process_zendesk_update
+from kitsune.customercare.models import SupportTicket
+from kitsune.customercare.tasks import process_zendesk_update
 from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
+from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.products.models import Topic
 
 log = logging.getLogger("k.customercare")
@@ -46,58 +49,97 @@ def ticket_detail(request, username, ticket_id):
         user__username=username,
     )
 
-    pending = ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-
-    initial = (
-        {"body": pending.payload}
-        if pending and pending.effective_status == SupportTicketPendingChange.STATUS_FAILED
+    placeholder = (
+        _("Reply here to reopen this ticket.")
+        if ticket.zd_status == SupportTicket.ZD_STATUS_SOLVED
         else None
     )
-
-    form = SupportTicketReplyForm(request.POST or None, initial=initial)
+    form = SupportTicketReplyForm(request.POST or None, placeholder=placeholder)
 
     is_htmx = bool(request.headers.get("HX-Request"))
-    # Captured before any post-submission form reset: a bound form means the
-    # user is submitting; an unbound HTMX request is a background refresh.
-    is_polling = is_htmx and not form.is_bound
+    is_htmx_get = is_htmx and not form.is_bound
 
-    if form.is_valid() and (ticket.zd_status != SupportTicket.ZD_STATUS_CLOSED):
+    sync_error = False
+    reply_error = False
+    status_changed = False
+
+    if (ticket.zd_status != SupportTicket.ZD_STATUS_CLOSED) and form.is_valid():
         new_body = form.cleaned_data["body"]
-        should_post_reply = False
-        with transaction.atomic():
-            pending = ticket.pending_change(
-                SupportTicketPendingChange.KIND_COMMENT, for_update=True
-            )
-            already_sending = pending and (
-                pending.effective_status == SupportTicketPendingChange.STATUS_SENDING
-            )
-            same_body = pending and (pending.payload == new_body)
-            if (not already_sending) and same_body:
-                # Same body but trying again. Bump "last_attempted_at" so
-                # stale-sending detection anchors on this retry, not the prior
-                # failed attempt.
-                pending.status = SupportTicketPendingChange.STATUS_SENDING
-                pending.last_attempted_at = timezone.now()
-                pending.save(update_fields=["status", "last_attempted_at"])
-                should_post_reply = True
-            elif not already_sending:
-                # No prior pending, or user edited the body — start fresh.
-                if pending:
-                    pending.delete()
-                try:
-                    with transaction.atomic():
-                        pending = SupportTicketPendingChange.objects.create(
-                            ticket=ticket,
-                            kind=SupportTicketPendingChange.KIND_COMMENT,
-                            payload=new_body,
-                        )
-                except IntegrityError:
-                    pending = ticket.pending_change(SupportTicketPendingChange.KIND_COMMENT)
-                else:
-                    should_post_reply = True
 
-        if should_post_reply:
-            post_reply_to_zendesk.delay(ticket_id=ticket.id)
+        # Zendesk automatically triggers a reopen only when the comment author
+        # is the same as the API user, which is never true in our case, so we
+        # take care of that here.
+        new_status = (
+            SupportTicket.ZD_STATUS_OPEN
+            if ticket.zd_status
+            in {SupportTicket.ZD_STATUS_PENDING, SupportTicket.ZD_STATUS_SOLVED}
+            else None
+        )
+
+        try:
+            ticket_audit = ZendeskClient(
+                timeout=settings.ZENDESK_REPLY_TIMEOUT
+            ).add_ticket_comment(
+                user=ticket.user,
+                ticket_id=int(ticket.zendesk_ticket_id),
+                comment_body=new_body,
+                public=True,
+                status=new_status,
+            )
+        except APIException, requests.exceptions.RequestException:
+            log.exception("Failed to add comment to Zendesk ticket %s", ticket.zendesk_ticket_id)
+            reply_error = True
+        else:
+            new_comment = next(
+                (
+                    ev
+                    for ev in ticket_audit.audit.events
+                    if isinstance(ev, dict) and ev.get("type") == "Comment" and ev.get("id")
+                ),
+                None,
+            )
+            if new_comment is None:
+                log.error(
+                    f"Zendesk audit had no comment event for ticket {ticket_audit.ticket.id}."
+                )
+                reply_error = True
+
+        if not reply_error:
+            with transaction.atomic():
+                ticket = (
+                    SupportTicket.objects.select_related("user", "user__profile")
+                    .select_for_update(of=("self",))
+                    .get(id=ticket_id)
+                )
+
+                ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
+                update_fields = ["zd_updated_at"]
+
+                if ticket.zd_status != ticket_audit.ticket.status.lower():
+                    ticket.zd_status = ticket_audit.ticket.status.lower()
+                    update_fields.append("zd_status")
+                    status_changed = True
+
+                new_comment_id = new_comment["id"]
+                if not any(c.get("id") == new_comment_id for c in ticket.comments):
+                    ticket.comments.append(
+                        {
+                            "id": new_comment_id,
+                            "body": new_comment["html_body"],
+                            "created_at": ticket_audit.ticket.updated_at,
+                            "public": True,
+                            "author": {
+                                "name": ticket.user.profile.display_name,
+                                "id": new_comment["author_id"],
+                            },
+                        }
+                    )
+                    update_fields.append("comments")
+
+                ticket.save(update_fields=update_fields)
+
+            form = SupportTicketReplyForm()
+
             if not is_htmx:
                 return redirect(
                     "customercare.ticket_detail",
@@ -105,19 +147,22 @@ def ticket_detail(request, username, ticket_id):
                     ticket_id=ticket.id,
                 )
 
-        form = SupportTicketReplyForm()
-
     needs_sync = _ticket_needs_sync(ticket)
 
-    sync_error = False
-    if is_polling and needs_sync:
+    if is_htmx_get and needs_sync:
         try:
             sync_ticket_from_zendesk(ticket)
         except APIException, requests.exceptions.RequestException:
             log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
             sync_error = True
 
-    context = {"ticket": ticket, "pending": pending, "sync_error": sync_error, "reply_form": form}
+    context = {
+        "ticket": ticket,
+        "reply_form": form,
+        "sync_error": sync_error,
+        "reply_error": reply_error,
+        "status_changed": status_changed,
+    }
     if is_htmx:
         return render(request, "customercare/includes/ticket_replies.html", context)
     return render(
