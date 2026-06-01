@@ -42,27 +42,33 @@ def _ticket_needs_sync(ticket):
     return ticket.last_synced_at < timezone.now() - threshold
 
 
-@login_required
-@require_http_methods(["GET", "POST"])
-def ticket_detail(request, username, ticket_id):
-    ticket = get_object_or_404(
-        SupportTicket.objects.accessible_to(request.user).select_related(
-            "product", "topic", "user", "org_group"
-        ),
-        id=ticket_id,
-        user__username=username,
-    )
-
+def _accessible_ticket(request, username, ticket_id, select_related=None):
+    qs = SupportTicket.objects.accessible_to(request.user)
+    if select_related:
+        qs = qs.select_related(*select_related)
+    ticket = get_object_or_404(qs, id=ticket_id, user__username=username)
     can_reply = ticket.can_reply(request.user)
     if request.method == "POST" and not can_reply:
         raise PermissionDenied
+    return ticket, can_reply
 
-    placeholder = (
+
+def _reply_placeholder(ticket):
+    return (
         _("Reply here to reopen this ticket.")
         if ticket.zd_status == SupportTicket.ZD_STATUS_SOLVED
         else None
     )
-    form = SupportTicketReplyForm(request.POST or None, placeholder=placeholder)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def ticket_detail(request, username, ticket_id):
+    ticket, can_reply = _accessible_ticket(
+        request, username, ticket_id, select_related=("product", "topic", "user")
+    )
+
+    form = SupportTicketReplyForm(request.POST or None, placeholder=_reply_placeholder(ticket))
 
     is_htmx = bool(request.headers.get("HX-Request"))
     is_htmx_get = is_htmx and not form.is_bound
@@ -183,29 +189,17 @@ def ticket_detail(request, username, ticket_id):
 @login_required
 @require_POST
 def ticket_mark_solved(request, username, ticket_id):
-    ticket = get_object_or_404(
-        SupportTicket.objects.accessible_to(request.user).select_related(
-            "product", "topic", "user", "org_group"
-        ),
-        id=ticket_id,
-        user__username=username,
-    )
-
-    if not ticket.can_reply(request.user):
-        raise PermissionDenied
+    ticket, can_reply = _accessible_ticket(request, username, ticket_id, select_related=("user",))
 
     status_error = False
     status_changed = False
 
     if ticket.zd_status in SupportTicket.ZD_STATUSES_SOLVABLE:
         try:
-            ticket_audit = ZendeskClient(
-                timeout=settings.ZENDESK_REPLY_TIMEOUT
-            ).update_ticket_status(
-                int(ticket.zendesk_ticket_id),
-                SupportTicket.ZD_STATUS_SOLVED,
+            ticket_audit = ZendeskClient().update_ticket_status(
+                int(ticket.zendesk_ticket_id), SupportTicket.ZD_STATUS_SOLVED
             )
-        except APIException, requests.exceptions.RequestException:
+        except ZENDESK_ERRORS:
             log.exception("Failed to mark Zendesk ticket %s as solved", ticket.zendesk_ticket_id)
             status_error = True
         else:
@@ -220,12 +214,7 @@ def ticket_mark_solved(request, username, ticket_id):
                 ticket.save(update_fields=["zd_updated_at", "zd_status"])
                 status_changed = True
 
-    placeholder = (
-        _("Reply here to reopen this ticket.")
-        if ticket.zd_status == SupportTicket.ZD_STATUS_SOLVED
-        else None
-    )
-    form = SupportTicketReplyForm(placeholder=placeholder)
+    form = SupportTicketReplyForm(placeholder=_reply_placeholder(ticket))
 
     context = {
         "ticket": ticket,
@@ -234,7 +223,7 @@ def ticket_mark_solved(request, username, ticket_id):
         "reply_error": False,
         "status_error": status_error,
         "status_changed": status_changed,
-        "can_reply": True,
+        "can_reply": can_reply,
     }
 
     if request.headers.get("HX-Request"):

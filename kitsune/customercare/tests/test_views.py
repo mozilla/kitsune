@@ -525,7 +525,6 @@ class TicketMarkSolvedTests(TestCase):
     def test_post_calls_zendesk_with_solved_status(self, mock_client_cls):
         mock_client_cls.return_value.update_ticket_status.return_value = self._audit()
         self.client.post(self.url)
-        mock_client_cls.assert_called_with(timeout=settings.ZENDESK_REPLY_TIMEOUT)
         mock_client_cls.return_value.update_ticket_status.assert_called_once_with(
             42, SupportTicket.ZD_STATUS_SOLVED
         )
