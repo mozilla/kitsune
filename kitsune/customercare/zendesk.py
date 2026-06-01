@@ -19,6 +19,8 @@ class ZendeskClient:
             "token": settings.ZENDESK_API_TOKEN,
             "subdomain": settings.ZENDESK_SUBDOMAIN,
         }
+        # Bound every call so an unreachable/slow Zendesk can't hang a worker.
+        kwargs.setdefault("timeout", settings.ZENDESK_SYNC_TIMEOUT)
         self.client = Zenpy(**(creds | kwargs))
 
     def _user_to_zendesk_user(self, user, email):

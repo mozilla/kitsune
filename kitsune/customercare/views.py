@@ -17,7 +17,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.http import require_http_methods, require_POST
-from zenpy.lib.exception import APIException
+from zenpy.lib.exception import APIException, ZenpyException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
@@ -27,6 +27,10 @@ from kitsune.customercare.zendesk import ZendeskClient
 from kitsune.products.models import Topic
 
 log = logging.getLogger("k.customercare")
+
+# Zendesk failures we surface as a notice rather than a 500 (ZenpyException
+# covers client construction, e.g. missing credentials).
+ZENDESK_ERRORS = (APIException, ZenpyException, requests.exceptions.RequestException)
 
 
 def _ticket_needs_sync(ticket):
@@ -81,16 +85,14 @@ def ticket_detail(request, username, ticket_id):
         )
 
         try:
-            ticket_audit = ZendeskClient(
-                timeout=settings.ZENDESK_REPLY_TIMEOUT
-            ).add_ticket_comment(
+            ticket_audit = ZendeskClient().add_ticket_comment(
                 user=ticket.user,
                 ticket_id=int(ticket.zendesk_ticket_id),
                 comment_body=new_body,
                 public=True,
                 status=new_status,
             )
-        except APIException, requests.exceptions.RequestException:
+        except ZENDESK_ERRORS:
             log.exception("Failed to add comment to Zendesk ticket %s", ticket.zendesk_ticket_id)
             reply_error = True
         else:
@@ -156,7 +158,7 @@ def ticket_detail(request, username, ticket_id):
     if is_htmx_get and needs_sync:
         try:
             sync_ticket_from_zendesk(ticket)
-        except APIException, requests.exceptions.RequestException:
+        except ZENDESK_ERRORS:
             log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
             sync_error = True
 

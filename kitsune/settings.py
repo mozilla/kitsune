@@ -1248,7 +1248,10 @@ ZENDESK_WEBHOOK_API_KEY_HEADER_NAME = config(
 )
 ZENDESK_WEBHOOK_API_KEY = config("ZENDESK_WEBHOOK_API_KEY", default="")
 ZENDESK_COMMENTS_SYNC_THRESHOLD = config("ZENDESK_COMMENTS_SYNC_THRESHOLD", default=3600, cast=int)
-ZENDESK_REPLY_TIMEOUT = config("ZENDESK_REPLY_TIMEOUT", default=20, cast=int)
+# (connect, read) seconds: fail fast on a dead host, tolerate a slow response.
+ZENDESK_SYNC_TIMEOUT = config(
+    "ZENDESK_SYNC_TIMEOUT", default="5,10", cast=Csv(int, post_process=tuple)
+)
 
 # Products that allow un-authenticated users to submit support requests
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
