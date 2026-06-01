@@ -653,6 +653,8 @@
 
 .karma-titles {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: p.$spacing-xs;
   margin: 0 0 0 p.$spacing-sm;
   padding-left: p.$spacing-sm;
   line-height: 1;
