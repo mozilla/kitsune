@@ -6,7 +6,6 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import requests
-from django.conf import settings
 from django.contrib.auth.models import Group
 from django.test import override_settings
 from django.urls import reverse
@@ -320,7 +319,7 @@ class TicketReplySyncTests(TestCase):
     def test_post_calls_zendesk_with_expected_args(self, mock_client_cls):
         mock_client_cls.return_value.add_ticket_comment.return_value = self._audit()
         self.client.post(self.url, {"body": "hello"})
-        mock_client_cls.assert_called_with(timeout=settings.ZENDESK_REPLY_TIMEOUT)
+        mock_client_cls.assert_called_with()
         mock_client_cls.return_value.add_ticket_comment.assert_called_once()
         kwargs = mock_client_cls.return_value.add_ticket_comment.call_args.kwargs
         self.assertEqual(self.owner, kwargs["user"])
