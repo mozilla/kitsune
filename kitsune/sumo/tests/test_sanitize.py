@@ -22,6 +22,10 @@ class RestrictedHtmlConstantsTests(TestCase):
         for tag in ("table", "thead", "tbody", "tfoot", "tr", "td", "th"):
             self.assertIn(tag, RESTRICTED_HTML_TAGS)
 
+    def test_tags_contains_u_and_hr(self):
+        self.assertIn("u", RESTRICTED_HTML_TAGS)
+        self.assertIn("hr", RESTRICTED_HTML_TAGS)
+
     def test_rename_preserves_existing_attribute_entries(self):
         self.assertIn("a", RESTRICTED_HTML_ATTRIBUTES)
         self.assertIn("abbr", RESTRICTED_HTML_ATTRIBUTES)
@@ -108,6 +112,14 @@ class SanitizeExternalHtmlFilterTests(TestCase):
     def test_heading_tag_is_preserved(self):
         result = sanitize_external_html("<h2>Section</h2>")
         self.assertIn("<h2>Section</h2>", result)
+
+    def test_underline_tag_is_preserved(self):
+        result = sanitize_external_html("<u>under</u>")
+        self.assertIn("<u>under</u>", result)
+
+    def test_horizontal_rule_is_preserved(self):
+        result = sanitize_external_html("before<hr>after")
+        self.assertIn("<hr>", result)
 
     def test_table_structure_is_preserved(self):
         result = sanitize_external_html(
