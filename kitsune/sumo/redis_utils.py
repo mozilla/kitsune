@@ -94,10 +94,14 @@ class RateLimit:
         # Only the first caller will be able to set the key and its expiration, since
         # the key will only be set if it doesn't already exist (nx=True). Note that
         # once a key expires, it's considered to no longer exist.
-        self.redis.set(self.key, self.max_calls, nx=True, ex=self.period)
-        # If the "token bucket" is empty, start rate limiting until it's refreshed
-        # again after the period expires.
-        return self.redis.decrby(self.key, 1) < 0
+        #
+        # Atomic: if the key expires between set and decrby, decrby recreates it
+        # with no TTL, leaving the bucket stuck rate-limiting forever.
+        with self.redis.pipeline() as pipe:
+            pipe.set(self.key, self.max_calls, nx=True, ex=self.period)
+            pipe.decrby(self.key, 1)
+            _, remaining = pipe.execute()
+        return remaining < 0
 
     def wait(self):
         """
