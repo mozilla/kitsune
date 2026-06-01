@@ -57,18 +57,18 @@
       <tbody>
         {% for t in tickets %}
           <tr>
-            <td>
+            <td data-label="{{ _('Subject') }}">
               <a href="{{ t.get_absolute_url() }}">{{ t.subject }}</a>
             </td>
-            <td>
+            <td data-label="{{ _('Submitter') }}">
               <a class="group-tickets--submitter" href="{{ profile_url(t.user) }}">{{ display_name(t.user) }}</a>
             </td>
-            <td>
+            <td data-label="{{ _('Status') }}">
               <span class="group-tickets--status group-tickets--status-{{ t.zd_status or 'unknown' }}">
                 {{ t.get_zd_status_display() or _('Submitted') }}
               </span>
             </td>
-            <td>{{ (t.zd_updated_at or t.created)|timesince }}</td>
+            <td data-label="{{ _('Last update') }}">{{ (t.zd_updated_at or t.created)|timesince }}</td>
           </tr>
         {% endfor %}
       </tbody>

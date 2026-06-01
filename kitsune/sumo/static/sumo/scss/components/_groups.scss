@@ -938,9 +938,20 @@ body:has(#group-tickets) {
     }
   }
 
-  &--member-filter select {
-    width: auto;
-    min-width: 200px;
+  &--member-filter {
+    select {
+      width: auto;
+      min-width: 200px;
+    }
+
+    @media (max-width: 767px) {
+      flex-basis: 100%;
+
+      select {
+        width: 100%;
+        min-width: 0;
+      }
+    }
   }
 
   &--submitter {
@@ -994,6 +1005,45 @@ body:has(#group-tickets) {
 
       &:hover {
         text-decoration: underline;
+      }
+    }
+
+    // Stack each row into a labelled card on small screens — a 4-column
+    // table is too cramped to read on a phone (issue #3070). The hidden
+    // column headers are surfaced per-cell via the data-label attribute.
+    @media (max-width: 767px) {
+      thead {
+        @include c.sr-only;
+      }
+
+      tr {
+        display: block;
+        padding: p.$spacing-sm 0;
+
+        &:not(:last-child) {
+          border-bottom: 1px solid var(--color-border);
+        }
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: p.$spacing-md;
+        padding: p.$spacing-xs 0;
+        border-bottom: 0;
+        text-align: right;
+
+        &::before {
+          @include c.text-body-xs;
+          flex: 0 0 auto;
+          font-weight: 600;
+          text-align: left;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--color-text-light);
+          content: attr(data-label);
+        }
       }
     }
   }
