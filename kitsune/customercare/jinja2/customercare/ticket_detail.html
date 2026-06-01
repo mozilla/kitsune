@@ -5,7 +5,6 @@
 
 {% set title = ticket.subject %}
 {% set canonical_url = canonicalize(viewname="customercare.ticket_detail", username=ticket.user.username, ticket_id=ticket.id) %}
-{% set crumbs = [(url('users.questions', ticket.user.username), _('My Questions')), (None, ticket.subject)] %}
 
 {% block thread_title %}{{ ticket.subject }}{% endblock %}
 

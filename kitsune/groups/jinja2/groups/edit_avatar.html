@@ -2,7 +2,7 @@
 {% set title = _('Change {group} group avatar')|f(group=profile.group.name) %}
 
 {# Build breadcrumb trail #}
-{% set crumbs = [(url('groups.list'), _('Groups')), (url('groups.profile', profile.slug), profile.group.name), (None, _('Change Avatar'))] %}
+{% set crumbs = group_breadcrumbs(profile) + [(None, _('Change Avatar'))] %}
 
 {% block content %}
   <article id="change-avatar">

@@ -493,3 +493,14 @@ class GroupTicketsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"<html", response.content)
         self.assertIn(b'id="tickets-content"', response.content)
+
+    def test_breadcrumb_shows_ancestor_chain(self):
+        self.client.force_login(self.member)
+        response = self.client.get(reverse("groups.tickets", args=[self.c1.slug]))
+        self.assertEqual(response.status_code, 200)
+        crumbs = pq(response.content)("#main-breadcrumbs a")
+        hrefs = [a.attrib["href"] for a in crumbs]
+        self.assertIn(reverse("groups.list"), hrefs)
+        self.assertIn(reverse("groups.profile", args=[self.root.slug]), hrefs)
+        self.assertIn(reverse("groups.profile", args=[self.c1.slug]), hrefs)
+        self.assertContains(response, "Tickets")
