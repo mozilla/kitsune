@@ -93,6 +93,7 @@ RESTRICTED_HTML_TAGS = {
     "h4",
     "h5",
     "h6",
+    "hr",
     "i",
     "li",
     "ol",
@@ -105,6 +106,7 @@ RESTRICTED_HTML_TAGS = {
     "th",
     "thead",
     "tr",
+    "u",
     "ul",
     "p",
 }
