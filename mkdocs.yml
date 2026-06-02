@@ -25,13 +25,16 @@ markdown_extensions:
     - pymdownx.keys
     - pymdownx.mark
     - pymdownx.smartsymbols
-    - pymdownx.superfences
+    - pymdownx.superfences:
+        custom_fences:
+          - name: mermaid
+            class: mermaid
+            format: !!python/name:pymdownx.superfences.fence_code_format
     - pymdownx.tabbed:
         alternate_style: true
     - pymdownx.tasklist:
         custom_checkbox: true
     - pymdownx.tilde
-    - pymdownx.superfences
 theme:
     name: material
     features:
