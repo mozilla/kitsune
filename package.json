@@ -58,7 +58,7 @@
     "@stylistic/stylelint-plugin": "^5.0.1",
     "@types/underscore": "^1.13.0",
     "autoprefixer": "^10.4.27",
-    "babel-loader": "^9.2.1",
+    "babel-loader": "^10.1.1",
     "baseline-browser-mapping": "^2.10.31",
     "browser-sync": "^3.0.4",
     "chai": "^6.2.2",
