@@ -77,7 +77,7 @@ dependencies = [
     "requests>=2.34.0,<3",
     "fuzzywuzzy>=0.18.0,<0.19",
     "django-ses==4.7.2",
-    "django-post-office==3.10.1",
+    "django-post-office==3.11.2",
     "langchain==1.2.14",
     "langchain-google-vertexai==3.2.3",
     "django-celery-beat>=2.8.1,<3",
