@@ -243,7 +243,7 @@ def questions_contributed(request, username):
     if channel != "direct_support":
         forum_questions = profile.user.questions.select_related(
             "solution", "product", "topic", "last_answer", "last_answer__creator"
-        ).order_by("-created")
+        ).prefetch_related("metadata_set").order_by("-created")
         if product_slug:
             forum_questions = forum_questions.filter(product__slug=product_slug)
         if topic_slug:

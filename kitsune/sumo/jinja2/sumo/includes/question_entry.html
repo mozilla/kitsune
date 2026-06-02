@@ -188,6 +188,7 @@
   <div class="question-entry--meta">
     <div class="question-entry--meta-primary">
       {% if question.product and _product_url %}
+      <span class="question-entry--meta-item">
         <a class="question-entry--meta-item"
            href="{{ _product_url }}"
            title="{{ _('{product} questions')|f(product=question.product.title) }}">
@@ -199,6 +200,10 @@
           </svg>
           {{ question.product.title }}
         </a>
+        {% if question.channel != "direct_support" and user_is_contributor and question.product_version %}
+         {{ question.product_version }}
+        {% endif %}
+      </span>
       {% endif %}
       {% if question.topic and _topic_url %}
         <a class="question-entry--meta-item"

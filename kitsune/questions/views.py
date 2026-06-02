@@ -260,6 +260,7 @@ def question_list(request, product_slug=None, topic_slug=None):
         "topic",
         "product",
     )
+    question_qs = question_qs.prefetch_related("metadata_set")
     today = date.today()
     question_qs = (
         question_qs.exclude(

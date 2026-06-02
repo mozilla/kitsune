@@ -105,12 +105,21 @@
     flex-shrink: 0;
   }
 
+  * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
-a.question-entry--meta-item:hover {
-  color: var(--color-link);
-  text-decoration: underline;
-}
+  a.question-entry--meta-item,
+  .question-entry--meta-item a {
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-link);
+      text-decoration: underline;
+    }
+  }
 
 .question-entry--reply-count,
 .question-entry--vote-count {
@@ -137,16 +146,8 @@ a.question-entry--meta-item:hover {
 }
 
 .question-entry--meta-asked-by {
-  position: relative;
-  z-index: 1;
   color: var(--color-heading);
   font-weight: 600;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-    color: var(--color-link);
-  }
 }
 
 .question-entry--last-reply {
