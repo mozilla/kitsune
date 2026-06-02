@@ -64,10 +64,6 @@ class SupportTicket(ModelBase):
         (ZD_STATUS_CLOSED, _lazy("Closed")),
     )
 
-    # Statuses from which a ticket can be transitioned to SOLVED. Used by the
-    # "Mark as solved" affordance on the ticket detail page (view + template).
-    ZD_STATUSES_SOLVABLE = frozenset({ZD_STATUS_OPEN, ZD_STATUS_PENDING, ZD_STATUS_HOLD})
-
     subject = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=255)
