@@ -214,7 +214,7 @@ class Question(AAQBase):
             if settings.QUESTION_CLASSIFIER_ENABLED:
                 question_classifier.delay(self.id)
 
-    def add_metadata(self, **kwargs):
+    def add_metadata(self, update=False, **kwargs):
         """Add (save to db) the passed in metadata.
 
         Usage:
@@ -223,7 +223,10 @@ class Question(AAQBase):
 
         """
         for key, value in list(kwargs.items()):
-            QuestionMetaData.objects.create(question=self, name=key, value=value)
+            if update:
+                QuestionMetaData.objects.update_or_create(question=self, name=key, value=value)
+            else:
+                QuestionMetaData.objects.create(question=self, name=key, value=value)
         self._metadata = None
 
     def clear_mutable_metadata(self):
@@ -252,6 +255,18 @@ class Question(AAQBase):
         if not hasattr(self, "_metadata") or self._metadata is None:
             self._metadata = {m.name: m.value for m in self.metadata_set.all()}
         return self._metadata
+
+    @property
+    def product_version(self):
+        metadata = self.metadata
+        if "sanitized_product_version" in metadata:
+            return metadata.get("sanitized_product_version")
+        elif self.product_slug in ("firefox", "mobile", "ios"):
+            return metadata.get("ff_version")
+        elif self.product_slug in ("thunderbird", "thunderbird-android"):
+            return metadata.get("tb_version")
+        else:
+            return None
 
     @property
     def solver(self):
@@ -319,6 +334,7 @@ class Question(AAQBase):
             # beta exists. A bare version is tagged only if it's a known
             # major/stability release.
             match = re.match(r"(\d+(?:\.\d+){0,2})([ab]\d*)?", raw_version)
+            sanitized_product_version = ""
             if match:
                 version, suffix = match.group(1), match.group(2)
                 if "." not in version:
@@ -327,14 +343,18 @@ class Question(AAQBase):
 
                 if suffix:
                     if any(key.startswith(f"{version}b") for key in development_releases):
+                        sanitized_product_version = f"{version}b"
                         tags.append(f"{product_name} {version}")
                         if tenths and tenths != version:
                             tags.append(f"{product_name} {tenths}")
                         tags.append("beta")
                 elif version in major_releases or version in stability_releases:
+                    sanitized_product_version = version
                     tags.append(f"{product_name} {version}")
                     if tenths and tenths != version:
                         tags.append(f"{product_name} {tenths}")
+            if action == "add":
+                self.add_metadata(update=True, sanitized_product_version=sanitized_product_version)
 
         # Add a tag for the OS but only if it already exists as a non-segmentation tag.
         if os := self.metadata.get("os"):
