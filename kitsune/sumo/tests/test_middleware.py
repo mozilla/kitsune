@@ -6,6 +6,7 @@ from django.test.client import RequestFactory
 from kitsune.sumo.middleware import (
     CacheHeadersMiddleware,
     EnforceHostIPMiddleware,
+    GeoIPCookieMiddleware,
     PlusToSpaceMiddleware,
     SetRemoteAddr,
 )
@@ -227,3 +228,24 @@ class SetRemoteAddrFromForwardedForMiddlewareTestCase(TestCase):
                 request = rf.get("/", **kwargs)
                 mw(request)
                 self.assertEqual(request.META["REMOTE_ADDR"], expected)
+
+
+class GeoIPCookieMiddlewareTestCase(TestCase):
+    def setUp(self):
+        self.rf = RequestFactory()
+        self.mw = GeoIPCookieMiddleware(lambda r: HttpResponse())
+
+    def test_header_sets_cookie(self):
+        request = self.rf.get(
+            "/",
+            HTTP_X_CLIENT_GEO_COUNTRY_NAME="United States",
+        )
+        response = HttpResponse()
+        response = self.mw.process_response(request, response)
+        self.assertEqual(response.cookies["geoip_country_name"].value, "United States")
+
+    def test_no_header_sets_no_cookie(self):
+        request = self.rf.get("/")
+        response = HttpResponse()
+        response = self.mw.process_response(request, response)
+        self.assertNotIn("geoip_country_name", response.cookies)

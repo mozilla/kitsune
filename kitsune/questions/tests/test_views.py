@@ -199,6 +199,16 @@ class AAQZendeskRedirectLocaleTests(TestCase):
         links = doc(".switcher-actions a:not(.sumo-button)")
         self.assertEqual(len(links), 0)
 
+    def test_country_field_populated_from_geo_header(self):
+        """The hidden country field is pre-populated from the Fastly geo header."""
+        url = reverse("questions.aaq_step3", locale="en-US", args=["firefox"])
+        response = self.client.get(
+            url,
+            HTTP_X_CLIENT_GEO_COUNTRY_NAME="Germany",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="Germany"')
+
 
 class TestQuestionUpdates(TestCase):
     """Tests that questions are only updated in the right cases."""

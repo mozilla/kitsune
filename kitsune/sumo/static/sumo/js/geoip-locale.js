@@ -1,38 +1,13 @@
-import "sumo/js/libs/jquery.cookie";
 import trackEvent from "sumo/js/analytics";
 
-/* Please do not directly use this code or SUMO key. */
-/* Contact MLS team for your own credentials. */
-/* https://location.services.mozilla.com/contact */
-
 (function() {
-  var GeoIPUrl = 'https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d';
-  var countryData = {
-    'country_name': $.cookie('geoip_country_name'),
-    'country_code': $.cookie('geoip_country_code')
-  };
-
-  if (!countryData.country_name) {
-    $.ajax({
-      method: 'GET',
-      url: GeoIPUrl,
-      beforeSend: function() {} // don't send X-CSRFToken header
-    })
-    .done(function(data) {
-      $.cookie('geoip_country_name', data.country_name, { path: '/' });
-      $.cookie('geoip_country_code', data.country_code, { path: '/' });
-      countryData = data;
-    })
-    .fail(function(error) {
-      console.warn('Error retrieving geoip data');
-      $('#announce-geoip-suggestion').remove();
-    })
-    .always(function() {
-      handleLocale(countryData.country_name);
-    });
-  } else {
-    handleLocale(countryData.country_name);
+  var match = document.cookie.match(/(?:^|; )geoip_country_name=([^;]*)/);
+  var value = match ? match[1] : '';
+  // SimpleCookie wraps values with special chars (e.g. spaces in country names) in double quotes
+  if (value.length >= 2 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+    value = value.slice(1, -1);
   }
+  handleLocale(value);
 })();
 
 function handleLocale(countryName) {

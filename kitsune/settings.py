@@ -525,6 +525,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.sumo.middleware.ReadOnlyMiddleware",
     "kitsune.sumo.middleware.PlusToSpaceMiddleware",
     "kitsune.sumo.middleware.ClientHintsMiddleware",
+    "kitsune.sumo.middleware.GeoIPCookieMiddleware",
     "commonware.middleware.ScrubRequestOnException",
     "waffle.middleware.WaffleMiddleware",
     "commonware.middleware.RobotsTagHeader",
@@ -1313,7 +1314,6 @@ CONTENT_SECURITY_POLICY = {
         "connect-src": [
             SELF,
             "https://*.google-analytics.com",
-            "https://location.services.mozilla.com",
             "https://accounts.firefox.com/metrics-flow",
             "https://accounts.stage.mozaws.net/metrics-flow",
             "https://basket.mozilla.org",
@@ -1374,11 +1374,6 @@ MOZILLA_ACCOUNT_ARTICLES = [
     "accounts-blocked",
     "im-having-problems-confirming-my-firefox-account",
 ]
-
-MOZILLA_LOCATION_SERVICE = config(
-    "MOZILLA_LOCATION_SERVICE",
-    default="https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d",
-)
 
 SUMO_BOT_USERNAME = config("SUMO_BOT_USERNAME", default="SumoBot")
 SUMO_CONTENT_GROUP = config("SUMO_CONTENT_GROUP", default="Staff Content Team")

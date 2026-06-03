@@ -4,7 +4,6 @@ import random
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
-import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
@@ -836,12 +835,6 @@ def edit_details(request, question_id):
     return redirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
-def aaq_location_proxy(request):
-    """Proxy request from the Mozilla service to our form."""
-    response = requests.get(settings.MOZILLA_LOCATION_SERVICE)
-    return JsonResponse(response.json())
-
-
 def aaq(request, product_slug=None, step=1, is_loginless=False):
     """Ask a new question."""
     # After the migration to a DB based AAQ, we need to account for
@@ -1001,6 +994,7 @@ def aaq(request, product_slug=None, step=1, is_loginless=False):
                 data=request.POST or None,
                 product=product,
                 user=request.user,
+                initial={"country": request.headers.get("X-Client-Geo-Country-Name", "")},
             )
             context["form"] = zendesk_form
             context["submit_event_parameters"] = get_ga_submit_event_parameters_as_json(
