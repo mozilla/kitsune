@@ -162,11 +162,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             log.warning("Failed to get Mozilla account UID.")
             return users
 
-        # A existing user is attempting to connect a Mozilla account to the SUMO profile
-        # NOTE: this section will be dropped when the migration is complete
-        if self.request and self.request.user and self.request.user.is_authenticated:
-            return [self.request.user]
-
         users = user_model.objects.filter(profile__fxa_uid=fxa_uid)
 
         if not users:
@@ -201,26 +196,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
     def update_user(self, user, claims):
         """Update existing user with new claims, if necessary save, and return user"""
         profile = user.profile
-        fxa_uid = claims.get("uid")
         email = claims.get("email")
         user_attr_changed = False
         # Check if the user has active subscriptions
         subscriptions = claims.get("subscriptions", [])
 
-        if (request := getattr(self, "request", None)) and not profile.is_fxa_migrated:
-            # Check if there is already a Mozilla account with this ID
-            if Profile.objects.filter(fxa_uid=fxa_uid).exists():
-                msg = _("This Mozilla account is already used in another profile.")
-                messages.error(request, msg)
-                return None
-
-            # If it's not migrated, we can assume that there isn't an FxA id too
-            profile.is_fxa_migrated = True
-            profile.fxa_uid = fxa_uid
-            # This is the first time an existing user is using FxA. Redirect to profile edit
-            # in case the user wants to update any settings.
-            request.session["oidc_login_next"] = reverse("users.edit_my_profile")
-            messages.info(request, "fxa_notification_updated")
+        request = getattr(self, "request", None)
 
         # There is a change in the email in Mozilla accounts. Let's update user's email
         # unless we have a superuser

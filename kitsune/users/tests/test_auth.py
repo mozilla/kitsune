@@ -141,7 +141,7 @@ class FXAAuthBackendTests(TestCase):
 
     @patch("kitsune.users.auth.messages")
     def test_connecting_using_existing_fxa_account(self, message_mock):
-        """Test connecting a SUMO account with an existing FxA in SUMO."""
+        """update_user must not link an existing account to the FxA uid in the claims."""
         UserFactory.create(profile__fxa_uid="my_unique_fxa_id")
         user = UserFactory.create()
         user.profile.is_fxa_migrated = False
@@ -161,9 +161,7 @@ class FXAAuthBackendTests(TestCase):
         with self.subTest("with a request"):
             self.backend.request = request_mock
             self.backend.update_user(user, claims)
-            message_mock.error.assert_called_with(
-                request_mock, "This Mozilla account is already used in another profile."
-            )
+            assert not message_mock.error.called
             assert not User.objects.get(id=user.id).profile.is_fxa_migrated
             assert not User.objects.get(id=user.id).profile.fxa_uid
 
@@ -200,8 +198,10 @@ class FXAAuthBackendTests(TestCase):
     @patch("kitsune.users.auth.messages")
     @patch("mozilla_django_oidc.auth.requests")
     @patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-    def test_link_sumo_account_fxa(self, verify_token_mock, requests_mock, message_mock):
-        """Test that an existing SUMO account is succesfully linked to Mozilla account."""
+    def test_existing_sumo_account_not_linked_to_fxa(
+        self, verify_token_mock, requests_mock, message_mock
+    ):
+        """An authenticated existing SUMO account must not be auto-linked to FxA on login."""
 
         verify_token_mock.return_value = True
 
@@ -214,7 +214,7 @@ class FXAAuthBackendTests(TestCase):
 
         get_json_mock = Mock()
         get_json_mock.json.return_value = {
-            "email": "fxa@example.com",
+            "email": "sumo@example.com",
             "uid": "my_unique_fxa_id",
             "avatar": "http://example.com/avatar",
             "locale": "en-US",
@@ -232,11 +232,12 @@ class FXAAuthBackendTests(TestCase):
         requests_mock.post.return_value = post_json_mock
 
         self.backend.authenticate(auth_request)
-        assert user.profile.is_fxa_migrated
-        self.assertEqual(user.profile.fxa_uid, "my_unique_fxa_id")
-        self.assertEqual(user.email, "fxa@example.com")
-        self.assertEqual(user.profile.name, "Kenny Bania")
-        message_mock.info.assert_called_with(auth_request, "fxa_notification_updated")
+        user = User.objects.get(id=user.id)
+        assert not user.profile.is_fxa_migrated
+        assert not user.profile.fxa_uid
+        self.assertEqual(user.email, "sumo@example.com")
+        self.assertEqual(User.objects.count(), 1)
+        assert not message_mock.info.called
 
     @patch("kitsune.users.auth.messages")
     def test_update_email_already_exists(self, message_mock):
@@ -346,11 +347,10 @@ class FXAAuthBackendTests(TestCase):
 
     @patch("kitsune.users.auth.messages")
     @override_settings(MOZILLA_DOMAINS=["mozilla.org", "mozilla.com"])
-    def test_fxa_migration_sets_mozilla_staff_flag(self, message_mock):
-        """Test that is_mozilla_staff is set during FxA migration."""
+    def test_update_user_sets_mozilla_staff_flag(self, message_mock):
+        """Test that is_mozilla_staff is set when updating a Mozilla domain user."""
         user = UserFactory.create(
             email="user@mozilla.org",
-            profile__is_fxa_migrated=False,
             profile__is_mozilla_staff=False,
         )
         claims = {"uid": "my_unique_fxa_id", "email": "user@mozilla.org", "subscriptions": "[]"}
@@ -361,6 +361,5 @@ class FXAAuthBackendTests(TestCase):
 
         self.backend.update_user(user, claims)
         user = User.objects.get(id=user.id)
-        self.assertTrue(user.profile.is_fxa_migrated)
         self.assertTrue(user.profile.is_mozilla_staff)
-        message_mock.info.assert_called_with(request_mock, "fxa_notification_updated")
+        assert not message_mock.info.called
