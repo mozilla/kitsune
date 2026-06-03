@@ -988,6 +988,14 @@ GTM_CONTAINER_ID = config("GTM_CONTAINER_ID", default="")  # Google container ID
 GA_DEBUG_MODE = config("GA_DEBUG_MODE", default=False, cast=bool)
 GA_CONSOLE_LOGGING = config("GA_CONSOLE_LOGGING", default=False, cast=bool)
 
+# Matomo (MZLA / Thunderbird) analytics. Support pages for these product
+# slugs report pageviews to MZLA's Matomo instance. Add future products
+# (e.g. iOS) here.
+MATOMO_MZLA_PRODUCT_SLUGS = ["thunderbird", "thunderbird-android"]
+MATOMO_MZLA_TRACKER_HOST = "thunderbird.innocraft.cloud"
+MATOMO_MZLA_CDN_HOST = "cdn.matomo.cloud"
+MATOMO_MZLA_SITE_ID = "8"
+
 REDIS_BACKENDS = {
     "default": config("REDIS_DEFAULT_URL"),
     "helpfulvotes": config("REDIS_HELPFULVOTES_URL"),
@@ -1267,6 +1275,7 @@ CONTENT_SECURITY_POLICY = {
             "https://*.webservices.mozgcp.net",
             "https://*.google-analytics.com",
             "https://*.googletagmanager.com",
+            f"https://{MATOMO_MZLA_CDN_HOST}",
             "https://pontoon.mozilla.org",
             "https://*.jsdelivr.net",
             NONCE,
@@ -1278,6 +1287,7 @@ CONTENT_SECURITY_POLICY = {
             "https://*.mozaws.net",
             "https://*.webservices.mozgcp.net",
             "https://*.google-analytics.com",
+            f"https://{MATOMO_MZLA_TRACKER_HOST}",
             "https://profile.accounts.firefox.com",
             "https://firefoxusercontent.com",
             "https://secure.gravatar.com",
@@ -1314,6 +1324,7 @@ CONTENT_SECURITY_POLICY = {
         "connect-src": [
             SELF,
             "https://*.google-analytics.com",
+            f"https://{MATOMO_MZLA_TRACKER_HOST}",
             "https://accounts.firefox.com/metrics-flow",
             "https://accounts.stage.mozaws.net/metrics-flow",
             "https://basket.mozilla.org",

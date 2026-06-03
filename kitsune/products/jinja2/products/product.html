@@ -9,6 +9,7 @@
 {% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
 {% set ga_products = "/" + product.slug + "/" %}
 {% set ga_content_group = "product-home" %}
+{% set matomo_mzla = matomo_mzla_enabled([product]) %}
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 

@@ -23,6 +23,7 @@
 {% set extra_body_attrs = {"data-document-id": document.id} %}
 {% set ga_content_group = "kb-article" %}
 {% set ga_default_slug = default_slug %}
+{% set matomo_mzla = matomo_mzla_enabled(document.products.all()) %}
 
 {% block title %}
   {{ document.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}

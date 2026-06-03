@@ -10,8 +10,10 @@ from django.core import mail
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.test import RequestFactory
+from django.test.utils import override_settings
 from django.utils import timezone
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 
 from kitsune.products.models import ProductSupportConfig
 from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
@@ -1717,3 +1719,62 @@ class ProductForumTemplateTestCase(TestCase):
         assert firefox.title in product_list_html
         assert android.title in product_list_html
         assert mza.title not in product_list_html
+
+
+_MZLA_SLUGS = ["thunderbird", "thunderbird-android"]
+_MATOMO_MARKER = "data-matomo-site-id"
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(MATOMO_MZLA_PRODUCT_SLUGS=_MZLA_SLUGS)
+class MatomoMzlaQuestionListTests(TestCase):
+    """Matomo snippet appears on question list for MZLA products only."""
+
+    def test_matomo_present_for_mzla_product(self):
+        p = ProductFactory(slug="thunderbird")
+        QuestionFactory(product=p)
+        url = reverse("questions.list", args=[p.slug])
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, _MATOMO_MARKER)
+
+    def test_matomo_absent_for_non_mzla_product(self):
+        p = ProductFactory(slug="firefox")
+        QuestionFactory(product=p)
+        url = reverse("questions.list", args=[p.slug])
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, _MATOMO_MARKER)
+
+    def test_matomo_absent_for_multiple_products(self):
+        tb = ProductFactory(slug="thunderbird")
+        ff = ProductFactory(slug="firefox")
+        QuestionFactory(product=tb)
+        url = reverse("questions.list", args=["{},{}".format(tb.slug, ff.slug)])
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, _MATOMO_MARKER)
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(MATOMO_MZLA_PRODUCT_SLUGS=_MZLA_SLUGS)
+class MatomoMzlaQuestionDetailTests(TestCase):
+    """Matomo snippet appears on question detail page for MZLA products only."""
+
+    def test_matomo_present_for_mzla_product(self):
+        p = ProductFactory(slug="thunderbird")
+        q = AnswerFactory(question=QuestionFactory(product=p)).question
+        response = self.client.get(
+            reverse("questions.details", args=[q.id]), follow=True
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, _MATOMO_MARKER)
+
+    def test_matomo_absent_for_non_mzla_product(self):
+        p = ProductFactory(slug="firefox")
+        q = AnswerFactory(question=QuestionFactory(product=p)).question
+        response = self.client.get(
+            reverse("questions.details", args=[q.id]), follow=True
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, _MATOMO_MARKER)
