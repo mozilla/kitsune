@@ -1,14 +1,17 @@
 {% from "sumo/includes/thread_post.html" import post_body %}
 {% from "sumo/includes/question_entry.html" import state_badges %}
+{% from "customercare/includes/ticket_notices.html" import pending_notice %}
 
 {# When a reply changes the ticket's status (e.g. reply-triggers-reopen on a
-   PENDING/SOLVED ticket), the hero pill cluster lives outside #thread-replies
-   and would otherwise stay stale until the next navigation. HTMX strips this
-   OOB element from the response and swaps it into the matching id on the page.
-   The gate also prevents a duplicate-id violation on initial page render,
-   where ticket_detail.html {% include %}s this partial inline. #}
+   PENDING/SOLVED ticket), the hero pill cluster and the pending notice both
+   live outside #thread-replies and would otherwise stay stale until the next
+   navigation. HTMX strips these OOB elements from the response and swaps them
+   into the matching ids on the page. The gate also prevents a duplicate-id
+   violation on initial page render, where ticket_detail.html {% include %}s
+   this partial inline. #}
 {% if status_changed %}
 <div id="thread-detail--pill-cluster" hx-swap-oob="true" class="thread-detail--pill-cluster">{{ state_badges(ticket) }}</div>
+<div id="thread-detail--notice-slot" hx-swap-oob="true">{{ pending_notice(ticket) }}</div>
 {% endif %}
 
 {% set comments = ticket.public_comments | sort(attribute='created_at') %}

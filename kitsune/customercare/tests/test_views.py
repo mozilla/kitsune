@@ -488,3 +488,22 @@ class TicketReplySyncTests(TestCase):
         # Exactly one `id="thread-detail--pill-cluster"` should appear:
         # the one in the hero. The OOB block must be gated off.
         self.assertEqual(1, response.content.count(b'id="thread-detail--pill-cluster"'))
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_htmx_post_removes_pending_notice_via_oob(self, mock_client_cls):
+        """Reopening a PENDING ticket OOB-swaps an empty notice slot, clearing
+        the 'waiting for your response' banner without a full reload (#3078)."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_PENDING
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client_cls.return_value.add_ticket_comment.return_value = self._audit(status="open")
+        response = self.client.post(self.url, {"body": "hi"}, HTTP_HX_REQUEST="true")
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="thread-detail--notice-slot"')
+        self.assertContains(response, 'hx-swap-oob="true"')
+        self.assertNotIn(b"waiting for your response", response.content)
+
+    def test_non_htmx_render_emits_single_notice_slot(self):
+        """Initial page render must NOT duplicate the notice slot element."""
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, response.content.count(b'id="thread-detail--notice-slot"'))

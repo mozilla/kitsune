@@ -1,6 +1,7 @@
 {% extends "sumo/thread_detail.html" %}
 {% from "sumo/includes/thread_post.html" import thread_meta_rows %}
 {% from "sumo/includes/question_entry.html" import state_badges %}
+{% from "customercare/includes/ticket_notices.html" import pending_notice %}
 
 {% set title = ticket.subject %}
 {% set canonical_url = canonicalize(viewname="customercare.ticket_detail", username=ticket.user.username, ticket_id=ticket.id) %}
@@ -10,11 +11,7 @@
 
 {# ── Notice: agent waiting for user reply ────────────────────────────────── #}
 {% block thread_notice %}
-  {% if ticket.zd_status == ticket.ZD_STATUS_PENDING %}
-    <div class="thread-detail--notice thread-detail--notice--info">
-      {{ _('Our support team has replied and is waiting for your response. You can reply below or respond directly via email.') }}
-    </div>
-  {% endif %}
+  <div id="thread-detail--notice-slot">{{ pending_notice(ticket) }}</div>
 {% endblock %}
 
 {# ── Hero status pill cluster ────────────────────────────────────────────── #}
