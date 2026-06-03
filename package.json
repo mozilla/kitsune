@@ -59,7 +59,7 @@
     "@types/underscore": "^1.13.0",
     "autoprefixer": "^10.4.27",
     "babel-loader": "^10.1.1",
-    "baseline-browser-mapping": "^2.10.31",
+    "baseline-browser-mapping": "^2.10.33",
     "browser-sync": "^3.0.4",
     "chai": "^6.2.2",
     "chai-lint": "0.1.1",
