@@ -10,6 +10,7 @@ from django.contrib.auth.models import Group
 from django.test import override_settings
 from django.urls import reverse
 from django.utils.dateparse import parse_datetime
+from pyquery import PyQuery as pq
 from zenpy.lib.exception import APIException
 
 from kitsune.customercare.models import SupportTicket
@@ -17,6 +18,7 @@ from kitsune.customercare.tests import SupportTicketFactory
 from kitsune.groups.models import GroupProfile
 from kitsune.products.tests import ProductSupportConfigFactory, ZendeskConfigFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse as reverse_locale
 from kitsune.users.tests import UserFactory
 
 WEBHOOK_API_KEY = "test-webhook-api-key"
@@ -507,3 +509,131 @@ class TicketReplySyncTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.content.count(b'id="thread-detail--notice-slot"'))
+
+
+class TicketDetailBreadcrumbsTests(TestCase):
+    """Breadcrumbs on the ticket detail page are derived from the viewer's
+    relationship to the ticket. The view renders the trail into
+    #main-breadcrumbs (after an automatic Home crumb):
+
+      * the owner gets their personal "My Questions" trail, UNLESS they
+        navigated in from the group ticket pool (detected via the Referer
+        header), in which case they get the group trail instead;
+      * a non-owner who can view the ticket (org teammate, moderator, staff)
+        always gets the group trail, regardless of the Referer;
+      * everyone else (e.g. staff on a stranger's personal ticket) gets just
+        the unlinked ticket subject.
+    """
+
+    def setUp(self):
+        self.owner = UserFactory()
+        self.ticket = SupportTicketFactory(user=self.owner)
+
+    def _get(self, user, referer=None):
+        self.client.force_login(user)
+        extra = {"HTTP_REFERER": referer} if referer is not None else {}
+        return self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id]),
+            **extra,
+        )
+
+    def _breadcrumbs(self, response):
+        self.assertEqual(200, response.status_code)
+        return pq(response.content)("#main-breadcrumbs")
+
+    def _group_pool_url(self):
+        """Locale-prefixed group ticket pool URL, matching exactly what the
+        view builds (and compares the Referer against)."""
+        return reverse_locale("groups.tickets", args=[self.ticket.org_group.slug])
+
+    def assertMyQuestionsTrail(self, response):
+        crumbs = self._breadcrumbs(response)
+        hrefs = [a.attrib["href"] for a in crumbs("a")]
+        self.assertIn("My Questions", crumbs.text())
+        self.assertTrue(
+            any(reverse("users.questions", args=[self.owner.username]) in h for h in hrefs),
+            f"expected a My Questions link, got {hrefs}",
+        )
+        # Not the group trail.
+        self.assertNotIn("Groups", crumbs.text())
+        self.assertNotIn("Tickets", crumbs.text())
+
+    def assertGroupPoolTrail(self, response):
+        crumbs = self._breadcrumbs(response)
+        hrefs = [a.attrib["href"] for a in crumbs("a")]
+        self.assertIn("Tickets", crumbs.text())
+        self.assertTrue(
+            any(self._group_pool_url() in h for h in hrefs),
+            f"expected a group ticket pool link, got {hrefs}",
+        )
+        # Group trail starts at the Groups list, not the owner's questions.
+        self.assertIn("Groups", crumbs.text())
+        self.assertNotIn("My Questions", crumbs.text())
+
+    def assertSubjectOnlyTrail(self, response):
+        crumbs = self._breadcrumbs(response)
+        self.assertIn(self.ticket.subject, crumbs.text())
+        self.assertNotIn("My Questions", crumbs.text())
+        self.assertNotIn("Groups", crumbs.text())
+        self.assertNotIn("Tickets", crumbs.text())
+
+    # --- owner of a personal (non-org) ticket -------------------------------
+
+    def test_owner_personal_ticket_gets_my_questions(self):
+        self.assertMyQuestionsTrail(self._get(self.owner))
+
+    # --- owner who is also an org agent -------------------------------------
+
+    def test_owner_agent_without_referer_gets_my_questions(self):
+        """An owner who also happens to be an org agent still defaults to their
+        own questions trail when they did not arrive from the group pool."""
+        _make_viewable_by_teammate(self.owner, self.ticket)
+        self.ticket.refresh_from_db()
+        self.assertMyQuestionsTrail(self._get(self.owner))
+
+    def test_owner_agent_from_group_pool_gets_group_trail(self):
+        """The design change: an owner who navigated in from the group ticket
+        pool (per the Referer) sees the group trail instead of My Questions."""
+        _make_viewable_by_teammate(self.owner, self.ticket)
+        self.ticket.refresh_from_db()
+        response = self._get(self.owner, referer=self._group_pool_url())
+        self.assertGroupPoolTrail(response)
+
+    def test_owner_agent_with_unrelated_referer_gets_my_questions(self):
+        """Only the group pool Referer flips the owner's trail; arriving from
+        any other page keeps the personal trail."""
+        _make_viewable_by_teammate(self.owner, self.ticket)
+        self.ticket.refresh_from_db()
+        elsewhere = reverse_locale("users.questions", args=[self.owner.username])
+        self.assertMyQuestionsTrail(self._get(self.owner, referer=elsewhere))
+
+    # --- non-owner viewers ---------------------------------------------------
+
+    def test_org_agent_gets_group_trail(self):
+        """A teammate who can view someone else's org ticket gets the group
+        trail without any Referer."""
+        teammate = _make_viewable_by_teammate(self.owner, self.ticket)
+        self.ticket.refresh_from_db()
+        self.assertGroupPoolTrail(self._get(teammate))
+
+    def test_org_agent_referer_is_ignored(self):
+        """The Referer gate applies only to the owner: a non-owner agent gets
+        the group trail even when they arrived from an unrelated page."""
+        teammate = _make_viewable_by_teammate(self.owner, self.ticket)
+        self.ticket.refresh_from_db()
+        elsewhere = reverse_locale("users.questions", args=[self.owner.username])
+        self.assertGroupPoolTrail(self._get(teammate, referer=elsewhere))
+
+    def test_staff_on_org_ticket_gets_group_trail(self):
+        """Staff can view any ticket; on an org ticket they get the group trail
+        (they pass can_view_tickets without org membership)."""
+        _make_viewable_by_teammate(self.owner, self.ticket)
+        self.ticket.refresh_from_db()
+        staff = UserFactory(is_staff=True)
+        self.assertGroupPoolTrail(self._get(staff))
+
+    def test_staff_on_personal_ticket_gets_subject_only(self):
+        """Staff viewing a stranger's personal (non-org) ticket gets just the
+        subject: no personal trail (not theirs) and no group trail (no org)."""
+        staff = UserFactory(is_staff=True)
+        self.assertSubjectOnlyTrail(self._get(staff))

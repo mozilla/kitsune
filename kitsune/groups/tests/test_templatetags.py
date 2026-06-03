@@ -5,7 +5,11 @@ from django.conf import settings
 from pyquery import PyQuery as pq
 
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.templatetags.jinja_helpers import group_avatar, group_link
+from kitsune.groups.templatetags.jinja_helpers import (
+    group_avatar,
+    group_breadcrumbs,
+    group_link,
+)
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -50,3 +54,38 @@ class GroupHelperTests(TestCase):
         p.avatar.url = "/foo/bar"
         url = group_avatar(p)
         self.assertEqual("/foo/bar", url)
+
+
+class GroupBreadcrumbsTests(TestCase):
+    def test_root_org_includes_self_linked(self):
+        root = GroupProfileFactory(group=GroupFactory(name="Acme"))
+        self.assertEqual(
+            group_breadcrumbs(root),
+            [
+                (reverse("groups.list"), "Groups"),
+                (reverse("groups.profile", args=[root.slug]), "Acme"),
+            ],
+        )
+
+    def test_with_ancestors_in_root_to_self_order(self):
+        root = GroupProfileFactory(group=GroupFactory(name="Acme"))
+        child = root.add_child(group=GroupFactory(name="Acme EU"), slug="acme-eu")
+        self.assertEqual(
+            group_breadcrumbs(child),
+            [
+                (reverse("groups.list"), "Groups"),
+                (reverse("groups.profile", args=[root.slug]), "Acme"),
+                (reverse("groups.profile", args=[child.slug]), "Acme EU"),
+            ],
+        )
+
+    def test_include_self_false_drops_trailing_crumb(self):
+        root = GroupProfileFactory(group=GroupFactory(name="Acme"))
+        child = root.add_child(group=GroupFactory(name="Acme EU"), slug="acme-eu")
+        self.assertEqual(
+            group_breadcrumbs(child, include_self=False),
+            [
+                (reverse("groups.list"), "Groups"),
+                (reverse("groups.profile", args=[root.slug]), "Acme"),
+            ],
+        )

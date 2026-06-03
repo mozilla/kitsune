@@ -2,12 +2,7 @@
 {% set title = _('{group} | Groups')|f(group=profile.group.name) %}
 
 {# Build breadcrumb trail #}
-{% set crumbs = [(url('groups.list'), _('Groups'))] %}
-{% set ancestors = profile.get_ancestors() %}
-{% for ancestor in ancestors %}
-  {% do crumbs.append((url('groups.profile', ancestor.slug), ancestor.group.name)) %}
-{% endfor %}
-{% do crumbs.append((None, profile.group.name)) %}
+{% set crumbs = group_breadcrumbs(profile, include_self=False) + [(None, profile.group.name)] %}
 
 {% block side %}
   {# Avatar card #}

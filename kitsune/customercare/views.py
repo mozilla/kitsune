@@ -24,7 +24,9 @@ from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import process_zendesk_update
 from kitsune.customercare.utils import generate_classification_tags, sync_ticket_from_zendesk
 from kitsune.customercare.zendesk import ZendeskClient
+from kitsune.groups.templatetags.jinja_helpers import group_breadcrumbs
 from kitsune.products.models import Topic
+from kitsune.sumo.urlresolvers import reverse
 
 log = logging.getLogger("k.customercare")
 
@@ -42,17 +44,6 @@ def _ticket_needs_sync(ticket):
     return ticket.last_synced_at < timezone.now() - threshold
 
 
-def _accessible_ticket(request, username, ticket_id, select_related=None):
-    qs = SupportTicket.objects.accessible_to(request.user)
-    if select_related:
-        qs = qs.select_related(*select_related)
-    ticket = get_object_or_404(qs, id=ticket_id, user__username=username)
-    can_reply = ticket.can_reply(request.user)
-    if request.method == "POST" and not can_reply:
-        raise PermissionDenied
-    return ticket, can_reply
-
-
 def _reply_placeholder(ticket):
     return (
         _("Reply here to reopen this ticket.")
@@ -64,9 +55,17 @@ def _reply_placeholder(ticket):
 @login_required
 @require_http_methods(["GET", "POST"])
 def ticket_detail(request, username, ticket_id):
-    ticket, can_reply = _accessible_ticket(
-        request, username, ticket_id, select_related=("product", "topic", "user")
+    ticket = get_object_or_404(
+        SupportTicket.objects.accessible_to(request.user).select_related(
+            "product", "topic", "user", "org_group"
+        ),
+        id=ticket_id,
+        user__username=username,
     )
+
+    can_reply = ticket.can_reply(request.user)
+    if request.method != "GET" and not can_reply:
+        raise PermissionDenied
 
     form = SupportTicketReplyForm(request.POST or None, placeholder=_reply_placeholder(ticket))
 
@@ -176,12 +175,45 @@ def ticket_detail(request, username, ticket_id):
         "status_changed": status_changed,
         "can_reply": can_reply,
     }
+
     if is_htmx:
         return render(request, "customercare/includes/ticket_replies.html", context)
+
+    # Determine the proper breadcrumbs.
+    crumbs = [(None, ticket.subject)]
+    is_owner = request.user.id == ticket.user_id
+    has_group = bool(ticket.org_group)
+
+    show_group_crumbs = False
+    if has_group:
+        url_group_tickets = reverse("groups.tickets", args=[ticket.org_group.slug])
+        if is_owner:
+            # Owner only gets group crumbs if they explicitly came from the group URL.
+            show_group_crumbs = url_group_tickets in request.headers.get("referer", "")
+        else:
+            # Non-owners get group crumbs if they have permission.
+            show_group_crumbs = ticket.org_group.can_view_tickets(request.user)
+
+    if show_group_crumbs:
+        crumbs = [
+            *group_breadcrumbs(ticket.org_group),
+            (url_group_tickets, _("Tickets")),
+            *crumbs,
+        ]
+    elif is_owner:
+        crumbs = [
+            (reverse("users.questions", args=[ticket.user.username]), _("My Questions")),
+            *crumbs,
+        ]
+
     return render(
         request,
         "customercare/ticket_detail.html",
-        {**context, "needs_sync": needs_sync},
+        {
+            **context,
+            "needs_sync": needs_sync,
+            "crumbs": crumbs,
+        },
     )
 
 

@@ -1,13 +1,7 @@
 {% extends "groups/base.html" %}
 {% set title = _('{group} Tickets | Groups')|f(group=profile.group.name) %}
 
-{% set crumbs = [(url('groups.list'), _('Groups'))] %}
-{% set ancestors = profile.get_ancestors() %}
-{% for ancestor in ancestors %}
-  {% do crumbs.append((url('groups.profile', ancestor.slug), ancestor.group.name)) %}
-{% endfor %}
-{% do crumbs.append((url('groups.profile', profile.slug), profile.group.name)) %}
-{% do crumbs.append((None, _('Tickets'))) %}
+{% set crumbs = group_breadcrumbs(profile) + [(None, _('Tickets'))] %}
 
 {% block outer_side %}{% endblock %}
 
