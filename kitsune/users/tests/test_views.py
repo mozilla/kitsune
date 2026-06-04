@@ -10,11 +10,13 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+from django.utils import timezone
 from josepy import jwa, jwk, jws
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
+from kitsune.customercare.utils import resolve_user_org_group
 from kitsune.forums.models import Post, Thread
 from kitsune.forums.tests import PostFactory, ThreadFactory
 from kitsune.groups.models import GroupProfile
@@ -232,9 +234,7 @@ class UserProfileTests(TestCase):
         self.assertIsNotNone(thread.last_post)
         self.assertEqual(thread_starter, thread.last_post.creator)
 
-        discuss_url = reverse(
-            "wiki.discuss.threads", args=[thread.document.slug], locale="en-US"
-        )
+        discuss_url = reverse("wiki.discuss.threads", args=[thread.document.slug], locale="en-US")
         self.assertEqual(200, self.client.get(discuss_url).status_code)
 
     def test_deactivate_without_spam_preserves_forum_content(self):
@@ -873,3 +873,29 @@ class QuestionsContributedSidebarTests(TestCase):
         self.client.force_login(self.outsider)
         response = self.client.get(self._url_for(self.member))
         self.assertNotContains(response, "Your company")
+
+    def test_deleted_ticket_excluded_from_org_counts(self):
+        """A ticket deleted in Zendesk must not inflate the org's counts."""
+        org = resolve_user_org_group(self.member)
+        # The set-up already creates one active and one solved ticket for the org. Adding
+        # tickets in each category that have been deleted in Zendesk shouldn't add to the
+        # active or solved counts.
+        SupportTicketFactory(
+            user=self.member,
+            org_group=org,
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+            zd_deleted_at=timezone.now(),
+        )
+        SupportTicketFactory(
+            user=self.member,
+            org_group=org,
+            zd_status=SupportTicket.ZD_STATUS_SOLVED,
+            zd_deleted_at=timezone.now(),
+        )
+
+        self.client.force_login(self.member)
+        response = self.client.get(self._url_for(self.member))
+
+        counts = pq(response.content)(".company-tickets-widget--counts dd")
+        self.assertEqual("1", counts.eq(0).text())  # active
+        self.assertEqual("1", counts.eq(1).text())  # solved

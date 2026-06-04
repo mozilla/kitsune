@@ -104,6 +104,11 @@ class SupportTicket(ModelBase):
     zd_status = models.CharField(max_length=20, choices=ZD_STATUS_CHOICES, null=True, blank=True)
     zd_updated_at = models.DateTimeField(null=True, blank=True)
     last_synced_at = models.DateTimeField(null=True, blank=True)
+    zd_deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Set when the ticket is deleted in Zendesk (soft or permanent).",
+    )
     comments = models.JSONField(default=list, blank=True)
     internal_zd_tags = models.JSONField(default=list, blank=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -127,6 +132,11 @@ class SupportTicket(ModelBase):
     @property
     def channel(self):
         return "direct_support"
+
+    @property
+    def is_zendesk_deleted(self):
+        """True once the ticket has been deleted in Zendesk (soft or permanent)."""
+        return self.zd_deleted_at is not None
 
     def get_absolute_url(self):
         if not self.user:

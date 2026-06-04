@@ -1,5 +1,5 @@
 {% macro pending_notice(ticket) %}
-  {% if ticket.zd_status == ticket.ZD_STATUS_PENDING %}
+  {% if ticket.zd_status == ticket.ZD_STATUS_PENDING and not ticket.is_zendesk_deleted %}
     <div class="thread-detail--notice thread-detail--notice--info">
       {{ _('Our support team has replied and is waiting for your response. You can reply below or respond directly via email.') }}
     </div>

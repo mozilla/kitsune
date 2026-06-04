@@ -1,8 +1,9 @@
 from typing import Any
 
 import waffle
+from django.db import transaction
 from django.utils import timezone
-from zenpy.lib.exception import APIException
+from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.forms import ZENDESK_PRODUCT_SLUGS
 from kitsune.customercare.models import SupportTicket
@@ -18,9 +19,7 @@ from kitsune.users.models import Profile
 def _nearest_ancestor_org(user, candidates) -> GroupProfile | None:
     if not (user and user.is_authenticated):
         return None
-    user_paths = list(
-        GroupProfile.objects.filter(group__user=user).values_list("path", flat=True)
-    )
+    user_paths = list(GroupProfile.objects.filter(group__user=user).values_list("path", flat=True))
     matches = [cp for cp in candidates if any(p.startswith(cp.path) for p in user_paths)]
     if not matches:
         return None
@@ -78,10 +77,39 @@ def apply_zendesk_ticket_data(ticket: SupportTicket, zd_ticket, zd_comments) -> 
     )
 
 
-def sync_ticket_from_zendesk(ticket: SupportTicket) -> None:
-    """Fetch fresh ticket status and comments from Zendesk and save to DB."""
-    zd_ticket, zd_comments = fetch_zendesk_ticket_data(ticket.zendesk_ticket_id)
-    apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
+def sync_ticket_from_zendesk(ticket: SupportTicket) -> SupportTicket:
+    """Fetch fresh ticket status and comments from Zendesk and save to DB.
+
+    Returns the up-to-date ticket. The row we lock and mutate is a different
+    instance than the one passed in, so callers that re-render afterwards (e.g.
+    ticket_detail) must use the returned object rather than the one they passed.
+    """
+    if ticket.is_zendesk_deleted:
+        return ticket
+
+    set_zd_deleted_at = False
+
+    try:
+        zd_ticket, zd_comments = fetch_zendesk_ticket_data(ticket.zendesk_ticket_id)
+    except RecordNotFoundException:
+        # The Zendesk ticket was deleted between the time the support ticket was
+        # acquired and the fetch above. Let's set "zd_deleted_at" just in case
+        # the deletion event never arrives via the webhook.
+        set_zd_deleted_at = True
+
+    with transaction.atomic():
+        try:
+            ticket = SupportTicket.objects.select_for_update().get(id=ticket.id)
+        except SupportTicket.DoesNotExist:
+            return ticket
+
+        if set_zd_deleted_at:
+            ticket.zd_deleted_at = timezone.now()
+            ticket.save(update_fields=["zd_deleted_at"])
+        else:
+            apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
+
+    return ticket
 
 
 def generate_classification_tags(submission: SupportTicket, result: dict[str, Any]) -> list[str]:

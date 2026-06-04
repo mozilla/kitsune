@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 from django.contrib.auth.models import Group
 from django.utils import timezone
-from zenpy.lib.exception import APIException
+from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
@@ -449,6 +449,26 @@ class SyncTicketFromZendeskTests(TestCase):
 
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.description, "An updated description from Zendesk")
+
+    @patch("kitsune.customercare.utils.fetch_zendesk_ticket_data")
+    def test_skips_deleted_ticket(self, mock_fetch):
+        self.ticket.zd_deleted_at = timezone.now()
+        self.ticket.save(update_fields=["zd_deleted_at"])
+
+        sync_ticket_from_zendesk(self.ticket)
+
+        mock_fetch.assert_not_called()
+
+    @patch(
+        "kitsune.customercare.utils.fetch_zendesk_ticket_data",
+        side_effect=RecordNotFoundException,
+    )
+    def test_record_not_found_marks_ticket_deleted(self, mock_fetch):
+        """A ticket deleted in Zendesk before we fetch it self-heals to read-only."""
+        sync_ticket_from_zendesk(self.ticket)
+
+        self.ticket.refresh_from_db()
+        self.assertIsNotNone(self.ticket.zd_deleted_at)
 
 
 class ResolveOrgGroupTests(TestCase):

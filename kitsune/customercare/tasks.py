@@ -6,11 +6,10 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.utils import (
-    apply_zendesk_ticket_data,
-    fetch_zendesk_ticket_data,
     process_zendesk_classification_result,
     sync_ticket_from_zendesk,
 )
@@ -25,12 +24,22 @@ shared_task_with_retry = shared_task(
     acks_late=True, autoretry_for=(Exception,), retry_backoff=2, retry_kwargs={"max_retries": 3}
 )
 
-HANDLED_EVENT_TYPES = {
+# Zendesk webhook events that trigger a re-sync of the ticket from the Zendesk REST API.
+RESYNC_EVENT_TYPES = {
     "zen:event-type:ticket.status_changed",
     "zen:event-type:ticket.subject_changed",
     "zen:event-type:ticket.description_changed",
     "zen:event-type:ticket.comment_added",
 }
+# Zendesk webhook events that only update the local deletion state of the support ticket.
+UNDELETE_EVENT_TYPE = "zen:event-type:ticket.undeleted"
+DELETION_EVENT_TYPES = {
+    "zen:event-type:ticket.soft_deleted",
+    "zen:event-type:ticket.permanently_deleted",
+    UNDELETE_EVENT_TYPE,
+}
+
+HANDLED_EVENT_TYPES = RESYNC_EVENT_TYPES | DELETION_EVENT_TYPES
 
 
 @shared_task_with_retry
@@ -141,9 +150,12 @@ def process_failed_zendesk_tickets() -> None:
 @skip_if_read_only_mode
 def process_zendesk_update(payload: dict) -> None:
     """
-    Process an incoming Zendesk ticket-event webhook payload by re-syncing
-    the affected ticket from Zendesk via the REST API. The webhook is a
-    notification trigger only; the REST API is the source of truth.
+    Process an incoming Zendesk ticket-event webhook payload.
+
+    Most events re-sync the affected ticket from Zendesk via the REST API. The
+    webhook is only a notification trigger. The REST API is the source of truth.
+    Deletion events are the exception. A deleted ticket no longer exists in Zendesk,
+    so they only update the "zd_deleted_at" value and never touch the API.
     """
     if not (detail := payload.get("detail")) or not (ticket_id := detail.get("id")):
         raise ValueError("Zendesk webhook payload missing detail.id.")
@@ -154,17 +166,31 @@ def process_zendesk_update(payload: dict) -> None:
         return
 
     qs = SupportTicket.objects.filter(zendesk_ticket_id=str(ticket_id))
-    if not qs.exists():
+
+    if event_type in DELETION_EVENT_TYPES:
+        zd_deleted_at = (
+            None
+            if event_type == UNDELETE_EVENT_TYPE
+            else parse_datetime(payload.get("time") or "") or timezone.now()
+        )
+
+        with transaction.atomic():
+            try:
+                ticket = qs.select_for_update().get()
+            except SupportTicket.DoesNotExist:
+                return
+
+            ticket.zd_deleted_at = zd_deleted_at
+            ticket.save(update_fields=["zd_deleted_at"])
+
         return
 
-    zd_ticket, zd_comments = fetch_zendesk_ticket_data(str(ticket_id))
+    try:
+        ticket = qs.filter(zd_deleted_at__isnull=True).get()
+    except SupportTicket.DoesNotExist:
+        return
 
-    with transaction.atomic():
-        try:
-            ticket = qs.select_for_update().get()
-        except SupportTicket.DoesNotExist:
-            return
-        apply_zendesk_ticket_data(ticket, zd_ticket, zd_comments)
+    sync_ticket_from_zendesk(ticket)
 
 
 @shared_task_with_retry
@@ -176,7 +202,9 @@ def sync_support_ticket(ticket_id: int) -> None:
     """
     try:
         ticket = (
-            SupportTicket.objects.filter(zendesk_ticket_id__isnull=False)
+            SupportTicket.objects.filter(
+                zendesk_ticket_id__isnull=False, zd_deleted_at__isnull=True
+            )
             .exclude(zendesk_ticket_id="")
             .get(id=ticket_id)
         )
@@ -205,6 +233,7 @@ def sync_active_support_tickets() -> None:
         SupportTicket.objects.filter(
             zd_status__in=active_statuses,
             zendesk_ticket_id__isnull=False,
+            zd_deleted_at__isnull=True,
         )
         .exclude(zendesk_ticket_id="")
         .values_list("id", flat=True)

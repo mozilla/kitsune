@@ -289,15 +289,17 @@ def questions_contributed(request, username):
             org_group=org_profile, submission_status=SupportTicket.STATUS_SENT
         )
         org_active_count = org_qs.filter(
+            zd_deleted_at__isnull=True,
             zd_status__in=(
                 SupportTicket.ZD_STATUS_NEW,
                 SupportTicket.ZD_STATUS_OPEN,
                 SupportTicket.ZD_STATUS_PENDING,
                 SupportTicket.ZD_STATUS_HOLD,
-            )
+            ),
         ).count()
         org_solved_count = org_qs.filter(
-            zd_status__in=(SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED)
+            zd_deleted_at__isnull=True,
+            zd_status__in=(SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED),
         ).count()
 
     return render(

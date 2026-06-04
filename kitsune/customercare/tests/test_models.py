@@ -67,6 +67,14 @@ class SupportTicketModelTests(TestCase):
         self.assertIn("Test Subject", str_repr)
         self.assertIn("processing_failed", str_repr)
 
+    def test_is_zendesk_deleted_reflects_zd_deleted_at(self):
+        """is_zendesk_deleted is True only when zd_deleted_at is set."""
+        ticket = SupportTicketFactory()
+        self.assertFalse(ticket.is_zendesk_deleted)
+
+        ticket.zd_deleted_at = timezone.now()
+        self.assertTrue(ticket.is_zendesk_deleted)
+
 
 class PublicCommentsTests(TestCase):
     """Tests for SupportTicket.public_comments and num_answers.

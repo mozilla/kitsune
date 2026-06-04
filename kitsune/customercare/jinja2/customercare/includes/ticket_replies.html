@@ -64,7 +64,11 @@
   <p class="thread-comments--empty">{{ _("No replies yet.") }}</p>
 {% endif %}
 
-{% if ticket.zd_status == ticket.ZD_STATUS_CLOSED %}
+{% if ticket.is_zendesk_deleted %}
+  <div class="thread-detail--notice thread-detail--notice--info">
+    {{ _('This ticket can no longer receive replies. Please open a new ticket if you still need help.') }}
+  </div>
+{% elif ticket.zd_status == ticket.ZD_STATUS_CLOSED %}
   <div class="thread-detail--notice thread-detail--notice--info">
     {{ _('This ticket is closed and can no longer receive replies. Please open a new ticket if you still need help.') }}
   </div>

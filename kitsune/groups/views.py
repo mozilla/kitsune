@@ -18,6 +18,9 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.utils import create_image_thumbnail
 
+# Tickets deleted in Zendesk (zd_deleted_at set) are excluded from "active" and
+# "solved" — they're no longer actionable — but remain under "all" so staff can
+# still find them (they render with an "Inactive" status pill).
 TICKET_STATUS_FILTERS = {
     "active": {
         "zd_status__in": (
@@ -25,11 +28,13 @@ TICKET_STATUS_FILTERS = {
             SupportTicket.ZD_STATUS_OPEN,
             SupportTicket.ZD_STATUS_PENDING,
             SupportTicket.ZD_STATUS_HOLD,
-        )
+        ),
+        "zd_deleted_at__isnull": True,
     },
     "all": {},
     "solved": {
-        "zd_status__in": (SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED)
+        "zd_status__in": (SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED),
+        "zd_deleted_at__isnull": True,
     },
 }
 
