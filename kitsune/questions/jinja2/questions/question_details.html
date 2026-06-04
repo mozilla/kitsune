@@ -38,6 +38,7 @@
 {% if product %}
   {% set ga_products = "/" + product.slug + "/" %}
 {% endif %}
+{% set matomo_mzla = matomo_mzla_enabled([product] if product else []) %}
 {% if topic %}
   {% set ga_topics = "/" + topic.slug + "/" %}
 {% endif %}

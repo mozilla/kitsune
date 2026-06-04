@@ -12,10 +12,16 @@
   {% if ga_article_locale %}data-ga-article-locale="{{ ga_article_locale }}"{% endif %}
   {% if ga_topics %}data-ga-topics="{{ ga_topics }}"{% endif %}
   {% if ga_products %}data-ga-products="{{ ga_products }}"{% endif %}
+  {% if matomo_mzla and settings.MATOMO_MZLA_SITE_ID %}
+  data-matomo-site-id="{{ settings.MATOMO_MZLA_SITE_ID }}"
+  data-matomo-tracker-host="{{ settings.MATOMO_MZLA_TRACKER_HOST }}"
+  data-matomo-cdn-host="{{ settings.MATOMO_MZLA_CDN_HOST }}"
+  {% endif %}
   {% if settings.GA_CONSOLE_LOGGING %}data-ga-console-logging="true"{% endif %}
   {% if settings.GA_DEBUG_MODE %}data-ga-debug-mode="true"{% endif %}>
 <head>
   {% include "includes/google-analytics.html" %}
+  {% if matomo_mzla %}{% include "includes/matomo-mzla.html" %}{% endif %}
 
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>

@@ -4,10 +4,13 @@ from zoneinfo import ZoneInfo
 
 from babel.dates import format_date, format_datetime, format_time
 from django.forms.fields import CharField
+from django.test import override_settings
 from django.test.client import RequestFactory
 from markupsafe import Markup
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.templatetags.jinja_helpers import (
     DateTimeFormatError,
     class_selected,
@@ -17,6 +20,7 @@ from kitsune.sumo.templatetags.jinja_helpers import (
     fe,
     json,
     label_with_help,
+    matomo_mzla_enabled,
     number,
     remove,
     static,
@@ -272,3 +276,33 @@ class TestWikiToSafeHtml(TestCase):
 
     def test_renders_markup(self):
         self.assertIn("hello", wiki_to_safe_html("hello"))
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(MATOMO_MZLA_PRODUCT_SLUGS=["thunderbird", "thunderbird-android"])
+class TestMatomoMzlaEnabled(TestCase):
+    """Tests for the matomo_mzla_enabled helper."""
+
+    def test_matching_slug_returns_true(self):
+        product = ProductFactory(slug="thunderbird")
+        self.assertTrue(matomo_mzla_enabled([product]))
+
+    def test_non_matching_slug_returns_false(self):
+        product = ProductFactory(slug="firefox")
+        self.assertFalse(matomo_mzla_enabled([product]))
+
+    def test_all_matching_products_returns_true(self):
+        products = [ProductFactory(slug="thunderbird"), ProductFactory(slug="thunderbird-android")]
+        self.assertTrue(matomo_mzla_enabled(products))
+
+    def test_mixed_products_returns_false(self):
+        products = [ProductFactory(slug="firefox"), ProductFactory(slug="thunderbird")]
+        self.assertFalse(matomo_mzla_enabled(products))
+
+    def test_empty_iterable_returns_false(self):
+        self.assertFalse(matomo_mzla_enabled([]))
+
+    @override_switch("matomo-mzla", active=False)
+    def test_inactive_switch_returns_false(self):
+        product = ProductFactory(slug="thunderbird")
+        self.assertFalse(matomo_mzla_enabled([product]))

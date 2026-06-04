@@ -102,6 +102,9 @@ const entrypoints = {
   "gtm-snippet": [
     "sumo/js/gtm-snippet.js",
   ],
+  "matomo-mzla": [
+    "sumo/js/matomo-mzla.js",
+  ],
   contribute: [
     "./svelte/contribute",
   ],

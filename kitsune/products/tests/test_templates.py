@@ -1,12 +1,15 @@
 from django.conf import settings
 from django.core.cache import cache
+from django.test.utils import override_settings
 from pyquery import PyQuery as pq
+from waffle.testutils import override_switch
 
 from kitsune.products.models import HOT_TOPIC_SLUG, ProductSupportConfig
 from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.search.tests import ElasticTestCase
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 
@@ -170,3 +173,43 @@ class ProductViewsTestCase(ElasticTestCase):
         self.assertEqual(200, r.status_code)
         pqdoc = pq(r.content)
         self.assertEqual(2, len(pqdoc(".subtopics>li")))
+
+
+_MZLA_SLUGS = ["thunderbird", "thunderbird-android"]
+_MATOMO_MARKER = "data-matomo-site-id"
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(MATOMO_MZLA_PRODUCT_SLUGS=_MZLA_SLUGS)
+class MatomoMzlaProductLandingTests(TestCase):
+    """Matomo snippet appears on Thunderbird product landing and not on Firefox."""
+
+    def test_matomo_present_for_mzla_product(self):
+        p = ProductFactory(slug="thunderbird")
+        url = reverse("products.product", args=[p.slug])
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        self.assertContains(r, _MATOMO_MARKER)
+
+    @override_switch("matomo-mzla", active=False)
+    def test_matomo_absent_when_switch_inactive(self):
+        p = ProductFactory(slug="thunderbird")
+        url = reverse("products.product", args=[p.slug])
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        self.assertNotContains(r, _MATOMO_MARKER)
+
+    def test_matomo_absent_for_non_mzla_product(self):
+        p = ProductFactory(slug="firefox")
+        url = reverse("products.product", args=[p.slug])
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        self.assertNotContains(r, _MATOMO_MARKER)
+
+    @override_settings(MATOMO_MZLA_SITE_ID="")
+    def test_matomo_absent_when_site_id_empty(self):
+        p = ProductFactory(slug="thunderbird")
+        url = reverse("products.product", args=[p.slug])
+        r = self.client.get(url, follow=True)
+        self.assertEqual(200, r.status_code)
+        self.assertNotContains(r, _MATOMO_MARKER)

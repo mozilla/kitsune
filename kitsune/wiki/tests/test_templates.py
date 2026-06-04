@@ -6,7 +6,9 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+from django.test.utils import override_settings
 from django.utils import timezone
+from waffle.testutils import override_switch
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -3258,3 +3260,45 @@ def _translation_data():
         "summary": "lipsumo",
         "content": "loremo ipsumo doloro sito ameto",
     }
+
+
+_MZLA_SLUGS = ["thunderbird", "thunderbird-android"]
+_MATOMO_MARKER = "data-matomo-site-id"
+
+
+@override_switch("matomo-mzla", active=True)
+@override_settings(MATOMO_MZLA_PRODUCT_SLUGS=_MZLA_SLUGS)
+class MatomoMzlaDocumentTests(TestCase):
+    """Matomo snippet appears on KB documents associated only with MZLA products."""
+
+    def test_matomo_present_for_mzla_product(self):
+        p = ProductFactory(slug="thunderbird")
+        r = ApprovedRevisionFactory(document__products=[p])
+        response = self.client.get(r.document.get_absolute_url())
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, _MATOMO_MARKER)
+
+    def test_matomo_present_for_all_mzla_products(self):
+        """A document associated only with MZLA products should show the snippet."""
+        p_tb = ProductFactory(slug="thunderbird")
+        p_tba = ProductFactory(slug="thunderbird-android")
+        r = ApprovedRevisionFactory(document__products=[p_tb, p_tba])
+        response = self.client.get(r.document.get_absolute_url())
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, _MATOMO_MARKER)
+
+    def test_matomo_absent_for_non_mzla_product(self):
+        p = ProductFactory(slug="firefox")
+        r = ApprovedRevisionFactory(document__products=[p])
+        response = self.client.get(r.document.get_absolute_url())
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, _MATOMO_MARKER)
+
+    def test_matomo_absent_for_mixed_products(self):
+        """A document with any non-MZLA product should not show the snippet."""
+        p_firefox = ProductFactory(slug="firefox")
+        p_thunderbird = ProductFactory(slug="thunderbird")
+        r = ApprovedRevisionFactory(document__products=[p_firefox, p_thunderbird])
+        response = self.client.get(r.document.get_absolute_url())
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, _MATOMO_MARKER)

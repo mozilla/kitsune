@@ -6,6 +6,7 @@ import urllib
 from zoneinfo import ZoneInfo
 
 import jinja2
+import waffle
 import wikimarkup.parser
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
@@ -594,6 +595,21 @@ def slug_to_title(slug):
     Convert a slug to a title.
     """
     return slug.replace("-", " ").capitalize()
+
+
+@library.global_function
+def matomo_mzla_enabled(products) -> bool:
+    """Return True if MZLA Matomo tracking applies to the given products.
+
+    Enabled only when the global switch is active and every associated product
+    is an MZLA product (and there is at least one). Pages associated with any
+    non-MZLA product are not tracked.
+    """
+    if not waffle.switch_is_active("matomo-mzla"):
+        return False
+    products = list(products)
+    slugs = settings.MATOMO_MZLA_PRODUCT_SLUGS
+    return bool(products) and all(p.slug in slugs for p in products)
 
 
 @library.global_function
