@@ -1,11 +1,11 @@
-import importPlugin from "eslint-plugin-import";
+import importPlugin, { createNodeResolver } from "eslint-plugin-import-x";
 
 export default [
     {
         files: ["webpack/**/*.{js,ts,jsx,tsx}", "svelte/**/*.{js,ts,jsx,tsx}"],
         ignores: ["**/tests/**"],
         plugins: {
-            import: importPlugin,
+            "import-x": importPlugin,
         },
         languageOptions: {
             ecmaVersion: "latest",
@@ -30,18 +30,18 @@ export default [
             },
         },
         settings: {
-            "import/resolver": {
-                webpack: {
-                    config: "./webpack.common.js",
-                },
-            },
+            "import-x/resolver-next": [
+                createNodeResolver({
+                    extensions: [".mjs", ".js", ".svelte"],
+                }),
+            ],
         },
         rules: {
             "no-undef": 2,
-            "import/extensions": ["error", "ignorePackages", { svelte: "always" }],
-            "import/first": 2,
-            "import/no-self-import": 2,
-            "import/no-cycle": 2,
+            "import-x/extensions": ["error", "ignorePackages", { svelte: "always" }],
+            "import-x/first": 2,
+            "import-x/no-self-import": 2,
+            "import-x/no-cycle": 2,
         },
     },
 ]; 
