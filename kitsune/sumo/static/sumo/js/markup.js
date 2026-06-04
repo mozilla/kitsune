@@ -120,7 +120,7 @@ Marky.SimpleButton = function(name, openTag, closeTag, defaultText,
     this.classes = classes;
   }
 
-  this.html = '<button class="markup-toolbar-button" />';
+  this.html = '<button class="markup-toolbar-button" type="button" />';
 };
 
 Marky.SimpleButton.prototype = {
@@ -280,7 +280,7 @@ Marky.LinkButton = function() {
   this.origCloseTag = this.closeTag;
   this.origDefaultText = this.defaultText;
 
-  this.html = '<button class="markup-toolbar-button" />';
+  this.html = '<button class="markup-toolbar-button" type="button" />';
 };
 
 Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
@@ -522,7 +522,7 @@ Marky.MediaButton = function() {
   this.defaultText = gettext('media');
   this.everyline = false;
 
-  this.html = '<button class="markup-toolbar-button" />';
+  this.html = '<button class="markup-toolbar-button" type="button" />';
 };
 
 Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
