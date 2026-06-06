@@ -2,11 +2,9 @@
 
 ## Summary
 
-```
 This chapter helps you get an installation of Kitsune up and running.
 
-If you have any problems getting Kitsune running, let us know. See :ref:`contact-us-chapter`.
-```
+If you have any problems getting Kitsune running, let us know. See [Contact us](contactus.md).
 
 ## Getting up and running
 
