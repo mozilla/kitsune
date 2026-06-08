@@ -93,10 +93,10 @@ class ZendeskTopicFactory(factory.django.DjangoModelFactory):
         model = ZendeskTopic
 
     slug = FuzzyUnicode()
-    topic = FuzzyUnicode()
+    form_title = FuzzyUnicode()
     legacy_tag = ""
     tier_tags: list[str] = []
-    automation_tag = ""
+    automation_tags: list[str] = []
     segmentation_tag = ""
 
 

@@ -141,6 +141,11 @@ class Topic(BaseProductTopic):
     in_nav = models.BooleanField(
         default=False, help_text="Whether this topic is shown in navigation menus."
     )
+    legacy_tag = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Legacy Zendesk bucket (accounts/technical/payments). Set on t1 roots.",
+    )
 
     class Meta:
         ordering = ["title", "display_order"]
@@ -170,6 +175,11 @@ class Topic(BaseProductTopic):
             cur = cur.parent
             path = [cur.slug, *path]
         return path
+
+    @property
+    def tier_tags(self):
+        """Zendesk tier tags derived from the parent chain (e.g. ['t1-foo', 't2-bar'])."""
+        return [f"t{i}-{slug}" for i, slug in enumerate(self.path, start=1)]
 
     def documents(self, user=None, **kwargs):
         # Avoid circular imports
@@ -474,16 +484,26 @@ class ZendeskTopic(ModelBase):
     slug = models.SlugField(
         max_length=100, unique=True, help_text="Globally unique identifier for this topic"
     )
-    topic = models.CharField(
+    form_title = models.CharField(
         max_length=255, help_text="User-facing topic text shown in the dropdown"
+    )
+    topic = models.ForeignKey(
+        Topic,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="zendesk_topics",
+        help_text="Linked taxonomy topic. Source of truth for tier_tags and legacy_tag.",
     )
     legacy_tag = models.CharField(max_length=100, blank=True, help_text="Legacy Zendesk tag")
     tier_tags = models.JSONField(
         default=list,
         help_text="List of tier tags (e.g., ['t1-billing-and-subscriptions'])",
     )
-    automation_tag = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Automation tag for Zendesk workflows"
+    automation_tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of automation tags for Zendesk workflows.",
     )
     segmentation_tag = models.CharField(
         max_length=100, blank=True, null=True, help_text="Segmentation tag for analytics"
@@ -494,15 +514,29 @@ class ZendeskTopic(ModelBase):
         ordering = ["slug"]
 
     def __str__(self):
-        return f"{self.topic} ({self.slug})"
+        return f"{self.form_title} ({self.slug})"
 
     @property
     def tags_dict(self):
-        """Returns tags in the format expected by ZendeskForm."""
+        """Returns tags in the format expected by ZendeskForm.
+
+        Derives legacy and tier tags from the linked Topic when available;
+        falls back to stored fields for ZendeskTopics not yet linked.
+        """
+        if self.topic_id is not None:
+            root = self.topic
+            while root.parent_id is not None:
+                root = root.parent
+            return {
+                "legacy": root.legacy_tag,
+                "tiers": self.topic.tier_tags,
+                "automation": self.automation_tags,
+                "segmentation": self.segmentation_tag,
+            }
         return {
             "legacy": self.legacy_tag,
             "tiers": self.tier_tags,
-            "automation": self.automation_tag,
+            "automation": self.automation_tags,
             "segmentation": self.segmentation_tag,
         }
 
@@ -539,6 +573,4 @@ class ZendeskTopicConfiguration(ModelBase):
         ]
 
     def __str__(self):
-        return (
-            f"{self.zendesk_config.name}: {self.zendesk_topic.topic} (order {self.display_order})"
-        )
+        return f"{self.zendesk_config.name}: {self.zendesk_topic.form_title} (order {self.display_order})"
