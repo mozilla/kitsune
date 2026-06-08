@@ -97,7 +97,7 @@
     "stylelint": "^17.12.0",
     "stylelint-config-recommended-scss": "^17.0.0",
     "stylelint-order": "^8.1.1",
-    "stylelint-scss": "^7.1.1",
+    "stylelint-scss": "^7.2.0",
     "svelte-loader": "^3.2.4",
     "svelte-preprocess": "^5.0.1",
     "webpack": "^5.105.4",
