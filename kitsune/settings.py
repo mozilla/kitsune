@@ -1152,6 +1152,7 @@ IMAGE_ATTACHMENT_USER_LIMIT = config("IMAGE_ATTACHMENT_USER_LIMIT", default=50, 
 USER_AGENT_FILTERS = config("USER_AGENT_FILTERS", default="", cast=Csv())
 
 BADGE_LIMIT_L10N_KB = config("BADGE_LIMIT_L10N_KB", default=10, cast=int)
+BADGE_LIMIT_REVIEWER = config("BADGE_LIMIT_REVIEWER", default=25, cast=int)
 BADGE_LIMIT_SUPPORT_FORUM = config("BADGE_LIMIT_SUPPORT_FORUM", default=30, cast=int)
 BADGE_MAX_RECENT = config("BADGE_MAX_RECENT", default=15, cast=int)
 BADGE_PAGE_SIZE = config("BADGE_PAGE_SIZE", default=50, cast=int)

@@ -351,41 +351,60 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
     if badge.is_awarded_to(user):
         return False
 
-    # Count the number of approved revisions in the appropriate locales
-    # for the current year.
-    qs = Revision.objects.filter(
-        creator=user,
-        is_approved=True,
-        created__gte=date(year, 1, 1),
-        created__lt=date(year + 1, 1, 1),
-    )
+    if badge_template["slug"] == WIKI_BADGES["reviewer-badge"]["slug"]:
+        # Count the number of revisions reviewed by the user
+        # in the default locale for the current year.
+        qs = Revision.objects.filter(
+            reviewer=user,
+            document__locale=settings.WIKI_DEFAULT_LANGUAGE,
+            reviewed__gte=date(year, 1, 1),
+            reviewed__lt=date(year + 1, 1, 1),
+        )
 
-    deleted_contributions_extra_kwargs: dict[str, str] = {}
+        # We can't include deleted revisions, since we don't preserve the reviewer field.
+        num_contributions = qs.count()
 
-    if badge_template["slug"] == WIKI_BADGES["kb-badge"]["slug"]:
-        # kb-badge
-        qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-        deleted_contributions_extra_kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        if num_contributions >= settings.BADGE_LIMIT_REVIEWER:
+            badge.award_to(user)
+            return True
+
+        return False
     else:
-        # l10n-badge
-        qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-        deleted_contributions_extra_kwargs.update(exclude_locale=settings.WIKI_DEFAULT_LANGUAGE)
+        # The badge is either the KB Badge or the L10n Badge.
+        # Count the number of approved revisions in the appropriate locales
+        # for the current year.
+        qs = Revision.objects.filter(
+            creator=user,
+            is_approved=True,
+            created__gte=date(year, 1, 1),
+            created__lt=date(year + 1, 1, 1),
+        )
 
-    num_contributions = qs.count() + num_deleted_contributions(
-        Revision,
-        contributor=user,
-        contribution_timestamp__gte=date(year, 1, 1),
-        contribution_timestamp__lt=date(year + 1, 1, 1),
-        metadata__is_approved=True,
-        **deleted_contributions_extra_kwargs,
-    )
+        deleted_contributions_extra_kwargs: dict[str, str] = {}
 
-    # If the count is 10 or higher, award the badge.
-    if num_contributions >= settings.BADGE_LIMIT_L10N_KB:
-        badge.award_to(user)
-        return True
+        if badge_template["slug"] == WIKI_BADGES["kb-badge"]["slug"]:
+            # kb-badge
+            qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+            deleted_contributions_extra_kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        else:
+            # l10n-badge
+            qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+            deleted_contributions_extra_kwargs.update(exclude_locale=settings.WIKI_DEFAULT_LANGUAGE)
 
-    return False
+        num_contributions = qs.count() + num_deleted_contributions(
+            Revision,
+            contributor=user,
+            contribution_timestamp__gte=date(year, 1, 1),
+            contribution_timestamp__lt=date(year + 1, 1, 1),
+            metadata__is_approved=True,
+            **deleted_contributions_extra_kwargs,
+        )
+
+        if num_contributions >= settings.BADGE_LIMIT_L10N_KB:
+            badge.award_to(user)
+            return True
+
+        return False
 
 
 @shared_task

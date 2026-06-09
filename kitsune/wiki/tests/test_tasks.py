@@ -28,6 +28,7 @@ from kitsune.wiki.tasks import (
 )
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
+    DeferredRevisionFactory,
     RevisionAnchorRecordFactory,
     RevisionFactory,
 )
@@ -219,6 +220,8 @@ class TestDocumentRenderCascades(TestCase):
 
 
 class TestMaybeAwardBadge(TestCase):
+    """Test that the annual wiki badges are awarded correctly."""
+
     @override_settings(BADGE_LIMIT_L10N_KB=4)
     def test_maybe_award_badge_for_kb(self):
         badge = get_or_create_badge(
@@ -280,6 +283,34 @@ class TestMaybeAwardBadge(TestCase):
 
         ApprovedRevisionFactory(creator=rev1.creator, document__locale="fr")
         self.assertTrue(badge.is_awarded_to(rev1.creator))
+
+    @override_settings(BADGE_LIMIT_REVIEWER=4)
+    def test_maybe_award_badge_for_reviewer(self):
+        u = UserFactory()
+        badge = get_or_create_badge(
+            WIKI_BADGES["reviewer-badge"],
+            year=timezone.now().year,
+        )
+
+        ApprovedRevisionFactory(reviewer=u)
+        self.assertFalse(badge.is_awarded_to(u))
+
+        ApprovedRevisionFactory(reviewer=u)
+        self.assertFalse(badge.is_awarded_to(u))
+
+        ApprovedRevisionFactory(reviewer=u)
+        self.assertFalse(badge.is_awarded_to(u))
+
+        # These shouldn't count, since they're not reviewed.
+        RevisionFactory(creator=u)
+        self.assertFalse(badge.is_awarded_to(u))
+
+        RevisionFactory(creator=u)
+        self.assertFalse(badge.is_awarded_to(u))
+
+        # A deferred revision should count.
+        DeferredRevisionFactory(reviewer=u)
+        self.assertTrue(badge.is_awarded_to(u))
 
 
 class CleanupOldAnchorRecordsTestCase(TestCase):
