@@ -9,20 +9,21 @@ from collections.abc import Collection, Mapping
 
 from justhtml import (
     Decide,
+    EditAttrs,
     JustHTML,
     Linkify,
-    RewriteAttrs,
     SanitizationPolicy,
     SetAttrs,
     UrlPolicy,
     UrlRule,
 )
 
-# Private imports: justhtml doesn't re-export these. Staying in sync with
-# upstream matters here — if the validation tightens in a future release,
-# mirrored regexes would silently go stale and reintroduce the serializer
-# ValueError.
-from justhtml.serialize import _SERIALIZABLE_ATTR_NAME_RE, _SERIALIZABLE_TAG_NAME_RE
+# Private imports: these are underscore-prefixed, so they're not part of
+# justhtml's supported API even though the `serializer` package re-exports
+# them. Staying in sync with upstream matters here — if the validation
+# tightens in a future release, mirrored regexes would silently go stale and
+# reintroduce the serializer ValueError.
+from justhtml.serializer import _SERIALIZABLE_ATTR_NAME_RE, _SERIALIZABLE_TAG_NAME_RE
 
 
 def _drop_unserializable_attrs(element):
@@ -229,7 +230,7 @@ def linkify(text: str, nofollow: bool = False) -> str:
     """
     transforms = [
         Decide("*", _decide_unserializable_tags),
-        RewriteAttrs("*", _drop_unserializable_attrs),
+        EditAttrs("*", _drop_unserializable_attrs),
         Linkify(),
     ]
     if nofollow:
