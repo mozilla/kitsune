@@ -50,6 +50,14 @@
 {% endif %}
 
 {% block breadcrumbs %}
+  {% if document.slug == "built-in-vpn" %}
+    {{ sumo_banner(
+        id="built-in-vpn-banner",
+        text=_("Now through August 31, get unlimited bandwidth with more locations in built-in VPN. Head to Connect for more details."),
+        button_text=_('Details'),
+        button_link="https://connect.mozilla.org/t5/discussions/more-bandwidth-and-more-vpn-locations-in-firefox-this-summer/td-p/127583",
+    ) }}
+  {% endif %}
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
