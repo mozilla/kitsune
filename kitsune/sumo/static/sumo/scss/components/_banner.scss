@@ -94,6 +94,32 @@
   }
 }
 
+#built-in-vpn-banner {
+  margin: p.$spacing-md 0;
+
+  .heading {
+    margin: 0 p.$spacing-md;
+  }
+
+  .sumo-button {
+    margin: p.$spacing-md p.$spacing-md 0;
+  }
+
+  @media #{p.$mq-md} {
+    .heading {
+      margin: p.$spacing-md;
+    }
+
+    .sumo-button {
+      margin: p.$spacing-md p.$spacing-md p.$spacing-md 0;
+    }
+
+    .sumo-close-button {
+      margin-right: p.$spacing-md;
+    }
+  }
+}
+
 .sumo-banner-warning {
   background: var(--color-warning);
   color: var(--color-heading);
