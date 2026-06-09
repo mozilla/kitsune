@@ -103,11 +103,11 @@ def maybe_award_badge(badge_template: dict, year: int, user_id: int) -> bool:
     if badge.is_awarded_to(user):
         return False
 
-    # Count the number of replies tweeted in the current year.
+    # Count the number of non-spam replies tweeted in the current year.
     from kitsune.questions.models import Answer
 
     num_contributions = Answer.objects.filter(
-        creator=user, created__gte=date(year, 1, 1), created__lt=date(year + 1, 1, 1)
+        creator=user, is_spam=False, created__gte=date(year, 1, 1), created__lt=date(year + 1, 1, 1)
     ).count() + num_deleted_contributions(
         Answer,
         contributor=user,
