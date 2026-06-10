@@ -186,7 +186,7 @@ def process_zendesk_update(payload: dict) -> None:
         return
 
     try:
-        ticket = qs.filter(zd_deleted_at__isnull=True).get()
+        ticket = qs.syncable().get()
     except SupportTicket.DoesNotExist:
         return
 
@@ -201,13 +201,7 @@ def sync_support_ticket(ticket_id: int) -> None:
     failing ticket doesn't stall the rest of the batch and gets isolated retries.
     """
     try:
-        ticket = (
-            SupportTicket.objects.filter(
-                zendesk_ticket_id__isnull=False, zd_deleted_at__isnull=True
-            )
-            .exclude(zendesk_ticket_id="")
-            .get(id=ticket_id)
-        )
+        ticket = SupportTicket.objects.syncable().get(id=ticket_id)
     except SupportTicket.DoesNotExist:
         return
 
@@ -223,21 +217,7 @@ def sync_active_support_tickets() -> None:
     Zenpy handles Zendesk API rate limiting, so sub-tasks run as fast as the
     worker pool allows.
     """
-    active_statuses = [
-        SupportTicket.ZD_STATUS_NEW,
-        SupportTicket.ZD_STATUS_OPEN,
-        SupportTicket.ZD_STATUS_PENDING,
-        SupportTicket.ZD_STATUS_HOLD,
-    ]
-    ticket_ids = (
-        SupportTicket.objects.filter(
-            zd_status__in=active_statuses,
-            zendesk_ticket_id__isnull=False,
-            zd_deleted_at__isnull=True,
-        )
-        .exclude(zendesk_ticket_id="")
-        .values_list("id", flat=True)
-    )
+    ticket_ids = SupportTicket.objects.active().syncable().values_list("id", flat=True)
 
     result = group(sync_support_ticket.s(ticket_id) for ticket_id in ticket_ids).delay()
 

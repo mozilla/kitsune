@@ -101,10 +101,8 @@
 {% macro zd_status_badge(ticket, size="sm") %}
   {% set _size_class = " status-label--lg" if size == "lg" else "" %}
   {% set _status_class = ticket.zd_status or "neutral" %}
-  {% set _status_label = ticket.get_zd_status_display() or _("Submitted") %}
-  {% if ticket.is_zendesk_deleted %}
+  {% if ticket.zd_deleted_at %}
     {% set _status_class = "neutral" %}
-    {% set _status_label = _("Inactive") %}
     {% set _status_tip = _("This ticket is no longer active and can no longer receive replies") %}
   {% elif ticket.zd_status == ticket.ZD_STATUS_SOLVED %}
     {% set _status_tip = _("This ticket has been resolved") %}
@@ -122,7 +120,7 @@
     {% set _status_class = "neutral" %}
     {% set _status_tip = _("This ticket has been submitted and is being processed") %}
   {% endif %}
-  <span class="status-label status-label--{{ _status_class }}{{ _size_class }}" title="{{ _status_tip }}">{{ _status_label }}</span>
+  <span class="status-label status-label--{{ _status_class }}{{ _size_class }}" title="{{ _status_tip }}">{{ ticket.status_label }}</span>
 {% endmacro %}
 
 {% macro state_badges(obj) %}

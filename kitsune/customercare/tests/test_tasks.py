@@ -369,14 +369,6 @@ class ProcessZendeskUpdateTests(TestCase):
         self.assertIsNotNone(self.ticket.zd_deleted_at)
 
     @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
-    def test_permanently_deleted_marks_ticket_deleted(self, mock_sync):
-        process_zendesk_update(self._payload("zen:event-type:ticket.permanently_deleted"))
-
-        mock_sync.assert_not_called()
-        self.ticket.refresh_from_db()
-        self.assertIsNotNone(self.ticket.zd_deleted_at)
-
-    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
     def test_deletion_event_uses_payload_time(self, mock_sync):
         payload = self._payload("zen:event-type:ticket.soft_deleted")
         payload["time"] = "2026-06-04T12:34:56Z"

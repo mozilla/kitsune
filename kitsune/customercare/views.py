@@ -36,7 +36,7 @@ ZENDESK_ERRORS = (APIException, ZenpyException, requests.exceptions.RequestExcep
 
 
 def _ticket_needs_sync(ticket):
-    if ticket.is_zendesk_deleted or not ticket.zendesk_ticket_id:
+    if not ticket.is_syncable:
         return False
     if ticket.last_synced_at is None:
         return True
@@ -78,7 +78,7 @@ def ticket_detail(request, username, ticket_id):
 
     if (
         (ticket.zd_status != SupportTicket.ZD_STATUS_CLOSED)
-        and (not ticket.is_zendesk_deleted)
+        and ticket.is_syncable
         and form.is_valid()
     ):
         set_zd_deleted_at = False
@@ -182,7 +182,7 @@ def ticket_detail(request, username, ticket_id):
             log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
             sync_error = True
         else:
-            status_changed = ticket.is_zendesk_deleted or ticket.zd_status != old_status
+            status_changed = (ticket.zd_status != old_status) or not ticket.is_syncable
 
     context = {
         "ticket": ticket,

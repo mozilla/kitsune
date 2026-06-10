@@ -84,7 +84,7 @@ def sync_ticket_from_zendesk(ticket: SupportTicket) -> SupportTicket:
     instance than the one passed in, so callers that re-render afterwards (e.g.
     ticket_detail) must use the returned object rather than the one they passed.
     """
-    if ticket.is_zendesk_deleted:
+    if not ticket.is_syncable:
         return ticket
 
     set_zd_deleted_at = False

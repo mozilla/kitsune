@@ -150,7 +150,9 @@ class TicketDetailViewTests(TestCase):
     def setUp(self):
         self.owner = UserFactory()
         self.other = UserFactory()
-        self.ticket = SupportTicketFactory(user=self.owner)
+        self.ticket = SupportTicketFactory(
+            user=self.owner, zendesk_ticket_id="123", last_synced_at=timezone.now()
+        )
 
     def test_owner_can_view(self):
         self.client.force_login(self.owner)

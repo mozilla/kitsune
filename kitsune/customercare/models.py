@@ -9,7 +9,32 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.models import ModelBase
 
 
-class SupportTicketManager(models.Manager):
+class SupportTicketQuerySet(models.QuerySet):
+    def syncable(self):
+        # Mirror SupportTicket.is_syncable: a usable Zendesk id and not deleted.
+        return self.filter(zd_deleted_at__isnull=True).exclude(
+            Q(zendesk_ticket_id__isnull=True) | Q(zendesk_ticket_id="")
+        )
+
+    def active(self):
+        # Display semantics: status alone, regardless of whether the ticket has
+        # synced a Zendesk id yet. Chain .syncable() when sync-eligibility matters.
+        return self.filter(
+            zd_status__in=(
+                SupportTicket.ZD_STATUS_NEW,
+                SupportTicket.ZD_STATUS_OPEN,
+                SupportTicket.ZD_STATUS_PENDING,
+                SupportTicket.ZD_STATUS_HOLD,
+            ),
+            zd_deleted_at__isnull=True,
+        )
+
+    def solved(self):
+        return self.filter(
+            zd_status__in=(SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED),
+            zd_deleted_at__isnull=True,
+        )
+
     def accessible_to(self, user):
         if not (user and user.is_authenticated):
             return self.none()
@@ -113,7 +138,7 @@ class SupportTicket(ModelBase):
     internal_zd_tags = models.JSONField(default=list, blank=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
-    objects = SupportTicketManager()
+    objects = SupportTicketQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created"]
@@ -134,9 +159,9 @@ class SupportTicket(ModelBase):
         return "direct_support"
 
     @property
-    def is_zendesk_deleted(self):
-        """True once the ticket has been deleted in Zendesk (soft or permanent)."""
-        return self.zd_deleted_at is not None
+    def is_syncable(self):
+        """True if the ticket can be synced with Zendesk."""
+        return bool(self.zendesk_ticket_id and not self.zd_deleted_at)
 
     def get_absolute_url(self):
         if not self.user:
@@ -162,15 +187,8 @@ class SupportTicket(ModelBase):
         return [c for c in self.comments[first_reply_index:] if c.get("public", False)]
 
     @property
-    def user_status(self):
-        """Derive a user-facing status from submission_status and zd_status."""
-        if self.submission_status == self.STATUS_REJECTED:
-            return None
-        if self.submission_status in (
-            self.STATUS_PENDING,
-            self.STATUS_FLAGGED,
-            self.STATUS_PROCESSING_FAILED,
-        ):
-            return _lazy("processing")
-        # STATUS_SENT — delegate to ZD status if available
-        return self.zd_status or _lazy("submitted")
+    def status_label(self):
+        """Derive a user-facing status."""
+        if self.zd_deleted_at:
+            return _lazy("Inactive")
+        return self.get_zd_status_display() or _lazy("Submitted")
