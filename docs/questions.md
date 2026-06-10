@@ -2,6 +2,10 @@
 title: Ask A Question
 ---
 
+!!! warning
+
+    This section of documentation may be outdated.
+
 This document explains what kinds of question states exist in Kitsune,
 how they are set and their implications.
 
@@ -57,7 +61,7 @@ ways:
 
 Implications:
 
--   Users can\'t reply
+-   Users can't reply
 -   Moderators can unlock to reply
 -   If there is an answer, the locked thread is still shown by search
     engines and our internal search.

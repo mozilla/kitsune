@@ -1,9 +1,5 @@
 # Advanced Search
 
-```eval_rst
-.. contents:: :local:
-```
-
 Kitsune supports an advanced search syntax in all its search boxes.
 
 A number of search operators and tokens,
@@ -109,8 +105,8 @@ Specifies that the token must not exist in the document.
 
 Specifies that both tokens must exist in the document.
 
-```eval_rst
-.. note::
+!!! note
+
     A quirk of our current implementation is that ``x AND y`` can return more results than ``x y``.
     This is because ``x y`` requires both tokens to exist in the same field,
     whereas ``x AND y`` will match across fields.
@@ -123,7 +119,6 @@ Specifies that both tokens must exist in the document.
         }
 
     ``x y`` wouldn't match, but ``x AND y`` would.
-```
 
 ### OR
 
@@ -201,11 +196,11 @@ e.g. to match against question content in English, you'll need to use `question_
 
 e.g. to match against answer content in German, you'll use to use `answer_content.de`.
 
-```eval_rst
-.. note::
-  Currently you can't search in a locale other than the one you're using SUMO in.
-  For instance, attempting to search for ``field:question_content.en-US:firefox`` on http://support.mozilla.org/de will return zero results.
-```
+!!! note
+
+    Currently you can't search in a locale other than the one you're using SUMO in.
+    For instance, attempting to search for ``field:question_content.en-US:firefox`` on http://support.mozilla.org/de will return zero results.
+
 
 ### Knowledge Base Articles
 
