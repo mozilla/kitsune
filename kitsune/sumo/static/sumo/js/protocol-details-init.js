@@ -33,16 +33,34 @@ export default function detailsInit() {
     button.innerHTML = mobileButtonText;
   }
 
-  if (sidebarList && _mqWide.matches) {
+  function initializeMobileDetails() {
     Details.init('.details-heading');
-    swapMobileSubnavText();
+    if ((document.querySelector('#doc-tools')?.textContent ?? "").trim() === "") {
+      // The only potential section of a mobile sidebar is empty, so there's no sense in displaying the sidebar.
+      // This isn't relevant for the large version, where the sidebar will always include the helpfulness survey at least.
+      // Note that we can't check #aside directly, since the helpfulness survey has not been moved from it yet.
+      let aside = document.querySelector('#aside');
+      if (aside) {
+        aside.hidden = true;
+      }
+    }
+    else {
+      swapMobileSubnavText();
+    }
+  }
+
+  if (sidebarList && _mqWide.matches) {
+    initializeMobileDetails();
   }
   _mqWide.addListener(function(mq) {
     if (sidebarList && mq.matches) {
-      Details.init('.details-heading');
-      swapMobileSubnavText();
+      initializeMobileDetails();
     } else {
       Details.destroy('.details-heading');
+      let aside = document.querySelector('#aside');
+      if (aside) {
+        aside.hidden = false;
+      }
     }
   });
 
