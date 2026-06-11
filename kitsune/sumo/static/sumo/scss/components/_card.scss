@@ -187,6 +187,15 @@
     display: flex;
     flex-direction: column;
     min-height: 144px;
+
+    // Clamp the description so a single verbose product can't stretch every
+    // card in the uniform grid into a tall box full of empty space.
+    .card--desc {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
   }
 
   &--topic {
@@ -478,7 +487,11 @@
   @media #{p.$mq-lg} {
     &--product {
       flex-direction: row;
-      align-items: center;
+      // Top-align the icon and text rather than centering them. When cards wrap
+      // into rows, each card stretches to the tallest card in its row; centering
+      // would float the shorter cards' content in the middle so titles wouldn't
+      // line up across the row. flex-start keeps every card's title aligned.
+      align-items: flex-start;
     }
 
     &--icon {
