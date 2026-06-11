@@ -139,7 +139,7 @@ def get_pinned_articles(
     condition = Q(id__in=pinned_articles)
 
     if locale != settings.WIKI_DEFAULT_LANGUAGE:
-        condition = condition | Q(parent__in=pinned_articles)
+        condition = condition | Q(parent__in=pinned_articles, current_revision__isnull=False)
 
     return (
         Document.objects.filter(locale=locale).filter(condition).select_related("current_revision")
