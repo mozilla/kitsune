@@ -168,4 +168,19 @@ body[data-product-slug="firefox-enterprise"] {
       }
     }
   }
+
+  // Below the large breakpoint the cards become a single-row horizontal
+  // scroller with a hidden scrollbar. Touch devices can swipe through it, but
+  // on a narrow desktop window (fine pointer) there's no scrollbar and the
+  // wheel scrolls vertically, so the cards are unreachable. For non-touch
+  // pointers, let the cards wrap into rows that scroll with the page instead.
+  @media (max-width: #{p.$screen-lg}) and (hover: hover) and (pointer: fine) {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    scroll-snap-type: none;
+
+    >.card--topic {
+      height: auto;
+    }
+  }
 }

@@ -96,6 +96,34 @@
     --cg-card-width: 40vw;
   }
 
+  @media (max-width: #{p.$screen-lg}) and (hover: hover) and (pointer: fine) {
+    overflow: visible;
+    scroll-snap-type: none;
+
+    .scroll-wrap {
+      width: auto;
+      flex-wrap: wrap;
+    }
+    &.is-product-wrap .scroll-wrap,
+    &.is-four-wide .scroll-wrap {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: 1fr;
+      column-gap: var(--cg-gutter);
+      row-gap: 20px;
+    }
+
+    &.is-product-wrap .card,
+    &.is-four-wide .card,
+    &.is-product-wrap .card:first-child,
+    &.is-four-wide .card:first-child,
+    &.is-product-wrap .card:last-child,
+    &.is-four-wide .card:last-child {
+      width: auto;
+      margin: 0;
+    }
+  }
+
   @media #{p.$mq-lg} {
     --cg-gutter: #{c.$gutter-width};
     margin: 0;
@@ -109,7 +137,22 @@
     }
 
     &.is-product-wrap {
-      margin-bottom: -40px;
+      margin-bottom: 0;
+      .scroll-wrap {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 1fr;
+        column-gap: c.$gutter-width;
+        row-gap: p.$spacing-lg;
+        margin: 0;
+      }
+
+      .card,
+      .card:first-child,
+      .card:last-child {
+        width: auto;
+        margin: 0;
+      }
     }
 
     .card {
@@ -127,15 +170,27 @@
       @include c.col(1, 3); // This should be an 8 col grid, and it should use a 10-col grid at XL
     }
 
-    &.is-four-wide, &.extra-padding {
+    &.extra-padding {
       margin-bottom: -1 * p.$spacing-lg;
     }
 
     &.is-four-wide {
+      margin-bottom: 0;
+
+      .scroll-wrap {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-auto-rows: 1fr;
+        column-gap: c.$gutter-width;
+        row-gap: p.$spacing-lg;
+        margin: 0;
+      }
+
       .card,
       .card:first-child,
       .card:last-child {
-        @include c.col(1, 4);
+        width: auto;
+        margin: 0;
       }
     }
   }
