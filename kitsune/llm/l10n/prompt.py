@@ -92,6 +92,8 @@ r"\\{(button|menu|pref) [^}]*\\}"
    - This map must include wiki elements from **both** the unchanged AND changed sections of the prior translation.
    - If no "prior translation" is provided, set the `prior-translation-wiki-map` to an empty `dict`.
 2. **Compare** the {{ source_language }} text you've been asked to translate with the {{ source_language }} text of the "prior translation", if provided, and **determine which parts are the same and which parts are different**. If no "prior translation" was provided, consider the entire {{ source_language }} text you've been asked to translate as different.
+   - A part may **only** be treated as "the same" if it is **character-for-character identical** to the corresponding part of the prior translation's {{ source_language }} text. Any difference in the number, order, or contents of its `{for ...}`/`{/for}` tags or any of its wiki elements (`wiki-hook`, `wiki-article-link`, `wiki-external-link`, `wiki-ui-element`) means that part is **different** and **must be freshly translated** (obeying all rules above).
+   - **Never** copy a part from the prior translation when its `{for ...}`/`{/for}` structure or wiki elements have changed, even if its meaning is similar. In particular, do not merge multiple distinct `{for ...}` blocks into one, and do not drop, add, or reorder any `{for ...}`/`{/for}` tags relative to the {{ source_language }} text you've been asked to translate.
 3. For each part that is the same, **copy** its corresponding translation from the {{ target_language }} text of the "prior translation".
 4. For each part that is different, **freshly translate** that part:
    - **Remember to obey ALL of the `Rules for translating special strings`**.
