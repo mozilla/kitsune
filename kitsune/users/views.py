@@ -148,7 +148,7 @@ def profile(request, username):
                 "profile": user_profile,
                 "awards": Award.objects.filter(user=user_profile.user),
                 "groups": groups,
-                "num_questions": num_questions(user_profile.user),
+                "num_questions": num_questions(user_profile.user, viewer=request.user),
                 "num_answers": num_answers(user_profile.user),
                 "num_solutions": num_solutions(user_profile.user),
                 "num_documents": (

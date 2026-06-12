@@ -22,7 +22,7 @@ from kitsune.questions.utils import (
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Profile
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import UserFactory, add_permission
 
 
 class ContributionCountTestCase(TestCase):
@@ -42,6 +42,24 @@ class ContributionCountTestCase(TestCase):
 
         q2.delete()
         self.assertEqual(num_questions(u), 0)
+
+    def test_num_questions_excludes_spam_for_non_moderators(self):
+        """Spam questions are only counted for viewers who can moderate spam."""
+        u = UserFactory()
+        QuestionFactory(creator=u)
+        QuestionFactory(creator=u, is_spam=True)
+
+        # No viewer (e.g. anonymous): spam is excluded.
+        self.assertEqual(num_questions(u), 1)
+
+        # A regular viewer without moderation permission: spam is excluded.
+        regular_viewer = UserFactory()
+        self.assertEqual(num_questions(u, viewer=regular_viewer), 1)
+
+        # A moderator: spam is included.
+        moderator = UserFactory()
+        add_permission(moderator, FlaggedObject, "can_moderate")
+        self.assertEqual(num_questions(u, viewer=moderator), 2)
 
     def test_num_answers(self):
         u = UserFactory()

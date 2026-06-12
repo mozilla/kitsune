@@ -30,9 +30,15 @@ REGEX_TOPIC_HIERARCHY_SPLITTER = re.compile(r">|;|\s/\s|\.|\s\-\s|\||\:\:|\:")
 log = logging.getLogger("k.questions")
 
 
-def num_questions(user):
-    """Returns the number of questions a user has."""
-    return Question.objects.filter(creator=user).count()
+def num_questions(user, viewer=None):
+    """Returns the number of questions a user has.
+
+    Spam-marked questions are excluded unless the viewer has permission to moderate spam.
+    """
+    questions = Question.objects.filter(creator=user)
+    if not (viewer and viewer.has_perm("flagit.can_moderate")):
+        questions = questions.filter(is_spam=False)
+    return questions.count()
 
 
 def num_answers(user):

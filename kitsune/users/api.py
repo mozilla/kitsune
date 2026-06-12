@@ -35,7 +35,7 @@ from kitsune.users.templatetags.jinja_helpers import profile_avatar
 def display_name_or_none(user):
     try:
         return user.profile.name
-    except (Profile.DoesNotExist, AttributeError):
+    except Profile.DoesNotExist, AttributeError:
         return None
 
 
@@ -99,7 +99,14 @@ def usernames(request):
                 .select_related("profile")
                 .get()
             )
-            autocomplete_list = [{"username": exact_match.username, "display_name": display_name_or_none(exact_match), "avatar": profile_avatar(exact_match, 24)}, *autocomplete_list]
+            autocomplete_list = [
+                {
+                    "username": exact_match.username,
+                    "display_name": display_name_or_none(exact_match),
+                    "avatar": profile_avatar(exact_match, 24),
+                },
+                *autocomplete_list,
+            ]
         except User.DoesNotExist:
             pass
 
@@ -216,7 +223,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         return profile_avatar(profile.user, size=size)
 
     def get_question_count(self, profile):
-        return num_questions(profile.user)
+        request = self.context.get("request")
+        return num_questions(profile.user, viewer=request.user if request else None)
 
     def get_answer_count(self, profile):
         return num_answers(profile.user)
@@ -379,6 +387,7 @@ def create_test_user(request):
             ],
         }
     )
+
 
 @group_required("Staff")
 @require_POST
