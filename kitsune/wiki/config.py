@@ -115,11 +115,13 @@ SIMPLE_WIKI_LANDING_PAGE_SLUG = "frequently-asked-questions"
 # Q object for filtering valid pinned articles.
 # This is used in both the admin UI (via limit_choices_to) and in runtime
 # filtering (via get_pinned_articles()) to ensure consistency.
-# Excludes: templates, archived, restricted, redirects, and non-IA categories.
+# Excludes: templates, archived, restricted, redirects, non-IA categories,
+#           and those without a current revision.
 PINNED_ARTICLE_LIMIT_Q = Q(
     parent__isnull=True,
     is_template=False,
     is_archived=False,
+    current_revision__isnull=False,
     restrict_to_groups__isnull=True,
     category__in=settings.IA_DEFAULT_CATEGORIES,
 ) & ~Q(html__startswith=REDIRECT_HTML)

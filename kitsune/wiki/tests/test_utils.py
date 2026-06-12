@@ -1147,8 +1147,10 @@ class GetPinnedArticlesTests(TestCase):
         result = get_pinned_articles(product=self.product1, locale="fr", fetch_for_aaq=True)
         self.assertEqual(result.count(), 0)
 
+        # The "es" translation has no approved (current) revision, so it is
+        # excluded even though its parent (en_doc) is a valid pinned article.
         result = get_pinned_articles(product=self.product1, locale="es")
-        self.assertEqual(list(result), [self.es_doc])
+        self.assertEqual(result.count(), 0)
 
         result = get_pinned_articles(locale="de")
         self.assertEqual(result.count(), 0)
@@ -1212,5 +1214,38 @@ class GetPinnedArticlesTests(TestCase):
         valid_doc.category = HOW_TO_CATEGORY
         valid_doc.save()
         RedirectRevisionFactory(document=valid_doc)
+        result = get_pinned_articles(product=self.product1)
+        self.assertEqual(result.count(), 0)
+
+    def test_excludes_pinned_article_that_loses_its_current_revision(self):
+        """
+        A pinned article that loses its approved (current) revision is excluded.
+
+        The admin UI's limit_choices_to prevents pinning an article that has no
+        approved revision to begin with, but that is only a form-level
+        constraint. get_pinned_articles re-applies PINNED_ARTICLE_LIMIT_Q at
+        runtime, so an already-pinned article whose approved revision is later
+        deleted (which nulls current_revision) is filtered out, keeping pinned
+        articles consistent with the featured-articles pool.
+        """
+        revision = ApprovedRevisionFactory(
+            document__locale="en-US",
+            document__slug="loses-current-revision",
+        )
+        doc = revision.document
+
+        config = PinnedArticleConfig.objects.create(title="LosesCurrentRevision")
+        config.pinned_articles.add(doc)
+        self.product1.pinned_article_config = config
+        self.product1.save()
+
+        result = get_pinned_articles(product=self.product1)
+        self.assertEqual(list(result), [doc])
+
+        # Deleting the only approved revision nulls the document's current_revision.
+        revision.delete()
+        doc.refresh_from_db()
+        self.assertIsNone(doc.current_revision)
+
         result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
