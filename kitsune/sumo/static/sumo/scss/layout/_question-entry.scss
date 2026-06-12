@@ -37,6 +37,12 @@
     inset: 0;
   }
 
+  // Surface the visited state so users can tell which questions they've already
+  // read (issue #7459). Before :hover so hover still wins (CSS LVHA order).
+  &:visited {
+    color: var(--color-link-visited);
+  }
+
   &:hover {
     text-decoration: underline;
     color: var(--color-click);
