@@ -10,3 +10,5 @@ class HomepageMessages:
     NEW_USER_REGISTRATION_MESSAGE = (
         "Welcome! You are now signed in using your Mozilla account. Edit your profile."
         "Already have a different Mozilla Support Account? Read more.")
+    USER_DEACTIVATED_MESSAGE = ("This account is not active. Please contact an administrator if "
+                                "you believe this is an error")

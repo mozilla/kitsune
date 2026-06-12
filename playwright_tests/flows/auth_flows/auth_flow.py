@@ -104,3 +104,32 @@ class AuthFlowPage:
         self.auth_page.click_on_continue_deletion_button()
         self.auth_page.add_fxa_password(password)
         self.auth_page.click_on_the_delete_confirmation_button()
+
+    def change_test_account_password_flow(self, username: str, old_password: str,
+                                          new_password: str):
+        """Change FxA account password flow.
+
+        Args:
+            username (str): Targeted FxA username.
+            old_password (str): Old FxA account password.
+            new_password (str): New FxA account password.
+        """
+
+        self.page.goto(self.utilities.different_endpoints['fxa_stage'])
+        fxa_page = self.utilities.create_new_context_page()
+        auth_page = AuthPage(fxa_page)
+        utilities = Utilities(fxa_page)
+
+        auth_page.enter_your_email_input_field.wait_for(state="visible", timeout=3500)
+        auth_page.add_data_to_email_input_field(username)
+        auth_page.click_on_enter_your_email_submit_button()
+        auth_page.add_data_to_password_input_field(old_password)
+        auth_page.click_on_enter_your_password_submit_button()
+        auth_page.click_on_change_password_button()
+        confirmation_code = utilities.get_fxa_verification_code(restmail_username=username,
+                                                                change_password=True)
+        auth_page.add_password_change_confirmation_code(confirmation_code)
+        auth_page.change_fxa_password_form_completion(old_password, new_password)
+
+        fxa_page.context.close()
+

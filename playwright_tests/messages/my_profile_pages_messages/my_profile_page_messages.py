@@ -3,6 +3,7 @@ class MyProfileMessages:
     TWITTER_REDIRECT_LINK = "https://x.com/"
     COMMUNITY_PORTAL_LINK = "https://community.mozilla.org"
     PEOPLE_DIRECTORY_LINK = "https://people.mozilla.org"
+    USER_DEACTIVATED_MESSAGE = "This user has been deactivated."
 
     @staticmethod
     def get_my_profile_stage_url(username: str) -> str:
