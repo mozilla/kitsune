@@ -50,6 +50,9 @@ IMAGE_PARAM_VALUES = {
 }
 VIDEO_PARAMS = ["height", "width", "modal", "title", "placeholder"]
 YOUTUBE_PLACEHOLDER = "<p>YOUTUBE_EMBED_PLACEHOLDER_%s</p>"
+YOUTUBE_DOMAINS = frozenset(
+    ["youtu.be", "youtube.com", "www.youtube.com", "www.youtube-nocookie.com"]
+)
 UI_COMPONENT_PLACEHOLDER = "<p>UI_COMPONENT_EMBED_PLACEHOLDER_%s</p>"
 ALLOWED_UI_COMPONENTS = frozenset(["device_migration_wizard", "details_start", "details_end"])
 
@@ -82,7 +85,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
     """
     try:
         return cls.objects.get(title=title, locale=locale, **kwargs)
-    except (OSError, cls.DoesNotExist):
+    except OSError, cls.DoesNotExist:
         pass
 
     # Fallback
@@ -114,7 +117,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
         # Return the English item:
         return default_lang_doc
     # Okay, all else failed
-    except (OSError, cls.DoesNotExist):
+    except OSError, cls.DoesNotExist:
         return default
 
 
@@ -406,19 +409,11 @@ class WikiParser(Parser):
         # params, only modal supported for now
         title, params = build_hook_params(title, self.locale, VIDEO_PARAMS)
 
-        # If this is a youtube video, return the youtube embed
-        if _is_youtube_url(title):
-            parsed_url = urlparse(title)
-            netloc = parsed_url.netloc
-            if netloc == "youtu.be":
-                # The video id is the path minus the leading /
-                video_id = parsed_url.path[1:]
-            else:
-                # The video id is in the v= query param
-                video_id = parse_qs(parsed_url.query)["v"][0]
-
+        # If this is a youtube video, return the youtube embed. Anything that
+        # isn't a recognized youtube video URL (including malformed ones) falls
+        # through to the gallery video lookup below.
+        if video_id := _get_youtube_id(title):
             self.youtube_videos.add(video_id)
-
             return YOUTUBE_PLACEHOLDER % video_id
 
         v = get_object_fallback(Video, title, self.locale, message)
@@ -497,8 +492,32 @@ def _get_video_url(video_file):
     return video_file.url
 
 
-def _is_youtube_url(url):
-    """Returns true if the URL is to youtube."""
+def _get_youtube_id(url):
+    """Extract the video id from a youtube URL.
+
+    Returns None if the URL isn't a recognized youtube video URL, handling the
+    various youtube URL formats:
+      - youtu.be/<id>
+      - youtube.com/watch?v=<id>
+      - youtube.com/{embed,shorts,live,v}/<id> (also youtube-nocookie.com)
+    """
     parsed_url = urlparse(url)
-    netloc = parsed_url.netloc
-    return netloc in ["youtu.be", "youtube.com", "www.youtube.com", "www.youtube-nocookie.com"]
+
+    if parsed_url.netloc not in YOUTUBE_DOMAINS:
+        return None
+
+    if parsed_url.netloc == "youtu.be":
+        # The video id is the path minus the leading /.
+        return parsed_url.path.lstrip("/").split("/")[0] or None
+
+    # Standard watch URLs carry the id in the v= query param.
+    video_id = parse_qs(parsed_url.query).get("v", [None])[0]
+    if video_id:
+        return video_id
+
+    # The embed/shorts/live URLs carry the id in the path (/embed/<id>, etc.).
+    path_parts = [part for part in parsed_url.path.split("/") if part]
+    if len(path_parts) == 2 and path_parts[0] in ("embed", "shorts", "live", "v"):
+        return path_parts[1]
+
+    return None
