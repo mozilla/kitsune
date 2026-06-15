@@ -3,6 +3,7 @@ from typing import Any
 from kitsune.llm.categorization.prompt import (
     DEFAULT_PRODUCT_RESULT,
     DEFAULT_TOPIC_RESULT,
+    SELECTED_TOPIC_HINT,
     build_product_prompt,
     build_topic_prompt,
     product_parser,
@@ -72,6 +73,11 @@ def classify_topic(payload: dict[str, Any]) -> dict[str, Any]:
         payload["topics"] = get_taxonomy(
             product, include_metadata=["description", "examples"], output_format="JSON"
         )
+
+    selected_topic = payload.get("selected_topic") or ""
+    payload["selected_topic_hint"] = (
+        SELECTED_TOPIC_HINT.format(selected_topic=selected_topic) if selected_topic else ""
+    )
 
     topic_prompt = build_topic_prompt()
     topic_classification_chain = build_chain_with_retry(

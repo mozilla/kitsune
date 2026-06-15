@@ -5,8 +5,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from kitsune.flagit.models import FlaggedObject
+from kitsune.llm.support.classifiers import classify_question
 from kitsune.llm.tasks import process_moderation_queue
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Question
 from kitsune.users.models import Profile
 
@@ -136,3 +137,60 @@ class ModerationQueueProcessingTestCase(TestCase):
 
                     self.assertIn("Processed 3 stale flagged objects", result)
                     self.assertEqual(mock_classify.call_count, 3)
+
+
+class ClassifyQuestionTopicHintTests(TestCase):
+    """The question's selected topic is passed to classify_topic as a hint."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="asker")
+        Profile.objects.create(user=self.user)
+        self.product = Product.objects.create(title="Firefox", slug="firefox", display_order=1)
+
+    @patch("kitsune.llm.support.classifiers.get_taxonomy")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_selected_topic_passed_as_hint(
+        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy
+    ):
+        mock_get_taxonomy.return_value = {}
+        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_classify_topic.return_value = {"topic_result": {"topic": "Sign in failure"}}
+
+        topic = Topic.objects.create(
+            title="Sign in failure", slug="sign-in-failure", description="", display_order=1
+        )
+        question = Question.objects.create(
+            title="Can't sign in",
+            content="I cannot sign in to my account",
+            creator=self.user,
+            product=self.product,
+            topic=topic,
+        )
+
+        classify_question(question)
+
+        payload = mock_classify_topic.call_args.args[0]
+        self.assertEqual(payload["selected_topic"], "Sign in failure")
+
+    @patch("kitsune.llm.support.classifiers.get_taxonomy")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_no_hint_when_question_has_no_topic(
+        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy
+    ):
+        mock_get_taxonomy.return_value = {}
+        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_classify_topic.return_value = {"topic_result": {"topic": "General"}}
+
+        question = Question.objects.create(
+            title="Hello",
+            content="Generic question",
+            creator=self.user,
+            product=self.product,
+        )
+
+        classify_question(question)
+
+        payload = mock_classify_topic.call_args.args[0]
+        self.assertNotIn("selected_topic", payload)

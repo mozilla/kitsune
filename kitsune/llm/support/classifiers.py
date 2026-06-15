@@ -7,7 +7,7 @@ from kitsune.llm.spam.classifier import (
     classify_spam,
     determine_action_from_spam_result,
 )
-from kitsune.products.models import Product, ProductSupportConfig
+from kitsune.products.models import Product, ProductSupportConfig, ZendeskTopic
 from kitsune.products.utils import get_taxonomy
 
 if TYPE_CHECKING:
@@ -64,6 +64,10 @@ def classify_question(question: Question) -> dict[str, Any]:
         ),
     }
 
+    # Pass the user's selected topic as a hint for topic classification.
+    if question.topic_id:
+        payload["selected_topic"] = question.topic.title
+
     spam_result_dict = classify_spam(payload)
     spam_result = spam_result_dict["spam_result"]
     is_spam: bool = spam_result.get("is_spam", False)
@@ -81,9 +85,11 @@ def classify_question(question: Question) -> dict[str, Any]:
         if (action == ModerationAction.SPAM) and spam_result.get("maybe_misclassified"):
 
             def on_reassignment(product_result: dict[str, Any], new_product: Product):
-                # Reassign payload product and run topic classification
+                # Reassign payload product and run topic classification. Drop the selected
+                # topic hint — it belonged to the original product's taxonomy.
                 payload["product"] = new_product
                 payload.pop("topics", None)
+                payload.pop("selected_topic", None)
                 topic_result_dict = classify_topic(payload)
                 return {
                     "action": ModerationAction.NOT_SPAM,
@@ -121,6 +127,15 @@ def classify_zendesk_submission(submission: SupportTicket) -> dict[str, Any]:
             product, include_metadata=["description", "examples"], output_format="JSON"
         ),
     }
+
+    # Pass the user's form selection as a hint for topic classification. Only when the
+    # ZendeskTopic maps to a taxonomy topic, since the classifier picks from topic titles.
+    if submission.category:
+        zd_topic = (
+            ZendeskTopic.objects.filter(slug=submission.category).select_related("topic").first()
+        )
+        if zd_topic and zd_topic.topic_id:
+            payload["selected_topic"] = zd_topic.topic.title
 
     # Check if spam moderation should be skipped for this product
     skip_spam = False

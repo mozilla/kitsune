@@ -13,7 +13,9 @@ from kitsune.llm.support.classifiers import classify_zendesk_submission
 from kitsune.products.tests import (
     ProductFactory,
     ProductSupportConfigFactory,
+    TopicFactory,
     ZendeskConfigFactory,
+    ZendeskTopicFactory,
 )
 from kitsune.sumo.tests import TestCase
 
@@ -148,6 +150,63 @@ class ZendeskSubmissionClassifierTests(TestCase):
 
         mock_classify_spam.assert_called_once()
         mock_classify_topic.assert_called_once()
+
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
+    @patch("kitsune.llm.support.classifiers.get_taxonomy")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_form_selection_passed_as_topic_hint(
+        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
+    ):
+        """The selected topic's taxonomy title is passed to classify_topic as a hint."""
+        mock_get_taxonomy.return_value = {}
+        mock_reassignment.return_value = None
+        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_classify_topic.return_value = {"topic_result": {"topic": "Edit account details"}}
+
+        topic = TopicFactory(title="Edit account details")
+        ZendeskTopicFactory(slug="test-edit-account-topic", topic=topic)
+
+        submission = SupportTicket.objects.create(
+            subject="Change my email",
+            description="I want to change the email on my account",
+            category="test-edit-account-topic",
+            email="user@example.com",
+            product=self.product,
+            submission_status=SupportTicket.STATUS_PENDING,
+        )
+
+        classify_zendesk_submission(submission)
+
+        payload = mock_classify_topic.call_args.args[0]
+        self.assertEqual(payload["selected_topic"], "Edit account details")
+
+    @patch("kitsune.llm.support.classifiers._handle_product_reassignment")
+    @patch("kitsune.llm.support.classifiers.get_taxonomy")
+    @patch("kitsune.llm.support.classifiers.classify_spam")
+    @patch("kitsune.llm.support.classifiers.classify_topic")
+    def test_no_topic_hint_without_matching_selection(
+        self, mock_classify_topic, mock_classify_spam, mock_get_taxonomy, mock_reassignment
+    ):
+        """No hint is passed when the category matches no ZendeskTopic."""
+        mock_get_taxonomy.return_value = {}
+        mock_reassignment.return_value = None
+        mock_classify_spam.return_value = {"spam_result": {"is_spam": False}}
+        mock_classify_topic.return_value = {"topic_result": {"topic": "General Support"}}
+
+        submission = SupportTicket.objects.create(
+            subject="Need help",
+            description="How do I use Firefox?",
+            category="unknown-category",
+            email="user@example.com",
+            product=self.product,
+            submission_status=SupportTicket.STATUS_PENDING,
+        )
+
+        classify_zendesk_submission(submission)
+
+        payload = mock_classify_topic.call_args.args[0]
+        self.assertNotIn("selected_topic", payload)
 
 
 class ProcessFailedZendeskTicketsTests(TestCase):

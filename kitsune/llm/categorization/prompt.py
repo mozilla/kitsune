@@ -62,7 +62,7 @@ Below is a JSON-formatted list of topics you MUST choose from. Each topic includ
 ```json
 {topics}
 ```
-
+{selected_topic_hint}
 # Classification Instructions
 For each piece of content:
 1. **Analyze the content** carefully to understand its primary intent or main concern.
@@ -86,6 +86,15 @@ For each piece of content:
 
 # Response Format
 {format_instructions}
+"""
+
+# Rendered into TOPIC_INSTRUCTIONS only when the user picked a topic in the form; a weak
+# prior the classifier may override, not a directive.
+SELECTED_TOPIC_HINT = """
+# User's Topic Selection
+The user selected "{selected_topic}" when submitting. Treat this as a hint only: weigh it
+against the content and pick a different topic whenever the subject and body more clearly
+match one. Do not let the selection override a clear mismatch.
 """
 
 
@@ -195,5 +204,6 @@ def build_topic_prompt():
     ).partial(
         format_instructions=topic_pydantic_parser.get_format_instructions()
         + ADDITIONAL_FORMAT_INSTRUCTIONS,
+        selected_topic_hint="",
     )
     return topic_prompt
