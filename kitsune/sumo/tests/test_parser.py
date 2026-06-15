@@ -225,6 +225,10 @@ class TestWikiParser(TestCase):
             "https://youtube.com/watch?v=oHg5SJYRHA0",
             "http://youtu.be/oHg5SJYRHA0",
             "https://youtu.be/oHg5SJYRHA0",
+            "https://www.youtube.com/embed/oHg5SJYRHA0",
+            "https://www.youtube.com/shorts/oHg5SJYRHA0",
+            "https://www.youtube.com/live/oHg5SJYRHA0",
+            "https://www.youtube-nocookie.com/embed/oHg5SJYRHA0",
         ]
 
         for url in urls:
@@ -235,6 +239,21 @@ class TestWikiParser(TestCase):
                     .attrib["src"]
                     .startswith("//www.youtube.com/embed/oHg5SJYRHA0")
                 )
+
+    def test_youtube_video_without_id_does_not_crash(self):
+        """A youtube URL with no extractable id degrades gracefully (no KeyError)."""
+        urls = [
+            "https://www.youtube.com/",
+            "https://www.youtube.com/watch",
+            "https://www.youtube.com/watch?foo=bar",
+            "https://youtu.be/",
+        ]
+
+        for url in urls:
+            with self.subTest(url):
+                result = self.p.parse("[[V:{}]]".format(url))
+                self.assertIn("does not exist", result)
+                self.assertNotIn("iframe", result)
 
     def test_ui_component_device_migration_wizard(self):
         """Verify that the UI component hook for the device-migration wizard works."""
