@@ -3,12 +3,13 @@ import logging
 from datetime import date, timedelta
 
 from django.conf import settings
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET
 
 from kitsune.dashboards import PERIODS
+from kitsune.dashboards.metrics import get_wiki_metrics_data
 from kitsune.dashboards.readouts import (
     CONTRIBUTOR_READOUTS,
     L10N_READOUTS,
@@ -244,6 +245,22 @@ def aggregated_metrics(request):
             "products": Product.objects.filter(visible=True),
         },
     )
+
+
+@require_GET
+def wiki_metrics_data(request):
+    """Return shaped WikiMetric data (a fixed one-year window) for the dashboards.
+
+    Serves both the aggregated dashboard (all locales) and the per-locale
+    dashboard (when a `locale` query parameter is given), in a single response.
+    """
+    product = _get_product(request)
+
+    locale = request.GET.get("locale") or None
+    if locale and locale not in settings.SUMO_LANGUAGES:
+        raise Http404
+
+    return JsonResponse(get_wiki_metrics_data(product, locale))
 
 
 def _get_product(request):

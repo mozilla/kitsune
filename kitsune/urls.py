@@ -7,7 +7,6 @@ from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
 from kitsune.customercare.views import ZendeskWebhookView
-from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
 from kitsune.sumo.i18n import i18n_patterns
 
@@ -63,8 +62,6 @@ urlpatterns += [
     path("api/1/products/", include("kitsune.products.urls_api")),
     path("api/1/gallery/", include("kitsune.gallery.urls_api")),
     path("api/1/users/", include("kitsune.users.urls_api")),
-    # API to pull wiki metrics data.
-    re_path(r"^api/v1/wikimetrics/?$", WikiMetricList.as_view(), name="api.wikimetric_list"),
     # v2 APIs
     path("api/2/", include("kitsune.notifications.urls_api")),
     path("api/2/", include("kitsune.questions.urls_api")),

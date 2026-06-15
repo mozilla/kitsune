@@ -6,8 +6,6 @@
 {% set crumbs = [(None, title)] %}
 {% set classes = 'aggregated-metrics' %}
 
-{% set product_slug = product.slug if product else 'null' %}
-
 
 {% block content %}
     <article class="dashboards sumo-page-section">
@@ -19,23 +17,23 @@
         {{ _('The dashboard data is being loaded. This may take some time.') }}
       </div>
 
-      <div id="dashboard-readouts" class="sumo-page-section">
-        <section id="percent-localized-top100" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+      <div id="dashboard-readouts" class="sumo-page-section" data-url="{{ url('dashboards.wiki_metrics_data')|urlparams(product=(product.slug if product else None)) }}">
+        <section id="percent-localized-top100">
           {# Double % required below to escape % for gettext #}
           <h2 class="sumo-page-subheading">{{ _('Top 100 Articles: %% Localized') }}</h2>
         </section>
 
-        <section id="percent-localized-top20" class="sumo-page-section" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+        <section id="percent-localized-top20" class="sumo-page-section">
           {# Double % required below to escape % for gettext #}
           <h2 class="sumo-page-subheading">{{ _('Top 20 Articles: %% Localized') }}</h2>
         </section>
 
-        <section id="percent-localized-all" class="sumo-page-section" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+        <section id="percent-localized-all" class="sumo-page-section">
           {# Double % required below to escape % for gettext #}
           <h2 class="sumo-page-subheading">{{ _('All Articles: %% Localized') }}</h2>
         </section>
 
-        <section id="active-contributors" class="sumo-page-section" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+        <section id="active-contributors" class="sumo-page-section">
           <h2 class="sumo-page-subheading">{{ _('Active Contributors') }}</h2>
         </section>
       </div>

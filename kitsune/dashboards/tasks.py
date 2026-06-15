@@ -4,6 +4,7 @@ from celery import shared_task
 from django.conf import settings
 from django.db import connection
 
+from kitsune.dashboards.metrics import warm_wiki_metrics_cache
 from kitsune.dashboards.models import (
     L10N_ACTIVE_CONTRIBUTORS_CODE,
     L10N_ALL_CODE,
@@ -103,6 +104,9 @@ def update_l10n_coverage_metrics() -> None:
             WikiMetric.objects.create(
                 code=L10N_ALL_CODE, locale=locale, product=product, date=today, value=percent
             )
+
+    # Warm the cached dashboard payloads with the freshly-computed data.
+    warm_wiki_metrics_cache()
 
 
 @shared_task
@@ -260,3 +264,6 @@ def update_l10n_contributor_metrics(day_isoformat: str | None = None) -> None:
                 date=previous_first_of_month,
                 value=num,
             )
+
+    # Warm the cached dashboard payloads with the freshly-computed data.
+    warm_wiki_metrics_cache()
