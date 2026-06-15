@@ -18,24 +18,34 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.body.classList.contains("aggregated-metrics")) {
     initAggregatedMetrics();
   }
-  // Hook for iteration 5 — locale-metrics page reuses this module
   if (document.body.classList.contains("locale-metrics")) {
     initLocaleMetrics();
   }
 });
 
 async function initAggregatedMetrics() {
-  const firstSection = document.getElementById("percent-localized-top100");
-  if (!firstSection) return;
-  const url = firstSection.dataset.url;
+  const container = document.getElementById("dashboard-readouts");
+  const url = container?.dataset.url;
   if (!url) return;
 
-  const allResults = await fetchAllPages(url, 60);
-  document.querySelector(".loading-data")?.remove();
-  document.getElementById("dashboard-readouts").style.display = "";
+  let payload;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    payload = await response.json();
+  } catch {
+    const loading = document.querySelector(".loading-data");
+    if (loading) loading.textContent = gettext("Error loading dashboard data");
+    return;
+  }
 
-  const grouped = groupResultsByCode(allResults);
-  const allLocales = [...new Set(allResults.map((r) => r.locale))].sort();
+  document.querySelector(".loading-data")?.remove();
+  container.style.display = "";
+
+  // Every locale present across any code.
+  const allLocales = [
+    ...new Set(Object.values(payload).flatMap((byLocale) => Object.keys(byLocale))),
+  ].sort();
 
   const picker = document.getElementById("locale-picker");
   const sidebarLocales = picker?.dataset.locales
@@ -56,8 +66,8 @@ async function initAggregatedMetrics() {
     for (const cfg of CHART_CONFIGS) {
       const section = document.getElementById(cfg.id);
       if (!section) continue;
-      const dataForCode = grouped.get(cfg.code) || new Map();
-      const chart = renderMultiLocaleChart(section, dataForCode, allLocales, defaultLocales, cfg);
+      const byLocale = payload[cfg.code] || {};
+      const chart = renderMultiLocaleChart(section, byLocale, allLocales, defaultLocales, cfg);
       if (chart) charts.push({ chart });
     }
 
@@ -76,20 +86,21 @@ async function initLocaleMetrics() {
 
   const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 0));
 
-  // Wiki-metric charts — single locale, derive series from `code`
+  // Wiki-metric charts — single locale, one payload keyed by code.
   if (wikimetricSection?.dataset.url) {
     try {
-      const results = await fetchAllPages(wikimetricSection.dataset.url, 60);
-      const byCodeAndDate = groupByCodeAndDate(results);
+      const response = await fetch(wikimetricSection.dataset.url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const byCode = seriesByCode(await response.json());
 
       schedule(() => {
         const localization = document.getElementById("localization-metrics");
         if (localization) {
-          renderLocaleLocalizationChart(localization, byCodeAndDate);
+          renderLocaleLocalizationChart(localization, byCode);
         }
         const contributors = document.getElementById("active-contributors");
         if (contributors) {
-          renderLocaleContributorsChart(contributors, byCodeAndDate);
+          renderLocaleContributorsChart(contributors, byCode);
         }
       });
     } catch {
@@ -98,7 +109,7 @@ async function initLocaleMetrics() {
     }
   }
 
-  // Helpful-votes chart — separate endpoint
+  // Helpful-votes chart — separate endpoint.
   if (voteSection?.dataset.url) {
     try {
       const response = await fetch(voteSection.dataset.url);
@@ -112,12 +123,12 @@ async function initLocaleMetrics() {
   }
 }
 
-function groupByCodeAndDate(results) {
-  // Returns Map<code, Map<date, value>>
-  const out = new Map();
-  for (const r of results) {
-    if (!out.has(r.code)) out.set(r.code, new Map());
-    out.get(r.code).set(r.date, r.value);
+function seriesByCode(payload) {
+  // payload is {code: {locale: [{date, value}]}} for a single locale; collapse
+  // to {code: [{date, value}]} by taking that one locale's series.
+  const out = {};
+  for (const [code, byLocale] of Object.entries(payload)) {
+    out[code] = Object.values(byLocale)[0] || [];
   }
   return out;
 }
@@ -133,7 +144,7 @@ function replaceWithCanvas(section, height = 320) {
   return canvas;
 }
 
-function renderLocaleLocalizationChart(section, byCodeAndDate) {
+function renderLocaleLocalizationChart(section, byCode) {
   const canvas = replaceWithCanvas(section);
   const codes = [
     { code: "percent_localized_top100", label: gettext("Top 100 Articles"), color: "#5d84b2" },
@@ -141,26 +152,15 @@ function renderLocaleLocalizationChart(section, byCodeAndDate) {
     { code: "percent_localized_all",    label: gettext("All Articles"),     color: "#89a54e" },
   ];
 
-  const allDates = new Set();
-  for (const { code } of codes) {
-    const byDate = byCodeAndDate.get(code);
-    if (byDate) for (const d of byDate.keys()) allDates.add(d);
-  }
-  const sortedDates = [...allDates].sort();
-  const dateObjs = sortedDates.map(parseISO);
-
-  const datasets = codes.map(({ code, label, color }) => {
-    const byDate = byCodeAndDate.get(code) || new Map();
-    return {
-      label,
-      borderColor: color,
-      backgroundColor: color,
-      pointRadius: 0,
-      borderWidth: 1.5,
-      fill: false,
-      data: sortedDates.map((d, i) => ({ x: dateObjs[i], y: byDate.has(d) ? byDate.get(d) : null })),
-    };
-  });
+  const datasets = codes.map(({ code, label, color }) => ({
+    label,
+    borderColor: color,
+    backgroundColor: color,
+    pointRadius: 0,
+    borderWidth: 1.5,
+    fill: false,
+    data: (byCode[code] || []).map((p) => ({ x: parseISO(p.date), y: p.value })),
+  }));
 
   renderLineChart(canvas, lineChartOptions(datasets, {
     yTitle: gettext("% Localized"),
@@ -169,10 +169,8 @@ function renderLocaleLocalizationChart(section, byCodeAndDate) {
   }));
 }
 
-function renderLocaleContributorsChart(section, byCodeAndDate) {
+function renderLocaleContributorsChart(section, byCode) {
   const canvas = replaceWithCanvas(section);
-  const byDate = byCodeAndDate.get("active_contributors") || new Map();
-  const sorted = [...byDate.keys()].sort();
   const dataset = {
     label: gettext("Active Contributors"),
     borderColor: "#5d84b2",
@@ -180,7 +178,7 @@ function renderLocaleContributorsChart(section, byCodeAndDate) {
     pointRadius: 0,
     borderWidth: 1.5,
     fill: true,
-    data: sorted.map(d => ({ x: parseISO(d), y: byDate.get(d) })),
+    data: (byCode["active_contributors"] || []).map((p) => ({ x: parseISO(p.date), y: p.value })),
   };
   renderLineChart(canvas, lineChartOptions([dataset], {
     yTitle: gettext("Contributors"),
@@ -249,34 +247,7 @@ function lineChartOptions(datasets, { yTitle, max, valueFormatter }) {
   };
 }
 
-async function fetchAllPages(url, maxPages) {
-  const results = [];
-  let next = url;
-  let count = 0;
-  while (next && count < maxPages) {
-    const response = await fetch(next);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    results.push(...(data.results || []));
-    next = data.next;
-    count++;
-  }
-  return results;
-}
-
-function groupResultsByCode(results) {
-  // Returns Map<code, Map<date, Map<locale, value>>>
-  const out = new Map();
-  for (const r of results) {
-    if (!out.has(r.code)) out.set(r.code, new Map());
-    const byDate = out.get(r.code);
-    if (!byDate.has(r.date)) byDate.set(r.date, new Map());
-    byDate.get(r.date).set(r.locale, r.value);
-  }
-  return out;
-}
-
-function renderMultiLocaleChart(section, dataForCode, allLocales, visibleLocales, cfg) {
+function renderMultiLocaleChart(section, byLocale, allLocales, visibleLocales, cfg) {
   const oldRickshaw = section.querySelector(".rickshaw");
   if (oldRickshaw) oldRickshaw.remove();
 
@@ -286,8 +257,6 @@ function renderMultiLocaleChart(section, dataForCode, allLocales, visibleLocales
   wrap.appendChild(canvas);
   section.appendChild(wrap);
 
-  const dates = Array.from(dataForCode.keys()).sort();
-  const dateObjs = dates.map((d) => parseISO(d));
   const datasets = allLocales.map((locale, i) => ({
     label: locale,
     borderColor: COLORS[i % COLORS.length],
@@ -296,7 +265,7 @@ function renderMultiLocaleChart(section, dataForCode, allLocales, visibleLocales
     borderWidth: 1.2,
     fill: false,
     hidden: !visibleLocales.has(locale),
-    data: dates.map((d, idx) => ({ x: dateObjs[idx], y: dataForCode.get(d).get(locale) ?? null })),
+    data: (byLocale[locale] || []).map((p) => ({ x: parseISO(p.date), y: p.value })),
   }));
 
   return renderLineChart(canvas, {

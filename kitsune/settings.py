@@ -769,6 +769,10 @@ SESSION_SERIALIZER = config(
 # Our group with the power to see hidden docs and message groups.
 STAFF_GROUP = "Staff"
 
+# Groups whose members may view the L10n metrics dashboards, in addition to
+# anyone who is a leader, reviewer, or editor of any wiki Locale team.
+L10N_METRICS_GROUPS = ["Staff", "l10n-contributors"]
+
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #

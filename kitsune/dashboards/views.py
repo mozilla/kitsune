@@ -3,12 +3,14 @@ import logging
 from datetime import date, timedelta
 
 from django.conf import settings
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET
 
 from kitsune.dashboards import PERIODS
+from kitsune.dashboards.decorators import l10n_metrics_access_required
+from kitsune.dashboards.metrics import DEFAULT_WINDOW, WINDOW_CHOICES, get_wiki_metrics_data
 from kitsune.dashboards.readouts import (
     CONTRIBUTOR_READOUTS,
     L10N_READOUTS,
@@ -208,6 +210,7 @@ def contributors_overview_rows(request):
 
 
 @require_GET
+@l10n_metrics_access_required
 def locale_metrics(request, locale_code):
     """The kb metrics dashboard for a specific locale."""
 
@@ -228,11 +231,16 @@ def locale_metrics(request, locale_code):
 
 
 @require_GET
+@l10n_metrics_access_required
 def aggregated_metrics(request):
     """The aggregated (all locales) kb metrics dashboard."""
     today = date.today()
     locales = get_locales_by_visit(today - timedelta(days=30), today)
     product = _get_product(request)
+
+    window = request.GET.get("window", DEFAULT_WINDOW)
+    if window not in WINDOW_CHOICES:
+        window = DEFAULT_WINDOW
 
     return render(
         request,
@@ -242,8 +250,31 @@ def aggregated_metrics(request):
             "locales": locales,
             "product": product,
             "products": Product.objects.filter(visible=True),
+            "window": window,
+            "windows": list(WINDOW_CHOICES),
         },
     )
+
+
+@require_GET
+@l10n_metrics_access_required
+def wiki_metrics_data(request):
+    """Return shaped, windowed WikiMetric data for the metrics dashboards.
+
+    Serves both the aggregated dashboard (all locales) and the per-locale
+    dashboard (when a `locale` query parameter is given), in a single response.
+    """
+    product = _get_product(request)
+
+    window = request.GET.get("window", DEFAULT_WINDOW)
+    if window not in WINDOW_CHOICES:
+        window = DEFAULT_WINDOW
+
+    locale = request.GET.get("locale") or None
+    if locale and locale not in settings.SUMO_LANGUAGES:
+        raise Http404
+
+    return JsonResponse(get_wiki_metrics_data(product, window, locale))
 
 
 def _get_product(request):
