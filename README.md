@@ -22,7 +22,7 @@ It is a [Django](http://www.djangoproject.com/) application. There is [documenta
 
     Example:
 
-    `git tag -s 1.0.1 -m "Bump version: 1.0.0 to 1.0.1`
+    `git tag -s 1.0.1 -m "Bump version: 1.0.0 to 1.0.1"`
 
 -   Draft a new release in GitHub for the new tag. Document the **highlights** of the release and also use the option to automatically document the release through the commit history.
 
