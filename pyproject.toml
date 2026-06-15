@@ -40,7 +40,6 @@ dependencies = [
     "Faker>=16.9.0,<17",
     "simplejson>=4.0.1,<5",
     "twython>=3.9.1,<4",
-    "translate-toolkit>=3.12.1,<4",
     "django-ratelimit>=4.1.0,<5",
     "django-storages[google]>=1.14.2,<2",
     "django-taggit>=6.1.0,<7",
