@@ -160,18 +160,30 @@ class MyProfilePage(BasePage):
         self._click(self.report_abuse_profile_option)
 
     def click_on_deactivate_this_user_button(self):
-        # The .deactivate form's submit handler calls window.confirm(...) — the
-        # dialog handler must be attached before the click, and it must call
-        # .accept() itself (otherwise confirm() blocks and the click hangs).
-        self.page.once("dialog", lambda dialog: dialog.accept())
-        self._click(self.deactivate_this_user_button)
+        # The .deactivate form's submit handler calls window.confirm(...), so a dialog
+        # handler that calls .accept() must be attached before the click (otherwise
+        # confirm() blocks and the click hangs). Use a persistent `on` listener rather
+        # than `once`: _click retries the click on failure, and a one-shot handler would
+        # be consumed by the first attempt, leaving retries to hit an auto-dismissed
+        # dialog. Remove it afterwards so it can't accept unrelated dialogs.
+        handler = lambda dialog: dialog.accept()  # noqa: E731
+        self.page.on("dialog", handler)
+        try:
+            self._click(self.deactivate_this_user_button,
+                        expected_locator=self.this_user_was_deactivated_message)
+        finally:
+            self.page.remove_listener("dialog", handler)
 
     def click_deactivate_this_user_and_mark_all_content_as_spam(self):
-        # The .deactivate form's submit handler calls window.confirm(...) — the
-        # dialog handler must be attached before the click, and it must call
-        # .accept() itself (otherwise confirm() blocks and the click hangs).
-        self.page.once("dialog", lambda dialog: dialog.accept())
-        self._click(self.deactivate_this_user_and_mark_all_content_as_spam)
+        # See click_on_deactivate_this_user_button for why a persistent dialog handler
+        # is attached and removed around the click.
+        handler = lambda dialog: dialog.accept()  # noqa: E731
+        self.page.on("dialog", handler)
+        try:
+            self._click(self.deactivate_this_user_and_mark_all_content_as_spam,
+                        expected_locator=self.this_user_was_deactivated_message)
+        finally:
+            self.page.remove_listener("dialog", handler)
 
     def click_on_spam_content_option(self):
         """Select the 'Spam or other unrelated content' report reason radio button."""

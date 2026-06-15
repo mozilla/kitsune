@@ -1,5 +1,6 @@
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from playwright_tests.core.utilities import Utilities
+from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.auth_page import AuthPage
 from playwright_tests.pages.top_navbar import TopNavbar
 
@@ -52,6 +53,16 @@ class AuthFlowPage:
             """If the 'Continue with Firefox Accounts' button is displayed, click on it."""
             self.auth_page.click_on_continue_with_firefox_accounts_button()
         self.auth_page.click_on_user_logged_in_sign_in_button()
+        # Clicking "Sign in" kicks off the FxA -> /fxa/callback/?code=... -> SUMO redirect
+        # chain. Block until it lands back on the SUMO origin and off the callback page,
+        # otherwise callers race the redirect and assert against the still-loading callback
+        # page (e.g. the signed-in username hasn't rendered yet, so to_have_text times out).
+        base = HomepageMessages.STAGE_HOMEPAGE_URL
+        self.page.wait_for_url(
+            lambda url: url.startswith(base) and "/fxa/callback" not in url,
+            timeout=30000,
+        )
+        self.utilities.wait_for_dom_to_load()
 
     # Sign in flow.
     def sign_in_flow(self, username: str, account_password: str, via_top_navbar: bool = False,

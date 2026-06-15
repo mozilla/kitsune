@@ -509,6 +509,17 @@ class Utilities:
             Page: A new page belonging to the freshly created, isolated context.
         """
         browser = self.page.context.browser
+        # Record this context's video into the same artifacts directory that
+        # pytest-playwright uses for the default page. pytest-playwright only
+        # wires up `record_video_dir` for the contexts it creates itself, so we
+        # mirror it here for manually-created contexts. This lets the failure
+        # hook attach the screencast of every window, not just the default page.
+        if "record_video_dir" not in context_kwargs and self.page.video:
+            try:
+                context_kwargs["record_video_dir"] = os.path.dirname(self.page.video.path())
+            except PlaywrightError as error:
+                print(f"Could not derive the video directory for the new context: {error}")
+
         context = browser.new_context(
             user_agent=self.user_agent,
             extra_http_headers={
@@ -516,7 +527,33 @@ class Utilities:
             },
             **context_kwargs,
         )
-        return context.new_page()
+        new_page = context.new_page()
+        new_page.set_default_navigation_timeout(30000)
+
+        # Wire up the same 502 nav-status tracking the autouse `navigate_to_homepage`
+        # fixture sets up for the default page. Without this, `_last_main_nav_status`
+        # is never set on manually-created windows (e.g. the admin page), so
+        # `BasePage._recover_if_on_error_page` can't detect a 502 and never reloads,
+        # leaving the window stuck on the error page.
+        new_page._last_main_nav_status = None
+
+        def _track_main_nav_status(response):
+            try:
+                if (response.request.is_navigation_request()
+                        and response.frame == new_page.main_frame):
+                    new_page._last_main_nav_status = response.status
+            except PlaywrightError as e:
+                print(f"Nav-status listener ignored error: {e}")
+
+        new_page.on("response", _track_main_nav_status)
+
+        # Register the page so the failure hook (pytest_runtest_makereport) can
+        # attach the screencasts of all windows opened during the test.
+        if not hasattr(self.page, "_extra_pages"):
+            self.page._extra_pages = []
+        self.page._extra_pages.append(new_page)
+
+        return new_page
 
     def delete_cookies(self, tried_once=False, retries=3):
         """
