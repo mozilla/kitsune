@@ -115,7 +115,6 @@ dev = [
     "tabulate>=0.10.0,<0.11",
     "rope>=1.11.0,<2",
     "pytest-html>=4.2.0,<5",
-    "docker>=7.1.0,<8",
     "nltk>=3.9.1,<4",
     "pytest-xdist>=3.6.1,<4",
     "pytest-playwright>=0.7.0,<0.8",
