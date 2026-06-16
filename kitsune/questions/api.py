@@ -33,30 +33,26 @@ from kitsune.sumo.utils import is_ratelimited
 from kitsune.tags.models import SumoTag
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
-from kitsune.users.models import Profile
 
 
 def get_profile(user):
     """
-    Return the Profile for a User without creating one.
+    Return the user's Profile or None if one doesn't exist.
 
-    Serialization happens on read-only (GET) requests, so it must never
-    write. Users without a Profile serialize gracefully as ``None`` (mirroring
-    the read-only fallback already used by ``profile_avatar`` and
-    ``display_name``) rather than triggering a ``get_or_create`` write. That
-    per-row write was an N+1 write-on-read which intermittently timed out
-    (HTTP 500) on large, ordered list queries such as
-    ``?ordering=updated&updated__gt=`` (mozilla/kitsune#7591).
+    This reads through the one-to-one relation (user.profile) rather than
+    querying Profile directly, so the lookup can be served from the cache
+    populated by "select_related" and "prefetch_related", avoiding a query
+    per-row. The "getattr" call returns None both when user is None and
+    when the user has no Profile (the reverse accessor raises a DoesNotExist
+    that subclasses AttributeError).
 
     Args:
-        user: User instance (can be None for optional fields)
+        user: User instance (can be None for optional fields).
 
     Returns:
         Profile instance if the user has one, None otherwise.
     """
-    if user is None:
-        return None
-    return Profile.objects.filter(user=user).first()
+    return getattr(user, "profile", None)
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -277,7 +273,26 @@ class HasAddTagPermissions(permissions.BasePermission):
 
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
+    # select_related/prefetch_related the related profiles (and other related
+    # rows the serializer reads) so serialization is served from the relation
+    # cache. Without this, get_profile would issue one query per related user
+    # per row -- the N+1 read half of mozilla/kitsune#7591.
+    queryset = (
+        Question.objects.all()
+        .select_related(
+            "creator__profile",
+            "updated_by__profile",
+            "taken_by__profile",
+            "solution__creator__profile",
+            "product",
+            "topic",
+        )
+        .prefetch_related(
+            "answers__creator__profile",
+            "metadata_set",
+            "tags",
+        )
+    )
     pagination_class = pagination.PageNumberPagination
     permission_classes = [
         OnlyCreatorEdits,
@@ -520,7 +535,12 @@ class AnswerFilter(django_filters.FilterSet):
 
 class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerSerializer
-    queryset = Answer.objects.all()
+    # select_related the related profiles the serializer reads, so the
+    # per-row profile lookups don't become an N+1 (mozilla/kitsune#7591).
+    queryset = Answer.objects.all().select_related(
+        "creator__profile",
+        "updated_by__profile",
+    )
     permission_classes = [
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,

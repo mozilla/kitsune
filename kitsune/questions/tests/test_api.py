@@ -4,6 +4,8 @@ from unittest import mock
 
 import actstream.actions
 from actstream.models import Follow
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework.exceptions import APIException
 from rest_framework.test import APIClient
@@ -197,7 +199,12 @@ class TestQuestionSerializerSerialization(TestCase):
         self.question.creator.profile.delete()
         profiles_before = Profile.objects.count()
 
-        serializer = api.QuestionSerializer(instance=self.question)
+        # Re-fetch so the serializer reads the creator's profile state from the
+        # database, not the stale Profile left cached on the in-memory instance
+        # by the delete above. This mirrors how the viewset loads a question
+        # fresh on each request.
+        question = Question.objects.get(pk=self.question.pk)
+        serializer = api.QuestionSerializer(instance=question)
 
         self.assertIsNone(serializer.data["creator"])
         # Serialization must not create a Profile for the profile-less creator.
@@ -420,6 +427,77 @@ class TestQuestionViewSet(TestCase):
         # The GET must not have created any Profile rows.
         self.assertEqual(Profile.objects.count(), 0)
 
+    def test_serializing_more_involved_users_does_not_add_queries(self):
+        """Regression test for #7591.
+
+        Serializing a question's involved users must not run one query per
+        answer author. With answers__creator__profile prefetched on the
+        viewset, the query count is constant no matter how many distinct
+        users answered -- this removes the N+1 read that, alongside the
+        get_or_create write fixed in #7592, produced the intermittent HTTP
+        500 on large result sets.
+        """
+
+        def query_count_for(num_answers):
+            question = QuestionFactory()
+            for _ in range(num_answers):
+                AnswerFactory(question=question, creator=UserFactory())
+            url = reverse("question-detail", args=[question.id])
+            with CaptureQueriesContext(connection) as ctx:
+                res = self.client.get(url)
+            self.assertEqual(res.status_code, 200)
+            # Sanity: the creator plus every distinct answerer is serialized.
+            self.assertEqual(len(res.data["involved"]), num_answers + 1)
+            return len(ctx.captured_queries)
+
+        self.assertEqual(
+            query_count_for(num_answers=1),
+            query_count_for(num_answers=5),
+            "Serializing more answer authors should not add queries; the "
+            "involved profile lookup has regressed into an N+1.",
+        )
+
+    def test_list_query_count_is_fixed_for_populated_questions(self):
+        """Regression test for #7591.
+
+        Locks the query count for a representative page of fully-populated
+        questions. Every related object the serializer reads -- creator,
+        updated_by, taken_by, solution.creator, product, topic, answer
+        authors, metadata and tags -- is select_related/prefetch_related on
+        the viewset, so dropping any one of them reintroduces a per-row query
+        and changes this count. Several questions (rather than one) are needed
+        for the prefetched relations to show their savings.
+
+        The expected count is fixed for this dataset, not invariant to page
+        size: it includes one num_votes count-query per question, a separate
+        per-row read not addressed here. Bump it if the serializer's related
+        reads legitimately change.
+        """
+        product = ProductFactory()
+        topic = TopicFactory(products=[product])
+        for _ in range(3):
+            question = QuestionFactory(
+                creator=UserFactory(),
+                product=product,
+                topic=topic,
+                metadata={"useragent": "Firefox"},
+                tags=["tag1", "tag2"],
+            )
+            solution = AnswerFactory(question=question, creator=UserFactory())
+            AnswerFactory(question=question, creator=UserFactory())
+            question.solution = solution
+            question.updated_by = UserFactory()
+            question.taken_by = UserFactory()
+            question.taken_until = timezone.now() + timedelta(days=1)
+            question.save()
+
+        url = reverse("question-list")
+        with self.assertNumQueries(10):
+            res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["count"], 3)
+
     def test_filter_product_with_slug(self):
         p1 = ProductFactory()
         p2 = ProductFactory()
@@ -615,6 +693,32 @@ class TestAnswerSerializerDeserialization(TestCase):
 class TestAnswerViewSet(TestCase):
     def setUp(self):
         self.client = APIClient()
+
+    def test_list_query_count_is_fixed_for_distinct_authors(self):
+        """Regression test for #7591.
+
+        Locks the query count for an answer page whose answers have distinct
+        creators and updated_by users. Those profiles are select_related, and
+        the parent question is emitted as its FK id (no JOIN), so dropping a
+        select_related -- or turning the question field into a related lookup
+        -- would change this count.
+
+        The expected count includes per-answer num_helpful_votes and
+        num_unhelpful_votes count-queries, separate per-row reads not
+        addressed here. Bump it if the serializer's related reads change.
+        """
+        question = QuestionFactory()
+        for _ in range(3):
+            answer = AnswerFactory(question=question, creator=UserFactory())
+            answer.updated_by = UserFactory()
+            answer.save()
+
+        url = reverse("answer-list")
+        with self.assertNumQueries(11):
+            res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["count"], 3)
 
     def test_create(self):
         q = QuestionFactory()
