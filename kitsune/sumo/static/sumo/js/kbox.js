@@ -66,6 +66,8 @@
  *          Override the template to use for creating the modal.
  *      title:
  *          The kbox's title.
+ *      windowMargin:
+ *          Minimum margin between the kbox and the edge of the window.
  */
 
 var TEMPLATE = (
@@ -105,7 +107,9 @@ KBox.prototype = {
       preOpen: false,
       preClose: false,
       template: TEMPLATE,
-      title: self.$el.attr('title') || self.$el.attr('data-title')
+      title: self.$el.attr('title') || self.$el.attr('data-title'),
+      windowMargin: self.$el.data('viewport-margin') === undefined ?
+        20 : parseInt(self.$el.data('viewport-margin'), 10),
     }, options);
     self.options = options;
     self.$clickTarget = options.clickTarget && $(options.clickTarget);
@@ -187,7 +191,9 @@ KBox.prototype = {
       self.render();
     }
     self.$kbox.addClass('kbox-open');
+    self.handleOverflow();
     self.setPosition();
+    self.addResizeHandler();
     if (self.options.modal) {
       self.createOverlay();
     }
@@ -215,8 +221,27 @@ KBox.prototype = {
       }, 0);
     }
   },
+  addResizeHandler: function () {
+    var self = this;
+    // If position is none, return early instead of adding a listener that will never do anything
+    if (self.options.position === 'none') {
+      return;
+    }
+    self.resizeHandler = function () {
+      self.setPosition();
+    };
+    $(window).on('resize', self.resizeHandler);
+  },
+  removeResizeHandler: function () {
+    var self = this;
+    if (self.resizeHandler) {
+      $(window).off('resize', self.resizeHandler);
+      delete self.resizeHandler;
+    }
+  },
   setPosition: function (position) {
     var self = this;
+    const minMargin = self.options.windowMargin;
     if (!position) {
       position = self.options.position;
     }
@@ -226,17 +251,71 @@ KBox.prototype = {
     if (position === 'center') {
       let windowWidth = $(window).width();
       let windowHeight = $(window).height();
+
+      // Reset height and width limitations to get the actual initial kbox size
+      self.resetOverflow();
+
       let modalWidth = self.$kbox.outerWidth();
       let modalHeight = self.$kbox.outerHeight();
 
+      let left = Math.max((windowWidth - modalWidth) / 2, minMargin);
+      let top = Math.max((windowHeight - modalHeight) / 2, minMargin);
+
       self.$kbox.css({
-        'left': (windowWidth - modalWidth) / 2,
-        'top': (windowHeight - modalHeight) / 2,
+        'left': left,
+        'top': top,
         'right': 'inherit',
         'bottom': 'inherit',
         'position': 'fixed'
       });
+
+      self.handleOverflow();
     }
+  },
+  handleOverflow: function () {
+    var self = this;
+    const minMargin = self.options.windowMargin;
+
+    let windowWidth = $(window).width();
+    let windowHeight = $(window).height();
+    let modalWidth = self.$kbox.outerWidth();
+    let modalHeight = self.$kbox.outerHeight();
+    let rect = self.$kbox[0].getBoundingClientRect();
+
+    if (rect.right > windowWidth - minMargin) {
+      self.$kbox.css({
+        'max-width': windowWidth - minMargin - rect.left
+      });
+    }
+    else if (rect.right < windowWidth - minMargin) {
+      self.$kbox.css({
+        'max-width': ''
+      });
+    }
+
+    // Due to max-width, kbox height may have changed.
+    rect = self.$kbox[0].getBoundingClientRect();
+
+    if (rect.bottom > windowHeight) {
+      self.$kbox.css({
+        'max-height': windowHeight - minMargin - rect.top,
+        'overflow-y': 'auto'
+      });
+    }
+    else if (rect.bottom < windowHeight - minMargin) {
+      self.$kbox.css({
+        'max-height': '',
+        'overflow-y': ''
+      });
+    }
+  },
+  resetOverflow: function () {
+    var self = this;
+    self.$kbox.css({
+      'max-width': '',
+      'max-height': '',
+      'overflow-y': ''
+    });
   },
   close: function () {
     var self = this;
@@ -250,6 +329,7 @@ KBox.prototype = {
     }
     self.isOpen = false;
     self.$kbox.removeClass('kbox-open');
+    self.removeResizeHandler();
     if (self.options.modal) {
       self.destroyOverlay();
     }
@@ -266,6 +346,7 @@ KBox.prototype = {
   destroy: function () {
     // return DOM to how it was originally, if possible.
     var self = this;
+    self.removeResizeHandler();
     if (self.$container && self.$ph) {
       self.$ph.replaceWith(self.$el.detach());
     }
