@@ -45,7 +45,7 @@
       <form action="" method="post">
         {% csrf_token %}
           {% for field in revision_form.visible_fields() %}
-            <div class="field {% if field.name == 'content' %}has-large-textarea{% endif %}">
+            <div class="field {% if field.name == 'content' %}has-large-textarea{% else %}full-width{% endif %}">
               {% if field.name not in ['comment', 'content'] %}
                 {% if not field.name == 'keywords' or document.allows(user, 'edit_keywords') %}
                   {{ field|label_with_help }}{{ field|safe }}
