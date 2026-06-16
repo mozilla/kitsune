@@ -87,7 +87,7 @@
 
     <div class="sumo-button-wrap reverse-on-desktop">
       <button class="sumo-button primary-button" type="submit">{{ _('Update My Profile') }}</button>
-      <button class="sumo-button secondary-button push-right" type="reset">{{ _('Cancel') }}</button>
+      <a class="sumo-button secondary-button push-right" href="{{ url('users.profile', profile.user.username) }}">{{ _('Cancel') }}</a>
     </div>
   </form>
   {% if request.user == profile.user %}
