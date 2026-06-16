@@ -61,3 +61,29 @@ class TestWikiBadges(TestCase):
 
         # User should have the badge now
         assert b.is_awarded_to(user)
+
+    def test_reviewer_badge(self):
+        """Verify the Reviewer Badge is awarded properly."""
+        # Create the user and badge.
+        year = date.today().year
+        u = UserFactory()
+        b = BadgeFactory(
+            slug=WIKI_BADGES["reviewer-badge"]["slug"].format(year=year),
+            title=WIKI_BADGES["reviewer-badge"]["title"].format(year=year),
+            description=WIKI_BADGES["reviewer-badge"]["description"].format(year=year),
+        )
+
+        # Create 24 en-US revisions approved by the user.
+        d = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        ApprovedRevisionFactory.create_batch(
+            settings.BADGE_LIMIT_REVIEWER - 1, reviewer=u, document=d
+        )
+
+        # User should NOT have the badge yet
+        assert not b.is_awarded_to(u)
+
+        # Create 1 more en-US revision approved by the user.
+        ApprovedRevisionFactory(reviewer=u, document=d)
+
+        # User should have the badge now
+        assert b.is_awarded_to(u)

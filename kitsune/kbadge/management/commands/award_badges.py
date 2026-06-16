@@ -13,7 +13,7 @@ from kitsune.wiki.tasks import maybe_award_badge as maybe_award_wiki_badge
 
 
 class Command(BaseCommand):
-    help = "Award yearly badges starting from 2010."
+    help = "Award yearly badges for years 2010-2013."
 
     def handle(self, *arg, **kwargs):
         for year in [2010, 2011, 2012, 2013]:

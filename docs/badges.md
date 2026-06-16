@@ -2,39 +2,44 @@
 title: Badges
 ---
 
-::: warning
-::: title
-Warning
-:::
+Badges in kitsune are based on modified [Django
+Badger](https://github.com/mozilla/django-badger).
 
-This section of documentation may be outdated.
-:::
-
-Badges in kitsune are based off of [Django
-Badger](https://github.com/mozilla/django-badger),
-
-As of Q3 2018, kitsune issues four badges per calendar year:
+Kitsune issues four badges per calendar year:
 
 1.  KB Badge
 2.  L10n Badge
-3.  Support Forum Badge
-4.  Army of Awesome Badge
+3.  Reviewer Badge
+4.  Support Forum Badge
 
-A list of active badges can be seen at
-[https://support.mozilla.org/badges/](https://support.mozilla.org/en-US/badges/).
+The Army of Awesome Badge was also issued annually until 2020
+when it was discontinued.
+
+A full list of active badges can be seen at
+https://support.mozilla.org/badges/.
 
 # KB Badge & L10n Badge
 
 The KB Badge is awarded after a user has reached 10 approved English
-edits on knowledge base articles.
+revisions on knowledge base articles.
 
 The L10n Badge is awarded after a user has reached 10 approved
-translation edits on knowledge base articles.
+translation revisions on knowledge base articles.
 
 Logic for both badges can be found in `kitsune.wiki.badges`.
 
-The number of edits needed is configurable in
+The number of revisions needed is configurable in
 `settings.BADGE_LIMIT_L10N_KB`.
+
+# Reviewer Badge
+
+The Reviewer Badge is awarded after a user has reached 25 English
+revisions reviewed by them on knowledge base articles.
+
+Logic for awarding this badge can be found in `kitsune.wiki.badges`.
+
+The number of reviews needed is configurable in
+`settings.BADGE_LIMIT_REVIEWER`.
 
 # Support Forum Badge
 
@@ -49,15 +54,11 @@ The number of replies needed is configurable in
 
 # Army of Awesome Badge
 
-::: warning
-::: title
-Warning
-:::
+!!! warning
 
-This badge is no longer available.
-:::
+    This badge is no longer issued/awarded.
 
-The Army of Awesome Badge is awarded when a user has tweeted 50 Army of
+The Army of Awesome Badge used to be awarded when a user had tweeted 50 Army of
 Awesome replies.
 
 ## Badge Creation

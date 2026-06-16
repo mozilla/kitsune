@@ -90,6 +90,8 @@ class RevisionFactory(factory.django.DjangoModelFactory):
     comment = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
     is_approved = False
+    reviewed = None
+    reviewer = None
 
     @factory.post_generation
     def set_current_revision(self, create, extracted, **kwargs):
@@ -100,6 +102,11 @@ class RevisionFactory(factory.django.DjangoModelFactory):
 
 class ApprovedRevisionFactory(RevisionFactory):
     is_approved = True
+    reviewed = factory.LazyAttribute(lambda o: timezone.now())
+
+
+class DeferredRevisionFactory(RevisionFactory):
+    is_approved = False
     reviewed = factory.LazyAttribute(lambda o: timezone.now())
 
 
