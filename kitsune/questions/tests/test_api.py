@@ -187,6 +187,22 @@ class TestQuestionSerializerSerialization(TestCase):
             },
         )
 
+    def test_creator_without_profile_serializes_as_none(self):
+        """Regression test for #7591.
+
+        Serializing a Question is a read-only operation, so a creator who
+        has no Profile must serialize as None rather than triggering a
+        write (``get_or_create``) during serialization.
+        """
+        self.question.creator.profile.delete()
+        profiles_before = Profile.objects.count()
+
+        serializer = api.QuestionSerializer(instance=self.question)
+
+        self.assertIsNone(serializer.data["creator"])
+        # Serialization must not create a Profile for the profile-less creator.
+        self.assertEqual(Profile.objects.count(), profiles_before)
+
     def test_with_tags(self):
         self.question.tags.add("tag1")
         self.question.tags.add("tag2")
@@ -375,6 +391,34 @@ class TestQuestionViewSet(TestCase):
         self.assertEqual(res.data["results"][0]["id"], q1.id)
         self.assertEqual(res.data["results"][1]["id"], q2.id)
         self.assertEqual(res.data["results"][2]["id"], q3.id)
+
+    def test_list_ordering_by_updated_does_not_write_profiles(self):
+        """Regression test for #7591.
+
+        ``GET /api/2/question/?ordering=updated&updated__gt=`` is a
+        read-only request and must never create Profile rows. Accounts
+        without a Profile (common for old or imported users) previously
+        triggered a per-row ``Profile.objects.get_or_create`` write while
+        serializing the question's creator and involved users -- an N+1
+        write-on-read that intermittently timed out (HTTP 500) on large,
+        ordered result sets.
+        """
+        asker = UserFactory()
+        answerer = UserFactory()
+        question = QuestionFactory(creator=asker)
+        AnswerFactory(question=question, creator=answerer)
+
+        # Simulate accounts that have no Profile.
+        Profile.objects.all().delete()
+        self.assertEqual(Profile.objects.count(), 0)
+
+        url = reverse("question-list") + "?ordering=updated&updated__gt=2000-01-01T00:00:00"
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["count"], 1)
+        # The GET must not have created any Profile rows.
+        self.assertEqual(Profile.objects.count(), 0)
 
     def test_filter_product_with_slug(self):
         p1 = ProductFactory()

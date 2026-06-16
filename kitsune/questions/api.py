@@ -36,23 +36,27 @@ from kitsune.users.api import ProfileFKSerializer
 from kitsune.users.models import Profile
 
 
-def get_or_create_profile(user):
+def get_profile(user):
     """
-    Get or create a Profile for a User.
+    Return the Profile for a User without creating one.
 
-    This helper ensures Users without Profiles don't cause serialization failures.
-    Follows Django's get_or_create naming pattern.
+    Serialization happens on read-only (GET) requests, so it must never
+    write. Users without a Profile serialize gracefully as ``None`` (mirroring
+    the read-only fallback already used by ``profile_avatar`` and
+    ``display_name``) rather than triggering a ``get_or_create`` write. That
+    per-row write was an N+1 write-on-read which intermittently timed out
+    (HTTP 500) on large, ordered list queries such as
+    ``?ordering=updated&updated__gt=`` (mozilla/kitsune#7591).
 
     Args:
         user: User instance (can be None for optional fields)
 
     Returns:
-        Profile instance if user is provided, None otherwise
+        Profile instance if the user has one, None otherwise.
     """
     if user is None:
         return None
-    profile, _ = Profile.objects.get_or_create(user=user)
-    return profile
+    return Profile.objects.filter(user=user).first()
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -120,12 +124,13 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def get_involved(self, obj):
         involved_profiles = []
-        creator_profile = get_or_create_profile(obj.creator)
-        involved_profiles.append(creator_profile)
+        creator_profile = get_profile(obj.creator)
+        if creator_profile:
+            involved_profiles.append(creator_profile)
 
         for answer in obj.answers.all():
-            answer_profile = get_or_create_profile(answer.creator)
-            if answer_profile not in involved_profiles:
+            answer_profile = get_profile(answer.creator)
+            if answer_profile and answer_profile not in involved_profiles:
                 involved_profiles.append(answer_profile)
 
         return ProfileFKSerializer(involved_profiles, many=True).data
@@ -133,19 +138,19 @@ class QuestionSerializer(serializers.ModelSerializer):
     def get_solved_by(self, obj):
         if not obj.solution:
             return None
-        profile = get_or_create_profile(obj.solution.creator)
-        return ProfileFKSerializer(profile).data
+        profile = get_profile(obj.solution.creator)
+        return ProfileFKSerializer(profile).data if profile else None
 
     def get_creator(self, obj):
-        profile = get_or_create_profile(obj.creator)
-        return ProfileFKSerializer(profile).data
+        profile = get_profile(obj.creator)
+        return ProfileFKSerializer(profile).data if profile else None
 
     def get_taken_by(self, obj):
-        profile = get_or_create_profile(obj.taken_by)
+        profile = get_profile(obj.taken_by)
         return ProfileFKSerializer(profile).data if profile else None
 
     def get_updated_by(self, obj):
-        profile = get_or_create_profile(obj.updated_by)
+        profile = get_profile(obj.updated_by)
         return ProfileFKSerializer(profile).data if profile else None
 
     def get_tags(self, obj):
@@ -471,11 +476,11 @@ class AnswerSerializer(serializers.ModelSerializer):
         )
 
     def get_creator(self, obj):
-        profile = get_or_create_profile(obj.creator)
-        return ProfileFKSerializer(profile).data
+        profile = get_profile(obj.creator)
+        return ProfileFKSerializer(profile).data if profile else None
 
     def get_updated_by(self, obj):
-        profile = get_or_create_profile(obj.updated_by)
+        profile = get_profile(obj.updated_by)
         return ProfileFKSerializer(profile).data if profile else None
 
     def validate(self, data):
