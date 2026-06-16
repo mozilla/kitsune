@@ -11,13 +11,13 @@ CONNECTIONS = [
     },
     {
         "zendesk_slug": "fxa-emailverify-lockout",
-        "target_tiers": ["t1-accounts", "t2-account-recovery"],
+        "target_tiers": ["t1-passwords-and-sign-in", "t2-sign-in", "t3-email-verify-lockout"],
         "automation_tags": ["ssa-pwrdreset-automation"],
         "product_slugs": ["mozilla-account"],
     },
     {
         "zendesk_slug": "account-signin",
-        "target_tiers": ["t1-accounts", "t2-account-recovery"],
+        "target_tiers": ["t1-passwords-and-sign-in", "t2-sign-in", "t3-sign-in-failure"],
         "automation_tags": ["ssa-sign-in-failure-automation"],
         "product_slugs": [
             "firefox",
@@ -30,7 +30,11 @@ CONNECTIONS = [
     },
     {
         "zendesk_slug": "vpn-connection-issues",
-        "target_tiers": ["t1-performance-and-connectivity", "t2-crashing-and-slow-performance"],
+        "target_tiers": [
+            "t1-performance-and-connectivity",
+            "t2-connectivity",
+            "t3-connection-failure",
+        ],
         "automation_tags": ["ssa-connection-issues-automation"],
         "product_slugs": ["mozilla-vpn"],
     },
