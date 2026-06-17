@@ -210,6 +210,33 @@ class TestQuestionSerializerSerialization(TestCase):
         # Serialization must not create a Profile for the profile-less creator.
         self.assertEqual(Profile.objects.count(), profiles_before)
 
+    def test_system_account_creator_serializes_as_none(self):
+        """A system account creator must serialize as None, matching
+        RegularProfileManager (which the reverse profile accessor bypasses)."""
+        profile = self.question.creator.profile
+        profile.account_type = Profile.AccountType.SYSTEM
+        profile.save()
+
+        question = Question.objects.get(pk=self.question.pk)
+        serializer = api.QuestionSerializer(instance=question)
+
+        self.assertIsNone(serializer.data["creator"])
+
+    def test_system_account_excluded_from_involved(self):
+        """A system account that answered must not appear in involved users."""
+        bot = UserFactory()
+        bot.profile.account_type = Profile.AccountType.SYSTEM
+        bot.profile.save()
+        self._answer(self.helper1)
+        self._answer(bot)
+
+        question = Question.objects.get(pk=self.question.pk)
+        serializer = api.QuestionSerializer(instance=question)
+
+        usernames = {profile["username"] for profile in serializer.data["involved"]}
+        self.assertIn(self.helper1.username, usernames)
+        self.assertNotIn(bot.username, usernames)
+
     def test_with_tags(self):
         self.question.tags.add("tag1")
         self.question.tags.add("tag2")

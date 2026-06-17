@@ -33,26 +33,24 @@ from kitsune.sumo.utils import is_ratelimited
 from kitsune.tags.models import SumoTag
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
+from kitsune.users.models import Profile
 
 
 def get_profile(user):
     """
-    Return the user's Profile or None if one doesn't exist.
+    Return the user's Profile, or None if it doesn't exist or is a system account.
 
-    This reads through the one-to-one relation (user.profile) rather than
-    querying Profile directly, so the lookup can be served from the cache
-    populated by "select_related" and "prefetch_related", avoiding a query
-    per-row. The "getattr" call returns None both when user is None and
-    when the user has no Profile (the reverse accessor raises a DoesNotExist
-    that subclasses AttributeError).
-
-    Args:
-        user: User instance (can be None for optional fields).
-
-    Returns:
-        Profile instance if the user has one, None otherwise.
+    Reads through the one-to-one relation (user.profile) so the lookup is served
+    from the select_related/prefetch_related cache, avoiding a query per row;
+    getattr returns None when user is None or has no Profile (the reverse
+    accessor's DoesNotExist subclasses AttributeError). System accounts (e.g. the
+    SuMo bot) are excluded to match RegularProfileManager, which the reverse
+    accessor bypasses by going through the base manager.
     """
-    return getattr(user, "profile", None)
+    profile = getattr(user, "profile", None)
+    if profile is None or profile.account_type == Profile.AccountType.SYSTEM:
+        return None
+    return profile
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
