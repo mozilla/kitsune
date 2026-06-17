@@ -1,9 +1,11 @@
+from django.test import tag
 from django.test.utils import override_settings
 
 from kitsune.search.es_utils import get_doc_types
 from kitsune.sumo.tests import TestCase
 
 
+@tag("es")
 @override_settings(ES_LIVE_INDEXING=True)
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
