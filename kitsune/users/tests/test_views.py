@@ -421,6 +421,29 @@ class ProfileNotificationTests(TestCase):
         self.assertEqual(doc(".user-messages li").text(), text)
 
 
+class EditProfileTests(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.client.login(username=self.user.username, password="testpass")
+        super().setUp()
+
+    def test_invalid_username_renders_error_without_500(self):
+        """An invalid username must re-render the form with an error, not 500.
+
+        The rejected value stays on the bound instance, so the Cancel link must
+        reverse the profile URL from the original username (see issue #3129).
+        """
+        res = self.client.post(
+            reverse("users.edit_my_profile", locale="en-US"),
+            {"username": "Test\U0001F63A\U0001F638", "name": "Test User"},
+        )
+        self.assertEqual(200, res.status_code)
+        doc = pq(res.content)
+        self.assertTrue(doc("#id_username").closest(".has-error"))
+        self.user.refresh_from_db()
+        self.assertNotEqual(self.user.username, "Test\U0001F63A\U0001F638")
+
+
 class FXAAuthenticationTests(TestCase):
     def test_authenticate_does_not_update_session(self):
         self.client.get(reverse("users.fxa_authentication_init"))
