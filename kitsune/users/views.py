@@ -471,6 +471,11 @@ def edit_profile(request, username=None):
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=user)
 
+    # Capture the canonical username before binding the form. An invalid POST
+    # leaves the (rejected) submitted value on the bound instance, which would
+    # break reversing the profile URL when the page is re-rendered.
+    original_username = user_profile.user.username
+
     profile_form = ProfileForm(request.POST or None, request.FILES or None, instance=user_profile)
     user_form = UserForm(request.POST or None, instance=user_profile.user)
 
@@ -504,6 +509,7 @@ def edit_profile(request, username=None):
             "profile_form": profile_form,
             "user_form": user_form,
             "profile": user_profile,
+            "original_username": original_username,
             "fxa_messages": fxa_messages,
             "delete_account_confirmation": request.session.get("delete_account_confirmation"),
         },
