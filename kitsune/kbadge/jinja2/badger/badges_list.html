@@ -22,10 +22,10 @@
           {% endif %}
           <div class="card elevation-01 zoom-on-hover">
             <div class="card--horizontal">
-              <img class="card--img" src="{{ badge_image }}" alt="" title="{{ pgettext('DB: badger.Badge.title', badge.title) }}">
+              <img class="card--img" src="{{ badge_image }}" alt="" title="{{ display_badge_title(badge.title) }}">
               <h3 class="card--title">
                 <a class="expand-this-link" href="{{ badge.get_absolute_url() }}">
-                  {{ pgettext('DB: badger.Badge.title', badge.title) }}
+                  {{ display_badge_title(badge.title) }}
                 </a>
               </h3>
             </div>

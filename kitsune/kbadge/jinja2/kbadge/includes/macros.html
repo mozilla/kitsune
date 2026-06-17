@@ -9,8 +9,8 @@
         {% set award_image = webpack_static('kbadge/img/default-badge.png') %}
       {% endif %}
       <li>
-        <a href="{{ award.get_absolute_url() }}" title="{{ pgettext('DB: badger.Badge.title', award.badge.title) }}">
-          <img src="{{ award_image }}" alt="{{ pgettext('DB: badger.Badge.title', award.badge.title) }}" />
+        <a href="{{ award.get_absolute_url() }}" title="{{ display_badge_title(award.badge.title) }}">
+          <img src="{{ award_image }}" alt="{{ display_badge_title(award.badge.title) }}" />
         </a>
       </li>
     {% endfor %}

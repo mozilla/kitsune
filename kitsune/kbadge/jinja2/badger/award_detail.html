@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (url('kbadge.awards_list'), _('Recently Awarded')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
+{% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (url('kbadge.awards_list'), _('Recently Awarded')), (None, display_badge_title(badge.title))] %}
 
 {% block content %}
   <h1 class="sumo-page-heading">
-    {% trans badge_name=pgettext('DB: badger.Badge.title', badge.title) %}
+    {% trans badge_name=display_badge_title(badge.title) %}
       Awarded badge: {{ badge_name }}
     {% endtrans %}
   </h1>
@@ -14,7 +14,7 @@
       {% if badge.image %}
         <figure class="avatar-group--figure text-center">
           <a href="{{ badge.get_absolute_url() }}">
-            <img src="{{ badge.image.url }}" alt="{{ pgettext('DB: badger.Badge.title', badge.title) }}" width="160" height="160" />
+            <img src="{{ badge.image.url }}" alt="{{ display_badge_title(badge.title) }}" width="160" height="160" />
           </a>
         </figure>
       {% endif %}
@@ -23,7 +23,7 @@
         <dl class="sumo-dl">
           {% if badge.description %}
             <dt><strong>{{ _('Description:') }}</strong></dt>
-            <dd>{{ pgettext('DB: badger.Badge.description', badge.description) }}</dd>
+            <dd>{{ display_badge_description(badge.description) }}</dd>
           {% endif %}
 
           {% if badge.creator %}

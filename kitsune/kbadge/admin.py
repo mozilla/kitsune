@@ -5,7 +5,7 @@ from django import forms
 from django.contrib import admin
 from django.db import models
 from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 from kitsune.kbadge.models import Award, Badge
 
@@ -14,8 +14,10 @@ def show_image(obj):
     if not obj.image:
         return "None"
     img_url = obj.image.url
-    return mark_safe(
-        '<a href="{}" target="_new"><img src="{}" width="48" height="48" /></a>'.format(img_url, img_url)
+    return format_html(
+        '<a href="{}" target="_new"><img src="{}" width="48" height="48" /></a>',
+        img_url,
+        img_url,
     )
 
 
@@ -33,11 +35,13 @@ def build_related_link(self, model_name, name_single, name_plural, qs):
     )
     count = qs.count()
     what = ((count == 1) and name_single) or name_plural
-    return '<a href="{}">{} {}</a> (<a href="{}">new</a>)'.format(link, count, what, new_link)
+    return format_html(
+        '<a href="{}">{} {}</a> (<a href="{}">new</a>)', link, count, what, new_link
+    )
 
 
 def related_awards_link(self):
-    return mark_safe(build_related_link(self, "award", "award", "awards", self.award_set))
+    return build_related_link(self, "award", "award", "awards", self.award_set)
 
 
 related_awards_link.short_description = "Awards"  # type: ignore
@@ -76,7 +80,7 @@ class BadgeAdmin(admin.ModelAdmin):
 
 def badge_link(self):
     url = reverse("admin:kbadge_badge_change", args=[self.badge.id])
-    return mark_safe('<a href="{}">{}</a>'.format(url, self.badge))
+    return format_html('<a href="{}">{}</a>', url, self.badge)
 
 
 badge_link.short_description = "Badge"  # type: ignore
@@ -106,7 +110,7 @@ class AwardAdmin(admin.ModelAdmin):
 
 def award_link(self):
     url = reverse("admin:kbadge_award_change", args=[self.award.id])
-    return mark_safe('<a href="{}">{}</a>'.format(url, self.award))
+    return format_html('<a href="{}">{}</a>', url, self.award)
 
 
 award_link.short_description = "award"  # type: ignore

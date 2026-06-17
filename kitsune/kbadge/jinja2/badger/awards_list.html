@@ -10,7 +10,7 @@
     {% endblock %}
     {% if badge %}
       <h1 class="sumo-page-heading">
-        {% trans badge_name=pgettext('DB: badger.Badge.title', badge.title) %}
+        {% trans badge_name=display_badge_title(badge.title) %}
           Recently awarded &quot;{{ badge_name }}&quot; badges
         {% endtrans %}
       </h1>
@@ -43,7 +43,7 @@
                 <td>
                   <a href="{{ award.get_absolute_url() }}">
                     <img src="{{ award_image }}" alt="" width="32" height="32">
-                    {{ pgettext('DB: badger.Badge.title', award.badge.title) }}
+                    {{ display_badge_title(award.badge.title) }}
                   </a>
                 </td>
                 <td>
