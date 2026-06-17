@@ -16,6 +16,7 @@ from kitsune.kpi.models import (
     SEARCH_SEARCHES_METRIC_CODE,
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
     SUPPORT_FORUM_HELPER_COHORT_CODE,
+    VISITORS_METRIC_CODE,
     Cohort,
     CohortKind,
     Metric,
@@ -30,6 +31,10 @@ from kitsune.wiki.models import Revision
 # Cap the search CTR backfill at roughly a year, matching GA4's event-data
 # retention window.
 SEARCH_CTR_MAX_BACKFILL_DAYS = 365
+
+# Cap the visitors backfill at roughly a year, matching GA4's data
+# retention window.
+VISITORS_MAX_BACKFILL_DAYS = 365
 
 
 def update_support_forum_contributors_metric(day: date | None = None) -> None:
@@ -231,6 +236,38 @@ def update_search_ctr_metric() -> None:
         next_day = day + timedelta(days=1)
         Metric.objects.create(kind=searches_kind, start=day, end=next_day, value=num_searches)
         Metric.objects.create(kind=clicks_kind, start=day, end=next_day, value=num_clicks)
+
+
+@shared_task
+@skip_if_read_only_mode
+def update_visitors_metric() -> None:
+    """Get new visitor data from Google Analytics and save."""
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
+    # Collect up until yesterday.
+    end = date.today() - timedelta(days=1)
+
+    # Start updating the day after the last updated.
+    latest_metric = utils._get_latest_metric(VISITORS_METRIC_CODE)
+    if latest_metric is not None:
+        latest_metric_date = latest_metric.start
+    else:
+        latest_metric_date = date(2011, 1, 1)
+    start = latest_metric_date + timedelta(days=1)
+
+    # Cap how far back the first run backfills. GA4 only retains data for a
+    # limited window, so reaching further back would just create rows of
+    # zeros for dates GA can no longer report.
+    start = max(start, end - timedelta(days=VISITORS_MAX_BACKFILL_DAYS))
+
+    # Create the metrics.
+    metric_kind = MetricKind.objects.get_or_create(code=VISITORS_METRIC_CODE)[0]
+    for day, visits in googleanalytics.visitors(start, end):
+        Metric.objects.create(
+            kind=metric_kind, start=day, end=day + timedelta(days=1), value=visits
+        )
 
 
 @shared_task
