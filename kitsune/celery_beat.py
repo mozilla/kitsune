@@ -186,6 +186,11 @@ PERIODIC_TASKS_PRODUCTION_ONLY = {
         "task": "kitsune.kpi.tasks.update_l10n_metric",
         "schedule": crontab(hour="10", minute="0"),
     },
+    # Daily at 01:00.
+    "update_search_ctr_metric": {
+        "task": "kitsune.kpi.tasks.update_search_ctr_metric",
+        "schedule": crontab(hour="1", minute="0"),
+    },
     # Questions Periodic Tasks
     # Daily at 23:00.
     "reload_question_traffic_stats": {
