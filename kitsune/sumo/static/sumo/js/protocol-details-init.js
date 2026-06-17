@@ -35,8 +35,9 @@ export default function detailsInit() {
 
   function initializeMobileDetails() {
     Details.init('.details-heading');
-    if ((document.querySelector('#doc-tools')?.textContent ?? "").trim() === "") {
-      // The only potential section of a mobile sidebar is empty, so there's no sense in displaying the sidebar.
+    if (document.body.classList.contains('document')
+      && (document.querySelector('#doc-tools')?.textContent ?? "").trim() === "") {
+      // The only potential section of a mobile article sidebar is empty, so there's no sense in displaying the sidebar.
       // This isn't relevant for the large version, where the sidebar will always include the helpfulness survey at least.
       // Note that we can't check #aside directly, since the helpfulness survey has not been moved from it yet.
       let aside = document.querySelector('#aside');
