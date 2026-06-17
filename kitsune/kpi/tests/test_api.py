@@ -5,9 +5,6 @@ from django.core.cache import cache
 from django.utils import timezone
 
 from kitsune.kpi.models import (
-    EXIT_SURVEY_DONT_KNOW_CODE,
-    EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_YES_CODE,
     KB_ENUS_CONTRIBUTORS_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE,
@@ -341,19 +338,3 @@ class KpiApiTests(TestCase):
         # The l10n coverage should be 56%.
         r = self._get_api_result("api.kpi.l10n-coverage")
         self.assertEqual(r["objects"][0]["coverage"], 56)
-
-    def test_exit_survey_results(self):
-        """Test the exist survey results API call."""
-        # Create the metrics
-        kind = MetricKindFactory(code=EXIT_SURVEY_YES_CODE)
-        MetricFactory(kind=kind, start=date.today(), end=date.today(), value=1337)
-        kind = MetricKindFactory(code=EXIT_SURVEY_NO_CODE)
-        MetricFactory(kind=kind, start=date.today(), end=date.today(), value=42)
-        kind = MetricKindFactory(code=EXIT_SURVEY_DONT_KNOW_CODE)
-        MetricFactory(kind=kind, start=date.today(), end=date.today(), value=777)
-
-        # Verify the results returned from the API
-        r = self._get_api_result("api.kpi.exit-survey")
-        self.assertEqual(r["objects"][0]["yes"], 1337)
-        self.assertEqual(r["objects"][0]["no"], 42)
-        self.assertEqual(r["objects"][0]["dont_know"], 777)

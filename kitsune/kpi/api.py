@@ -16,9 +16,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from kitsune.kpi.models import (
-    EXIT_SURVEY_DONT_KNOW_CODE,
-    EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_YES_CODE,
     KB_ENUS_CONTRIBUTORS_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE,
@@ -91,7 +88,7 @@ class SearchClickthroughMetricList(CachedAPIView):
         if min_start:
             try:
                 _parse_date(min_start)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 min_start = None
 
         # I'm not sure you can join a table to itself with the ORM.
@@ -103,14 +100,14 @@ class SearchClickthroughMetricList(CachedAPIView):
             INNER JOIN kpi_metric d ON n.start=d.start
             WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)
             AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)
-            """ + (
-            "AND n.start>=%s" if min_start else ""
-        )
+            """ + ("AND n.start>=%s" if min_start else "")
         args = [self.clicks_kind, self.searches_kind]
         if min_start:
             args.append(min_start)
         cursor.execute(query, args)
-        return [{"start": s, "clicks": n, "searches": d} for s, n, d in reversed(cursor.fetchall())]
+        return [
+            {"start": s, "clicks": n, "searches": d} for s, n, d in reversed(cursor.fetchall())
+        ]
 
 
 class QuestionsMetricList(CachedAPIView):
@@ -280,50 +277,6 @@ class L10nCoverageMetricList(CachedAPIView):
         qs = Metric.objects.filter(kind=kind).order_by("-start")
 
         return [{"date": m.start, "coverage": m.value} for m in qs]
-
-
-class ExitSurveyMetricList(CachedAPIView):
-    """The API list view for exit survey metrics."""
-
-    def get_objects(self, request):
-        # Set up the queries for the data we need
-        kind = MetricKind.objects.get(code=EXIT_SURVEY_YES_CODE)
-        yes = Metric.objects.filter(kind=kind).order_by("-start")
-
-        kind = MetricKind.objects.get(code=EXIT_SURVEY_NO_CODE)
-        no = Metric.objects.filter(kind=kind).order_by("-start")
-
-        kind = MetricKind.objects.get(code=EXIT_SURVEY_DONT_KNOW_CODE)
-        dont_know = Metric.objects.filter(kind=kind).order_by("-start")
-
-        # Put all the results in a dict with the date as the key.
-        results_dict = {}
-
-        def merge_results(metrics_qs, label):
-            for metric in metrics_qs:
-                results_dict.setdefault(metric.end, {})[label] = metric.value
-
-        merge_results(yes, "yes")
-        merge_results(no, "no")
-        merge_results(dont_know, "dont_know")
-
-        # Convert that to a list of dicts.
-        results_list = [dict(date=k, **v) for k, v in list(results_dict.items())]
-
-        return [dict(**x) for x in sorted(results_list, key=itemgetter("date"), reverse=True)]
-
-
-class CSATMetricList(CachedAPIView):
-    """The API list view for contributor CSAT metrics"""
-
-    code = None
-
-    def get_objects(self, request):
-        kind = MetricKind.objects.get(code=self.code)
-        since = date.today() - timedelta(days=30)
-        metrics = Metric.objects.filter(start__gte=since, kind=kind).order_by("-start")
-
-        return [{"date": m.start, "csat": m.value} for m in metrics]
 
 
 def _daily_qs_for(model_cls):

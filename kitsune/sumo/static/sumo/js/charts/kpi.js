@@ -21,15 +21,6 @@ const COLORS = {
 //  - dashed?: bool
 //  - filled?: bool
 const CHART_SPECS = {
-  csat: () => [
-    {
-      label: gettext("Average Satisfaction"),
-      color: COLORS.blue,
-      axis: "y1",
-      filled: true,
-      extract: (o) => (o.csat != null ? o.csat : null), // already 0-100 from API
-    },
-  ],
   questions: () => [
     { label: gettext("Questions"),                 color: COLORS.blue,    axis: "y",  filled: true,  extract: (o) => o.questions },
     { label: gettext("Solved"),                    color: COLORS.red,     axis: "y",  filled: true,  extract: (o) => o.solved },
@@ -58,12 +49,6 @@ const CHART_SPECS = {
   ],
   l10n: () => [
     { label: gettext("L10n Coverage"), color: COLORS.blue, axis: "y1", extract: (o) => o.coverage },
-  ],
-  exitSurvey: () => [
-    { label: gettext("Percent Yes"),  color: COLORS.green, axis: "y1", dashed: true, extract: (o) => (o.yes + o.no + o.dont_know) > 0 ? (100 * o.yes) / (o.yes + o.no + o.dont_know) : null },
-    { label: gettext("Yes"),          color: COLORS.green, axis: "y",                extract: (o) => o.yes },
-    { label: gettext("No"),           color: COLORS.red,   axis: "y",                extract: (o) => o.no },
-    { label: gettext("I don't know"), color: COLORS.brown, axis: "y",                extract: (o) => o.dont_know },
   ],
 };
 

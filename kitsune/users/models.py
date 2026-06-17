@@ -135,11 +135,6 @@ class Profile(ModelBase):
     involved_from = models.DateField(
         null=True, blank=True, verbose_name=_lazy("Involved with Mozilla from")
     )
-    csat_email_sent = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="When the user was sent a community health survey",
-    )
     is_fxa_migrated = models.BooleanField(default=False)
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
     fxa_avatar = models.URLField(max_length=512, blank=True, default="")
