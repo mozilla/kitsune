@@ -12,6 +12,8 @@ from kitsune.kpi.models import (
     KB_L10N_CONTRIBUTOR_COHORT_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE,
+    SEARCH_CLICKS_METRIC_CODE,
+    SEARCH_SEARCHES_METRIC_CODE,
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
     SUPPORT_FORUM_HELPER_COHORT_CODE,
     Cohort,
@@ -24,6 +26,10 @@ from kitsune.questions.models import Answer
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.wiki.models import Revision
+
+# Cap the search CTR backfill at roughly a year, matching GA4's event-data
+# retention window.
+SEARCH_CTR_MAX_BACKFILL_DAYS = 365
 
 
 def update_support_forum_contributors_metric(day: date | None = None) -> None:
@@ -192,6 +198,39 @@ def update_l10n_metric() -> None:
         end=day + timedelta(days=1),
         value=int(coverage * 100),
     )  # Store as a % int.
+
+
+@shared_task
+@skip_if_read_only_mode
+def update_search_ctr_metric() -> None:
+    """Get new search CTR data from Google Analytics and save."""
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
+    # Collect up until yesterday.
+    end = date.today() - timedelta(days=1)
+
+    # Start updating the day after the last updated.
+    latest_metric = utils._get_latest_metric(SEARCH_CLICKS_METRIC_CODE)
+    if latest_metric is not None:
+        latest_metric_date = latest_metric.start
+    else:
+        latest_metric_date = date(2011, 1, 1)
+    start = latest_metric_date + timedelta(days=1)
+
+    # Cap how far back the first run backfills. GA4 only retains event data
+    # for a limited window, so reaching further back would just create rows
+    # of zeros for dates GA can no longer report.
+    start = max(start, end - timedelta(days=SEARCH_CTR_MAX_BACKFILL_DAYS))
+
+    # Get the CTR data from Google Analytics, and create the metrics.
+    clicks_kind = MetricKind.objects.get_or_create(code=SEARCH_CLICKS_METRIC_CODE)[0]
+    searches_kind = MetricKind.objects.get_or_create(code=SEARCH_SEARCHES_METRIC_CODE)[0]
+    for day, num_clicks, num_searches in googleanalytics.search_clicks_and_impressions(start, end):
+        next_day = day + timedelta(days=1)
+        Metric.objects.create(kind=searches_kind, start=day, end=next_day, value=num_searches)
+        Metric.objects.create(kind=clicks_kind, start=day, end=next_day, value=num_clicks)
 
 
 @shared_task
