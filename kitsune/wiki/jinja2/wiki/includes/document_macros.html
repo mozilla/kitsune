@@ -244,10 +244,10 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
+{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, allow_draft=False) -%}
   <div class="submit sumo-button-wrap reverse-on-desktop align-end">
     <button class="sumo-button primary-button btn-submit" type="submit">{{ _('Submit for Review') }}</button>
-    {% if translate %}
+    {% if allow_draft %}
       <button class="sumo-button secondary-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
     {% endif %}
     <button class="sumo-button secondary-button btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
