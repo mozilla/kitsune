@@ -3,11 +3,12 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.cache import cache_page
 
 from kitsune.postcrash.models import Signature
+from kitsune.sumo.utils import strip_nul_bytes
 
 
 @cache_page(60 * 60 * 24)  # One day.
 def api(request):
-    s = request.GET.get("s", None)
+    s = strip_nul_bytes(request.GET.get("s", None))
     if not s:
         return HttpResponseBadRequest(content_type="text/plain")
 
