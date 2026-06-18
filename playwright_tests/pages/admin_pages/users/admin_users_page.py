@@ -13,7 +13,10 @@ class AdminUserPage(BasePage):
         self.user = lambda username: page.locator(
             f"//th[@class='field-username']/a[text()='{username}']")
         self.active_checkbox = page.locator("//input[@id='id_is_active']")
+        self.superuser_checkbox = page.locator("//input[@id='id_is_superuser']")
         self.save_button = page.locator("//input[@value='Save']")
+        self.save_and_continue_editing_button = page.locator(
+            "//input[@value='Save and continue editing']")
 
     def click_on_users_page_option(self):
         self._click(self.users_page)
@@ -35,3 +38,6 @@ class AdminUserPage(BasePage):
 
     def click_on_save_changes_button(self):
         self._click(self.save_button)
+
+    def click_on_save_and_continue_editing_button(self):
+        self._click(self.save_and_continue_editing_button)

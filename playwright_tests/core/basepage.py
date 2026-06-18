@@ -115,9 +115,10 @@ class BasePage:
                 self.wait_for_dom_to_load()
                 self._recover_if_on_error_page()
                 if expected_locator:
-                    self._wait_for_locator(expected_locator, timeout=3000)
+                    self._wait_for_locator(expected_locator, timeout=3000, raise_exception=True)
                 if expected_locator_to_be_hidden:
-                    self._wait_for_locator_to_be_hidden(expected_locator_to_be_hidden)
+                    self._wait_for_locator_to_be_hidden(
+                        expected_locator_to_be_hidden, raise_exception=True)
                 if expected_url:
                     self.page.wait_for_url(expected_url, timeout=10000)
                 break

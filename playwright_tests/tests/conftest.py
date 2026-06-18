@@ -56,15 +56,49 @@ def pytest_runtest_makereport(item, call) -> None:
         # Ensure the test has failed and involves Playwright automation.
         if report.failed and "page" in item.funcargs:
             page: Page = item.funcargs["page"]  # Retrieve the page object from the test args.
-            video_path = page.video.path()  # Retrieve the path to the recorded video.
-            page.context.close()  # Close the browser context to ensure the video is saved.
 
-            # Attaching the video to the Allure report:
-            allure.attach(
-                open(video_path, 'rb').read(),
-                name=f"{slugify(item.nodeid)}.webm",
-                attachment_type=allure.attachment_type.WEBM
-            )
+            # Gather the default page plus any extra windows opened during the
+            # test. Each extra window lives in its own browser context (created
+            # via Utilities.create_new_context_page) with its own video.
+            pages = [page] + list(getattr(page, "_extra_pages", []))
+
+            # Snapshot each window's video, then close its context so the video
+            # file is flushed to disk before we read it. A context shared by
+            # several pages is only closed once.
+            windows = []
+            closed_contexts = set()
+            for index, current_page in enumerate(pages):
+                try:
+                    video = current_page.video
+                except Exception as error:  # page may already be closed by the test
+                    print(f"Could not access video for window {index + 1}: {error}")
+                    video = None
+                windows.append(video)
+                try:
+                    context = current_page.context
+                    if id(context) not in closed_contexts:
+                        closed_contexts.add(id(context))
+                        context.close()  # Close to ensure the video is saved.
+                except Exception as error:
+                    print(f"Could not close context for window {index + 1}: {error}")
+
+            # Attach each window's screencast to the Allure report. For
+            # single-window tests the name is unchanged; multi-window tests get
+            # a per-window suffix so all screencasts are distinguishable.
+            multiple_windows = len([v for v in windows if v]) > 1
+            for index, video in enumerate(windows):
+                if not video:
+                    continue
+                try:
+                    video_path = video.path()
+                    suffix = f"-window-{index + 1}" if multiple_windows else ""
+                    allure.attach(
+                        open(video_path, 'rb').read(),
+                        name=f"{slugify(item.nodeid)}{suffix}.webm",
+                        attachment_type=allure.attachment_type.WEBM
+                    )
+                except Exception as error:
+                    print(f"Could not attach screencast for window {index + 1}: {error}")
 
 
 @pytest.fixture()
