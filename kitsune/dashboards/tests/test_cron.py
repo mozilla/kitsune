@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.conf import settings
+from django.test import tag
 
 from kitsune.dashboards.models import (
     L10N_ALL_CODE,
@@ -131,6 +132,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         self.assertEqual(5, result[r.document.id]["total"])
 
 
+@tag("no_parallel")
 class TopUnhelpfulArticlesCommandTests(TestCase):
     def setUp(self):
         super().setUp()
@@ -144,7 +146,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
     def tearDown(self):
         try:
             self.redis.flushdb()
-        except (KeyError, AttributeError):
+        except KeyError, AttributeError:
             raise SkipTest
         super().tearDown()
 

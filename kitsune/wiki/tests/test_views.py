@@ -3,7 +3,7 @@ from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.test import Client
+from django.test import Client, tag
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -2070,6 +2070,7 @@ class VoteTests(TestCase):
         self.assertEqual(10, HelpfulVote.objects.count())
 
 
+@tag("no_parallel")
 class TestDocumentLocking(TestCase):
     def setUp(self):
         super().setUp()
