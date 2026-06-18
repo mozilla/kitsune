@@ -1,5 +1,5 @@
 import operator
-from datetime import date, datetime, timedelta
+from datetime import datetime
 from functools import reduce
 
 from django.db.models import Q
@@ -7,14 +7,7 @@ from django.utils import timezone
 
 from kitsune.dashboards import LAST_90_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.kpi.models import (
-    EXIT_SURVEY_DONT_KNOW_CODE,
-    EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_YES_CODE,
-    Metric,
-    MetricKind,
-)
-from kitsune.kpi.surveygizmo_utils import get_exit_survey_results
+from kitsune.kpi.models import Metric
 from kitsune.wiki.config import MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
 
 MAX_DOCS_UP_TO_DATE = 50
@@ -84,41 +77,6 @@ def _get_up_to_date_count(top_60_docs, locale):
     return up_to_date_docs, num_docs
 
 
-def _process_exit_survey_results():
-    """Collect and save new exit survey results."""
-    # Gather and process up until yesterday's exit survey results.
-    yes_kind = MetricKind.objects.get_or_create(code=EXIT_SURVEY_YES_CODE)[0]
-    no_kind = MetricKind.objects.get_or_create(code=EXIT_SURVEY_NO_CODE)[0]
-    dunno_kind = MetricKind.objects.get_or_create(code=EXIT_SURVEY_DONT_KNOW_CODE)[0]
-
-    latest_metric = _get_latest_metric(EXIT_SURVEY_YES_CODE)
-    if latest_metric is not None:
-        latest_metric_date = latest_metric.start
-    else:
-        latest_metric_date = date(2013, 7, 1)
-
-    day = latest_metric_date + timedelta(days=1)
-    today = date.today()
-
-    while day < today:
-        # Get the aggregated results.
-        results = get_exit_survey_results("general", day)
-
-        # Store them.
-        Metric.objects.create(
-            kind=yes_kind, start=day, end=day + timedelta(days=1), value=results["yes"]
-        )
-        Metric.objects.create(
-            kind=no_kind, start=day, end=day + timedelta(days=1), value=results["no"]
-        )
-        Metric.objects.create(
-            kind=dunno_kind, start=day, end=day + timedelta(days=1), value=results["dont-know"]
-        )
-
-        # Move on to next day.
-        day += timedelta(days=1)
-
-
 def _count_contributors_in_range(querysets, users, date_range):
     """Of the group ``users``, count how many made a contribution in ``date_range``."""
     start, end = date_range
@@ -155,7 +113,9 @@ def _get_cohort(querysets, date_range):
                 else start
             )
             end_aware = (
-                timezone.make_aware(end) if isinstance(end, datetime) and timezone.is_naive(end) else end
+                timezone.make_aware(end)
+                if isinstance(end, datetime) and timezone.is_naive(end)
+                else end
             )
             return start_aware <= first_contrib.created < end_aware
 

@@ -1013,12 +1013,6 @@ API_LIMIT_PER_PAGE = 0
 # Change the default for XFrameOptionsMiddleware.
 X_FRAME_OPTIONS = "DENY"
 
-# SurveyGizmo API
-SURVEYGIZMO_USER = config("SURVEYGIZMO_USER", default=None)
-SURVEYGIZMO_PASSWORD = config("SURVEYGIZMO_PASSWORD", default=None)
-SURVEYGIZMO_API_TOKEN = config("SURVEYGIZMO_API_TOKEN", default=None)
-SURVEYGIZMO_API_TOKEN_SECRET = config("SURVEYGIZMO_API_TOKEN_SECRET", default=None)
-
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),

@@ -25,30 +25,5 @@
       </div>
     </section>
 
-    <section id="kpi-csat-enus"
-     data-url="{{ url('api.kpi.csat-contributors-kb-enus') }}">
-
-      {# The locale code is not localizable - the data are for English only. #}
-      <h2 class="sumo-page-subheading">{{ _('Contributor Satisfaction: %(locale)s', locale='en-US') }}</h2>
-
-      <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
-    </section>
-
-    <section id="kpi-csat-l10n"
-     data-url="{{ url('api.kpi.csat-contributors-kb-l10n') }}">
-
-      <h2 class="sumo-page-subheading">{{ _('Contributor Satisfaction: l10n') }}</h2>
-
-      <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
-    </section>
-
-    <section id="kpi-csat-support"
-     data-url="{{ url('api.kpi.csat-contributors-support-forum') }}">
-
-      <h2 class="sumo-page-subheading">{{ _('Contributor Satisfaction: Support Forum') }}</h2>
-
-      <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
-    </section>
-
   </article>
 {% endblock %}
