@@ -494,7 +494,7 @@ MIDDLEWARE: tuple[str, ...] = (
     # using `request.csp_nonce` (e.g. Forbidden403Middleware), so that on
     # the response phase (which runs in reverse) it is the last to write
     # the CSP header. Otherwise `request.csp_nonce` raises CSPNonceError.
-    "csp.middleware.CSPMiddleware",
+    "kitsune.sumo.middleware.AdminCSPMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "kitsune.sumo.middleware.SetRemoteAddr",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
@@ -1265,14 +1265,12 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [NONE],
         "script-src": [
-            SELF,
-            "https://*.mozilla.org",
-            "https://*.webservices.mozgcp.net",
-            "https://*.google-analytics.com",
-            "https://*.googletagmanager.com",
+            # Third-party scripts injected at runtime without our nonce, so they
+            # must stay host-allowlisted (don't add 'strict-dynamic').
+            "https://www.googletagmanager.com",
+            "https://www.google-analytics.com",
             f"https://{MATOMO_MZLA_CDN_HOST}",
             "https://pontoon.mozilla.org",
-            "https://*.jsdelivr.net",
             NONCE,
         ],
         "img-src": [
@@ -1304,7 +1302,6 @@ CONTENT_SECURITY_POLICY = {
         "style-src": [
             SELF,
             "https://*.webservices.mozgcp.net",
-            "https://*.jsdelivr.net",
             NONCE,
         ],
         "form-action": [
@@ -1330,6 +1327,10 @@ CONTENT_SECURITY_POLICY = {
 if DEBUG:
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].append(UNSAFE_INLINE)
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([UNSAFE_INLINE, UNSAFE_EVAL])
+    # GraphiQL (DEBUG-only) loads from jsDelivr; restrict to /npm/ so arbitrary
+    # /gh/ repo scripts can't be loaded.
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].append("https://cdn.jsdelivr.net/npm/")
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["style-src"].append("https://cdn.jsdelivr.net/npm/")
 
 # Trusted Contributor Groups
 TRUSTED_GROUPS = [

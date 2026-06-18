@@ -77,8 +77,9 @@ urlpatterns += [
         servestatic,
         kwargs={"document_root": settings.ROOT},
     ),
-    # GraphiQL
-    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
+    # GraphiQL IDE loads CDN assets, so enable it only for local dev to keep
+    # that CDN out of the deployed CSP. The GraphQL endpoint stays available.
+    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=settings.DEBUG))),
     re_path(
         r"^customercare/zendesk/updates/?$",
         csrf_exempt(ZendeskWebhookView.as_view()),
