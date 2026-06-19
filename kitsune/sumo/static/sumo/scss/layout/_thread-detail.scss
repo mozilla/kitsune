@@ -131,6 +131,20 @@
   }
 }
 
+.thread-detail--ticket-id {
+  display: inline-flex;
+  align-items: center;
+  gap: p.$spacing-xs;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
+
+  svg {
+    width: p.$spacing-md;
+    height: p.$spacing-md;
+    flex-shrink: 0;
+  }
+}
+
 .thread-detail--engagement {
   display: flex;
   flex-wrap: wrap;
