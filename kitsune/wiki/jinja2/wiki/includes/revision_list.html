@@ -3,7 +3,7 @@
     <form action="{{ url('wiki.compare_revisions', document.slug)  }}" method="get">
       <input type="hidden" name="locale" value="{{ document.locale }}">
       {% if revisions.count() > 1 %}
-        <div class="sumo-button-wrap reverse-on-desktop align-full">
+        <div class="sumo-button-wrap reverse-on-desktop">
           <button type="submit" class="sumo-button compare-revisions-button-down">{% if document.parent %}{{ _('Compare Selected Translations') }}{% else %}{{ _('Compare Selected Revisions') }}{% endif %}</button>
         </div>
       {% endif %}
