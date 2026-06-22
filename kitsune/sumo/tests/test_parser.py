@@ -283,20 +283,21 @@ class TestWikiParser(TestCase):
         self.assertEqual(0, len(doc("iframe")))
 
     def test_iframe_hell_bug_898769(self):
-        """Verify fix for bug 898769."""
+        """Verify fix for bug 898769: the injected tags are escaped, not live.
+
+        We assert no live opening tag survives rather than the exact escaped
+        output, which shifts with justhtml's HTML5 recovery between versions.
+        """
         content = r"""<iframe/src \/\/onload = prompt(1)
 
 <iframe/onreadystatechange=alert(/@blinkms/)
 
 <svg/onload=alert(1)"""
 
-        self.assertEqual(
-            "<p>&lt;iframe src onload p&gt;&amp;lt;p&amp;gt;&amp;"
-            "lt;iframe/onreadystatechange=alert(/@blinkms/)\n&amp;lt;/p&amp;"
-            "gt;&amp;lt;p&amp;gt;&amp;lt;svg/onload=alert(1)\n&amp;lt;/p&amp;"
-            "gt;&lt;/iframe&gt;</p>",
-            self.p.parse(content),
-        )
+        result = self.p.parse(content).lower()
+
+        for tag in ("<iframe", "<svg"):
+            self.assertNotIn(tag, result, f"live {tag} survived: {result!r}")
 
     def test_injections(self):
         testdata = (
