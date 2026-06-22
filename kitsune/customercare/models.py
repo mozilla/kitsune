@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
@@ -7,6 +9,22 @@ from django.utils.translation import gettext_lazy as _lazy
 from kitsune.groups.models import GroupProfile
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.models import ModelBase
+
+
+@dataclass(frozen=True)
+class StatusMeta:
+    """Display metadata for a single Zendesk ticket status.
+
+    group   -- the "active" or "solved" bucket the status belongs to; drives the
+               SupportTicketQuerySet.active()/solved() filters.
+    variant -- the status-label--<variant> modifier for the badge; the colors for
+               each variant live in SCSS (base/_status-label.scss).
+    tip     -- the tooltip copy shown on the badge.
+    """
+
+    group: str
+    variant: str
+    tip: str
 
 
 class SupportTicketQuerySet(models.QuerySet):
@@ -20,18 +38,13 @@ class SupportTicketQuerySet(models.QuerySet):
         # Display semantics: status alone, regardless of whether the ticket has
         # synced a Zendesk id yet. Chain .syncable() when sync-eligibility matters.
         return self.filter(
-            zd_status__in=(
-                SupportTicket.ZD_STATUS_NEW,
-                SupportTicket.ZD_STATUS_OPEN,
-                SupportTicket.ZD_STATUS_PENDING,
-                SupportTicket.ZD_STATUS_HOLD,
-            ),
+            zd_status__in=SupportTicket.statuses_in_group(SupportTicket.ZD_GROUP_ACTIVE),
             zd_deleted_at__isnull=True,
         )
 
     def solved(self):
         return self.filter(
-            zd_status__in=(SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED),
+            zd_status__in=SupportTicket.statuses_in_group(SupportTicket.ZD_GROUP_SOLVED),
             zd_deleted_at__isnull=True,
         )
 
@@ -88,6 +101,46 @@ class SupportTicket(ModelBase):
         (ZD_STATUS_SOLVED, _lazy("Solved")),
         (ZD_STATUS_CLOSED, _lazy("Closed")),
     )
+
+    ZD_GROUP_ACTIVE = "active"
+    ZD_GROUP_SOLVED = "solved"
+
+    # Per-status metadata. The group is the active/solved bucket for the status,
+    # and defines the single source of truth for the split (no second hardcoded
+    # list in the querysets). The variant selects the appropriate CSS variant,
+    # and the tip is the visual tool tip for the status.
+    ZD_STATUS_META = {
+        ZD_STATUS_NEW: StatusMeta(
+            group=ZD_GROUP_ACTIVE,
+            variant="new",
+            tip=_lazy("This ticket has been received and is awaiting review"),
+        ),
+        ZD_STATUS_OPEN: StatusMeta(
+            group=ZD_GROUP_ACTIVE,
+            variant="open",
+            tip=_lazy("This ticket is open and being reviewed by our team"),
+        ),
+        ZD_STATUS_PENDING: StatusMeta(
+            group=ZD_GROUP_ACTIVE,
+            variant="pending",
+            tip=_lazy("Our team has responded and is awaiting a reply"),
+        ),
+        ZD_STATUS_HOLD: StatusMeta(
+            group=ZD_GROUP_ACTIVE,
+            variant="hold",
+            tip=_lazy("Our team is investigating with a third party"),
+        ),
+        ZD_STATUS_SOLVED: StatusMeta(
+            group=ZD_GROUP_SOLVED,
+            variant="solved",
+            tip=_lazy("This ticket has been resolved"),
+        ),
+        ZD_STATUS_CLOSED: StatusMeta(
+            group=ZD_GROUP_SOLVED,
+            variant="closed",
+            tip=_lazy("This ticket has been closed"),
+        ),
+    }
 
     subject = models.CharField(max_length=255)
     description = models.TextField()
@@ -186,9 +239,39 @@ class SupportTicket(ModelBase):
         first_reply_index = 0 if self.last_synced_at is None else 1
         return [c for c in self.comments[first_reply_index:] if c.get("public", False)]
 
+    @classmethod
+    def statuses_in_group(cls, group):
+        """The zd_status values belonging to an active/solved group."""
+        return tuple(status for status, meta in cls.ZD_STATUS_META.items() if meta.group == group)
+
+    @property
+    def status_meta(self):
+        """Display metadata for the current zd_status, or None for a status not in
+        the registry (e.g. a not-yet-synced ticket whose zd_status is null)."""
+        return self.ZD_STATUS_META.get(self.zd_status)
+
     @property
     def status_label(self):
         """Derive a user-facing status."""
         if self.zd_deleted_at:
             return _lazy("Inactive")
         return self.get_zd_status_display() or _lazy("Submitted")
+
+    @property
+    def status_variant(self):
+        """The status-label--<variant> modifier for this ticket's badge. Deleted
+        and not-yet-synced tickets fall back to the "neutral" variant."""
+        if self.zd_deleted_at:
+            return "neutral"
+        meta = self.status_meta
+        return meta.variant if meta else "neutral"
+
+    @property
+    def status_tip(self):
+        """Tooltip copy describing the ticket's current status."""
+        if self.zd_deleted_at:
+            return _lazy("This ticket is no longer active and can no longer receive replies")
+        meta = self.status_meta
+        if meta:
+            return meta.tip
+        return _lazy("This ticket has been submitted and is being processed")

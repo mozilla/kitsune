@@ -91,36 +91,10 @@
 {% endmacro %}
 
 {# Status pill for a Direct Support (Zendesk) ticket. Shared by the My Questions
-   list, the ticket detail hero, and the group tickets table so all three render
-   the same .status-label--* colors. The status -> color mapping lives in SCSS
-   (the class is just status-label--<zd_status>), so re-coloring a status is a
-   stylesheet change, not a template one. "size" controls only padding/scale
-   ("sm" default; "lg" for the roomier group table). Tips use a neutral "This
-   ticket" voice so they read correctly on both the owner's pages and the staff
-   table. #}
+   list, the ticket detail hero, and the group tickets table. #}
 {% macro zd_status_badge(ticket, size="sm") %}
   {% set _size_class = " status-label--lg" if size == "lg" else "" %}
-  {% set _status_class = ticket.zd_status or "neutral" %}
-  {% if ticket.zd_deleted_at %}
-    {% set _status_class = "neutral" %}
-    {% set _status_tip = _("This ticket is no longer active and can no longer receive replies") %}
-  {% elif ticket.zd_status == ticket.ZD_STATUS_SOLVED %}
-    {% set _status_tip = _("This ticket has been resolved") %}
-  {% elif ticket.zd_status == ticket.ZD_STATUS_CLOSED %}
-    {% set _status_tip = _("This ticket has been closed") %}
-  {% elif ticket.zd_status == ticket.ZD_STATUS_NEW %}
-    {% set _status_tip = _("This ticket has been received and is awaiting review") %}
-  {% elif ticket.zd_status == ticket.ZD_STATUS_OPEN %}
-    {% set _status_tip = _("This ticket is open and being reviewed by our team") %}
-  {% elif ticket.zd_status == ticket.ZD_STATUS_PENDING %}
-    {% set _status_tip = _("Our team has responded and is awaiting a reply") %}
-  {% elif ticket.zd_status == ticket.ZD_STATUS_HOLD %}
-    {% set _status_tip = _("Our team is investigating with a third party") %}
-  {% else %}
-    {% set _status_class = "neutral" %}
-    {% set _status_tip = _("This ticket has been submitted and is being processed") %}
-  {% endif %}
-  <span class="status-label status-label--{{ _status_class }}{{ _size_class }}" title="{{ _status_tip }}">{{ ticket.status_label }}</span>
+  <span class="status-label status-label--{{ ticket.status_variant }}{{ _size_class }}" title="{{ ticket.status_tip }}">{{ ticket.status_label }}</span>
 {% endmacro %}
 
 {% macro state_badges(obj) %}
