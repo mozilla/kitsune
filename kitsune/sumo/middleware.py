@@ -6,6 +6,8 @@ from functools import wraps
 from ipaddress import ip_address
 
 import django.middleware.locale
+from csp.constants import SELF
+from csp.middleware import CSPMiddleware
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
@@ -412,3 +414,24 @@ class InAAQMiddleware(MiddlewareMixin):
             ):
                 request.session["aaq_context"] = {}
         return None
+
+
+class AdminCSPMiddleware(CSPMiddleware):
+    """Allow the admin's own static scripts on admin paths only.
+
+    The admin loads external JS without a CSP nonce, which the site-wide
+    nonce-only script-src would block. SELF covers same-origin static
+    (local/dev), the host covers the deployed static host.
+    """
+
+    def get_policy_parts(self, request, response, report_only=False):
+        policy_parts = super().get_policy_parts(request, response, report_only=report_only)
+        if not report_only and request.path_info.startswith("/admin/"):
+            update = policy_parts.update or {}
+            update["script-src"] = [
+                *update.get("script-src", []),
+                SELF,
+                "https://*.webservices.mozgcp.net",
+            ]
+            policy_parts.update = update
+        return policy_parts
