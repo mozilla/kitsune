@@ -3,15 +3,16 @@ import hashlib
 import hmac
 import json
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import requests
 from django.contrib.auth.models import Group
 from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from pyquery import PyQuery as pq
-from zenpy.lib.exception import APIException
+from zenpy.lib.exception import APIException, RecordNotFoundException
 
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tests import SupportTicketFactory
@@ -149,7 +150,9 @@ class TicketDetailViewTests(TestCase):
     def setUp(self):
         self.owner = UserFactory()
         self.other = UserFactory()
-        self.ticket = SupportTicketFactory(user=self.owner)
+        self.ticket = SupportTicketFactory(
+            user=self.owner, zendesk_ticket_id="123", last_synced_at=timezone.now()
+        )
 
     def test_owner_can_view(self):
         self.client.force_login(self.owner)
@@ -216,6 +219,21 @@ class TicketDetailViewTests(TestCase):
         self.assertNotContains(response, "Post Reply")
         self.assertContains(response, "Only the ticket creator can reply")
 
+    def test_deleted_ticket_shows_readonly_banner_and_hides_form(self):
+        """A ticket deleted in Zendesk shows the read-only notice, not the reply form."""
+        self.ticket.update(zd_deleted_at=timezone.now())
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse("customercare.ticket_detail", args=[self.owner.username, self.ticket.id])
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, "question-reply-form")
+        self.assertNotContains(response, "Post Reply")
+        self.assertContains(response, "This ticket can no longer receive replies")
+        # Hero status pill reads "Inactive" rather than the stale zd_status.
+        self.assertContains(response, "Inactive")
+
     def test_get_absolute_url(self):
         expected = reverse(
             "customercare.ticket_detail", args=[self.owner.username, self.ticket.id]
@@ -258,10 +276,28 @@ class SyncTicketCommentsViewTests(TestCase):
 
     @patch("kitsune.customercare.views.sync_ticket_from_zendesk")
     def test_htmx_request_triggers_sync_and_returns_partial(self, mock_sync):
+        mock_sync.return_value = self.ticket
         self.client.force_login(self.owner)
         response = self._htmx_get()
         self.assertEqual(200, response.status_code)
         mock_sync.assert_called_once_with(self.ticket)
+
+    @patch(
+        "kitsune.customercare.utils.fetch_zendesk_ticket_data",
+        side_effect=RecordNotFoundException,
+    )
+    def test_htmx_sync_self_heals_when_ticket_deleted(self, mock_fetch):
+        """If Zendesk 404s during the on-view sync, the view must re-render from the
+        self-healed ticket: banner + Inactive pill, not a stale status + reply form."""
+        self.client.force_login(self.owner)
+        response = self._htmx_get()
+
+        self.assertEqual(200, response.status_code)
+        self.ticket.refresh_from_db()
+        self.assertIsNotNone(self.ticket.zd_deleted_at)
+        self.assertContains(response, "This ticket can no longer receive replies")
+        self.assertContains(response, "Inactive")
+        self.assertNotContains(response, "Post Reply")
 
     @patch("kitsune.customercare.views.sync_ticket_from_zendesk")
     def test_zd_failure_returns_error_partial(self, mock_sync):
@@ -270,6 +306,52 @@ class SyncTicketCommentsViewTests(TestCase):
         response = self._htmx_get()
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "latest replies")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_htmx_sync_status_change_oob_swaps_pill(self, mock_client_cls):
+        """A GET sync that changes zd_status re-renders from the synced ticket and
+        OOB-swaps the hero pill cluster to the new status."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_OPEN
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client = mock_client_cls.return_value
+        mock_client.get_ticket_comments.return_value = []
+        mock_client.get_ticket.return_value = MagicMock(
+            status="solved",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description=self.ticket.description,
+        )
+
+        self.client.force_login(self.owner)
+        response = self._htmx_get()
+
+        self.assertEqual(200, response.status_code)
+        self.ticket.refresh_from_db()
+        self.assertEqual(SupportTicket.ZD_STATUS_SOLVED, self.ticket.zd_status)
+        self.assertContains(response, 'id="thread-detail--pill-cluster"')
+        self.assertContains(response, 'hx-swap-oob="true"')
+        self.assertContains(response, "status-label--solved")
+
+    @patch("kitsune.customercare.utils.ZendeskClient")
+    def test_htmx_sync_without_status_change_omits_oob_badge(self, mock_client_cls):
+        """A GET sync that leaves zd_status unchanged emits no OOB pill swap."""
+        self.ticket.zd_status = SupportTicket.ZD_STATUS_OPEN
+        self.ticket.save(update_fields=["zd_status"])
+        mock_client = mock_client_cls.return_value
+        mock_client.get_ticket_comments.return_value = []
+        mock_client.get_ticket.return_value = MagicMock(
+            status="open",
+            updated_at=timezone.now(),
+            subject=self.ticket.subject,
+            description=self.ticket.description,
+        )
+
+        self.client.force_login(self.owner)
+        response = self._htmx_get()
+
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn(b'hx-swap-oob="true"', response.content)
+        self.assertNotIn(b'id="thread-detail--pill-cluster"', response.content)
 
     def test_non_owner_htmx_gets_404(self):
         self.client.force_login(self.other)
@@ -329,6 +411,30 @@ class TicketReplySyncTests(TestCase):
         self.assertEqual("hello", kwargs["comment_body"])
         self.assertTrue(kwargs["public"])
         self.assertIsNone(kwargs["status"])
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_reply_blocked_for_deleted_ticket(self, mock_client_cls):
+        self.ticket.update(zd_deleted_at=timezone.now())
+
+        self.client.post(self.url, {"body": "hello"})
+
+        mock_client_cls.return_value.add_ticket_comment.assert_not_called()
+        self.ticket.refresh_from_db()
+        self.assertEqual([], self.ticket.comments)
+
+    @patch("kitsune.customercare.views.ZendeskClient")
+    def test_reply_self_heals_when_ticket_deleted_mid_request(self, mock_client_cls):
+        """If the ticket is deleted in Zendesk between load and reply, self-heal to
+        read-only and show the banner instead of a 'failed to send' error."""
+        mock_client_cls.return_value.add_ticket_comment.side_effect = RecordNotFoundException
+
+        response = self.client.post(self.url, {"body": "hello"}, HTTP_HX_REQUEST="true")
+
+        self.ticket.refresh_from_db()
+        self.assertIsNotNone(self.ticket.zd_deleted_at)
+        self.assertEqual([], self.ticket.comments)
+        self.assertContains(response, "This ticket can no longer receive replies")
+        self.assertNotContains(response, "failed to send")
 
     @patch("kitsune.customercare.views.ZendeskClient")
     def test_pending_ticket_reopens_on_reply(self, mock_client_cls):

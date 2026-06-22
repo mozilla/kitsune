@@ -277,3 +277,110 @@ class AccessibleToTests(TestCase):
     def test_anonymous_cannot_reply(self):
         self.assertFalse(self.alice_ticket.can_reply(AnonymousUser()))
         self.assertFalse(self.alice_ticket.can_reply(None))
+
+
+class IsSyncableTests(TestCase):
+    """is_syncable is True only with a usable Zendesk id and no deletion."""
+
+    def test_syncable_with_id_and_not_deleted(self):
+        ticket = SupportTicketFactory(zendesk_ticket_id="123")
+        self.assertTrue(ticket.is_syncable)
+
+    def test_not_syncable_when_deleted(self):
+        ticket = SupportTicketFactory(zendesk_ticket_id="123", zd_deleted_at=timezone.now())
+        self.assertFalse(ticket.is_syncable)
+
+    def test_not_syncable_with_null_id(self):
+        ticket = SupportTicketFactory(zendesk_ticket_id=None)
+        self.assertFalse(ticket.is_syncable)
+
+    def test_not_syncable_with_blank_id(self):
+        ticket = SupportTicketFactory(zendesk_ticket_id="")
+        self.assertFalse(ticket.is_syncable)
+
+
+class StatusLabelTests(TestCase):
+    """status_label derives the user-facing status string."""
+
+    def test_deleted_is_inactive_regardless_of_status(self):
+        ticket = SupportTicketFactory(
+            zendesk_ticket_id="123",
+            zd_status=SupportTicket.ZD_STATUS_SOLVED,
+            zd_deleted_at=timezone.now(),
+        )
+        self.assertEqual(str(ticket.status_label), "Inactive")
+
+    def test_zd_status_maps_to_display(self):
+        ticket = SupportTicketFactory(
+            zendesk_ticket_id="123", zd_status=SupportTicket.ZD_STATUS_SOLVED
+        )
+        self.assertEqual(str(ticket.status_label), "Solved")
+
+    def test_no_zd_status_is_submitted(self):
+        ticket = SupportTicketFactory(zendesk_ticket_id="123", zd_status=None)
+        self.assertEqual(str(ticket.status_label), "Submitted")
+
+
+class SupportTicketQuerySetTests(TestCase):
+    """Tests for SupportTicketQuerySet.syncable / active / solved.
+
+    active() and solved() are display filters (status + not deleted), so they
+    include tickets that have not yet synced a Zendesk id. syncable() is the
+    sync-eligibility filter and mirrors is_syncable: a usable id and no deletion.
+    The sync dispatch chains active().syncable().
+    """
+
+    def setUp(self):
+        self.product = ProductFactory()
+        self.live_open = self._make(zendesk_ticket_id="1", zd_status=SupportTicket.ZD_STATUS_OPEN)
+        self.live_solved = self._make(
+            zendesk_ticket_id="2", zd_status=SupportTicket.ZD_STATUS_SOLVED
+        )
+        self.closed = self._make(zendesk_ticket_id="3", zd_status=SupportTicket.ZD_STATUS_CLOSED)
+        self.no_status = self._make(zendesk_ticket_id="4", zd_status=None)
+        self.deleted_open = self._make(
+            zendesk_ticket_id="5",
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+            zd_deleted_at=timezone.now(),
+        )
+        self.null_id_open = self._make(
+            zendesk_ticket_id=None, zd_status=SupportTicket.ZD_STATUS_OPEN
+        )
+        self.blank_id_open = self._make(
+            zendesk_ticket_id="", zd_status=SupportTicket.ZD_STATUS_OPEN
+        )
+
+    def _make(self, **kwargs):
+        return SupportTicketFactory(product=self.product, **kwargs)
+
+    def _ids(self, qs):
+        return set(qs.values_list("id", flat=True))
+
+    def test_syncable_requires_usable_id_and_not_deleted(self):
+        self.assertEqual(
+            self._ids(SupportTicket.objects.syncable()),
+            {self.live_open.id, self.live_solved.id, self.closed.id, self.no_status.id},
+        )
+
+    def test_active_includes_active_statuses_regardless_of_id(self):
+        self.assertEqual(
+            self._ids(SupportTicket.objects.active()),
+            {self.live_open.id, self.null_id_open.id, self.blank_id_open.id},
+        )
+
+    def test_solved_includes_solved_and_closed(self):
+        self.assertEqual(
+            self._ids(SupportTicket.objects.solved()),
+            {self.live_solved.id, self.closed.id},
+        )
+
+    def test_active_and_solved_exclude_deleted(self):
+        self.assertNotIn(self.deleted_open.id, self._ids(SupportTicket.objects.active()))
+        self.assertNotIn(self.deleted_open.id, self._ids(SupportTicket.objects.solved()))
+
+    def test_active_syncable_composition_drops_unsyncable(self):
+        # The sync dispatch path: active by status AND sync-eligible.
+        self.assertEqual(
+            self._ids(SupportTicket.objects.active().syncable()),
+            {self.live_open.id},
+        )

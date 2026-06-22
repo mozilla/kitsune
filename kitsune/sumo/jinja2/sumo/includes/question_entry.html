@@ -90,6 +90,13 @@
   {% endif %}
 {% endmacro %}
 
+{# Status pill for a Direct Support (Zendesk) ticket. Shared by the My Questions
+   list, the ticket detail hero, and the group tickets table. #}
+{% macro zd_status_badge(ticket, size="sm") %}
+  {% set _size_class = " status-label--lg" if size == "lg" else "" %}
+  <span class="status-label status-label--{{ ticket.status_variant }}{{ _size_class }}" title="{{ ticket.status_tip }}">{{ ticket.status_label }}</span>
+{% endmacro %}
+
 {% macro state_badges(obj) %}
   {% if obj.channel == "direct_support" %}
     <span class="my-questions--channel-badge my-questions--channel-badge--direct-support"
@@ -97,34 +104,10 @@
       {# L10n: A label/tab for questions that are Premium support tickets handled by paid support agents. #}
       {{ _("Direct Support") }}
     </span>
-    {% if obj.zd_status == obj.ZD_STATUS_SOLVED %}
-      {% set _status_class = "resolved" %}
-      {% set _status_tip = _("Your ticket has been resolved") %}
-    {% elif obj.zd_status == obj.ZD_STATUS_CLOSED %}
-      {% set _status_class = "neutral" %}
-      {% set _status_tip = _("Your ticket has been closed") %}
-    {% elif obj.zd_status == obj.ZD_STATUS_NEW %}
-      {% set _status_class = "open" %}
-      {% set _status_tip = _("Your ticket has been received and is awaiting review") %}
-    {% elif obj.zd_status == obj.ZD_STATUS_OPEN %}
-      {% set _status_class = "open" %}
-      {% set _status_tip = _("Your ticket is open and being reviewed by our team") %}
-    {% elif obj.zd_status == obj.ZD_STATUS_PENDING %}
-      {% set _status_class = "pending" %}
-      {% set _status_tip = _("Our team has responded and is awaiting your reply") %}
-    {% elif obj.zd_status == obj.ZD_STATUS_HOLD %}
-      {% set _status_class = "pending" %}
-      {% set _status_tip = _("Our team is investigating with a third party") %}
-    {% else %}
-      {% set _status_class = "neutral" %}
-      {% set _status_tip = _("Your ticket has been submitted and is being processed") %}
-    {% endif %}
-    <span class="status-label status-label--{{ _status_class }}" title="{{ _status_tip }}">
-      {{ obj.get_zd_status_display() or _("Submitted") }}
-    </span>
+    {{ zd_status_badge(obj) }}
   {% else %}
     {% if obj.solution_id %}
-      <span class="status-label status-label--resolved"
+      <span class="status-label status-label--solved"
             title="{{ _('This question has a verified solution') }}">{{ _("Solved") }}</span>
     {% endif %}
     {% if obj.is_locked %}

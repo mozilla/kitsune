@@ -1061,24 +1061,6 @@ body:has(#group-tickets) {
     }
   }
 
-  // ZD status pill — bespoke (more states than .status-label--*).
-  &--status {
-    display: inline-block;
-    padding: 6px p.$spacing-md;
-    border-radius: 12px;
-    @include c.text-body-md;
-    font-weight: 600;
-    line-height: 1.25;
-    background: var(--color-marketing-gray-02);
-    color: var(--color-marketing-gray-08);
-
-    &-open    { background: #dbeafe; color: #1e40af; }
-    &-pending { background: #fde68a; color: #854d0e; }
-    &-waiting { background: #fef3c7; color: #92400e; }
-    &-solved  { background: #d1fae5; color: #065f46; }
-    &-closed  { background: var(--color-marketing-gray-02); color: var(--color-marketing-gray-08); }
-  }
-
   &--paginator {
     display: flex;
     align-items: center;

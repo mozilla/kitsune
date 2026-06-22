@@ -17,7 +17,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.http import require_http_methods, require_POST
-from zenpy.lib.exception import APIException, ZenpyException
+from zenpy.lib.exception import APIException, RecordNotFoundException, ZenpyException
 
 from kitsune.customercare.forms import SupportTicketReplyForm
 from kitsune.customercare.models import SupportTicket
@@ -36,7 +36,7 @@ ZENDESK_ERRORS = (APIException, ZenpyException, requests.exceptions.RequestExcep
 
 
 def _ticket_needs_sync(ticket):
-    if not ticket.zendesk_ticket_id:
+    if not ticket.is_syncable:
         return False
     if ticket.last_synced_at is None:
         return True
@@ -76,8 +76,12 @@ def ticket_detail(request, username, ticket_id):
     reply_error = False
     status_changed = False
 
-    if (ticket.zd_status != SupportTicket.ZD_STATUS_CLOSED) and form.is_valid():
-        new_body = form.cleaned_data["body"]
+    if (
+        (ticket.zd_status != SupportTicket.ZD_STATUS_CLOSED)
+        and ticket.is_syncable
+        and form.is_valid()
+    ):
+        set_zd_deleted_at = False
 
         # Zendesk automatically triggers a reopen only when the comment author
         # is the same as the API user, which is never true in our case, so we
@@ -93,10 +97,15 @@ def ticket_detail(request, username, ticket_id):
             ticket_audit = ZendeskClient().add_ticket_comment(
                 user=ticket.user,
                 ticket_id=int(ticket.zendesk_ticket_id),
-                comment_body=new_body,
+                comment_body=form.cleaned_data["body"],
                 public=True,
                 status=new_status,
             )
+        except RecordNotFoundException:
+            # The Zendesk ticket was deleted between the time the support ticket was
+            # acquired and the "add_ticket_comment" call above. Let's set "zd_deleted_at"
+            # just in case the deletion event never arrives via the webhook.
+            set_zd_deleted_at = True
         except ZENDESK_ERRORS:
             log.exception("Failed to add comment to Zendesk ticket %s", ticket.zendesk_ticket_id)
             reply_error = True
@@ -123,29 +132,34 @@ def ticket_detail(request, username, ticket_id):
                     .get(id=ticket_id)
                 )
 
-                ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
-                update_fields = ["zd_updated_at"]
-
-                if ticket.zd_status != ticket_audit.ticket.status.lower():
-                    ticket.zd_status = ticket_audit.ticket.status.lower()
-                    update_fields.append("zd_status")
+                if set_zd_deleted_at:
+                    ticket.zd_deleted_at = timezone.now()
+                    update_fields = ["zd_deleted_at"]
                     status_changed = True
+                else:
+                    ticket.zd_updated_at = parse_datetime(ticket_audit.ticket.updated_at)
+                    update_fields = ["zd_updated_at"]
 
-                new_comment_id = new_comment["id"]
-                if not any(c.get("id") == new_comment_id for c in ticket.comments):
-                    ticket.comments.append(
-                        {
-                            "id": new_comment_id,
-                            "body": new_comment["html_body"],
-                            "created_at": ticket_audit.ticket.updated_at,
-                            "public": True,
-                            "author": {
-                                "name": ticket.user.profile.display_name,
-                                "id": new_comment["author_id"],
-                            },
-                        }
-                    )
-                    update_fields.append("comments")
+                    if ticket.zd_status != ticket_audit.ticket.status.lower():
+                        ticket.zd_status = ticket_audit.ticket.status.lower()
+                        update_fields.append("zd_status")
+                        status_changed = True
+
+                    new_comment_id = new_comment["id"]
+                    if not any(c.get("id") == new_comment_id for c in ticket.comments):
+                        ticket.comments.append(
+                            {
+                                "id": new_comment_id,
+                                "body": new_comment["html_body"],
+                                "created_at": ticket_audit.ticket.updated_at,
+                                "public": True,
+                                "author": {
+                                    "name": ticket.user.profile.display_name,
+                                    "id": new_comment["author_id"],
+                                },
+                            }
+                        )
+                        update_fields.append("comments")
 
                 ticket.save(update_fields=update_fields)
 
@@ -162,10 +176,13 @@ def ticket_detail(request, username, ticket_id):
 
     if is_htmx_get and needs_sync:
         try:
-            sync_ticket_from_zendesk(ticket)
+            old_status = ticket.zd_status
+            ticket = sync_ticket_from_zendesk(ticket)
         except ZENDESK_ERRORS:
             log.exception("Failed to sync ticket %s from Zendesk", ticket.zendesk_ticket_id)
             sync_error = True
+        else:
+            status_changed = (ticket.zd_status != old_status) or not ticket.is_syncable
 
     context = {
         "ticket": ticket,

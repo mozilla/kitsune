@@ -18,20 +18,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate
 from kitsune.upload.utils import create_image_thumbnail
 
-TICKET_STATUS_FILTERS = {
-    "active": {
-        "zd_status__in": (
-            SupportTicket.ZD_STATUS_NEW,
-            SupportTicket.ZD_STATUS_OPEN,
-            SupportTicket.ZD_STATUS_PENDING,
-            SupportTicket.ZD_STATUS_HOLD,
-        )
-    },
-    "all": {},
-    "solved": {
-        "zd_status__in": (SupportTicket.ZD_STATUS_SOLVED, SupportTicket.ZD_STATUS_CLOSED)
-    },
-}
+TICKET_STATUS_FILTERS = {"active", "all", "solved"}
 
 
 def _remove_group_member(profile, user, request, remove_from_group=True):
@@ -322,7 +309,7 @@ def tickets(request, group_slug):
     base_qs = SupportTicket.objects.filter(
         org_group=profile, submission_status=SupportTicket.STATUS_SENT
     ).select_related("user", "product")
-    by_status = {key: base_qs.filter(**flt) for key, flt in TICKET_STATUS_FILTERS.items()}
+    by_status = {key: getattr(base_qs, key)() for key in TICKET_STATUS_FILTERS}
     counts = {key: qs.count() for key, qs in by_status.items()}
 
     qs = by_status[status]

@@ -1,5 +1,8 @@
 from unittest.mock import patch
 
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+
 from kitsune.customercare.models import SupportTicket
 from kitsune.customercare.tasks import (
     process_failed_zendesk_tickets,
@@ -307,59 +310,83 @@ class ProcessZendeskUpdateTests(TestCase):
             "detail": {"id": ticket_id},
         }
 
-    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
-    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
-    def test_status_changed_triggers_resync(self, mock_fetch, mock_apply):
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_status_changed_triggers_resync(self, mock_sync):
         process_zendesk_update(self._payload("zen:event-type:ticket.status_changed"))
 
-        mock_fetch.assert_called_once_with("12345")
-        mock_apply.assert_called_once()
-        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
+        mock_sync.assert_called_once()
+        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
 
-    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
-    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
-    def test_subject_changed_triggers_resync(self, mock_fetch, mock_apply):
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_subject_changed_triggers_resync(self, mock_sync):
         process_zendesk_update(self._payload("zen:event-type:ticket.subject_changed"))
 
-        mock_fetch.assert_called_once_with("12345")
-        mock_apply.assert_called_once()
-        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
+        mock_sync.assert_called_once()
+        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
 
-    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
-    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
-    def test_description_changed_triggers_resync(self, mock_fetch, mock_apply):
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_description_changed_triggers_resync(self, mock_sync):
         process_zendesk_update(self._payload("zen:event-type:ticket.description_changed"))
 
-        mock_fetch.assert_called_once_with("12345")
-        mock_apply.assert_called_once()
-        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
+        mock_sync.assert_called_once()
+        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
 
-    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
-    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data", return_value=(None, None))
-    def test_comment_added_triggers_resync(self, mock_fetch, mock_apply):
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_comment_added_triggers_resync(self, mock_sync):
         process_zendesk_update(self._payload("zen:event-type:ticket.comment_added"))
 
-        mock_fetch.assert_called_once_with("12345")
-        mock_apply.assert_called_once()
-        self.assertEqual(mock_apply.call_args.args[0].id, self.ticket.id)
+        mock_sync.assert_called_once()
+        self.assertEqual(mock_sync.call_args.args[0].id, self.ticket.id)
 
-    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
-    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data")
-    def test_unhandled_event_type_is_noop(self, mock_fetch, mock_apply):
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_unhandled_event_type_is_noop(self, mock_sync):
         process_zendesk_update(self._payload("zen:event-type:ticket.priority_changed"))
 
-        mock_fetch.assert_not_called()
-        mock_apply.assert_not_called()
+        mock_sync.assert_not_called()
 
-    @patch("kitsune.customercare.tasks.apply_zendesk_ticket_data")
-    @patch("kitsune.customercare.tasks.fetch_zendesk_ticket_data")
-    def test_no_matching_ticket_is_noop(self, mock_fetch, mock_apply):
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_no_matching_ticket_is_noop(self, mock_sync):
         process_zendesk_update(
             self._payload("zen:event-type:ticket.status_changed", ticket_id="99999")
         )
 
-        mock_fetch.assert_not_called()
-        mock_apply.assert_not_called()
+        mock_sync.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_resync_skipped_when_ticket_already_deleted(self, mock_sync):
+        self.ticket.update(zd_deleted_at=timezone.now())
+
+        process_zendesk_update(self._payload("zen:event-type:ticket.status_changed"))
+
+        mock_sync.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_soft_deleted_marks_ticket_deleted(self, mock_sync):
+        process_zendesk_update(self._payload("zen:event-type:ticket.soft_deleted"))
+
+        mock_sync.assert_not_called()
+        self.ticket.refresh_from_db()
+        self.assertIsNotNone(self.ticket.zd_deleted_at)
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_deletion_event_uses_payload_time(self, mock_sync):
+        payload = self._payload("zen:event-type:ticket.soft_deleted")
+        payload["time"] = "2026-06-04T12:34:56Z"
+
+        process_zendesk_update(payload)
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.zd_deleted_at, parse_datetime("2026-06-04T12:34:56Z"))
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_undeleted_clears_deletion(self, mock_sync):
+        self.ticket.update(zd_deleted_at=timezone.now())
+
+        process_zendesk_update(self._payload("zen:event-type:ticket.undeleted"))
+
+        mock_sync.assert_not_called()
+        self.ticket.refresh_from_db()
+        self.assertIsNone(self.ticket.zd_deleted_at)
 
     def test_missing_ticket_id_raises(self):
         """Payload without detail.id should raise ValueError so Sentry captures it."""
@@ -425,6 +452,14 @@ class SyncSupportTicketTests(TestCase):
         with self.assertRaises(RuntimeError):
             sync_support_ticket(ticket.id)
 
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_deleted_ticket_skips_helper(self, mock_helper):
+        ticket = self._make_ticket(zd_deleted_at=timezone.now())
+
+        sync_support_ticket(ticket.id)
+
+        mock_helper.assert_not_called()
+
 
 class SyncActiveSupportTicketsTests(TestCase):
     """Tests for the sync_active_support_tickets orchestrator task."""
@@ -468,3 +503,14 @@ class SyncActiveSupportTicketsTests(TestCase):
         sync_active_support_tickets()
 
         mock_sync.assert_not_called()
+
+    @patch("kitsune.customercare.tasks.sync_ticket_from_zendesk")
+    def test_excludes_deleted_tickets(self, mock_sync):
+        active = self._make_ticket(SupportTicket.ZD_STATUS_OPEN)
+        deleted = self._make_ticket(SupportTicket.ZD_STATUS_OPEN)
+        deleted.update(zd_deleted_at=timezone.now())
+
+        sync_active_support_tickets()
+
+        dispatched_ids = {call.args[0].id for call in mock_sync.call_args_list}
+        self.assertEqual(dispatched_ids, {active.id})

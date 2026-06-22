@@ -1,3 +1,4 @@
+{% from "sumo/includes/question_entry.html" import zd_status_badge %}
 {% set base_url = url('groups.tickets', profile.slug) %}
 
 <div id="tickets-content" class="group-tickets" aria-live="polite">
@@ -64,9 +65,7 @@
               <a class="group-tickets--submitter" href="{{ profile_url(t.user) }}">{{ display_name(t.user) }}</a>
             </td>
             <td class="group-tickets--cell-status">
-              <span class="group-tickets--status group-tickets--status-{{ t.zd_status or 'unknown' }}">
-                {{ t.get_zd_status_display() or _('Submitted') }}
-              </span>
+              {{ zd_status_badge(t, size="lg") }}
             </td>
             <td class="group-tickets--cell-updated">{{ (t.zd_updated_at or t.created)|timesince }}</td>
           </tr>

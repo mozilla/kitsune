@@ -6,6 +6,7 @@ from django.contrib.auth.models import Group
 from django.core.files import File
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
+from django.utils import timezone
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.models import SupportTicket
@@ -483,6 +484,25 @@ class GroupTicketsViewTests(TestCase):
         )
         self.assertContains(response, self.solved_ticket.subject)
         self.assertNotContains(response, self.open_ticket.subject)
+
+    def test_deleted_ticket_only_under_all(self):
+        """A ticket deleted in Zendesk is excluded from active/solved but shown under all."""
+        deleted = SupportTicketFactory(
+            user=self.member,
+            product=self.open_ticket.product,
+            org_group=self.c1,
+            zd_status=SupportTicket.ZD_STATUS_OPEN,
+            zd_deleted_at=timezone.now(),
+        )
+        self.client.force_login(self.member)
+        url = reverse("groups.tickets", args=[self.c1.slug])
+
+        self.assertNotContains(self.client.get(url), deleted.subject)
+        self.assertNotContains(self.client.get(url + "?status=solved"), deleted.subject)
+        all_response = self.client.get(url + "?status=all")
+        self.assertContains(all_response, deleted.subject)
+        # The deleted ticket renders with the shared "Inactive" status pill.
+        self.assertContains(all_response, "Inactive")
 
     def test_htmx_request_returns_fragment(self):
         self.client.force_login(self.member)
