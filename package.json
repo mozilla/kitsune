@@ -41,7 +41,7 @@
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "codemirror": "^5.65.21",
-    "date-fns": "^4.2.1",
+    "date-fns": "^4.4.0",
     "graphql": "^16.13.1",
     "htmx.org": "^1.9.12",
     "jquery": "^3.6.3",
