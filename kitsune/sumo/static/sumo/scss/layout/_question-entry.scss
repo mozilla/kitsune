@@ -203,6 +203,21 @@ a.question-entry--meta-item:hover {
   }
 }
 
+.question-entry--ticket-id {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: p.$spacing-xs;
+  @include c.text-body-sm;
+  color: var(--color-text-light);
+
+  svg {
+    width: p.$spacing-md;
+    height: p.$spacing-md;
+    flex-shrink: 0;
+  }
+}
+
 .question-entry--meta {
   grid-column: 2;
   display: grid;
