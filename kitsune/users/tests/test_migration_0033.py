@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.test import TestCase
 
 from kitsune.forums.tests import PostFactory, ThreadFactory
-from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.gallery.tests import ImageFactory
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.questions.tests import (
     AnswerFactory,
@@ -64,10 +64,6 @@ class TestDeleteNonMigratedUsersMigrationQuery(TestCase):
         user11 = ProfileFactory(user__username="user11", is_fxa_migrated=False).user
         ImageFactory(creator=user11)
 
-        # Case 12: Non-migrated user with a gallery video (should be kept)
-        user12 = ProfileFactory(user__username="user12", is_fxa_migrated=False).user
-        VideoFactory(creator=user12)
-
         # Case 13: Non-migrated user with a forum thread (should be kept)
         user13 = ProfileFactory(user__username="user13", is_fxa_migrated=False).user
         ThreadFactory(creator=user13)
@@ -91,7 +87,6 @@ class TestDeleteNonMigratedUsersMigrationQuery(TestCase):
             | Q(badge__isnull=False)
             | Q(created_revisions__isnull=False)
             | Q(gallery_images__isnull=False)
-            | Q(gallery_videos__isnull=False)
             | Q(inboxmessage__isnull=False)
             | Q(outbox__isnull=False)
             | Q(poll_votes__isnull=False)

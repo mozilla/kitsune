@@ -1,8 +1,8 @@
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
 
-from kitsune.gallery.models import Image, Video
-from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.gallery.models import Image
+from kitsune.gallery.tests import ImageFactory
 from kitsune.gallery.utils import check_media_permissions, create_image
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -17,13 +17,12 @@ class CheckPermissionsTestCase(TestCase):
 
     def tearDown(self):
         Image.objects.all().delete()
-        Video.objects.all().delete()
         super().tearDown()
 
     def test_check_own_object(self):
-        """tagger can edit a video s/he doesn't own."""
-        vid = VideoFactory(creator=self.user)
-        check_media_permissions(vid, self.user, "change")
+        """Owner can change an image they own."""
+        img = ImageFactory(creator=self.user)
+        check_media_permissions(img, self.user, "change")
 
     def test_check_not_own_object(self):
         """tagger cannot delete an image s/he doesn't own."""
@@ -33,11 +32,11 @@ class CheckPermissionsTestCase(TestCase):
             check_media_permissions(img, self.user, "delete")
 
     def test_check_has_perm(self):
-        """User with django permission has perm to change video."""
-        vid = VideoFactory(creator=self.user)
+        """User with django permission has perm to change image."""
+        img = ImageFactory(creator=self.user)
         u = UserFactory()
-        add_permission(u, Video, "change_video")
-        check_media_permissions(vid, u, "change")
+        add_permission(u, Image, "change_image")
+        check_media_permissions(img, u, "change")
 
 
 class CreateImageTestCase(TestCase):
@@ -60,7 +59,7 @@ class CreateImageTestCase(TestCase):
             file_info = create_image({"image": up_file}, self.user)
 
         image = Image.objects.all()[0]
-        delete_url = reverse("gallery.delete_media", args=["image", image.id])
+        delete_url = reverse("gallery.delete_media", args=[image.id])
         check_file_info(
             file_info,
             name="test.png",
@@ -83,7 +82,7 @@ class CreateImageTestCase(TestCase):
             file_info = create_image({"image": up_file}, self.user)
 
         image = Image.objects.all()[0]
-        delete_url = reverse("gallery.delete_media", args=["image", image.id])
+        delete_url = reverse("gallery.delete_media", args=[image.id])
         check_file_info(
             file_info,
             name=filepath,

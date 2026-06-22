@@ -1,5 +1,4 @@
 import re
-from os.path import basename
 from urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
@@ -9,7 +8,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from sentry_sdk import capture_exception
 from wikimarkup.parser import ALLOWED_TAGS, Parser
 
-from kitsune.gallery.models import Image, Video
+from kitsune.gallery.models import Image
 from kitsune.sumo import email_utils
 from kitsune.sumo.sanitize import clean, linkify
 from kitsune.sumo.urlresolvers import reverse
@@ -250,7 +249,7 @@ class WikiParser(Parser):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or
-        Media (Video, Image) for that locale. We key Documents by
+        Media (Image) for that locale. We key Documents by
         title and locale, so both are required to identify it for a
         e.g. link.
 
@@ -398,29 +397,17 @@ class WikiParser(Parser):
             },
         )
 
-    # Videos are objects that can have one or more files attached to them
-    #
-    # They are keyed by title in the syntax and the locale passed to the
-    # parser.
+    # The [[Video:]] / [[V:]] hooks only support YouTube embeds; uploaded
+    # gallery videos are no longer supported.
     def _hook_video(self, parser, space, title):
-        """Handles [[Video:video title]] with locale from parser."""
-        message = _lazy('The video "%s" does not exist.') % title
+        """Handles [[Video:youtube-url]] with locale from parser."""
+        title, _params = build_hook_params(title, self.locale, VIDEO_PARAMS)
 
-        # params, only modal supported for now
-        title, params = build_hook_params(title, self.locale, VIDEO_PARAMS)
-
-        # If this is a youtube video, return the youtube embed. Anything that
-        # isn't a recognized youtube video URL (including malformed ones) falls
-        # through to the gallery video lookup below.
         if video_id := _get_youtube_id(title):
             self.youtube_videos.add(video_id)
             return YOUTUBE_PLACEHOLDER % video_id
 
-        v = get_object_fallback(Video, title, self.locale, message)
-        if isinstance(v, str):
-            return v
-
-        return generate_video(v, params)
+        return _lazy('The video "%s" does not exist.') % title
 
     def _hook_button(self, parser, space, btn_type):
         btn_type, params = build_hook_params(
@@ -444,32 +431,6 @@ class WikiParser(Parser):
         return UI_COMPONENT_PLACEHOLDER % name
 
 
-def generate_video(v, params=None):
-    """Takes a video object and returns HTML markup for embedding it."""
-    if params is None:
-        params = []
-    sources = []
-    if v.webm:
-        sources.append({"src": _get_video_url(v.webm), "type": "webm"})
-    if v.ogv:
-        sources.append({"src": _get_video_url(v.ogv), "type": "ogg"})
-    data_fallback = ""
-    # Flash fallback
-    if v.flv:
-        data_fallback = _get_video_url(v.flv)
-    return render_to_string(
-        "wikiparser/hook_video.html",
-        {
-            "fallback": data_fallback,
-            "sources": sources,
-            "params": params,
-            "video": v,
-            "height": settings.WIKI_VIDEO_HEIGHT,
-            "width": settings.WIKI_VIDEO_WIDTH,
-        },
-    )
-
-
 def generate_youtube_embed(video_id):
     """Takes a youtube video id and returns the embed markup."""
     return render_to_string("wikiparser/hook_youtube_embed.html", {"video_id": video_id})
@@ -484,12 +445,6 @@ def generate_ui_component_embed(name):
             return "</section>"
 
     return render_to_string(f"wikiparser/hook_{name}.html", {"settings": settings})
-
-
-def _get_video_url(video_file):
-    if settings.GALLERY_VIDEO_URL:
-        return settings.GALLERY_VIDEO_URL + basename(video_file.name)
-    return video_file.url
 
 
 def _get_youtube_id(url):

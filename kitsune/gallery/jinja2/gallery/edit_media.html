@@ -4,13 +4,13 @@
 {% set save_this = _('Save image') %}
 {% set title = _('Edit image | {t} | Media Gallery')|f(t=media.title) %}
 
-{% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),
-                 (url('gallery.media', media_type, media.id), media.title),
+{% set crumbs = [(url('gallery.gallery'), _('Media Gallery')),
+                 (url('gallery.media', media.id), media.title),
                  (None, edit_this)] %}
 
 {% block content %}
   <div id="media-object-edit" class="main grid_12">
-    <form action="{{ url('gallery.edit_media', media_type, media.id) }}" method="post">
+    <form action="{{ url('gallery.edit_media', media.id) }}" method="post">
       {% csrf_token %}
       {{ errorlist(form) }}
       <div class="form-item description">
@@ -19,7 +19,7 @@
       </div>
       <div class="submit">
         <button type="submit" class="btn btn-submit big">{{ save_this }}</button>
-        <a class="btn" href="{{ url('gallery.media', media_type, media.id) }}">{{ _('Cancel') }}</a>
+        <a class="btn" href="{{ url('gallery.media', media.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
   </div>

@@ -18,7 +18,6 @@ def delete_non_migrated_users(apps, schema_editor):
         | Q(badge__isnull=False)
         | Q(created_revisions__isnull=False)
         | Q(gallery_images__isnull=False)
-        | Q(gallery_videos__isnull=False)
         | Q(outbox__isnull=False)
         | Q(poll_votes__isnull=False)
         | Q(post__isnull=False)
