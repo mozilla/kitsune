@@ -554,11 +554,6 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             '<button type="submit" class="submit-button search-button" title="' + gettext('Search Gallery') + '">' +
             gettext('Search Gallery') + '</button>' +
           '</form>' +
-          '<div class="type">' +
-            '<span>' + gettext('Show:') + '</span>' +
-            '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
-            '<li data-type="video">' + gettext('Videos') + '</li></ol>' +
-          '</div>' +
           '<div class="locale-filter">' + gettext('Show media for:') + ' <select></select>' +
           '</div>' +
         '</div>' +
@@ -572,25 +567,10 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
       '</section>'
   ),
       selectedText = me.getSelectedText(),
-      mediaType = $html.find('div.type li.selected').data('type'),
       mediaQ = '',
       mediaLocale = $('html').attr('lang'),
       mediaPage = 1,
       kbox;
-
-    // Handle Images/Videos filter
-    $html.find('div.type li').on("click", function(e) {
-      var $this = $(this);
-      if (!$this.is('.selected')) {
-        $html.find('div.type li.selected').removeClass('selected');
-        $this.addClass('selected');
-        mediaType = $this.data('type');
-        mediaPage = 1;
-        updateResults();
-      }
-      e.preventDefault();
-      return false;
-    });
 
     // Handle locale filter
     var $lf = $html.find('div.locale-filter select');
@@ -631,12 +611,11 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
 
       var $selected = $html.find('#media-list > li.selected');
       if ($selected.length < 1) {
-        alert(gettext('Please select an image or video to insert.'));
+        alert(gettext('Please select an image to insert.'));
         return false;
       }
 
-      me.openTag = '[[';
-      me.openTag += (mediaType === 'image') ? 'Image' : 'Video';
+      me.openTag = '[[Image';
       me.openTag += ':' + $selected.find('a').attr('title') + ']] ';
 
       me.handleClick(e);
@@ -651,7 +630,7 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
       $.ajax({
         url: mediaSearchUrl,
         type: 'GET',
-        data: {type: mediaType, q: mediaQ, page: mediaPage,
+        data: {q: mediaQ, page: mediaPage,
           locale: mediaLocale},
         dataType: 'html',
         success: function(html) {

@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
@@ -37,7 +36,7 @@ def create_image(files, user):
 
     name = escape(up_file.name)
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
-    delete_url = reverse("gallery.delete_media", args=["image", image.id])
+    delete_url = reverse("gallery.delete_media", args=[image.id])
     return {
         "name": name,
         "url": image.get_absolute_url(),
@@ -54,9 +53,9 @@ def upload_image(request):
 
 
 def check_media_permissions(media, user, perm_type):
-    """Checks the permissions for user on media (image or video).
+    """Checks the permissions for user on media.
 
-    Pass in: * media object (Image or Video)
+    Pass in: * media object (Image)
              * (logged in) user
              * perm_type = 'delete', 'change', 'add'
     Raises PermissionDenied if not allowed. Owner is always allowed.

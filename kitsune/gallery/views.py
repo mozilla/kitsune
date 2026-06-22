@@ -4,7 +4,6 @@ import logging
 from django.conf import settings
 from django.db.models import Q
 from django.http import (
-    Http404,
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseRedirect,
@@ -19,7 +18,7 @@ from PIL import UnidentifiedImageError
 from kitsune.access.decorators import login_required
 from kitsune.gallery import ITEMS_PER_PAGE
 from kitsune.gallery.forms import ImageForm
-from kitsune.gallery.models import Image, Video
+from kitsune.gallery.models import Image
 from kitsune.gallery.utils import check_media_permissions, upload_image
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
@@ -30,23 +29,13 @@ from kitsune.wiki.tasks import schedule_rebuild_kb
 log = logging.getLogger("k.gallery")
 
 
-def gallery(request, media_type="image"):
-    """The media gallery.
-
-    Filter can be set to 'images' or 'videos'.
-
-    """
-    if media_type == "image":
-        media_qs = Image.objects.filter(locale=request.LANGUAGE_CODE)
-    elif media_type == "video":
-        media_qs = Video.objects.filter(locale=request.LANGUAGE_CODE)
-    else:
-        raise Http404
-
+def gallery(request):
+    """The media gallery."""
+    media_qs = Image.objects.filter(locale=request.LANGUAGE_CODE)
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
     drafts = _get_drafts(request.user)
-    image = drafts["image"][0] if drafts["image"] else None
+    image = drafts[0] if drafts else None
     image_form = _init_media_form(ImageForm, request, image)
     if request.method == "POST":
         image_form.is_valid()
@@ -56,7 +45,6 @@ def gallery(request, media_type="image"):
         "gallery/gallery.html",
         {
             "media": media,
-            "media_type": media_type,
             "image_form": image_form,
             "submitted": request.method == "POST",
             "locale": request.LANGUAGE_CODE,
@@ -66,12 +54,12 @@ def gallery(request, media_type="image"):
 
 @login_required
 @require_POST
-def upload(request, media_type="image"):
+def upload(request):
     """Finalizes an uploaded draft."""
     drafts = _get_drafts(request.user)
-    if media_type == "image" and drafts["image"]:
+    if drafts:
         # We're publishing an image draft!
-        image_form = _init_media_form(ImageForm, request, drafts["image"][0])
+        image_form = _init_media_form(ImageForm, request, drafts[0])
         if image_form.is_valid():
             img = image_form.save(is_draft=None)
             generate_thumbnail.delay("gallery.Image", img.id, "file", "thumbnail")
@@ -80,19 +68,18 @@ def upload(request, media_type="image"):
             schedule_rebuild_kb()
             return HttpResponseRedirect(img.get_absolute_url())
         else:
-            return gallery(request, media_type="image")
+            return gallery(request)
 
     return HttpResponseBadRequest("Unrecognized POST request.")
 
 
 @login_required
 @require_POST
-def cancel_draft(request, media_type="image"):
+def cancel_draft(request):
     """Delete an existing draft for the user."""
     drafts = _get_drafts(request.user)
-    if media_type == "image" and drafts["image"]:
-        drafts["image"].delete()
-        drafts["image"] = None
+    if drafts:
+        drafts.delete()
     else:
         msg = _("Unrecognized request or nothing to cancel.")
         content_type = None
@@ -104,7 +91,7 @@ def cancel_draft(request, media_type="image"):
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return HttpResponse(json.dumps({"status": "success"}), content_type="application/json")
 
-    return HttpResponseRedirect(reverse("gallery.gallery", args=[media_type]))
+    return HttpResponseRedirect(reverse("gallery.gallery"))
 
 
 def gallery_async(request):
@@ -113,18 +100,9 @@ def gallery_async(request):
     Returns an HTML list representation of the media.
 
     """
-    # Maybe refactor this into existing views and check request.is_ajax?
-    media_type = request.GET.get("type", "image")
     term = request.GET.get("q")
     media_locale = request.GET.get("locale", settings.WIKI_DEFAULT_LANGUAGE)
-    if media_type == "image":
-        media_qs = Image.objects
-    elif media_type == "video":
-        media_qs = Video.objects
-    else:
-        raise Http404
-
-    media_qs = media_qs.filter(locale=media_locale)
+    media_qs = Image.objects.filter(locale=media_locale)
 
     if term:
         media_qs = media_qs.filter(Q(title__icontains=term) | Q(description__icontains=term))
@@ -134,34 +112,25 @@ def gallery_async(request):
     return render(request, "gallery/includes/media_list.html", {"media_list": media})
 
 
-def search(request, media_type):
+def search(request):
     """Search the media gallery."""
 
     term = request.GET.get("q")
     if not term:
-        url = reverse("gallery.gallery", args=[media_type])
-        return HttpResponseRedirect(url)
+        return HttpResponseRedirect(reverse("gallery.gallery"))
 
     filter = Q(title__icontains=term) | Q(description__icontains=term)
-
-    if media_type == "image":
-        media_qs = Image.objects.filter(filter, locale=request.LANGUAGE_CODE)
-    elif media_type == "video":
-        media_qs = Video.objects.filter(filter, locale=request.LANGUAGE_CODE)
-    else:
-        raise Http404
+    media_qs = Image.objects.filter(filter, locale=request.LANGUAGE_CODE)
 
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
-    return render(
-        request, "gallery/search.html", {"media": media, "media_type": media_type, "q": term}
-    )
+    return render(request, "gallery/search.html", {"media": media, "q": term})
 
 
 @login_required
-def delete_media(request, media_id, media_type="image"):
+def delete_media(request, media_id):
     """Delete media and redirect to gallery view."""
-    media, media_format = _get_media_info(media_id, media_type)
+    media, media_format = _get_media_info(media_id)
 
     check_media_permissions(media, request.user, "delete")
 
@@ -170,32 +139,29 @@ def delete_media(request, media_id, media_type="image"):
         return render(
             request,
             "gallery/confirm_media_delete.html",
-            {"media": media, "media_type": media_type, "media_format": media_format},
+            {"media": media, "media_format": media_format},
         )
 
     # Handle confirm delete form POST
-    log.warning("User {} is deleting {} with id={}".format(request.user, media_type, media.id))
+    log.warning("User {} is deleting image with id={}".format(request.user, media.id))
     media.delete()
     # Rebuild KB
     schedule_rebuild_kb()
-    return HttpResponseRedirect(reverse("gallery.gallery", args=[media_type]))
+    return HttpResponseRedirect(reverse("gallery.gallery"))
 
 
 @login_required
-def edit_media(request, media_id, media_type="image"):
+def edit_media(request, media_id):
     """Edit media means only changing the description, for now."""
-    media, media_format = _get_media_info(media_id, media_type)
+    media, media_format = _get_media_info(media_id)
 
     check_media_permissions(media, request.user, "change")
 
-    if media_type == "image":
-        media_form = _init_media_form(ImageForm, request, media, ("locale", "title"))
-    else:
-        raise Http404
+    media_form = _init_media_form(ImageForm, request, media, ("locale", "title"))
 
     if request.method == "POST" and media_form.is_valid():
         media = media_form.save(update_user=request.user, is_draft=None)
-        return HttpResponseRedirect(reverse("gallery.media", args=[media_type, media_id]))
+        return HttpResponseRedirect(reverse("gallery.media", args=[media_id]))
 
     return render(
         request,
@@ -204,34 +170,29 @@ def edit_media(request, media_id, media_type="image"):
             "media": media,
             "media_format": media_format,
             "form": media_form,
-            "media_type": media_type,
         },
     )
 
 
-def media(request, media_id, media_type="image"):
+def media(request, media_id):
     """The media page."""
-    media, media_format = _get_media_info(media_id, media_type)
+    media, media_format = _get_media_info(media_id)
     return render(
         request,
         "gallery/media.html",
-        {"media": media, "media_format": media_format, "media_type": media_type},
+        {"media": media, "media_format": media_format},
     )
 
 
 @login_required
 @require_POST
 @xframe_options_sameorigin
-def upload_async(request, media_type="image"):
-    """Upload images or videos from request.FILES."""
+def upload_async(request):
+    """Upload images from request.FILES."""
     # TODO(paul): validate the Submit File on upload modal async
     #             even better, use JS validation for title length.
     try:
-        if media_type == "image":
-            file_info = upload_image(request)
-        else:
-            msg = _("Unrecognized media type.")
-            return HttpResponseBadRequest(json.dumps({"status": "error", "message": msg}))
+        file_info = upload_image(request)
     except FileTooLargeError as e:
         return HttpResponseBadRequest(json.dumps({"status": "error", "message": e.args[0]}))
 
@@ -245,39 +206,32 @@ def upload_async(request, media_type="image"):
     )
 
 
-def _get_media_info(media_id, media_type):
-    """Returns an image or video along with media format for the image."""
+def _get_media_info(media_id):
+    """Returns an image along with its media format."""
     media_format = None
-    if media_type == "image":
-        media = get_object_or_404(Image, pk=media_id)
-        try:
-            with PILImage.open(media.file.file) as img:
-                media_format = img.format.lower() if img.format else None
-        except (UnidentifiedImageError, OSError):
-            pass
-    elif media_type == "video":
-        media = get_object_or_404(Video, pk=media_id)
-    else:
-        raise Http404
+    media = get_object_or_404(Image, pk=media_id)
+    try:
+        with PILImage.open(media.file.file) as img:
+            media_format = img.format.lower() if img.format else None
+    except UnidentifiedImageError, OSError:
+        pass
     return (media, media_format)
 
 
 def _get_drafts(user):
-    """Get video and image drafts for a given user."""
-    drafts = {"image": None, "video": None}
+    """Get the image drafts for a given user."""
     if user.is_authenticated:
-        drafts["image"] = Image.objects.filter(creator=user, is_draft=True)
-        drafts["video"] = Video.objects.filter(creator=user, is_draft=True)
-    return drafts
+        return Image.objects.filter(creator=user, is_draft=True)
+    return Image.objects.none()
 
 
 def _init_media_form(form_cls, request=None, obj=None, ignore_fields=()):
-    """Initializes the media form with an Image/Video instance and POSTed data.
+    """Initializes the media form with an Image instance and POSTed data.
 
     form_cls is a django ModelForm
     Request method must be POST for POST data to be bound.
     exclude_fields contains the list of fields to default to their current
-    value from the Image/Video object.
+    value from the Image object.
 
     """
     post_data = None

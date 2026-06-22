@@ -42,10 +42,6 @@ class MediaGallery(BasePage):
         self.insert_media_panel = page.locator("div#media-modal")
         self.search_gallery_searchbox_modal = page.locator("form#gallery-modal-search input")
         self.search_gallery_search_button_modal = page.locator("form#gallery-modal-search button")
-        self.show_images_filter = page.locator("div[class='type'] ol").get_by_role(
-            "listitem", name="Images", exact=True)
-        self.show_videos_filter = page.locator("div[class='type'] ol").get_by_role(
-            "listitem", name="Videos", exact=True)
         self.cancel_media_insert_button = page.locator("a[href='#cancel']")
         self.upload_media_button = page.locator("//form[@id='gallery-upload-image']//"
                                                 "input[@value='Upload']")
@@ -182,14 +178,6 @@ class MediaGallery(BasePage):
         panel.
         """
         self._click(self.search_gallery_search_button_modal)
-
-    def click_on_images_filter(self):
-        """Click on the 'Images' filter form the 'Insert media...' modal."""
-        self._click(self.show_images_filter)
-
-    def click_on_videos_filter(self):
-        """Click on the 'Videos' filter from the 'Insert media...' modal."""
-        self._click(self.show_videos_filter)
 
     def click_on_cancel_media_insert(self):
         """Click on the 'Cancel' button from the 'Insert media...' modal."""

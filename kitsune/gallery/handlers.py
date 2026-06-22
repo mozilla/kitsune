@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from kitsune.gallery.models import Image, Video
+from kitsune.gallery.models import Image
 from kitsune.users.handlers import UserDeletionListener
 from kitsune.users.models import Profile
 
@@ -13,4 +13,3 @@ class MediaListener(UserDeletionListener):
 
         sumo_bot = Profile.get_sumo_bot()
         Image.objects.filter(creator=user).update(creator=sumo_bot)
-        Video.objects.filter(creator=user).update(creator=sumo_bot)

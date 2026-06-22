@@ -844,11 +844,6 @@ LOGOUT_URL = "/users/logout"
 LOGIN_REDIRECT_URL = "/"
 REGISTER_URL = "/users/register"
 
-# Video settings, hard coded here for now.
-# TODO: figure out a way that doesn't need these values
-WIKI_VIDEO_WIDTH = 640
-WIKI_VIDEO_HEIGHT = 480
-
 IMAGE_MAX_FILESIZE = 10485760  # 10 megabytes, in bytes
 IMAGE_MAX_PIXELS = 20_000_000  # 20 megapixels
 THUMBNAIL_SIZE = 120  # Thumbnail size, in pixels
@@ -961,10 +956,6 @@ WIKI_DEFAULT_LANGUAGE = LANGUAGE_CODE
 GALLERY_DEFAULT_LANGUAGE = WIKI_DEFAULT_LANGUAGE
 GALLERY_IMAGE_PATH = "uploads/gallery/images/"
 GALLERY_IMAGE_THUMBNAIL_PATH = "uploads/gallery/images/thumbnails/"
-GALLERY_VIDEO_PATH = "uploads/gallery/videos/"
-GALLERY_VIDEO_URL = MEDIA_URL + "uploads/gallery/videos/"
-GALLERY_VIDEO_THUMBNAIL_PATH = "uploads/gallery/videos/thumbnails/"
-GALLERY_VIDEO_THUMBNAIL_PROGRESS_URL = MEDIA_URL + "img/video-thumb.png"
 THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
 THUMBNAIL_PROGRESS_HEIGHT = 32  # height of the above image
 VIDEO_MAX_FILESIZE = 52428800  # 50 megabytes, in bytes

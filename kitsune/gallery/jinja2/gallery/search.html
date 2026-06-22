@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% set title = _('Media Gallery Search') %}
 {% set scripts = ('wiki',) %}
-{% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),
+{% set crumbs = [(url('gallery.gallery'), _('Media Gallery')),
                  (None, _('Search'))] %}
 
 {% block above_main %}
@@ -12,7 +12,7 @@
   <article id="gallery-list" class="main">
     <div class="cf">
       <div class="grid_6">
-        <form action="{{ url('gallery.search', media_type) }}" method="get" class="simple-search-form" id="gallery-search">
+        <form action="{{ url('gallery.search') }}" method="get" class="simple-search-form" id="gallery-search">
           <input class="searchbox" type="search" autocomplete="off" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
           <button class="submit-button" title="{{ _('Search') }}" type="submit">
           </button>
@@ -32,17 +32,6 @@
               <input type="submit" value="{{ _('Go') }}">
             </noscript>
           </form>
-        </div>
-        <div id="media-type-filter">
-          <span>{{ _("Show:") }}</span>
-          <select id="media-type-select">
-            <option {% if media_type == 'image' %}selected="selected"{% endif %} value="{{ url('gallery.search', 'image')|urlparams(q=q) }}">{{ _('Images') }}</option>
-            <option {% if media_type == 'video' %}selected="selected"{% endif %} value="{{ url('gallery.search', 'video')|urlparams(q=q) }}">{{ _('Videos') }}</option>
-          </select>
-          <noscript>
-            <a href="{{ url('gallery.search', 'image')|urlparams(q=q) }}">{{ _('Images') }}</a> |
-            <a href="{{ url('gallery.search', 'video')|urlparams(q=q) }}">{{ _('Videos') }}</a>
-          </noscript>
         </div>
       </div>
     </div>

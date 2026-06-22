@@ -29,7 +29,7 @@
 {% macro submit_row(form, type) %}
   <div class="upload-action sumo-button-wrap reverse-on-desktop align-full">
     <input type="submit" class="sumo-button primary-button" name="upload" value="{{ _('Upload') }}">
-    <input type="submit" name="cancel" class="sumo-button kbox-cancel {% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}" value="{{ _('Cancel') }}">
+    <input type="submit" name="cancel" class="sumo-button kbox-cancel {% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft') }}" value="{{ _('Cancel') }}">
   </div>
 {% endmacro %}
 
@@ -43,7 +43,7 @@
       {% endif %}
     </div>
     <input type="submit" name="cancel" class="sumo-button button-sm draft link-btn"
-      data-name="{{ name }}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}"
+      data-name="{{ name }}" data-action="{{ url('gallery.cancel_draft') }}"
       value="{{ _('Delete this image') }}" />
   </div>
   {% endif %}
@@ -53,7 +53,7 @@
     {{ form_row(form, name, classes='upload-media') }}
     {{ raw_row('<div class="progress-message"></div><a class="{name} sumo-button" data-type="{name}" href="{url}">{text}</a>'|fe(
                  name=name, text=_('Cancel'),
-                 url=url('gallery.gallery', media_type=media_type)),
+                 url=url('gallery.gallery')),
                'progress ' + name, _('Progress')) }}
     {{ image_preview(form, type, name) }}
 {% endmacro %}
@@ -81,9 +81,9 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
   data-id="upload-kbox"
   data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
   <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
-    data-post-url="{{ url('gallery.upload_async', media_type='image') }}"
+    data-post-url="{{ url('gallery.upload_async') }}"
     method="post" enctype="multipart/form-data"
-    action="{{ url('gallery.upload', media_type='image') }}"
+    action="{{ url('gallery.upload') }}"
     data-file="{{ 1 if image_form.instance.file else 0 }}">
     {% csrf_token %}
     {# TODO: test for errors only shown during post. #}

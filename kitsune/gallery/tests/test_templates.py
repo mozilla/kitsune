@@ -1,7 +1,7 @@
 from pyquery import PyQuery as pq
 
-from kitsune.gallery.models import Image, Video
-from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.gallery.models import Image
+from kitsune.gallery.tests import ImageFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase, get, post
 from kitsune.sumo.urlresolvers import reverse
@@ -20,7 +20,7 @@ class GalleryPageCase(TestCase):
 
         """
         img = ImageFactory()
-        response = get(self.client, "gallery.gallery", args=["image"])
+        response = get(self.client, "gallery.gallery")
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         imgs = doc("#media-list li img")
@@ -30,14 +30,14 @@ class GalleryPageCase(TestCase):
     def test_gallery_locale(self):
         """Test that images only show for their set locale."""
         ImageFactory(locale="es")
-        url = reverse("gallery.gallery", args=["image"])
+        url = reverse("gallery.gallery")
         response = self.client.get(url, follow=True)
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         imgs = doc("#media-list li img")
         self.assertEqual(0, len(imgs))
 
-        locale_url = reverse("gallery.gallery", locale="es", args=["image"])
+        locale_url = reverse("gallery.gallery", locale="es")
         response = self.client.get(locale_url, follow=True)
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
@@ -89,13 +89,12 @@ class GalleryUploadTestCase(TestCase):
 
     def tearDown(self):
         Image.objects.all().delete()
-        Video.objects.all().delete()
         super().tearDown()
 
     def test_image_draft_shows(self):
         """The image draft is loaded for this user."""
         img = ImageFactory(is_draft=True, creator=self.u)
-        response = get(self.client, "gallery.gallery", args=["image"])
+        response = get(self.client, "gallery.gallery")
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         assert doc(".file.preview img").attr("src").endswith(img.file.name)
@@ -108,26 +107,15 @@ class GalleryUploadTestCase(TestCase):
             self.client,
             "gallery.gallery",
             {"description": "??", "title": "test"},
-            args=["image"],
         )
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        # Preview for all 3 video formats: flv, ogv, webm
         self.assertEqual("??", doc("#gallery-upload-modal textarea").html().strip())
         self.assertEqual("test", doc('#gallery-upload-modal input[name="title"]').val())
 
-    def test_video_draft_post(self):
-        """Posting to the page saves the field values for the video draft."""
-        VideoFactory(is_draft=True, creator=self.u)
-        response = post(self.client, "gallery.gallery", {"title": "zTestz"}, args=["image"])
-        self.assertEqual(200, response.status_code)
-        doc = pq(response.content)
-        # Preview for all 3 video formats: flv, ogv, webm
-        self.assertEqual("zTestz", doc('#gallery-upload-modal input[name="title"]').val())
-
     def test_modal_locale_selected(self):
         """Locale value is selected for upload modal."""
-        response = get(self.client, "gallery.gallery", args=["image"], locale="fr")
+        response = get(self.client, "gallery.gallery", locale="fr")
         doc = pq(response.content)
         self.assertEqual("fr", doc('#gallery-upload-image option[selected="selected"]').val())
 

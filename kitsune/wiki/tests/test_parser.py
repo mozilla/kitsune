@@ -2,12 +2,10 @@ import re
 from unittest.mock import patch
 
 from django.conf import settings
-from django.test.utils import override_settings
 from pyquery import PyQuery as pq
 
 import kitsune.sumo.tests.test_parser
-from kitsune.gallery.models import Video
-from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.gallery.tests import ImageFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import GroupFactory
 from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
@@ -598,77 +596,11 @@ class TestWikiTemplateRestricted(TestCase):
 class TestWikiVideo(TestCase):
     """Video hook."""
 
-    def tearDown(self):
-        Video.objects.all().delete()
-        super().tearDown()
-
-    def test_video_english(self):
-        """Video is created and found in English."""
-        v = VideoFactory()
-        d = ApprovedRevisionFactory(content="[[V:{}]]".format(v.title)).document
-        doc = pq(d.html)
-        self.assertEqual("video", doc("div.video").attr("class"))
-        self.assertEqual(
-            doc("video").html(),
-            (
-                f'<source src="{v.webm.url}" type="video/webm">'
-                f'<source src="{v.ogv.url}" type="video/ogg"/>'
-                "</source>"
-            ),
-        )
-        self.assertEqual(1, len(doc("video")))
-        self.assertEqual(2, len(doc("source")))
-        data_fallback = doc("video").attr("data-fallback")
-        self.assertEqual(v.flv.url, data_fallback)
-
-    def test_video_fallback_french(self):
-        """English video is found in French."""
-        p = WikiParser()
-        v = VideoFactory()
-        doc = pq(p.parse("[[V:{}]]".format(v.title), locale="fr"))
-        self.assertEqual("video", doc("div.video").attr("class"))
-        self.assertEqual(1, len(doc("video")))
-        self.assertEqual(2, len(doc("source")))
-        data_fallback = doc("video").attr("data-fallback")
-        self.assertEqual(Video.objects.all()[0].flv.url, data_fallback)
-
     def test_video_not_exist(self):
         """Video does not exist."""
         p = WikiParser()
         doc = pq(p.parse("[[V:404]]", locale="fr"))
         self.assertEqual("La vidéo « 404 » n’existe pas.", doc.text().replace("\xa0", " "))
-
-    def test_video_modal(self):
-        """Video modal defaults for plcaeholder and text."""
-        v = VideoFactory()
-        replacement = '<img class="video-thumbnail" src="{}"/>'.format(v.thumbnail_url_if_set())
-        d = ApprovedRevisionFactory(content="[[V:{}|modal]]".format(v.title)).document
-        doc = pq(d.html)
-        self.assertEqual(v.title, doc(".video-modal")[0].attrib["title"])
-        self.assertEqual(1, doc(".video video").length)
-        self.assertEqual(replacement, doc(".video-placeholder").html().strip())
-        self.assertEqual("video modal-trigger", doc("div.video").attr("class"))
-
-    def test_video_modal_caption_text(self):
-        """Video modal can change title and placeholder text."""
-        v = VideoFactory()
-        r = ApprovedRevisionFactory(
-            content="[[V:{}|modal|placeholder=Place<b>holder</b>|title=WOOT]]".format(v.title)
-        )
-        d = r.document
-        doc = pq(d.html)
-        self.assertEqual("WOOT", doc(".video-modal")[0].attrib["title"])
-        self.assertEqual("Place<b>holder</b>", doc(".video-placeholder").html().strip())
-
-    @override_settings(GALLERY_VIDEO_URL="http://videos.mozilla.org/serv/sumo/")
-    def test_video_cdn(self):
-        """Video URLs can link to the CDN if a CDN setting is set."""
-        v = VideoFactory()
-        d = ApprovedRevisionFactory(content="[[V:{}]]".format(v.title)).document
-        doc = pq(d.html)
-        assert settings.GALLERY_VIDEO_URL in doc("source").eq(1).attr("src")
-        assert settings.GALLERY_VIDEO_URL in doc("video").attr("data-fallback")
-        assert settings.GALLERY_VIDEO_URL in doc("source").eq(0).attr("src")
 
     def test_youtube_video(self):
         """Verify youtube embeds."""
