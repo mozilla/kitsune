@@ -33,6 +33,13 @@ urlpatterns = [
         views.aggregated_metrics,
         name="dashboards.aggregated_metrics",
     ),
+    # JSON data feeding the kb metrics dashboards (must precede the per-locale
+    # pattern below, which would otherwise match "metrics/data").
+    re_path(
+        r"^kb/dashboard/metrics/data$",
+        views.wiki_metrics_data,
+        name="dashboards.wiki_metrics_data",
+    ),
     # The per-locale kb metrics dashboard.
     re_path(
         r"^kb/dashboard/metrics/(?P<locale_code>[^/]+)$",
