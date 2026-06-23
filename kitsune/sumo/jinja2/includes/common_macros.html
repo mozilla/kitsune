@@ -884,8 +884,13 @@
   {% call announcement_bar('foo', 'info') %}
     This is the contents of the bar.
   {% endcall %}
+
+  Pass wrap_content=False when the caller already supplies block-level HTML
+  (e.g. paragraphs produced by wiki_to_html). Wrapping such content in a <p>
+  would nest block elements inside an inline paragraph, which browsers
+  recover from by inserting empty paragraphs (see mozilla/sumo#3065).
 #}
-{% macro announcement_bar(id, level, close_memory="", close_type="") -%}
+{% macro announcement_bar(id, level, close_memory="", close_type="", wrap_content=True) -%}
   {% set content = caller() %}
   {% if content %}
     <div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}"
@@ -894,7 +899,7 @@
         {% if close_memory %}data-close-memory="{{ close_memory }}" {% endif %}
         {% if close_type %}data-close-type="{{ close_type }}" {% endif %}>
       </button>
-      <p>{{ content }}</p>
+      {% if wrap_content %}<p>{{ content }}</p>{% else %}{{ content }}{% endif %}
     </div>
   {% endif %}
 {% endmacro %}

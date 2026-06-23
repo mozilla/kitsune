@@ -61,6 +61,13 @@
   }
 }
 
+// Announcement bars hug their content. The shared 46px min-height leaves a
+// single line looking bottom-heavy (multi-line bars already exceed it). Scoped
+// to #announcements so other notification bars keep their minimum height.
+#announcements .mzp-c-notification-bar {
+  min-height: 0;
+}
+
 #announce-geoip-suggestion {
   display: none;
 
