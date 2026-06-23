@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from django.conf import settings
@@ -16,10 +16,10 @@ from kitsune.wiki.content_managers import (
     ManualContentManager,
     WikiContentManager,
 )
-from kitsune.wiki.models import Revision
+from kitsune.wiki.models import Revision, RevisionTranslationRecord
 
 
-class TranslationTrigger(str, Enum):
+class TranslationTrigger(StrEnum):
     """Available translation triggers."""
 
     REVIEW_REVISION = "review_revision"
@@ -144,10 +144,25 @@ class TranslationStrategy(AbstractTranslationStrategy):
     def _log_operation(
         self, l10n_request: TranslationRequest, translation_result: TranslationResult
     ) -> None:
-        # TODO: Future enhancement - log all operations to database
-        # This will track: revision_id, strategy_used, timestamps, outcomes
-        # self._log_operation(l10n_request, result)
-        pass
+        """Record the LLM's explanation for AI and hybrid translations.
+
+        Only operations that produced a revision and carry an LLM explanation are
+        recorded (i.e. AI and hybrid). Manual operations have no explanation, so they
+        are skipped.
+        """
+        explanation = translation_result.metadata.get("explanation")
+        if not (translation_result.success and translation_result.revision and explanation):
+            return
+
+        RevisionTranslationRecord.objects.update_or_create(
+            revision=translation_result.revision,
+            defaults={
+                "locale": l10n_request.target_locale,
+                "explanation": explanation,
+                "trigger": l10n_request.trigger,
+                "method": translation_result.method,
+            },
+        )
 
 
 @dataclass
@@ -252,7 +267,9 @@ class AITranslationStrategy(TranslationStrategy):
             "translated_content": translated_content,
         }
 
-        rev = self.content_manager.create_revision(data, doc, send_notifications=send_notifications)
+        rev = self.content_manager.create_revision(
+            data, doc, send_notifications=send_notifications
+        )
         if publish:
             rev = self.content_manager.publish_revision(rev, send_notifications=send_notifications)
 
@@ -283,10 +300,13 @@ class HybridTranslationStrategy(TranslationStrategy):
         self.content_manager = HybridContentManager()
 
     def translate(self, l10n_request: TranslationRequest) -> TranslationResult:
-        """Perform hybrid translation."""
-        result = AITranslationStrategy().translate(l10n_request, publish=False)
-        result.method = TranslationMethod.HYBRID
-        return result
+        """Perform hybrid translation.
+
+        The created revision is left unpublished, awaiting human review. The result's
+        method is the request's method (HYBRID), since AITranslationStrategy.translate
+        derives it from the request rather than hardcoding it.
+        """
+        return AITranslationStrategy().translate(l10n_request, publish=False)
 
 
 class TranslationStrategyFactory:

@@ -1401,6 +1401,9 @@ HYBRID_REVIEW_GRACE_PERIOD = config(
 STALE_ANCHOR_RECORD_RETENTION_DAYS = config(
     "STALE_ANCHOR_RECORD_RETENTION_DAYS", default=90, cast=int
 )
+TRANSLATION_RECORD_RETENTION_DAYS = config(
+    "TRANSLATION_RECORD_RETENTION_DAYS", default=180, cast=int
+)
 
 # Threshold for how long inactive users are allowed to remain in groups.
 INACTIVE_GROUP_MEMBER_RETENTION_DAYS = config(
