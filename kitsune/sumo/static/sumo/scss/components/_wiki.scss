@@ -386,7 +386,6 @@ article {
 
     .creator {
       width: 300px;
-      overflow: auto;
     }
 
     .comment {
@@ -400,6 +399,14 @@ article {
 
   .creator {
     color: #333;
+    // Long display names/usernames without spaces would otherwise expand this
+    // column and force the whole table to overflow horizontally, so allow them
+    // to wrap within the column. Keep room for a minimum number of characters
+    // too, otherwise on narrow screens the column collapses to the width of a
+    // single character.
+    min-width: 16ch;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
 
