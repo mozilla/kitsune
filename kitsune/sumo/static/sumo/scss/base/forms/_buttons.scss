@@ -181,6 +181,9 @@
       background-repeat: no-repeat;
       background-position: center center;
       content: "";
+      .html-rtl & {
+        transform: scaleX(-1);
+      }
     }
   }
 
