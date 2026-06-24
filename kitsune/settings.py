@@ -32,6 +32,12 @@ SYSLOG_TAG = "http_sumo_app"
 # Repository directory.
 ROOT = os.path.dirname(os.path.dirname(__file__))
 
+# Dockerflow's `/__version__` view reads `version.json` from `settings.BASE_DIR`
+# (see dockerflow.django.views.version). CI writes that file to the repo root,
+# which is `ROOT`, so point BASE_DIR there. Without this the view raises
+# AttributeError and `/__version__` returns a 500.
+BASE_DIR = ROOT
+
 # Django project directory.
 PROJECT_ROOT = os.path.dirname(__file__)
 
