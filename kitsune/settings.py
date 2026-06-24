@@ -1256,8 +1256,8 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [NONE],
         "script-src": [
-            # Third-party scripts injected at runtime without our nonce, so they
-            # must stay host-allowlisted (don't add 'strict-dynamic').
+            # Host-allowlisted, not nonce-based: the nonce is unreliable behind caching.
+            "https://*.webservices.mozgcp.net",
             "https://www.googletagmanager.com",
             "https://www.google-analytics.com",
             f"https://{MATOMO_MZLA_CDN_HOST}",
