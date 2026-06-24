@@ -5,6 +5,7 @@ from django.test.client import RequestFactory
 from django.utils import translation
 from pyquery import PyQuery as pq
 
+from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -72,6 +73,21 @@ class BaseTemplateTests(MockRequestTests):
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         self.assertEqual("false", doc("body")[0].attrib["data-readonly"])
+
+    def test_announcement_bar_no_empty_paragraphs(self):
+        """
+        Announcement content is already block-level HTML, so it must not be
+        re-wrapped in a <p>, and check that trailing blank lines in the source
+        are stripped.
+        """
+        self.request.user = UserFactory()
+        # Two real paragraphs plus a trailing blank line, exercising both the
+        # double-wrap and the trailing-empty-paragraph failure modes.
+        announcement = AnnouncementFactory(content="First line.\n\nSecond line.\n\n")
+        html = render_to_string(self.template, request=self.request)
+        paragraphs = pq(html)("#announce-{} p".format(announcement.id))
+        # Exactly the two authored paragraphs (no extra empty ones).
+        self.assertEqual(2, len(paragraphs))
 
     @override_settings(READ_ONLY=True)
     def test_readonly_login_link_disabled(self):
