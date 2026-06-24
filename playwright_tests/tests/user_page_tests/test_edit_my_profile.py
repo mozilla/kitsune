@@ -168,10 +168,13 @@ def test_cancel_profile_edit(page: Page, create_user_factory):
     with allure.step("Populating edit profile fields with data"):
         sumo_pages.edit_profile_flow.edit_profile_with_test_data()
 
-    with allure.step("Clicking on the 'Cancel' button and verifying that we are on the same "
-                     "page and all input field values were reverted back to original"):
-        sumo_pages.edit_my_profile_page.click_cancel_button()
+    with check, allure.step("Clicking on the 'Cancel' button and verifying that we are redirected "
+                            "back to the profile page"):
+        sumo_pages.edit_my_profile_page.click_cancel_button(test_user["username"])
 
+    with allure.step("Clicking on the edit profile button and verifying that the values remained "
+                     "the same"):
+        sumo_pages.top_navbar.click_on_edit_profile_option()
         assert sumo_pages.edit_my_profile_page.get_value_of_all_fields() == original_values
 
 

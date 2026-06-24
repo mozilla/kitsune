@@ -67,6 +67,21 @@ class CommonWebElements(BasePage):
         self.next_pagination_item= page.locator(
             "//ol[@class='pagination']//span[text()='Next']/..")
 
+        """Locators belonging to the 'Contributor tools' side navbar
+        (nav#for-contributors-sidebar) which is common to several SUMO pages (e.g. the media
+        gallery, dashboards, recent revisions) and displayed for any signed-in user.
+        """
+        self.contributor_tools_side_navbar = page.locator("nav#for-contributors-sidebar")
+        self.contributor_tools_side_navbar_heading = page.locator(
+            "nav#for-contributors-sidebar li.sidebar-subheading")
+        self.contributor_tools_side_navbar_option = lambda option_name: page.locator(
+            "nav#for-contributors-sidebar ul.sidebar-nav--list").get_by_role(
+            "link", name=option_name, exact=True)
+        self.contributor_tools_side_navbar_selected_option = page.locator(
+            "nav#for-contributors-sidebar a.selected")
+        self.contributor_tools_side_navbar_show_more_button = page.locator(
+            "nav#for-contributors-sidebar a#show-more-link")
+
 
     """Actions against the announcement banner locators."""
     def click_on_announcement_banner_close_button(self, banner_id: str):
@@ -162,3 +177,16 @@ class CommonWebElements(BasePage):
     def is_next_pagination_item_visible(self) -> bool:
         """Return if the next pagination item is visible or not."""
         return self._is_element_visible(self.next_pagination_item)
+
+    """Actions against the 'Contributor tools' side navbar."""
+    def click_on_a_contributor_tools_side_navbar_option(self, option_name: str):
+        """Click on a 'Contributor tools' side navbar option.
+
+        Args:
+            option_name (str): The name of the side navbar option to click on.
+        """
+        self._click(self.contributor_tools_side_navbar_option(option_name))
+
+    def click_on_contributor_tools_side_navbar_show_more_button(self):
+        """Expand the collapsible 'Show More' section of the 'Contributor tools' side navbar."""
+        self._click(self.contributor_tools_side_navbar_show_more_button)

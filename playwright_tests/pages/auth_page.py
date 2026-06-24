@@ -34,12 +34,23 @@ class AuthPage(BasePage):
         """Locators belonging to the fxa stage account page."""
         self.delete_fxa_account_button = page.locator("//a[@data-testid='settings-delete-account']")
         self.all_acknowledge_checkboxes = page.locator("//input[@data-testid='checkbox-input']")
+        self.change_password_button = page.locator("//a[@data-testid='password-unit-row-route']")
+        self.change_password_confirmation_field = page.locator(
+            "//input[@data-testid='input-field']")
+        self.change_password_confirmation_button = page.locator("//button[text()='Confirm']")
+        self.enter_current_password_input_field = page.locator(
+            "//input[@data-testid='current-password-input-field']")
+        self.enter_new_password_input_field = page.locator(
+            "//input[@data-testid='new-password-input-field']")
+        self.enter_new_password_confirm_input_field = page.locator(
+            "//input[@data-testid='verify-password-input-field']")
+        self.new_password_save_button = page.locator(
+            "//button[@data-testid='save-password-button']")
         self.delete_fxa_continue_button = page.locator("//button[@data-testid='continue-button']")
         self.password_confirmation_field = page.locator(
             "//input[@data-testid='delete-account-confirm-input-field']")
         self.password_confirmation_delete_button = page.locator(
-            "//button[@data-testid='delete-account-button']"
-        )
+            "//button[@data-testid='delete-account-button']")
         self.account_deleted_message = page.locator("//p[text()='Account deleted successfully']")
 
 
@@ -125,6 +136,31 @@ class AuthPage(BasePage):
     def click_on_delete_account_button(self):
         """Clicks on the 'Delete Account' button from the fxa page."""
         self._click(self.delete_fxa_account_button)
+
+    def click_on_change_password_button(self):
+        """Clicks on the 'Change password' button"""
+        self._click(self.change_password_button)
+
+    def add_password_change_confirmation_code(self, confirmation_code: str):
+        """Add confirmation code for password change
+
+        Args:
+            confirmation_code: The email sent confirmation code.
+        """
+        self._fill(self.change_password_confirmation_field, confirmation_code)
+        self._click(self.change_password_confirmation_button)
+
+    def change_fxa_password_form_completion(self, current_password: str, new_password: str):
+        """Add data inside the change password form fields.
+
+        Args:
+            current_password (str): The current FxA password.
+            new_password (str): The new FxA password.
+        """
+        self._fill(self.enter_current_password_input_field, current_password)
+        self._fill(self.enter_new_password_input_field, new_password)
+        self._fill(self.enter_new_password_confirm_input_field, new_password)
+        self._click(self.new_password_save_button)
 
     def check_all_acknowledge_fxa_page_checkboxes(self):
         """Checks all the required checkboxes inside the step 1 fxa deletion flow/page."""

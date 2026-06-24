@@ -54,6 +54,19 @@ class MediaGallery(BasePage):
         """Locators belonging to the delete image confirmation page."""
         self.delete_this_image_button = page.locator("//button[text()='Delete this image']")
 
+        """Locators belonging to the Media Gallery pagination.
+        Note: the rendered markup is <ol class="pagination cf">, so the 'pagination' class is
+        targeted via the CSS class selector (which matches multi-class elements) rather than an
+        exact @class match.
+        """
+        self.media_list_files = page.locator("ol#media-list li a")
+        self.pagination_section = page.locator("ol.pagination")
+        self.pagination_page = lambda page_number: page.locator(
+            "ol.pagination li").get_by_role("link", name=str(page_number), exact=True)
+        self.selected_pagination_page = page.locator("ol.pagination li.selected a")
+        self.next_pagination_button = page.locator("ol.pagination a.btn-page-next")
+        self.previous_pagination_button = page.locator("ol.pagination a.btn-page-prev")
+
 
     """General actions against the Media Gallery page."""
     def click_on_upload_a_new_media_file_button(self):
@@ -113,7 +126,14 @@ class MediaGallery(BasePage):
         self._click(self.cancel_image_upload_during_upload_progress_button)
 
     def wait_for_image_preview(self):
-        self._wait_for_locator(self.upload_modal_image_preview)
+        """Wait for the uploaded image to be rendered inside the 'Upload' modal preview section.
+
+        This must complete before submitting the upload, otherwise the image is submitted before
+        it finished rendering. The wait raises if the preview never appears instead of silently
+        continuing.
+        """
+        self._wait_for_locator(
+            self.upload_modal_image_preview, timeout=10000, raise_exception=True)
 
     """Actions against the media preview page."""
     def click_on_image_creator_link(self):
@@ -162,6 +182,31 @@ class MediaGallery(BasePage):
     def click_on_media_gallery_searchbox_search_button(self):
         """Click on the search button next to the Media Gallery's search box."""
         self._click(self.search_gallery_search_button)
+
+    """Actions against the Media Gallery pagination."""
+    def get_displayed_media_files_links(self) -> list[str]:
+        """
+        Return the list of media file links (href) displayed on the current pagination page.
+        The link is used over the title since it is unique per media file.
+        """
+        self._wait_for_locator(self.media_list_files.first)
+        return self._get_element_attribute_value(self.media_list_files.all(), "href")
+
+    def click_on_a_pagination_page(self, page_number: int):
+        """
+        Click on a specific pagination page number.
+        Args:
+            page_number (int): The pagination page number to navigate to.
+        """
+        self._click(self.pagination_page(page_number))
+
+    def click_on_the_next_pagination_page(self):
+        """Click on the 'Next' pagination button."""
+        self._click(self.next_pagination_button)
+
+    def click_on_the_previous_pagination_page(self):
+        """Click on the 'Previous' pagination button."""
+        self._click(self.previous_pagination_button)
 
     """Actions against the 'Insert Media...' kb panel."""
     def fill_search_modal_gallery_searchbox_input_field(self, text: str):

@@ -17,7 +17,7 @@ class AddKbMediaFlow:
         self.media_gallery_page.click_on_insert_media_button()
 
     def add_new_media_file_to_gallery(self, title: str, description:str, locale=None,
-                                      path_to_file=None):
+                                      path_to_file=None, submit=True):
         """
         Add a new media file to the Media Gallery.
         Args:
@@ -30,9 +30,14 @@ class AddKbMediaFlow:
                            the 'Cancel' button from the Upload modal is clicked.
         """
         self.media_gallery_page.click_on_upload_a_new_media_file_button()
+        # Upload under a unique filename so parallel runs uploading the same test image don't
+        # collide on the server-generated storage path (RenameFileStorage derives the name from
+        # the upload's filename + a second-precision timestamp), which can otherwise wipe out a
+        # sibling upload's file and 500 the finalize step.
         self.utilities.upload_file(
             self.media_gallery_page.upload_modal_browse_button,
-            path_to_file or os.path.abspath("test_data/test-image.png")
+            path_to_file or os.path.abspath("test_data/test-image.png"),
+            unique_name=True
         )
 
         self.media_gallery_page.wait_for_image_preview()
@@ -40,7 +45,10 @@ class AddKbMediaFlow:
             self.media_gallery_page.select_upload_modal_locale(locale)
         self.media_gallery_page.fill_upload_modal_title_field(title)
         self.media_gallery_page.fill_upload_modal_description_field(description)
-        self.media_gallery_page.click_on_upload_media_button()
+        if submit:
+            self.media_gallery_page.click_on_upload_media_button()
+        else:
+            self.media_gallery_page.click_on_upload_modal_cancel_button()
 
     def delete_media_file(self, media_file_title="None"):
         """

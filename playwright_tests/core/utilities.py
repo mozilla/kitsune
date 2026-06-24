@@ -5,6 +5,8 @@ import time
 import re
 import json
 import random
+import uuid
+import mimetypes
 from PIL import Image
 from PIL import ImageChops
 from typing import Any, Union
@@ -229,6 +231,17 @@ class Utilities:
         """
         return str(random.randint(min_value, max_value))
 
+    def generate_unique_title(self, prefix: str = "Automation test image") -> str:
+        """Generate a unique title by appending a uuid-based suffix to the given prefix.
+
+        Used for media gallery uploads (and similar) where a '(locale, title)' uniqueness
+        constraint would otherwise be violated by tests running in parallel.
+
+        Args:
+            prefix (str): The human-readable prefix for the title.
+        """
+        return f"{prefix} {uuid.uuid4().hex}"
+
     def number_extraction_from_string(self, string_to_analyze: str) -> int:
         """
         This helper function extracts the number from a given string.
@@ -394,17 +407,31 @@ class Utilities:
                 response = None
         return response
 
-    def upload_file(self, element: Locator, path_to_file: str):
-        """This helper function uploads the test-image.png file to a given file element chooser.
+    def upload_file(self, element: Locator, path_to_file: str, unique_name: bool = False):
+        """This helper function uploads a file to a given file element chooser.
 
         Args:
             element (str): The element file chooser locator's xpath.
             path_to_file (str): The path to the file to be uploaded.
+            unique_name (bool): If True the file is uploaded under a randomized, unique filename
+                (preserving its extension) instead of its on-disk name. This avoids server-side
+                filename collisions when the same file is uploaded by tests running in parallel.
         """
         with self.page.expect_file_chooser() as file_chooser:
             element.click()
         file_chooser_value = file_chooser.value
-        file_chooser_value.set_files(os.path.abspath(path_to_file))
+        absolute_path = os.path.abspath(path_to_file)
+        if unique_name:
+            root, extension = os.path.splitext(os.path.basename(absolute_path))
+            with open(absolute_path, "rb") as file:
+                file_buffer = file.read()
+            file_chooser_value.set_files(files={
+                "name": f"{root}-{uuid.uuid4().hex}{extension}",
+                "mimeType": mimetypes.guess_type(absolute_path)[0] or "application/octet-stream",
+                "buffer": file_buffer,
+            })
+        else:
+            file_chooser_value.set_files(absolute_path)
 
     def screenshot_the_locator(self, locator: Locator, path_to_save: str):
         """
