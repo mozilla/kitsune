@@ -1,28 +1,31 @@
-import os
-from urllib.error import HTTPError
-import requests
-import time
-import re
+import io
 import json
-import random
-import uuid
 import mimetypes
-from PIL import Image
-from PIL import ImageChops
-from typing import Any, Union
+import os
+import random
+import re
+import time
+import uuid
 from datetime import datetime
+from typing import Any, Union
+from urllib.error import HTTPError
+
+import requests
 from dateutil import parser
 from dateutil.tz import tz
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 from nltk import SnowballStemmer, WordNetLemmatizer
-from playwright.sync_api import Page, Locator, Response, expect
+from PIL import Image, ImageChops
+from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import Locator, Page, Response, expect
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+
 from playwright_tests.messages.auth_pages_messages.fxa_page_messages import FxAPageMessages
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.test_data.search_synonym import SearchSynonyms
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, Error as PlaywrightError
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from google.auth.transport.requests import Request
 
 
 class Utilities:
@@ -407,19 +410,55 @@ class Utilities:
                 response = None
         return response
 
-    def upload_file(self, element: Locator, path_to_file: str, unique_name: bool = False):
+    def generate_in_memory_image(self, min_size_bytes: int = 0,
+                                 dimensions: tuple[int, int] = (50, 50)) -> bytes:
+        """Generate the bytes of a valid PNG image entirely in memory (no file on disk).
+
+        Used by upload tests so we don't have to commit fixed-size test images to the repo. The
+        returned bytes can be handed straight to ``upload_file`` via its ``file_buffer`` argument.
+
+        Args:
+            min_size_bytes (int): If the generated PNG is smaller than this, it is padded with
+                trailing null bytes until it reaches the requested size. Padding is appended after
+                the PNG's IEND marker, so the result is still a decodable image while letting us
+                exceed limits such as ``IMAGE_MAX_FILESIZE`` (10MB) for negative tests.
+            dimensions (tuple[int, int]): The (width, height) of the generated image.
+        """
+        buffer = io.BytesIO()
+        Image.new("RGB", dimensions, color=(120, 80, 200)).save(buffer, format="PNG")
+        image_bytes = buffer.getvalue()
+        if len(image_bytes) < min_size_bytes:
+            image_bytes += b"\x00" * (min_size_bytes - len(image_bytes))
+        return image_bytes
+
+    def upload_file(self, element: Locator, path_to_file: str = None,
+                    unique_name: bool = False, file_buffer: bytes = None,
+                    file_name: str = None):
         """This helper function uploads a file to a given file element chooser.
 
         Args:
             element (str): The element file chooser locator's xpath.
-            path_to_file (str): The path to the file to be uploaded.
+            path_to_file (str): The path to the file to be uploaded. Ignored when
+                ``file_buffer`` is provided.
             unique_name (bool): If True the file is uploaded under a randomized, unique filename
                 (preserving its extension) instead of its on-disk name. This avoids server-side
                 filename collisions when the same file is uploaded by tests running in parallel.
+            file_buffer (bytes): In-memory file contents to upload. When provided, no file is read
+                from disk; the bytes are uploaded directly under ``file_name``.
+            file_name (str): The filename to present to the page when uploading ``file_buffer``.
+                Defaults to a randomized ``.png`` name.
         """
         with self.page.expect_file_chooser() as file_chooser:
             element.click()
         file_chooser_value = file_chooser.value
+        if file_buffer is not None:
+            name = file_name or f"in-memory-{uuid.uuid4().hex}.png"
+            file_chooser_value.set_files(files={
+                "name": name,
+                "mimeType": mimetypes.guess_type(name)[0] or "image/png",
+                "buffer": file_buffer,
+            })
+            return
         absolute_path = os.path.abspath(path_to_file)
         if unique_name:
             root, extension = os.path.splitext(os.path.basename(absolute_path))
