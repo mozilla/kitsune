@@ -1,6 +1,8 @@
 import re
 from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
+from playwright_tests.messages.my_profile_pages_messages.my_profile_page_messages import \
+    MyProfileMessages
 
 
 class MyProfileEdit(BasePage):
@@ -41,7 +43,7 @@ class MyProfileEdit(BasePage):
         self.selected_locale = page.locator("select#id_locale option[selected]")
         self.involved_with_mozilla_from_month = page.locator("select#id_involved_from_month")
         self.involved_with_mozilla_from_year = page.locator("select#id_involved_from_year")
-        self.cancel_button = page.get_by_role("button").filter(has_text="Cancel")
+        self.cancel_button = page.get_by_role("link").filter(has_text="Cancel")
         self.update_my_profile_button = page.get_by_role("button").filter(
             has_text="Update My Profile")
 
@@ -212,9 +214,10 @@ class MyProfileEdit(BasePage):
         """Clear the involved with mozilla year dropdown"""
         self._select_option_by_value(self.involved_with_mozilla_from_year, "0")
 
-    def click_cancel_button(self):
+    def click_cancel_button(self, user: str):
         """Click the cancel button"""
-        self._click(self.cancel_button)
+        self._click(self.cancel_button,
+                    expected_url=MyProfileMessages.get_my_profile_stage_url(user))
 
     def click_update_my_profile_button(self, expected_url=None, expected_locator=None):
         """Click the update my profile button"""

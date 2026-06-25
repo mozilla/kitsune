@@ -6,14 +6,14 @@ from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.sumo_pages import SumoPages
 
 
-# C2939491
+# C2939491, C891368
 @pytest.mark.smokeTest
 @pytest.mark.userDeletion
 def test_media_file_ownership_reassignment_to_system_account(page: Page, create_user_factory):
     utilities = Utilities(page)
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "forum-contributors"])
-    media_title = "Automation test image " + utilities.generate_random_number(1, 1000)
+    media_title = utilities.generate_unique_title()
     media_description = "Automation test description" + utilities.generate_random_number(1, 1000)
     staff = utilities.username_extraction_from_email(utilities.staff_user)
 
@@ -50,7 +50,7 @@ def test_media_file_is_displayed_in_kb_after_owner_deletion(page: Page, create_u
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["Knowledge Base Reviewers", "forum-contributors"])
     test_user_two = create_user_factory(groups=["Knowledge Base Reviewers", "forum-contributors"])
-    media_title = "Automation test image " + utilities.generate_random_number(1, 1000)
+    media_title = utilities.generate_unique_title()
     media_description = "Automation test description" + utilities.generate_random_number(1, 1000)
     staff = utilities.username_extraction_from_email(utilities.staff_user)
 
@@ -101,7 +101,7 @@ def test_media_gallery_image_is_preserved_after_editor_deletion(page: Page, crea
     sumo_pages = SumoPages(page)
     test_user = create_user_factory(groups=["forum-contributors"])
     test_user_two = create_user_factory(groups=["forum-contributors", "Moderators"])
-    media_title = "Automation test image " + utilities.generate_random_number(1, 1000)
+    media_title = utilities.generate_unique_title()
     media_description = "Automation test description" + utilities.generate_random_number(1, 1000)
     new_media_description = "Test 123"
 

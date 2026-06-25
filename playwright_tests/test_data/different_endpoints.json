@@ -12,5 +12,6 @@
   "fxa_stage": "https://accounts.stage.mozaws.net",
   "admin": "https://support.allizom.org/admin/",
   "admin_announcement_page": "https://support.allizom.org/admin/announcements/announcement/",
-  "admin_users_page": "https://support.allizom.org/admin/auth/user/"
+  "admin_users_page": "https://support.allizom.org/admin/auth/user/",
+  "media_gallery": "https://support.allizom.org/en-US/gallery/images"
 }
