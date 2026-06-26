@@ -1,10 +1,19 @@
 import itertools
 
+import markdown
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html_join
+from django.utils.safestring import mark_safe
 
-from kitsune.wiki.models import Document, ImportantDate, Locale, PinnedArticleConfig
+from kitsune.sumo.sanitize import RESTRICTED_HTML_ATTRIBUTES, RESTRICTED_HTML_TAGS, clean
+from kitsune.wiki.models import (
+    Document,
+    ImportantDate,
+    Locale,
+    PinnedArticleConfig,
+    RevisionTranslationRecord,
+)
 
 
 class DocumentAdmin(admin.ModelAdmin):
@@ -140,4 +149,79 @@ class PinnedArticleConfigAdmin(admin.ModelAdmin):
         )
 
 
+class RevisionTranslationRecordAdmin(admin.ModelAdmin):
+    """Read-only view of the LLM explanations recorded for AI/hybrid translations."""
+
+    list_display = ("revision", "locale", "method", "trigger", "created")
+    list_filter = ("locale", "method", "trigger", "created")
+    search_fields = ("revision__document__title", "revision__document__slug")
+    fieldsets = (
+        (None, {"fields": ("revision", "locale", "method", "trigger", "created")}),
+        (
+            "LLM Explanations",
+            {
+                "fields": (
+                    "content_explanation",
+                    "summary_explanation",
+                    "keywords_explanation",
+                    "title_explanation",
+                )
+            },
+        ),
+    )
+    readonly_fields = (
+        "revision",
+        "locale",
+        "method",
+        "trigger",
+        "created",
+        "content_explanation",
+        "summary_explanation",
+        "keywords_explanation",
+        "title_explanation",
+    )
+
+    @admin.display(description="Content")
+    def content_explanation(self, obj):
+        return self.render_explanation(obj, "content")
+
+    @admin.display(description="Summary")
+    def summary_explanation(self, obj):
+        return self.render_explanation(obj, "summary")
+
+    @admin.display(description="Keywords")
+    def keywords_explanation(self, obj):
+        return self.render_explanation(obj, "keywords")
+
+    @admin.display(description="Title")
+    def title_explanation(self, obj):
+        return self.render_explanation(obj, "title")
+
+    @staticmethod
+    def render_explanation(obj, key):
+        """Render a single attribute's explanation, or an em dash if absent."""
+        text = (obj.explanation or {}).get(key)
+        if text:
+            # The LLM often uses markdown in its explanation.
+            html = markdown.markdown(text, extensions=["fenced_code"])
+            return mark_safe(
+                clean(html, tags=RESTRICTED_HTML_TAGS, attributes=RESTRICTED_HTML_ATTRIBUTES)
+            )
+
+        return "—"
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("revision__document")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(PinnedArticleConfig, PinnedArticleConfigAdmin)
+admin.site.register(RevisionTranslationRecord, RevisionTranslationRecordAdmin)

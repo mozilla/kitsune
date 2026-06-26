@@ -1106,6 +1106,49 @@ class RevisionAnchorRecord(ModelBase):
         return f"<RevisionAnchorRecord: revision #{self.revision_id}>"
 
 
+class RevisionTranslationRecord(ModelBase):
+    """
+    Record of an LLM-generated AI or hybrid translation.
+
+    Tied to the translated revision that was created. The translated content itself is
+    stored on the revision, so the explanation is the key piece here. The explanation is
+    useful for understanding how the LLM is interpreting and executing the translation
+    prompt, which can then inform prompt adjustments.
+
+    Records are removed periodically by a Celery beat task once they are older than
+    settings.TRANSLATION_RECORD_RETENTION_DAYS.
+    """
+
+    revision = models.OneToOneField(
+        Revision,
+        on_delete=models.CASCADE,
+        related_name="translation_record",
+        primary_key=True,
+        help_text="The translated revision this record belongs to.",
+    )
+    locale = LocaleField(
+        db_index=True,
+        help_text="The locale of the translated revision.",
+    )
+    explanation = models.JSONField(
+        default=dict,
+        encoder=PrettyJSONEncoder,
+        help_text="Per-attribute LLM explanations (content, summary, keywords, title).",
+    )
+    trigger = models.CharField(
+        max_length=32,
+        help_text="What triggered the translation.",
+    )
+    method = models.CharField(
+        max_length=10,
+        help_text="The translation method used.",
+    )
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return f"Translation record for [{self.locale}] revision #{self.revision_id}"
+
+
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
 
