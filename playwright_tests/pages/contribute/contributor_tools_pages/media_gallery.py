@@ -24,6 +24,7 @@ class MediaGallery(BasePage):
         self.upload_modal_upload_button = page.locator("//input[@value='Upload']")
         self.cancel_image_upload_during_upload_progress_button = page.locator(
             "//div[@class='field progress file off']//a[text()='Cancel']")
+        self.upload_modal_file_details = page.locator("div.upload-media.file div.details")
 
         """Locators belonging to the Edit Media description page."""
         self.edit_image_description_textarea = page.locator("//textarea[@id='id_description']")
@@ -44,7 +45,7 @@ class MediaGallery(BasePage):
         self.search_gallery_search_button_modal = page.locator("form#gallery-modal-search button")
         self.cancel_media_insert_button = page.locator("a[href='#cancel']")
         self.upload_media_button = page.locator("//form[@id='gallery-upload-image']//"
-                                                "input[@value='Upload']")
+                                                "input[@name='upload']")
         self.insert_media_button = page.get_by_role("button", name="Insert Media", exact=True)
         self.linked_in_document = lambda document_name: page.locator(
             "div[class='documents'] li").get_by_role("link", name=document_name, exact=True)

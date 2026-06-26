@@ -156,6 +156,152 @@ def test_media_gallery_pagination(page: Page, create_user_factory):
         expect(sumo_pages.media_gallery.media_file(media_title)).to_be_visible()
 
 
+# The server-side limit (settings.IMAGE_MAX_FILESIZE) and the client-side check in gallery.js.
+IMAGE_MAX_FILESIZE = 10485760  # 10MB, in bytes
+IMAGE_TOO_LARGE_MESSAGE = "Image too large. Please select a smaller image file."
+
+
+# C1811690
+@pytest.mark.mediaGalleryTests
+def test_image_under_size_limit_can_be_uploaded(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+    media_title = utilities.generate_unique_title()
+    media_description = f"Automation test description{utilities.generate_random_number(1, 1000)}"
+
+    with allure.step("Signing in with a contributor account and navigating to the media gallery"):
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.top_navbar.click_on_media_gallery_option()
+
+    with allure.step("Generating a small (well under 10MB) in-memory image and uploading it to "
+                     "the media gallery"):
+        small_image = utilities.generate_in_memory_image()
+        assert len(small_image) < IMAGE_MAX_FILESIZE
+        sumo_pages.add_kb_media_flow.add_new_media_file_to_gallery(
+            title=media_title, description=media_description, image_bytes=small_image)
+
+    with check, allure.step("Verifying that the upload succeeded and landed on the image preview "
+                            "page for the newly uploaded image"):
+        expect(sumo_pages.media_gallery.image_heading).to_have_text(media_title)
+
+    with check, allure.step("Searching for the uploaded image in the gallery and verifying that "
+                            "it is listed"):
+        sumo_pages.top_navbar.click_on_media_gallery_option()
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        expect(sumo_pages.media_gallery.media_file(media_title)).to_be_visible()
+
+
+# C1811691
+@pytest.mark.mediaGalleryTests
+def test_image_over_size_limit_cannot_be_uploaded(page: Page, create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+    media_title = utilities.generate_unique_title()
+
+    with allure.step("Signing in with a contributor account and navigating to the media gallery"):
+        utilities.start_existing_session(cookies=test_user)
+        sumo_pages.top_navbar.click_on_media_gallery_option()
+
+    with allure.step("Opening the 'Upload a New Media File' panel and selecting an in-memory "
+                     "image that exceeds the 10MB limit"):
+        oversized_image = utilities.generate_in_memory_image(
+            min_size_bytes=IMAGE_MAX_FILESIZE + 1024)
+        assert len(oversized_image) > IMAGE_MAX_FILESIZE
+        sumo_pages.media_gallery.click_on_upload_a_new_media_file_button()
+        utilities.upload_file(
+            sumo_pages.media_gallery.upload_modal_browse_button,
+            file_buffer=oversized_image,
+            file_name=f"{media_title}.png")
+
+    with check, allure.step("Verifying that the 'Image too large' error message is displayed and "
+                            "that no image preview is rendered"):
+        expect(sumo_pages.media_gallery.upload_modal_file_details).to_contain_text(
+            IMAGE_TOO_LARGE_MESSAGE)
+        expect(sumo_pages.media_gallery.upload_modal_image_preview).to_be_hidden()
+
+
+# C2266244
+@pytest.mark.mediaGalleryTests
+@pytest.mark.parametrize("upload_origin", ["en-US", "de"])
+def test_image_is_only_displayed_in_the_locale_it_was_uploaded_in(
+        page: Page, create_user_factory, upload_origin):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+    media_title = utilities.generate_unique_title()
+    media_description = f"Automation test description{utilities.generate_random_number(1, 1000)}"
+    en_us_gallery = utilities.different_endpoints["media_gallery"]
+    de_gallery = en_us_gallery.replace("/en-US/", "/de/")
+
+    with allure.step("Signing in with a contributor account"):
+        utilities.start_existing_session(cookies=test_user)
+
+    if upload_origin == "en-US":
+        with allure.step("From the en-US media gallery, uploading an image and assigning it the "
+                         "German (de) locale via the upload modal's locale dropdown"):
+            utilities.navigate_to_link(en_us_gallery)
+            sumo_pages.add_kb_media_flow.add_new_media_file_to_gallery(
+                title=media_title, description=media_description, locale="de")
+    else:
+        with allure.step("Uploading an image directly from the German (de) media gallery, which "
+                         "defaults the image locale to German"):
+            utilities.navigate_to_link(de_gallery)
+            sumo_pages.add_kb_media_flow.add_new_media_file_to_gallery(
+                title=media_title, description=media_description)
+
+    with check, allure.step("Searching the German media gallery and verifying that the image is "
+                            "displayed there"):
+        utilities.navigate_to_link(de_gallery)
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        expect(sumo_pages.media_gallery.media_file(media_title)).to_be_visible()
+
+    with check, allure.step("Searching the en-US media gallery and verifying that the image is "
+                            "not displayed there"):
+        utilities.navigate_to_link(en_us_gallery)
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        expect(sumo_pages.media_gallery.media_file(media_title)).to_be_hidden()
+
+
+# C2266244
+@pytest.mark.mediaGalleryTests
+def test_en_us_image_is_not_displayed_in_a_non_en_us_locale_gallery(page: Page,
+                                                                    create_user_factory):
+    utilities = Utilities(page)
+    sumo_pages = SumoPages(page)
+    test_user = create_user_factory(groups=["forum-contributors"])
+    media_title = utilities.generate_unique_title()
+    media_description = f"Automation test description{utilities.generate_random_number(1, 1000)}"
+    en_us_gallery = utilities.different_endpoints["media_gallery"]
+    de_gallery = en_us_gallery.replace("/en-US/", "/de/")
+
+    with allure.step("Signing in with a contributor account and uploading an image from the "
+                     "en-US media gallery (the image defaults to the en-US locale)"):
+        utilities.start_existing_session(cookies=test_user)
+        utilities.navigate_to_link(en_us_gallery)
+        sumo_pages.add_kb_media_flow.add_new_media_file_to_gallery(
+            title=media_title, description=media_description)
+
+    with check, allure.step("Searching the en-US media gallery and verifying that the image is "
+                            "displayed there"):
+        utilities.navigate_to_link(en_us_gallery)
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        expect(sumo_pages.media_gallery.media_file(media_title)).to_be_visible()
+
+    with check, allure.step("Searching the German (non en-US) media gallery and verifying that "
+                            "the image is not displayed there"):
+        utilities.navigate_to_link(de_gallery)
+        sumo_pages.media_gallery.fill_search_media_gallery_searchbox_input_field(media_title)
+        sumo_pages.media_gallery.click_on_media_gallery_searchbox_search_button()
+        expect(sumo_pages.media_gallery.media_file(media_title)).to_be_hidden()
+
+
+# C2663905
 @pytest.mark.mediaGalleryTests
 @pytest.mark.parametrize("user", ["forum_contributor", "non_contributor", None])
 def test_contributor_tools_side_navbar(page: Page, create_user_factory, user):
@@ -163,9 +309,6 @@ def test_contributor_tools_side_navbar(page: Page, create_user_factory, user):
     sumo_pages = SumoPages(page)
     common_web_elements = sumo_pages.common_web_elements
     media_gallery_url = utilities.different_endpoints["media_gallery"]
-    # All 'Contributor tools' side navbar options available to a signed-in non-moderator. The
-    # last three are revealed by the 'Show More' toggle. ('Moderate forum content' is excluded
-    # since it requires moderation permissions.)
     contributor_tools = ["Knowledge base dashboards", "Guides", "Templates", "Media gallery",
                          "Recent revisions", "Community hub", "Locales", "Locale metrics",
                          "Aggregated metrics"]
@@ -203,16 +346,12 @@ def test_contributor_tools_side_navbar(page: Page, create_user_factory, user):
             expect(common_web_elements.contributor_tools_side_navbar_option(option)
                    ).to_be_visible()
 
-    # The side navbar options are identical for every signed-in user, so we only verify the
-    # redirects once, using the forum contributor account.
     if user == "forum_contributor":
         for option in contributor_tools:
             with check, allure.step(f"Clicking on the '{option}' option and verifying that it "
                                     f"successfully navigates to its page (status < 400)"):
                 utilities.navigate_to_link(media_gallery_url)
                 common_web_elements.click_on_contributor_tools_side_navbar_show_more_button()
-                # click_and_wait_for_navigation reloads the destination on a 502 and returns the
-                # final response, so transient gateway errors are retried instead of failing.
                 response = utilities.click_and_wait_for_navigation(
                     lambda: common_web_elements
                     .click_on_a_contributor_tools_side_navbar_option(option))

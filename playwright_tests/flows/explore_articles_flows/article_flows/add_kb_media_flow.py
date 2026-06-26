@@ -1,6 +1,4 @@
-import os
-
-from playwright.sync_api import Page, Locator
+from playwright.sync_api import Page
 
 from playwright_tests.core.utilities import Utilities
 from playwright_tests.pages.contribute.contributor_tools_pages.media_gallery import MediaGallery
@@ -17,28 +15,44 @@ class AddKbMediaFlow:
         self.media_gallery_page.click_on_insert_media_button()
 
     def add_new_media_file_to_gallery(self, title: str, description:str, locale=None,
-                                      path_to_file=None, submit=True):
+                                      path_to_file=None, submit=True, image_bytes=None,
+                                      file_name=None):
         """
         Add a new media file to the Media Gallery.
+
+        By default the uploaded image is generated in memory, so no image fixture needs to be
+        committed to the project. Pass ``path_to_file`` to upload a specific on-disk image instead
+        (e.g. when a test depends on the actual image content).
         Args:
-            path_to_file (str): The path to the media item which is to be uploaded.
             title (str): The title given to the uploaded media item.
             description (str): The description given to the uploaded media item.
-            locale (str): The locale under which the media item is to be uploaded
-                          (defaults to en-US)
+            locale (str): The locale to select in the upload modal's locale dropdown. When omitted
+                          the image is uploaded under the gallery page's current locale.
+            path_to_file (str): Optional path to an on-disk image to upload instead of an in-memory
+                                generated one.
             submit (bool): If True the 'Upload' button from the Upload modal is clicked. If False
                            the 'Cancel' button from the Upload modal is clicked.
+            image_bytes (bytes): Optional in-memory image contents to upload (e.g. to control the
+                                 file size). Ignored when ``path_to_file`` is provided.
+            file_name (str): Optional filename to present when uploading in-memory bytes.
         """
         self.media_gallery_page.click_on_upload_a_new_media_file_button()
-        # Upload under a unique filename so parallel runs uploading the same test image don't
-        # collide on the server-generated storage path (RenameFileStorage derives the name from
-        # the upload's filename + a second-precision timestamp), which can otherwise wipe out a
-        # sibling upload's file and 500 the finalize step.
-        self.utilities.upload_file(
-            self.media_gallery_page.upload_modal_browse_button,
-            path_to_file or os.path.abspath("test_data/test-image.png"),
-            unique_name=True
-        )
+        if path_to_file is not None:
+            # Upload a specific on-disk file under a unique filename so parallel runs uploading the
+            # same image don't collide on the server-generated storage path (RenameFileStorage
+            # derives the name from the upload's filename + a second-precision timestamp), which
+            # can otherwise wipe out a sibling upload's file and 500 the finalize step.
+            self.utilities.upload_file(
+                self.media_gallery_page.upload_modal_browse_button, path_to_file, unique_name=True)
+        else:
+            # No fixture needed: generate the image in memory. upload_file falls back to a unique,
+            # uuid-based filename when none is given, which likewise avoids the storage-path
+            # collisions described above.
+            self.utilities.upload_file(
+                self.media_gallery_page.upload_modal_browse_button,
+                file_buffer=image_bytes if image_bytes is not None
+                else self.utilities.generate_in_memory_image(),
+                file_name=file_name)
 
         self.media_gallery_page.wait_for_image_preview()
         if locale:
