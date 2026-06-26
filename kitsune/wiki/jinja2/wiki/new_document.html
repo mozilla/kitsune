@@ -22,10 +22,10 @@
           {% csrf_token %}
           <ul>
             {% if in_staff_group(request.user) %}
-            <li class="mzp-c-emphasis-box field has-large-textarea">
+            <li class="mzp-c-emphasis-box field full-width">
               <fieldset>
                   <legend>{{ _("Restrict Visibility") }}</legend>
-                  <span class="field has-large-textarea {% if document_form.restrict_to_groups.errors %}has-error{% endif %}">
+                  <span class="{% if document_form.restrict_to_groups.errors %}has-error{% endif %}">
                     {{ document_form.restrict_to_groups|label_with_help }}
                     {{ document_form.restrict_to_groups }}
                     {{ document_form.restrict_to_groups.errors }}
@@ -36,7 +36,7 @@
             {% for field in document_form.visible_fields() if (field.name != 'restrict_to_groups') and (field.name != 'is_localizable' or settings.WIKI_DEFAULT_LANGUAGE == request.LANGUAGE_CODE) %}
               <li class="
                   field
-                  has-large-textarea
+                  full-width
                   {% if field.name in ['allow_discussion', 'is_localizable'] %}checkbox{% endif %}
                   {% if field.errors %}has-error{% endif %}">
                 {# manually reorder checkboxes #}
@@ -59,7 +59,7 @@
           </ul>
           <ul>
             {% for field in revision_form.visible_fields() %}
-              <li class="field has-large-textarea {% if field.errors %}has-error{% endif %}">
+              <li class="field {% if field.name == 'content' %}has-large-textarea{% else %}full-width{% endif %} {% if field.errors %}has-error{% endif %}">
                 {% if field.name not in ['comment', 'content'] %}
                   {{ field|label_with_help }}{{ field|safe }}
                 {% elif field.name == 'content' %}
