@@ -200,6 +200,9 @@ class Question(AAQBase):
             if update:
                 self.updated = timezone.now()
 
+        # Clear cached product_slug
+        self._product_slug = None
+
         super().save(*args, **kwargs)
 
         # Ensure that the metadata doesn't contain a "solver_id" if there's no solution.
@@ -291,9 +294,7 @@ class Question(AAQBase):
 
     @property
     def product_slug(self):
-        """Return the product slug for this question.
-
-        It returns 'all' in the off chance that there are no products."""
+        """Return the product slug for this question."""
         if not hasattr(self, "_product_slug") or self._product_slug is None:
             self._product_slug = self.product.slug if self.product else None
 
