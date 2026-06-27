@@ -82,7 +82,7 @@ class ImageForm(MediaForm):
         error_messages={"required": MSG_IMAGE_REQUIRED, "max_length": MSG_IMAGE_LONG},
         label=_lazy("Image"),
         max_length=settings.MAX_FILENAME_LENGTH,
-        widget=forms.FileInput(attrs={"accept": "image/*, video/*"}),
+        widget=forms.FileInput(attrs={"accept": "image/*"}),
     )
 
     def __init__(self, *args, **kwargs):
