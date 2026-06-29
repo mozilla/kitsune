@@ -7,7 +7,7 @@ from django import forms
 from django.db.models import Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import pagination, permissions, serializers, status, viewsets
+from rest_framework import mixins, pagination, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -500,6 +500,11 @@ class AnswerSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user and not user.is_anonymous and data.get("creator") is None:
             data["creator"] = user
+        question = data.get("question")
+        if question is not None and not question.editable:
+            raise serializers.ValidationError(
+                "Question is locked or archived; no new answers are allowed."
+            )
         return data
 
 
@@ -531,7 +536,13 @@ class AnswerFilter(django_filters.FilterSet):
         }
 
 
-class AnswerViewSet(viewsets.ModelViewSet):
+class AnswerViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = AnswerSerializer
     # select_related the related profiles the serializer reads, so the
     # per-row profile lookups don't become an N+1 (mozilla/kitsune#7591).
