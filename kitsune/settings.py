@@ -964,7 +964,6 @@ GALLERY_IMAGE_PATH = "uploads/gallery/images/"
 GALLERY_IMAGE_THUMBNAIL_PATH = "uploads/gallery/images/thumbnails/"
 THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
 THUMBNAIL_PROGRESS_HEIGHT = 32  # height of the above image
-VIDEO_MAX_FILESIZE = 52428800  # 50 megabytes, in bytes
 
 BITLY_API_URL = config("BITLY_API_URL", default="https://api-ssl.bitly.com/v4/shorten")
 BITLY_GUID = config("BITLY_GUID", default="")
