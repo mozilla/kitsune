@@ -53,7 +53,6 @@ if settings.OIDC_ENABLE:
 
 urlpatterns += [
     path("1/", include("kitsune.inproduct.urls")),
-    path("postcrash", include("kitsune.postcrash.urls")),
     path("wafflejs", wafflejs, name="wafflejs"),
     path("", include("kitsune.kpi.urls_api")),
     path("", include("kitsune.sumo.urls")),
