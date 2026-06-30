@@ -347,6 +347,36 @@ class TestQuestionMetadata(TestCase):
         q.auto_tag()
         tags_eq(q, [])
 
+    def test_product_version_uses_sanitized_metadata(self):
+        """product_version prefers the sanitized version, falling back to the raw one."""
+        firefox = ProductFactory(slug="firefox")
+        q = QuestionFactory(product=firefox)
+        q.add_metadata(ff_version="120.0.1")
+        self.assertEqual(q.product_version, "120.0.1")
+        q.add_metadata(update=True, sanitized_product_version="120.0")
+        self.assertEqual(q.product_version, "120.0")
+
+    def test_product_version_follows_current_product(self):
+        """Changing the product must not leak the previous product's version."""
+        firefox = ProductFactory(slug="firefox")
+        thunderbird = ProductFactory(slug="thunderbird")
+        monitor = ProductFactory(slug="monitor")
+
+        q = QuestionFactory(product=firefox)
+        q.add_metadata(ff_version="120.0.1", sanitized_product_version="120.0")
+        self.assertEqual(q.product_version, "120.0")
+
+        # The question now belongs to Thunderbird, which has no version
+        # metadata, so the stale Firefox version must not be shown.
+        q.product = thunderbird
+        q._product_slug = None
+        self.assertIsNone(q.product_version)
+
+        # A product that doesn't carry a version concept shows nothing.
+        q.product = monitor
+        q._product_slug = None
+        self.assertIsNone(q.product_version)
+
     def test_tenths_version(self):
         """Test the filter that turns 1.2.3 into 1.2."""
         self.assertEqual(_tenths_version("1.2.3beta3"), "1.2")
