@@ -443,7 +443,8 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
     // when checked.
     var $checkbox = $('#id_needs_change'),
       $comment = $('#id_needs_change_comment'),
-      $commentlabel = $('label[for="id_needs_change_comment"]');
+      $commentlabel = $('label[for="id_needs_change_comment"]'),
+      $kbox = $checkbox.closest('.kbox').data('kbox');
 
     if ($checkbox.length > 0) {
       updateComment();
@@ -459,6 +460,11 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         $commentlabel.hide();
         $comment.hide();
         $comment.find('textarea').prop('required', false);
+      }
+      if ($kbox && $kbox.isOpen) {
+        $comment.add($commentlabel).promise().done(function () {
+          $kbox.handleOverflow();
+        });
       }
     }
   }
