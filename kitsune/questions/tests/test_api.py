@@ -877,6 +877,47 @@ class TestAnswerViewSet(TestCase):
         self.assertEqual(res.status_code, 200)
         assert "<unbleached>" not in res.data["content"]
 
+    def test_cannot_create_answer_on_locked_question(self):
+        q = QuestionFactory(is_locked=True)
+        u = UserFactory()
+        self.client.force_authenticate(user=u)
+        data = {"question": q.id, "content": "Sneaking onto a locked question."}
+        res = self.client.post(reverse("answer-list"), data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(Answer.objects.count(), 0)
+
+    def test_cannot_create_answer_on_archived_question(self):
+        q = QuestionFactory(is_archived=True)
+        u = UserFactory()
+        self.client.force_authenticate(user=u)
+        data = {"question": q.id, "content": "Sneaking onto an archived question."}
+        res = self.client.post(reverse("answer-list"), data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(Answer.objects.count(), 0)
+
+    def test_cannot_move_answer_onto_locked_question_via_patch(self):
+        u = UserFactory()
+        open_q = QuestionFactory()
+        locked_q = QuestionFactory(is_locked=True)
+        answer = AnswerFactory(question=open_q, creator=u)
+        self.client.force_authenticate(user=u)
+        res = self.client.patch(
+            reverse("answer-detail", args=[answer.id]), {"question": locked_q.id}
+        )
+        self.assertEqual(res.status_code, 405)
+        answer.refresh_from_db()
+        self.assertEqual(answer.question, open_q)
+
+    def test_put_is_not_allowed(self):
+        u = UserFactory()
+        answer = AnswerFactory(creator=u)
+        self.client.force_authenticate(user=u)
+        res = self.client.put(
+            reverse("answer-detail", args=[answer.id]),
+            {"question": answer.question_id, "content": "rewritten"},
+        )
+        self.assertEqual(res.status_code, 405)
+
 
 class TestQuestionFilter(TestCase):
     def setUp(self):
