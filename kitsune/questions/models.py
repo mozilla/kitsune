@@ -262,14 +262,15 @@ class Question(AAQBase):
     @property
     def product_version(self):
         metadata = self.metadata
-        if "sanitized_product_version" in metadata:
-            return metadata.get("sanitized_product_version")
-        elif self.product_slug in ("firefox", "mobile", "ios"):
-            return metadata.get("ff_version")
+        if self.product_slug in ("firefox", "mobile", "ios"):
+            raw_version = metadata.get("ff_version")
         elif self.product_slug in ("thunderbird", "thunderbird-android"):
-            return metadata.get("tb_version")
+            raw_version = metadata.get("tb_version")
         else:
             return None
+        if not raw_version:
+            return None
+        return metadata.get("sanitized_product_version") or raw_version
 
     @property
     def solver(self):
