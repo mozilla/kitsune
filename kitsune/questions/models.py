@@ -262,7 +262,9 @@ class Question(AAQBase):
     @property
     def product_version(self):
         metadata = self.metadata
-        if self.product_slug in ("firefox", "mobile", "ios"):
+        # We hard-code slugs here instead of checking whether the fields are
+        # in self.product_config.extra_fields to avoid costly requests to the DB.
+        if self.product_slug in ("firefox", "firefox-enterprise", "mobile", "ios", "focus-firefox"):
             raw_version = metadata.get("ff_version")
         elif self.product_slug in ("thunderbird", "thunderbird-android"):
             raw_version = metadata.get("tb_version")
