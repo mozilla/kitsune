@@ -7,7 +7,11 @@ class ModerateForumContent(BasePage):
         super().__init__(page)
 
         """Locators belonging to the View All deactivated users page."""
-        self.view_all_deactivated_users_button = page.locator("div[class='sumo-button-wrap'] a")
+        self.view_all_deactivated_users_button = page.get_by_role(
+            "link", name="View all deactivated users", exact=True)
+        self.deactivation_log_deactivated_user = lambda username: page.locator(
+            f"//table[@id='deactivations-log']/tbody/tr/td[2]/a[normalize-space(text())="
+            f"'{username}']")
 
         """Locators belonging to the flagged questions page."""
         self.flagged_question = lambda question_info: page.locator("p").get_by_text(
@@ -18,13 +22,13 @@ class ModerateForumContent(BasePage):
             question_title, exact=True).locator("> div[class='content'] p")
         self.created_by_link_text = lambda question_info: page.locator(
             f"//p[normalize-space(text())='{question_info}']/ancestor::div"
-            f"[@class='flagged-item-content']//h3[text()='Created:']/following-sibling::p/a")
+            f"[@class='flagged-item-content']//h3[text()='Created:']/following-sibling::p[1]/a")
         self.flagged_by_link_text = lambda question_info: page.locator(
             f"//p[normalize-space(text())='{question_info}']/ancestor::div"
-            f"[@class='flagged-item-content']//h3[text()='Flagged:']/following-sibling::p/a")
-        self.take_action_view_option = lambda question_info: page.get_by_role(
-            "paragraph", name=question_info, exact=True).locator("+ div").get_by_role(
-            "link", name="View", exact=True)
+            f"[@class='flagged-item-content']//h3[text()='Flagged:']/following-sibling::p[1]/a")
+        self.take_action_view_option = lambda flagged_info: page.locator(
+            f"//li[.//*[normalize-space(text())='{flagged_info}']]"
+            f"//a[normalize-space(text())='View']")
         self.take_action_edit_option = lambda question_info: page.locator(
             f"//p[normalize-space(text())='{question_info}']/ancestor::"
             f"div[@class='flagged-item-content']//a[text()='Edit']")
@@ -37,8 +41,22 @@ class ModerateForumContent(BasePage):
         self.update_status_button = lambda question_info: page.locator(
             f"//p[normalize-space(text())='{question_info}']/ancestor::div"
             f"[@class='flagged-item-content']//following-sibling::form/input[@value='Update']")
+        # Profile tickets render the flagged username inside an <h2> (rather than a <p>), so the
+        # profile update-status controls are anchored on that heading instead.
+        self.update_profile_status_option = lambda username: page.locator(
+            f"//h2[@class='sumo-page-subheading' and text()='{username}']/ancestor::div"
+            f"[@class='flagged-item-content']//following-sibling::form/select")
+        self.update_profile_status_button = lambda username: page.locator(
+            f"//h2[@class='sumo-page-subheading' and text()='{username}']/ancestor::div"
+            f"[@class='flagged-item-content']//following-sibling::form/input[@value='Update']")
         self.paginator_section = page.locator("//ol[@class='pagination cf']")
         self.last_paginator_option = page.locator("//ol[@class='pagination cf']/li/a").last
+
+        """Locators belonging to the 'Filter by reason' and 'Filter by type' dropdowns."""
+        self.filter_by_reason_dropdown = page.locator("select#flagit-reason-filter")
+        self.filter_by_type_dropdown = page.locator("select#flagit-content-type-filter")
+        self.filter_by_type_option = lambda type_name: page.locator(
+            f"//select[@id='flagit-content-type-filter']/option[normalize-space()='{type_name}']")
 
         """Locators belonging to the flagged profile tickets"""
         self.profile_flagged_ticket = lambda username: page.locator(
@@ -57,8 +75,8 @@ class ModerateForumContent(BasePage):
     def click_flagged_by_link(self, question_info: str):
         self._click(self.flagged_by_link_text(question_info))
 
-    def click_take_action_view_option(self, question_info: str):
-        self._click(self.take_action_view_option(question_info))
+    def click_take_action_view_option(self, flagged_info: str):
+        self._click(self.take_action_view_option(flagged_info))
 
     def click_take_action_edit_option(self, question_info: str):
         self._click(self.take_action_edit_option(question_info))
@@ -72,8 +90,21 @@ class ModerateForumContent(BasePage):
     def click_on_the_update_button(self, question_info: str):
         self._click(self.update_status_button(question_info))
 
+    def select_update_profile_status_option(self, username: str, select_value: str):
+        self._select_option_by_value(self.update_profile_status_option(username), select_value)
+
+    def click_on_the_update_profile_button(self, username: str):
+        self._click(self.update_profile_status_button(username))
+
     def click_view_all_deactivated_users_button(self):
         self._click(self.view_all_deactivated_users_button)
+
+    def filter_flagged_content_by_reason(self, reason_value: str):
+        self._select_option_by_value(self.filter_by_reason_dropdown, reason_value)
+
+    def filter_flagged_content_by_type(self, type_name: str):
+        value = self._get_element_attribute_value(self.filter_by_type_option(type_name), "value")
+        self._select_option_by_value(self.filter_by_type_dropdown, value)
 
     def is_paginator_visible(self) -> bool:
         self.wait_for_dom_to_load()

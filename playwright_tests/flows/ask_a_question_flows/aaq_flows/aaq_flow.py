@@ -215,18 +215,23 @@ class AAQFlow:
         if submit_reply:
             return self.question_page.click_on_post_reply_button(repliant_username, fetch_id)
 
-    def report_question_abuse(self, answer_id="", text=''):
+    def report_question_abuse(self, answer_id="", text='', report_reason=""):
         """
         Flow for reporting question as abusive.
         Args:
             answer_id (str): The ID of the question reply.
             text: Text to be added inside the report.
+            report_reason (str): The reason radio value to select (e.g. 'spam', 'language',
+                'abuse', 'other'). Defaults to the preselected 'spam' reason when not provided.
         """
 
         if answer_id:
             self.question_page.click_on_report_abuse_for_a_certain_reply(answer_id)
         else:
             self.question_page.click_on_question_report_abuse_option()
+
+        if report_reason:
+            self.question_page.click_on_report_abuse_reason_option(report_reason)
 
         if text:
             self.question_page.add_text_to_report_abuse_textarea(text)

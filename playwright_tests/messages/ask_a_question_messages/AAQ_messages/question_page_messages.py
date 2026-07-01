@@ -3,6 +3,8 @@ class QuestionPageMessages:
     EDIT_REPLY_URL = "/edit/"
     DELETE_QUESTION_URL_ENDPOINT = '/delete'
     DELETE_QUESTION_REPLY_URL = '/delete/'
+    DELETE_QUESTION_CONFIRMATION_HEADING = "Are you sure you want to delete this question?"
+    DELETE_ANSWER_CONFIRMATION_HEADING = "Are you sure you want to delete this answer?"
     LOCKED_THREAD_BANNER = "This thread was closed. Please ask a new question if you need help."
     ARCHIVED_THREAD_BANNER = ("This thread was archived. Please ask a new question if you need "
                               "help.")
