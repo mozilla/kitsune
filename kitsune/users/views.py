@@ -162,6 +162,13 @@ def profile(request, username):
 
 
 @login_required
+@require_GET
+def my_profile(request):
+    """Redirect a logged-in user to their own profile."""
+    return redirect(reverse("users.profile", args=(request.user.username,)))
+
+
+@login_required
 @require_POST
 def close_account(request):
     expected_confirmation = request.session.get("delete_account_confirmation")
