@@ -1195,6 +1195,8 @@ def edit_question(request, question_id):
     )
 
     if form.is_valid():
+        question.remove_auto_tags()
+
         question.title = form.cleaned_data["title"]
         question.content = form.cleaned_data["content"]
         question.updated_by = user
@@ -1207,6 +1209,9 @@ def edit_question(request, question_id):
         # the form, which should probably become a ModelForm.
         question.clear_mutable_metadata()
         question.add_metadata(**form.cleaned_metadata)
+
+        question.clear_cached_tags()
+        question.auto_tag()
 
         return HttpResponseRedirect(
             reverse("questions.details", kwargs={"question_id": question.id})
