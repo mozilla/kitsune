@@ -223,11 +223,19 @@ class QuestionPage(BasePage):
         """Locators belonging to the delete question section."""
         self.delete_question_delete_button = page.locator("input[value='Delete']")
         self.delete_question_cancel_button = page.get_by_role("link").filter(has_text="Cancel")
+        self.delete_confirmation_section = page.locator("div[class='to-delete highlight-box']")
+        self.delete_confirmation_heading = page.locator("div[class='to-delete highlight-box'] h1")
 
         """Locators belonging to the report abuse section."""
         self.report_abuse_submit_button = page.locator(
             "div[class='mzp-c-modal-inner'] button[type='submit']")
         self.report_abuse_textarea = page.locator("div[class='mzp-c-modal-inner'] textarea")
+        # The reason radio options ('spam', 'language', 'abuse', 'other') inside the currently
+        # open report-abuse modal. 'spam' is preselected by default. The radio <input>s are
+        # visually hidden by the styled-radio CSS, so the (clickable) <label> is targeted
+        # instead - matched by its 'for' attribute suffix, since the id prefix is dynamic.
+        self.report_abuse_reason_option = lambda reason_value: page.locator(
+            "div[class='mzp-c-modal-inner']").locator(f"label[for$='_{reason_value}']")
         self.report_abuse_flagged_this_content_message = page.locator(
             "div[class='mzp-c-modal-inner'] span[class='message']")
         self.report_abuse_modal_close_button = page.locator(
@@ -255,6 +263,9 @@ class QuestionPage(BasePage):
 
     def add_text_to_report_abuse_textarea(self, text: str):
         self._fill(self.report_abuse_textarea, text)
+
+    def click_on_report_abuse_reason_option(self, reason_value: str):
+        self._click(self.report_abuse_reason_option(reason_value))
 
     def click_on_report_abuse_submit_button(self):
         self._click(self.report_abuse_submit_button)
