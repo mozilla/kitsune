@@ -272,7 +272,10 @@ class Question(AAQBase):
             return None
         if not raw_version:
             return None
-        return metadata.get("sanitized_product_version") or raw_version
+        if "sanitized_product_version" in metadata:
+            return metadata.get("sanitized_product_version")
+        else:
+            return raw_version
 
     @property
     def solver(self):
