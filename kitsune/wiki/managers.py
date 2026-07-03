@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.db.models import Exists, OuterRef, Q
 
@@ -94,11 +95,24 @@ class VisibilityManager(models.Manager):
             or in_staff_group(user)
             or can_delete_documents_or_review_revisions(user, locale=locale)
         ):
+            # If locale is not specified, we need to find all the locales
+            # where the user can_delete_documents_or_review_revisions.
+            elevated_locales = []
+            if not locale:
+                elevated_locales = [
+                    candidate_locale
+                    for candidate_locale in settings.SUMO_LANGUAGES
+                    if can_delete_documents_or_review_revisions(
+                        user, locale=candidate_locale
+                    )
+                ]
+
             # Authenticated users without permission to see documents that
             # have no approved content, can only see those they have created.
             return qs.filter(
                 Q(**{f"{prefix}current_revision__isnull": False})
                 | self.get_creator_condition(user)
+                | Q(**{f"{prefix}locale__in": elevated_locales})
             )
 
         return qs

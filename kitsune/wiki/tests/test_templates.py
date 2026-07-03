@@ -2110,7 +2110,7 @@ class TranslateTests(TestCase):
     @mock.patch.object(EditDocumentEvent, "fire")
     @mock.patch.object(Site.objects, "get_current")
     def test_first_translation_to_locale(self, get_current, edited_fire, ready_fire):
-        """Create the first translation of a doc to new locale."""
+        """Create the first translation of a doc to new locale. Returns the revision."""
         get_current.return_value.domain = "testserver"
 
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
@@ -2127,16 +2127,36 @@ class TranslateTests(TestCase):
         self.assertEqual(data["content"], rev.content)
         assert edited_fire.called
         assert ready_fire.called
+        return rev
 
     def _create_and_approve_first_translation(self):
         """Returns the revision."""
         # First create the first one with test above
-        self.test_first_translation_to_locale()
+        rev_es = self.test_first_translation_to_locale()
         # Approve the translation
-        rev_es = Revision.objects.filter(document__locale="es")[0]
         rev_es.is_approved = True
         rev_es.save()
         return rev_es
+
+    def test_translate_based_on_unapproved_first_translation(self):
+        """Locale reviewers should be able to base edits on unapproved first translations."""
+        base_rev = self.test_first_translation_to_locale()
+
+        user = UserFactory()
+        locale = LocaleFactory(locale="es")
+        locale.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+
+        url = reverse(
+            "wiki.new_revision_based_on",
+            locale="es",
+            args=[base_rev.document.slug, base_rev.id],
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+        self.assertEqual(doc("#id_content")[0].value.strip(), base_rev.content)
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, "fire")
     @mock.patch.object(EditDocumentEvent, "fire")
