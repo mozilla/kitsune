@@ -84,7 +84,7 @@
   ) }}
   <div id="my-queue-tools" data-current-username="{{ current_username }}"
        {% if not (selected_assignee and (selected_assignee == current_username)) %} hidden{% endif %}>
-    <label>{{ _('Manage my queue') }}:</label>
+    <label>{{ _('Manage my queue:') }}</label>
     <form method="post" action="">
       {% csrf_token %}
       <input type="hidden" name="action" value="assign">
