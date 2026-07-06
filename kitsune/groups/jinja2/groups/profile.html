@@ -107,7 +107,7 @@
             {{ profile.get_visibility_display() }}
           </span>
           <span class="badge badge--count">
-            {{ members.paginator.count }} {{ _('members') }}
+            {{ ngettext("{n} member", "{n} members", members.paginator.count)|f(n=members.paginator.count) }}
           </span>
         </div>
       </div>
