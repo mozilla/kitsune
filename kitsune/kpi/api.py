@@ -106,7 +106,7 @@ class SearchClickthroughMetricList(CachedAPIView):
             args.append(min_start)
         cursor.execute(query, args)
         return [
-            {"start": s, "clicks": n, "searches": d} for s, n, d in reversed(cursor.fetchall())
+            {"date": s, "clicks": n, "searches": d} for s, n, d in reversed(cursor.fetchall())
         ]
 
 
