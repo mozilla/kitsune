@@ -3,14 +3,17 @@ import time
 from datetime import date, timedelta
 from unittest import mock
 
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.base import SessionBase
 from django.http import Http404
+from django.test import RequestFactory
 from django.test.utils import override_settings
+from django.utils import timezone
 from requests.exceptions import HTTPError
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.products.models import ProductSupportConfig
+from kitsune.products.models import ProductSupportConfig, Topic
 from kitsune.products.tests import ProductFactory, ProductSupportConfigFactory, TopicFactory
 from kitsune.questions.tests import AAQConfigFactory
 from kitsune.sumo.tests import TestCase
@@ -26,6 +29,7 @@ from kitsune.wiki.tests import (
 )
 from kitsune.wiki.utils import (
     active_contributors,
+    build_topics_data,
     generate_short_url,
     get_featured_articles,
     get_kb_visited,
@@ -1249,3 +1253,52 @@ class GetPinnedArticlesTests(TestCase):
 
         result = get_pinned_articles(product=self.product1)
         self.assertEqual(result.count(), 0)
+
+
+class BuildTopicsDataTests(TestCase):
+    def _request(self, locale="en-US"):
+        request = RequestFactory().get("/")
+        request.user = AnonymousUser()
+        request.LANGUAGE_CODE = locale
+        return request
+
+    def _topic_documents(self, product, topic):
+        [topic_data] = build_topics_data(self._request(), product, [topic])
+        return [doc.id for doc in topic_data["documents"]]
+
+    def test_newest_topic_orders_card_by_publish_date(self):
+        """A NEWEST-topic card previews the newest articles first by publication
+        date, independent of display_order and creation order, and shows only 3."""
+        now = timezone.now()
+        product = ProductFactory()
+        topic = TopicFactory(products=[product], article_ordering=Topic.ArticleOrdering.NEWEST)
+
+        # display_order and creation order both differ from the publication order,
+        # so only the publication date yields the expected preview.
+        third = DocumentFactory(products=[product], topics=[topic], display_order=2)
+        ApprovedRevisionFactory(document=third, reviewed=now - timedelta(days=10))
+        newest = DocumentFactory(products=[product], topics=[topic], display_order=4)
+        ApprovedRevisionFactory(document=newest, reviewed=now - timedelta(days=1))
+        oldest = DocumentFactory(products=[product], topics=[topic], display_order=1)
+        ApprovedRevisionFactory(document=oldest, reviewed=now - timedelta(days=30))
+        second = DocumentFactory(products=[product], topics=[topic], display_order=3)
+        ApprovedRevisionFactory(document=second, reviewed=now - timedelta(days=5))
+
+        # Newest three by publication date, newest first; the oldest is dropped.
+        self.assertEqual(self._topic_documents(product, topic), [newest.id, second.id, third.id])
+
+    def test_default_topic_orders_card_by_display_order(self):
+        """A DEFAULT-topic card keeps the existing display_order ordering."""
+        product = ProductFactory()
+        topic = TopicFactory(products=[product])  # defaults to ArticleOrdering.DEFAULT
+
+        # Create in the opposite order of display_order, to prove the card follows
+        # display_order rather than creation order.
+        third = DocumentFactory(products=[product], topics=[topic], display_order=3)
+        ApprovedRevisionFactory(document=third)
+        first = DocumentFactory(products=[product], topics=[topic], display_order=1)
+        ApprovedRevisionFactory(document=first)
+        second = DocumentFactory(products=[product], topics=[topic], display_order=2)
+        ApprovedRevisionFactory(document=second)
+
+        self.assertEqual(self._topic_documents(product, topic), [first.id, second.id, third.id])

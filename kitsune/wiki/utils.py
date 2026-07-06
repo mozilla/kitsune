@@ -1,5 +1,7 @@
+import heapq
 import random
 import time
+from collections.abc import Iterable
 from itertools import chain, islice
 
 import requests
@@ -298,6 +300,14 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     main_doc_ids = {doc["id"] for doc in main_docs_data}
     fallback_doc_ids = {doc["id"] for doc in (fallback_docs_data or [])}
 
+    # When any topic wants newest ordering, documents_for includes each article's
+    # publication date; index it by document id so we can order those cards below.
+    published_at = {
+        doc["id"]: doc["first_published_at"]
+        for doc in chain(main_docs_data, fallback_docs_data or [])
+        if "first_published_at" in doc
+    }
+
     all_documents = (
         Document.objects.filter(id__in=main_doc_ids | fallback_doc_ids)
         .select_related("parent")
@@ -336,13 +346,30 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
         ]
 
         # Get remaining main documents excluding featured ones
-        remaining_docs = (doc for doc in main_topic_docs if doc not in topic_featured)
+        remaining_docs: Iterable[Document] = (
+            doc for doc in main_topic_docs if doc not in topic_featured
+        )
+
+        if newest_first := (topic.article_ordering == Topic.ArticleOrdering.NEWEST):
+            # Featured articles are always shown first; order the rest newest-first
+            # by publication date. Use nlargest so we only pull the few we need
+            # instead of sorting the whole list.
+            remaining_docs = heapq.nlargest(
+                3, remaining_docs, key=lambda doc: published_at[doc.id]
+            )
 
         # First try to get documents from featured and main docs
         main_docs = list(islice(chain(topic_featured, remaining_docs), 3))
 
         # Fall back to fallback documents only if no main documents exist
-        documents_to_show = main_docs if main_docs else list(islice(fallback_topic_docs, 3))
+        if main_docs:
+            documents_to_show = main_docs
+        elif newest_first:
+            documents_to_show = heapq.nlargest(
+                3, fallback_topic_docs, key=lambda doc: published_at[doc.id]
+            )
+        else:
+            documents_to_show = list(islice(fallback_topic_docs, 3))
 
         topic_data = {
             "topic": topic,

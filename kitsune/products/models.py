@@ -117,6 +117,10 @@ class Product(BaseProductTopic):
 
 
 class Topic(BaseProductTopic):
+    class ArticleOrdering(models.TextChoices):
+        DEFAULT = "default", "Default (display order, then popularity)"
+        NEWEST = "newest", "Newest first (by publication date)"
+
     # We don't use a SlugField here because it isn't unique by itself.
     slug = models.CharField(max_length=255, db_index=True)
     image = ImagePlusField(
@@ -145,6 +149,12 @@ class Topic(BaseProductTopic):
         max_length=100,
         blank=True,
         help_text="Legacy Zendesk bucket (accounts/technical/payments). Set on t1 roots.",
+    )
+    article_ordering = models.CharField(
+        max_length=20,
+        choices=ArticleOrdering.choices,
+        default=ArticleOrdering.DEFAULT,
+        help_text="How KB articles are ordered for this topic.",
     )
 
     class Meta:

@@ -4,8 +4,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
 from django.core.cache import cache
-from django.db.models import Case, Count, OuterRef, Q, Subquery, When
-from django.db.models.functions import Now
+from django.db.models import Case, Count, Min, OuterRef, Q, Subquery, When
+from django.db.models.functions import Coalesce, Now
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document, HelpfulVote
@@ -43,6 +43,12 @@ def documents_for(user, locale, topics=None, products=None, current_document=Non
     specified. The second item is the list of fallback articles in en-US
     that aren't localized to the specified locale. If the specified locale
     is en-US, the second item will be None.
+
+    The order of the returned articles is derived from the given topics: if they
+    all have an "article_ordering" of "newest", the articles are ordered
+    newest-first by publication date; otherwise the default ordering is used
+    (see "_documents_for"). Both the localized and fallback lists use the same
+    order.
 
     :arg user: the user making this request
     :arg locale: the locale
@@ -90,11 +96,26 @@ def documents_for(user, locale, topics=None, products=None, current_document=Non
 
 def _documents_for(user, locale, topics=None, products=None):
     """Returns a list of articles that apply to passed in locale, topics and products."""
+    # Include each article's publication date whenever ANY topic wants newest
+    # ordering, so a caller listing several topics at once (build_topics_data) can
+    # order each topic's articles itself. Only reorder the whole combined list
+    # here when ALL topics opt in, so a mixed set keeps a meaningful default order.
+    annotate_first_published = bool(topics) and any(
+        topic.article_ordering == Topic.ArticleOrdering.NEWEST for topic in topics
+    )
+    sort_newest_first = bool(topics) and all(
+        topic.article_ordering == Topic.ArticleOrdering.NEWEST for topic in topics
+    )
     cache_key = _cache_key(locale, topics, products)
 
     if not user.is_authenticated:
-        # For anonymous users, first check the cache.
-        documents_cache_key = f"documents_for_v2:{cache_key}"
+        # For anonymous users, first check the cache. Both the ordering and whether
+        # the publication date is included are part of the key (but not the shared
+        # "cache_key") so that toggling a topic's article_ordering invalidates only
+        # these already-sorted results.
+        documents_cache_key = (
+            f"documents_for_v2:{cache_key}:{sort_newest_first}:{annotate_first_published}"
+        )
         documents = cache.get(documents_cache_key)
         if documents is not None:
             return documents
@@ -172,24 +193,66 @@ def _documents_for(user, locale, topics=None, products=None):
         )
     )
 
-    doc_dicts = []
-    for d in qs:
-        doc_dicts.append(
-            {
-                "id": d.id,
-                "document_title": d.title,
-                "url": d.get_absolute_url(),
-                "document_parent_id": d.parent_id,
-                "created": d.current_revision.created,
-                "product_titles": d.product_titles,
-                "document_summary": d.current_revision.summary,
-                "display_order": d.original.display_order,
-                "helpful_votes": votes_dict.get(d.current_revision_id, 0),
-            }
+    if annotate_first_published:
+        # Annotate each document with the publication date of its original: the
+        # earliest approved revision of the original (parent for translations,
+        # otherwise the document itself). Prefer the review date (when it went
+        # live), falling back to the created date when a revision was approved
+        # without a review timestamp (e.g. auto-created redirects, legacy data).
+        # Using the original keeps localized listings and their en-US fallbacks in
+        # the same chronological order as en-US.
+        qs = qs.annotate(
+            first_published_at=Subquery(
+                Document.objects.filter(pk=OuterRef("pk"))
+                .annotate(
+                    first_published_at=Case(
+                        When(
+                            parent__isnull=False,
+                            then=Coalesce(
+                                Min(
+                                    "parent__revisions__reviewed",
+                                    filter=Q(parent__revisions__is_approved=True),
+                                ),
+                                Min(
+                                    "parent__revisions__created",
+                                    filter=Q(parent__revisions__is_approved=True),
+                                ),
+                            ),
+                        ),
+                        default=Coalesce(
+                            Min("revisions__reviewed", filter=Q(revisions__is_approved=True)),
+                            Min("revisions__created", filter=Q(revisions__is_approved=True)),
+                        ),
+                    ),
+                )
+                .values("first_published_at")
+            )
         )
 
-    # sort the results by ascending display_order and descending votes
-    doc_dicts.sort(key=lambda x: (x["display_order"], -x["helpful_votes"]))
+    doc_dicts = []
+    for d in qs:
+        doc_dict = {
+            "id": d.id,
+            "document_title": d.title,
+            "url": d.get_absolute_url(),
+            "document_parent_id": d.parent_id,
+            "created": d.current_revision.created,
+            "product_titles": d.product_titles,
+            "document_summary": d.current_revision.summary,
+            "display_order": d.original.display_order,
+            "helpful_votes": votes_dict.get(d.current_revision_id, 0),
+        }
+        if annotate_first_published:
+            doc_dict["first_published_at"] = d.first_published_at
+        doc_dicts.append(doc_dict)
+
+    if sort_newest_first:
+        # newest-first by the original's publication date; id breaks ties
+        # deterministically.
+        doc_dicts.sort(key=lambda x: (x["first_published_at"], x["id"]), reverse=True)
+    else:
+        # sort the results by ascending display_order and descending votes
+        doc_dicts.sort(key=lambda x: (x["display_order"], -x["helpful_votes"]))
 
     if not user.is_authenticated:
         cache.set(documents_cache_key, doc_dicts)
