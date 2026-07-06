@@ -20,7 +20,7 @@
       {% if self_approving and document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
         {# Only show self approving warning to en-US reviewers. In other locales, it
            is usual for the editor and the reviewer to be the same user. #}
-        <div class="mzp-c-notification-bar mzp-t-warning">
+        <div id="self-approve-warning" class="mzp-c-notification-bar mzp-t-warning">
           <div class="warning">
           {% trans url=url('groups.profile', 'reviewers') %}You are about to approve your own edit.
           Please consider asking our <a href="{{ url }}">reviewers</a> instead.{% endtrans %}
@@ -31,7 +31,15 @@
         <p>
           {% trans %}Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
         </p>
-        {{ form.significance }}
+        {# Mock form.significance to get the right styling. #}
+        <div id="{{ form.significance.auto_id }}">
+          {% for radio in form.significance %}
+            <div class="field radio is-condensed">
+              {{ radio.tag()|safe }}
+              <label for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+            </div>
+          {% endfor %}
+        </div>
       {% endif %}
       {% if not should_ask_significance and not self_approving %}
         <p>
@@ -51,17 +59,17 @@
         </div>
       {% endif %}
       {% if document.allows(user, 'mark_ready_for_l10n') %}
-        <div class="ready-for-l10n">
-          <label>
+        <div class="field checkbox ready-for-l10n">
             {{ form.is_ready_for_localization }}
-            {{ form.is_ready_for_localization.label }}
-          </label>
+            {{ form.is_ready_for_localization|label_with_help }}
         </div>
       {% endif %}
       {% if document.allows(user, 'edit_needs_change') %}
-        <div class="needs-change">
-          {{ form.needs_change }}
-          {{ form.needs_change|label_with_help }}
+        <div class="field needs-change">
+          <div class="checkbox">
+            {{ form.needs_change }}
+            {{ form.needs_change|label_with_help }}
+          </div>
           <div class="comment">
             {{ form.needs_change_comment|label_with_help }}{{ form.needs_change_comment }}
           </div>

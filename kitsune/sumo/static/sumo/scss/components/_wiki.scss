@@ -644,6 +644,15 @@ article {
   form {
     padding: 0 0 20px;
   }
+
+  label[for="id_needs_change_comment"] {
+    font-weight: normal;
+  }
+
+  /* Remove margin after the needs-change field before the comment (when it's displayed). */
+  div:has(label[for="id_needs_change"]):has(+ div label[for="id_needs_change_comment"]) {
+    margin-bottom: 0;
+  }
 }
 
 #preview {
@@ -911,11 +920,7 @@ body.review {
 }
 
 #approve-modal {
-  p {
-    margin: 0 0 10px;
-  }
-
-  label {
+  .field label {
     font-weight: normal;
   }
 
@@ -957,11 +962,6 @@ body.review {
   div.needs-change {
     margin: 10px 0;
   }
-
-  textarea {
-    height: 100px;
-    width: 350px;
-  }
 }
 
 .html-rtl {
@@ -986,9 +986,13 @@ body.review {
   }
 }
 
+#self-approve-warning {
+    margin-top: 0;
+}
+
 .needs-change {
   .comment {
-    margin: 0 0 0 17px;
+    @include p.bidi(((margin, 0 0 0 calc(20px + #{p.$spacing-md}), 0 calc(20px + #{p.$spacing-md}) 0 0),));
 
     label {
       display: block;
