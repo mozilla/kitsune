@@ -309,15 +309,15 @@ class KpiApiTests(TestCase):
         self.assertEqual(
             data["objects"],
             [
-                {"clicks": 2, "searches": 20, "start": "2000-01-09"},
-                {"clicks": 1, "searches": 10, "start": "2000-01-01"},
+                {"clicks": 2, "searches": 20, "date": "2000-01-09"},
+                {"clicks": 1, "searches": 10, "date": "2000-01-01"},
             ],
         )
 
         # Test filtering by start date:
         response = self.client.get(url + "?format=json&min_start=2000-01-09")
         data = json.loads(response.content)
-        self.assertEqual(data["objects"], [{"searches": 20, "start": "2000-01-09", "clicks": 2}])
+        self.assertEqual(data["objects"], [{"searches": 20, "date": "2000-01-09", "clicks": 2}])
 
     def test_visitors(self):
         """Test unique visitors API call."""
