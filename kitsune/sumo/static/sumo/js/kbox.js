@@ -108,8 +108,7 @@ KBox.prototype = {
       preClose: false,
       template: TEMPLATE,
       title: self.$el.attr('title') || self.$el.attr('data-title'),
-      windowMargin: self.$el.data('viewport-margin') === undefined ?
-        20 : parseInt(self.$el.data('viewport-margin'), 10),
+      windowMargin: parseInt(self.$el.data('viewport-margin') ?? 20, 10),
     }, options);
     self.options = options;
     self.$clickTarget = options.clickTarget && $(options.clickTarget);
@@ -288,13 +287,11 @@ KBox.prototype = {
 
     let windowWidth = $(window).width();
     let windowHeight = $(window).height();
-    let modalWidth = self.$kbox.outerWidth();
-    let modalHeight = self.$kbox.outerHeight();
     let rect = self.$kbox[0].getBoundingClientRect();
 
     if (rect.right > windowWidth - minMargin) {
       self.$kbox.css({
-        'max-width': windowWidth - minMargin - rect.left
+        'max-width': Math.max(windowWidth - minMargin - rect.left, minMargin)
       });
     }
     else if (rect.right < windowWidth - minMargin) {
@@ -306,9 +303,9 @@ KBox.prototype = {
     // Due to max-width, kbox height may have changed.
     rect = self.$kbox[0].getBoundingClientRect();
 
-    if (rect.bottom > windowHeight) {
+    if (rect.bottom > windowHeight - minMargin) {
       self.$kbox.css({
-        'max-height': windowHeight - minMargin - rect.top,
+        'max-height': Math.max(windowHeight - minMargin - rect.top, minMargin),
         'overflow-y': 'auto'
       });
     }

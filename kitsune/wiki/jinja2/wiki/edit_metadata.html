@@ -59,7 +59,7 @@
                   {% if field.field.widget.input_type == 'checkbox' %}
                     <div class="checkbox">
                       {{ field }}
-                      {# Out current implementation of the custom checkmark is tied to label, so let's create an empty one. #}
+                      {# Our current implementation of the custom checkmark is tied to label, so let's create an empty one. #}
                       <label for="{{ field.id_for_label }}"></label>
                     </div>
                   {% else %}
