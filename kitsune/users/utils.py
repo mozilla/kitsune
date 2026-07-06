@@ -80,12 +80,20 @@ def add_to_contributors(user, language_code, contribution_area=""):
         return
 
     group, created = Group.objects.get_or_create(name=ContributionAreas[area].value)
-    # don't fire an email if the user is already member of the group
+
+    # don't do anything if the user is already member of the group
     if user.groups.filter(pk=group.pk).exists():
         return
 
+    # don't fire an email if the user is already contributor
+    # (member of one of the contributor groups)
+    send_welcome_email = not user_is_contributor(user)
+
     user.groups.add(group)
     user.save()
+
+    if not send_welcome_email:
+        return
 
     # Get Community Team member info for the email
     team_info = get_community_team_member_info()
