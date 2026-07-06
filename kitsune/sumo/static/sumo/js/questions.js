@@ -219,7 +219,7 @@ function addReferrerAndQueryToVoteForm() {
 * Ajaxify the Helpful/Not Helpful form
 */
 function initHelpfulVote() {
-  $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
+  $('.sumo-l-two-col--sidebar, #document-list, .answer-footer').each(function() {
     new AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
       replaceFormWithMessage: true,
       removeForm: true
