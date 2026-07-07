@@ -28,7 +28,8 @@
     <ul class="thread-meta topic-article--meta-list">
       <li class="question-status text-body-sm">
         {% if result.type == "question" and result.is_solved %}
-        <span class="is-solution">{{ _('Solved') }}</span>
+        {# L10n: This is a question status. #}
+        <span class="is-solution">{{ pgettext('question', 'Solved') }}</span>
         {% endif %}
         Last updated {{ result.last_updated|timesince }}
       </li>

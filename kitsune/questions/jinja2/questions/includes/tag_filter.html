@@ -3,12 +3,14 @@
 {% if available_tags %}
   {% set tags_initial_limit = 10 %}
 
+  {# L10n: A header for the Tags section, displayed when viewing support forums (e.g., https://support.mozilla.org/questions/firefox) and questions. #}
   <div class="sidebar-subheading sidebar-nav--heading-item">{{ _('Tags') }}</div>
 
   {% if tags %}
     <div class="sidebar-tags-active">
       <div class="sidebar-tags-active--header">
-        <span class="sidebar-tags-active--label">{{ _('Active') }}</span>
+        {# L10n: A label for the currently selected tags that appears in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). #}
+        <span class="sidebar-tags-active--label">{{ pgettext('tags', 'Active') }}</span>
         <a class="sidebar-tags-active--clear"
            href="{{ base_list_url_with_params | urlparams(tagged=None, page=None) }}"
            hx-get="{{ base_list_url_with_params | urlparams(tagged=None, page=None) }}"
@@ -16,6 +18,7 @@
            hx-select="#questions-list"
            hx-select-oob="{{ filter_oob }}"
            hx-swap="outerHTML"
+           {# L10n: A button for clearing all the currently selected tags that appears in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). #}
            hx-push-url="true">{{ _('Clear all') }}</a>
       </div>
       <div class="sidebar-tags-active--chips">
@@ -31,7 +34,9 @@
                hx-select-oob="{{ filter_oob }}"
                hx-swap="outerHTML"
                hx-push-url="true"
+               {# L10n: A tooltip (and accessibility name) for the cross button removing a currently selected tag that appears in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). {tag} is the tag name. #}
                title="{{ _('{tag} — click to remove')|f(tag=tag.name) }}"
+               {# L10n: A tooltip (and accessibility name) for the cross button removing a currently selected tag that appears in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). {tag} is the tag name. #}
                aria-label="{{ _('{tag} — click to remove')|f(tag=tag.name) }}">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -49,7 +54,9 @@
   <input class="sidebar-tags--search"
          type="search"
          maxlength="64"
+         {# L10n: A placeholder for the tag search field that appears in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). #}
          placeholder="{{ _('Search tags…') }}"
+         {# L10n: An accessibility name for the tag search field that appears in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). #}
          aria-label="{{ _('Search tags') }}">
 
   <ul class="sidebar-tags--list">
@@ -79,6 +86,7 @@
     {% endfor %}
   </ul>
 
+  {# L10n: A message that appears under the tag search field in the Tags section when viewing support forums (e.g., https://support.mozilla.org/questions/firefox). #}
   <p class="sidebar-tags--no-results" hidden>{{ _('No tags match your search.') }}</p>
 
   {% if available_tags | length > tags_initial_limit %}

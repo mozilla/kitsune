@@ -23,6 +23,7 @@
     {% if result.type == 'question' %}
       <ul class="topic-article--meta-list thread-meta">
         {% if result.is_solved %}
+          {# L10n: This is a question status. #}
           <li>{{ _('Solved') }}</li>
         {% endif %}
         <li>

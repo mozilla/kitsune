@@ -24,7 +24,8 @@
     <nav class="tabs">
       <ul class="tabs--list">
         <li class="tabs--item">
-          <a href="?" {% if not channel %}class="selected"{% endif %}><span>{{ _("All") }}</span></a>
+          {# L10n: A name of the tab displaying all questions. #}
+          <a href="?" {% if not channel %}class="selected"{% endif %}><span>{{ pgettext("questions", "All") }}</span></a>
         </li>
         <li class="tabs--item">
           {# L10n: Displayed for users viewing their own questions. This is a label for a tab that lists community forum questions authored by the user. #}
@@ -42,7 +43,8 @@
     <nav class="tabs">
       <ul class="tabs--list">
         <li class="tabs--item">
-          <a href="?" {% if not show %}class="selected"{% endif %}><span>{{ _("All") }}</span></a>
+          {# L10n: A name of the tab displaying all questions. #}
+          <a href="?" {% if not show %}class="selected"{% endif %}><span>{{ pgettext("questions", "All") }}</span></a>
         </li>
         <li class="tabs--item">
           {# L10n: Displayed for moderators only on user questions pages (like https://support.mozilla.org/user/kelimuttu/questions). This is a label for a tab that lists all non-spam forum questions authored by the user. #}

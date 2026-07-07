@@ -22,9 +22,11 @@
     <ul class="tag-list">
       <li {% if not current_locale %}class="is-active"{% endif %}>
         {% if not current_locale %}
-          {{ _('All') }}
+          {# L10n: A default option for the locale selector on https://support.mozilla.org/questions/dashboard/metrics. #}
+          {{ pgettext('locales', 'All') }}
         {% else %}
-          <a href="{{ url('questions.metrics') }}">{{ _('All') }}</a>
+          {# L10n: A default option for the locale selector on https://support.mozilla.org/questions/dashboard/metrics. #}
+          <a href="{{ url('questions.metrics') }}">{{ pgettext('locales', 'All') }}</a>
         {% endif %}
       </li>
       {% for locale in AAQ_LANGUAGES %}

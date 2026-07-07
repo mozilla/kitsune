@@ -236,7 +236,8 @@
       {% endif %}
       <label>{{ _('Filter by type:') }}</label>
       <select data-submit name="category">
-        <option value="">{{ _('All') }}</option>
+        {# L10n: A default option for the document type filter, displayed on https://support.mozilla.org/contributors and https://support.mozilla.org/contributors/kb-overview. #}
+        <option value="">{{ pgettext('document types', 'All') }}</option>
         {% for c in categories %}
           <option value="{{ c[0] }}" {% if category == c[0] %}selected="selected"{% endif %}>{{ c[1] }}</option>
         {% endfor %}
