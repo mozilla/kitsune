@@ -27,7 +27,7 @@
     "webpack:build": "npx webpack build --config webpack.dev.js",
     "webpack:build:pre-render": "npx webpack build --config webpack.pre-render.js",
     "webpack:build:prod": "npx webpack build --config webpack.prod.js",
-    "webpack:watch": "env-cmd npx concurrently npm:webpack:watch:*",
+    "webpack:watch": "env-cmd -- npx concurrently npm:webpack:watch:*",
     "webpack:watch:dev": "npx webpack watch --config webpack.dev.js",
     "webpack:watch:pre-render": "npx webpack watch --config webpack.pre-render.js",
     "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js"
@@ -70,7 +70,7 @@
     "copy-webpack-plugin": "^14.0.0",
     "css-loader": "^7.1.4",
     "cssnano": "^8.0.2",
-    "env-cmd": "^10.1.0",
+    "env-cmd": "^11.0.0",
     "eslint": "^10.4.1",
     "eslint-plugin-import-x": "^4.16.2",
     "exports-loader": "^5.0.0",
