@@ -4,7 +4,7 @@
 <div id="tickets-content" class="group-tickets" aria-live="polite">
   <div class="group-tickets--filter-bar">
     <div class="group-tickets--chips" role="tablist">
-      {% for key, label in [("active", _("Active")), ("all", _("All")), ("solved", _("Solved"))] %}
+      {% for key, label in [("active", pgettext("tickets", "Active")), ("all", pgettext("tickets", "All")), ("solved", pgettext("tickets", "Solved"))] %}
         {% set chip_url = base_url|urlparams(status=key, member=member_filter or None) %}
         <a
           role="tab"

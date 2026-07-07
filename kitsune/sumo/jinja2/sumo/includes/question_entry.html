@@ -108,19 +108,31 @@
   {% else %}
     {% if obj.solution_id %}
       <span class="status-label status-label--solved"
-            title="{{ _('This question has a verified solution') }}">{{ _("Solved") }}</span>
+            title="{{ _('This question has a verified solution') }}">
+        {# L10n: This is a question status. #}
+        {{ pgettext("question", "Solved") }}
+      </span>
     {% endif %}
     {% if obj.is_locked %}
       <span class="status-label status-label--neutral"
-            title="{{ _('This question has been locked') }}">{{ _("Locked") }}</span>
+            title="{{ _('This question has been locked') }}">
+        {# L10n: This is a question status. #}
+        {{ pgettext("question", "Locked") }}
+      </span>
     {% endif %}
     {% if obj.is_archived %}
       <span class="status-label status-label--neutral"
-            title="{{ _('This question has been archived') }}">{{ _("Archived") }}</span>
+            title="{{ _('This question has been archived') }}">
+        {# L10n: This is a question status. #}
+        {{ _("Archived") }}
+      </span>
     {% endif %}
     {% if not obj.is_locked and not obj.is_archived and not obj.solution_id %}
       <span class="status-label status-label--open"
-            title="{{ _('This question is open and awaiting a reply') }}">{{ _("Open") }}</span>
+            title="{{ _('This question is open and awaiting a reply') }}">
+        {# L10n: This is a question status. #}
+        {{ pgettext("question", "Open") }}
+      </span>
     {% endif %}
   {% endif %}
 {% endmacro %}

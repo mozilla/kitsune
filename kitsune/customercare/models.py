@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext_lazy
 
 from kitsune.groups.models import GroupProfile
 from kitsune.products.models import Product, Topic
@@ -94,11 +95,17 @@ class SupportTicket(ModelBase):
     ZD_STATUS_CLOSED = "closed"
 
     ZD_STATUS_CHOICES = (
-        (ZD_STATUS_NEW, _lazy("New")),
-        (ZD_STATUS_OPEN, _lazy("Open")),
-        (ZD_STATUS_PENDING, _lazy("Pending")),
+        # L10n: This is a support ticket status.
+        (ZD_STATUS_NEW, pgettext_lazy("ticket", "New")),
+        # L10n: This is a support ticket status.
+        (ZD_STATUS_OPEN, pgettext_lazy("ticket", "Open")),
+        # L10n: This is a support ticket status, which means the ticket is awaiting a response from the customer.
+        (ZD_STATUS_PENDING, pgettext_lazy("ticket", "Pending")),
+        # L10n: This is a support ticket status, which means the ticket is awaiting a response from a third party.
         (ZD_STATUS_HOLD, _lazy("Hold")),
-        (ZD_STATUS_SOLVED, _lazy("Solved")),
+        # L10n: This is a support ticket status.
+        (ZD_STATUS_SOLVED, pgettext_lazy("ticket", "Solved")),
+        # L10n: This is a support ticket status.
         (ZD_STATUS_CLOSED, _lazy("Closed")),
     )
 

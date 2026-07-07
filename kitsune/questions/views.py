@@ -28,6 +28,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext_lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from elasticsearch.dsl import A as DSLA
@@ -100,7 +101,7 @@ FILTER_GROUPS = {
     "needs-attention": OrderedDict(
         [
             # L10n: This is a question filter option for the Attention needed tab.
-            ("new", _lazy("New")),
+            ("new", pgettext_lazy("question-filter", "New")),
             # L10n: This is a question filter option for the Attention needed tab.
             ("unhelpful-answers", _lazy("Answers didn't help")),
         ]
@@ -114,9 +115,9 @@ FILTER_GROUPS = {
     "done": OrderedDict(
         [
             # L10n: This is a question filter option for the Done tab.
-            ("solved", _lazy("Solved")),
+            ("solved", pgettext_lazy("question-filter", "Solved")),
             # L10n: This is a question filter option for the Done tab.
-            ("locked", _lazy("Locked")),
+            ("locked", pgettext_lazy("question-filter", "Locked")),
         ]
     ),
     "spam": OrderedDict(

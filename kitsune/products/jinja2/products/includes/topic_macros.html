@@ -167,7 +167,8 @@
           "link_name": "tab.product-and-topic-home",
           "link_detail": "{{ product.slug + '/' + topic.slug }}"
         }'>
-        <span class="mobile-only">{{ _('All') }}</span>
+        {# L10n: Short label for a tab listing all articles for the selected topic (the full version is "All articles"). Displayed on mobile on topic pages, such as https://support.mozilla.org/products/firefox/browse #}
+        <span class="mobile-only">{{ pgettext('articles', 'All') }}</span>
         {# L10n: Deprecated. Label for a tab listing all articles for the selected topic. Displayed on topic pages, such as https://support.mozilla.org/products/firefox/browse #}
         {% set deprecated_all_desktop = _('All articles and threads') %}
         {# L10n: Label for a tab listing all articles for the selected topic. Displayed on topic pages, such as https://support.mozilla.org/products/firefox/browse #}

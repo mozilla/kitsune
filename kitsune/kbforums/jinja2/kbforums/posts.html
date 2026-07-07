@@ -46,8 +46,10 @@
       <ul class="topic-article--meta-list" id="thread-meta">
         {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
         {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.creator) }}</li>{% endif %}
-        {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
-        {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
+        {# L10n: This is a contributor forum thread status. #}
+        {% if thread.is_sticky %}<li>{{ pgettext('thread_type', 'Sticky') }}</li>{% endif %}
+        {# L10n: This is a contributor forum thread status. #}
+        {% if thread.is_locked %}<li>{{ pgettext('thread_type', 'Locked') }}</li>{% endif %}
       </ul>
       {% if user.is_authenticated %}
         <form action="{{ url('wiki.discuss.watch_thread', document.slug, thread.id) }}" method="post">

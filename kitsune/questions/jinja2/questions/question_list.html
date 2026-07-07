@@ -194,7 +194,8 @@
     <ul class="tabs--list subtopics">
       <li class="tabs--item">
         <a href="{{ questions_url(show='all', filter=None, page=None, tagged=tagged or None) }}" {{ show|class_selected('all') }}>
-          <span>{{ _('All') }}</span>
+          {# L10n: A name of the tab displaying all questions. #}
+          <span>{{ pgettext('questions', 'All') }}</span>
         </a>
       </li>
       <li class="tabs--item">
@@ -278,7 +279,8 @@
     <ul class="sidebar-nav--list">
       {% if filters and _user_is_contributor %}
         <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Filter by') }}</li>
-        <li class="{{ 'selected' if filter == None else '' }}"><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
+        {# L10n: A default option for the question "Filter by" filter, displayed when viewing support forums (e.g., on https://support.mozilla.org/questions/firefox). #}
+        <li class="{{ 'selected' if filter == None else '' }}"><a href="{{ questions_url(filter=None, page=None) }}">{{ pgettext('questions filter-by', 'All') }}</a></li>
         {% for f, desc in filters.items() %}
           <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
         {% endfor %}
