@@ -55,6 +55,8 @@ users_patterns = [
 ]
 
 urlpatterns = [
+    # Generic link to the logged-in user's own profile.
+    re_path(r"^profile$", views.my_profile, name="users.my_profile"),
     # URLs for a single user.
     re_path(r"^user/(?P<username>[\w@\.\s+-]+)/", include(detail_patterns)),
     re_path(

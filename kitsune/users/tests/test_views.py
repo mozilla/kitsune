@@ -77,6 +77,19 @@ class UserProfileTests(TestCase):
         res = self.client.get(reverse("users.profile", args=[self.user.pk], locale="en-US"))
         self.assertEqual(302, res.status_code)
 
+    def test_my_profile_redirects_to_own_profile(self):
+        """The generic profile link redirects a logged-in user to their profile."""
+        self.client.force_login(self.user)
+        res = self.client.get(reverse("users.my_profile", locale="en-US"))
+        self.assertEqual(302, res.status_code)
+        self.assertEqual(self.userrl, res["Location"])
+
+    def test_my_profile_requires_login(self):
+        """Anonymous users are sent to log in rather than to a profile."""
+        res = self.client.get(reverse("users.my_profile", locale="en-US"))
+        self.assertEqual(302, res.status_code)
+        self.assertNotEqual(self.userrl, res["Location"])
+
     def test_profile_inactive(self):
         """Inactive users don't have a public profile."""
         self.user.is_active = False
