@@ -303,7 +303,7 @@ KBox.prototype = {
     // Due to max-width, kbox height may have changed.
     rect = self.$kbox[0].getBoundingClientRect();
 
-    if (rect.bottom > windowHeight - minMargin) {
+    if (rect.bottom > windowHeight) {
       self.$kbox.css({
         'max-height': Math.max(windowHeight - minMargin - rect.top, minMargin),
         'overflow-y': 'auto'
