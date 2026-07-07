@@ -1098,7 +1098,7 @@ wheels = [
 
 [[package]]
 name = "google-analytics-data"
-version = "0.22.0"
+version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "google-api-core", extra = ["grpc"] },
@@ -1107,9 +1107,9 @@ dependencies = [
     { name = "proto-plus" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ba/46/06df55745208b0084264c57e1fbcc6e8ccd542a1a3f20d34c2cde89ba66a/google_analytics_data-0.22.0.tar.gz", hash = "sha256:16fb155d7d9896d34c786c9147f3ae4ab84f67b34dcc21e7199a54f0850286b9", size = 233436, upload-time = "2026-05-07T08:03:43.394Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/09/76553c6ec3e277d38486f7619d8bad631745fb6bdd486027e956dea8a8c7/google_analytics_data-0.23.0.tar.gz", hash = "sha256:8799b8829ca175e11385008aedb9f2f0aaf5c78c2b69f7570712ee46b190b08a", size = 232484, upload-time = "2026-06-03T14:52:16.145Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/4f/84e11dcf81a1c3209c14aa0150cfa478404f1ab3c099860a5faf344bfdf1/google_analytics_data-0.22.0-py3-none-any.whl", hash = "sha256:82e5d63deb71335806a942628c8f4c5c09f3a9df86d8ef6bf7504cd27047deef", size = 199904, upload-time = "2026-05-07T08:02:07.768Z" },
+    { url = "https://files.pythonhosted.org/packages/df/28/56dda8a3ba26c09a26592c1ae701f0092d9c0f8e620df073783dad733ddc/google_analytics_data-0.23.0-py3-none-any.whl", hash = "sha256:ba21edbe7f2aa61424651b11b06f81fa4ceed5db5581ef2ca2af0d189b77c0bd", size = 199547, upload-time = "2026-06-03T14:51:25.009Z" },
 ]
 
 [[package]]
@@ -1938,7 +1938,7 @@ requires-dist = [
     { name = "factory-boy", specifier = ">=3.3.0,<4" },
     { name = "faker", specifier = ">=16.9.0,<17" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0,<0.19" },
-    { name = "google-analytics-data", specifier = ">=0.22.0,<1" },
+    { name = "google-analytics-data", specifier = ">=0.23.0,<1" },
     { name = "google-auth", specifier = ">=2.45.0,<3" },
     { name = "graphene-django", specifier = ">=3.2.0,<4" },
     { name = "gunicorn", specifier = ">=22.0.0,<26" },
