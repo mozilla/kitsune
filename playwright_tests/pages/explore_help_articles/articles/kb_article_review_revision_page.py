@@ -42,19 +42,20 @@ class KBArticleReviewRevisionPage(BasePage):
 
         """Locators belonging to the approve revision modal."""
         self.accept_revision_modal_header = page.locator("div[class='kbox-title']")
-
-        # Need to add locators for approving own edit revision warning.
         self.ready_for_localization_modal_checkbox = page.locator(
             "input#id_is_ready_for_localization")
+        self.ready_for_localization_modal_label = page.locator(
+            "label[for='id_is_ready_for_localization']")
         self.needs_change_modal_checkbox = page.locator("input#id_needs_change")
+        self.needs_change_modal_label = page.locator("label[for='id_needs_change']")
         self.needs_change_comment_textarea = page.locator("textarea#id_needs_change_comment")
         self.modal_accept_button = page.locator("form#approve-modal div button")
         self.modal_cancel_button = page.locator("form#approve-modal div a")
 
         """Locators belonging to the revision significance section."""
-        self.minor_significance = page.locator("input#id_significance_0")
-        self.normal_significance = page.locator("input#id_significance_1")
-        self.major_significance = page.locator("input#id_significance_2")
+        self.minor_significance = page.locator("label[for='id_significance_0']")
+        self.normal_significance = page.locator("label[for='id_significance_1']")
+        self.major_significance = page.locator("label[for='id_significance_2']")
 
     """Actions against the general review revision page locators."""
     def click_on_back_to_history_option(self):
@@ -81,13 +82,13 @@ class KBArticleReviewRevisionPage(BasePage):
         self._click(self.modal_accept_button)
 
     def check_ready_for_localization_checkbox(self):
-        self._click(self.ready_for_localization_modal_checkbox)
+        self._click(self.ready_for_localization_modal_label)
 
     def is_needs_change_checkbox_checked(self) -> bool:
         return self._is_checkbox_checked(self.needs_change_modal_checkbox)
 
     def click_on_needs_change_checkbox(self):
-        self._click(self.needs_change_modal_checkbox)
+        self._click(self.needs_change_modal_label)
 
     def add_text_to_needs_change_comment(self, text: str):
         self._fill(self.needs_change_comment_textarea, text)

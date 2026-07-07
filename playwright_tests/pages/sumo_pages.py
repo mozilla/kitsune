@@ -81,6 +81,7 @@ from playwright_tests.pages.contribute.contributor_tools_pages.article_discussio
 from playwright_tests.pages.contribute.contributor_tools_pages.community_hub_page import \
     CommunityHubPage
 from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
+from playwright_tests.pages.contribute.contributor_tools_pages.kb_locale_page import KBLocalePage
 from playwright_tests.pages.contribute.contributor_tools_pages.l10n_most_visited_translations import (
     MostVisitedTranslations,
 )
@@ -369,6 +370,10 @@ class SumoPages:
     @cached_property
     def kb_dashboard_page(self):
         return KBDashboard(self._page)
+
+    @cached_property
+    def kb_locale_page(self):
+        return KBLocalePage(self._page)
 
     @cached_property
     def recent_revisions_page(self):
