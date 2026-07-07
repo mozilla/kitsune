@@ -50,6 +50,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: true,
+          order: 4,
           data: objects.map((o) => ({ x: parseISO(o.date), y: o.questions })),
         },
         {
@@ -60,6 +61,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: true,
+          order: 3,
           data: objects.map((o) => ({ x: parseISO(o.date), y: o.solved })),
         },
         {
@@ -70,6 +72,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: true,
+          order: 1,
           data: objects.map((o) => ({ x: parseISO(o.date), y: o.responded_24 })),
         },
         {
@@ -80,6 +83,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: true,
+          order: 2,
           data: objects.map((o) => ({ x: parseISO(o.date), y: o.responded_72 })),
         },
         {
@@ -91,6 +95,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: false,
+          order: 0,
           data: objects.map((o) => ({
             x: parseISO(o.date),
             y: o.questions > 0 ? (100 * o.solved) / o.questions : null,
@@ -105,6 +110,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: false,
+          order: 0,
           data: objects.map((o) => ({
             x: parseISO(o.date),
             y: o.questions > 0 ? (100 * o.responded_24) / o.questions : null,
@@ -119,6 +125,7 @@ function buildConfig(objects) {
           pointRadius: 0,
           borderWidth: 1.5,
           fill: false,
+          order: 0,
           data: objects.map((o) => ({
             x: parseISO(o.date),
             y: o.questions > 0 ? (100 * o.responded_72) / o.questions : null,
