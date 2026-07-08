@@ -2,7 +2,7 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from "forums/includes/forum_macros.html" import thread_list with context %}
 {# L10n: {f} is the name of the forum. #}
-{% set title = _('{f} | Forums')|f(f=forum.name) %}
+{% set title = _('{f} | Contributor Discussions')|f(f=forum.name) %}
 {% set crumbs = [(url('forums.forums'), _('Contributor Discussions')), (None, forum.name)] %}
 {% set canonical_url = canonicalize(viewname='forums.threads', forum_slug=forum.slug) %}
 {% if threads.number > 1 %}
@@ -40,6 +40,7 @@
     <form name="find-thread" id="find-thread" class="simple-search-form"
       action="{{ url('forums.search', forum_slug=forum.slug) }}" method="get">
       <input type="search" name="q" id="search-q" class="searchbox" value="{{ q or '' }}"
+        {# L10n: A placeholder for the search field that appears when viewing contributor forums (e.g., on https://support.mozilla.org/forums/contributors/). #}
         placeholder="{{ _('Search this forum') }}" />
       <input type="submit" value="{{ _('Search') }}" class="search-button" />
     </form>
@@ -55,8 +56,10 @@
           <th class="author{% if sort == 3 %} sort{% endif %}"><a
               href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
           <th class="replies{% if sort == 4 %} sort{% endif %}"><a
-              href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
+              {# L10n: This is a header for the column with number of replies, displayed when viewing contributor forums (such as https://support.mozilla.org/forums/contributors). #}
+              href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ pgettext('counter column header', 'Replies') }}</a></th>
           <th class="last-post{% if sort == 5 %} sort{% endif %}"><a
+              {# L10n: This is a header for a column, displayed when viewing contributor forums (such as https://support.mozilla.org/forums/contributors/), which contains info about the last post for each thread (date and author). #}
               href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
         </tr>
       </thead>

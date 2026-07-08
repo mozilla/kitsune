@@ -2,8 +2,8 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor with context %}
 {# L10n: {f} if the name of the forum, {t} if the name of the thread. #}
-{% set title = _('Edit a post | {t} | {f} | Forums')|f(t=thread.title,f=forum.name) %}
-{% set crumbs = [(url('forums.forums'), _('Forums')),
+{% set title = _('Edit a post | {t} | {f} | Contributor Discussions')|f(t=thread.title,f=forum.name) %}
+{% set crumbs = [(url('forums.forums'), _('Contributor Discussions')),
 (url('forums.threads', forum.slug), forum.name),
 (url('forums.posts', forum.slug, thread.id), thread.title),
 (None, _('Edit a post'))] %}

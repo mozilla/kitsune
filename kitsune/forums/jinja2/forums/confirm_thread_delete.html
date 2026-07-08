@@ -1,10 +1,10 @@
 {% extends "forums/base.html" %}
 {# L10n: {t} is the title of the thread. {f} if the name of the forum. #}
-{% set title = _('Delete Thread | {t} | {f} | Forums')|f(t=thread.title, f=forum.name) %}
-{% set crumbs = [(url('forums.forums'), _('Forums')),
+{% set title = _('Delete thread "{t}" | {f} | Contributor Discussions')|f(t=thread.title, f=forum.name) %}
+{% set crumbs = [(url('forums.forums'), _('Contributor Discussions')),
                 (url('forums.threads', forum.slug), forum.name),
                 (url('forums.posts', forum.slug, thread.id), thread.title),
-                (None, _('Delete Thread'))] %}
+                (None, _('Delete thread'))] %}
 {% set ga_content_group = "contributor-forum-thread-delete" %}
 
 {% block content %}
