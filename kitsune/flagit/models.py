@@ -7,7 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _lazy
-from django.utils.translation import pgettext_lazy
 
 from kitsune.sumo.models import ModelBase
 
@@ -38,12 +37,9 @@ class FlaggedObject(ModelBase):
     FLAG_REJECTED = 2
     FLAG_DUPLICATE = 3
     STATUSES = (
-        # L10n: Unused. A fallback moderation flag status.
-        (FLAG_PENDING, pgettext_lazy("flag", "Pending")),
-        # L10n: Unused. A fallback moderation flag status.
-        (FLAG_ACCEPTED, _lazy("Accepted and Fixed")),
-        # L10n: Unused. A fallback moderation flag status.
-        (FLAG_REJECTED, _lazy("Rejected")),
+        (FLAG_PENDING, "Pending"),
+        (FLAG_ACCEPTED, "Accepted and Fixed"),
+        (FLAG_REJECTED, "Rejected"),
     )
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

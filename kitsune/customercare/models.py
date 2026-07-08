@@ -77,11 +77,11 @@ class SupportTicket(ModelBase):
     STATUS_PROCESSING_FAILED = "processing_failed"
 
     SUBMISSION_STATUS_CHOICES = (
-        (STATUS_PENDING, _lazy("Ticket Pending Classification")),
-        (STATUS_SENT, _lazy("Ticket Sent")),
-        (STATUS_FLAGGED, _lazy("Ticket under Review")),
-        (STATUS_REJECTED, _lazy("Ticket Rejected")),
-        (STATUS_PROCESSING_FAILED, _lazy("Ticket Processing Failed")),
+        (STATUS_PENDING, "Ticket Pending Classification"),
+        (STATUS_SENT, "Ticket Sent"),
+        (STATUS_FLAGGED, "Ticket under Review"),
+        (STATUS_REJECTED, "Ticket Rejected"),
+        (STATUS_PROCESSING_FAILED, "Ticket Processing Failed"),
     )
 
     # Zendesk ticket lifecycle statuses.
