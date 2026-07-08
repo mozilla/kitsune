@@ -1,16 +1,18 @@
-import {expect, use} from 'chai';
-import chaiLint from 'chai-lint';
+import {expect} from 'chai';
 
 import KBox from "sumo/js/kbox.js";
 
-use(chaiLint);
+// Returns the currently-open kbox container, or null if none is open.
+function openContainer() {
+  return document.querySelector('.kbox-container.kbox-open');
+}
 
 describe('kbox', () => {
   describe('declarative', () => {
-    let $kbox, kbox;
+    let kbox;
 
     beforeEach(() => {
-      $('body').empty().html(`
+      document.body.innerHTML = `
         <div id="sandbox">
           <div class="kbox"
                data-title="ignored title"
@@ -20,44 +22,47 @@ describe('kbox', () => {
             <p>lorem ipsum dolor sit amet.</p>
           </div>
           <a href="#" class="kbox-target">click me</a>
-        </div>`
-      );
+        </div>`;
 
-      $kbox = $('.kbox');
-      kbox = new KBox($kbox);
+      kbox = new KBox(document.querySelector('.kbox'));
+    });
+
+    afterEach(() => {
+      document.body.innerHTML = '';
     });
 
     it('should open when the target is clicked', () => {
-      $('.kbox-target').trigger('click');
-      expect($('.kbox-container').hasClass('kbox-open')).to.beTrue();
+      document.querySelector('.kbox-target').click();
+      expect(openContainer()).to.not.equal(null);
     });
 
     it('should open programmatically', () => {
       kbox.open();
-      expect($('.kbox-container').hasClass('kbox-open')).to.beTrue();
+      expect(openContainer()).to.not.equal(null);
     });
 
     it('should close programmatically', () => {
+      kbox.open();
       kbox.close();
-      expect($('.kbox-container').hasClass('kbox-open')).to.beFalse();
+      expect(openContainer()).to.equal(null);
     });
 
     it('should have the right title', () => {
       kbox.open();
-      expect($('.kbox-title').text()).to.equal('test kbox');
+      expect(document.querySelector('.kbox-title').textContent).to.equal('test kbox');
     });
 
     it('should have a modal overlay', () => {
-      expect($('#kbox-overlay').length).to.equal(0);
+      expect(document.getElementById('kbox-overlay')).to.equal(null);
       kbox.open();
-      expect($('#kbox-overlay').length).to.equal(1);
+      expect(document.getElementById('kbox-overlay')).to.not.equal(null);
     });
 
     it('destroy should clean up the container', () => {
       kbox.open();
-      expect($('.kbox-container').length).to.equal(1);
+      expect(document.querySelector('.kbox-container')).to.not.equal(null);
       kbox.destroy();
-      expect($('.kbox-container').length).to.equal(0);
+      expect(document.querySelector('.kbox-container')).to.equal(null);
     });
   });
 });

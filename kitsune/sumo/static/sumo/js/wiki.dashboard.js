@@ -1,34 +1,36 @@
-import "jquery-ui/ui/widgets/datepicker";
 import { getQueryParamsAsDict } from "sumo/js/main";
 
 /*
  * kb dashboard chart
  */
 
-(function($) {
-
-  'use strict';
-
-  $(function() {
-    if ($('body').is('.contributor-dashboard')) {
-      // Add click events to to the date tabs
-      $('.tabs--link').on('click', function() {
+function onReady() {
+  if (document.body.classList.contains('contributor-dashboard')) {
+    // Add click events to the date tabs
+    document.querySelectorAll('.tabs--link').forEach(function (link) {
+      link.addEventListener('click', function () {
         // Clear active class from all tabs--link
-        $('.tabs--link').removeClass('is-active');
+        document.querySelectorAll('.tabs--link').forEach(function (other) {
+          other.classList.remove('is-active');
+        });
         // Add is-active class to the clicked tabs--link
-        $(this).addClass('is-active');
+        link.classList.add('is-active');
       });
-    }
+    });
+  }
 
-    if ($('body').is('.localization-dashboard')) {
-      // Add's datepicker to the create announcement pop-up
-      addDatePicker('#id_show_after');
-      addDatePicker('#id_show_until');
-    }
+  if (document.body.classList.contains('localization-dashboard')) {
+    // Native date pickers for the create-announcement popup. Native date
+    // inputs use ISO (yyyy-mm-dd) values, matching the old datepicker format.
+    useNativeDate('#id_show_after');
+    useNativeDate('#id_show_until');
+  }
 
-    // product selector page reloading
-    $('#product-selector select').on('change', function() {
-      var val = $(this).val();
+  // product selector page reloading
+  var selector = document.querySelector('#product-selector select');
+  if (selector) {
+    selector.addEventListener('change', function () {
+      var val = selector.value;
       var queryParams = getQueryParamsAsDict(document.location.toString());
 
       if (val === '') {
@@ -36,12 +38,21 @@ import { getQueryParamsAsDict } from "sumo/js/main";
       } else {
         queryParams.product = val;
       }
-      document.location = document.location.pathname + '?' + $.param(queryParams);
+      document.location = document.location.pathname + '?' +
+        new URLSearchParams(queryParams).toString();
     });
-  });
-
-  function addDatePicker(inputId) {
-    $(inputId).attr('type','text').datepicker('option', 'dateFormat', 'yy-mm-dd');
   }
+}
 
-})(jQuery);
+function useNativeDate(selector) {
+  var input = document.querySelector(selector);
+  if (input) {
+    input.type = 'date';
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', onReady);
+} else {
+  onReady();
+}

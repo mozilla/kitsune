@@ -1,6 +1,6 @@
 import spinnerImg from "sumo/img/spinner.gif";
 import "sumo/js/libs/jquery.cookie";
-import "sumo/js/libs/jquery.lazyload";
+import { lazyload, loadAllImages } from "sumo/js/utils/lazyload";
 import KBox from "sumo/js/kbox";
 import CodeMirror from "codemirror";
 import "codemirror/addon/mode/simple";
@@ -37,7 +37,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       new ShowFor();
       initNeedsChange();
 
-      $('img.lazy').loadnow();
+      loadAllImages();
 
       // We can enable the buttons now.
       $('#actions input').prop("disabled", false);
@@ -60,7 +60,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
       initNeedsChange();
       initFormLock();
 
-      $('img.lazy').loadnow();
+      loadAllImages();
 
       // We can enable the buttons now.
       $('.submit input').prop("disabled", false);
@@ -91,7 +91,7 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
     collapsibleContributorTools();
 
-    $('img.lazy').lazyload();
+    lazyload();
   }
 
   function initArticleApproveModal() {
@@ -238,8 +238,10 @@ import collapsibleAccordionInit from "sumo/js/protocol-details-init";
         contentElement: $('#id_content'),
         previewElement: $preview
       });
-    $(preview).on('done', function (e, success) {
-      if (success) {
+    // AjaxPreview is now a native EventTarget; listen with addEventListener and
+    // read success off the CustomEvent detail (was a jQuery $(preview).on).
+    preview.addEventListener('done', function (e) {
+      if (e.detail.success) {
         $previewBottom.show();
         new ShowFor();
         $preview.find('select.enable-if-js').prop("disabled", false);
