@@ -139,7 +139,7 @@ ORDER_BY = OrderedDict(
         # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
         ("votes", ("num_votes_past_week", _lazy("Votes"))),
         # L10n: This is a question sort option. It is a part of a drop-down menu with no heading.
-        ("replies", ("num_answers", _lazy("Replies"))),
+        ("replies", ("num_answers", pgettext_lazy("question-sort", "Replies"))),
     ]
 )
 

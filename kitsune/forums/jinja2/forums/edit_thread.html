@@ -1,8 +1,8 @@
 {% extends "forums/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {# L10n: {f} is the name of the forum, {t} is the name of the thread. #}
-{% set title = _('Edit thread "{t}" | {f} | Forums')|f(t=thread.title, f=forum.name) %}
-{% set crumbs = [(url('forums.forums'), _('Forums')),
+{% set title = _('Edit thread "{t}" | {f} | Contributor Discussions')|f(t=thread.title, f=forum.name) %}
+{% set crumbs = [(url('forums.forums'), _('Contributor Discussions')),
 (url('forums.threads', forum.slug), forum.name),
 (url('forums.posts', forum.slug, thread.id), thread.title),
 (None, _('Edit thread'))] %}

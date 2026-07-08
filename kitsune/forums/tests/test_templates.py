@@ -195,14 +195,14 @@ class PostsTemplateTests(TestCase):
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
         self.assertEqual(200, response.status_code)
-        assert b"0 Replies" in response.content
+        assert b"0 replies" in response.content
 
         PostFactory(thread=t)
         PostFactory(thread=t)
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
         self.assertEqual(200, response.status_code)
-        assert b"2 Replies" in response.content
+        assert b"2 replies" in response.content
 
     def test_num_posts(self):
         """Verify the number of posts in all threads for a given post's author."""

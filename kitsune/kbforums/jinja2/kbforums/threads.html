@@ -34,7 +34,9 @@
           <th class="type"><a rel="ugc nofollow" href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Type') }}</a></th>
           <th class="title">{{ _('Title') }}</th>
           <th class="author{% if sort == 3 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
-          <th class="replies{% if sort == 4 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
+          {# L10n: This is a header for the column with number of replies, displayed when viewing contributor forums (such as https://support.mozilla.org/forums/contributors). #}
+          <th class="replies{% if sort == 4 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ pgettext('counter column header', 'Replies') }}</a></th>
+          {# L10n: This is a header for a column, displayed when viewing contributor forums (such as https://support.mozilla.org/forums/contributors/), which contains info about the last post for each thread (date and author). #}
           <th class="last-post{% if sort == 5 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
         </tr>
         {% for thread in threads.object_list %}

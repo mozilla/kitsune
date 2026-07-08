@@ -541,6 +541,7 @@ def search(request, forum_slug=None):
     search_form = BaseSearchForm(request.GET, initial={"forum": forum})
     if not search_form.is_valid():
         messages.add_message(
+            # L10n: A message that appears when searching a contributor forum (such as https://support.mozilla.org/forums/contributors/) fails.
             request, messages.WARNING, _("Something went wrong. Cannot search this forum.")
         )
         return threads(request, forum_slug=forum_slug)
