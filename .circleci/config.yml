@@ -93,8 +93,7 @@ jobs:
             kitsune.sumo kitsune.users kitsune.forums kitsune.groups kitsune.dashboards
             kitsune.customercare kitsune.kpi kitsune.upload kitsune.llm kitsune.announcements
             kitsune.gallery kitsune.notifications kitsune.messages kitsune.flagit kitsune.access
-            kitsune.inproduct kitsune.kbadge kitsune.tidings kitsune.karma kitsune.postcrash
-            kitsune.tags
+            kitsune.inproduct kitsune.kbadge kitsune.tidings kitsune.karma kitsune.tags
 
   test-js:
     docker:
