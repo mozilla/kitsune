@@ -134,12 +134,19 @@ def _documents_for(user, locale, topics=None, products=None):
         topic_ids = [t.id for t in topics]
         # For parent documents: include if they have the requested topics
         # For translations: include ONLY if their parent has the requested topics,
-        # completely ignoring any topics directly assigned to the translation
+        # completely ignoring any topics directly assigned to the translation. We
+        # also require the parent to have approved content, since a translation
+        # whose English parent has no approved revision shouldn't be listed (and it
+        # guarantees a non-null publication date when ordering newest-first).
         qs = qs.filter(
             # Either this is a parent document with matching topics
             (Q(parent__isnull=True) & Q(topics__in=topic_ids))
-            # OR this is a translation and its parent has matching topics
-            | (Q(parent__isnull=False) & Q(parent__topics__in=topic_ids))
+            # OR this is a translation whose parent has matching topics and content
+            | (
+                Q(parent__isnull=False)
+                & Q(parent__topics__in=topic_ids)
+                & Q(parent__current_revision__isnull=False)
+            )
         )
 
     for product in products or []:

@@ -590,3 +590,39 @@ class TestFacetHelpers(TestCase):
         self.assertEqual([d["id"] for d in docs], [trans_newer.id, trans_older.id])
         # Untranslated originals fall back to en-US, newest-first by their own date.
         self.assertEqual([d["id"] for d in fallback], [fallback_newer.id, fallback_older.id])
+
+    def test_documents_for_excludes_orphaned_translation(self):
+        """A translation whose English parent has no approved revision is not
+        listed at all, which also guarantees a non-null publication date when
+        ordering newest-first."""
+        cache.clear()
+        now = timezone.now()
+
+        releases = TopicFactory(
+            products=[self.desktop],
+            slug="releases-orphan",
+            article_ordering=Topic.ArticleOrdering.NEWEST,
+        )
+
+        # An orphaned translation: its parent carries the topic but has only an
+        # unapproved revision, so the parent has no approved content of its own.
+        orphan_parent = DocumentFactory(products=[self.desktop], topics=[releases])
+        RevisionFactory(document=orphan_parent, is_approved=False)
+        orphan_trans = DocumentFactory(locale="de", parent=orphan_parent, products=[self.desktop])
+        ApprovedRevisionFactory(document=orphan_trans, reviewed=now - timedelta(days=10))
+
+        # A normal translation whose parent is approved.
+        parent = DocumentFactory(products=[self.desktop], topics=[releases])
+        rev = ApprovedRevisionFactory(
+            document=parent, is_ready_for_localization=True, reviewed=now - timedelta(days=5)
+        )
+        trans = DocumentFactory(locale="de", parent=parent, products=[self.desktop])
+        ApprovedRevisionFactory(document=trans, based_on=rev, reviewed=now - timedelta(days=1))
+
+        docs = _documents_for(self.anonymous, locale="de", topics=[releases])
+
+        # The orphaned translation is filtered out; only the normally-parented one
+        # is listed, with a non-null publication date.
+        self.assertEqual([d["id"] for d in docs], [trans.id])
+        self.assertNotIn(orphan_trans.id, [d["id"] for d in docs])
+        self.assertTrue(all(d["first_published_at"] is not None for d in docs))
