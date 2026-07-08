@@ -3,14 +3,25 @@ import sinon from 'sinon';
 
 import AjaxPreview from "sumo/js/ajaxpreview";
 
+function htmlResponse(html) {
+  return {
+    ok: true,
+    status: 200,
+    headers: { get: () => "text/html" },
+    json: async () => JSON.parse(html),
+    text: async () => html,
+  };
+}
+
 describe('ajax preview', () => {
   describe('events', () => {
 
     beforeEach(() => {
+      sinon
+        .stub(window, 'fetch')
+        .resolves(htmlResponse('<p>The content to preview.</p>'));
 
-      sinon.stub($, 'ajax').yieldsTo('success', '<p>The content to preview.</p>');
-
-      $('body').empty().html(`
+      document.body.innerHTML = `
         <div>
           <form action="" method="post">
             <input type="hidden" name="csrfmiddlewaretoken" value="tokenvalue">
@@ -21,46 +32,41 @@ describe('ajax preview', () => {
               data-preview-content-id="id_content">
           </form>
           <div id="preview-container"></div>
-        </div>`
-      );
+        </div>`;
     });
 
     afterEach(() => {
-      $.ajax.restore();
-    });
-
-    // This test is mainly about testing the test framework.
-    it('should have a jquery', () => {
-      expect($('body').length).to.equal(1);
+      window.fetch.restore();
+      document.body.innerHTML = '';
     });
 
     it('should fire "show-preview" event', done => {
-      let ajaxPreview = new AjaxPreview($('#preview'));
-      $(ajaxPreview).on('show-preview', (e, success, content) => {
-        expect(success).to.equal(true);
-        expect(content).to.equal('<p>The content to preview.</p>');
+      let ajaxPreview = new AjaxPreview(document.getElementById('preview'));
+      ajaxPreview.addEventListener('show-preview', (e) => {
+        expect(e.detail.success).to.equal(true);
+        expect(e.detail.html).to.equal('<p>The content to preview.</p>');
         done();
       });
-      $(ajaxPreview).trigger('get-preview');
+      ajaxPreview.dispatchEvent(new CustomEvent('get-preview'));
     });
 
     it('should fire "done" event', done => {
-      let ajaxPreview = new AjaxPreview($('#preview'));
-      $(ajaxPreview).on('done', (e, success) => {
-        expect(success).to.equal(true);
+      let ajaxPreview = new AjaxPreview(document.getElementById('preview'));
+      ajaxPreview.addEventListener('done', (e) => {
+        expect(e.detail.success).to.equal(true);
         done();
       });
-      $(ajaxPreview).trigger('get-preview');
+      ajaxPreview.dispatchEvent(new CustomEvent('get-preview'));
     });
 
     it('should show the preview', done => {
-      let ajaxPreview = new AjaxPreview($('#preview'));
-      $(ajaxPreview).on('done', (e, success) => {
-        expect($('#preview-container').html())
+      let ajaxPreview = new AjaxPreview(document.getElementById('preview'));
+      ajaxPreview.addEventListener('done', () => {
+        expect(document.getElementById('preview-container').innerHTML)
           .to.equal('<p>The content to preview.</p>');
         done();
       });
-      $('#preview').trigger('click');
+      document.getElementById('preview').click();
     });
   });
 });

@@ -1,6 +1,4 @@
-import "sumo/js/libs/jquery.cookie";
-import "sumo/js/libs/jquery.placeholder";
-import _each from "underscore/modules/each";
+import { getCookie } from "sumo/js/utils/cookie";
 
 export const getQueryParamsAsDict = function (url) {
   // Parse the url's query parameters into a dict. Mostly stolen from:
@@ -97,11 +95,15 @@ export const safeInterpolate = function (fmt, obj, named) {
 };
 
 
-// Pass CSRF token in XHR header
+// Pass CSRF token in XHR header for jQuery ajax.
+// NOTE: This $.ajaxSetup is intentionally retained until every jQuery $.ajax
+// caller has been migrated to apiFetch (which sets its own CSRF header). It is
+// what supplies the header to all not-yet-migrated $.ajax/$.post calls, so
+// removing it early would break their CSRF. Remove in the teardown batch.
 $.ajaxSetup({
   beforeSend: function (xhr, settings) {
     var csrfElem = document.querySelector('input[name=csrfmiddlewaretoken]');
-    var csrf = $.cookie('csrftoken');
+    var csrf = getCookie('csrftoken');
     if (!csrf && csrfElem) {
       csrf = csrfElem.value;
     }
@@ -111,22 +113,32 @@ $.ajaxSetup({
   }
 });
 
-$(function () {
+function onReady() {
   layoutTweaks();
   /* Focus form field when clicking on error message. */
-  $('#content ul.errorlist a').on("click", function () {
-    $($(this).attr('href')).focus();
-    return false;
+  document.querySelectorAll('#content ul.errorlist a').forEach(function (link) {
+    link.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        target.focus();
+      }
+    });
   });
 
-  if ($('body').data('readonly')) {
-    var $forms = $('form[method=post]');
-    $forms.find('input, button, select, textarea').attr('disabled', 'disabled');
-    $forms.find('input[type=image]').css('opacity', .5);
-    $('div.editor-tools').remove();
+  if (document.body.dataset.readonly === 'true') {
+    document.querySelectorAll('form[method=post]').forEach(function (form) {
+      form.querySelectorAll('input, button, select, textarea').forEach(function (el) {
+        el.setAttribute('disabled', 'disabled');
+      });
+      form.querySelectorAll('input[type=image]').forEach(function (el) {
+        el.style.opacity = 0.5;
+      });
+    });
+    document.querySelectorAll('div.editor-tools').forEach(function (el) {
+      el.remove();
+    });
   }
-
-  $('input[placeholder]').placeholder();
 
   initAutoSubmitSelects();
   disableFormsOnSubmit();
@@ -134,11 +146,23 @@ $(function () {
   userMessageUI();
 
   /* Skip to search (a11y) */
-  $('#skip-to-search').on('click', function (ev) {
-    ev.preventDefault();
-    $('input[name=q]').last().get(0).focus();
-  });
-});
+  var skip = document.getElementById('skip-to-search');
+  if (skip) {
+    skip.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var qInputs = document.querySelectorAll('input[name=q]');
+      if (qInputs.length) {
+        qInputs[qInputs.length - 1].focus();
+      }
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', onReady);
+} else {
+  onReady();
+}
 
 window.addEventListener('popstate', function () {
   setTimeout(layoutTweaks, 0);
@@ -147,9 +171,16 @@ window.addEventListener('popstate', function () {
 /*
   * Initialize some selects so that they auto-submit on change.
   */
-function initAutoSubmitSelects() {
-  $('select.autosubmit').on('change keyup', function () {
-    $(this).closest('form').trigger('submit');
+export function initAutoSubmitSelects() {
+  document.querySelectorAll('select.autosubmit').forEach(function (select) {
+    var submitForm = function () {
+      var form = select.closest('form');
+      if (form) {
+        form.requestSubmit();
+      }
+    };
+    select.addEventListener('change', submitForm);
+    select.addEventListener('keyup', submitForm);
   });
 }
 
@@ -159,6 +190,10 @@ function initAutoSubmitSelects() {
   *
   * NOTE: We can't disable the buttons because it prevents their name/value
   * from being submitted and we depend on those in some views.
+  *
+  * TODO(jquery-removal): retained on jQuery until the $.ajax callers are gone.
+  * It re-enables the form via $this.ajaxComplete(), which only fires for jQuery
+  * $.ajax. Migrate to vanilla in the teardown batch once no $.ajax remains.
   */
 function disableFormsOnSubmit() {
   $('form').on("submit", function (ev) {
@@ -204,43 +239,53 @@ function remove_item(from_list, match_against) {
   }
 }
 
-function userMessageUI() {
+export function userMessageUI() {
   // Add a close button to all messages.
-  $('.user-messages > li').each(function () {
-    var $msg = $(this);
-    $('<div>', { 'class': 'close-button' }).appendTo($msg);
+  document.querySelectorAll('.user-messages > li').forEach(function (msg) {
+    var closeButton = document.createElement('div');
+    closeButton.className = 'close-button';
+    msg.appendChild(closeButton);
   });
 
-  function key($msg) {
-    return 'user-message::dismissed::' + $msg.attr('id');
+  function key(msg) {
+    return 'user-message::dismissed::' + msg.getAttribute('id');
   }
 
   // Some messages can be dismissed permanently.
-  $('.user-messages .dismissible').each(function () {
-    var $msg = $(this);
-    if (!localStorage.getItem(key($msg))) {
-      $msg.show();
+  document.querySelectorAll('.user-messages .dismissible').forEach(function (msg) {
+    if (!localStorage.getItem(key(msg))) {
+      msg.style.display = '';
     }
   });
-  $('.user-messages').on('click', '.dismissible .dismiss', function (e) {
-    var $msg = $(this).parent();
-    localStorage.setItem(key($msg), true);
-    $msg.hide();
+  document.querySelectorAll('.user-messages').forEach(function (container) {
+    container.addEventListener('click', function (e) {
+      var dismiss = e.target.closest('.dismissible .dismiss');
+      if (!dismiss) {
+        return;
+      }
+      var msg = dismiss.parentNode;
+      localStorage.setItem(key(msg), true);
+      msg.style.display = 'none';
+    });
   });
 }
 
 function layoutTweaks() {
   // Adjust the height of cards to be consistent within a group.
-  $('.card-grid').each(function () {
-    var $cards = $(this).children('li');
+  document.querySelectorAll('.card-grid').forEach(function (grid) {
+    var cards = Array.from(grid.children).filter(function (el) {
+      return el.tagName === 'LI';
+    });
     var max = 0;
-    $cards.each(function () {
-      var h = $(this).height();
+    cards.forEach(function (card) {
+      var h = card.offsetHeight;
       if (h > max) {
         max = h;
       }
     });
-    $cards.height(max);
+    cards.forEach(function (card) {
+      card.style.height = max + 'px';
+    });
   });
 }
 

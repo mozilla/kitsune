@@ -1,6 +1,6 @@
-import "sumo/js/libs/jquery.lazyload";
+import { lazyload } from "sumo/js/utils/lazyload";
 import ShowFor from "sumo/js/showfor";
 
 new ShowFor();
 
-$("img.lazy").lazyload();
+lazyload();

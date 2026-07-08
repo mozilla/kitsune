@@ -1,4 +1,4 @@
-import "sumo/js/libs/jquery.autoresize";
+import { autoResize } from "sumo/js/utils/autoresize";
 import AjaxPreview from "sumo/js/ajaxpreview";
 import Marky from "sumo/js/markup";
 
@@ -22,7 +22,8 @@ $(function() {
 
   // Show the orginal button and expanding textarea.
   $area.one('focus', function() {
-    $area.autoResize({minHeight: 150}).addClass('focused');
+    autoResize($area[0], {minHeight: 150});
+    $area.addClass('focused');
     $('#read-message .editor-tools').show();
     $('#read-message input[type=submit]').show();
     Marky.createSimpleToolbar('#read-message .editor-tools', '#id_message', {privateMessaging: true});

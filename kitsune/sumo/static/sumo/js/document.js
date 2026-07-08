@@ -1,4 +1,4 @@
-import "sumo/js/libs/jquery.lazyload";
+import { lazyload, loadAllImages } from "sumo/js/utils/lazyload";
 import {
   getQueryParamsAsDict,
   getReferrer,
@@ -114,10 +114,10 @@ $(window).on("load", function () {
 // break the lazy loading.
 function determineLazyLoad() {
   if (window.location.href.indexOf("relay-integration") > -1) {
-    $("img.lazy").loadnow(); // Load all images
+    loadAllImages(); // Load all images
   }
   else {
-    $("img.lazy").lazyload();
+    lazyload();
   }
 };
 
