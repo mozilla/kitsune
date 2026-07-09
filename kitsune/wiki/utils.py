@@ -300,14 +300,6 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
     main_doc_ids = {doc["id"] for doc in main_docs_data}
     fallback_doc_ids = {doc["id"] for doc in (fallback_docs_data or [])}
 
-    # When any topic wants newest ordering, documents_for includes each article's
-    # publication date; index it by document id so we can order those cards below.
-    published_at = {
-        doc["id"]: doc["first_published_at"]
-        for doc in chain(main_docs_data, fallback_docs_data or [])
-        if "first_published_at" in doc
-    }
-
     all_documents = (
         Document.objects.filter(id__in=main_doc_ids | fallback_doc_ids)
         .select_related("parent")
@@ -352,10 +344,11 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
 
         if newest_first := (topic.article_ordering == Topic.ArticleOrdering.NEWEST):
             # Featured articles are always shown first; order the rest newest-first
-            # by publication date. Use nlargest so we only pull the few we need
-            # instead of sorting the whole list.
+            # by the original document's creation order (its parent's id for
+            # translations). Use nlargest so we only pull the few we need instead
+            # of sorting the whole list.
             remaining_docs = heapq.nlargest(
-                3, remaining_docs, key=lambda doc: published_at[doc.id]
+                3, remaining_docs, key=lambda doc: doc.parent_id or doc.id
             )
 
         # First try to get documents from featured and main docs
@@ -366,7 +359,7 @@ def build_topics_data(request: HttpRequest, product: Product, topics: list[Topic
             documents_to_show = main_docs
         elif newest_first:
             documents_to_show = heapq.nlargest(
-                3, fallback_topic_docs, key=lambda doc: published_at[doc.id]
+                3, fallback_topic_docs, key=lambda doc: doc.parent_id or doc.id
             )
         else:
             documents_to_show = list(islice(fallback_topic_docs, 3))

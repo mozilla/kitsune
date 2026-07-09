@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 choices=[
                     ("default", "Default (display order, then popularity)"),
-                    ("newest", "Newest first (by publication date)"),
+                    ("newest", "Newest first (most recently added)"),
                 ],
                 default="default",
                 help_text="How KB articles are ordered for this topic.",

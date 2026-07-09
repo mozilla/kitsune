@@ -119,7 +119,7 @@ class Product(BaseProductTopic):
 class Topic(BaseProductTopic):
     class ArticleOrdering(models.TextChoices):
         DEFAULT = "default", "Default (display order, then popularity)"
-        NEWEST = "newest", "Newest first (by publication date)"
+        NEWEST = "newest", "Newest first (most recently added)"
 
     # We don't use a SlugField here because it isn't unique by itself.
     slug = models.CharField(max_length=255, db_index=True)

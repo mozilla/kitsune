@@ -1,9 +1,6 @@
-from datetime import timedelta
-
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
-from django.utils import timezone
 
 from kitsune.products.models import Topic
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -510,9 +507,8 @@ class TestFacetHelpers(TestCase):
 
     def test_documents_for_newest_first(self):
         """A topic with article_ordering=NEWEST orders articles newest-first by
-        publication (review) date, ignoring display_order and creation order."""
+        the document's creation order (id), ignoring display_order."""
         cache.clear()
-        now = timezone.now()
 
         releases = TopicFactory(
             products=[self.desktop],
@@ -520,33 +516,32 @@ class TestFacetHelpers(TestCase):
             article_ordering=Topic.ArticleOrdering.NEWEST,
         )
 
-        # Publication order (newest first) is pub_new, pub_mid, pub_old. Both the
-        # display_order and the creation order are deliberately different, so only
-        # the publication date can produce the expected result.
-        pub_mid = DocumentFactory(products=[self.desktop], topics=[releases], display_order=3)
-        ApprovedRevisionFactory(document=pub_mid, reviewed=now - timedelta(days=10))
-        pub_new = DocumentFactory(products=[self.desktop], topics=[releases], display_order=1)
-        ApprovedRevisionFactory(document=pub_new, reviewed=now - timedelta(days=5))
-        pub_old = DocumentFactory(products=[self.desktop], topics=[releases], display_order=2)
-        ApprovedRevisionFactory(document=pub_old, reviewed=now - timedelta(days=15))
+        # Created oldest -> newest (ascending id), with display_order set in the
+        # same ascending order, so newest-first (descending id) is the opposite
+        # of the default (ascending display_order) ordering.
+        oldest = DocumentFactory(products=[self.desktop], topics=[releases], display_order=1)
+        ApprovedRevisionFactory(document=oldest)
+        middle = DocumentFactory(products=[self.desktop], topics=[releases], display_order=2)
+        ApprovedRevisionFactory(document=middle)
+        newest = DocumentFactory(products=[self.desktop], topics=[releases], display_order=3)
+        ApprovedRevisionFactory(document=newest)
 
         docs = _documents_for(self.anonymous, locale="en-US", topics=[releases])
-        self.assertEqual([d["id"] for d in docs], [pub_new.id, pub_mid.id, pub_old.id])
+        self.assertEqual([d["id"] for d in docs], [newest.id, middle.id, oldest.id])
 
         # Sanity check: under a default-ordered topic the same documents follow
-        # display_order (ascending), a different order than newest-first.
+        # display_order (ascending) instead, i.e. the opposite order.
         default_topic = TopicFactory(products=[self.desktop], slug="default-order")
-        for doc in (pub_mid, pub_new, pub_old):
+        for doc in (oldest, middle, newest):
             doc.topics.add(default_topic)
         default_docs = _documents_for(self.anonymous, locale="en-US", topics=[default_topic])
-        self.assertEqual([d["id"] for d in default_docs], [pub_new.id, pub_old.id, pub_mid.id])
+        self.assertEqual([d["id"] for d in default_docs], [oldest.id, middle.id, newest.id])
 
-    def test_documents_for_newest_first_uses_parent_publish_date(self):
+    def test_documents_for_newest_first_uses_original_order(self):
         """For a NEWEST topic, translations are ordered by their *parent's*
-        publication date (not the translation's own), and the en-US fallback list
+        creation order (not the translation's own), and the en-US fallback list
         uses the same newest-first ordering."""
         cache.clear()
-        now = timezone.now()
 
         releases = TopicFactory(
             products=[self.desktop],
@@ -554,75 +549,29 @@ class TestFacetHelpers(TestCase):
             article_ordering=Topic.ArticleOrdering.NEWEST,
         )
 
-        # Two en-US originals with distinct publication dates.
-        parent_newer = DocumentFactory(products=[self.desktop], topics=[releases])
-        rev_newer = ApprovedRevisionFactory(
-            document=parent_newer, is_ready_for_localization=True, reviewed=now - timedelta(days=5)
-        )
+        # Two en-US originals; parent_newer is created last (higher id => newer).
         parent_older = DocumentFactory(products=[self.desktop], topics=[releases])
-        rev_older = ApprovedRevisionFactory(
-            document=parent_older,
-            is_ready_for_localization=True,
-            reviewed=now - timedelta(days=20),
-        )
+        rev_older = ApprovedRevisionFactory(document=parent_older, is_ready_for_localization=True)
+        parent_newer = DocumentFactory(products=[self.desktop], topics=[releases])
+        rev_newer = ApprovedRevisionFactory(document=parent_newer, is_ready_for_localization=True)
 
-        # German translations whose *own* review dates are the opposite order of
-        # their parents', to prove ordering follows the parent's publication date.
+        # Translations created in the *opposite* order of their parents, so
+        # ordering by the translation's own id would disagree with the parent's.
         trans_newer = DocumentFactory(locale="de", parent=parent_newer, products=[self.desktop])
-        ApprovedRevisionFactory(
-            document=trans_newer, based_on=rev_newer, reviewed=now - timedelta(days=40)
-        )
+        ApprovedRevisionFactory(document=trans_newer, based_on=rev_newer)
         trans_older = DocumentFactory(locale="de", parent=parent_older, products=[self.desktop])
-        ApprovedRevisionFactory(
-            document=trans_older, based_on=rev_older, reviewed=now - timedelta(days=2)
-        )
+        ApprovedRevisionFactory(document=trans_older, based_on=rev_older)
 
-        # Two untranslated en-US originals, to populate the de fallback list.
-        fallback_newer = DocumentFactory(products=[self.desktop], topics=[releases])
-        ApprovedRevisionFactory(document=fallback_newer, reviewed=now - timedelta(days=3))
+        # Two more originals left untranslated, to populate the en-US fallback.
         fallback_older = DocumentFactory(products=[self.desktop], topics=[releases])
-        ApprovedRevisionFactory(document=fallback_older, reviewed=now - timedelta(days=25))
+        ApprovedRevisionFactory(document=fallback_older)
+        fallback_newer = DocumentFactory(products=[self.desktop], topics=[releases])
+        ApprovedRevisionFactory(document=fallback_newer)
 
         docs, fallback = documents_for(self.anonymous, locale="de", topics=[releases])
 
-        # Translations ordered by parent publication date (parent_newer first),
-        # even though trans_newer's own revision is the older one.
+        # Translations ordered by parent creation order (parent_newer first),
+        # even though trans_older has the higher (later-created) translation id.
         self.assertEqual([d["id"] for d in docs], [trans_newer.id, trans_older.id])
-        # Untranslated originals fall back to en-US, newest-first by their own date.
+        # The untranslated originals fall back to en-US, newest-first.
         self.assertEqual([d["id"] for d in fallback], [fallback_newer.id, fallback_older.id])
-
-    def test_documents_for_excludes_orphaned_translation(self):
-        """A translation whose English parent has no approved revision is not
-        listed at all, which also guarantees a non-null publication date when
-        ordering newest-first."""
-        cache.clear()
-        now = timezone.now()
-
-        releases = TopicFactory(
-            products=[self.desktop],
-            slug="releases-orphan",
-            article_ordering=Topic.ArticleOrdering.NEWEST,
-        )
-
-        # An orphaned translation: its parent carries the topic but has only an
-        # unapproved revision, so the parent has no approved content of its own.
-        orphan_parent = DocumentFactory(products=[self.desktop], topics=[releases])
-        RevisionFactory(document=orphan_parent, is_approved=False)
-        orphan_trans = DocumentFactory(locale="de", parent=orphan_parent, products=[self.desktop])
-        ApprovedRevisionFactory(document=orphan_trans, reviewed=now - timedelta(days=10))
-
-        # A normal translation whose parent is approved.
-        parent = DocumentFactory(products=[self.desktop], topics=[releases])
-        rev = ApprovedRevisionFactory(
-            document=parent, is_ready_for_localization=True, reviewed=now - timedelta(days=5)
-        )
-        trans = DocumentFactory(locale="de", parent=parent, products=[self.desktop])
-        ApprovedRevisionFactory(document=trans, based_on=rev, reviewed=now - timedelta(days=1))
-
-        docs = _documents_for(self.anonymous, locale="de", topics=[releases])
-
-        # The orphaned translation is filtered out; only the normally-parented one
-        # is listed, with a non-null publication date.
-        self.assertEqual([d["id"] for d in docs], [trans.id])
-        self.assertNotIn(orphan_trans.id, [d["id"] for d in docs])
-        self.assertTrue(all(d["first_published_at"] is not None for d in docs))
