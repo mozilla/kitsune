@@ -362,8 +362,12 @@ ShowFor.prototype.updateState = function () {
 
   this.container.querySelectorAll('.product').forEach(function (productElem) {
     var slug = productElem.dataset.product;
+    // container defaults to <body>, so this can match non-showfor .product
+    // elements that have no checkbox. jQuery's .prop('checked') returned
+    // undefined for those (empty set); guard to match that instead of throwing.
+    var checkbox = productElem.querySelector('input[type=checkbox]');
     this.state[slug] = {
-      enabled: productElem.querySelector('input[type=checkbox]').checked
+      enabled: checkbox ? checkbox.checked : undefined
     };
 
     productElem.querySelectorAll('select').forEach(function (selectElem) {
@@ -376,8 +380,8 @@ ShowFor.prototype.updateState = function () {
         var option = selectElem.selectedOptions[0];
         data = {
           slug: data,
-          min: parseFloat(option.dataset.min),
-          max: parseFloat(option.dataset.max)
+          min: option ? parseFloat(option.dataset.min) : NaN,
+          max: option ? parseFloat(option.dataset.max) : NaN
         };
       }
 

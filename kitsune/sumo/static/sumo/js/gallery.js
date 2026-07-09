@@ -491,11 +491,16 @@ import "sumo/js/kbox";
     }
   });
 
-  // Open modal window from media page
+  // Open modal window from media page. Use a native click: KBox's open trigger
+  // is now a native addEventListener handler, which jQuery's .trigger('click')
+  // doesn't reliably invoke.
   if (document.location.hash === '#upload' ||
   $('#gallery-upload-type').hasClass('draft') ||
   $('body').hasClass('submitted')) {
-    $('#btn-upload').trigger("click");
+    var btnUpload = document.getElementById('btn-upload');
+    if (btnUpload) {
+      btnUpload.click();
+    }
   }
 
 })(jQuery);
