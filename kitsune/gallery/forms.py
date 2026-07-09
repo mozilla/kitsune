@@ -1,6 +1,5 @@
 from django import forms
 from django.conf import settings
-from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.gallery.models import Image
@@ -78,21 +77,17 @@ class MediaForm(forms.ModelForm):
 class ImageForm(MediaForm):
     """Image form."""
 
+    accept = ",".join(
+        f".{extension}" for extension in sorted(LimitedImageField.ALLOWED_IMAGE_EXTENSIONS)
+    )
+
     file = LimitedImageField(
         error_messages={"required": MSG_IMAGE_REQUIRED, "max_length": MSG_IMAGE_LONG},
         label=_lazy("Image"),
+        help_text=_lazy("Accepted formats include .PNG, .JPG, .JPEG and .GIF."),
         max_length=settings.MAX_FILENAME_LENGTH,
-        widget=forms.FileInput(attrs={"accept": "image/*"}),
+        widget=forms.FileInput(attrs={"accept": accept}),
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        msg = _(
-            "Accepted formats include: PNG, JPEG, GIF. "
-            '<a target="_blank" href="{learn_more}">Learn more...</a>'
-        )
-        url = "https://developer.mozilla.org/docs/Web/Media/Guides/Formats/Image_types"
-        self.fields["file"].help_text = msg.format(learn_more=url)
 
     class Meta:
         model = Image
