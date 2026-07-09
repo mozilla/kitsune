@@ -683,6 +683,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "kitsune.access",
     "kitsune.sumo",
     "kitsune.search",
+    "kitsune.retrieval",
     "kitsune.forums",
     "rest_framework.authtoken",
     "kitsune.questions",
