@@ -25,7 +25,7 @@ def send_award_notification(award_id: int):
     @email_utils.safe_translation
     def _make_mail(locale, context, email):
         subject = _("You were awarded the '{title}' badge!").format(
-            title=pgettext("DB: badger.Badge.title", award.badge.title)
+            title=pgettext("DB: kbadge.Badge.title", award.badge.title)
         )
 
         mail = email_utils.make_mail(

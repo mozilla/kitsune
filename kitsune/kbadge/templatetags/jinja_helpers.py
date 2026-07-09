@@ -18,9 +18,9 @@ def _display_db_string(value, context):
 
 @library.global_function
 def display_badge_title(title):
-    return _display_db_string(title, "DB: badger.Badge.title")
+    return _display_db_string(title, "DB: kbadge.Badge.title")
 
 
 @library.global_function
 def display_badge_description(description):
-    return _display_db_string(description, "DB: badger.Badge.description")
+    return _display_db_string(description, "DB: kbadge.Badge.description")
