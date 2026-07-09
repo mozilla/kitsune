@@ -1,11 +1,11 @@
 {{ _('Congratulations!') }}
 
 {% if award.creator %}
-{% trans awarder=display_name(award.creator), title=pgettext('DB: badger.Badge.title', badge.title) %}
+{% trans awarder=display_name(award.creator), title=pgettext('DB: kbadge.Badge.title', badge.title) %}
 {{ awarder }} has awarded you the {{ title }} badge!
 {% endtrans %}
 {% else %}
-{% trans title=pgettext('DB: badger.Badge.title', badge.title) %}
+{% trans title=pgettext('DB: kbadge.Badge.title', badge.title) %}
 You have been awarded the {{ title }} badge!
 {% endtrans %}
 {% endif %}
