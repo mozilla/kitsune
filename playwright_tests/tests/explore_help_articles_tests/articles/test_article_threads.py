@@ -137,7 +137,7 @@ def test_thread_replies_counter_increment(page: Page, create_user_factory):
                             "discussion thread and verifying that the thread counter is not 0"):
         thread_info = sumo_pages.kb_article_thread_flow.add_new_kb_discussion_thread()
         expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
-            "0 Replies")
+            "0 replies")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has incremented successfully"):
@@ -154,7 +154,7 @@ def test_thread_replies_counter_increment(page: Page, create_user_factory):
 
     with check, allure.step("Verifying that the thread counter is 1"):
         expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
-            "1 Replies")
+            "1 reply")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has incremented successfully"):
@@ -194,7 +194,7 @@ def test_thread_replies_counter_decrement(page: Page, create_user_factory):
             utilities.kb_new_thread_test_data['thread_reply_body']
         )
         expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
-            "2 Replies")
+            "2 replies")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has incremented successfully"):
@@ -210,7 +210,7 @@ def test_thread_replies_counter_decrement(page: Page, create_user_factory):
                             "reply counter for the posted thread has decremented successfully"):
         sumo_pages.kb_article_thread_flow.delete_reply_to_thread(thread_reply_info['reply_id'])
         expect(sumo_pages.kb_article_discussion_page.thread_page_replies_counter).to_have_text(
-            "1 Replies")
+            "1 reply")
 
     with check, allure.step("Manually navigating to the discuss endpoint and verifying that the "
                             "reply counter for the posted thread has decremented successfully"):
@@ -761,7 +761,7 @@ def test_article_thread_content_edit(page: Page, thread_author, create_user_fact
             sumo_pages.kb_article_discussion_page.click_on_a_particular_thread(
                 thread_info_two["thread_id"])
 
-    with allure.step("Clicking on the 'Edit this thread', adding data inside the title field "
+    with allure.step("Clicking on the 'Edit thread title', adding data inside the title field "
                      "and clicking on the cancel button"):
         sumo_pages.kb_article_thread_flow._edit_article_thread(
             utilities.kb_new_thread_test_data['second_thread_updated_title'], False

@@ -27,7 +27,7 @@ class KBArticleDiscussionPage(BasePage):
 
         """Locators belonging to the thread content section."""
         self.article_thread_edit_this_thread = page.get_by_role(
-            "link", name="Edit this thread", exact=True)
+            "link", name="Edit thread title", exact=True)
         self.article_thread_sticky_status = page.locator(
             "//ul[@id='thread-meta']/li[text()='Sticky']")
         self.posted_thread = lambda thread_id: page.locator(
