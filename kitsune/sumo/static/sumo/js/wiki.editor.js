@@ -64,19 +64,19 @@ function updateDisabledMessage(name) {
   let numberDisabled = document.querySelectorAll(
     `#relevant-${name} input[type="checkbox"][name="${name}"]:disabled`
   ).length;
-  document.getElementById(
-    `relevant-${name}-disabled-message`
-  ).hidden = (numberDisabled === 0);
+  let message = document.getElementById(`relevant-${name}-disabled-message`);
+  if (message) {
+    message.hidden = (numberDisabled === 0);
+  }
 }
 
 function updateSelectedMessage(name) {
   let numberSelected = document.querySelectorAll(
     `#relevant-${name} input[type="checkbox"][name="${name}"]:checked`
   ).length;
-  if (numberSelected > 0) {
-    document.getElementById(
-      `relevant-${name}-selected-message`
-    ).textContent = interpolate(
+  let message = document.getElementById(`relevant-${name}-selected-message`);
+  if (numberSelected > 0 && message) {
+    message.textContent = interpolate(
       gettext("%(number)s selected"), { number: numberSelected }, true
     );
   }
@@ -181,28 +181,32 @@ document.addEventListener("DOMContentLoaded", function () {
       handleUpdate();
     });
   });
-  document.getElementById(
-    "relevant-topics-clear-selected"
-  ).addEventListener("click", function (event) {
-    event.preventDefault();
-    clearSelected("topics");
-  });
-  document.getElementById(
-    "relevant-products-clear-selected"
-  ).addEventListener("click", function (event) {
-    event.preventDefault();
-    clearSelected("products");
-  });
+  let clearTopics = document.getElementById("relevant-topics-clear-selected");
+  if (clearTopics) {
+    clearTopics.addEventListener("click", function (event) {
+      event.preventDefault();
+      clearSelected("topics");
+    });
+  }
+  let clearProducts = document.getElementById("relevant-products-clear-selected");
+  if (clearProducts) {
+    clearProducts.addEventListener("click", function (event) {
+      event.preventDefault();
+      clearSelected("products");
+    });
+  }
 
-  new TomSelect("select[id='id_restrict_to_groups']", {
-    closeAfterSelect: true,
-    plugins: {
-      remove_button: {
-        title: "Remove Item"
+  if (document.getElementById("id_restrict_to_groups")) {
+    new TomSelect("select[id='id_restrict_to_groups']", {
+      closeAfterSelect: true,
+      plugins: {
+        remove_button: {
+          title: "Remove Item"
+        },
       },
-    },
-    placeholder: "Restrict visibility to selected group(s)",
-    persist: false,
-    create: true,
-  });
+      placeholder: "Restrict visibility to selected group(s)",
+      persist: false,
+      create: true,
+    });
+  }
 });

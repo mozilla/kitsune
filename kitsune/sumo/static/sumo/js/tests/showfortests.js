@@ -236,6 +236,18 @@ describe('ShowFor', () => {
         },
       });
     });
+
+    it('does not throw for a .product without a checkbox (non-showfor element)', () => {
+      // ShowFor's container defaults to <body>, so unrelated .product elements
+      // on the page get scanned too; they have no checkbox.
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        '<div class="product" data-product="stray"></div>'
+      );
+
+      expect(function () { showFor.updateState(); }).to.not.throw();
+      expect(showFor.state.stray.enabled).to.equal(undefined);
+    });
   });
 
   describe('initShowFuncs', () => {
