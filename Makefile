@@ -85,7 +85,7 @@ test: .docker-build
 	${DC} run web ./bin/run-unit-tests.sh
 
 test-js: .docker-build
-	${DC} run web npm run webpack:test
+	${DC} run node npm run webpack:test
 
 docs: .docker-build
 	${DC} run -p 8001:8001 web mkdocs serve -a 0.0.0.0:8001
